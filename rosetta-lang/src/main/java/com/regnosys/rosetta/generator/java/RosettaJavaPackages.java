@@ -75,17 +75,13 @@ public class RosettaJavaPackages {
 			return child("validation");
 		}
 
-		public DottedPath dataRule() {
+		public DottedPath condition() {
 			return typeValidation().child("datarule");
 		}
 
 		public DottedPath existsValidation() {
 			return typeValidation().child("exists");
 		}
-		
-		public DottedPath blueprint() {
- 			return child("blueprint");
- 		}
 		
 		public DottedPath reports() {
 			return child("reports");

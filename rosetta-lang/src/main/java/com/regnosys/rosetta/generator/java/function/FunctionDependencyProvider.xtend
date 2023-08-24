@@ -84,8 +84,8 @@ class FunctionDependencyProvider {
 		distinctBy(objects.map[object|functionDependencies(object)].flatten, [f|f.name]).toSet;
 	}
 
-	def Set<RFunction> rFunctionDependencies(RosettaExpression expresseion) {
-		val rosettaSymbols = EcoreUtil2.eAllOfType(expresseion, RosettaSymbolReference).map[it.symbol]
+	def Set<RFunction> rFunctionDependencies(RosettaExpression expression) {
+		val rosettaSymbols = EcoreUtil2.eAllOfType(expression, RosettaSymbolReference).map[it.symbol]
 		(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
 			rosettaSymbols.filter(RosettaBlueprint).map[rTypeBuilderFactory.buildRFunction(it)]).toSet
 	}

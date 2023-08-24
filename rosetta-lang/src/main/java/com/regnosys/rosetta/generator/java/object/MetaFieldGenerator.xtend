@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.Multimaps
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaFactory
@@ -39,6 +38,7 @@ import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension

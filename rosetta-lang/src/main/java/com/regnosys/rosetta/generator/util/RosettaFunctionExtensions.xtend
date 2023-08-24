@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.util
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Annotated
@@ -23,6 +22,7 @@ import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import java.util.List
 import com.regnosys.rosetta.types.RFunction
+import javax.inject.Inject
 
 class RosettaFunctionExtensions {
 

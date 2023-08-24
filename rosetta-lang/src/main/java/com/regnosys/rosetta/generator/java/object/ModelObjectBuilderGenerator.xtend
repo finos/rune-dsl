@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -18,6 +17,7 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
+import javax.inject.Inject
 
 class ModelObjectBuilderGenerator {
 	

@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.ImplementedBy
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
@@ -55,12 +54,12 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.xtext.naming.QualifiedName
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class FunctionGenerator {
 
@@ -360,10 +359,6 @@ class FunctionGenerator {
 	private def JavaClass toDispatchClass(FunctionDispatch ele) {
 		return new JavaClass(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name))
 	}
-
-//	private def QualifiedName toEnumClassName(FunctionDispatch ele) {
-//		return QualifiedName.create(ele.name).append(formatEnumName(ele.value.value.name))
-//	}
 
 	private def boolean assignAsKey(ROperation op) {
 		return op.expression instanceof AsKeyOperation

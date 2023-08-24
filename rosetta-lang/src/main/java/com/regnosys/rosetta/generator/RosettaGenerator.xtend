@@ -4,7 +4,6 @@
  */
 package com.regnosys.rosetta.generator
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
@@ -38,6 +37,7 @@ import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
+import javax.inject.Inject
 
 /**
  * Generates code from your model files on save.
@@ -49,7 +49,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
-	@Inject ConditionGenerator dataRuleGenerator
+	@Inject ConditionGenerator conditionGenerator
 	@Inject TabulatorGenerator tabulatorGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
@@ -150,7 +150,7 @@ class RosettaGenerator implements IGenerator2 {
 							metaGenerator.generate(packages, fsa, it, version)
 							validatorsGenerator.generate(packages, fsa, it, version)
 							it.conditions.forEach [ cond |
-								dataRuleGenerator.generate(packages, fsa, it, cond, version)
+								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]
 							tabulatorGenerator.generate(fsa, it, Optional.empty)
 						}

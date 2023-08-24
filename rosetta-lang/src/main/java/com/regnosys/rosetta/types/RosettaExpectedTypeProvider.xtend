@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Operation
@@ -11,6 +10,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import javax.inject.Inject
 
 class RosettaExpectedTypeProvider {
 	

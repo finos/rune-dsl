@@ -2,7 +2,6 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
@@ -131,6 +130,7 @@ import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.REnumType
 import java.util.Optional
+import javax.inject.Inject
 
 // TODO: split expression validator
 // TODO: type check type call arguments

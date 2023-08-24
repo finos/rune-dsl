@@ -7,9 +7,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.Validate;
 
-import com.google.inject.Inject;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;

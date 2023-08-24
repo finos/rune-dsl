@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.function
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.eclipse.xtext.testing.InjectWith
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -50,7 +50,6 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
@@ -58,6 +57,7 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.Period;
 			import com.rosetta.test.model.PeriodEnum;
 			import java.math.BigDecimal;
+			import javax.inject.Inject;
 			
 			
 			/**
@@ -285,7 +285,6 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
@@ -298,6 +297,7 @@ class CalculationFunctionGeneratorTest {
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -389,7 +389,6 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
@@ -402,6 +401,7 @@ class CalculationFunctionGeneratorTest {
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -493,7 +493,6 @@ class CalculationFunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -505,6 +504,7 @@ class CalculationFunctionGeneratorTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
@@ -585,10 +585,10 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -674,11 +674,11 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
+			import javax.inject.Inject;
 			
 			
 			/**
@@ -792,10 +792,10 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)

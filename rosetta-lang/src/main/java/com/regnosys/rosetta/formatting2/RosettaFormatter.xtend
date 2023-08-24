@@ -3,7 +3,6 @@
  */
 package com.regnosys.rosetta.formatting2
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
@@ -57,6 +56,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.TypeCallArgument
+import javax.inject.Inject
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	

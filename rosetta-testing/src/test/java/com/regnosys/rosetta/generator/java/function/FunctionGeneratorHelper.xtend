@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
-import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -20,6 +19,7 @@ import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import java.lang.reflect.InvocationTargetException
+import javax.inject.Inject
 
 class FunctionGeneratorHelper {
 

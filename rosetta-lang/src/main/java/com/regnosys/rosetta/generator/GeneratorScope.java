@@ -182,6 +182,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * 
 	 * @throws IllegalStateException if this scope is closed.
 	 * @throws IllegalStateException if this scope already contains an identifier for `key`.
+	 * @throws IllegalStateException if this scope does not contain an identifier for `keyWithIdentifier`.
 	 */
 	public void createKeySynonym(Object key, Object keyWithIdentifier) {
 		if (isClosed) {
@@ -189,6 +190,9 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		}
 		if (this.getIdentifier(key).isPresent()) {
 			throw new IllegalStateException("There is already a name defined for key `" + normalizeKey(key) + "`.\n" + this);
+		}
+		if (this.getIdentifier(keyWithIdentifier).isEmpty()) {
+			throw new IllegalStateException("There is no name defined for key `" + normalizeKey(keyWithIdentifier) + "`.\n" + this);
 		}
 		
 		this.keySynonyms.put(key, keyWithIdentifier);

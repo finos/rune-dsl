@@ -220,7 +220,7 @@ class BlueprintGenerator {
 				}
 			'''
 
-			buildClass(packageName.blueprint, body, topScope)
+			buildClass(packageName.legacyBlueprint, body, topScope)
 		} catch (Exception e) {
 			LOGGER.error("Error generating blueprint java for " + name, e);
 			return '''Unexpected Error generating «name».java Please see log for details'''

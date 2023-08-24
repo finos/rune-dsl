@@ -1,11 +1,11 @@
 package com.regnosys.rosetta.types
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
 import com.regnosys.rosetta.tests.util.ExpressionParser
+import javax.inject.Inject
 
 class TypeTestUtil {
 	@Inject

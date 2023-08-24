@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.tests.util
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import java.io.StringReader
@@ -37,6 +36,7 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.scoping.IScope
 import com.regnosys.rosetta.rosetta.RosettaModel
+import javax.inject.Inject
 
 class ExpressionParser {
 	@Inject IParser parser

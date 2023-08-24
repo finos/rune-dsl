@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
-import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -20,6 +19,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
+import javax.inject.Inject
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -143,7 +143,6 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -153,6 +152,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
@@ -404,7 +404,6 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -414,6 +413,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
@@ -658,7 +658,6 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -668,6 +667,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
@@ -784,7 +784,6 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -794,6 +793,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
@@ -1031,13 +1031,13 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
@@ -1914,10 +1914,10 @@ class RosettaRuleGeneratorTest {
 		package com.rosetta.test.model.reports;
 		
 		import com.google.inject.ImplementedBy;
-		import com.google.inject.Inject;
 		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Foo;
+		import javax.inject.Inject;
 		
 		
 		@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
@@ -1982,7 +1982,6 @@ class RosettaRuleGeneratorTest {
 		package com.rosetta.test.model.reports;
 		
 		import com.google.inject.ImplementedBy;
-		import com.google.inject.Inject;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.functions.ModelObjectValidator;
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -1990,6 +1989,7 @@ class RosettaRuleGeneratorTest {
 		import com.rosetta.test.model.Input;
 		import com.rosetta.test.model.Input.InputBuilder;
 		import java.util.Optional;
+		import javax.inject.Inject;
 		
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		

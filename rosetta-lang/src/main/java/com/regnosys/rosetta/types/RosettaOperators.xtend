@@ -1,12 +1,12 @@
 package com.regnosys.rosetta.types
 
-import com.google.inject.Inject
 import com.google.inject.Singleton
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RStringType
 import java.util.Optional
 import com.regnosys.rosetta.types.builtin.RNumberType
 import com.regnosys.rosetta.utils.OptionalUtil
+import javax.inject.Inject
 
 @Singleton
 class RosettaOperators {

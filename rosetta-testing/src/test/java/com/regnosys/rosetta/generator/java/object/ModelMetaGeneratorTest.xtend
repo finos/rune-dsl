@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -25,6 +24,7 @@ import static java.util.Map.of
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -142,9 +142,9 @@ class ModelMetaGeneratorTest {
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationType.CARDINALITY, o.getClass().getSimpleName(), path, "", error);
+						return failure("Foo", ValidationType.CARDINALITY, "Foo", path, "", error);
 					}
-					return success("Foo", ValidationType.CARDINALITY, o.getClass().getSimpleName(), path, "");
+					return success("Foo", ValidationType.CARDINALITY, "Foo", path, "");
 				}
 			
 			}
@@ -185,9 +185,9 @@ class ModelMetaGeneratorTest {
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+						return failure("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "", error);
 					}
-					return success("Foo", ValidationType.TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
+					return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
 				}
 			
 			}

@@ -3,6 +3,8 @@ package com.regnosys.rosetta.ide.formatting;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.xtext.formatting.IIndentationInformation;
@@ -16,7 +18,6 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.TextRegion;
 
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
 
@@ -34,7 +35,7 @@ public class RosettaFormattingService extends FormattingService {
 	public static String PREFERENCE_MAX_LINE_WIDTH_KEY = "maxLineWidth";
 	public static String PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY = "conditionalMaxLineWidth";
 	
-	@Inject(optional = true)
+	@Inject
 	private Provider<IFormatter2> formatter2Provider;
 
 	@Inject

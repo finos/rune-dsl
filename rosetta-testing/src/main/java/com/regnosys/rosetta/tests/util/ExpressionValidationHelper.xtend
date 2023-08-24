@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.tests.util
 
-import com.google.inject.Inject
-import com.google.inject.name.Named
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.validation.AbstractRosettaValidator
 import com.regnosys.rosetta.validation.StandaloneRosettaTypingValidator
@@ -16,6 +14,8 @@ import org.eclipse.xtext.validation.Issue
 
 import static com.google.common.collect.Iterables.isEmpty
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
+import javax.inject.Named
 
 class ExpressionValidationHelper {
 	@Inject

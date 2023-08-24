@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -20,6 +19,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -52,7 +52,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -64,6 +63,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -148,7 +148,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -160,6 +159,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -282,7 +282,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -294,6 +293,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -380,7 +380,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -393,6 +392,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -940,7 +940,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
@@ -954,6 +953,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -1576,7 +1576,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -1587,6 +1586,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -1902,7 +1902,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -1915,6 +1914,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -2037,7 +2037,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -2050,6 +2049,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -2294,12 +2294,12 @@ class ListOperationTest {
 				package ns1.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
 				import java.util.List;
+				import javax.inject.Inject;
 				import ns1.Bar;
 				import ns1.Foo;
 				
@@ -2468,12 +2468,12 @@ class ListOperationTest {
 				package ns2.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
 				import java.util.List;
+				import javax.inject.Inject;
 				import ns1.Bar;
 				import ns1.Foo;
 				import ns1.functions.GetFoo;
@@ -2569,12 +2569,12 @@ class ListOperationTest {
 				package ns2.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
 				import java.util.List;
+				import javax.inject.Inject;
 				import ns1.Bar;
 				import ns1.Foo;
 				import ns1.functions.GetBaz;
@@ -3281,7 +3281,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -3291,6 +3290,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -3712,7 +3712,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -3723,6 +3722,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)

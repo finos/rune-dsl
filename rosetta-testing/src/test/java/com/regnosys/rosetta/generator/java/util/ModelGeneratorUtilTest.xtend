@@ -6,11 +6,10 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.util.ModelHelper
 
 import static org.junit.jupiter.api.Assertions.*
-
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

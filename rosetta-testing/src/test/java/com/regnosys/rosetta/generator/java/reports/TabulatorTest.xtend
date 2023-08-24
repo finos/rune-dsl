@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.eclipse.xtext.testing.InjectWith
@@ -28,6 +27,7 @@ import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValue
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValue
 import org.eclipse.xtend2.lib.StringConcatenation
 import com.rosetta.model.lib.ModelSymbolId
+import javax.inject.Inject
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)

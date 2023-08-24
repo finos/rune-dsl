@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -20,6 +19,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -122,25 +122,25 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 
 		val foo1 = classes.createInstanceUsingBuilder('Foo', of('bar', 'Y', 'baz', 'a'))
-		assertTrue(classes.runDataRule(foo1, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo1, 'FooDataRule0').isSuccess)
 
 		val foo2 = classes.createInstanceUsingBuilder('Foo', of('bar', 'Y'))
-		assertFalse(classes.runDataRule(foo2, 'FooDataRule0').isSuccess)
+		assertFalse(classes.runCondition(foo2, 'FooDataRule0').isSuccess)
 
 		val foo3 = classes.createInstanceUsingBuilder('Foo', of('bar', 'I'))
-		assertTrue(classes.runDataRule(foo3, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo3, 'FooDataRule0').isSuccess)
 
 		val foo4 = classes.createInstanceUsingBuilder('Foo', of('bar', 'I', 'baz', 'a'))
-		assertFalse(classes.runDataRule(foo4, 'FooDataRule0').isSuccess)
+		assertFalse(classes.runCondition(foo4, 'FooDataRule0').isSuccess)
 
 		val foo5 = classes.createInstanceUsingBuilder('Foo', of('bar', 'N'))
-		assertTrue(classes.runDataRule(foo5, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo5, 'FooDataRule0').isSuccess)
 		
 		val foo6 = classes.createInstanceUsingBuilder('Foo', of('bar', 'N', 'baz', 'a'))
-		assertFalse(classes.runDataRule(foo6, 'FooDataRule0').isSuccess)
+		assertFalse(classes.runCondition(foo6, 'FooDataRule0').isSuccess)
 		
 		val foo7 = classes.createInstanceUsingBuilder('Foo', of())
-		assertTrue(classes.runDataRule(foo7, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo7, 'FooDataRule0').isSuccess)
 	}
 
 	@Test
@@ -245,25 +245,25 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 
 		val foo1 = classes.createInstanceUsingBuilder('Foo', of('bar', 'Y', 'baz', 'a'))
-		assertTrue(classes.runDataRule(foo1, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo1, 'FooDataRule0').isSuccess)
 
 		val foo2 = classes.createInstanceUsingBuilder('Foo', of('bar', 'Y'))
-		assertFalse(classes.runDataRule(foo2, 'FooDataRule0').isSuccess)
+		assertFalse(classes.runCondition(foo2, 'FooDataRule0').isSuccess)
 
 		val foo3 = classes.createInstanceUsingBuilder('Foo', of('bar', 'I'))
-		assertTrue(classes.runDataRule(foo3, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo3, 'FooDataRule0').isSuccess)
 
 		val foo4 = classes.createInstanceUsingBuilder('Foo', of('bar', 'I', 'baz', 'a'))
-		assertFalse(classes.runDataRule(foo4, 'FooDataRule0').isSuccess)
+		assertFalse(classes.runCondition(foo4, 'FooDataRule0').isSuccess)
 
 		val foo5 = classes.createInstanceUsingBuilder('Foo', of('bar', 'N'))
-		assertTrue(classes.runDataRule(foo5, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo5, 'FooDataRule0').isSuccess)
 		
 		val foo6 = classes.createInstanceUsingBuilder('Foo', of('bar', 'N', 'baz', 'a'))
-		assertFalse(classes.runDataRule(foo6, 'FooDataRule0').isSuccess)
+		assertFalse(classes.runCondition(foo6, 'FooDataRule0').isSuccess)
 		
 		val foo7 = classes.createInstanceUsingBuilder('Foo', of())
-		assertTrue(classes.runDataRule(foo7, 'FooDataRule0').isSuccess)
+		assertTrue(classes.runCondition(foo7, 'FooDataRule0').isSuccess)
 	}
 
 
@@ -323,7 +323,7 @@ class DataRuleGeneratorTest {
 	}
 	
 	@Test
-	def void dataRuleWithDoIfAndFunction() {
+	def void conditionWithDoIfAndFunction() {
 		val code = '''
 				func Foo:
 					inputs:
@@ -342,7 +342,7 @@ class DataRuleGeneratorTest {
 	}
 	
 	@Test
-	def void dataRuleWithDoIfAndFunctionAndElse() {
+	def void conditionWithDoIfAndFunctionAndElse() {
 		val code = '''
 				func Foo:
 					inputs:
@@ -362,7 +362,7 @@ class DataRuleGeneratorTest {
 	}
 	
 	@Test
-	def void dataRuleCoinHead() {
+	def void conditionCoinHead() {
 		val code = '''
 			type Coin:
 				head boolean (0..1)
@@ -378,14 +378,14 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 		val coinInstance = classes.createInstanceUsingBuilder('Coin', of('head', true, 'tail', true), of())
 
-		val validationResult = classes.runDataRule(coinInstance, 'CoinCoinHeadRule')
+		val validationResult = classes.runCondition(coinInstance, 'CoinCoinHeadRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if head = True then tail = False"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Coin->getTail] [true] does not equal [Boolean] [false]"))
 	}
 
 	@Test
-	def void dataRuleCoinTail() {
+	def void conditionCoinTail() {
 		val code = '''
 			type Coin:
 				head boolean (0..1)
@@ -400,13 +400,13 @@ class DataRuleGeneratorTest {
 
 		val coinInstance = classes.createInstanceUsingBuilder('Coin', of('head', false, 'tail', true), of())
 
-		val validationResult = classes.runDataRule(coinInstance, 'CoinCoinTailRule')
+		val validationResult = classes.runCondition(coinInstance, 'CoinCoinTailRule')
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if tail = True then head = False"))
 	}
 	
 	@Test
-	def void dataRuleCoinEdge() {
+	def void conditionCoinEdge() {
 		val code = '''
 			type Coin:
 				head boolean (0..1)
@@ -423,7 +423,7 @@ class DataRuleGeneratorTest {
 
 		val coinInstance = classes.createInstanceUsingBuilder('Coin', of('head', false, 'tail', false), of())
 		
-		val validationResult = classes.runDataRule(coinInstance, 'CoinEdgeRule')
+		val validationResult = classes.runCondition(coinInstance, 'CoinEdgeRule')
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if tail = False then head = False"))
 	}
@@ -442,7 +442,7 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 
 		val coinInstance = classes.createInstanceUsingBuilder('CondTest', of(), of('multiAttr', #[BigDecimal.ONE]))
-		val validationResult = classes.runDataRule(coinInstance, 'CondTestDataRule0')
+		val validationResult = classes.runCondition(coinInstance, 'CondTestDataRule0')
 
 		assertTrue(validationResult.isSuccess)
 	}
@@ -467,11 +467,11 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 
 		val bar1 = classes.createInstanceUsingBuilder('Bar', of('z', 'v1'))
-		val result1 = classes.runDataRule(bar1, 'BarDataRule0')
+		val result1 = classes.runCondition(bar1, 'BarDataRule0')
 		assertFalse(result1.isSuccess)
 		
 		val bar2 = classes.createInstanceUsingBuilder('Bar', of('y', 'v1', 'z', 'v2'))
-		val result2 = classes.runDataRule(bar2, 'BarDataRule0')
+		val result2 = classes.runCondition(bar2, 'BarDataRule0')
 		assertTrue(result2.isSuccess)
 	}
 	
@@ -502,11 +502,11 @@ class DataRuleGeneratorTest {
 
 		val namespace = new RootPackage('ns2')
 		val bar1 = classes.createInstanceUsingBuilder(namespace, 'Bar', of('z', 'v1'))
-		val result1 = classes.runDataRule(namespace, bar1, 'BarDataRule0')
+		val result1 = classes.runCondition(namespace, bar1, 'BarDataRule0')
 		assertFalse(result1.isSuccess)
 		
 		val bar2 = classes.createInstanceUsingBuilder(namespace, 'Bar', of('y', 'v1', 'z', 'v2'))
-		val result2 = classes.runDataRule(namespace, bar2, 'BarDataRule0')
+		val result2 = classes.runCondition(namespace, bar2, 'BarDataRule0')
 		assertTrue(result2.isSuccess)
 	}
 	
@@ -530,11 +530,11 @@ class DataRuleGeneratorTest {
 		val classes = code.compileToClasses
 
 		val bar1 = classes.createInstanceUsingBuilder('Bar', of('z', 'v1'))
-		val result1 = classes.runDataRule(bar1, 'FooDataRule0')
+		val result1 = classes.runCondition(bar1, 'FooDataRule0')
 		assertFalse(result1.isSuccess)
 		
 		val bar2 = classes.createInstanceUsingBuilder('Bar', of('x', 'v1', 'y', 'v2', 'z', 'v3'))
-		val result2 = classes.runDataRule(bar2, 'FooDataRule0')
+		val result2 = classes.runCondition(bar2, 'FooDataRule0')
 		assertTrue(result2.isSuccess)
 	}
 		
@@ -564,7 +564,7 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance)))
 				
-		val validationResult = classes.runDataRule(fooInstance, 'FooListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 	}
@@ -580,7 +580,7 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance)))
 				
-		val validationResult = classes.runDataRule(fooInstance, 'FooListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue] [2.0] does not equal [BigDecimal] [1.0]"))
@@ -601,7 +601,7 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2)))
 				
-		val validationResult = classes.runDataRule(fooInstance, 'FooListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 	}
@@ -618,7 +618,7 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance)))
 			
-		val validationResult = classes.runDataRule(fooInstance, 'FooListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[0]->getBaz[1]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
@@ -637,7 +637,7 @@ class DataRuleGeneratorTest {
 		// foo
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2)))
 			
-		val validationResult = classes.runDataRule(fooInstance, 'FooListDataRule')
+		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))

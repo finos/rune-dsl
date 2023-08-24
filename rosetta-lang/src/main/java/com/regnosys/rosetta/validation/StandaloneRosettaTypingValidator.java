@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
 
-import com.google.inject.Inject;
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;

@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkArgument
 import org.junit.jupiter.api.Assertions
 import com.google.inject.Provider
-import com.google.inject.Inject
+import javax.inject.Inject
 
 class ExpressionFormatterTestHelper extends FormatterTestHelper {
 	@Inject

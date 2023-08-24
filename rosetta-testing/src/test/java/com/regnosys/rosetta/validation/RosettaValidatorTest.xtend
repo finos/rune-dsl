@@ -3,7 +3,6 @@
  */
 package com.regnosys.rosetta.validation
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -22,6 +21,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.junit.Assert.assertEquals
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -1497,7 +1497,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Clazz:
 				test boolean (0..1)
 			
-				condition DataRule:
+				condition Condition:
 					if test = True 
 						or False <> False
 						or 1 > 0

@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.google.inject.ImplementedBy
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -24,6 +22,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
+import javax.inject.Inject
+import com.google.inject.ImplementedBy
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -34,14 +34,14 @@ class ConditionGenerator {
 	@Inject extension JavaTypeTranslator
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
-		val topScope = new JavaScope(root.dataRule)
+		val topScope = new JavaScope(root.condition)
 		
-		val classBody = ele.dataRuleClassBody(data, topScope, version)
-		val content = buildClass(root.dataRule, classBody, topScope)
-		fsa.generateFile('''«root.dataRule.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
+		val classBody = ele.conditionClassBody(data, topScope, version)
+		val content = buildClass(root.condition, classBody, topScope)
+		fsa.generateFile('''«root.condition.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
 	}
 
-	private def StringConcatenationClient dataRuleClassBody(Condition rule, Data data, JavaScope scope, String version)  {
+	private def StringConcatenationClient conditionClassBody(Condition rule, Data data, JavaScope scope, String version)  {
 		val rosettaClass = rule.eContainer as Data
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)

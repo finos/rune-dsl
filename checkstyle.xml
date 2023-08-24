@@ -1,0 +1,11 @@
+<!DOCTYPE module PUBLIC
+  "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+  "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<module name="Checker">
+	<module name="TreeWalker">
+		<!-- Forbid using Google Inject in favor of javax Inject. -->
+		<module name="IllegalImport">
+		  <property name="illegalClasses" value="com.google.inject.Inject, com.google.inject.name.Named"/>
+		</module>
+	</module>
+</module>

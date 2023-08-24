@@ -2,7 +2,8 @@ package com.rosetta.model.lib.qualify;
 
 import java.util.function.Function;
 
-import com.google.inject.Inject;
+import javax.inject.Inject;
+
 import com.google.inject.Injector;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.expression.ComparisonResult;

@@ -14,7 +14,7 @@ public interface RosettaIssueCodes {
 	static final String INVALID_TYPE = PREFIX + "InvalidType";
 	static final String DUPLICATE_CHOICE_RULE_ATTRIBUTE = PREFIX + "DuplicateChoiceRuleAttribute";
 	static final String CLASS_WITH_CHOICE_RULE_AND_ONE_OF_RULE = PREFIX + "ClassWithChoiceRuleAndOneOfRule";
-	static final String MULIPLE_CLASS_REFERENCES_DEFINED_FOR_DATA_RULE = PREFIX + "MulipleClassReferencesDefinedForDataRule";
+	static final String MULIPLE_CLASS_REFERENCES_DEFINED_FOR_CONDITION = PREFIX + "MulipleClassReferencesDefinedForCondition";
 	static final String MAPPING_RULE_INVALID = PREFIX + "MappingRuleInvalid";
 	static final String MAPPING_RULE_NOT_USED = PREFIX + "MappingRuleNotUsed";
 	static final String MISSING_ENUM_VALUE = PREFIX + "MissingEnumValue";

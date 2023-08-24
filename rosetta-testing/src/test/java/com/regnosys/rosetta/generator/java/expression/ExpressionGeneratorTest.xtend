@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.RosettaCardinality
@@ -38,6 +37,7 @@ import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.rosetta.util.DottedPath
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

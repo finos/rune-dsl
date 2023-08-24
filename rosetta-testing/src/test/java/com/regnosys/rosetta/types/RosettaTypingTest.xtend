@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -20,6 +19,7 @@ import java.util.Optional
 import java.math.BigDecimal
 import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
 import com.regnosys.rosetta.tests.util.ExpressionParser
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

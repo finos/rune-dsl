@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.tests.util
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.RosettaGenerator
 import com.regnosys.rosetta.generator.RosettaInternalGenerator
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
@@ -22,6 +21,7 @@ import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static com.google.common.collect.ImmutableMap.*
 import com.rosetta.model.lib.RosettaModelObject
+import javax.inject.Inject
 
 class CodeGeneratorTestHelper {
 

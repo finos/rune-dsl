@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
@@ -42,6 +41,7 @@ import com.rosetta.util.types.JavaWildcardTypeArgument
 import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class ValidatorsGenerator {
 
@@ -91,9 +91,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
 			}
 		
 		}
@@ -112,9 +112,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
 			}
 		
 		}
@@ -139,9 +139,9 @@ class ValidatorsGenerator {
 						.collect(«Collectors».toSet());
 				
 				if (setFields.equals(fields)) {
-					return «method(ValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
+					return «method(ValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "");
 				}
-				return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
+				return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "",
 						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 			}
 		}
