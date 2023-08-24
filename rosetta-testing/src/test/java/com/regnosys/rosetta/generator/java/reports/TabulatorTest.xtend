@@ -10,28 +10,15 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import java.util.Map
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.GeneratedJavaClassService
 import com.rosetta.util.types.JavaClass
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject
-import java.util.List
-import com.rosetta.model.lib.reports.Tabulator.Field
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import java.math.BigDecimal
-import com.google.inject.Injector
-import com.rosetta.model.lib.reports.Tabulator.FieldValue
-import com.rosetta.model.lib.reports.Tabulator.FieldValueVisitor
-import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValue
-import com.rosetta.model.lib.reports.Tabulator.NestedFieldValue
-import org.eclipse.xtend2.lib.StringConcatenation
 import com.rosetta.model.lib.ModelSymbolId
 import javax.inject.Inject
-import com.rosetta.model.lib.records.Date
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import java.time.LocalTime
-import java.time.ZonedDateTime
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -39,7 +26,7 @@ class TabulatorTest {
 	
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension GeneratedJavaClassService
-	@Inject Injector injector
+	@Inject extension TabulatorTestUtil
 	
 	final StringConcatenationClient HEADER = '''
 	namespace com.rosetta.test.model
@@ -55,81 +42,6 @@ class TabulatorTest {
 	eligibility rule IsReportableInput from ReportableInput:
 		filter True
 	'''
-	
-	private def Tabulator<RosettaModelObject> createTabulatorInstance(Map<String, Class<?>> classes, JavaClass tabulatorClassRepr) {
-		val tabulatorClass = classes.get(tabulatorClassRepr.canonicalName.withDots)
-		return injector.getInstance(tabulatorClass) as Tabulator<RosettaModelObject>
-	}
-	
-	private def void assertFieldsEqual(String expected, List<Field> actual) {
-		val actualRepr =
-		'''
-		«FOR field : actual SEPARATOR '\n'»
-			«field.fieldStringRepr»
-		«ENDFOR»
-		'''
-		assertEquals(expected, actualRepr)
-	}
-	private def StringConcatenationClient fieldStringRepr(Field field) {
-		'''
-		«field.attributeName»«IF field.multi»*«ENDIF»
-		«IF field.name != field.attributeName»"«field.name»"«ENDIF»
-			«FOR child : field.children SEPARATOR '\n'»
-			«child.fieldStringRepr»
-			«ENDFOR»
-		'''
-	}
-	private def void assertFieldValuesEqual(String expected, List<FieldValue> actual) {
-		val actualRepr =
-		'''
-		«FOR fieldValue : actual SEPARATOR '\n'»
-			«fieldValue.fieldValueStringRepr»
-		«ENDFOR»
-		'''
-		assertEquals(expected, actualRepr)
-	}
-	
-	private static def StringConcatenationClient fieldValueStringRepr(FieldValue fieldValue) {
-		val visitor = new FieldValueToReprVisitor
-		fieldValue.accept(visitor, null)
-		'''«visitor.result»'''
-	}
-	private static class FieldValueToReprVisitor implements FieldValueVisitor<Void> {
-		public StringConcatenation result = new StringConcatenation
-		override visitMultiNested(MultiNestedFieldValue fieldValue, Void c) {
-			result.append(fieldValue.field.attributeName)
-			result.append(':')
-			if (fieldValue.isPresent) {
-				for (vs: fieldValue.value.get) {
-					for (v: vs) {
-						result.newLine
-						result.append("\t")
-						result.append(v.fieldValueStringRepr, "\t")
-					}
-				}
-			} else {
-				result.append(' <empty>')
-			}
-		}
-		override visitNested(NestedFieldValue fieldValue, Void c) {
-			result.append(fieldValue.field.attributeName)
-			result.append(':')
-			if (fieldValue.isPresent) {
-				for (v: fieldValue.value.get) {
-					result.newLine
-					result.append("\t")
-					result.append(v.fieldValueStringRepr, "\t")
-				}
-			} else {
-				result.append(' <empty>')
-			}
-		}
-		override visitSingle(FieldValue fieldValue, Void c) {
-			result.append(fieldValue.field.attributeName)
-			result.append(': ')
-			result.append(fieldValue.value.map[toString].orElse("<empty>"))
-		}
-	}
 	
 	@Test
 	def void generateTabulatorForReportWithoutLists() {
@@ -282,7 +194,7 @@ class TabulatorTest {
 		assertEquals(expected, tabulatorCode)
 		
 		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
 		val expectedFields =
 		'''
@@ -433,7 +345,7 @@ class TabulatorTest {
 		assertEquals(expected, tabulatorCode)
 		
 		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
 		val expectedFields =
 		'''
@@ -523,7 +435,7 @@ class TabulatorTest {
 		val tabulatorClass = new JavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator")
 		
 		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
 		val expectedFields =
 		'''
@@ -664,7 +576,7 @@ class TabulatorTest {
 		assertEquals(expected, tabulatorCode)
 		
 		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
 		val expectedFields =
 		'''
@@ -774,7 +686,7 @@ class TabulatorTest {
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
 		val expectedFields =
 		'''
@@ -818,7 +730,7 @@ class TabulatorTest {
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
 		val expectedFields =
 		'''
@@ -829,295 +741,6 @@ class TabulatorTest {
 		val flatReport = tabulator.tabulate(report)
 		val expectedValues =
 		'''
-		'''
-		assertFieldValuesEqual(expectedValues, flatReport)
-	}
-	
-	@Test
-	def void generateTabulatorForHeroModel() {
-		val model = '''
-			namespace "test.reg"
-			version "test"
-			
-			type Person:
-			    name string (1..1)
-			    dateOfBirth date (1..1)
-			    nationality CountryEnum (1..1)
-			    hasSpecialAbilities boolean (1..1)
-			    powers PowerEnum (0..*)
-			    attribute Attribute (0..1)
-			    organisations Organisation (0..*)
-			
-			type Attribute:
-			    heroInt int (1..1)
-			    heroNumber number (1..1)
-			    heroZonedDateTime zonedDateTime (1..1)
-			    heroTime time (1..1)
-			
-			type Organisation:
-			    name string (1..1)
-			    isGovernmentAgency boolean (1..1)
-			    country CountryEnum (1..1)
-			
-			enum PowerEnum:
-			    Armour
-			    Flight
-			    SuperhumanReflexes
-			    SuperhumanStrength
-			
-			enum CountryEnum:
-			    UnitedStatesOfAmerica
-			
-			body Authority Shield <"Strategic Homeland Intervention, Enforcement and Logistics Division">
-			
-			corpus Act "Avengers Initiative" Avengers <"The Avengers Initiative (a.k.a Phase 1; originally conceptualized as the Protector Initiative) was a secret project created by S.H.I.E.L.D. to create the Avengers, a response team comprised of the most able individuals humankind has to offer. The Initiative will defend Earth from imminent global threats that are beyond the warfighting capability of conventional military forces. ">
-			
-			corpus Regulations "Sokovia Accords" SokoviaAccords <"The Sokovia Accords are a set of legal documents designed to regulate the activities of enhanced individuals, specifically those who work for either government agencies such as S.H.I.E.L.D. or for private organizations such as the Avengers">
-			
-			segment rationale
-			segment rationale_author
-			segment structured_provision
-			
-			segment section
-			segment field
-			
-			report Shield Avengers SokoviaAccords in real-time
-			    from Person
-			    when HasSuperPowers
-			    with type SokoviaAccordsReport
-			
-			type SokoviaAccordsReport:
-			    heroName string (1..1) <"Basic type - string">
-			        [ruleReference HeroName]
-			    dateOfBirth date (1..1) <"Basic type - date">
-			        [ruleReference DateOfBirth]
-			    nationality CountryEnum (1..1) <"Enum type">
-			        [ruleReference Nationality]
-			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
-			        [ruleReference SpecialAbilities]
-			    power PowerEnum (0..1) <"Multiple cardinality not supported">
-			        [ruleReference Powers]
-			    attribute AttributeReport (0..1)  <"Nested report">
-			    organisations OrganisationReport (0..*) <"Repeatable rule">
-			        [ruleReference HeroOrganisations]
-			    notModelled string (1..1) <"Not modelled">
-			        [ruleReference NotModelled]
-			
-			type AttributeReport:
-			    heroInt int (1..1) <"Basic type - int">
-			        [ruleReference AttributeInt]
-			    heroNumber number (1..1) <"Basic type - number">
-			        [ruleReference AttributeNumber]
-			    heroTime time (1..1) <"Basic type - time">
-			        [ruleReference AttributeTime]
-			    heroZonedDateTime zonedDateTime (1..1) <"Record type - zonedDateTime">
-			        [ruleReference AttributeZonedDateTime]
-			
-			type OrganisationReport: <"Repeated rule">
-			    name string (1..1)
-			        [ruleReference OrganisationName]
-			    isGovernmentAgency boolean (1..1)
-			        [ruleReference IsGovernmentAgency]
-			    country CountryEnum (1..1)
-			        [ruleReference OrganisationCountry]
-			
-			eligibility rule HasSuperPowers from Person:
-			     filter hasSpecialAbilities
-			
-			reporting rule HeroName from Person: <"Name">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
-			    extract name as "Hero Name"
-			
-			reporting rule DateOfBirth from Person: <"Date of birth">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Date of birth."]
-			    extract dateOfBirth as "Date of Birth"
-			
-			reporting rule Nationality from Person: <"Nationality">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Nationality."]
-			    extract nationality as "Nationality"
-			
-			reporting rule SpecialAbilities from Person: <"Has Special Abilities">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "3" provision "Has Special Abilities"]
-			    extract hasSpecialAbilities as "Has Special Abilities"
-			
-			reporting rule Powers from Person: <"Super Power Name">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Powers."]
-			    extract powers as "Powers"
-			
-			reporting rule AttributeInt from Person: <"Attribute - Int">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "Attribute - Int."]
-			    extract attribute -> heroInt as "Attribute - Int"
-			
-			reporting rule AttributeNumber from Person: <"Attribute - Number">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "6"  provision "Attribute - Number."]
-			    extract attribute -> heroNumber as "Attribute - Number"
-			
-			reporting rule AttributeZonedDateTime from Person: <"Attribute - ZonedDateTime">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "7"  provision "Attribute - ZonedDateTime."]
-			    extract attribute -> heroZonedDateTime as "Attribute - ZonedDateTime"
-			
-			reporting rule AttributeTime from Person: <"Attribute - Time">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "8"  provision "Attribute - Time."]
-			    extract attribute -> heroTime as "Attribute - Time"
-			
-			reporting rule HeroOrganisations from Person: <"Has Special Abilities">
-			    [legacy-syntax]
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "9"  provision "."]
-			    extract repeatable Person -> organisations then
-			    (
-			        OrganisationName,
-			        OrganisationCountry,
-			        IsGovernmentAgency
-			    ) as "Hero Organisations"
-			
-			reporting rule OrganisationName from Organisation: <"Organisation Name">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "10"  provision "."]
-			    extract name as "Organisation Name"
-			
-			reporting rule OrganisationCountry from Organisation: <"Organisation Country">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "11"  provision "."]
-			    extract country as "Organisation Country"
-			
-			reporting rule IsGovernmentAgency from Organisation: <"Is Government Agency">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "12"  provision "."]
-			    extract isGovernmentAgency as "Is Government Agency"
-			
-			reporting rule NotModelled from Person: <"Not Modelled">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "13"  provision "Not Modelled."]
-			    "Not modelled" as "Not Modelled"
-			
-			// Validation catches this if added to report with wrong type
-			reporting rule MultipleTypes from Person: <"Multiple Types - ZonedDateTime and Number">
-			    [legacy-syntax]
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "14"  provision "."]
-			    (
-			        extract Person -> attribute -> heroZonedDateTime as "Multiple Types - ZonedDateTime",
-			        extract Person -> attribute -> heroNumber as "Multiple Types - Number"
-			    )
-		'''
-		val code = model.generateCode
-		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Shield", "Avengers", "SokoviaAccords")
-		val tabulatorClass = reportId.toJavaReportTabulator
-		
-		val classes = code.compileToClasses
-		val tabulator = classes.createTabulatorInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		heroName
-		"Hero Name"
-		
-		dateOfBirth
-		"Date of Birth"
-		
-		nationality
-		"Nationality"
-		
-		hasSpecialAbilities
-		"Has Special Abilities"
-		
-		power
-		"Powers"
-		
-		attribute
-			heroInt
-			"Attribute - Int"
-			
-			heroNumber
-			"Attribute - Number"
-			
-			heroTime
-			"Attribute - Time"
-			
-			heroZonedDateTime
-			"Attribute - ZonedDateTime"
-		
-		organisations*
-		"Hero Organisations"
-			name
-			"Organisation Name"
-			
-			isGovernmentAgency
-			"Is Government Agency"
-			
-			country
-			"Organisation Country"
-		
-		notModelled
-		"Not Modelled"
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
-		
-		val countryLoader = classes
-			.get("test.reg.CountryEnum")
-			.getDeclaredMethod("fromDisplayName", String)
-		val powerLoader = classes
-			.get("test.reg.PowerEnum")
-			.getDeclaredMethod("fromDisplayName", String)
-		
-		val attributeReport = classes.createInstanceUsingBuilder(new RootPackage("test.reg"), "AttributeReport",
-			#{
-				"heroInt" -> 9,
-				"heroNumber" -> new BigDecimal("0.12345"),
-				"heroTime" -> LocalTime.parse("10:13:07"),
-				"heroZonedDateTime" -> ZonedDateTime.parse("2011-06-01T10:13:07Z")
-			}
-		)
-		val organisationReport1 = classes.createInstanceUsingBuilder(new RootPackage("test.reg"), "OrganisationReport",
-			#{
-				"name" -> "Avengers",
-				"isGovernmentAgency" -> false,
-				"country" -> countryLoader.invoke(null, "UnitedStatesOfAmerica")
-			}
-		)
-		val organisationReport2 = classes.createInstanceUsingBuilder(new RootPackage("test.reg"), "OrganisationReport",
-			#{
-				"name" -> "S.H.I.E.L.D.",
-				"isGovernmentAgency" -> true,
-				"country" -> countryLoader.invoke(null, "UnitedStatesOfAmerica")
-			}
-		)
-		val report = classes.createInstanceUsingBuilder(new RootPackage("test.reg"), "SokoviaAccordsReport",
-			#{
-				"heroName" -> "Iron Man",
-				"dateOfBirth" -> Date.of(1970, 5, 29),
-				"nationality" -> countryLoader.invoke(null, "UnitedStatesOfAmerica"),
-				"hasSpecialAbilities" -> true,
-				"power" -> powerLoader.invoke(null, "SuperhumanStrength"),
-				"attribute" -> attributeReport,
-				"organisations" -> #[organisationReport1, organisationReport2],
-				"notModelled" -> "Not modelled"
-			}
-		)
-		val flatReport = tabulator.tabulate(report)
-		val expectedValues =
-		'''
-		heroName: Iron Man
-		
-		dateOfBirth: 1970-05-29
-		
-		nationality: UnitedStatesOfAmerica
-		
-		hasSpecialAbilities: true
-		
-		power: SuperhumanStrength
-		
-		attribute:
-			heroInt: 9
-			heroNumber: 0.12345
-			heroTime: 10:13:07
-			heroZonedDateTime: 2011-06-01T10:13:07Z
-		
-		organisations:
-			name: Avengers
-			isGovernmentAgency: false
-			country: UnitedStatesOfAmerica
-			name: S.H.I.E.L.D.
-			isGovernmentAgency: true
-			country: UnitedStatesOfAmerica
-		
-		notModelled: Not modelled
 		'''
 		assertFieldValuesEqual(expectedValues, flatReport)
 	}
