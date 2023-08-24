@@ -81,6 +81,11 @@ class EnumGenerator {
 				return value;
 			}
 			
+			@Override
+			public «String» toString() {
+				return displayName != null ?  displayName : name();
+			}
+			
 			public «String» toDisplayString() {
 				return displayName != null ?  displayName : rosettaName;
 			}
