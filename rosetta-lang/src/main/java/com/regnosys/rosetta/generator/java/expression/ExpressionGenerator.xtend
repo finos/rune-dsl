@@ -902,7 +902,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	}
 
 	override protected caseToStringOperation(ToStringOperation expr, JavaScope context) {
-		'''«expr.argument.ensureMapperJavaCode(context, false)».map("«expr.operator»", «Object»::toString)'''
+		val rType = typeProvider.getRType(expr.argument)
+		val StringConcatenationClient toStringMethod = if (rType.stripFromTypeAliases instanceof REnumType) {
+			'''«rType.toJavaReferenceType»::toDisplayString'''
+		} else {
+			'''«Object»::toString'''
+		}
+		'''«expr.argument.ensureMapperJavaCode(context, false)».map("«expr.operator»", «toStringMethod»)'''
 	}
 
 	override protected caseToTimeOperation(ToTimeOperation expr, JavaScope context) {

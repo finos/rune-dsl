@@ -56,15 +56,20 @@ class EnumGenerator {
 			static {
 		        «Map»<«String», «e.name»> map = new «ConcurrentHashMap»<>();
 				for («e.name» instance : «e.name».values()) {
-					map.put(instance.toString(), instance);
+					map.put(instance.toDisplayString(), instance);
 				}
 				values = «Collections».unmodifiableMap(map);
 		    }
 		
-		
+			private final «String» rosettaName;
 			private final «String» displayName;
+			
+			«e.name»(«String» rosettaName) {
+				this(rosettaName, null);
+			}
 
-			«e.name»(«String» displayName) {
+			«e.name»(«String» rosettaName, «String» displayName) {
+				this.rosettaName = rosettaName;
 				this.displayName = displayName;
 			}
 			
@@ -75,12 +80,10 @@ class EnumGenerator {
 				}
 				return value;
 			}
-
-			@Override
-			public «String» toString() {
-				return displayName;
-			}
 			
+			public «String» toDisplayString() {
+				return displayName != null ?  displayName : rosettaName;
+			}
 		}
 		'''
 		

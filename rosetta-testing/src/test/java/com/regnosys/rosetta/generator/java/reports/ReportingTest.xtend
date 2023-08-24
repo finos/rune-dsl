@@ -89,7 +89,7 @@ class ReportingTest {
 			        [ruleReference Nationality]
 			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
 			        [ruleReference SpecialAbilities]
-			    power PowerEnum (0..1) <"Multiple cardinality not supported">
+			    powers PowerEnum (0..*)
 			        [ruleReference Powers]
 			    attribute AttributeReport (0..1)  <"Nested report">
 			    organisations OrganisationReport (0..*) <"Repeatable rule">
@@ -257,7 +257,7 @@ class ReportingTest {
 		hasSpecialAbilities
 		"Has Special Abilities"
 		
-		power
+		powers*
 		"Powers"
 		
 		attribute
@@ -296,11 +296,11 @@ class ReportingTest {
 		
 		dateOfBirth: 1970-05-29
 		
-		nationality: UnitedStatesOfAmerica
+		nationality: UNITED_STATES_OF_AMERICA
 		
 		hasSpecialAbilities: true
 		
-		power: SuperhumanStrength
+		powers: [ARMOUR, FLIGHT, SUPERHUMAN_REFLEXES, SUPERHUMAN_STRENGTH]
 		
 		attribute:
 			heroInt: 9
@@ -311,10 +311,10 @@ class ReportingTest {
 		organisations:
 			name: Avengers
 			isGovernmentAgency: false
-			country: UnitedStatesOfAmerica
+			country: UNITED_STATES_OF_AMERICA
 			name: S.H.I.E.L.D.
 			isGovernmentAgency: true
-			country: UnitedStatesOfAmerica
+			country: UNITED_STATES_OF_AMERICA
 		
 		notModelled: Not modelled
 		'''

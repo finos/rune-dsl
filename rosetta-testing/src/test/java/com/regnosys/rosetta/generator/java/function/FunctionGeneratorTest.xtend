@@ -225,8 +225,8 @@ class FunctionGeneratorTest {
 	def void toEnumTest() {
 		val code = '''
 		enum Bar:
-			VALUE1
-			VALUE2 displayName "Value 2"
+			Value1
+			Value2 displayName "Value 2"
 		
 		func ToBar:
 			inputs: input string (1..1)
@@ -248,13 +248,13 @@ class FunctionGeneratorTest {
 		
 		val toBar = classes.createFunc("ToBar");
 		
-		assertEquals(value1, toBar.invokeFunc(barClass, #["VALUE1"]))
-		assertEquals(null, toBar.invokeFunc(barClass, #["VALUE2"]))
+		assertEquals(value1, toBar.invokeFunc(barClass, #["Value1"]))
+		assertEquals(null, toBar.invokeFunc(barClass, #["Value2"]))
 		assertEquals(value2, toBar.invokeFunc(barClass, #["Value 2"]))
 		
 		val toString = classes.createFunc("ToString");
 		
-		assertEquals("VALUE1", toString.invokeFunc(String, #[value1]))
+		assertEquals("Value1", toString.invokeFunc(String, #[value1]))
 		assertEquals("Value 2", toString.invokeFunc(String, #[value2]))
 	}
 	
