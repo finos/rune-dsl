@@ -2,9 +2,7 @@ package com.regnosys.rosetta.generator.java;
 
 import java.util.Objects;
 
-import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.types.RFunction;
-import com.rosetta.util.types.JavaClass;
 
 public class FunctionInstanceRepresentation {
 	private final RFunction func;

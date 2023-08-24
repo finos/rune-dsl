@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
-
 public class JavaPrimitiveType implements JavaType {
 	private static Map<Class<?>, JavaPrimitiveType> typeMap = new HashMap<>();
 	

@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException
 import com.rosetta.util.types.JavaInterface
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.rosetta.util.types.JavaReferenceType
+import java.util.Collections
 
 class RuleGenerator {
 	@Inject extension JavaTypeTranslator
@@ -88,6 +89,7 @@ class RuleGenerator {
 		val bpInstanceId = doEvaluateScope.createUniqueIdentifier("blueprint")
 		val bpReportId = doEvaluateScope.createUniqueIdentifier("blueprintReport")
 		val reportDataId = doEvaluateScope.createUniqueIdentifier("reportData")
+		val singleReportDataId = doEvaluateScope.createUniqueIdentifier("singleReportData")
 		val doEvaluateLambdaScope1 = doEvaluateScope.lambdaScope
 		val doEvaluateLambdaParam1 = doEvaluateLambdaScope1.createUniqueIdentifier("b")
 		val doEvaluateLambdaScope2 = doEvaluateScope.lambdaScope
@@ -148,12 +150,20 @@ class RuleGenerator {
 						    throw new «RuntimeException»(e);
 						}
 						«List»<«Map»<«DataIdentifier», «GroupableData»<?, «String»>>> «reportDataId» = («List»<«Map»<«DataIdentifier», «GroupableData»<?, «String»>>>)«bpReportId».getReportData();
+				        «Map»<«DataIdentifier», «GroupableData»<?, «String»>> «singleReportDataId»;
+				        if («reportDataId».size() == 1) {
+				        	«singleReportDataId» = «reportDataId».get(0);
+				        } else if («reportDataId».size() == 0) {
+				        	«singleReportDataId» = «Collections».emptyMap();
+				        } else {
+				        	throw new «RuntimeException»("Expected a single report output, but found " + «reportDataId».size() + ".");
+				        }
 				        «IF output.RType instanceof RDataType»
 				        return «Optional».ofNullable(«bpReportId».getDataItemReportBuilder())
-				                .map(«doEvaluateLambdaParam1» -> («output.toBuilderType»)«doEvaluateLambdaParam1».buildReport«IF output.isMulti»List«ENDIF»(«reportDataId».get(0).values()))
+				                .map(«doEvaluateLambdaParam1» -> («output.toBuilderType»)«doEvaluateLambdaParam1».buildReport«IF output.isMulti»List«ENDIF»(«singleReportDataId».values()))
 				                .orElse(null);
 				        «ELSE»
-				        return «reportDataId».get(0).entrySet().stream()
+				        return «singleReportDataId».entrySet().stream()
 				        		.filter(«doEvaluateLambdaParam2» -> «doEvaluateLambdaParam2».getKey() instanceof «RuleIdentifier»)
 				        		.findAny()
 				                .map(«doEvaluateLambdaParam2» -> («output.toBuilderType»)«doEvaluateLambdaParam2».getValue().getData())

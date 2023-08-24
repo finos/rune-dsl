@@ -113,7 +113,7 @@ class CodeGeneratorTestHelper {
 		val rosettaClassBuilderInstance = classes.get(namespace + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |
-			rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value.class]).invoke(
+			rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class]).invoke(
 				rosettaClassBuilderInstance, value);
 		]
 		itemsToAddToList.forEach [ name, objectsToAdd |

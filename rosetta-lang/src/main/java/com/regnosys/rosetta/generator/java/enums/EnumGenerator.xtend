@@ -49,11 +49,7 @@ class EnumGenerator {
 			«FOR value: allEnumsValues(e) SEPARATOR ',\n' AFTER ';'»
 				«javadoc(value)»
 				«value.contributeAnnotations»
-				«IF value.display !== null»
-				    «convertValuesWithDisplay(value)»
-				«ELSE»
-				    «convertValues(value)»
-		        «ENDIF»		
+				«convertValuesWithDisplay(value)»
 			«ENDFOR»
 			
 			private static «Map»<«String», «e.name»> values;
@@ -67,10 +63,6 @@ class EnumGenerator {
 		
 		
 			private final «String» displayName;
-			
-			«e.name»() {
-				this(null);
-			}
 
 			«e.name»(«String» displayName) {
 				this.displayName = displayName;
@@ -86,7 +78,7 @@ class EnumGenerator {
 
 			@Override
 			public «String» toString() {
-				return displayName != null ?  displayName : name();
+				return displayName;
 			}
 			
 		}

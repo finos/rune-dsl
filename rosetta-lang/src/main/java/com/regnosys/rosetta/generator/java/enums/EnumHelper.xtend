@@ -9,12 +9,12 @@ import java.util.stream.Collectors
 class EnumHelper {
 
 	def static convertValuesWithDisplay(RosettaEnumValue enumValue) {
-		formatEnumName(enumValue.name) + '''("«enumValue.display»")'''
+		formatEnumName(enumValue.name) + '''("«enumValue.display ?: enumValue.name»")'''
 
 	}
 
 	def static convertValues(RosettaEnumValue enumValue) {
-		return formatEnumName(enumValue.name)
+		formatEnumName(enumValue.name)
 	}
 
 	def static String formatEnumName(String name) {
