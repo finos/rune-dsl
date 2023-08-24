@@ -3049,4 +3049,62 @@ class RosettaBlueprintTest {
 		'''.generateCode
 		code.compileToClasses
 	}
+	
+	@Test
+	def void shouldNameNonLegacyReportsCorrectly() {
+		val model = #[
+				REPORT_TYPES,
+				REPORT_RULES,
+				'''
+					namespace com.rosetta.test.model
+
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR1
+					corpus TEST_REG MiFIR2
+
+					report TEST_REG MiFIR1 MiFIR2 in T+1
+					from Bar
+					when FooRule
+					with type BarReport
+
+					type BarReport:
+						barBarOne string (1..1)
+
+
+				''']
+		val code = model.generateCode
+		
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIR1MiFIR2ReportFunction")
+		assertThat(reportJava, CoreMatchers.notNullValue())
+	
+	}
+	
+	@Test
+	def void shouldNameLegacyReportsCorrectly() {
+		val model = #[
+				REPORT_TYPES,
+				REPORT_RULES,
+				'''
+					namespace com.rosetta.test.model
+
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR1
+					corpus TEST_REG MiFIR2
+
+					report TEST_REG MiFIR1 MiFIR2 in T+1
+					from Bar
+					when FooRule
+					with type BarReport
+
+					type BarReport:
+						barBarOne string (1..1)
+
+
+				''']
+		val code = model.generateCode
+		
+		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIR1_MiFIR2BlueprintReport")
+		assertThat(reportJava, CoreMatchers.notNullValue())
+	
+	}
 }
