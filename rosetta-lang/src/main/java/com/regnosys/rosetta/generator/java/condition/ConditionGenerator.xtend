@@ -24,6 +24,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 import javax.inject.Inject
 import com.google.inject.ImplementedBy
+import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -102,7 +103,7 @@ class ConditionGenerator {
 						if («defaultClassFailureMessageId» == null) {
 							«defaultClassFailureMessageId» = "Condition " + NAME + " failed.";
 						}
-						return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
+						return «ValidationResult».failure(NAME, «ValidationType».DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
 					}
 					
 					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {

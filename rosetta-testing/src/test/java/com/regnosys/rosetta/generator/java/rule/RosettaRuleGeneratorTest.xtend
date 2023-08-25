@@ -115,7 +115,7 @@ class RosettaRuleGeneratorTest {
 					type BarReport:
 						barBarOne string (1..1)
 							[ruleReference BarBarOne]
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 							[ruleReference BarBarTwo]
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
@@ -174,10 +174,11 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport.BarReportBuilder output = doEvaluate(input);
+						BarReport output = doEvaluate(input);
 						
 						if (output != null) {
 							objectValidator.validate(BarReport.class, output);
+							output = output.build();
 						}
 						return output;
 					}
@@ -196,7 +197,7 @@ class RosettaRuleGeneratorTest {
 								.setBarBarOne(MapperS.of(barBarOne.evaluate(MapperS.of(input).get())).get());
 							
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).get());
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
 							
 							output
 								.getOrCreateBarBaz()
@@ -260,7 +261,7 @@ class RosettaRuleGeneratorTest {
 									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
@@ -306,7 +307,7 @@ class RosettaRuleGeneratorTest {
 									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
@@ -435,10 +436,11 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport.BarReportBuilder output = doEvaluate(input);
+						BarReport output = doEvaluate(input);
 						
 						if (output != null) {
 							objectValidator.validate(BarReport.class, output);
+							output = output.build();
 						}
 						return output;
 					}
@@ -622,7 +624,7 @@ class RosettaRuleGeneratorTest {
 					type BarReport:
 						barBarOne string (1..1)
 							[ruleReference BarBarOne]
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 							[ruleReference BarBarTwo]
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
@@ -688,10 +690,11 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport.BarReportBuilder output = doEvaluate(input);
+						BarReport output = doEvaluate(input);
 						
 						if (output != null) {
 							objectValidator.validate(BarReport.class, output);
+							output = output.build();
 						}
 						return output;
 					}
@@ -710,7 +713,7 @@ class RosettaRuleGeneratorTest {
 								.setBarBarOne(MapperS.of(new_BarBarOne.evaluate(MapperS.of(input).get())).get());
 							
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).get());
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
 							
 							output
 								.getOrCreateBarBaz()
@@ -753,7 +756,7 @@ class RosettaRuleGeneratorTest {
 					type BarReport:
 						barBarOne string (1..1)
 							[ruleReference BarBarOne]
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 							[ruleReference BarBarTwo]
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
@@ -813,10 +816,11 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport.BarReportBuilder output = doEvaluate(input);
+						BarReport output = doEvaluate(input);
 						
 						if (output != null) {
 							objectValidator.validate(BarReport.class, output);
+							output = output.build();
 						}
 						return output;
 					}
@@ -832,7 +836,7 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).get());
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
 							
 							output
 								.getOrCreateBarBaz()
@@ -1051,10 +1055,11 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport.BarReportBuilder output = doEvaluate(input);
+						BarReport output = doEvaluate(input);
 						
 						if (output != null) {
 							objectValidator.validate(BarReport.class, output);
+							output = output.build();
 						}
 						return output;
 					}
@@ -1197,7 +1202,7 @@ class RosettaRuleGeneratorTest {
 			        [ruleReference Nationality]
 			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
 			        [ruleReference SpecialAbilities]
-			    powers PowerEnum (0..1) <"Enum type - multiple cardinality not allowed">
+			    powers PowerEnum (0..*) <"Enum type - multiple cardinality">
 			        [ruleReference Powers]
 			    attribute AttributeReport (0..1)  <"Nested report">
 			    organisations OrganisationReport (0..*) <"Repeatable rule">
@@ -1394,7 +1399,7 @@ class RosettaRuleGeneratorTest {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 								}
 								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+									DataItemReportUtils.setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
@@ -1461,7 +1466,7 @@ class RosettaRuleGeneratorTest {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 								}
 								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+									DataItemReportUtils.setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
@@ -2004,10 +2009,11 @@ class RosettaRuleGeneratorTest {
 			*/
 			@Override
 			public Input evaluate(Input input) {
-				Input.InputBuilder output = doEvaluate(input);
+				Input output = doEvaluate(input);
 				
 				if (output != null) {
 					objectValidator.validate(Input.class, output);
+					output = output.build();
 				}
 				return output;
 			}

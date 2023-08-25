@@ -226,7 +226,7 @@ class FunctionGenerator {
 							
 						«ENDFOR»
 					«ENDIF»
-					«output.toBuilderType» «evaluateScope.getIdentifierOrThrow(output)» = doEvaluate(«inputs.inputsAsArguments(evaluateScope)»);
+					«outputType» «evaluateScope.getIdentifierOrThrow(output)» = doEvaluate(«inputs.inputsAsArguments(evaluateScope)»);
 					
 					«IF !postConditions.empty»
 						// post-conditions
@@ -237,7 +237,8 @@ class FunctionGenerator {
 					«ENDIF»
 					«IF output.needsBuilder»
 						if («evaluateScope.getIdentifierOrThrow(output)» != null) {
-							«objectValidatorId».validate(«output.RType.toJavaType».class, «evaluateScope.getIdentifierOrThrow(output)»);
+							«objectValidatorId».validate(«output.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
+							«evaluateScope.getIdentifierOrThrow(output)» = «evaluateScope.getIdentifierOrThrow(output)»«IF output.needsBuilder»«IF output.isMulti».stream().map(«output.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»«ENDIF»;
 						}
 					«ENDIF»
 					return «evaluateScope.getIdentifierOrThrow(output)»;

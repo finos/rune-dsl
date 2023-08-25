@@ -1484,10 +1484,11 @@ class FunctionGeneratorTest {
 				* @return topOut 
 				*/
 				public Top evaluate(Top top) {
-					Top.TopBuilder topOut = doEvaluate(top);
+					Top topOut = doEvaluate(top);
 					
 					if (topOut != null) {
 						objectValidator.validate(Top.class, topOut);
+						topOut = topOut.build();
 					}
 					return topOut;
 				}
@@ -2680,10 +2681,11 @@ class FunctionGeneratorTest {
 					* @return res 
 					*/
 					public List<? extends Bar> evaluate(Foo foo) {
-						List<Bar.BarBuilder> res = doEvaluate(foo);
+						List<? extends Bar> res = doEvaluate(foo);
 						
 						if (res != null) {
 							objectValidator.validate(Bar.class, res);
+							res = res.stream().map(Bar::build).collect(Collectors.toList());
 						}
 						return res;
 					}
@@ -2779,10 +2781,11 @@ class FunctionGeneratorTest {
 					* @return res 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> barList) {
-						List<Bar.BarBuilder> res = doEvaluate(barList);
+						List<? extends Bar> res = doEvaluate(barList);
 						
 						if (res != null) {
 							objectValidator.validate(Bar.class, res);
+							res = res.stream().map(Bar::build).collect(Collectors.toList());
 						}
 						return res;
 					}
@@ -3415,10 +3418,11 @@ class FunctionGeneratorTest {
 					* @return result 
 					*/
 					public Bar evaluate(Boolean test, Bar b1, Bar b2) {
-						Bar.BarBuilder result = doEvaluate(test, b1, b2);
+						Bar result = doEvaluate(test, b1, b2);
 						
 						if (result != null) {
 							objectValidator.validate(Bar.class, result);
+							result = result.build();
 						}
 						return result;
 					}
@@ -3508,10 +3512,11 @@ class FunctionGeneratorTest {
 					* @return result 
 					*/
 					public List<? extends Bar> evaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-						List<Bar.BarBuilder> result = doEvaluate(test, b1, b2);
+						List<? extends Bar> result = doEvaluate(test, b1, b2);
 						
 						if (result != null) {
 							objectValidator.validate(Bar.class, result);
+							result = result.stream().map(Bar::build).collect(Collectors.toList());
 						}
 						return result;
 					}
@@ -3652,10 +3657,11 @@ class FunctionGeneratorTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<String> inList) {
-						Foo.FooBuilder foo = doEvaluate(inList);
+						Foo foo = doEvaluate(inList);
 						
 						if (foo != null) {
 							objectValidator.validate(Foo.class, foo);
+							foo = foo.build();
 						}
 						return foo;
 					}
@@ -3727,10 +3733,11 @@ class FunctionGeneratorTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<String> inList) {
-						Foo.FooBuilder foo = doEvaluate(inList);
+						Foo foo = doEvaluate(inList);
 						
 						if (foo != null) {
 							objectValidator.validate(Foo.class, foo);
+							foo = foo.build();
 						}
 						return foo;
 					}
@@ -4248,6 +4255,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
@@ -4282,7 +4290,7 @@ class FunctionGeneratorTest {
 							if (failureMessage == null) {
 								failureMessage = "Condition " + NAME + " failed.";
 							}
-							return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {

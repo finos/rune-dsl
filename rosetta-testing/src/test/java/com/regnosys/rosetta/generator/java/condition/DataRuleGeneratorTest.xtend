@@ -53,6 +53,7 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				
@@ -83,7 +84,7 @@ class DataRuleGeneratorTest {
 							if (failureMessage == null) {
 								failureMessage = "Condition " + NAME + " failed.";
 							}
-							return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -169,6 +170,7 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				
@@ -199,7 +201,7 @@ class DataRuleGeneratorTest {
 							if (failureMessage == null) {
 								failureMessage = "Condition " + NAME + " failed.";
 							}
-							return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {

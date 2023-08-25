@@ -310,10 +310,11 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public FoncOut evaluate(FuncIn funIn) {
-					FoncOut.FoncOutBuilder res = doEvaluate(funIn);
+					FoncOut res = doEvaluate(funIn);
 					
 					if (res != null) {
 						objectValidator.validate(FoncOut.class, res);
+						res = res.build();
 					}
 					return res;
 				}
@@ -414,10 +415,11 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public FuncOut evaluate(FuncIn funcIn) {
-					FuncOut.FuncOutBuilder out = doEvaluate(funcIn);
+					FuncOut out = doEvaluate(funcIn);
 					
 					if (out != null) {
 						objectValidator.validate(FuncOut.class, out);
+						out = out.build();
 					}
 					return out;
 				}

@@ -1106,9 +1106,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			} else {
 				// check cardinality
 				val ruleSingle = !bp.expression.isMulti
-				if (attrSingle != ruleSingle) {
-					val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
-						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+				if (attrSingle && !ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «attr.name» has single cardinality ''' +
+						'''whereas the reporting rule «bp.name» has multiple cardinality.'''
+					error(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				} else if (!attrSingle && ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «attr.name» has multiple cardinality ''' +
+						'''whereas the reporting rule «bp.name» has single cardinality.'''
 					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
 				
