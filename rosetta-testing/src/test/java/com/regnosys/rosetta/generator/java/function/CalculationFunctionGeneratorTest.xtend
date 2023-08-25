@@ -519,10 +519,11 @@ class CalculationFunctionGeneratorTest {
 					* @return out 
 					*/
 					public OtherType evaluate(List<? extends WithMeta> withMeta) {
-						OtherType.OtherTypeBuilder out = doEvaluate(withMeta);
+						OtherType out = doEvaluate(withMeta);
 						
 						if (out != null) {
 							objectValidator.validate(OtherType.class, out);
+							out = out.build();
 						}
 						return out;
 					}
