@@ -166,7 +166,8 @@ class RuleGenerator {
 				        return «singleReportDataId».entrySet().stream()
 				        		.filter(«doEvaluateLambdaParam2» -> «doEvaluateLambdaParam2».getKey() instanceof «RuleIdentifier»)
 				        		.findAny()
-				                .map(«doEvaluateLambdaParam2» -> («output.toBuilderType»)«doEvaluateLambdaParam2».getValue().getData())
+				                .map(«doEvaluateLambdaParam2» -> «doEvaluateLambdaParam2».getValue().getData())
+				                .map(«doEvaluateLambdaParam2» -> («output.toBuilderType»)«IF output.isMulti»(«doEvaluateLambdaParam2» instanceof «List» ? «doEvaluateLambdaParam2» : «List».of(«doEvaluateLambdaParam2»))«ELSE»«doEvaluateLambdaParam2»«ENDIF»)
 				                .orElse(null);
 				        «ENDIF»
 					}
