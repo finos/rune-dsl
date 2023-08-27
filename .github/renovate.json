@@ -37,5 +37,14 @@
     }
   ],
 
+  "regexManagers": [
+    {
+      "fileMatch": ["\\.pom\\.xml$", "(^|/)pom\\.xml$"],
+      "matchStrings": ["<node\\.version>(?<currentValue>.*?)<\\/node\\.version>"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node"
+    }
+  ]
+
   "ignoreDeps": ["org.eclipse.m2e:lifecycle-mapping"]
 }
