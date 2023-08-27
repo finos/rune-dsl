@@ -163,6 +163,9 @@ class FunctionGenerator {
 		val evaluateScope = classScope.methodScope("evaluate")
 		inputs.forEach[evaluateScope.createIdentifier(it, it.name)]
 		evaluateScope.createIdentifier(output, output.name)
+		val outputBuilderId = if (output.needsBuilder) {
+			evaluateScope.createUniqueIdentifier(output.name + "Builder")
+		}
 		
 		val doEvaluateScope = defaultClassScope.methodScope("doEvaluate")
 		inputs.forEach[doEvaluateScope.createIdentifier(it, it.name)]
@@ -226,20 +229,24 @@ class FunctionGenerator {
 							
 						«ENDFOR»
 					«ENDIF»
-					«outputType» «evaluateScope.getIdentifierOrThrow(output)» = doEvaluate(«inputs.inputsAsArguments(evaluateScope)»);
+					«output.toBuilderType» «IF output.needsBuilder»«outputBuilderId»«ELSE»«evaluateScope.getIdentifierOrThrow(output)»«ENDIF» = doEvaluate(«inputs.inputsAsArguments(evaluateScope)»);
 					
+					«IF output.needsBuilder»
+						final «outputType» «evaluateScope.getIdentifierOrThrow(output)»;
+						if («outputBuilderId» == null) {
+							«evaluateScope.getIdentifierOrThrow(output)» = null;
+						} else {
+							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
+							«objectValidatorId».validate(«output.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
+						}
+						
+					«ENDIF»
 					«IF !postConditions.empty»
 						// post-conditions
 						«FOR cond:postConditions»
 							«cond.contributeCondition(conditionValidatorId, evaluateScope)»
 							
 						«ENDFOR»
-					«ENDIF»
-					«IF output.needsBuilder»
-						if («evaluateScope.getIdentifierOrThrow(output)» != null) {
-							«objectValidatorId».validate(«output.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
-							«evaluateScope.getIdentifierOrThrow(output)» = «evaluateScope.getIdentifierOrThrow(output)»«IF output.needsBuilder»«IF output.isMulti».stream().map(«output.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»«ENDIF»;
-						}
 					«ENDIF»
 					return «evaluateScope.getIdentifierOrThrow(output)»;
 				}
