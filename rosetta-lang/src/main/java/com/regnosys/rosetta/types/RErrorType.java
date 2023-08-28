@@ -2,6 +2,7 @@ package com.regnosys.rosetta.types;
 
 import java.util.Objects;
 
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 // TODO: remove this type
@@ -12,6 +13,11 @@ public class RErrorType extends RType {
 		super();
 		this.message = message;
 	}
+	
+	@Override
+	public ModelSymbolId getSymbolId() {
+		return null;
+	}
 
 	@Override
 	public String getName() {
@@ -20,7 +26,12 @@ public class RErrorType extends RType {
 	
 	@Override
 	public DottedPath getNamespace() {
-		return DottedPath.of();
+		return null;
+	}
+	
+	@Override
+	public DottedPath getQualifiedName() {
+		return DottedPath.of(message);
 	}
 
 

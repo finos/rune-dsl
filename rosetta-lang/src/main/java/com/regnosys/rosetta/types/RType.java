@@ -1,12 +1,8 @@
 package com.regnosys.rosetta.types;
 
-import com.rosetta.util.DottedPath;
+import com.rosetta.model.lib.ModelSymbol;
 
-public abstract class RType {
-	public abstract String getName();
-	
-	public abstract DottedPath getNamespace();
-
+public abstract class RType implements ModelSymbol {
 	public boolean hasMeta() {
 		return false;
 	}

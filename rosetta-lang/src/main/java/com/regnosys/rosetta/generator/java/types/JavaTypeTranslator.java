@@ -101,11 +101,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass toFunctionJavaClass(RFunction func) {
 		switch (func.getOrigin()) {
 		case FUNCTION:
-			return generatedJavaClassService.toJavaFunction(func.getModelSymbolId());
+			return generatedJavaClassService.toJavaFunction(func.getSymbolId());
 		case REPORT:
-			return generatedJavaClassService.toJavaReportFunction(func.getModelSymbolId());
+			return generatedJavaClassService.toJavaReportFunction(func.getSymbolId());
 		case RULE:
-			return generatedJavaClassService.toJavaRule(func.getModelSymbolId());
+			return generatedJavaClassService.toJavaRule(func.getSymbolId());
 		default:
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 

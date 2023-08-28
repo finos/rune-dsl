@@ -5,23 +5,20 @@ import java.util.Objects;
 
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 import com.regnosys.rosetta.types.RType;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 public abstract class RRecordType extends RType {
-	private final String name;
+	private final ModelSymbolId symbolId;
 	
 	public RRecordType(String name) {
 		super();
-		this.name = name;
+		this.symbolId = new ModelSymbolId(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), name);
 	}
 	
 	@Override
-	public String getName() {
-		return this.name;
-	}
-	@Override
-	public DottedPath getNamespace() {
-		return DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE);
+	public ModelSymbolId getSymbolId() {
+		return this.symbolId;
 	}
 	@Override
 	public boolean hasNaturalOrder() {
@@ -33,7 +30,7 @@ public abstract class RRecordType extends RType {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(getName(), getFeatures());
+		return Objects.hash(getSymbolId(), getFeatures());
 	}
 
 	@Override
@@ -42,7 +39,7 @@ public abstract class RRecordType extends RType {
         if (this.getClass() != object.getClass()) return false;
         
 		RRecordType other = (RRecordType) object;
-		return Objects.equals(name, other.name)
+		return Objects.equals(getSymbolId(), other.getSymbolId())
 				&& Objects.equals(getFeatures(), other.getFeatures());
 	}
 }

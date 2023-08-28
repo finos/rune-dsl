@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
-import com.rosetta.util.DottedPath;
+import com.rosetta.model.lib.ModelSymbolId;
 
 public interface Tabulator<T> {
 
@@ -55,16 +55,16 @@ public interface Tabulator<T> {
 	public static class FieldImpl implements Field {
 		private String attributeName;
 		private boolean isMulti;
-		private Optional<DottedPath> ruleName; // TODO: ModelSymbolId
+		private Optional<ModelSymbolId> ruleId;
 		private Optional<String> identifier;
 		private List<Field> children;
 		
-		public FieldImpl(String attributeName, boolean isMulti, Optional<DottedPath> ruleName, Optional<String> identifier, List<Field> children) {
-			Objects.requireNonNull(ruleName);
+		public FieldImpl(String attributeName, boolean isMulti, Optional<ModelSymbolId> ruleId, Optional<String> identifier, List<Field> children) {
+			Objects.requireNonNull(ruleId);
 			Objects.requireNonNull(attributeName);
 			Objects.requireNonNull(identifier);
 			Validate.noNullElements(children);
-			this.ruleName = ruleName;
+			this.ruleId = ruleId;
 			this.attributeName = attributeName;
 			this.isMulti = isMulti;
 			this.identifier = identifier;
@@ -86,8 +86,8 @@ public interface Tabulator<T> {
 			return isMulti;
 		}
 		
-		public Optional<DottedPath> getRuleName() {
-			return ruleName;
+		public Optional<ModelSymbolId> getRuleId() {
+			return ruleId;
 		}
 
 		@Override

@@ -31,7 +31,7 @@ public class RBuiltinTypeService {
 	private Map<String, Function<Map<String, RosettaValue>, RType>> typeMap = new HashMap<>();
 
 	public final String INT_NAME = "int";
-	public final RTypeFunction INT_FUNCTION = new RTypeFunction(INT_NAME, DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE)) {
+	public final RTypeFunction INT_FUNCTION = new RTypeFunction(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), INT_NAME) {
 		@Override
 		public RNumberType evaluate(Map<String, RosettaValue> arguments) {
 			Map<String, RosettaValue> numberArgs = new HashMap<>(arguments);

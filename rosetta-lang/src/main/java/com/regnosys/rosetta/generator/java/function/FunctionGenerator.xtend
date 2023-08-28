@@ -347,13 +347,13 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					function.name + formatEnumName(enumFunc.value.value.name), 
-					DottedPath.splitOnDots(function.model.name), 
-					enumFunc.definition, 
-					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)], 
-					rTypeBuilderFactory.buildRAttribute(function.output), 
+					DottedPath.splitOnDots(function.model.name),
+					function.name + formatEnumName(enumFunc.value.value.name),
+					enumFunc.definition,
+					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
+					rTypeBuilderFactory.buildRAttribute(function.output),
 					RFunctionOrigin.FUNCTION,
-					enumFunc.conditions, 
+					enumFunc.conditions,
 					enumFunc.postConditions,
 					(function.shortcuts + enumFunc.shortcuts).toList.map[rTypeBuilderFactory.buildRShortcut(it)],
 					enumFunc.operations.map[rTypeBuilderFactory.buildROperation(it)],

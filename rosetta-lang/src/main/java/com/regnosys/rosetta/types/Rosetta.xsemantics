@@ -188,7 +188,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 				return new Equation(ref, arg.value);
 			].toList;
 	return systemSolver.solve(equations, parameters.toSet).map[solutionSet|
-		RTypeFunction.create(typeAlias.name, namespace,
+		RTypeFunction.create(namespace, typeAlias.name,
 			[arguments|
 				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
 			],
@@ -205,7 +205,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 			]
 		)
 	].orElseGet[
-		RTypeFunction.create(typeAlias.name, namespace,
+		RTypeFunction.create(namespace, typeAlias.name,
 			[arguments|
 				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
 			],

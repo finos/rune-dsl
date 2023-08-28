@@ -3,24 +3,25 @@ package com.regnosys.rosetta.types;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 public class RDataType extends RAnnotateType {
 	private final Data data;
+	private final ModelSymbolId symbolId;
 
 	public RDataType(final Data data) {
 		super();
 		this.data = data;
-	}
-
-	@Override
-	public String getName() {
-		return this.data.getName();
+		this.symbolId = new ModelSymbolId(
+				DottedPath.splitOnDots(data.getModel().getName()),
+				data.getName()
+			);
 	}
 	
 	@Override
-	public DottedPath getNamespace() {
-		return DottedPath.splitOnDots(data.getModel().getName());
+	public ModelSymbolId getSymbolId() {
+		return this.symbolId;
 	}
 
 	public Data getData() {

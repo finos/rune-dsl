@@ -5,15 +5,16 @@ import java.util.LinkedHashMap;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 import com.regnosys.rosetta.types.RParametrizedType;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 public class RBasicType extends RParametrizedType {
-	private final String name;
+	private final ModelSymbolId symbolId;
 	private final boolean hasNaturalOrder;
 	
 	protected RBasicType(String name, LinkedHashMap<String, RosettaValue> parameters, boolean hasNaturalOrder) {
 		super(parameters);
-		this.name = name;
+		this.symbolId = new ModelSymbolId(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), name);
 		this.hasNaturalOrder = hasNaturalOrder;
 	}
 	public RBasicType(String name, boolean hasNaturalOrder) {
@@ -21,13 +22,8 @@ public class RBasicType extends RParametrizedType {
 	}
 
 	@Override
-	public String getName() {
-		return name;
-	}
-	
-	@Override
-	public DottedPath getNamespace() {
-		return DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE);
+	public ModelSymbolId getSymbolId() {
+		return symbolId;
 	}
 	
 	@Override
