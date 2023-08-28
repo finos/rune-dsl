@@ -97,7 +97,7 @@ class TabulatorTest {
 			
 			
 			public class TEST_REGCorpReportTabulator implements Tabulator<Report> {
-				private ReportTabulator tabulator;
+				private final ReportTabulator tabulator;
 				
 				@Inject
 				public TEST_REGCorpReportTabulator(ReportTabulator tabulator) {
