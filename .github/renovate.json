@@ -44,7 +44,7 @@
       "depNameTemplate": "node",
       "datasourceTemplate": "node"
     }
-  ]
+  ],
 
   "ignoreDeps": ["org.eclipse.m2e:lifecycle-mapping"]
 }
