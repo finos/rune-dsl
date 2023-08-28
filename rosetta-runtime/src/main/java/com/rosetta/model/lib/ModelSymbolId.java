@@ -60,7 +60,11 @@ public class ModelSymbolId {
 		
 	}
 
-
+	@Override
+	public String toString() {
+		return getQualifiedName().withDots();
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, namespace);

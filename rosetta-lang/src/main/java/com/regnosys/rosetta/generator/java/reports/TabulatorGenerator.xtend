@@ -107,7 +107,7 @@ class TabulatorGenerator {
 			val innerTabulatorInstance = classScope.createUniqueIdentifier("tabulator")
 			'''
 			public class «tabulatorClass» implements «Tabulator»<«reportClass»> {
-				private «innerTabulatorClass» «innerTabulatorInstance»;
+				private final «innerTabulatorClass» «innerTabulatorInstance»;
 				
 				@«Inject»
 				public «tabulatorClass»(«innerTabulatorClass» «innerTabulatorInstance») {
