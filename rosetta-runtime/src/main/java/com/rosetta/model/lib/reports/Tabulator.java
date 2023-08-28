@@ -54,6 +54,7 @@ public interface Tabulator<T> {
 	
 	public static class FieldImpl implements Field {
 		private String attributeName;
+
 		private boolean isMulti;
 		private Optional<ModelSymbolId> ruleId;
 		private Optional<String> identifier;
@@ -94,6 +95,25 @@ public interface Tabulator<T> {
 		public List<Field> getChildren() {
 			return children;
 		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(attributeName, children, identifier, isMulti, ruleId);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			FieldImpl other = (FieldImpl) obj;
+			return Objects.equals(attributeName, other.attributeName) && Objects.equals(children, other.children)
+					&& Objects.equals(identifier, other.identifier) && isMulti == other.isMulti
+					&& Objects.equals(ruleId, other.ruleId);
+		}
 	}
 	public static class FieldValueImpl implements FieldValue {
 		private Field field;
@@ -118,6 +138,23 @@ public interface Tabulator<T> {
 		@Override
 		public String toString() {
 			return "<" + field.getName() + ", " + value.map(Object::toString).orElse("<empty>") + ">";
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(field, value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			FieldValueImpl other = (FieldValueImpl) obj;
+			return Objects.equals(field, other.field) && Objects.equals(value, other.value);
 		}
 	}
 	public static class NestedFieldValueImpl implements NestedFieldValue {
@@ -151,6 +188,23 @@ public interface Tabulator<T> {
 							.collect(Collectors.joining(", ", "{", "}")))
 					.orElse("<empty>");
 			return "<" + field.getName() + ", " + valueRepr + ">";
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(field, value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			NestedFieldValueImpl other = (NestedFieldValueImpl) obj;
+			return Objects.equals(field, other.field) && Objects.equals(value, other.value);
 		}
 	}
 	public static class MultiNestedFieldValueImpl implements MultiNestedFieldValue {
@@ -187,6 +241,23 @@ public interface Tabulator<T> {
 							.collect(Collectors.joining(", ", "[", "]")))
 					.orElse("<empty>");
 			return "<" + field.getName() + ", " + valueRepr + ">";
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(field, value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MultiNestedFieldValueImpl other = (MultiNestedFieldValueImpl) obj;
+			return Objects.equals(field, other.field) && Objects.equals(value, other.value);
 		}
 	}
 }
