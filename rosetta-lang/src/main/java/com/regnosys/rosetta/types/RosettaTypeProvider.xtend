@@ -92,7 +92,13 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	def RType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
 		switch seg {
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
-			RosettaDataReference: new RDataType(seg.data)
+			RosettaDataReference: {
+				if (extensions.isResolved(seg.data)) {
+					return new RDataType(seg.data)
+				} else {
+					NOTHING
+				}
+			}
 		}
 	}
 

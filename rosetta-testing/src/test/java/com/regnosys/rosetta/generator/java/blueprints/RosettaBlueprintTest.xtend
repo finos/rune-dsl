@@ -212,12 +212,16 @@ class RosettaBlueprintTest {
 				*/
 				@Override
 				public BarReport evaluate(Bar input) {
-					BarReport output = doEvaluate(input);
+					BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 					
-					if (output != null) {
+					final BarReport output;
+					if (outputBuilder == null) {
+						output = null;
+					} else {
+						output = outputBuilder.build();
 						objectValidator.validate(BarReport.class, output);
-						output = output.build();
 					}
+					
 					return output;
 				}
 			
@@ -474,12 +478,16 @@ class RosettaBlueprintTest {
 				*/
 				@Override
 				public BarReport evaluate(Bar input) {
-					BarReport output = doEvaluate(input);
+					BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 					
-					if (output != null) {
+					final BarReport output;
+					if (outputBuilder == null) {
+						output = null;
+					} else {
+						output = outputBuilder.build();
 						objectValidator.validate(BarReport.class, output);
-						output = output.build();
 					}
+					
 					return output;
 				}
 			
@@ -729,12 +737,16 @@ class RosettaBlueprintTest {
 				*/
 				@Override
 				public BarReport evaluate(Bar input) {
-					BarReport output = doEvaluate(input);
+					BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 					
-					if (output != null) {
+					final BarReport output;
+					if (outputBuilder == null) {
+						output = null;
+					} else {
+						output = outputBuilder.build();
 						objectValidator.validate(BarReport.class, output);
-						output = output.build();
 					}
+					
 					return output;
 				}
 			
@@ -855,12 +867,16 @@ class RosettaBlueprintTest {
 				*/
 				@Override
 				public BarReport evaluate(Bar input) {
-					BarReport output = doEvaluate(input);
+					BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 					
-					if (output != null) {
+					final BarReport output;
+					if (outputBuilder == null) {
+						output = null;
+					} else {
+						output = outputBuilder.build();
 						objectValidator.validate(BarReport.class, output);
-						output = output.build();
 					}
+					
 					return output;
 				}
 			
@@ -1098,12 +1114,16 @@ class RosettaBlueprintTest {
 				*/
 				@Override
 				public BarReport evaluate(Bar input) {
-					BarReport output = doEvaluate(input);
+					BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 					
-					if (output != null) {
+					final BarReport output;
+					if (outputBuilder == null) {
+						output = null;
+					} else {
+						output = outputBuilder.build();
 						objectValidator.validate(BarReport.class, output);
-						output = output.build();
 					}
+					
 					return output;
 				}
 			

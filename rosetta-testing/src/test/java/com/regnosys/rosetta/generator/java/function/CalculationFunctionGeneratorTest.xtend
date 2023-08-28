@@ -310,12 +310,16 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public FoncOut evaluate(FuncIn funIn) {
-					FoncOut res = doEvaluate(funIn);
+					FoncOut.FoncOutBuilder resBuilder = doEvaluate(funIn);
 					
-					if (res != null) {
+					final FoncOut res;
+					if (resBuilder == null) {
+						res = null;
+					} else {
+						res = resBuilder.build();
 						objectValidator.validate(FoncOut.class, res);
-						res = res.build();
 					}
+					
 					return res;
 				}
 			
@@ -415,12 +419,16 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public FuncOut evaluate(FuncIn funcIn) {
-					FuncOut out = doEvaluate(funcIn);
+					FuncOut.FuncOutBuilder outBuilder = doEvaluate(funcIn);
 					
-					if (out != null) {
+					final FuncOut out;
+					if (outBuilder == null) {
+						out = null;
+					} else {
+						out = outBuilder.build();
 						objectValidator.validate(FuncOut.class, out);
-						out = out.build();
 					}
+					
 					return out;
 				}
 			
@@ -519,12 +527,16 @@ class CalculationFunctionGeneratorTest {
 					* @return out 
 					*/
 					public OtherType evaluate(List<? extends WithMeta> withMeta) {
-						OtherType out = doEvaluate(withMeta);
+						OtherType.OtherTypeBuilder outBuilder = doEvaluate(withMeta);
 						
-						if (out != null) {
+						final OtherType out;
+						if (outBuilder == null) {
+							out = null;
+						} else {
+							out = outBuilder.build();
 							objectValidator.validate(OtherType.class, out);
-							out = out.build();
 						}
+						
 						return out;
 					}
 				

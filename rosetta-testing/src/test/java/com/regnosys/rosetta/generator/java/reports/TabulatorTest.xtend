@@ -124,6 +124,7 @@ class TabulatorTest {
 		expected = '''
 			package com.rosetta.test.model.reports;
 			
+			import com.rosetta.model.lib.ModelSymbolId;
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.Field;
 			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
@@ -151,7 +152,7 @@ class TabulatorTest {
 					this.basicField = new FieldImpl(
 						"basic",
 						false,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "Basic")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "Basic")),
 						Optional.empty(),
 						Arrays.asList()
 					);
@@ -165,7 +166,7 @@ class TabulatorTest {
 					this.subreportWithRuleField = new FieldImpl(
 						"subreportWithRule",
 						false,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "SubreportWithRule")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "SubreportWithRule")),
 						Optional.of("Subreport from a rule"),
 						subreportTabulator.getFields()
 					);
@@ -283,6 +284,7 @@ class TabulatorTest {
 		val expected = '''
 			package com.rosetta.test.model.reports;
 			
+			import com.rosetta.model.lib.ModelSymbolId;
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.Field;
 			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
@@ -310,14 +312,14 @@ class TabulatorTest {
 					this.basicListField = new FieldImpl(
 						"basicList",
 						true,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "BasicList")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "BasicList")),
 						Optional.empty(),
 						Arrays.asList()
 					);
 					this.subreportListField = new FieldImpl(
 						"subreportList",
 						true,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "SubreportList")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "SubreportList")),
 						Optional.of("Subreport group"),
 						subreportTabulator.getFields()
 					);
@@ -513,6 +515,7 @@ class TabulatorTest {
 		val expected = '''
 			package com.rosetta.test.model.reports;
 			
+			import com.rosetta.model.lib.ModelSymbolId;
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.Field;
 			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
@@ -535,21 +538,21 @@ class TabulatorTest {
 					this.basic1Field = new FieldImpl(
 						"basic1",
 						false,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "Basic1")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "Basic1")),
 						Optional.empty(),
 						Arrays.asList()
 					);
 					this.basic2Field = new FieldImpl(
 						"basic2",
 						false,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "Basic2Modified")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "Basic2Modified")),
 						Optional.of("Basic 2 Rule - Modified"),
 						Arrays.asList()
 					);
 					this.basic3Field = new FieldImpl(
 						"basic3",
 						false,
-						Optional.of(DottedPath.of("com", "rosetta", "test", "model", "Basic3")),
+						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "Basic3")),
 						Optional.empty(),
 						Arrays.asList()
 					);

@@ -1113,7 +1113,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	
 	@Test
 	def void testAttributesWithLocationBadTarget() {
-		'''
+		val model = '''
 			metaType scheme string
 			metaType reference string
 			
@@ -1122,8 +1122,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[metadata address "pointsTo"=Foo->foo]
 			
 		'''.parseRosetta
-		//TODO work out how to assert linking error
-		//model.assertError(ROSETTA_CALLABLE_CALL, null, "Couldn't resolve reference to RosettaCallable 'Foo' on RosettaCallableCall")
+		model.assertError(ROSETTA_DATA_REFERENCE, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Data 'Foo'.")
 	}
 	
 	@Test

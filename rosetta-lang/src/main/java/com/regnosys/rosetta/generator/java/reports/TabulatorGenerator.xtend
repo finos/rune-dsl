@@ -32,6 +32,7 @@ import org.apache.commons.text.StringEscapeUtils
 import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
 import com.rosetta.util.types.JavaParameterizedType
+import com.rosetta.model.lib.ModelSymbolId
 
 class TabulatorGenerator {
 	@Inject RosettaTypeProvider typeProvider
@@ -208,7 +209,7 @@ class TabulatorGenerator {
 				this.«fieldId» = new «FieldImpl»(
 					"«StringEscapeUtils.escapeJava(attr.name)»",
 					«attr.card.isMany»,
-					«rule.map[model].map[name].map[DottedPath.splitOnDots(it).child(rule.get.name).toDottedPathCode].toOptionalCode»,
+					«rule.map[model].map[name].map[new ModelSymbolId(DottedPath.splitOnDots(it), rule.get.name).toModelSymbolCode].toOptionalCode»,
 					«rule.map[findRuleIdentifier].map['"' + it + '"'].toOptionalCode»,
 					«IF attrType instanceof Data»
 						«scope.getIdentifierOrThrow(attrType.toNestedTabulatorInstance)».getFields()
@@ -328,6 +329,9 @@ class TabulatorGenerator {
 	}
 	private def StringConcatenationClient toDottedPathCode(DottedPath path) {
 		'''«DottedPath».of("«path.withSeparator("\", \"")»")'''
+	}
+	private def StringConcatenationClient toModelSymbolCode(ModelSymbolId symbolId) {
+		'''new «ModelSymbolId»(«symbolId.namespace.toDottedPathCode», "«symbolId.name»")'''
 	}
 	
 	private def toNestedTabulatorInstance(Data type) {

@@ -1381,17 +1381,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 								switch qualPath {
 									RosettaAttributeReference: {
 										val attrRef = qualPath as RosettaAttributeReference
-										checkForLocation(attrRef.attribute, it)
+										if (attrRef.attribute.isResolved) {
+											checkForLocation(attrRef.attribute, it)
+											val targetType = attrRef.attribute.typeCall.typeCallToRType
+											val thisType = ele.RTypeOfSymbol
+											if (!targetType.isSubtypeOf(thisType))
+												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+										}
 									}
 									default:
 										error('''Target of an address must be an attribute''', it,
 											ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 								}
-								val targetType = (qualPath as RosettaAttributeReference).attribute.typeCall.typeCallToRType
-								val thisType = ele.RTypeOfSymbol
-								if (!targetType.isSubtypeOf(thisType))
-									error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
-								//Check it has
 							}
 						]
 					} else {

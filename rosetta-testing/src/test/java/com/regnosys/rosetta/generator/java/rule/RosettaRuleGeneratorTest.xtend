@@ -174,12 +174,16 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport output = doEvaluate(input);
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 						
-						if (output != null) {
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
 							objectValidator.validate(BarReport.class, output);
-							output = output.build();
 						}
+						
 						return output;
 					}
 				
@@ -436,12 +440,16 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport output = doEvaluate(input);
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 						
-						if (output != null) {
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
 							objectValidator.validate(BarReport.class, output);
-							output = output.build();
 						}
+						
 						return output;
 					}
 				
@@ -690,12 +698,16 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport output = doEvaluate(input);
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 						
-						if (output != null) {
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
 							objectValidator.validate(BarReport.class, output);
-							output = output.build();
 						}
+						
 						return output;
 					}
 				
@@ -816,12 +828,16 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport output = doEvaluate(input);
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 						
-						if (output != null) {
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
 							objectValidator.validate(BarReport.class, output);
-							output = output.build();
 						}
+						
 						return output;
 					}
 				
@@ -1055,12 +1071,16 @@ class RosettaRuleGeneratorTest {
 					*/
 					@Override
 					public BarReport evaluate(Bar input) {
-						BarReport output = doEvaluate(input);
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
 						
-						if (output != null) {
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
 							objectValidator.validate(BarReport.class, output);
-							output = output.build();
 						}
+						
 						return output;
 					}
 				
@@ -2009,12 +2029,16 @@ class RosettaRuleGeneratorTest {
 			*/
 			@Override
 			public Input evaluate(Input input) {
-				Input output = doEvaluate(input);
+				Input.InputBuilder outputBuilder = doEvaluate(input);
 				
-				if (output != null) {
+				final Input output;
+				if (outputBuilder == null) {
+					output = null;
+				} else {
+					output = outputBuilder.build();
 					objectValidator.validate(Input.class, output);
-					output = output.build();
 				}
+				
 				return output;
 			}
 		

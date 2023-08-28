@@ -77,12 +77,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						List<? extends Foo> filteredFoos = doEvaluate(foos);
+						List<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends Foo> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, filteredFoos);
-							filteredFoos = filteredFoos.stream().map(Foo::build).collect(Collectors.toList());
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -174,12 +178,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						List<? extends Foo> filteredFoos = doEvaluate(foos);
+						List<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends Foo> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, filteredFoos);
-							filteredFoos = filteredFoos.stream().map(Foo::build).collect(Collectors.toList());
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -309,12 +317,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo2> evaluate(List<? extends Foo2> foos) {
-						List<? extends Foo2> filteredFoos = doEvaluate(foos);
+						List<Foo2.Foo2Builder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends Foo2> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(Foo2::build).collect(Collectors.toList());
 							objectValidator.validate(Foo2.class, filteredFoos);
-							filteredFoos = filteredFoos.stream().map(Foo2::build).collect(Collectors.toList());
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -409,12 +421,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
-						List<? extends FooWithScheme> filteredFoos = doEvaluate(foos);
+						List<FooWithScheme.FooWithSchemeBuilder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends FooWithScheme> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(FooWithScheme::build).collect(Collectors.toList());
 							objectValidator.validate(FooWithScheme.class, filteredFoos);
-							filteredFoos = filteredFoos.stream().map(FooWithScheme::build).collect(Collectors.toList());
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -975,12 +991,16 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(Bar bar) {
-						List<? extends Foo> foos = doEvaluate(bar);
+						List<Foo.FooBuilder> foosBuilder = doEvaluate(bar);
 						
-						if (foos != null) {
+						final List<? extends Foo> foos;
+						if (foosBuilder == null) {
+							foos = null;
+						} else {
+							foos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, foos);
-							foos = foos.stream().map(Foo::build).collect(Collectors.toList());
 						}
+						
 						return foos;
 					}
 				
@@ -1604,12 +1624,16 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Bar> bars) {
-						List<? extends Foo> foos = doEvaluate(bars);
+						List<Foo.FooBuilder> foosBuilder = doEvaluate(bars);
 						
-						if (foos != null) {
+						final List<? extends Foo> foos;
+						if (foosBuilder == null) {
+							foos = null;
+						} else {
+							foos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, foos);
-							foos = foos.stream().map(Foo::build).collect(Collectors.toList());
 						}
+						
 						return foos;
 					}
 				
@@ -1938,12 +1962,16 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						List<? extends Bar> updatedBars = doEvaluate(bars);
+						List<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
 						
-						if (updatedBars != null) {
+						final List<? extends Bar> updatedBars;
+						if (updatedBarsBuilder == null) {
+							updatedBars = null;
+						} else {
+							updatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, updatedBars);
-							updatedBars = updatedBars.stream().map(Bar::build).collect(Collectors.toList());
 						}
+						
 						return updatedBars;
 					}
 				
@@ -2074,12 +2102,16 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						List<? extends Bar> updatedBars = doEvaluate(bars);
+						List<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
 						
-						if (updatedBars != null) {
+						final List<? extends Bar> updatedBars;
+						if (updatedBarsBuilder == null) {
+							updatedBars = null;
+						} else {
+							updatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, updatedBars);
-							updatedBars = updatedBars.stream().map(Bar::build).collect(Collectors.toList());
 						}
+						
 						return updatedBars;
 					}
 				
@@ -3315,12 +3347,16 @@ class ListOperationTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<? extends Foo> foos) {
-						Foo foo = doEvaluate(foos);
+						Foo.FooBuilder fooBuilder = doEvaluate(foos);
 						
-						if (foo != null) {
+						final Foo foo;
+						if (fooBuilder == null) {
+							foo = null;
+						} else {
+							foo = fooBuilder.build();
 							objectValidator.validate(Foo.class, foo);
-							foo = foo.build();
 						}
+						
 						return foo;
 					}
 				
@@ -3744,12 +3780,16 @@ class ListOperationTest {
 					* @return sortedFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						List<? extends Foo> sortedFoos = doEvaluate(foos);
+						List<Foo.FooBuilder> sortedFoosBuilder = doEvaluate(foos);
 						
-						if (sortedFoos != null) {
+						final List<? extends Foo> sortedFoos;
+						if (sortedFoosBuilder == null) {
+							sortedFoos = null;
+						} else {
+							sortedFoos = sortedFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, sortedFoos);
-							sortedFoos = sortedFoos.stream().map(Foo::build).collect(Collectors.toList());
 						}
+						
 						return sortedFoos;
 					}
 				

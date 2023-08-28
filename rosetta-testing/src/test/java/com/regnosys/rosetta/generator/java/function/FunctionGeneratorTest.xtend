@@ -1484,12 +1484,16 @@ class FunctionGeneratorTest {
 				* @return topOut 
 				*/
 				public Top evaluate(Top top) {
-					Top topOut = doEvaluate(top);
+					Top.TopBuilder topOutBuilder = doEvaluate(top);
 					
-					if (topOut != null) {
+					final Top topOut;
+					if (topOutBuilder == null) {
+						topOut = null;
+					} else {
+						topOut = topOutBuilder.build();
 						objectValidator.validate(Top.class, topOut);
-						topOut = topOut.build();
 					}
+					
 					return topOut;
 				}
 			
@@ -2681,12 +2685,16 @@ class FunctionGeneratorTest {
 					* @return res 
 					*/
 					public List<? extends Bar> evaluate(Foo foo) {
-						List<? extends Bar> res = doEvaluate(foo);
+						List<Bar.BarBuilder> resBuilder = doEvaluate(foo);
 						
-						if (res != null) {
+						final List<? extends Bar> res;
+						if (resBuilder == null) {
+							res = null;
+						} else {
+							res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, res);
-							res = res.stream().map(Bar::build).collect(Collectors.toList());
 						}
+						
 						return res;
 					}
 				
@@ -2781,12 +2789,16 @@ class FunctionGeneratorTest {
 					* @return res 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> barList) {
-						List<? extends Bar> res = doEvaluate(barList);
+						List<Bar.BarBuilder> resBuilder = doEvaluate(barList);
 						
-						if (res != null) {
+						final List<? extends Bar> res;
+						if (resBuilder == null) {
+							res = null;
+						} else {
+							res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, res);
-							res = res.stream().map(Bar::build).collect(Collectors.toList());
 						}
+						
 						return res;
 					}
 				
@@ -3418,12 +3430,16 @@ class FunctionGeneratorTest {
 					* @return result 
 					*/
 					public Bar evaluate(Boolean test, Bar b1, Bar b2) {
-						Bar result = doEvaluate(test, b1, b2);
+						Bar.BarBuilder resultBuilder = doEvaluate(test, b1, b2);
 						
-						if (result != null) {
+						final Bar result;
+						if (resultBuilder == null) {
+							result = null;
+						} else {
+							result = resultBuilder.build();
 							objectValidator.validate(Bar.class, result);
-							result = result.build();
 						}
+						
 						return result;
 					}
 				
@@ -3512,12 +3528,16 @@ class FunctionGeneratorTest {
 					* @return result 
 					*/
 					public List<? extends Bar> evaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-						List<? extends Bar> result = doEvaluate(test, b1, b2);
+						List<Bar.BarBuilder> resultBuilder = doEvaluate(test, b1, b2);
 						
-						if (result != null) {
+						final List<? extends Bar> result;
+						if (resultBuilder == null) {
+							result = null;
+						} else {
+							result = resultBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, result);
-							result = result.stream().map(Bar::build).collect(Collectors.toList());
 						}
+						
 						return result;
 					}
 				
@@ -3657,12 +3677,16 @@ class FunctionGeneratorTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<String> inList) {
-						Foo foo = doEvaluate(inList);
+						Foo.FooBuilder fooBuilder = doEvaluate(inList);
 						
-						if (foo != null) {
+						final Foo foo;
+						if (fooBuilder == null) {
+							foo = null;
+						} else {
+							foo = fooBuilder.build();
 							objectValidator.validate(Foo.class, foo);
-							foo = foo.build();
 						}
+						
 						return foo;
 					}
 				
@@ -3733,12 +3757,16 @@ class FunctionGeneratorTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<String> inList) {
-						Foo foo = doEvaluate(inList);
+						Foo.FooBuilder fooBuilder = doEvaluate(inList);
 						
-						if (foo != null) {
+						final Foo foo;
+						if (fooBuilder == null) {
+							foo = null;
+						} else {
+							foo = fooBuilder.build();
 							objectValidator.validate(Foo.class, foo);
-							foo = foo.build();
 						}
+						
 						return foo;
 					}
 				
