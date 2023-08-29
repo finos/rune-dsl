@@ -39,6 +39,77 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+<<<<<<< Updated upstream
+=======
+	def void singularExtractWithEmptyValueReturnsEmpty() {
+		val code = '''
+		func A:
+			inputs:
+				input int (0..1)
+			output:
+				result boolean (0..1)
+			set result:
+				input
+					extract
+						if item = 0
+						then True
+						else False
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val a = classes.createFunc("A");
+		assertEquals(null, a.invokeFunc(String, #[null]))
+	}
+	
+	@Test
+	def void testDispatchFunction() {
+		val code = '''
+		enum DayCountFractionEnum:
+			ACT_360 displayName "ACT/360"
+			ACT_365L displayName "ACT/365L"
+			ACT_364 displayName "ACT/364"
+			ACT_365_fixed displayName "ACT/365.FIXED"
+			_30E_360 displayName "30E/360"
+			_30_360 displayName "30/360"
+		
+		func DayCountBasis:
+			inputs:
+				dcf DayCountFractionEnum (1..1)
+			output:
+				basis int (1..1)
+		
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_360):
+			set basis: 360
+		
+		func DayCountBasis(dcf: DayCountFractionEnum ->_30_360):
+			set basis: 360
+		
+		func DayCountBasis(dcf: DayCountFractionEnum ->_30E_360):
+			set basis: 360
+		
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365L):
+			set basis: 365
+		
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365_fixed):
+			set basis: 365
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val dcfeLoader = classes
+			.get("com.rosetta.test.model.DayCountFractionEnum")
+			.getDeclaredMethod("fromDisplayName", String)
+		val act360 = dcfeLoader.invoke(null, "ACT/360")
+		val act365Fixed = dcfeLoader.invoke(null, "ACT/365.FIXED")
+		val act364 = dcfeLoader.invoke(null, "ACT/364")
+		val dayCountBasis = classes.createFunc("DayCountBasis");
+		
+		assertEquals(360, dayCountBasis.invokeFunc(Integer, #[act360]))
+		assertEquals(365, dayCountBasis.invokeFunc(Integer, #[act365Fixed]))
+		assertThrows(IllegalArgumentException, [dayCountBasis.invokeFunc(Integer, #[act364])])
+	}
+	
+	@Test
+>>>>>>> Stashed changes
 	def void conditionalThenJoin() {
 		val code = '''
 		func A:
