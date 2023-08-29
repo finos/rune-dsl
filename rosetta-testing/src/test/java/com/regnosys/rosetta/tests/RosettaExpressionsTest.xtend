@@ -3,7 +3,6 @@
  */
 package com.regnosys.rosetta.tests
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
@@ -22,6 +21,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+import javax.inject.Inject
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression

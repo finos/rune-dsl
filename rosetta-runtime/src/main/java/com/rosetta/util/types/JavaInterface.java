@@ -1,8 +1,8 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.Objects;
 
-import com.regnosys.rosetta.utils.DottedPath;
+import com.rosetta.util.DottedPath;
 
 public class JavaInterface extends JavaClass {
 	public JavaInterface(DottedPath packageName, String simpleName) {
@@ -13,13 +13,9 @@ public class JavaInterface extends JavaClass {
 		if (t.isArray() || t.isPrimitive() || !t.isInterface() || t.getSimpleName().equals("")) {
 			return null;
 		}
-		String fullName = t.getSimpleName();
-		Class<?> parent = t;
-		while (parent.getDeclaringClass() != null) {
-			parent = t.getDeclaringClass();
-			fullName = parent.getSimpleName() + "." + fullName;
-		}
-		return new JavaInterface(DottedPath.splitOnDots(t.getPackageName()), fullName);
+		DottedPath packageName = DottedPath.splitOnDots(t.getCanonicalName()).parent();
+		String simpleName = t.getSimpleName();
+		return new JavaInterface(packageName, simpleName);
 	}
 	
 	@Override
@@ -30,5 +26,10 @@ public class JavaInterface extends JavaClass {
 		JavaInterface other = (JavaInterface) object;
         return Objects.equals(getPackageName(), other.getPackageName())
         		&& Objects.equals(getSimpleName(), other.getSimpleName());
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

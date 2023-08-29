@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.util;
 
-import com.regnosys.rosetta.generator.java.types.JavaClass;
+import com.rosetta.util.types.JavaClass;
 
 public class PreferWildcardImportClass {
 	private final JavaClass javaClass;

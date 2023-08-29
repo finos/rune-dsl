@@ -7,11 +7,11 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.Validate;
 
-import com.regnosys.rosetta.interpreter.RosettaNumber;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.BigDecimalInterval;
 import com.regnosys.rosetta.utils.OptionalUtil;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RNumberType extends RBasicType {
 	public static final String DIGITS_PARAM_NAME = "digits";

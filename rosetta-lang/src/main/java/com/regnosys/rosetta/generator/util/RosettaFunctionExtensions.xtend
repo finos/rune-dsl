@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.util
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Annotated
@@ -17,6 +16,13 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RAssignedRoot
+import com.regnosys.rosetta.types.RShortcut
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import java.util.List
+import com.regnosys.rosetta.types.RFunction
+import javax.inject.Inject
 
 class RosettaFunctionExtensions {
 
@@ -83,6 +89,10 @@ class RosettaFunctionExtensions {
 	dispatch def boolean needsBuilder(Void ele) {
 		false
 	}
+	
+	dispatch def boolean needsBuilder(RAttribute rAttribute) {
+		needsBuilder(rAttribute.RType)
+	}
 
 	dispatch def boolean needsBuilder(RosettaTyped ele) {
 		needsBuilder(ele.typeCall.type)
@@ -96,6 +106,14 @@ class RosettaFunctionExtensions {
 		switch (root) {
 			Attribute: root.typeCall.type.needsBuilder
 			ShortcutDeclaration: root.expression.needsBuilder
+			default: false
+		}
+	}
+	
+	dispatch def boolean needsBuilder(RAssignedRoot root) {
+		switch (root) {
+			RAttribute: root.RType.needsBuilder
+			RShortcut: root.expression.needsBuilder
 			default: false
 		}
 	}
@@ -130,12 +148,20 @@ class RosettaFunctionExtensions {
 		!getQualifierAnnotations(function).empty
 	}
 	
+	def boolean isQualifierFunction(RFunction function) {
+		!getQualifierAnnotations(function.annotations).empty
+	}
+	
 	def getMetadataAnnotations(Annotated element) {
 		element.annotations.filter["metadata" == it.annotation.name].toList
 	}
 	
 	def getQualifierAnnotations(Annotated element) {
-		element.annotations.filter["qualification" == it.annotation.name].toList
+		getQualifierAnnotations(element.annotations)
+	}
+	
+	def getQualifierAnnotations(List<AnnotationRef> annotations) {
+		annotations.filter["qualification" == it.annotation.name].toList
 	}
 	
 	def getCreationAnnotations(Annotated element) {

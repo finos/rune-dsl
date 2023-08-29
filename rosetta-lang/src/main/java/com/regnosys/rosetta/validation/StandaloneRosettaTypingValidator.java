@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
 
-import com.google.inject.Inject;
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
@@ -108,7 +109,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 			}
 		}
 		
-		RType reportTypeInputType = ts.getRulesInputType(report.getReportType(), report.getRuleSource());
+		RType reportTypeInputType = ts.getRulesInputType(report.getReportType(), Optional.ofNullable(report.getRuleSource()));
 		if (reportTypeInputType != builtins.ANY) {
 			if (!ts.isSubtypeOf(reportTypeInputType, inputType)) {
 				if (report.getRuleSource() != null) {
@@ -124,7 +125,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	public void checkReportType(Data data) {
 		RType current;
 		if (data.getSuperType() != null) {
-			current = ts.getRulesInputType(data.getSuperType(), null);
+			current = ts.getRulesInputType(data.getSuperType(), Optional.empty());
 			if (current.equals(builtins.NOTHING)) {
 				return;
 			}
@@ -146,7 +147,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
 				if (attrType instanceof RDataType) {
 					Data attrData = ((RDataType)attrType).getData();
-					RType inputType = ts.getRulesInputType(attrData, null);
+					RType inputType = ts.getRulesInputType(attrData, Optional.empty());
 					if (!inputType.equals(builtins.NOTHING)) {
 						RType newCurrent = ts.meet(current, inputType);
 						if (newCurrent.equals(builtins.NOTHING)) {
@@ -164,7 +165,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	public void checkExternalRuleSource(RosettaExternalRuleSource source) {
 		for (RosettaExternalClass externalClass: source.getExternalClasses()) {
 			Data data = externalClass.getData();
-			Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
+			Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(Optional.of(source), data);
 			
 			RType current = builtins.ANY;
 			for (Attribute attr: data.getAttributes()) {
@@ -189,7 +190,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 					RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
 					if (attrType instanceof RDataType) {
 						Data attrData = ((RDataType)attrType).getData();
-						RType inputType = ts.getRulesInputType(attrData, source);
+						RType inputType = ts.getRulesInputType(attrData, Optional.of(source));
 						if (!inputType.equals(builtins.NOTHING)) {
 							RType newCurrent = ts.meet(current, inputType);
 							if (newCurrent.equals(builtins.NOTHING)) {

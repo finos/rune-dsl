@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.Multimaps
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaFactory
@@ -30,15 +29,16 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import com.rosetta.model.lib.meta.FieldWithMeta
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaClass
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.types.TypeSystem
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -230,7 +230,7 @@ class MetaFieldGenerator {
 			valueAttribute, metaAttribute
 		])
 		
-		val FWMType = new JavaParametrizedType(JavaClass.from(FieldWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
+		val FWMType = new JavaParameterizedType(JavaClass.from(FieldWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
 		
 		val scope = new JavaScope(metaJavaType.packageName)
 		
@@ -279,7 +279,7 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
 		d.attributes.addAll(referenceAttributes(typeCall))
-		val refInterface = new JavaParametrizedType(JavaClass.from(ReferenceWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
+		val refInterface = new JavaParameterizedType(JavaClass.from(ReferenceWithMeta), typeCall.typeCallToRType.toJavaReferenceType)
 		
 		val scope = new JavaScope(root.metaField)
 		

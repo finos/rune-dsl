@@ -1,8 +1,8 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
-import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.validation.TypedBPNode
 import java.util.List
+import com.rosetta.util.types.JavaType
 
 class TypedBPJavaNode {
 	public TypedBPNode original

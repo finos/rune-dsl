@@ -130,16 +130,6 @@ PostCondition returns Condition:
 ;
 
 Operation:
-	AssignOutputOperation | OutputOperation
-;
-
-// @Compat deprecated - to be deleted once all models updated
-AssignOutputOperation:
-	'assign-output' assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
-	expression = RosettaCalcExpressionWithAsKey
-;
-
-OutputOperation:
 	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
 		expression = RosettaCalcExpressionWithAsKey
 ;

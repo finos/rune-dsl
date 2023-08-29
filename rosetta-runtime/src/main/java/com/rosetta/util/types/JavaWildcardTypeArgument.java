@@ -1,10 +1,7 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.Objects;
 import java.util.Optional;
-
-import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaWildcardTypeArgument implements JavaTypeArgument {
 	/*
@@ -19,7 +16,7 @@ public class JavaWildcardTypeArgument implements JavaTypeArgument {
 		this.bound = Optional.empty();
 	}
 	protected JavaWildcardTypeArgument(boolean extendsBound, JavaReferenceType bound) {
-		Validate.notNull(bound);
+		Objects.requireNonNull(bound);
 		this.extendsBound = extendsBound;
 		this.bound = Optional.of(bound);
 	}
@@ -61,19 +58,6 @@ public class JavaWildcardTypeArgument implements JavaTypeArgument {
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append("?");
-		if (hasExtendsBound()) {
-			target.append(" extends ");
-			bound.get().appendTo(target);
-		}
-		if (hasSuperBound()) {
-			target.append(" super ");
-			bound.get().appendTo(target);
-		}
-	}
-	
-	@Override
 	public int hashCode() {
 		return Objects.hash(extendsBound, bound);
 	}
@@ -86,5 +70,9 @@ public class JavaWildcardTypeArgument implements JavaTypeArgument {
         JavaWildcardTypeArgument other = (JavaWildcardTypeArgument) object;
         return extendsBound == other.extendsBound
         		&& Objects.equals(bound, other.bound);
+	}
+	@Override
+	public void accept(JavaTypeArgumentVisitor visitor) {
+		visitor.visitTypeArgument(this);
 	}
 }

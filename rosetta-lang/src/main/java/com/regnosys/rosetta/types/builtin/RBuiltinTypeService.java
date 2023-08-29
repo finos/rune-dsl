@@ -14,12 +14,14 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RTypeFunction;
+import com.rosetta.model.lib.RosettaNumber;
+import com.rosetta.util.DottedPath;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.interpreter.RosettaNumber;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 
 @Singleton
 public class RBuiltinTypeService {
@@ -29,7 +31,7 @@ public class RBuiltinTypeService {
 	private Map<String, Function<Map<String, RosettaValue>, RType>> typeMap = new HashMap<>();
 
 	public final String INT_NAME = "int";
-	public final RTypeFunction INT_FUNCTION = new RTypeFunction(INT_NAME) {
+	public final RTypeFunction INT_FUNCTION = new RTypeFunction(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), INT_NAME) {
 		@Override
 		public RNumberType evaluate(Map<String, RosettaValue> arguments) {
 			Map<String, RosettaValue> numberArgs = new HashMap<>(arguments);

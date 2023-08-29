@@ -18,20 +18,25 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
-import com.regnosys.rosetta.rosetta.RosettaBlueprint;
+import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
-import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RAliasType;
+import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RErrorType;
+import com.regnosys.rosetta.types.RFunction;
+import com.regnosys.rosetta.types.ROperation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -42,8 +47,17 @@ import com.regnosys.rosetta.types.builtin.RDateType;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
-import com.regnosys.rosetta.utils.DottedPath;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.util.DottedPath;
+import com.rosetta.util.types.GeneratedJavaClassService;
+import com.rosetta.util.types.JavaClass;
+import com.rosetta.util.types.JavaParameterizedType;
+import com.rosetta.util.types.JavaPrimitiveType;
+import com.rosetta.util.types.JavaReferenceType;
+import com.rosetta.util.types.JavaType;
+import com.rosetta.util.types.JavaWildcardTypeArgument;
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private RBuiltinTypeService builtins;
@@ -60,6 +74,10 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private RosettaTypeProvider typeProvider;
 	@Inject
 	private TypeSystem typeSystem;
+	@Inject
+	private GeneratedJavaClassService generatedJavaClassService;
+	@Inject
+	private RosettaFunctionExtensions rosettaFunctionExtensions;
 	
 	private JavaClass listClass = JavaClass.from(List.class);
 	private JavaClass objectClass = JavaClass.from(Object.class);
@@ -73,26 +91,60 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return modelPackage(model);
 	}
 	private JavaClass rosettaNamedToJavaClass(RosettaNamed object) {
-		return new JavaClass(getModelPackage(object), object.getName());
+		ModelSymbolId id = getSymbolId(object);
+		return new JavaClass(id.getNamespace(), id.getName());
 	}
 	
-	public JavaParametrizedType toPolymorphicList(JavaReferenceType t) {
-		return new JavaParametrizedType(listClass, JavaWildcardTypeArgument.extendsBound(t));
+	public JavaParameterizedType toPolymorphicList(JavaReferenceType t) {
+		return new JavaParameterizedType(listClass, JavaWildcardTypeArgument.extendsBound(t));
 	}
-	
+	public JavaClass toFunctionJavaClass(RFunction func) {
+		switch (func.getOrigin()) {
+		case FUNCTION:
+			return generatedJavaClassService.toJavaFunction(func.getSymbolId());
+		case REPORT:
+			return generatedJavaClassService.toJavaReportFunction(func.getSymbolId());
+		case RULE:
+			return generatedJavaClassService.toJavaRule(func.getSymbolId());
+		default:
+			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
+		}			 
+	}
 	public JavaClass toFunctionJavaClass(Function func) {
-		return new JavaClass(functions(getModelPackage(func)), func.getName());
+		return generatedJavaClassService.toJavaFunction(getSymbolId(func));
 	}
 	public JavaClass toFunctionJavaClass(RosettaExternalFunction func) {
 		return new JavaClass(packages.defaultLibFunctions(), func.getName());
 	}
-	public JavaClass toRuleJavaClass(RosettaBlueprint rule) {
-		return new JavaClass(blueprint(getModelPackage(rule)), rule.getName() + "Rule");
+	public JavaClass toReportFunctionJavaClass(RosettaBlueprintReport report) {
+		return generatedJavaClassService.toJavaReportFunction(getReportId(report));
 	}
-	
+	public JavaClass toReportTabulatorJavaClass(RosettaBlueprintReport report) {
+		return generatedJavaClassService.toJavaReportTabulator(getReportId(report));
+	}
+	public JavaClass toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+		ModelSymbolId typeId = getSymbolId(type);
+		Optional<RosettaExternalRuleSource> containingRuleSource = ruleSource.flatMap((rs) -> findContainingSuperRuleSource(type, rs));
+		if (containingRuleSource.isEmpty()) {
+			DottedPath packageName = typeId.getNamespace().child("reports");
+			String simpleName = typeId.getName() + "Tabulator";
+			return new JavaClass(packageName, simpleName);
+		}
+		ModelSymbolId sourceId = getSymbolId(containingRuleSource.get());
+		DottedPath packageName = sourceId.getNamespace().child("reports");
+		String simpleName = typeId.getName() + sourceId.getName() + "Tabulator";
+		return new JavaClass(packageName, simpleName);
+	}
+	private Optional<RosettaExternalRuleSource> findContainingSuperRuleSource(Data type, RosettaExternalRuleSource ruleSource) {
+		if (ruleSource.getExternalClasses().stream().filter(c -> c.getData().equals(type)).findAny().isPresent()) {
+			return Optional.of(ruleSource);
+		}
+		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
+	}
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
-		return toMetaJavaType(attrType, extensions.hasMetaFieldAnnotations(attribute), attribute.getTypeCall().getType());
+		DottedPath namespace = getModelPackage(attribute.getTypeCall().getType());
+		return toMetaJavaType(attrType, extensions.hasMetaFieldAnnotations(attribute), namespace);
 	}
 	public JavaReferenceType toMetaOrRegularJavaType(ExpandedAttribute expAttr) {
 		JavaReferenceType attrType;
@@ -104,7 +156,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (!expAttr.hasMetas()) {
 			return attrType;
 		}
-		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getRosettaType().getType());
+		DottedPath namespace = getModelPackage(expAttr.getRosettaType().getType());
+		return toMetaJavaType(attrType, expAttr.refIndex() < 0, namespace);
 	}
 	public JavaReferenceType toMultiMetaOrRegularJavaType(ExpandedAttribute expAttr) {
 		JavaReferenceType singleType = toMetaOrRegularJavaType(expAttr);
@@ -112,7 +165,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			if (expAttr.isDataType() || expAttr.hasMetas()) {
 				return toPolymorphicList(singleType);
 			} else {
-				return new JavaParametrizedType(listClass, singleType);
+				return new JavaParameterizedType(listClass, singleType);
 			}
 		}
 		return singleType;
@@ -124,7 +177,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		} else {
 			attrType = expandedTypeToJavaType(expAttr.getType());
 		}
-		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getRosettaType().getType());
+		DottedPath namespace = getModelPackage(expAttr.getRosettaType().getType());
+		return toMetaJavaType(attrType, expAttr.refIndex() < 0, namespace);
 	}
 	public JavaReferenceType expandedTypeToJavaType(ExpandedType type) {
 		if (type.getName().equals(RosettaAttributeExtensions.METAFIELDS_CLASS_NAME) || type.getName().equals(RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME)) {
@@ -138,7 +192,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return new JavaClass(modelPackage(type.getModel()), type.getName());
 	}
-	private JavaClass toMetaJavaType(JavaReferenceType base, boolean hasMetaFieldAnnotations, RosettaType model) {
+	private JavaClass toMetaJavaType(JavaReferenceType base, boolean hasMetaFieldAnnotations, DottedPath namespace) {
 		String attributeTypeName = base.getSimpleName();
 		String name;
 		if (hasMetaFieldAnnotations) {
@@ -146,7 +200,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		} else {
 			name = "ReferenceWithMeta" + attributeTypeName;
 		}
-		DottedPath pkg = metaField(getModelPackage(model));
+		DottedPath pkg = metaField(namespace);
 		return new JavaClass(pkg, name);
 	}
 	public JavaClass operationToReferenceWithMetaType(Operation op) {
@@ -157,7 +211,19 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<Segment> segments = op.pathAsSegmentList();
 			attr = segments.get(segments.size() - 1).getAttribute();
 		}
-		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr)), false, attr.getTypeCall().getType());
+		DottedPath namespace = getModelPackage(attr.getTypeCall().getType());
+		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr)), false, namespace);
+	}
+	
+	public JavaClass operationToReferenceWithMetaType(ROperation op) {
+		RAttribute attr;
+		if (op.getPathTail().isEmpty()) {
+			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+		} else {
+			List<RAttribute> segments = op.getPathTail();
+			attr = segments.get(segments.size() - 1);
+		}
+		return toMetaJavaType(toJavaReferenceType(attr.getRType()), false, attr.getRType().getNamespace());
 	}
 	
 	private String getTypeDebugInfo(RType type) {
@@ -176,6 +242,13 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaReferenceType toJavaReferenceType(Optional<RType> type) {
 		return type.map(t -> toJavaReferenceType(t)).orElse(objectClass);
 	}
+	public JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
+		if (rosettaFunctionExtensions.needsBuilder(rAttribute)) {
+			return toPolymorphicListOrSingleJavaType(rAttribute.getRType(), rAttribute.isMulti());
+		} else {
+			return toListOrSingleJavaType(rAttribute.getRType(), rAttribute.isMulti());
+		}
+	}
 	public JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
@@ -186,15 +259,15 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return caseDataType(type, null);
 	}
 	
-	public JavaType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
+	public JavaReferenceType toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
 			return toPolymorphicList(toJavaReferenceType(type));
 		} else
 			return toJavaReferenceType(type);
 	}
-	public JavaType toListOrSingleJavaType(RType type, boolean isMany) {
+	public JavaReferenceType toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
-			return new JavaParametrizedType(listClass, toJavaReferenceType(type));
+			return new JavaParameterizedType(listClass, toJavaReferenceType(type));
 		} else
 			return toJavaReferenceType(type);
 	}
@@ -219,17 +292,34 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return new JavaClass(existsValidation(getModelPackage(t.getData())), t.getName() + "OnlyExistsValidator");
 	}
 	
+	private ModelSymbolId getSymbolId(RosettaNamed named) {
+		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(named, RosettaRootElement.class);
+		RosettaModel model = rootElement.getModel();
+		if (model == null)
+			// Artificial attributes
+			throw new IllegalArgumentException("Can not compute package name for " + named.eClass().getName() + " " + named.getName() + ". Element is not attached to a RosettaModel.");
+		DottedPath namespace = DottedPath.splitOnDots(model.getName());
+		return new ModelSymbolId(namespace, named.getName());
+	}
+	private ModelSymbolId getReportId(RosettaBlueprintReport report) {
+		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(report, RosettaRootElement.class);
+		RosettaModel model = rootElement.getModel();
+		if (model == null)
+			// Artificial attributes
+			throw new IllegalArgumentException("Can not compute package name for " + report.eClass().getName() + " " + report.name() + ". Element is not attached to a RosettaModel.");
+		DottedPath namespace = DottedPath.splitOnDots(model.getName());
+		
+		RegulatoryDocumentReference ref = report.getRegulatoryBody();
+		String body = ref.getBody().getName();
+		String[] corpuses = ref.getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
+		
+		return ModelSymbolId.fromRegulatoryReference(namespace, body, corpuses);
+	}
 	private DottedPath modelPackage(RosettaModel model) {
 		return DottedPath.splitOnDots(model.getName());
 	}
 	private DottedPath metaField(DottedPath p) {
 		return p.child("metafields");
-	}
-	private DottedPath functions(DottedPath p) {
-		return p.child("functions");
-	}
-	private DottedPath blueprint(DottedPath p) {
-		return p.child("blueprint");
 	}
 	private DottedPath validation(DottedPath p) {
 		return p.child("validation");

@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
@@ -36,12 +35,13 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import java.util.Optional
 import java.util.regex.Pattern
 import org.apache.commons.text.StringEscapeUtils
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
-import com.regnosys.rosetta.generator.java.types.JavaClass
 import java.util.List
 import java.math.BigDecimal
-import com.regnosys.rosetta.generator.java.types.JavaWildcardTypeArgument
-import com.regnosys.rosetta.generator.java.types.JavaReferenceType
+import com.rosetta.util.types.JavaWildcardTypeArgument
+import com.rosetta.util.types.JavaReferenceType
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class ValidatorsGenerator {
 
@@ -91,9 +91,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
 			}
 		
 		}
@@ -112,9 +112,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, o.getClass().getSimpleName(), path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
 			}
 		
 		}
@@ -123,7 +123,7 @@ class ValidatorsGenerator {
 	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«t.toJavaType», «Set»<String>> {
 
-            /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			@Override
 			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
@@ -139,9 +139,9 @@ class ValidatorsGenerator {
 						.collect(«Collectors».toSet());
 				
 				if (setFields.equals(fields)) {
-					return «method(ValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "");
+					return «method(ValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "");
 				}
-				return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, o.getClass().getSimpleName(), path, "",
+				return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "",
 						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 			}
 		}
@@ -190,8 +190,8 @@ class ValidatorsGenerator {
 			'''o.get«attr.name?.toFirstUpper»()'''
 		} else {
 			val jt = attr.toExpandedAttribute.toMultiMetaOrRegularJavaType
-			if (jt instanceof JavaParametrizedType && (jt as JavaParametrizedType).baseType.equals(JavaClass.from(List))) {
-				val typeArg = (jt as JavaParametrizedType).arguments.head
+			if (jt instanceof JavaParameterizedType && (jt as JavaParameterizedType).getBaseType.equals(JavaClass.from(List))) {
+				val typeArg = (jt as JavaParameterizedType).getArguments.head
 				val itemType = if (typeArg instanceof JavaWildcardTypeArgument) {
 					typeArg.bound.get
 				} else {

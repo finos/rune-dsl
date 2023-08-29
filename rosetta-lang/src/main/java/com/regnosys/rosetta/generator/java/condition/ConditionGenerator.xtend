@@ -1,7 +1,5 @@
-package com.regnosys.rosetta.generator.java.rule
+package com.regnosys.rosetta.generator.java.condition
 
-import com.google.inject.ImplementedBy
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -24,8 +22,11 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
+import javax.inject.Inject
+import com.google.inject.ImplementedBy
+import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 
-class DataRuleGenerator {
+class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
@@ -34,19 +35,19 @@ class DataRuleGenerator {
 	@Inject extension JavaTypeTranslator
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
-		val topScope = new JavaScope(root.dataRule)
+		val topScope = new JavaScope(root.condition)
 		
-		val classBody = ele.dataRuleClassBody(data, topScope, version)
-		val content = buildClass(root.dataRule, classBody, topScope)
-		fsa.generateFile('''«root.dataRule.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
+		val classBody = ele.conditionClassBody(data, topScope, version)
+		val content = buildClass(root.condition, classBody, topScope)
+		fsa.generateFile('''«root.condition.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
 	}
 
-	private def StringConcatenationClient dataRuleClassBody(Condition rule, Data data, JavaScope scope, String version)  {
+	private def StringConcatenationClient conditionClassBody(Condition rule, Data data, JavaScope scope, String version)  {
 		val rosettaClass = rule.eContainer as Data
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)
 		val className = toConditionJavaType(ruleName);
-		val funcDeps = funcDependencies.functionDependencies(rule.expression)
+		val funcDeps = funcDependencies.rFunctionDependencies(rule.expression)
 		val implicitVarRepr = rule.implicitVarInContext
 		
 		val classScope = scope.classScope(toConditionJavaType(ruleName))
@@ -102,7 +103,7 @@ class DataRuleGenerator {
 						if («defaultClassFailureMessageId» == null) {
 							«defaultClassFailureMessageId» = "Condition " + NAME + " failed.";
 						}
-						return «ValidationResult».failure(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
+						return «ValidationResult».failure(NAME, «ValidationType».DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
 					}
 					
 					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {

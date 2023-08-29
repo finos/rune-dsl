@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.enums.EnumHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import org.junit.jupiter.api.Disabled
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -68,9 +68,9 @@ class EnumGeneratorTest {
 
         val testEnumCode = code.get(rootPackage + ".TestEnumWithDisplay")
         assertThat(testEnumCode,
-            allOf(containsString('''TestEnumWithDisplay()'''),
-                containsString('''TestEnumWithDisplay(String displayName)'''),
-                containsString('''public String toString()''')))
+            allOf(containsString('''TestEnumWithDisplay(String rosettaName)'''),
+                containsString('''TestEnumWithDisplay(String rosettaName, String displayName)'''),
+                containsString('''public String toDisplayString()''')))
 
         code.compileToClasses
     }

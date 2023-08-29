@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 
 import com.regnosys.rosetta.interpreter.RosettaValue;
+import com.rosetta.model.lib.ModelSymbolId;
 
 
 public class RAliasType extends RParametrizedType {
@@ -17,8 +18,8 @@ public class RAliasType extends RParametrizedType {
 	}
 
 	@Override
-	public String getName() {
-		return typeFunction.getName();
+	public ModelSymbolId getSymbolId() {
+		return typeFunction.getSymbolId();
 	}
 	
 	public RTypeFunction getTypeFunction() {

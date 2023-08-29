@@ -3,6 +3,8 @@ package com.regnosys.rosetta.serialization;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.inject.Inject;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.SaveOptions;
 import org.eclipse.xtext.serializer.ISerializationContext;
@@ -10,7 +12,6 @@ import org.eclipse.xtext.serializer.acceptor.ISequenceAcceptor;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic;
 import org.eclipse.xtext.serializer.impl.Serializer;
 
-import com.google.inject.Inject;
 import com.regnosys.rosetta.derivedstate.RosettaDerivedStateComputer;
 
 public class IgnoreDerivedStateSerializer extends Serializer {

@@ -1,12 +1,11 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
-import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 
 /**
  * A simplified model of types in Java, based on the Java specs:
  * https://docs.oracle.com/javase/specs/jls/se19/html/jls-4.html
  */
-public interface JavaType extends TargetLanguageRepresentation {
+public interface JavaType {
 	public static JavaType from(Class<?> t) {
 		if (t.isArray()) {
 			return JavaArrayType.from(t);
@@ -29,4 +28,6 @@ public interface JavaType extends TargetLanguageRepresentation {
 	}
 	
 	public String getSimpleName();
+	
+	public void accept(JavaTypeVisitor visitor);
 }

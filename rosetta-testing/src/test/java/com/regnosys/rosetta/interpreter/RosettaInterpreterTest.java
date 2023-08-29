@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
 import com.regnosys.rosetta.tests.util.ExpressionValidationHelper;
 import com.regnosys.rosetta.tests.util.RosettaValueHelper;
+import com.rosetta.model.lib.RosettaNumber;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
