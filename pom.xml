@@ -332,7 +332,7 @@
 				<executions>
 					<execution>
 						<id>Check style</id>
-						<!-- This needs to be run /after/ xtend (test) source generation is done. -->
+						<!-- This needs to run /after/ xtend (test) source generation is done. -->
 						<phase>process-test-sources</phase>
 						<goals>
 							<goal>check</goal>
