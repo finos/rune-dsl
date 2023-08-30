@@ -3,7 +3,6 @@
  */
 package com.regnosys.rosetta.validation
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -22,6 +21,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.junit.Assert.assertEquals
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -43,7 +43,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				ins then val
 		'''.parseRosetta
 		
-		model.assertError(OUTPUT_OPERATION, null,
+		model.assertError(OPERATION, null,
 			"Cardinality mismatch - cannot assign list to a single value.")
 	}
 	
@@ -1113,7 +1113,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	
 	@Test
 	def void testAttributesWithLocationBadTarget() {
-		'''
+		val model = '''
 			metaType scheme string
 			metaType reference string
 			
@@ -1122,8 +1122,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[metadata address "pointsTo"=Foo->foo]
 			
 		'''.parseRosetta
-		//TODO work out how to assert linking error
-		//model.assertError(ROSETTA_CALLABLE_CALL, null, "Couldn't resolve reference to RosettaCallable 'Foo' on RosettaCallableCall")
+		model.assertError(ROSETTA_DATA_REFERENCE, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Data 'Foo'.")
 	}
 	
 	@Test
@@ -1497,7 +1496,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Clazz:
 				test boolean (0..1)
 			
-				condition DataRule:
+				condition Condition:
 					if test = True 
 						or False <> False
 						or 1 > 0
@@ -1687,11 +1686,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				Foo:
 					+ foo
-						[value "bar" path "baz" dateFormat "MMB/dd/yy"]
+						[value "bar" path "baz" dateFormat "MMb/dd/yy"]
 			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
-			"Format must be a valid date/time format - Unknown pattern letter: B")
+			"Format must be a valid date/time format - Unknown pattern letter: b")
 	}
 	
 	@Test
@@ -1795,7 +1794,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				aa string (1..1)
 					[ruleReference Aa]
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertError(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
 	}
 
 	@Test
@@ -2341,6 +2340,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				filter bar1 exists
 			
 			reporting rule A from Bar:
+				[legacy-syntax]
 				extract Bar->bar1 as "A"
 			
 			type Bar:
@@ -2350,7 +2350,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				a string (0..*)
 					[ruleReference A]
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, null, "Report attributes with basic type (string) and multiple cardinality is not supported.")
+		model.assertError(ATTRIBUTE, null, "Legacy-syntax rules do not support attributes with a basic type (`string`) and multiple cardinality.")
 	}
 	
 	@Test

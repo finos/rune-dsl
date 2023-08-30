@@ -5,11 +5,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import com.regnosys.rosetta.interpreter.RosettaNumber;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaStringValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RStringType extends RBasicType {
 	public static final String MIN_LENGTH_PARAM_NAME = "minLength";

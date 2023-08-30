@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import com.rosetta.model.lib.RosettaNumber;
+
 public class RosettaNumberValue extends RosettaValueWithNaturalOrder<RosettaNumber> {
 	private final RosettaNumber scale;
 	

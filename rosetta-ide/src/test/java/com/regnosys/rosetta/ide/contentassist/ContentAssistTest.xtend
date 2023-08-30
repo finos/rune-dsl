@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 // TODO: fix completion
 class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 	@Test
-	def testInheritedAttributesDataRule() {
+	def testInheritedAttributesCondition() {
 		val model = '''
 		namespace "test"
 		version "test"
@@ -87,7 +87,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 	
 	// TODO: debug null pointer exception in log
 	@Test
-	def void testDataRuleAfterArrow() {
+	def void testConditionAfterArrow() {
 		val model = '''
 			namespace "test"
 			version "test"
@@ -182,7 +182,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 	}
 	
 	@Test
-	def void testDataRuleAfterArrow2() {
+	def void testConditionAfterArrow2() {
 		val model = '''
 			namespace "test"
 			version "test"

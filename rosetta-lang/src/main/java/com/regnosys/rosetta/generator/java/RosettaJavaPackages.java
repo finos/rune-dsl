@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
-import com.regnosys.rosetta.utils.DottedPath;
+import com.rosetta.util.DottedPath;
 
 public class RosettaJavaPackages {
 
@@ -75,15 +75,19 @@ public class RosettaJavaPackages {
 			return child("validation");
 		}
 
-		public DottedPath dataRule() {
+		public DottedPath condition() {
 			return typeValidation().child("datarule");
 		}
 
 		public DottedPath existsValidation() {
 			return typeValidation().child("exists");
 		}
-
-		public DottedPath blueprint() {
+		
+		public DottedPath reports() {
+			return child("reports");
+		}
+		
+		public DottedPath legacyBlueprint() {
 			return child("blueprint");
 		}
 

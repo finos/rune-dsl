@@ -1,8 +1,8 @@
 package com.regnosys.rosetta.types;
 
-public abstract class RType {
-	public abstract String getName();
+import com.rosetta.model.lib.ModelSymbol;
 
+public abstract class RType implements ModelSymbol {
 	public boolean hasMeta() {
 		return false;
 	}

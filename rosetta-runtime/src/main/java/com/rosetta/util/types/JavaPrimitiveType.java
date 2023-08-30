@@ -1,11 +1,8 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaPrimitiveType implements JavaType {
 	private static Map<Class<?>, JavaPrimitiveType> typeMap = new HashMap<>();
@@ -23,8 +20,8 @@ public class JavaPrimitiveType implements JavaType {
 	private final Class<?> type;
 	private final Class<?> wrapperType;
 	private JavaPrimitiveType(Class<?> type, Class<?> wrapperType) {
-		Validate.notNull(type);
-		Validate.notNull(wrapperType);
+		Objects.requireNonNull(type);
+		Objects.requireNonNull(wrapperType);
 		this.type = type;
 		this.wrapperType = wrapperType;
 	}
@@ -61,11 +58,6 @@ public class JavaPrimitiveType implements JavaType {
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append(type.getSimpleName());
-	}
-	
-	@Override
 	public int hashCode() {
 		return Objects.hash(type);
 	}
@@ -77,5 +69,10 @@ public class JavaPrimitiveType implements JavaType {
 
         JavaPrimitiveType other = (JavaPrimitiveType) object;
         return Objects.equals(type, other.type);
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

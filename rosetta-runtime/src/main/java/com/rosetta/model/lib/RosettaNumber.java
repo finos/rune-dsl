@@ -1,10 +1,9 @@
-package com.regnosys.rosetta.interpreter;
+package com.rosetta.model.lib;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Objects;
 
-// TODO: move this class to the Java runtime
 /**
  * An implementation of the IEEE754 decimal128 standard. Under the hood, this class uses
  * BigDecimal. Also see {@link MathContext#DECIMAL128}.

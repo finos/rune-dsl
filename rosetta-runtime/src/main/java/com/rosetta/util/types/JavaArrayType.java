@@ -1,15 +1,12 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.Objects;
-
-import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaArrayType implements JavaReferenceType {
 	private final JavaType baseType;
 
 	public JavaArrayType(JavaType baseType) {
-		Validate.notNull(baseType);
+		Objects.requireNonNull(baseType);
 		this.baseType = baseType;
 	}
 	
@@ -35,12 +32,6 @@ public class JavaArrayType implements JavaReferenceType {
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		baseType.appendTo(target);
-		target.append("[]");
-	}
-	
-	@Override
 	public int hashCode() {
 		return Objects.hash(baseType);
 	}
@@ -52,5 +43,10 @@ public class JavaArrayType implements JavaReferenceType {
 
         JavaArrayType other = (JavaArrayType) object;
         return Objects.equals(baseType, other.baseType);
+	}
+
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

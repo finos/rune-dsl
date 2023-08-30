@@ -6,10 +6,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.interpreter.RosettaBooleanValue;
-import com.regnosys.rosetta.interpreter.RosettaNumber;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaStringValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RosettaValueHelper {
 	private <U> Optional<RosettaValue> tryCast(List<?> list, Class<U> clazz, Function<List<U>, RosettaValue> construct) {

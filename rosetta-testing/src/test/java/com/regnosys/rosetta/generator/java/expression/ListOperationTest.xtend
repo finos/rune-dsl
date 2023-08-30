@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -20,6 +19,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -52,7 +52,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -64,6 +63,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -77,11 +77,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						List<Foo.FooBuilder> filteredFoos = doEvaluate(foos);
+						List<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends Foo> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, filteredFoos);
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -148,7 +153,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -160,6 +164,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -173,11 +178,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						List<Foo.FooBuilder> filteredFoos = doEvaluate(foos);
+						List<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends Foo> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, filteredFoos);
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -282,7 +292,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -294,6 +303,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -307,11 +317,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends Foo2> evaluate(List<? extends Foo2> foos) {
-						List<Foo2.Foo2Builder> filteredFoos = doEvaluate(foos);
+						List<Foo2.Foo2Builder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends Foo2> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(Foo2::build).collect(Collectors.toList());
 							objectValidator.validate(Foo2.class, filteredFoos);
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -380,7 +395,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -393,6 +407,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -406,11 +421,16 @@ class ListOperationTest {
 					* @return filteredFoos 
 					*/
 					public List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
-						List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = doEvaluate(foos);
+						List<FooWithScheme.FooWithSchemeBuilder> filteredFoosBuilder = doEvaluate(foos);
 						
-						if (filteredFoos != null) {
+						final List<? extends FooWithScheme> filteredFoos;
+						if (filteredFoosBuilder == null) {
+							filteredFoos = null;
+						} else {
+							filteredFoos = filteredFoosBuilder.stream().map(FooWithScheme::build).collect(Collectors.toList());
 							objectValidator.validate(FooWithScheme.class, filteredFoos);
 						}
+						
 						return filteredFoos;
 					}
 				
@@ -940,7 +960,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
@@ -954,6 +973,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -971,11 +991,16 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(Bar bar) {
-						List<Foo.FooBuilder> foos = doEvaluate(bar);
+						List<Foo.FooBuilder> foosBuilder = doEvaluate(bar);
 						
-						if (foos != null) {
+						final List<? extends Foo> foos;
+						if (foosBuilder == null) {
+							foos = null;
+						} else {
+							foos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, foos);
 						}
+						
 						return foos;
 					}
 				
@@ -1576,7 +1601,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -1587,6 +1611,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -1599,11 +1624,16 @@ class ListOperationTest {
 					* @return foos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Bar> bars) {
-						List<Foo.FooBuilder> foos = doEvaluate(bars);
+						List<Foo.FooBuilder> foosBuilder = doEvaluate(bars);
 						
-						if (foos != null) {
+						final List<? extends Foo> foos;
+						if (foosBuilder == null) {
+							foos = null;
+						} else {
+							foos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, foos);
 						}
+						
 						return foos;
 					}
 				
@@ -1902,7 +1932,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -1915,6 +1944,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -1932,11 +1962,16 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						List<Bar.BarBuilder> updatedBars = doEvaluate(bars);
+						List<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
 						
-						if (updatedBars != null) {
+						final List<? extends Bar> updatedBars;
+						if (updatedBarsBuilder == null) {
+							updatedBars = null;
+						} else {
+							updatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, updatedBars);
 						}
+						
 						return updatedBars;
 					}
 				
@@ -2037,7 +2072,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -2050,6 +2084,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -2067,11 +2102,16 @@ class ListOperationTest {
 					* @return updatedBars 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> bars) {
-						List<Bar.BarBuilder> updatedBars = doEvaluate(bars);
+						List<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
 						
-						if (updatedBars != null) {
+						final List<? extends Bar> updatedBars;
+						if (updatedBarsBuilder == null) {
+							updatedBars = null;
+						} else {
+							updatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, updatedBars);
 						}
+						
 						return updatedBars;
 					}
 				
@@ -2294,12 +2334,12 @@ class ListOperationTest {
 				package ns1.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
 				import java.util.List;
+				import javax.inject.Inject;
 				import ns1.Bar;
 				import ns1.Foo;
 				
@@ -2468,12 +2508,12 @@ class ListOperationTest {
 				package ns2.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
 				import java.util.List;
+				import javax.inject.Inject;
 				import ns1.Bar;
 				import ns1.Foo;
 				import ns1.functions.GetFoo;
@@ -2569,12 +2609,12 @@ class ListOperationTest {
 				package ns2.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
 				import java.util.List;
+				import javax.inject.Inject;
 				import ns1.Bar;
 				import ns1.Foo;
 				import ns1.functions.GetBaz;
@@ -3281,7 +3321,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -3291,6 +3330,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -3307,11 +3347,16 @@ class ListOperationTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<? extends Foo> foos) {
-						Foo.FooBuilder foo = doEvaluate(foos);
+						Foo.FooBuilder fooBuilder = doEvaluate(foos);
 						
-						if (foo != null) {
+						final Foo foo;
+						if (fooBuilder == null) {
+							foo = null;
+						} else {
+							foo = fooBuilder.build();
 							objectValidator.validate(Foo.class, foo);
 						}
+						
 						return foo;
 					}
 				
@@ -3712,7 +3757,6 @@ class ListOperationTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -3723,6 +3767,7 @@ class ListOperationTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -3735,11 +3780,16 @@ class ListOperationTest {
 					* @return sortedFoos 
 					*/
 					public List<? extends Foo> evaluate(List<? extends Foo> foos) {
-						List<Foo.FooBuilder> sortedFoos = doEvaluate(foos);
+						List<Foo.FooBuilder> sortedFoosBuilder = doEvaluate(foos);
 						
-						if (sortedFoos != null) {
+						final List<? extends Foo> sortedFoos;
+						if (sortedFoosBuilder == null) {
+							sortedFoos = null;
+						} else {
+							sortedFoos = sortedFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
 							objectValidator.validate(Foo.class, sortedFoos);
 						}
+						
 						return sortedFoos;
 					}
 				

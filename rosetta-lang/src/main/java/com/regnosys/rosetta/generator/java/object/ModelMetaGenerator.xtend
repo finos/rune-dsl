@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -29,6 +28,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
+import javax.inject.Inject
 
 class ModelMetaGenerator {
 
@@ -56,7 +56,7 @@ class ModelMetaGenerator {
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
 		val context = c.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(c, context.resources.map[contents.head as RosettaModel].toSet)
-		val dataRules = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
+		val conditions = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -65,8 +65,8 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
-						«FOR r : dataRules SEPARATOR ','»
-							factory.create(«r.containingClassNamespace.dataRule».«r.ruleName.toConditionJavaType».class)
+						«FOR r : conditions SEPARATOR ','»
+							factory.create(«r.containingClassNamespace.condition».«r.ruleName.toConditionJavaType».class)
 						«ENDFOR»
 					);
 				}

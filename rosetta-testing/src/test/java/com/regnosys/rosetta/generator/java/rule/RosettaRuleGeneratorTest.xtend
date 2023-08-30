@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
-import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
@@ -20,6 +19,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
+import javax.inject.Inject
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -115,7 +115,7 @@ class RosettaRuleGeneratorTest {
 					type BarReport:
 						barBarOne string (1..1)
 							[ruleReference BarBarOne]
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 							[ruleReference BarBarTwo]
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
@@ -136,89 +136,87 @@ class RosettaRuleGeneratorTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
+				package com.rosetta.test.model.reports;
 				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Quux;
+				import com.rosetta.test.model.BarQuxReport;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import java.util.Optional;
 				import javax.inject.Inject;
 				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				/**
-				 * @version 0.0.0
-				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Object, INKEY, INKEY> {
+				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
-					private final RosettaActionFactory actionFactory;
+					@Inject protected ModelObjectValidator objectValidator;
 					
-					@Inject
-					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					// RosettaFunction dependencies
+					//
+					@Inject protected BarBarOneRule barBarOne;
+					@Inject protected BarBarTwoRule barBarTwo;
+					@Inject protected BarBazRule barBaz;
+					@Inject protected BarQuuxRule barQuux;
+					@Inject protected BarQuxListRule barQuxList;
+				
+					/**
+					* @param input 
+					* @return output 
+					*/
 					@Override
-					public String getName() {
-						return "TEST_REGMiFIR"; 
+					public BarReport evaluate(Bar input) {
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+						
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
+							objectValidator.validate(BarReport.class, output);
+						}
+						
+						return output;
 					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic3.rosetta#/0/@elements.2";
-					}
-					
-					@Inject protected FooRuleRule fooRuleRef;
-					@Inject protected BarBarOneRule barBarOneRef;
-					@Inject protected BarBarTwoRule barBarTwoRef;
-					@Inject protected BarBazRule barBazRef;
-					@Inject protected BarQuuxRule barQuuxRef;
-					@Inject protected BarQuxListRule barQuxListRef;
-					
-					@Override
-					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, getBarBarOne()),
-								startsWith(actionFactory, getBarBarTwo()),
-								startsWith(actionFactory, getBarBaz()),
-								startsWith(actionFactory, getBarQuux()),
-								startsWith(actionFactory, getBarQuxList())
-								)
-							)
-							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
-						return fooRuleRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
-						return barBarOneRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
-						return barBarTwoRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
-						return barBazRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
-						return barQuuxRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
-						return barQuxListRef.blueprint();
+				
+					protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+				
+					public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+						@Override
+						protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+							BarReport.BarReportBuilder output = BarReport.builder();
+							return assignOutput(output, input);
+						}
+						
+						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+							output
+								.setBarBarOne(MapperS.of(barBarOne.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
+							
+							output
+								.getOrCreateBarBaz()
+								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+							
+							output
+								.setBarQuux(MapperS.of(barQuux.evaluate(MapperS.of(input).get())).get());
+							
+							return Optional.ofNullable(output)
+								.map(o -> o.prune())
+								.orElse(null);
+						}
 					}
 				}
 			'''
@@ -239,7 +237,10 @@ class RosettaRuleGeneratorTest {
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.Quux;
+				import java.util.ArrayList;
 				import java.util.Collection;
+				import java.util.List;
+				import java.util.stream.Collectors;
 				
 				
 				/**
@@ -264,7 +265,7 @@ class RosettaRuleGeneratorTest {
 									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
@@ -282,6 +283,59 @@ class RosettaRuleGeneratorTest {
 						}
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					@Override
+					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+								while (index >= listBuilder.size()) {
+									listBuilder.add(null);
+								}
+								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
+								if (dataItemReportBuilder == null) {
+									dataItemReportBuilder = BarReport.builder();
+									listBuilder.set(index, dataItemReportBuilder);
+								}
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								}
+								if (BarBazRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								}
+								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+								}
+								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								}
+								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								}
+							}
+						}
+						
+						return listBuilder.stream()
+							.map((item) -> {
+								if (item != null) {
+									return item.build();
+								}
+								return null;
+							})
+							.collect(Collectors.toList());
 					}
 				}
 			'''
@@ -348,89 +402,87 @@ class RosettaRuleGeneratorTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
+				package com.rosetta.test.model.reports;
 				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Quux;
+				import com.rosetta.test.model.BarQuxReport;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import java.util.Optional;
 				import javax.inject.Inject;
 				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				/**
-				 * @version 0.0.0
-				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Object, INKEY, INKEY> {
+				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
-					private final RosettaActionFactory actionFactory;
+					@Inject protected ModelObjectValidator objectValidator;
 					
-					@Inject
-					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					// RosettaFunction dependencies
+					//
+					@Inject protected BarBarOneRule barBarOne;
+					@Inject protected BarBarTwoRule barBarTwo;
+					@Inject protected BarBazRule barBaz;
+					@Inject protected BarQuuxRule barQuux;
+					@Inject protected BarQuxListRule barQuxList;
+				
+					/**
+					* @param input 
+					* @return output 
+					*/
 					@Override
-					public String getName() {
-						return "TEST_REGMiFIR"; 
+					public BarReport evaluate(Bar input) {
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+						
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
+							objectValidator.validate(BarReport.class, output);
+						}
+						
+						return output;
 					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic3.rosetta#/0/@elements.2";
-					}
-					
-					@Inject protected FooRuleRule fooRuleRef;
-					@Inject protected BarBarOneRule barBarOneRef;
-					@Inject protected BarBarTwoRule barBarTwoRef;
-					@Inject protected BarBazRule barBazRef;
-					@Inject protected BarQuuxRule barQuuxRef;
-					@Inject protected BarQuxListRule barQuxListRef;
-					
-					@Override
-					public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, getBarBarOne()),
-								startsWith(actionFactory, getBarBarTwo()),
-								startsWith(actionFactory, getBarBaz()),
-								startsWith(actionFactory, getBarQuux()),
-								startsWith(actionFactory, getBarQuxList())
-								)
-							)
-							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
-						return fooRuleRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarOne() {
-						return barBarOneRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
-						return barBarTwoRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
-						return barBazRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, Quux, INKEY, INKEY> getBarQuux() {
-						return barQuuxRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
-						return barQuxListRef.blueprint();
+				
+					protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+				
+					public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+						@Override
+						protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+							BarReport.BarReportBuilder output = BarReport.builder();
+							return assignOutput(output, input);
+						}
+						
+						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+							output
+								.setBarBarOne(MapperS.of(barBarOne.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.getOrCreateBarBaz()
+								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+							
+							output
+								.setBarQuux(MapperS.of(barQuux.evaluate(MapperS.of(input).get())).get());
+							
+							return Optional.ofNullable(output)
+								.map(o -> o.prune())
+								.orElse(null);
+						}
 					}
 				}
 			'''
@@ -451,7 +503,10 @@ class RosettaRuleGeneratorTest {
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.Quux;
+				import java.util.ArrayList;
 				import java.util.Collection;
+				import java.util.List;
+				import java.util.stream.Collectors;
 				
 				
 				/**
@@ -495,6 +550,59 @@ class RosettaRuleGeneratorTest {
 						
 						return dataItemReportBuilder.build();
 					}
+					
+					@Override
+					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+								while (index >= listBuilder.size()) {
+									listBuilder.add(null);
+								}
+								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
+								if (dataItemReportBuilder == null) {
+									dataItemReportBuilder = BarReport.builder();
+									listBuilder.set(index, dataItemReportBuilder);
+								}
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								}
+								if (BarBazRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								}
+								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+								}
+								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								}
+								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								}
+							}
+						}
+						
+						return listBuilder.stream()
+							.map((item) -> {
+								if (item != null) {
+									return item.build();
+								}
+								return null;
+							})
+							.collect(Collectors.toList());
+					}
 				}
 			'''
 			assertEquals(expected, reportBuilderJava)
@@ -524,7 +632,7 @@ class RosettaRuleGeneratorTest {
 					type BarReport:
 						barBarOne string (1..1)
 							[ruleReference BarBarOne]
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 							[ruleReference BarBarTwo]
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
@@ -553,82 +661,83 @@ class RosettaRuleGeneratorTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
+				package com.rosetta.test.model.reports;
 				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.BarQuxReport;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import java.util.Optional;
 				import javax.inject.Inject;
 				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				/**
-				 * @version 0.0.0
-				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
-					private final RosettaActionFactory actionFactory;
+					@Inject protected ModelObjectValidator objectValidator;
 					
-					@Inject
-					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					// RosettaFunction dependencies
+					//
+					@Inject protected BarBarTwoRule barBarTwo;
+					@Inject protected BarBazRule barBaz;
+					@Inject protected BarQuxListRule barQuxList;
+					@Inject protected New_BarBarOneRule new_BarBarOne;
+				
+					/**
+					* @param input 
+					* @return output 
+					*/
 					@Override
-					public String getName() {
-						return "TEST_REGMiFIR"; 
+					public BarReport evaluate(Bar input) {
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+						
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
+							objectValidator.validate(BarReport.class, output);
+						}
+						
+						return output;
 					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic3.rosetta#/0/@elements.2";
-					}
-					
-					@Inject protected FooRuleRule fooRuleRef;
-					@Inject protected BarBarTwoRule barBarTwoRef;
-					@Inject protected BarBazRule barBazRef;
-					@Inject protected BarQuxListRule barQuxListRef;
-					@Inject protected New_BarBarOneRule new_BarBarOneRef;
-					
-					@Override
-					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, getBarBarTwo()),
-								startsWith(actionFactory, getBarBaz()),
-								startsWith(actionFactory, getBarQuxList()),
-								startsWith(actionFactory, getNew_BarBarOne())
-								)
-							)
-							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
-						return fooRuleRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
-						return barBarTwoRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
-						return barBazRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
-						return barQuxListRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getNew_BarBarOne() {
-						return new_BarBarOneRef.blueprint();
+				
+					protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+				
+					public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+						@Override
+						protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+							BarReport.BarReportBuilder output = BarReport.builder();
+							return assignOutput(output, input);
+						}
+						
+						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+							output
+								.setBarBarOne(MapperS.of(new_BarBarOne.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
+							
+							output
+								.getOrCreateBarBaz()
+								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+							
+							return Optional.ofNullable(output)
+								.map(o -> o.prune())
+								.orElse(null);
+						}
 					}
 				}
 			'''
@@ -659,7 +768,7 @@ class RosettaRuleGeneratorTest {
 					type BarReport:
 						barBarOne string (1..1)
 							[ruleReference BarBarOne]
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 							[ruleReference BarBarTwo]
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
@@ -683,76 +792,79 @@ class RosettaRuleGeneratorTest {
 				''']
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
+				package com.rosetta.test.model.reports;
 				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.BarQuxReport;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import java.util.Optional;
 				import javax.inject.Inject;
 				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				/**
-				 * @version 0.0.0
-				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, String, INKEY, INKEY> {
+				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
-					private final RosettaActionFactory actionFactory;
+					@Inject protected ModelObjectValidator objectValidator;
 					
-					@Inject
-					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					// RosettaFunction dependencies
+					//
+					@Inject protected BarBarTwoRule barBarTwo;
+					@Inject protected BarBazRule barBaz;
+					@Inject protected BarQuxListRule barQuxList;
+				
+					/**
+					* @param input 
+					* @return output 
+					*/
 					@Override
-					public String getName() {
-						return "TEST_REGMiFIR"; 
+					public BarReport evaluate(Bar input) {
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+						
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
+							objectValidator.validate(BarReport.class, output);
+						}
+						
+						return output;
 					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic3.rosetta#/0/@elements.2";
-					}
-					
-					@Inject protected FooRuleRule fooRuleRef;
-					@Inject protected BarBarTwoRule barBarTwoRef;
-					@Inject protected BarBazRule barBazRef;
-					@Inject protected BarQuxListRule barQuxListRef;
-					
-					@Override
-					public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, getFooRule())
-							.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, getBarBarTwo()),
-								startsWith(actionFactory, getBarBaz()),
-								startsWith(actionFactory, getBarQuxList())
-								)
-							)
-							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
-						return fooRuleRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBarTwo() {
-						return barBarTwoRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarBaz() {
-						return barBazRef.blueprint();
-					}
-					
-					protected BlueprintInstance<Bar, String, INKEY, INKEY> getBarQuxList() {
-						return barQuxListRef.blueprint();
+				
+					protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+				
+					public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+						@Override
+						protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+							BarReport.BarReportBuilder output = BarReport.builder();
+							return assignOutput(output, input);
+						}
+						
+						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+							output
+								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
+							
+							output
+								.getOrCreateBarBaz()
+								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+							
+							output
+								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+							
+							return Optional.ofNullable(output)
+								.map(o -> o.prune())
+								.orElse(null);
+						}
 					}
 				}
 			'''
@@ -815,16 +927,19 @@ class RosettaRuleGeneratorTest {
 			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package ns3.blueprint;
-
+				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
+				import java.util.ArrayList;
 				import java.util.Collection;
+				import java.util.List;
+				import java.util.stream.Collectors;
 				import ns2.blueprint.BarBarTwoRule;
 				import ns3.BarReport;
-
+				
 				
 				/**
 				 * @version 0.0.0
@@ -854,6 +969,47 @@ class RosettaRuleGeneratorTest {
 						}
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					@Override
+					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+								while (index >= listBuilder.size()) {
+									listBuilder.add(null);
+								}
+								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
+								if (dataItemReportBuilder == null) {
+									dataItemReportBuilder = BarReport.builder();
+									listBuilder.set(index, dataItemReportBuilder);
+								}
+								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								}
+								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								}
+							}
+						}
+						
+						return listBuilder.stream()
+							.map((item) -> {
+								if (item != null) {
+									return item.build();
+								}
+								return null;
+							})
+							.collect(Collectors.toList());
 					}
 				}
 			'''
@@ -888,54 +1044,60 @@ class RosettaRuleGeneratorTest {
 		'''
 		val code = model.generateCode
 		//println(code)
-		val reportJava = code.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
 		try {
 			assertThat(reportJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
+				package com.rosetta.test.model.reports;
 				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import java.util.Optional;
 				import javax.inject.Inject;
 				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 				
-				/**
-				 * @version test
-				 */
-				public class TEST_REGMiFIRBlueprintReport<INKEY> implements Blueprint<Bar, Bar, INKEY, INKEY> {
+				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public TEST_REGMiFIRBlueprintReport(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					@Inject protected ModelObjectValidator objectValidator;
+				
+					/**
+					* @param input 
+					* @return output 
+					*/
 					@Override
-					public String getName() {
-						return "TEST_REGMiFIR"; 
+					public BarReport evaluate(Bar input) {
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+						
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
+							objectValidator.validate(BarReport.class, output);
+						}
+						
+						return output;
 					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#/0/@elements.2";
-					}
-					
-					@Inject protected FooRuleRule fooRuleRef;
-					
-					@Override
-					public BlueprintInstance<Bar, Bar, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, getFooRule())
-							.addDataItemReportBuilder(new BarReport_DataItemReportBuilder())
-							.toBlueprint(getURI(), getName());
-					}
-					
-					protected BlueprintInstance<Bar, Bar, INKEY, INKEY> getFooRule() {
-						return fooRuleRef.blueprint();
+				
+					protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+				
+					public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+						@Override
+						protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+							BarReport.BarReportBuilder output = BarReport.builder();
+							return assignOutput(output, input);
+						}
+						
+						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+							return Optional.ofNullable(output)
+								.map(o -> o.prune())
+								.orElse(null);
+						}
 					}
 				}
 			'''
@@ -948,15 +1110,18 @@ class RosettaRuleGeneratorTest {
 			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
 			val expected = '''
 				package com.rosetta.test.model.blueprint;
-
+				
 				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
 				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
 				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
 				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
 				import com.rosetta.test.model.BarReport;
+				import java.util.ArrayList;
 				import java.util.Collection;
-
-
+				import java.util.List;
+				import java.util.stream.Collectors;
+				
+				
 				/**
 				 * @version test
 				 */
@@ -979,6 +1144,41 @@ class RosettaRuleGeneratorTest {
 						}
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					@Override
+					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+								while (index >= listBuilder.size()) {
+									listBuilder.add(null);
+								}
+								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
+								if (dataItemReportBuilder == null) {
+									dataItemReportBuilder = BarReport.builder();
+									listBuilder.set(index, dataItemReportBuilder);
+								}
+							}
+						}
+						
+						return listBuilder.stream()
+							.map((item) -> {
+								if (item != null) {
+									return item.build();
+								}
+								return null;
+							})
+							.collect(Collectors.toList());
 					}
 				}
 			'''
@@ -1022,7 +1222,7 @@ class RosettaRuleGeneratorTest {
 			        [ruleReference Nationality]
 			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
 			        [ruleReference SpecialAbilities]
-			    powers PowerEnum (0..1) <"Enum type - multiple cardinality not allowed">
+			    powers PowerEnum (0..*) <"Enum type - multiple cardinality">
 			        [ruleReference Powers]
 			    attribute AttributeReport (0..1)  <"Nested report">
 			    organisations OrganisationReport (0..*) <"Repeatable rule">
@@ -1158,12 +1358,15 @@ class RosettaRuleGeneratorTest {
 				import java.math.BigDecimal;
 				import java.time.LocalTime;
 				import java.time.ZonedDateTime;
+				import java.util.ArrayList;
 				import java.util.Collection;
+				import java.util.List;
+				import java.util.stream.Collectors;
 				import test.reg.CountryEnum;
 				import test.reg.PowerEnum;
 				import test.reg.SokoviaAccordsReport;
-
-
+				
+				
 				/**
 				 * @version test
 				 */
@@ -1216,7 +1419,7 @@ class RosettaRuleGeneratorTest {
 									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 								}
 								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+									DataItemReportUtils.setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
 									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
@@ -1225,6 +1428,80 @@ class RosettaRuleGeneratorTest {
 						}
 						
 						return dataItemReportBuilder.build();
+					}
+					
+					@Override
+					public <T> List<SokoviaAccordsReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
+						List<SokoviaAccordsReport.SokoviaAccordsReportBuilder> listBuilder = new ArrayList();
+						
+						for (GroupableData<?, T> groupableData : reportData) {
+							DataIdentifier dataIdentifier = groupableData.getIdentifier();
+							if (dataIdentifier instanceof RuleIdentifier) {
+								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
+								Class<?> ruleType = ruleIdentifier.getRuleType();
+								Object data = groupableData.getData();
+								if (data == null) {
+									continue;
+								}
+								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
+								while (index >= listBuilder.size()) {
+									listBuilder.add(null);
+								}
+								SokoviaAccordsReport.SokoviaAccordsReportBuilder dataItemReportBuilder = listBuilder.get(index);
+								if (dataItemReportBuilder == null) {
+									dataItemReportBuilder = SokoviaAccordsReport.builder();
+									listBuilder.set(index, dataItemReportBuilder);
+								}
+								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
+								}
+								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
+								}
+								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
+								}
+								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
+								}
+								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
+								}
+								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
+								}
+								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
+								}
+								if (NationalityRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
+								}
+								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
+								}
+								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+								}
+								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+								}
+								if (PowersRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+								}
+								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
+									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
+								}
+							}
+						}
+						
+						return listBuilder.stream()
+							.map((item) -> {
+								if (item != null) {
+									return item.build();
+								}
+								return null;
+							})
+							.collect(Collectors.toList());
 					}
 				}
 			'''
@@ -1258,76 +1535,57 @@ class RosettaRuleGeneratorTest {
 				extract item->bar
 				then extract item->baz
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.Blueprint1Rule")
 		// writeOutClasses(blueprint, "validPath");
 		try {
 			assertThat(blueprintJava, CoreMatchers.notNullValue())
 			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Foo;
-				import javax.inject.Inject;
-				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
+			package com.rosetta.test.model.reports;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.model.lib.reports.ReportFunction;
+			import com.rosetta.test.model.Bar;
+			import com.rosetta.test.model.Foo;
+			
+			
+			@ImplementedBy(Blueprint1Rule.Blueprint1RuleDefault.class)
+			public abstract class Blueprint1Rule implements ReportFunction<Foo, String> {
+			
 				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY> implements Blueprint<Foo, String, INKEY, INKEY> {
+				* @param input 
+				* @return output 
+				*/
+				@Override
+				public String evaluate(Foo input) {
+					String output = doEvaluate(input);
 					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
+					return output;
+				}
+			
+				protected abstract String doEvaluate(Foo input);
+			
+				public static class Blueprint1RuleDefault extends Blueprint1Rule {
 					@Override
-					public String getName() {
-						return "Blueprint1"; 
+					protected String doEvaluate(Foo input) {
+						String output = null;
+						return assignOutput(output, input);
 					}
 					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
-						return
-							startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Blueprint1", "item extract [item->bar] then [item extract [item->baz]]", null, foo -> MapperS.of(evaluate(foo))))
-								.toBlueprint(getURI(), getName());
-					}
-					
-					public String evaluate(Foo foo) {
-						String string = doEvaluate(foo);
-						return string;
-					}
-					
-					private String doEvaluate(Foo foo) {
-						String string = null;
-						return assignOutput(string,foo);
-					}
-					
-					private String assignOutput(String string, Foo foo) {
-						string = MapperS.of(foo)
-							.mapSingleToItem(item -> (MapperS<Bar>)item.<Bar>map("getBar", _foo -> _foo.getBar()))
+					protected String assignOutput(String output, Foo input) {
+						output = MapperS.of(input)
+							.mapSingleToItem(item -> (MapperS<Bar>)item.<Bar>map("getBar", foo -> foo.getBar()))
 							.apply(item -> item
 								.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getBaz", bar -> bar.getBaz()))).get();
-					
-						return string;
+						
+						return output;
 					}
 				}
+			}
 			'''
 			assertEquals(expected, blueprintJava)
 			val classes = blueprint.compileToClasses
-			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Blueprint1Rule")
+			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Blueprint1Rule")
 			assertNotNull(bpImpl)
 		} finally {
 		}
@@ -1675,73 +1933,58 @@ class RosettaRuleGeneratorTest {
 			
 		'''.parseRosettaWithNoErrors
 		val code = parsed.generateCode
-		val bp = code.get("com.rosetta.test.model.blueprint.Rule1Rule")
+		val bp = code.get("com.rosetta.test.model.reports.Rule1Rule")
 		assertThat(bp, CoreMatchers.notNullValue())
 		val expected = '''
-			package com.rosetta.test.model.blueprint;
+		package com.rosetta.test.model.reports;
+		
+		import com.google.inject.ImplementedBy;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
+		import com.rosetta.test.model.Foo;
+		import javax.inject.Inject;
+		
+		
+		@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
+		public abstract class Rule1Rule implements ReportFunction<Foo, String> {
 			
-			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Foo;
-			import javax.inject.Inject;
-			
-			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			
+			// RosettaFunction dependencies
+			//
+			@Inject protected Rule2Rule rule2;
+		
 			/**
-			 * @version test
-			 */
-			public class Rule1Rule<INKEY> implements Blueprint<Foo, String, INKEY, INKEY> {
+			* @param input 
+			* @return output 
+			*/
+			@Override
+			public String evaluate(Foo input) {
+				String output = doEvaluate(input);
 				
-				private final RosettaActionFactory actionFactory;
-				
-				@Inject
-				public Rule1Rule(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
-				}
-				
+				return output;
+			}
+		
+			protected abstract String doEvaluate(Foo input);
+		
+			public static class Rule1RuleDefault extends Rule1Rule {
 				@Override
-				public String getName() {
-					return "Rule1"; 
+				protected String doEvaluate(Foo input) {
+					String output = null;
+					return assignOutput(output, input);
 				}
 				
-				@Override
-				public String getURI() {
-					return "__synthetic1.rosetta#com.rosetta.test.model.Rule1";
-				}
-				
-				@Inject protected Rule2Rule rule2Ref;
-				
-				@Override
-				public BlueprintInstance<Foo, String, INKEY, INKEY> blueprint() {
-					return
-						startsWith(actionFactory, actionFactory.<Foo, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.Rule1", "Rule2 then [item extract [val]]", null, foo -> MapperS.of(evaluate(foo))))
-							.toBlueprint(getURI(), getName());
-				}
-				
-				public String evaluate(Foo foo) {
-					String string = doEvaluate(foo);
-					return string;
-				}
-				
-				private String doEvaluate(Foo foo) {
-					String string = null;
-					return assignOutput(string,foo);
-				}
-				
-				private String assignOutput(String string, Foo foo) {
-					string = MapperS.of(rule2Ref.evaluate(MapperS.of(foo).get()))
+				protected String assignOutput(String output, Foo input) {
+					output = MapperS.of(rule2.evaluate(MapperS.of(input).get()))
 						.apply(item -> item
 							.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getVal", bar -> bar.getVal()))).get();
-				
-					return string;
+					
+					return output;
 				}
 			}
+		}
 		'''
 		assertEquals(expected, bp)
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.blueprint.Rule1Rule")
+		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Rule1Rule")
 		assertNotNull(bpImpl)
 	}
 
@@ -1757,78 +2000,65 @@ class RosettaRuleGeneratorTest {
 			
 		'''.generateCode
 		//blueprint.writeClasses("blueprint.filter")
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
-		package com.rosetta.test.model.blueprint;
+		package com.rosetta.test.model.reports;
 		
-		import com.regnosys.rosetta.blueprints.Blueprint;
-		import com.regnosys.rosetta.blueprints.BlueprintInstance;
-		import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
+		import com.google.inject.ImplementedBy;
 		import com.rosetta.model.lib.expression.CardinalityOperator;
 		import com.rosetta.model.lib.functions.ModelObjectValidator;
 		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Input;
 		import com.rosetta.test.model.Input.InputBuilder;
 		import java.util.Optional;
 		import javax.inject.Inject;
 		
-		import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
-		/**
-		 * @version test
-		 */
-		public class SimpleBlueprintRule<INKEY> implements Blueprint<Input, Input, INKEY, INKEY> {
-			
-			private final RosettaActionFactory actionFactory;
-			
-			@Inject
-			public SimpleBlueprintRule(RosettaActionFactory actionFactory) {
-				this.actionFactory = actionFactory;
-			}
-			
-			@Override
-			public String getName() {
-				return "SimpleBlueprint"; 
-			}
-			
-			@Override
-			public String getURI() {
-				return "__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint";
-			}
-			
+		@ImplementedBy(SimpleBlueprintRule.SimpleBlueprintRuleDefault.class)
+		public abstract class SimpleBlueprintRule implements ReportFunction<Input, Input> {
 			
 			@Inject protected ModelObjectValidator objectValidator;
-			
+		
+			/**
+			* @param input 
+			* @return output 
+			*/
 			@Override
-			public BlueprintInstance<Input, Input, INKEY, INKEY> blueprint() {
-				return
-					startsWith(actionFactory, actionFactory.<Input, Input, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.SimpleBlueprint", "item filter [traderef = \"Hello\"]", null, input -> MapperS.of(evaluate(input))))
-						.toBlueprint(getURI(), getName());
-			}
-			
-			public Input evaluate(Input input0) {
-				Input.InputBuilder input1 = doEvaluate(input0);
-				if (input1 != null) {
-					objectValidator.validate(Input.class, input1);
+			public Input evaluate(Input input) {
+				Input.InputBuilder outputBuilder = doEvaluate(input);
+				
+				final Input output;
+				if (outputBuilder == null) {
+					output = null;
+				} else {
+					output = outputBuilder.build();
+					objectValidator.validate(Input.class, output);
 				}
-				return input1;
+				
+				return output;
 			}
-			
-			private Input.InputBuilder doEvaluate(Input input0) {
-				Input.InputBuilder input1 = Input.builder();
-				return assignOutput(input1,input0);
-			}
-			
-			private Input.InputBuilder assignOutput(Input.InputBuilder input1, Input input0) {
-				input1 = toBuilder(MapperS.of(input0)
-					.filterSingleNullSafe(item -> (Boolean)areEqual(item.<String>map("getTraderef", input -> input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
-			
-				return Optional.ofNullable(input1)
-					.map(o -> o.prune())
-					.orElse(null);
+		
+			protected abstract Input.InputBuilder doEvaluate(Input input);
+		
+			public static class SimpleBlueprintRuleDefault extends SimpleBlueprintRule {
+				@Override
+				protected Input.InputBuilder doEvaluate(Input input) {
+					Input.InputBuilder output = Input.builder();
+					return assignOutput(output, input);
+				}
+				
+				protected Input.InputBuilder assignOutput(Input.InputBuilder output, Input input) {
+					output = toBuilder(MapperS.of(input)
+						.filterSingleNullSafe(item -> (Boolean)areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
+					
+					return Optional.ofNullable(output)
+						.map(o -> o.prune())
+						.orElse(null);
+				}
 			}
 		}
 		'''
@@ -1847,7 +2077,7 @@ class RosettaRuleGeneratorTest {
 				traderef string (0..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.SimpleBlueprintRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
 		// writeOutClasses(blueprint, "filter2");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 
@@ -1868,7 +2098,7 @@ class RosettaRuleGeneratorTest {
 				flag boolean (1..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.FilterRuleRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.FilterRuleRule")
 		//writeClasses(blueprint, "filterWhenRule");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 
@@ -1973,70 +2203,51 @@ class RosettaRuleGeneratorTest {
 				floating string (0..*)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.IsFixedFloatRule")
+		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.IsFixedFloatRule")
 		// writeOutClasses(blueprint, "filterWhenCount");
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 		val expected = '''
-			package com.rosetta.test.model.blueprint;
-			
-			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.rosetta.model.lib.expression.CardinalityOperator;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Foo;
-			import javax.inject.Inject;
-			
-			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-			
+		package com.rosetta.test.model.reports;
+		
+		import com.google.inject.ImplementedBy;
+		import com.rosetta.model.lib.expression.CardinalityOperator;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
+		import com.rosetta.test.model.Foo;
+		
+		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+		
+		@ImplementedBy(IsFixedFloatRule.IsFixedFloatRuleDefault.class)
+		public abstract class IsFixedFloatRule implements ReportFunction<Foo, Boolean> {
+		
 			/**
-			 * @version test
-			 */
-			public class IsFixedFloatRule<INKEY> implements Blueprint<Foo, Boolean, INKEY, INKEY> {
+			* @param input 
+			* @return output 
+			*/
+			@Override
+			public Boolean evaluate(Foo input) {
+				Boolean output = doEvaluate(input);
 				
-				private final RosettaActionFactory actionFactory;
-				
-				@Inject
-				public IsFixedFloatRule(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
-				}
-				
+				return output;
+			}
+		
+			protected abstract Boolean doEvaluate(Foo input);
+		
+			public static class IsFixedFloatRuleDefault extends IsFixedFloatRule {
 				@Override
-				public String getName() {
-					return "IsFixedFloat"; 
+				protected Boolean doEvaluate(Foo input) {
+					Boolean output = null;
+					return assignOutput(output, input);
 				}
 				
-				@Override
-				public String getURI() {
-					return "__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat";
-				}
-				
-				
-				@Override
-				public BlueprintInstance<Foo, Boolean, INKEY, INKEY> blueprint() {
-					return
-						startsWith(actionFactory, actionFactory.<Foo, Boolean, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#com.rosetta.test.model.IsFixedFloat", "item extract [fixed count = 12]", null, foo -> MapperS.of(evaluate(foo))))
-							.toBlueprint(getURI(), getName());
-				}
-				
-				public Boolean evaluate(Foo foo) {
-					Boolean _boolean = doEvaluate(foo);
-					return _boolean;
-				}
-				
-				private Boolean doEvaluate(Foo foo) {
-					Boolean _boolean = null;
-					return assignOutput(_boolean,foo);
-				}
-				
-				private Boolean assignOutput(Boolean _boolean, Foo foo) {
-					_boolean = MapperS.of(foo)
-						.mapSingleToItem(item -> (MapperS<Boolean>)areEqual(MapperS.of(item.<String>mapC("getFixed", _foo -> _foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)), CardinalityOperator.All).asMapper()).get();
-				
-					return _boolean;
+				protected Boolean assignOutput(Boolean output, Foo input) {
+					output = MapperS.of(input)
+						.mapSingleToItem(item -> (MapperS<Boolean>)areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)), CardinalityOperator.All).asMapper()).get();
+					
+					return output;
 				}
 			}
+		}
 		'''
 		blueprint.compileToClasses
 		assertEquals(expected, blueprintJava)
@@ -2087,7 +2298,7 @@ class RosettaRuleGeneratorTest {
 		'''
 		].generateCode
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
+		val bpImpl = classes.loadBlueprint("ns2.reports.Rule2Rule")
 		assertNotNull(bpImpl)
 	}
 	 
@@ -2114,7 +2325,7 @@ class RosettaRuleGeneratorTest {
 		].generateCode
 		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns2.blueprint.Rule2Rule")
+		val bpImpl = classes.loadBlueprint("ns2.reports.Rule2Rule")
 		assertNotNull(bpImpl)
 	}
 	
@@ -2371,143 +2582,6 @@ class RosettaRuleGeneratorTest {
 		'''.generateCode
 		blueprint.compileToClasses
 	}
-
-	@Test
-	def void shouldGenerateDataTypeThatExtendsAndOverrides() {
-		val blueprint = '''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			from Bar
-			when FooRule
-			with type BarReport2
-			
-			eligibility rule FooRule from Bar:
-				filter barA exists
-			
-			reporting rule Aa from Bar:
-				extract barA as "A"
-
-			reporting rule Aa2 from Bar:
-				extract barA2 as "A"
-
-			
-			type Bar:
-				barA string (0..1)
-				barA2 string (0..1)
-
-			
-			type BarReport:
-				aa string (1..1)
-					[ruleReference Aa]
-			
-			type BarReport2 extends BarReport:
-				aa string (1..1)
-					[ruleReference Aa2]
-
-		'''.generateCode
-		blueprint.compileToClasses
-		
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
-		
-		val expected = '''
-			@Override
-				public BlueprintInstance<Bar, String, INKEY, INKEY> blueprint() {
-					return 
-						startsWith(actionFactory, getFooRule())
-						.then(BlueprintBuilder.<Bar, String, INKEY, INKEY>or(actionFactory,
-							startsWith(actionFactory, getAa2())
-							)
-						)
-						.addDataItemReportBuilder(new BarReport2_DataItemReportBuilder())
-						.toBlueprint(getURI(), getName());
-				}
-			'''
-			assertTrue(blueprintJava.contains(expected), '''Expected string containing «expected» but was «blueprintJava»''')
-	}
-	
-	
-	@Test
-	def void shouldGenerateDataTypeThatExtendsAndOverridesMultipleTypes() {
-		val blueprint = '''
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			from Bar
-			when FooRule
-			with type BarReport2
-			
-			eligibility rule FooRule from Bar:
-				filter barA exists
-			
-			func FooFunc:
-				inputs:
-					bar Bar (1..1)
-				output:
-					result Bar (0..1)
-				set result:
-					bar filter barA exists
-			
-			reporting rule Aa from Bar:
-				extract barA as "A"
-
-			reporting rule Aa2 from Bar:
-				extract barA2 as "A"
-			
-			reporting rule Bb from Bar:
-				extract barB as "B"
-				
-			reporting rule Cc from Bar:
-				extract barC as "C"
-
-			
-			type Bar:
-				barA string (0..1)
-				barA2 string (0..1)
-				barB int (0..1)
-				barC BazEnum (0..1)
-
-			enum BazEnum:
-				X
-				Y
-				Z
-			
-			type BarReport:
-				aa string (1..1)
-					[ruleReference Aa]
-				bb int (1..1)
-					[ruleReference Bb]
-				cc BazEnum (1..1)
-					[ruleReference Cc]
-			
-			type BarReport2 extends BarReport:
-				aa string (1..1)
-					[ruleReference Aa2]
-
-		'''.generateCode
-		blueprint.compileToClasses
-		
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.TEST_REGMiFIRBlueprintReport")
-		
-		val expected = '''
-			@Override
-				public BlueprintInstance<Bar, Object, INKEY, INKEY> blueprint() {
-					return 
-						startsWith(actionFactory, getFooRule())
-						.then(BlueprintBuilder.<Bar, Object, INKEY, INKEY>or(actionFactory,
-							startsWith(actionFactory, getAa2()),
-							startsWith(actionFactory, getBb()),
-							startsWith(actionFactory, getCc())
-							)
-						)
-						.addDataItemReportBuilder(new BarReport2_DataItemReportBuilder())
-						.toBlueprint(getURI(), getName());
-				}'''
-			assertTrue(blueprintJava.contains(expected), '''Expected string containing «expected» but was «blueprintJava»''')
-			
-	}
 	
 	@Test
 	def void shouldTypeResolutionForListOperation() {
@@ -2562,6 +2636,52 @@ class RosettaRuleGeneratorTest {
 				FooEnum -> Bar
 			
 		'''.generateCode
+		
+		val rule = code.get("com.rosetta.test.model.reports.ReturnEnumValueRule")
+		
+		val expectedRule = '''
+		package com.rosetta.test.model.reports;
+		
+		import com.google.inject.ImplementedBy;
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.lib.reports.ReportFunction;
+		import com.rosetta.test.model.FooEnum;
+		
+		
+		@ImplementedBy(ReturnEnumValueRule.ReturnEnumValueRuleDefault.class)
+		public abstract class ReturnEnumValueRule implements ReportFunction<String, FooEnum> {
+		
+			/**
+			* @param input 
+			* @return output 
+			*/
+			@Override
+			public FooEnum evaluate(String input) {
+				FooEnum output = doEvaluate(input);
+				
+				return output;
+			}
+		
+			protected abstract FooEnum doEvaluate(String input);
+		
+			public static class ReturnEnumValueRuleDefault extends ReturnEnumValueRule {
+				@Override
+				protected FooEnum doEvaluate(String input) {
+					FooEnum output = null;
+					return assignOutput(output, input);
+				}
+				
+				protected FooEnum assignOutput(FooEnum output, String input) {
+					output = MapperS.of(FooEnum.BAR).get();
+					
+					return output;
+				}
+			}
+		}
+		'''
+		
+		assertEquals(expectedRule, rule)
+		
 		code.compileToClasses
 	}
 }

@@ -9,6 +9,8 @@
 
   "prConcurrentLimit": 4,
   "prHourlyLimit": 2,
+  "timezone": "Europe/London",
+  "schedule": ["before 4am on Monday"],
 
   "major": {
     "dependencyDashboardApproval": true
@@ -18,12 +20,14 @@
 
   "packageRules": [
     {
+      "description": "Group all Eclipse related dependencies (including Xtext). Because these dependencies often introduce breaking changes in minor version upgrades, we always require an explicit approval in the dependency dashboard before creating a PR.",
       "matchPackagePatterns": ["^org\\.eclipse\\."],
       "dependencyDashboardApproval": true,
       "groupName": "eclipse dependencies",
       "groupSlug": "eclipse-dependencies"
     },
     {
+      "description": "Group all non-breaking dependency updates. A PR will be created automatically.",
       "matchPackagePatterns": ["*"],
       "excludePackagePatterns": ["^org\\.eclipse\\."],
       "matchUpdateTypes": [
@@ -32,6 +36,16 @@
       ],
       "groupName": "all non-breaking dependencies",
       "groupSlug": "all-non-breaking"
+    }
+  ],
+
+  "regexManagers": [
+    {
+      "description": "Because the Node version we use for building the VS Code plugin is managed by a Maven plugin, we need a custom regex version detection strategy. This rule matches versions defined as a Maven property of the form <node.version>x.x.x</node.version>.",
+      "fileMatch": ["\\.pom\\.xml$", "(^|/)pom\\.xml$"],
+      "matchStrings": ["<node\\.version>(?<currentValue>.*?)<\\/node\\.version>"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node"
     }
   ],
 
