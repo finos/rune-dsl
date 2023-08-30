@@ -23,12 +23,9 @@ steps:
 
   BuildDsl:
     title: Maven build
-    no_cache: true
-    no_cf_cache: true
-    fail_fast: false
     image: regnosys-docker-registry.jfrog.io/regnosys/rosetta-products-deps:java-17
     commands:
-      - rm -rf /codefresh/volume/.m2/com/regnosys
+      - rm -rf /codefresh/volume/.m2/com/regnosys  # Necessary for refetching branch artifacts of the form `0.0.0.<branch name>`.
       - mvn -s /settings.xml versions:set -DnewVersion=${{RELEASE_NAME}}
       - mvn -U -s /settings.xml clean deploy
 
