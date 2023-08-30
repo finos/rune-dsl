@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.tests.util
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -8,6 +7,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import java.util.ArrayList
+import javax.inject.Inject
 
 class ModelHelper {
 

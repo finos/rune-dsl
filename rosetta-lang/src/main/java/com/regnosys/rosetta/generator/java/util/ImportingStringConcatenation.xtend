@@ -6,10 +6,11 @@ import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.GeneratedIdentifier
-import com.regnosys.rosetta.generator.java.types.JavaType;
 import com.regnosys.rosetta.generator.TargetLanguageStringConcatenation
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.utils.DottedPath
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaType
+import com.regnosys.rosetta.generator.java.types.JavaTypeRepresentation
 
 class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	@Accessors(PUBLIC_GETTER)
@@ -58,7 +59,10 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 		if (t === null) {
 			return n
 		}
-		return t
+		if (t instanceof JavaClass) {
+			return t;
+		}
+		return new JavaTypeRepresentation(t);
 	}
 			
 	def GeneratedIdentifier getOrImportIdentifier(Object object, DottedPath packageName, String simpleName) {

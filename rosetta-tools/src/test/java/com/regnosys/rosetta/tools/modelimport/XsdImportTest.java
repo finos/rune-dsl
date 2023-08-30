@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.eclipse.emf.common.util.URI;
@@ -32,7 +33,6 @@ import org.xmlet.xsdparser.xsdelements.XsdSchema;
 import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 
 import com.google.common.io.Resources;
-import com.google.inject.Inject;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;

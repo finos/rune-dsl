@@ -2,7 +2,6 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -22,13 +21,14 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.utils.DottedPath
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class ModelObjectGenerator {
 	
@@ -84,10 +84,10 @@ class ModelObjectGenerator {
 				default Class<? extends «javaType»> getType() {
 					return «javaType».class;
 				}
-				«FOR pt :interfaces.filter(JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
+				«FOR pt :interfaces.filter(JavaParameterizedType).filter[getBaseType.simpleName=="ReferenceWithMeta" || getBaseType.simpleName=="FieldWithMeta"]»
 				
-					default Class<«pt.arguments.head»> getValueType() {
-						return «pt.arguments.head».class;
+					default Class<«pt.getArguments.head»> getValueType() {
+						return «pt.getArguments.head».class;
 					}
 				«ENDFOR»
 				
@@ -150,9 +150,9 @@ class ModelObjectGenerator {
 	def dispatch buildify(Class<?> clazz) {
 		new JavaClass(DottedPath.splitOnDots(clazz.packageName), clazz.simpleName+"."+clazz.simpleName+"Builder")
 	}
-	def dispatch buildify(JavaParametrizedType clazz) {
-		val builderType = new JavaClass(clazz.baseType.packageName, clazz.baseType.simpleName+"."+clazz.baseType.simpleName+"Builder")
-		new JavaParametrizedType(builderType, clazz.arguments)
+	def dispatch buildify(JavaParameterizedType clazz) {
+		val builderType = new JavaClass(clazz.getBaseType.packageName, clazz.getBaseType.simpleName+"."+clazz.getBaseType.simpleName+"Builder")
+		new JavaParameterizedType(builderType, clazz.getArguments)
 	}
 
 	def boolean globalKeyRecursive(Data class1) {

@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -28,6 +27,8 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
+import static org.junit.Assert.assertThrows
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -37,6 +38,53 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testDispatchFunction() {
+		val code = '''
+		enum DayCountFractionEnum:
+			ACT_360 displayName "ACT/360"
+			ACT_365L displayName "ACT/365L"
+			ACT_364 displayName "ACT/364"
+			ACT_365_fixed displayName "ACT/365.FIXED"
+			_30E_360 displayName "30E/360"
+			_30_360 displayName "30/360"
+		
+		func DayCountBasis:
+			inputs:
+				dcf DayCountFractionEnum (1..1)
+			output:
+				basis int (1..1)
+		
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_360):
+			set basis: 360
+		
+		func DayCountBasis(dcf: DayCountFractionEnum ->_30_360):
+			set basis: 360
+		
+		func DayCountBasis(dcf: DayCountFractionEnum ->_30E_360):
+			set basis: 360
+		
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365L):
+			set basis: 365
+		
+		func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365_fixed):
+			set basis: 365
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val dcfeLoader = classes
+			.get("com.rosetta.test.model.DayCountFractionEnum")
+			.getDeclaredMethod("fromDisplayName", String)
+		val act360 = dcfeLoader.invoke(null, "ACT/360")
+		val act365Fixed = dcfeLoader.invoke(null, "ACT/365.FIXED")
+		val act364 = dcfeLoader.invoke(null, "ACT/364")
+		val dayCountBasis = classes.createFunc("DayCountBasis");
+		
+		assertEquals(360, dayCountBasis.invokeFunc(Integer, #[act360]))
+		assertEquals(365, dayCountBasis.invokeFunc(Integer, #[act365Fixed]))
+		assertThrows(IllegalArgumentException, [dayCountBasis.invokeFunc(Integer, #[act364])])
+	}
 	
 	@Test
 	def void conditionalThenJoin() {
@@ -177,8 +225,8 @@ class FunctionGeneratorTest {
 	def void toEnumTest() {
 		val code = '''
 		enum Bar:
-			VALUE1
-			VALUE2 displayName "Value 2"
+			Value1
+			Value2 displayName "Value 2"
 		
 		func ToBar:
 			inputs: input string (1..1)
@@ -200,13 +248,13 @@ class FunctionGeneratorTest {
 		
 		val toBar = classes.createFunc("ToBar");
 		
-		assertEquals(value1, toBar.invokeFunc(barClass, #["VALUE1"]))
-		assertEquals(null, toBar.invokeFunc(barClass, #["VALUE2"]))
+		assertEquals(value1, toBar.invokeFunc(barClass, #["Value1"]))
+		assertEquals(null, toBar.invokeFunc(barClass, #["Value2"]))
 		assertEquals(value2, toBar.invokeFunc(barClass, #["Value 2"]))
 		
 		val toString = classes.createFunc("ToString");
 		
-		assertEquals("VALUE1", toString.invokeFunc(String, #[value1]))
+		assertEquals("Value1", toString.invokeFunc(String, #[value1]))
 		assertEquals("Value 2", toString.invokeFunc(String, #[value2]))
 	}
 	
@@ -1408,6 +1456,79 @@ class FunctionGeneratorTest {
 			'''
 		].generateCode
 		// .writeClasses("shouldGenerateFunctionWithCreationLHS")
+		
+		val extractBar = code.get("com.rosetta.test.model.agreement.functions.ExtractBar")
+		assertEquals(
+			'''
+			package com.rosetta.test.model.agreement.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.ModelObjectValidator;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.agreement.Bar;
+			import com.rosetta.test.model.agreement.Foo;
+			import com.rosetta.test.model.agreement.Top;
+			import com.rosetta.test.model.agreement.Top.TopBuilder;
+			import java.util.Optional;
+			import javax.inject.Inject;
+			
+			
+			@ImplementedBy(ExtractBar.ExtractBarDefault.class)
+			public abstract class ExtractBar implements RosettaFunction {
+				
+				@Inject protected ModelObjectValidator objectValidator;
+			
+				/**
+				* @param top 
+				* @return topOut 
+				*/
+				public Top evaluate(Top top) {
+					Top.TopBuilder topOutBuilder = doEvaluate(top);
+					
+					final Top topOut;
+					if (topOutBuilder == null) {
+						topOut = null;
+					} else {
+						topOut = topOutBuilder.build();
+						objectValidator.validate(Top.class, topOut);
+					}
+					
+					return topOut;
+				}
+			
+				protected abstract Top.TopBuilder doEvaluate(Top top);
+			
+				protected abstract Foo.FooBuilder fooAlias(Top.TopBuilder topOut, Top top);
+			
+				public static class ExtractBarDefault extends ExtractBar {
+					@Override
+					protected Top.TopBuilder doEvaluate(Top top) {
+						Top.TopBuilder topOut = Top.builder();
+						return assignOutput(topOut, top);
+					}
+					
+					protected Top.TopBuilder assignOutput(Top.TopBuilder topOut, Top top) {
+						topOut.getOrCreateFoo()
+							.setBar1(MapperS.of(top).<Foo>map("getFoo", _top -> _top.getFoo()).<Bar>map("getBar1", foo -> foo.getBar1()).get());
+						
+						topOut
+							.getOrCreateFoo()
+							.setBar2(MapperS.of(top).<Foo>map("getFoo", _top -> _top.getFoo()).<Bar>map("getBar2", foo -> foo.getBar2()).get());
+						
+						return Optional.ofNullable(topOut)
+							.map(o -> o.prune())
+							.orElse(null);
+					}
+					
+					@Override
+					protected Foo.FooBuilder fooAlias(Top.TopBuilder topOut, Top top) {
+						return toBuilder(MapperS.of(topOut).<Foo>map("getFoo", _top -> _top.getFoo()).get());
+					}
+				}
+			}
+			'''.toString,
+			extractBar)
 		code.compileToClasses
 	}
 
@@ -1591,11 +1712,11 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.records.Date;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -1634,6 +1755,117 @@ class FunctionGeneratorTest {
 				}
 			'''.toString,
 			f3
+		)
+		code.compileToClasses
+	}
+	
+	@Test
+	def void testDelegateFunctionCallWithInputAlias() {
+		val model = '''
+			func F1:
+				inputs: f1Input string (1..1)
+				output: f1Output string (1..1)
+				
+			func F2:
+				inputs: f2Input string (1..1)
+				output: f2Output string (1..1)
+				alias foo: F1(f2Input)
+				set f2Output: foo
+		'''
+		val code = model.generateCode
+		val f1 = code.get("com.rosetta.test.model.functions.F1")
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			
+			
+			@ImplementedBy(F1.F1Default.class)
+			public abstract class F1 implements RosettaFunction {
+			
+				/**
+				* @param f1Input 
+				* @return f1Output 
+				*/
+				public String evaluate(String f1Input) {
+					String f1Output = doEvaluate(f1Input);
+					
+					return f1Output;
+				}
+			
+				protected abstract String doEvaluate(String f1Input);
+			
+				public static class F1Default extends F1 {
+					@Override
+					protected String doEvaluate(String f1Input) {
+						String f1Output = null;
+						return assignOutput(f1Output, f1Input);
+					}
+					
+					protected String assignOutput(String f1Output, String f1Input) {
+						return f1Output;
+					}
+				}
+			}
+			'''.toString,
+			f1
+		)
+		val f2 = code.get("com.rosetta.test.model.functions.F2")
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
+			
+			
+			@ImplementedBy(F2.F2Default.class)
+			public abstract class F2 implements RosettaFunction {
+				
+				// RosettaFunction dependencies
+				//
+				@Inject protected F1 f1;
+			
+				/**
+				* @param f2Input 
+				* @return f2Output 
+				*/
+				public String evaluate(String f2Input) {
+					String f2Output = doEvaluate(f2Input);
+					
+					return f2Output;
+				}
+			
+				protected abstract String doEvaluate(String f2Input);
+			
+				protected abstract Mapper<String> foo(String f2Input);
+			
+				public static class F2Default extends F2 {
+					@Override
+					protected String doEvaluate(String f2Input) {
+						String f2Output = null;
+						return assignOutput(f2Output, f2Input);
+					}
+					
+					protected String assignOutput(String f2Output, String f2Input) {
+						f2Output = MapperS.of(foo(f2Input).get()).get();
+						
+						return f2Output;
+					}
+					
+					@Override
+					protected Mapper<String> foo(String f2Input) {
+						return MapperS.of(f1.evaluate(MapperS.of(f2Input).get()));
+					}
+				}
+			}
+			'''.toString,
+			f2
 		)
 		code.compileToClasses
 	}
@@ -1745,12 +1977,12 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.Mapper;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.records.Date;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -2429,7 +2661,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -2440,6 +2671,7 @@ class FunctionGeneratorTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2453,11 +2685,16 @@ class FunctionGeneratorTest {
 					* @return res 
 					*/
 					public List<? extends Bar> evaluate(Foo foo) {
-						List<Bar.BarBuilder> res = doEvaluate(foo);
+						List<Bar.BarBuilder> resBuilder = doEvaluate(foo);
 						
-						if (res != null) {
+						final List<? extends Bar> res;
+						if (resBuilder == null) {
+							res = null;
+						} else {
+							res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, res);
 						}
+						
 						return res;
 					}
 				
@@ -2529,7 +2766,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -2539,6 +2775,7 @@ class FunctionGeneratorTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -2552,11 +2789,16 @@ class FunctionGeneratorTest {
 					* @return res 
 					*/
 					public List<? extends Bar> evaluate(List<? extends Bar> barList) {
-						List<Bar.BarBuilder> res = doEvaluate(barList);
+						List<Bar.BarBuilder> resBuilder = doEvaluate(barList);
 						
-						if (res != null) {
+						final List<? extends Bar> res;
+						if (resBuilder == null) {
+							res = null;
+						} else {
+							res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, res);
 						}
+						
 						return res;
 					}
 				
@@ -3164,7 +3406,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -3173,6 +3414,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -3188,11 +3430,16 @@ class FunctionGeneratorTest {
 					* @return result 
 					*/
 					public Bar evaluate(Boolean test, Bar b1, Bar b2) {
-						Bar.BarBuilder result = doEvaluate(test, b1, b2);
+						Bar.BarBuilder resultBuilder = doEvaluate(test, b1, b2);
 						
-						if (result != null) {
+						final Bar result;
+						if (resultBuilder == null) {
+							result = null;
+						} else {
+							result = resultBuilder.build();
 							objectValidator.validate(Bar.class, result);
 						}
+						
 						return result;
 					}
 				
@@ -3253,7 +3500,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
@@ -3266,6 +3512,7 @@ class FunctionGeneratorTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -3281,11 +3528,16 @@ class FunctionGeneratorTest {
 					* @return result 
 					*/
 					public List<? extends Bar> evaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-						List<Bar.BarBuilder> result = doEvaluate(test, b1, b2);
+						List<Bar.BarBuilder> resultBuilder = doEvaluate(test, b1, b2);
 						
-						if (result != null) {
+						final List<? extends Bar> result;
+						if (resultBuilder == null) {
+							result = null;
+						} else {
+							result = resultBuilder.stream().map(Bar::build).collect(Collectors.toList());
 							objectValidator.validate(Bar.class, result);
 						}
+						
 						return result;
 					}
 				
@@ -3405,7 +3657,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -3413,6 +3664,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -3425,11 +3677,16 @@ class FunctionGeneratorTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<String> inList) {
-						Foo.FooBuilder foo = doEvaluate(inList);
+						Foo.FooBuilder fooBuilder = doEvaluate(inList);
 						
-						if (foo != null) {
+						final Foo foo;
+						if (fooBuilder == null) {
+							foo = null;
+						} else {
+							foo = fooBuilder.build();
 							objectValidator.validate(Foo.class, foo);
 						}
+						
 						return foo;
 					}
 				
@@ -3480,7 +3737,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -3488,6 +3744,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.List;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
@@ -3500,11 +3757,16 @@ class FunctionGeneratorTest {
 					* @return foo 
 					*/
 					public Foo evaluate(List<String> inList) {
-						Foo.FooBuilder foo = doEvaluate(inList);
+						Foo.FooBuilder fooBuilder = doEvaluate(inList);
 						
-						if (foo != null) {
+						final Foo foo;
+						if (fooBuilder == null) {
+							foo = null;
+						} else {
+							foo = fooBuilder.build();
 							objectValidator.validate(Foo.class, foo);
 						}
+						
 						return foo;
 					}
 				
@@ -4014,7 +4276,6 @@ class FunctionGeneratorTest {
 				package com.rosetta.test.model.validation.datarule;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.annotations.RosettaDataRule;
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
@@ -4022,9 +4283,11 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -4055,7 +4318,7 @@ class FunctionGeneratorTest {
 							if (failureMessage == null) {
 								failureMessage = "Condition " + NAME + " failed.";
 							}
-							return ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -4115,10 +4378,10 @@ class FunctionGeneratorTest {
                 package com.rosetta.test.model.functions;
                 
                 import com.google.inject.ImplementedBy;
-                import com.google.inject.Inject;
                 import com.rosetta.model.lib.functions.RosettaFunction;
                 import com.rosetta.model.lib.mapper.MapperS;
                 import com.rosetta.model.lib.mapper.MapperUtils;
+                import javax.inject.Inject;
                 
                 
                 @ImplementedBy(B.BDefault.class)

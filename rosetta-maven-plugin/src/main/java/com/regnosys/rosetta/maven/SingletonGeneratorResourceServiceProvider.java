@@ -3,6 +3,8 @@ package com.regnosys.rosetta.maven;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.generator.GeneratorDelegate;
 import org.eclipse.xtext.parser.IEncodingProvider;
@@ -12,7 +14,6 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.ConfigurationException;
-import com.google.inject.Inject;
 
 /**
  * A resource service provider that will reuse generator instances.

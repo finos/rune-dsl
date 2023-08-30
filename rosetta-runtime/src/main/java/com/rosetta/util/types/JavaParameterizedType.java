@@ -1,22 +1,22 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 
-public class JavaParametrizedType implements JavaReferenceType {
+public class JavaParameterizedType implements JavaReferenceType {
 	private final JavaClass baseType;
 	private final List<JavaTypeArgument> arguments;
 	
-	public JavaParametrizedType(JavaClass baseType, JavaTypeArgument... arguments) {
-		Validate.notNull(baseType);
+	public JavaParameterizedType(JavaClass baseType, JavaTypeArgument... arguments) {
+		Objects.requireNonNull(baseType);
 		Validate.noNullElements(arguments);
 		this.baseType = baseType;
-		this.arguments = List.of(arguments);
+		this.arguments = Arrays.asList(arguments);
 	}
 	
 	public JavaClass getBaseType() {
@@ -37,20 +37,6 @@ public class JavaParametrizedType implements JavaReferenceType {
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		baseType.appendTo(target);
-		target.append("<");
-		if (!arguments.isEmpty()) {
-			arguments.get(0).appendTo(target);
-			for (int i=1; i<arguments.size(); i++) {
-				target.append(", ");
-				arguments.get(i).appendTo(target);
-			}
-		}
-		target.append(">");
-	}
-	
-	@Override
 	public int hashCode() {
 		return Objects.hash(baseType, arguments);
 	}
@@ -60,8 +46,13 @@ public class JavaParametrizedType implements JavaReferenceType {
 		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
-        JavaParametrizedType other = (JavaParametrizedType) object;
+        JavaParameterizedType other = (JavaParameterizedType) object;
         return Objects.equals(baseType, other.baseType)
         		&& Objects.equals(arguments, other.arguments);
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

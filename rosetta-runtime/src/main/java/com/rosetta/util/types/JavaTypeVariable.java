@@ -1,16 +1,13 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.Objects;
-
-import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class JavaTypeVariable implements JavaReferenceType {
 	private final JavaClass declaringClass;
 	private final String name;
 	public JavaTypeVariable(JavaClass declaringClass, String name) {
-		Validate.notNull(declaringClass);
-		Validate.notNull(name);
+		Objects.requireNonNull(declaringClass);
+		Objects.requireNonNull(name);
 		this.declaringClass = declaringClass;
 		this.name = name;
 	}
@@ -34,11 +31,6 @@ public class JavaTypeVariable implements JavaReferenceType {
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append(name);
-	}
-	
-	@Override
 	public int hashCode() {
 		return Objects.hash(declaringClass, name);
 	}
@@ -51,5 +43,10 @@ public class JavaTypeVariable implements JavaReferenceType {
         JavaTypeVariable other = (JavaTypeVariable) object;
         return Objects.equals(declaringClass, other.declaringClass)
         		&& Objects.equals(name, other.name);
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

@@ -93,24 +93,16 @@ class Condition extends RosettaDefinable, Annotated, RosettaNamed, References {
 	contains RosettaExpression expression
 }
 
-abstract class Operation extends RosettaDefinable {
+class Operation extends RosettaDefinable {
 	container Function function opposite operations
 	refers AssignPathRoot assignRoot
 	contains Segment path
 	contains RosettaExpression expression
+	boolean add
 	op Segment[] pathAsSegmentList() {
 		return if(path !== null) path.asSegmentList(path) else new BasicEList
 	}
 }
-
-class AssignOutputOperation extends Operation {
-}
-
-class OutputOperation extends Operation {
-	boolean add
-	refers AssignPathRoot input
-}
-
 
 class Segment {
 	refers Attribute attribute

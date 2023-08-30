@@ -6,12 +6,11 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-
-import org.apache.commons.lang3.Validate;
 
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
@@ -65,6 +64,7 @@ import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, RosettaInterpreterContext> {
 	@Inject
@@ -80,8 +80,8 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 		return interpret(expr, new RosettaInterpreterContext());
 	}
 	public RosettaValue interpret(RosettaExpression expr, RosettaInterpreterContext context) {
-		Validate.notNull(expr);
-		Validate.notNull(context);
+		Objects.requireNonNull(expr);
+		Objects.requireNonNull(context);
 		return doSwitch(expr, context);
 	}
 	

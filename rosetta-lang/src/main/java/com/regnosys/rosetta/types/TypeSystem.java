@@ -3,12 +3,14 @@ package com.regnosys.rosetta.types;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.Validate;
 
-import com.google.inject.Inject;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
@@ -30,16 +32,16 @@ public class TypeSystem {
 	private ExternalAnnotationUtil annotationUtil;
 	
 	public RListType inferType(RosettaExpression expr) {
-		Validate.notNull(expr);
+		Objects.requireNonNull(expr);
 		
 		return typing.inferType(expr).getValue();
 	}
 	
-	public RType getRulesInputType(Data data, RosettaExternalRuleSource source) {
+	public RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source) {
 		return getRulesInputType(data, source, new HashSet<>());
 	}
-	private RType getRulesInputType(Data data, RosettaExternalRuleSource source, Set<Data> visited) {
-		Validate.notNull(data);
+	private RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source, Set<Data> visited) {
+		Objects.requireNonNull(data);
 		if (!visited.add(data)) {
 			return builtins.ANY;
 		}
@@ -64,13 +66,13 @@ public class TypeSystem {
 	}
 
 	public RType join(RType t1, RType t2) {
-		Validate.notNull(t1);
-		Validate.notNull(t2);
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
 		
 		return Objects.requireNonNull(typing.join(t1, t2));
 	}
 	public RType join(Iterable<RType> types) {
-		Validate.notNull(types);
+		Objects.requireNonNull(types);
 		Validate.noNullElements(types);
 		
 		RType acc = builtins.NOTHING;
@@ -83,15 +85,15 @@ public class TypeSystem {
 		return acc;
 	}
 	public RListType listJoin(RListType t1, RListType t2) {
-		Validate.notNull(t1);
-		Validate.notNull(t2);
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
 		
 		return Objects.requireNonNull(typing.listJoin(t1, t2));
 	}
 	
 	public RType meet(RType t1, RType t2) {
-		Validate.notNull(t1);
-		Validate.notNull(t2);
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
 		
 		if (isSubtypeOf(t1, t2)) {
 			return t1;
@@ -101,7 +103,7 @@ public class TypeSystem {
 		return builtins.NOTHING;
 	}
 	public RType meet(Iterable<RType> types) {
-		Validate.notNull(types);
+		Objects.requireNonNull(types);
 		Validate.noNullElements(types);
 		
 		RType acc = builtins.ANY;
@@ -115,27 +117,27 @@ public class TypeSystem {
 	}
 	
 	public boolean isSubtypeOf(RType sub, RType sup) {
-		Validate.notNull(sub);
-		Validate.notNull(sup);
+		Objects.requireNonNull(sub);
+		Objects.requireNonNull(sup);
 		
 		return typing.subtypeSucceeded(sub, sup);
 	}
 	public boolean isListSubtypeOf(RListType sub, RListType sup) {
-		Validate.notNull(sub);
-		Validate.notNull(sup);
+		Objects.requireNonNull(sub);
+		Objects.requireNonNull(sup);
 		
 		return typing.listSubtypeSucceeded(sub, sup);
 	}
 	
 	public boolean isComparable(RType t1, RType t2) {
-		Validate.notNull(t1);
-		Validate.notNull(t2);
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
 		
 		return typing.comparable(t1, t2);
 	}
 	public boolean isListComparable(RListType t1, RListType t2) {
-		Validate.notNull(t1);
-		Validate.notNull(t2);
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
 		
 		return typing.listComparable(t1, t2);
 	}
@@ -145,23 +147,23 @@ public class TypeSystem {
 	}
 	
 	public RType typeCallToRType(TypeCall typeCall, RosettaInterpreterContext context) {
-		Validate.notNull(typeCall);
-		Validate.notNull(context);
+		Objects.requireNonNull(typeCall);
+		Objects.requireNonNull(context);
 		
 		return typing.typeCallToRType(typeCall, context);
 	}
 	
 	public RType keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
-		Validate.notNull(t1);
-		Validate.notNull(t2);
-		Validate.notNull(combineUnderlyingTypes);
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
+		Objects.requireNonNull(combineUnderlyingTypes);
 		
 		return typing.keepTypeAliasIfPossible(t1, t2, combineUnderlyingTypes);
 	}
 	
 	public RType stripFromTypeAliases(RType t) {
 		if (t instanceof RAliasType) {
-			return ((RAliasType)t).getRefersTo();
+			return stripFromTypeAliases(((RAliasType)t).getRefersTo());
 		}
 		return t;
 	}

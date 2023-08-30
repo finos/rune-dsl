@@ -1,8 +1,12 @@
-package com.regnosys.rosetta.utils;
+package com.rosetta.util;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 public class DottedPath implements Comparable<DottedPath> {
 	protected final String[] segments;
@@ -11,6 +15,12 @@ public class DottedPath implements Comparable<DottedPath> {
 		this.segments = segments;
 	}
 	
+	public String first() {
+		return segments[0];
+	}
+	public DottedPath tail() {
+		return new DottedPath(Arrays.copyOfRange(segments, 1, segments.length));
+	}
 	public String last() {
 		return segments[segments.length - 1];
 	}
@@ -25,6 +35,9 @@ public class DottedPath implements Comparable<DottedPath> {
 	public static DottedPath splitOnDots(String str) {
 		return split(str, ".");
 	}
+	public static DottedPath splitOnForwardSlashes(String str) {
+		return split(str, "/");
+	}
 	
 	/* Navigation */
 	public DottedPath child(String newSegment) {
@@ -34,6 +47,9 @@ public class DottedPath implements Comparable<DottedPath> {
 	}
 	public DottedPath parent() {
 		return new DottedPath(Arrays.copyOf(segments, segments.length - 1));
+	}
+	public DottedPath concat(DottedPath second) {
+		return new DottedPath(ArrayUtils.addAll(segments, second.segments));
 	}
 	
 	/* Conversion */
@@ -48,7 +64,10 @@ public class DottedPath implements Comparable<DottedPath> {
 	}
 	public Path toPath() {
 		String[] tail = Arrays.copyOfRange(segments, 1, segments.length);
-		return Path.of(segments[0], tail);
+		return Paths.get(segments[0], tail);
+	}
+	public Stream<String> stream() {
+		return Arrays.stream(segments);
 	}
 	
 	@Override

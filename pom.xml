@@ -47,6 +47,7 @@
 		<!-- Plugin and plugin dependency management -->
 		<org.eclipse.emf.ecore.xcore.version>1.23.0</org.eclipse.emf.ecore.xcore.version>
 		<maven-enforcer-plugin.version>3.3.0</maven-enforcer-plugin.version>
+		<maven-checkstyle-plugin.version>3.3.0</maven-checkstyle-plugin.version>
 		<exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
 		<maven-clean-plugin.version>3.3.1</maven-clean-plugin.version>
 		<build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
@@ -102,7 +103,7 @@
 				<artifactId>logback-core</artifactId>
 				<version>${logback.version}</version>
 			</dependency>
-			
+
 			<!-- Runtime dependencies -->
 			<dependency>
 				<groupId>org.eclipse.xtext</groupId>
@@ -303,12 +304,39 @@
 								<bannedDependencies>
 									<excludes>
 										<exclude>log4j:log4j</exclude>
-										<exclude>org.apache.logging.log4j:log4j-core</exclude>
+										<exclude>
+											org.apache.logging.log4j:log4j-core</exclude>
 										<exclude>ch.qos.reload4j:reload4j</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<sourceDirectories>
+			            <sourceDirectory>src/main/java</sourceDirectory>
+			            <sourceDirectory>src/test/java</sourceDirectory>
+			            <sourceDirectory>target/xtend-gen/main/java</sourceDirectory>
+			            <sourceDirectory>target/xtend-gen/test/java</sourceDirectory>
+			        </sourceDirectories>
+				</configuration>
+				<executions>
+					<execution>
+						<id>Check style</id>
+						<!-- This needs to run /after/ xtend (test) source generation is done. -->
+						<phase>process-test-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>

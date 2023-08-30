@@ -3,7 +3,6 @@
  */
 package com.regnosys.rosetta
 
-import com.google.inject.Provider
 import com.regnosys.rosetta.derivedstate.RosettaDerivedStateComputer
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.generator.external.EmptyExternalGeneratorsProvider
@@ -39,6 +38,7 @@ import com.regnosys.rosetta.formatting2.RosettaExpressionFormatter
 import org.eclipse.xtext.serializer.impl.Serializer
 import com.regnosys.rosetta.formatting2.FormattingUtil
 import com.regnosys.rosetta.generator.java.util.RecordFeatureMap
+import javax.inject.Provider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {

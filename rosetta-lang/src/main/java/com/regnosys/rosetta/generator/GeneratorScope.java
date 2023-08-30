@@ -15,6 +15,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed;
 public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {	
 	private final Optional<Scope> parent;
 	private final Map<Object, GeneratedIdentifier> identifiers = new LinkedHashMap<>();
+	private final Map<Object, Object> keySynonyms = new HashMap<>();
 	
 	private boolean isClosed = false;
 	private Map<GeneratedIdentifier, String> actualNames = null;
@@ -67,6 +68,13 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 			this.identifiers.entrySet().forEach(e ->
 					b.append("\n\t").append(normalizeKey(e.getKey())).append(" -> \"").append(e.getValue().getDesiredName()).append("\""));
 		}
+		this.keySynonyms.entrySet().forEach(e -> 
+			b.append("\n\t")
+			.append("(keySynonym): ")
+			.append(normalizeKey(e.getKey()))
+			.append(" -> ")
+			.append(normalizeKey(e.getValue())));
+		
 		parent.ifPresent(p -> {
 			b.append("\n").append(p.getDebugInfo().replaceAll("(?m)^", "\t"));
 		});
@@ -97,10 +105,10 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * scope, if it exists.
 	 */
 	public Optional<GeneratedIdentifier> getIdentifier(Object obj) {
-		GeneratedIdentifier id = parent
+		return parent
 				.flatMap(p -> p.getIdentifier(obj))
-				.orElse(this.identifiers.get(obj));
-		return Optional.ofNullable(id);
+				.or(() -> Optional.ofNullable(this.identifiers.get(obj)))
+				.or(() -> Optional.ofNullable(this.keySynonyms.get(obj)).flatMap(key -> getIdentifier(key)));				
 	}
 	/**
 	 * Get the generated identifier of the given Rosetta object in the current
@@ -109,6 +117,15 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	public GeneratedIdentifier getIdentifierOrThrow(Object obj) {
 		return getIdentifier(obj).orElseThrow(() -> new NoSuchElementException("No identifier defined for " + normalizeKey(obj) + " in scope.\n" + this));
 	}
+	
+	protected GeneratedIdentifier overwriteIdentifier(Object obj, String name) {
+		if (isClosed) {
+			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + normalizeKey(obj) + " -> " + name + ")\n" + this);
+		}
+		GeneratedIdentifier id = new GeneratedIdentifier(this, name);
+		this.identifiers.put(obj, id);
+		return id;
+	}
 	/**
 	 * Define the desired name for a Rosetta object in this scope.
 	 * 
@@ -116,15 +133,10 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * @throws IllegalStateException if this scope already contains an identifier for `obj`.
 	 */
 	public GeneratedIdentifier createIdentifier(Object obj, String name) {
-		if (isClosed) {
-			throw new IllegalStateException("Cannot create a new identifier in a closed scope. (" + normalizeKey(obj) + " -> " + name + ")\n" + this);
-		}
 		if (this.getIdentifier(obj).isPresent()) {
 			throw new IllegalStateException("There is already a name defined for object `" + normalizeKey(obj) + "`.\n" + this);
 		}
-		GeneratedIdentifier id = new GeneratedIdentifier(this, name);
-		this.identifiers.put(obj, id);
-		return id;
+		return overwriteIdentifier(obj, name);
 	}
 	/**
 	 * Create an identifier for the given named Rosetta object.
@@ -163,6 +175,27 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 */
 	public GeneratedIdentifier getOrCreateIdentifier(RosettaNamed obj) {
 		return getOrCreateIdentifier(obj, obj.getName());
+	}
+	
+	/**
+	 * Create an synonym between an object and an already existing identifiable object.
+	 * 
+	 * @throws IllegalStateException if this scope is closed.
+	 * @throws IllegalStateException if this scope already contains an identifier for `key`.
+	 * @throws IllegalStateException if this scope does not contain an identifier for `keyWithIdentifier`.
+	 */
+	public void createKeySynonym(Object key, Object keyWithIdentifier) {
+		if (isClosed) {
+			throw new IllegalStateException("Cannot create a new key synonym in a closed scope. (" + normalizeKey(key) + " -> " + normalizeKey(keyWithIdentifier) + ")\n" + this);
+		}
+		if (this.getIdentifier(key).isPresent()) {
+			throw new IllegalStateException("There is already a name defined for key `" + normalizeKey(key) + "`.\n" + this);
+		}
+		if (this.getIdentifier(keyWithIdentifier).isEmpty()) {
+			throw new IllegalStateException("There is no name defined for key `" + normalizeKey(keyWithIdentifier) + "`.\n" + this);
+		}
+		
+		this.keySynonyms.put(key, keyWithIdentifier);
 	}
 	
 	/**

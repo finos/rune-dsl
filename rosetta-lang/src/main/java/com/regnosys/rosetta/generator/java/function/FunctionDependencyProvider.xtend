@@ -19,12 +19,18 @@ import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.types.RFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import org.eclipse.xtext.EcoreUtil2
+import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.types.RObjectFactory
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
  */
 class FunctionDependencyProvider {
-
+	@Inject RObjectFactory rTypeBuilderFactory
 
 	def Set<Function> functionDependencies(EObject object) {
 		switch object {
@@ -33,9 +39,8 @@ class FunctionDependencyProvider {
 			}
 			RosettaConditionalExpression: {
 				newHashSet(
-					functionDependencies(object.^if) +
-					functionDependencies(object.ifthen) +
-					functionDependencies(object.elsethen))
+					functionDependencies(object.^if) + functionDependencies(object.ifthen) +
+						functionDependencies(object.elsethen))
 			}
 			RosettaOnlyExistsExpression: {
 				functionDependencies(object.args)
@@ -59,7 +64,8 @@ class FunctionDependencyProvider {
 			}
 			ListLiteral: {
 				newHashSet(object.elements.flatMap[functionDependencies])
-			},
+			}
+			,
 			RosettaExternalFunction,
 			RosettaEnumValueReference,
 			RosettaLiteral,
@@ -67,13 +73,26 @@ class FunctionDependencyProvider {
 			RosettaSymbol:
 				emptySet()
 			default:
-				if(object !== null)
+				if (object !== null)
 					throw new IllegalArgumentException('''«object?.eClass?.name» is not covered yet.''')
-				else emptySet()
+				else
+					emptySet()
 		}
 	}
-	
+
 	def Set<Function> functionDependencies(Iterable<? extends EObject> objects) {
-		distinctBy(objects.map[object | functionDependencies(object)].flatten, [f|f.name]).toSet;
+		distinctBy(objects.map[object|functionDependencies(object)].flatten, [f|f.name]).toSet;
+	}
+
+	def Set<RFunction> rFunctionDependencies(RosettaExpression expression) {
+		val rosettaSymbols = EcoreUtil2.eAllOfType(expression, RosettaSymbolReference).map[it.symbol]
+		(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
+			rosettaSymbols.filter(RosettaBlueprint).map[rTypeBuilderFactory.buildRFunction(it)]).toSet
+	}
+
+	def Set<RFunction> rFunctionDependencies(Iterable<? extends RosettaExpression> expressions) {
+		expressions.flatMap [
+			rFunctionDependencies
+		].toSet
 	}
 }

@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

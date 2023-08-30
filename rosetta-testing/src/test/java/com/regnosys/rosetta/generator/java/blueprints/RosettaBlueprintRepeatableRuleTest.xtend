@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.blueprints
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)

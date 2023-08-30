@@ -3,11 +3,11 @@
  */
 package com.regnosys.rosetta
 
-import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import org.eclipse.emf.ecore.EPackage
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
+import com.google.inject.Injector
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.

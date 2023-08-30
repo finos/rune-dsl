@@ -119,32 +119,30 @@ public class ExternalAnnotationUtil {
 		return result;
 	}
 	
-	public Map<RosettaFeature, RosettaRuleReference> getAllRuleReferencesForType(ExternalAnnotationSource source, Data type) {
+	public Map<RosettaFeature, RosettaRuleReference> getAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, Data type) {
 		CollectRuleVisitor.Default visitor = new CollectRuleVisitor.Default();
 		
-		collectAllRuleReferencesForType(source, type, visitor);
+		collectAllRuleReferencesForType(maybeSource, type, visitor);
 		
 		return visitor.getMap();
 	}
 	
-	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(ExternalAnnotationSource source, Data type, T visitor) {
+	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, Data type, T visitor) {
 		// collect inline rule reference
 		rosettaExtensions.getAllAttributes(type)
 			.forEach(attr -> 
 				Optional.ofNullable(attr.getRuleReference()).ifPresent(rule -> visitor.add(attr, rule)));
 		
-		if (source == null) {
-			return visitor;
-		}
-		
-		// collect external super sources
-		List<ExternalAnnotationSource> superSources = getSuperSources(source);
-		// reverse so the sources are applied in the correct order
-		Collections.reverse(superSources);
-		superSources.forEach(s -> collectExternalRuleReferencesForType(s, type, visitor));
-		
-		// collect this external source
-		collectExternalRuleReferencesForType(source, type, visitor);
+		maybeSource.ifPresent((source) -> {
+			// collect external super sources
+			List<ExternalAnnotationSource> superSources = getSuperSources(source);
+			// reverse so the sources are applied in the correct order
+			Collections.reverse(superSources);
+			superSources.forEach(s -> collectExternalRuleReferencesForType(s, type, visitor));
+			
+			// collect this external source
+			collectExternalRuleReferencesForType(source, type, visitor);
+		});
 		
 		return visitor;
 	}
