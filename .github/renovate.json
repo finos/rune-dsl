@@ -10,7 +10,7 @@
   "prConcurrentLimit": 4,
   "prHourlyLimit": 2,
   "timezone": "Europe/London",
-  "schedule": ["before 4am on Monday"]
+  "schedule": ["before 4am on Monday"],
 
   "major": {
     "dependencyDashboardApproval": true
