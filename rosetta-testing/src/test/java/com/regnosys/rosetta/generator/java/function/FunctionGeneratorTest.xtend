@@ -40,6 +40,26 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void singularExtractWithEmptyValueReturnsEmpty() {
+		val code = '''
+		func A:
+			inputs:
+				input int (0..1)
+			output:
+				result boolean (0..1)
+			set result:
+				input
+					extract
+						if item = 0
+						then True
+						else False
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val a = classes.createFunc("A");
+		assertEquals(null, a.invokeFunc(String, #[null]))
+	}
+  
 	def void testDispatchFunction() {
 		val code = '''
 		enum DayCountFractionEnum:

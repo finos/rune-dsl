@@ -157,13 +157,16 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 	
 	/**
-	 * Map a single value into an item of a list based on the given mapping function.
+	 * Map a single value to a single value.
 	 * 
 	 * @param <F>
 	 * @param mappingFunc
 	 * @return mapped list
 	 */
 	public <F> MapperS<F> mapSingleToItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
+		if (item.getMappedObject() == null) {
+			return MapperS.ofNull();
+		}
 		return mappingFunc.apply(this);
 	}
 	
@@ -175,6 +178,9 @@ public class MapperS<T> implements MapperBuilder<T> {
 	 * @return mapped list
 	 */
 	public <F> MapperC<F> mapSingleToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
+		if (item.getMappedObject() == null) {
+			return MapperC.ofNull();
+		}
 		return mappingFunc.apply(this);
 	}
 	
