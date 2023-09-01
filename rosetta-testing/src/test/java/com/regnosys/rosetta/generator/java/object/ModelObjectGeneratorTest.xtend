@@ -44,6 +44,7 @@ class ModelObjectGeneratorTest {
 			condition Foo:
 				new exists
 		'''.generateCode
+//		code.writeClasses('testAttributeWithSameNameAsJavaKeyword')
 		code.compileToClasses
 	}
 
@@ -58,6 +59,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 		code.compileToClasses
 	}
+
 
 	@Test
 	def void useBuilderAddMultipleTimes() {

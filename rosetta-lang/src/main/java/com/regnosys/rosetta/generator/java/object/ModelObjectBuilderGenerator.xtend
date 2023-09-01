@@ -18,6 +18,7 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
+import com.rosetta.model.lib.annotations.RosettaAttribute
 
 class ModelObjectBuilderGenerator {
 	
@@ -33,10 +34,10 @@ class ModelObjectBuilderGenerator {
 			builderScope.createIdentifier(it, it.name)
 		]
 		'''
-		//«javaType.toBuilderImplType»
 		class «javaType»BuilderImpl«IF c.hasSuperType» extends «new RDataType(c.superType).toJavaType.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes»
+				@«RosettaAttribute»("«attribute.name»")
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		

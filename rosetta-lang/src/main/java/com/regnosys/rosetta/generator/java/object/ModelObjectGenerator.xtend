@@ -3,9 +3,18 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.ImmutableList
 import com.google.inject.Inject
+import com.regnosys.rosetta.generator.GeneratedIdentifier
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.utils.DottedPath
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaClass
@@ -21,14 +30,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.utils.DottedPath
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.TypeSystem
+import com.rosetta.model.lib.annotations.RosettaAttribute
+import com.rosetta.model.lib.annotations.RosettaDataType
 
 class ModelObjectGenerator {
 	
@@ -60,89 +63,113 @@ class ModelObjectGenerator {
 		val implScope = interfaceScope.classScope('''«javaType»Impl''')
 		'''
 			«javadoc(d, version)»
-			@«RosettaClass»
+			@«RosettaDataType»("«d.name»") @«RosettaClass» 
 			public interface «javaType» extends «IF d.hasSuperType»«new RDataType(d.superType).toJavaType»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
-				«d.name» build();
-				«javaType.toBuilderType» toBuilder();
-				
-				«FOR attribute : d.expandedAttributes»
-					«javadoc(attribute.definition, attribute.docReferences, null)»
-					«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
-				«ENDFOR»
-				
-				final static «metaType» «metaDataIdentifier» = new «metaType»();
-				
-				@Override
-				default «RosettaMetaData»<? extends «javaType»> metaData() {
-					return «metaDataIdentifier»;
-				} 
-						
-				static «javaType.toBuilderType» builder() {
-					return new «javaType.toBuilderImplType»();
-				}
-				
-				default Class<? extends «javaType»> getType() {
-					return «javaType».class;
-				}
-				«FOR pt :interfaces.filter(JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
-				
-					default Class<«pt.arguments.head»> getValueType() {
-						return «pt.arguments.head».class;
-					}
-				«ENDFOR»
-				
-				«d.processMethod»
-				
+			
+				«metaType» «metaDataIdentifier» = new «metaType»();
+			
+				«startComment('Getter Methods')»
+				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
+
+				«startComment('Build Methods')»
+				«pojoInterfaceBuilderMethods(javaType, d)»
+
+				«startComment('Utility Methods')»
+				«pojoInterfaceDefaultOverridenMethods(javaType, metaDataIdentifier, interfaces, d)»
+
+				«startComment('Builder Interface')»
 				interface «javaType»Builder extends «d.name», «IF d.hasSuperType»«new RDataType(d.superType).toJavaType.toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
-«««				Get or create methods will create a builder instance of an object for you if it does not exist
-					«FOR attribute : d.expandedAttributes»
-						«IF attribute.isDataType || attribute.hasMetas»
-							«IF attribute.cardinalityIsSingleValue»
-								«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
-								«attribute.toBuilderTypeSingle» get«attribute.name.toFirstUpper»();
-							«ELSE»
-								«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int _index);
-								«List»<? extends «attribute.toBuilderTypeSingle»> get«attribute.name.toFirstUpper»();
-							«ENDIF»
-						«ENDIF»
-					«ENDFOR»
-					«FOR attribute : d.expandedAttributesPlus»
-						«IF attribute.cardinalityIsSingleValue»
-							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
-						«ELSE»
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
-							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
-							«IF !attribute.isOverriding»
-							«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.multiple)» «builderScope.createUniqueIdentifier(attribute.name)»);
-							«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.multiple)» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
-							«ENDIF»
-						«ENDIF»
-					«ENDFOR»
-					
+					«pojoBuilderInterfaceGetterMethods(d, javaType, builderScope)»
+
 					«d.builderProcessMethod»
-					
+			
 					«javaType.toBuilderType» prune();
 				}
-				
-«««			This line reserves this name as a name SO any class imported with the smae name will automatically be fully qualified
-				//«javaType.toImplType»
+
+				«startComment('''Immutable Implementation of «d.name»''')»
 				class «javaType»Impl «IF d.hasSuperType»extends «new RDataType(d.superType).toJavaType.toImplType» «ENDIF»implements «d.name» {
 					«d.rosettaClass(implScope)»
 					
 					«d.boilerPlate(implScope)»
 				}
-				
+			
+				«startComment('''Builder Implementation of «d.name»''')»
 				«d.builderClass(interfaceScope)»
 			}
 		'''
 	}
 	
+	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(Data d, JavaClass javaType, JavaScope builderScope)
+		'''«FOR attribute : d.expandedAttributes»
+			«IF attribute.isDataType || attribute.hasMetas»
+				«IF attribute.cardinalityIsSingleValue»
+					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
+					«attribute.toBuilderTypeSingle» get«attribute.name.toFirstUpper»();
+				«ELSE»
+					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int _index);
+					«List»<? extends «attribute.toBuilderTypeSingle»> get«attribute.name.toFirstUpper»();
+				«ENDIF»
+			«ENDIF»
+		«ENDFOR»
+		«FOR attribute : d.expandedAttributesPlus»
+			«IF attribute.cardinalityIsSingleValue»
+				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
+			«ELSE»
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
+				«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
+				«IF !attribute.isOverriding»
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.multiple)» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.multiple)» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
+				«ENDIF»
+			«ENDIF»
+		«ENDFOR»'''
 	
+	
+	protected def StringConcatenationClient pojoInterfaceDefaultOverridenMethods(JavaClass javaType, GeneratedIdentifier metaDataIdentifier, Collection<Object> interfaces, Data d)
+		'''
+		@Override
+		default «RosettaMetaData»<? extends «javaType»> metaData() {
+			return «metaDataIdentifier»;
+		}
+					
+		@Override
+		default Class<? extends «javaType»> getType() {
+			return «javaType».class;
+		}
+					
+		«FOR pt :interfaces.filter(JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
+			@Override
+			default Class<«pt.arguments.head»> getValueType() {
+				return «pt.arguments.head».class;
+			}
+		«ENDFOR»
+		
+		«d.processMethod»'''
+	
+	
+	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass javaType, JavaClass metaType, GeneratedIdentifier metaDataIdentifier, Data d) '''
+		«FOR attribute : d.expandedAttributes»
+			«javadoc(attribute.definition, attribute.docReferences, null)»
+			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
+		«ENDFOR»'''
+	
+	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass javaType, Data d) '''
+			// Builder pattern methods
+			«d.name» build();
+
+			«javaType.toBuilderType» toBuilder();
+
+			static «javaType.toBuilderType» builder() {
+				return new «javaType.toBuilderImplType»();
+			}
+		'''
+		
+			
 	def dispatch buildify(Object object) {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
@@ -164,6 +191,7 @@ class ModelObjectGenerator {
 		val javaType = new RDataType(c).toJavaType
 		'''
 		«FOR attribute : expandedAttributes»
+			@«RosettaAttribute»("«attribute.name»")
 			private final «attribute.toMultiMetaOrRegularJavaType» «scope.createIdentifier(attribute, attribute.name)»;
 		«ENDFOR»
 
@@ -227,6 +255,9 @@ class ModelObjectGenerator {
 			'''f->f.build()'''
 		}
 	}
+	
+	private def StringConcatenationClient startComment(String msg) ''' 
+	/*********************** «msg»  ***********************/'''
 	
 
 }
