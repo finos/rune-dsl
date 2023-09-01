@@ -31,6 +31,132 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void validConstructor() {
+		'''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					c: A { a: 0, ... },
+					b: ["A", "B"],
+					a: 2*21,
+				}
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void missingFieldsInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void duplicateFieldInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21,
+					a: 0,
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void validRecordConstructor() {
+		val model = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4,
+					month: 11,
+					year: 1998
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void missingFieldInRecordConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21,
+					a: 0,
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void wrongTypeInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: "abc",
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
 	def void attributeOfImplicitItemWithMultiCardinalityShouldBeMulti() {
 		val model = '''
 		type A:

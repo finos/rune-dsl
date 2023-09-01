@@ -60,6 +60,7 @@ class FunctionGeneratorTest {
 		assertEquals(null, a.invokeFunc(String, #[null]))
 	}
   
+  	@Test
 	def void testDispatchFunction() {
 		val code = '''
 		enum DayCountFractionEnum:
