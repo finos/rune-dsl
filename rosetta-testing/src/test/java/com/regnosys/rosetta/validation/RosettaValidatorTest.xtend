@@ -71,6 +71,27 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void invalidUseOfDotsInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
 	def void duplicateFieldInConstructor() {
 		val model = '''
 		type A:
