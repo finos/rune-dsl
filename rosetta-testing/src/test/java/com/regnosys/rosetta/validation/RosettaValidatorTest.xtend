@@ -75,36 +75,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		val model = '''
 		type A:
 			a int (1..1)
-			b string (0..*)
-			c A (0..1)
-		
-		func CreateA:
-			output: result A (1..1)
-			set result:
-				A {
-					a: 2*21
-				}
-		'''.parseRosetta
-		
-		model.assertError(null, null,
-			""
-		)
-	}
-	
-	@Test
-	def void duplicateFieldInConstructor() {
-		val model = '''
-		type A:
-			a int (1..1)
-			b string (0..*)
-			c A (0..1)
+			b string (1..*)
+			c A (1..1)
 		
 		func CreateA:
 			output: result A (1..1)
 			set result:
 				A {
 					a: 2*21,
-					a: 0,
 					...
 				}
 		'''.parseRosetta
@@ -115,25 +93,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void validRecordConstructor() {
-		val model = '''
-		func CreateDate:
-			output: result date (1..1)
-			set result:
-				date {
-					day: 4,
-					month: 11,
-					year: 1998
-				}
-		'''.parseRosetta
-		
-		model.assertError(null, null,
-			""
-		)
-	}
-	
-	@Test
-	def void missingFieldInRecordConstructor() {
+	def void duplicateFieldInConstructor() {
 		val model = '''
 		type A:
 			a int (1..1)
@@ -168,6 +128,57 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			set result:
 				A {
 					a: "abc",
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void validRecordConstructor() {
+		val model = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4,
+					month: 11,
+					year: 1998
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void missingFieldInRecordConstructor() {
+		val model = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4
+				}
+		'''.parseRosetta
+		
+		model.assertError(null, null,
+			""
+		)
+	}
+	
+	@Test
+	def void invalidUseOfDotsInRecordConstructor() {
+		val model = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4,
 					...
 				}
 		'''.parseRosetta
