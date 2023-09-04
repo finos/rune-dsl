@@ -1,7 +1,7 @@
 ---
 title: "Rosetta Java Documentation"
 date: 2023-09-01T12:57:00+02:00
-description: ""
+description: "This document describes the interface and usage of classes that are generated from a Rosetta model using the Java code generator."
 draft: false
 weight: 2
 ---
