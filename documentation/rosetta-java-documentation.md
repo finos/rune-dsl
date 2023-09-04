@@ -28,90 +28,111 @@ Both reports and rules are represented in the same way as a [function](#function
 
 As a simple example, consider the following report definition:
 ``` Haskell
-report Shield Avengers SokoviaAccords in real-time
-    from Person
-    when HasSuperPowers
-    with type SokoviaAccordsReport
+report EuropeanParliament EmissionPerformanceStandardsEU in real-time
+    from VehicleOwnership
+    when IsEuroStandardsCoverage
+    with type EuropeanParliamentReport
 
-// Definition of regulatory references:
-body Authority Shield
-corpus Act "Avengers Initiative" Avengers
-corpus Regulations "Sokovia Accords" SokoviaAccords
-segment section
-segment field
+// Definition for regulatory references:
+body Authority EuropeanParliament
+corpus Regulation "Regulation (EU) 2019/631" EmissionPerformanceStandardsEU
 ```
-This report takes an input of type `Person`, and returns an instance of type `SokoviaAccordsReport`, defined as follows:
+This report takes an input of type `VehicleOwnership`, and returns an instance of type `EuropeanParliamentReport`, defined as follows:
 ``` Haskell
+type VehicleOwnership:
+    drivingLicence DrivingLicence (1..1)
+    vehicle Vehicle (1..1)
+
+type EuropeanParliamentReport:
+    vehicleRegistrationID string (1..1)
+        [ruleReference VehicleRegistrationID]
+    vehicleClassificationType VehicleClassificationEnum (1..1)
+        [ruleReference VehicleClassificationType]
+
+type Vehicle:
+    registrationID string (1..1)
+    vehicleClassification VehicleClassificationEnum (1..1)
+
+enum VehicleClassificationEnum:
+    M1_Passengers
+    M2_Passengers
+    M3_Passengers
+    N1I_Commercial
+    ...
+
 type Person:
     name string (1..1)
-    powers PowerEnum (0..*)
 
-type SokoviaAccordsReport:
-    heroName string (1..1)
-        [ruleReference HeroName]
-    canFly boolean (1..1)
-        [ruleReference CanFly]
-
-enum PowerEnum:
-    Armour
-    Flight
-    SuperhumanReflexes
-    SuperhumanStrength
+type DrivingLicence:
+    owner Person (1..1)
+    countryofIssuance string (1..1)
+    dateofIssuance date (1..1)
+    dateOfRenewal date (0..1)
+    vehicleEntitlement VehicleClassificationEnum (0..*)
 ```
 
 The report is supported by the following rules.
 
 ``` Haskell
-eligibility rule HasSuperPowers from Person:
-    filter powers exists
+eligibility rule IsEuroStandardsCoverage from VehicleOwnership:
+    filter
+        vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+            or vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+            or vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
+            or ...
 
-reporting rule HeroName from Person:
-    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
-    extract name as "Hero Name"
+reporting rule VehicleRegistrationID from VehicleOwnership:
+    extract vehicle -> registrationID
+        as "Vehicle Registration ID"
 
-reporting rule CanFly from Person:
-    [regulatoryReference Shield Avengers SokoviaAccords section "2" field "1" provision "Can Hero Fly."]
-    extract powers any = PowerEnum -> Flight as "Can Hero Fly"
+reporting rule VehicleClassificationType from VehicleOwnership: <"Classification type of the vehicle">
+    extract vehicle -> vehicleClassification
+        as "Vehicle Classification Type"
 ```
 
 #### Generated Java Code
 
 In Java, the report is represented by the following class:
 ``` Java
-@ImplementedBy(ShieldAvengersSokoviaAccordsReportFunction.ShieldAvengersSokoviaAccordsReportFunctionDefault.class)
-public abstract class ShieldAvengersSokoviaAccordsReportFunction implements ReportFunction<Person, SokoviaAccordsReport> {
-	@Override
-	public SokoviaAccordsReport evaluate(Person input) {
-		SokoviaAccordsReport.SokoviaAccordsReportBuilder outputBuilder = doEvaluate(input);
-		
-        // ... build the output and perform validation
-		
-		return output;
-	}
+@ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
+public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
+    @Override
+    public EuropeanParliamentReport evaluate(VehicleOwnership input) {
+        EuropeanParliamentReport.EuropeanParliamentReportBuilder outputBuilder = doEvaluate(input);
+        
+        ... // build the output and perform validation
+        
+        return output;
+    }
 
-	protected abstract SokoviaAccordsReport.SokoviaAccordsReportBuilder doEvaluate(Person input);
+    protected abstract EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input);
 
-	public static class ShieldAvengersSokoviaAccordsReportFunctionDefault extends ShieldAvengersSokoviaAccordsReportFunction {
-		@Override
-		protected SokoviaAccordsReport.SokoviaAccordsReportBuilder doEvaluate(Person input) { ... }
-	}
+    public static class EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault extends EuropeanParliamentEmissionPerformanceStandardsEUReportFunction {
+        @Override
+        protected EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input) { ... }
+    }
 }
 ```
-Note that we rely on the Guice dependency injection framework to separate specification (`ShieldAvengersSokoviaAccordsReportFunction`) from implementation (`ShieldAvengersSokoviaAccordsReportFunctionDefault`). The default implementation will delegate to the `HeroName` and `CanFly` reporting rules, as specified in the Rosetta model. The implementation of the report can be customized by binding the report class to a custom implementation in your Guice module.
+Note that we rely on the Guice dependency injection framework to separate specification (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunction`) from implementation (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault`). The default implementation will delegate to the `VehicleRegistrationID` and `VehicleClassificationType` reporting rules, as specified in the Rosetta model. 
+
+{{< notice info "Note" >}}
+The implementation of a report or a specific reporting rule can be customized by binding their Java class to a custom implementation in your Guice module.
+{{< /notice >}}
 
 #### Running a report
 
 To run the report, we first need to inject a report function instance using any conventional method delivered by Guice. An example:
 ``` Java
 @Inject
-private ShieldAvengersSokoviaAccordsReportFunction reportFunction;
+private EuropeanParliamentEmissionPerformanceStandardsEUReportFunction reportFunction;
 
 @Test
 private void testReportFunction() {
-    Person input = ... // create or read a person instance
-    SokoviaAccordsReport reportOutput = reportFunction.evaluate(input);
+    VehicleOwnership input = ... // create or read a vehicle ownership instance
+    EuropeanParliamentReport reportOutput = reportFunction.evaluate(input);
 
-    assertEquals(input.getName(), reportOutput.getHeroName());
+    assertEquals(input.getVehicle().getRegistrationID(), reportOutput.getVehicleRegistrationID());
 }
 ```
 

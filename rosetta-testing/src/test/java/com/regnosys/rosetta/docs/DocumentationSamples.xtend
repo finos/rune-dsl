@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*
 import com.google.inject.Guice
 import com.google.inject.Module
 import com.rosetta.util.types.JavaClass
+import com.regnosys.rosetta.tests.util.ModelHelper
 
 /**
  * This test class contains sample code used in the documentation of the DSL.
@@ -25,6 +26,7 @@ import com.rosetta.util.types.JavaClass
 @ExtendWith(InjectionExtension)
 class DocumentationSamples {
 	
+	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension GeneratedJavaClassService
 	
@@ -34,48 +36,88 @@ class DocumentationSamples {
 			namespace "test.reg"
 			version "test"
 			
-			report Shield Avengers SokoviaAccords in real-time
-			    from Person
-			    when HasSuperPowers
-			    with type SokoviaAccordsReport
+			report EuropeanParliament EmissionPerformanceStandardsEU in real-time
+			    from VehicleOwnership
+			    when IsEuroStandardsCoverage
+			    with type EuropeanParliamentReport
 			
 			// Definition for regulatory references:
-			body Authority Shield
-			corpus Act "Avengers Initiative" Avengers
-			corpus Regulations "Sokovia Accords" SokoviaAccords
-			segment section
-			segment field
+			body Authority EuropeanParliament
+			corpus Regulation "Regulation (EU) 2019/631" EmissionPerformanceStandardsEU
+			
+			type VehicleOwnership:
+			    drivingLicence DrivingLicence (1..1)
+			    vehicle Vehicle (1..1)
+			
+			type EuropeanParliamentReport:
+			    vehicleRegistrationID string (1..1)
+			        [ruleReference VehicleRegistrationID]
+			    vehicleClassificationType VehicleClassificationEnum (1..1)
+			        [ruleReference VehicleClassificationType]
+			
+			type Vehicle:
+			    registrationID string (1..1)
+			    vehicleClassification VehicleClassificationEnum (1..1)
+			
+			enum VehicleClassificationEnum:
+				M1_Passengers
+			    M2_Passengers
+			    M3_Passengers
+			    N1I_Commercial
+			    N1II_Commercial
+			    N1III_Commercial
+			    N2_Commercial
+			    N3_Commercial
+			    l1e_Moped
+			    l2e_Moped
+			    l3e_Motorcycle
+			    l4e_Motorcycle
+			    l5e_Motortricycle
+			    l6e_Quadricycle
+			    l7e_Quadricycle
+			    O1_Trailers
+			    O2_Trailers
+			    O3_Trailers
+			    O4_Trailers
 			
 			type Person:
 			    name string (1..1)
-			    powers PowerEnum (0..*)
 			
-			type SokoviaAccordsReport:
-			    heroName string (1..1)
-			        [ruleReference HeroName]
-			    canFly boolean (1..1)
-			        [ruleReference CanFly]
+			type DrivingLicence:
+			    owner Person (1..1)
+			    countryofIssuance string (1..1)
+			    dateofIssuance date (1..1)
+			    dateOfRenewal date (0..1)
+			    vehicleEntitlement VehicleClassificationEnum (0..*)
 			
-			enum PowerEnum:
-			    Armour
-			    Flight
-			    SuperhumanReflexes
-			    SuperhumanStrength
+			eligibility rule IsEuroStandardsCoverage from VehicleOwnership:
+			    filter
+			        vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1II_Commercial
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1III_Commercial
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N2_Commercial
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N3_Commercial
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> l3e_Motorcycle
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> l4e_Motorcycle
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> l5e_Motortricycle
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> l6e_Quadricycle
+			            or vehicle -> vehicleClassification = VehicleClassificationEnum -> l7e_Quadricycle
 			
-			eligibility rule HasSuperPowers from Person:
-			    filter powers exists
+			reporting rule VehicleRegistrationID from VehicleOwnership:
+			    extract vehicle -> registrationID
+			        as "Vehicle Registration ID"
 			
-			reporting rule HeroName from Person:
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
-			    extract name as "Hero Name"
-			
-			reporting rule CanFly from Person:
-			    [regulatoryReference Shield Avengers SokoviaAccords section "2" field "1" provision "Can Hero Fly."]
-			    extract powers any = PowerEnum -> Flight as "Can Hero Fly"
+			reporting rule VehicleClassificationType from VehicleOwnership: <"Classification type of the vehicle">
+			    extract vehicle -> vehicleClassification
+			        as "Vehicle Classification Type"
 		'''
+		model.parseRosettaWithNoIssues
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Shield", "Avengers", "SokoviaAccords")
+		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "EuropeanParliament", "EmissionPerformanceStandardsEU")
 		val reportFunctionClassRepr = reportId.toJavaReportFunction
 		
 		val reportFunctionCode = code.get(reportFunctionClassRepr.canonicalName.withDots)
@@ -89,55 +131,55 @@ class DocumentationSamples {
 			import com.rosetta.model.lib.reports.ReportFunction;
 			import java.util.Optional;
 			import javax.inject.Inject;
-			import test.reg.Person;
-			import test.reg.SokoviaAccordsReport;
-			import test.reg.SokoviaAccordsReport.SokoviaAccordsReportBuilder;
+			import test.reg.EuropeanParliamentReport;
+			import test.reg.EuropeanParliamentReport.EuropeanParliamentReportBuilder;
+			import test.reg.VehicleOwnership;
 			
 			
-			@ImplementedBy(ShieldAvengersSokoviaAccordsReportFunction.ShieldAvengersSokoviaAccordsReportFunctionDefault.class)
-			public abstract class ShieldAvengersSokoviaAccordsReportFunction implements ReportFunction<Person, SokoviaAccordsReport> {
+			@ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
+			public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
 				
 				@Inject protected ModelObjectValidator objectValidator;
 				
 				// RosettaFunction dependencies
 				//
-				@Inject protected CanFlyRule canFly;
-				@Inject protected HeroNameRule heroName;
+				@Inject protected VehicleClassificationTypeRule vehicleClassificationType;
+				@Inject protected VehicleRegistrationIDRule vehicleRegistrationID;
 			
 				/**
 				* @param input 
 				* @return output 
 				*/
 				@Override
-				public SokoviaAccordsReport evaluate(Person input) {
-					SokoviaAccordsReport.SokoviaAccordsReportBuilder outputBuilder = doEvaluate(input);
+				public EuropeanParliamentReport evaluate(VehicleOwnership input) {
+					EuropeanParliamentReport.EuropeanParliamentReportBuilder outputBuilder = doEvaluate(input);
 					
-					final SokoviaAccordsReport output;
+					final EuropeanParliamentReport output;
 					if (outputBuilder == null) {
 						output = null;
 					} else {
 						output = outputBuilder.build();
-						objectValidator.validate(SokoviaAccordsReport.class, output);
+						objectValidator.validate(EuropeanParliamentReport.class, output);
 					}
 					
 					return output;
 				}
 			
-				protected abstract SokoviaAccordsReport.SokoviaAccordsReportBuilder doEvaluate(Person input);
+				protected abstract EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input);
 			
-				public static class ShieldAvengersSokoviaAccordsReportFunctionDefault extends ShieldAvengersSokoviaAccordsReportFunction {
+				public static class EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault extends EuropeanParliamentEmissionPerformanceStandardsEUReportFunction {
 					@Override
-					protected SokoviaAccordsReport.SokoviaAccordsReportBuilder doEvaluate(Person input) {
-						SokoviaAccordsReport.SokoviaAccordsReportBuilder output = SokoviaAccordsReport.builder();
+					protected EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input) {
+						EuropeanParliamentReport.EuropeanParliamentReportBuilder output = EuropeanParliamentReport.builder();
 						return assignOutput(output, input);
 					}
 					
-					protected SokoviaAccordsReport.SokoviaAccordsReportBuilder assignOutput(SokoviaAccordsReport.SokoviaAccordsReportBuilder output, Person input) {
+					protected EuropeanParliamentReport.EuropeanParliamentReportBuilder assignOutput(EuropeanParliamentReport.EuropeanParliamentReportBuilder output, VehicleOwnership input) {
 						output
-							.setHeroName(MapperS.of(heroName.evaluate(MapperS.of(input).get())).get());
+							.setVehicleRegistrationID(MapperS.of(vehicleRegistrationID.evaluate(MapperS.of(input).get())).get());
 						
 						output
-							.setCanFly(MapperS.of(canFly.evaluate(MapperS.of(input).get())).get());
+							.setVehicleClassificationType(MapperS.of(vehicleClassificationType.evaluate(MapperS.of(input).get())).get());
 						
 						return Optional.ofNullable(output)
 							.map(o -> o.prune())
@@ -153,22 +195,20 @@ class DocumentationSamples {
 		package «runtimeModuleClassRepr.packageName»;
 		
 		import com.google.inject.AbstractModule;
-		import test.reg.Person;
-		import test.reg.SokoviaAccordsReport;
-		import test.reg.SokoviaAccordsReport.SokoviaAccordsReportBuilder;
+		import test.reg.VehicleOwnership;
+		import test.reg.EuropeanParliamentReport;
+		import test.reg.EuropeanParliamentReport.EuropeanParliamentReportBuilder;
 		
 		public class «runtimeModuleClassRepr.simpleName» extends AbstractModule {
 			@Override
 			protected void configure() {
-				this.bind(ShieldAvengersSokoviaAccordsReportFunction.class).to(CustomShieldAvengersSokoviaAccordsReportFunction.class);
+				this.bind(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.class).to(CustomEuropeanParliamentEmissionPerformanceStandardsEUReportFunction.class);
 			}
 			
-			public static class CustomShieldAvengersSokoviaAccordsReportFunction extends ShieldAvengersSokoviaAccordsReportFunction {
+			public static class CustomEuropeanParliamentEmissionPerformanceStandardsEUReportFunction extends EuropeanParliamentEmissionPerformanceStandardsEUReportFunction {
 				@Override
-				protected SokoviaAccordsReport.SokoviaAccordsReportBuilder doEvaluate(Person input) {
-					SokoviaAccordsReport.SokoviaAccordsReportBuilder output = SokoviaAccordsReport.builder();
-					output.setHeroName("My flying hero");
-					output.setCanFly(true);
+				protected EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input) {
+					EuropeanParliamentReport.EuropeanParliamentReportBuilder output = EuropeanParliamentReport.builder();
 					return output;
 				}
 			}
@@ -183,10 +223,10 @@ class DocumentationSamples {
 		
 		val simpleInjector = Guice.createInjector(emptyModule)
 		val reportFunction = simpleInjector.getInstance(reportFunctionClass)
-		assertEquals("ShieldAvengersSokoviaAccordsReportFunctionDefault", reportFunction.class.simpleName)
+		assertEquals("EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault", reportFunction.class.simpleName)
 		
 		val customInjector = Guice.createInjector(customModule)
 		val customReportFunction = customInjector.getInstance(reportFunctionClass)
-		assertEquals("CustomShieldAvengersSokoviaAccordsReportFunction", customReportFunction.class.simpleName)
+		assertEquals("CustomEuropeanParliamentEmissionPerformanceStandardsEUReportFunction", customReportFunction.class.simpleName)
 	}
 }
