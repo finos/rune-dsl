@@ -697,7 +697,9 @@ Employee {
 }
 ```
 
-Notice that most fields of Michael Scott are actually `empty`. We can simplify this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
+#### Triple-Dot Syntax
+
+Notice that in the example above most fields of Michael Scott are actually `empty`. Types with many optional attributes is common practice in Rosetta models such as the CDM, and assigning `empty` to them explicitly can be verbose. We can solve this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
 ``` Haskell
 Employee {
   name: "Dwight Schrute",
@@ -709,6 +711,8 @@ Employee {
   }
 }
 ```
+
+#### Constructing Record Types
 
 The same syntax can be used to construct a record such as `date` or `zonedDateTime`, e.g.,
 ``` Haskell
