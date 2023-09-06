@@ -663,6 +663,62 @@ E.g.:
 [DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
 ```
 
+### Data Type and Record Constructor
+
+Data types and records can be constructed using a syntax similar to JSON, i.e.,
+```
+<type name> {
+  <field name 1>: <field value 1>,
+  <field name 2>: <field value 2>,
+  etc
+}
+```
+
+As an example, consider the following data type representing an employee of a company.
+``` Haskell
+type Employee:
+  name string (1..1)
+  age int (0..1)
+  favouriteAnimal string (0..1)
+  mentor Employee (0..1)
+```
+To construct an employee called "Dwight Schrute" with a mentor called "Michael Scott" within Rosetta, the following syntax can be used.
+``` Haskell
+Employee {
+  name: "Dwight Schrute",
+  age: 42,
+  favouriteAnimal: "bear",
+  mentor: Employee {
+    name: "Michael Scott",
+    age: empty,
+    favouriteAnimal: empty,
+    mentor: empty
+  }
+}
+```
+
+Notice that most fields of Michael Scott are actually `empty`. We can simplify this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
+``` Haskell
+Employee {
+  name: "Dwight Schrute",
+  age: 42,
+  favouriteAnimal: "bear",
+  mentor: Employee {
+    name: "Michael Scott",
+    ...
+  }
+}
+```
+
+The same syntax can be used to construct a record such as `date` or `zonedDateTime`, e.g.,
+``` Haskell
+date {
+  year: 1998,
+  month: 11,
+  day: 4
+}
+```
+
 ### Path Expression
 
 #### Purpose
@@ -716,7 +772,7 @@ In the above example, if `drivingLicense` is null, the final `penaltyPoints` att
 
 A null value for an expression with multiple cardinality is treated as an empty [list](#list).
 
-### Operator
+### Operators
 
 #### Purpose
 
