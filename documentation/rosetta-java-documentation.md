@@ -24,7 +24,7 @@ Coming soon.
 
 Both reports and rules are represented in the same way as a [function](#functions). They implement the `ReportFunction<IN, OUT>` interface, which extends from `RosettaFunction`, and additionally exposes an `evaluate` method that takes in a single parameter of type `IN` (the input of a report, e.g., a `ReportableEvent`) and has a result of type `OUT` (the report output, e.g., a `CFTCPart43TransactionReport`).
 
-### Example: Hero Reports
+### Example: European Emission Report
 
 As a simple example, consider the following report definition:
 ``` Haskell
