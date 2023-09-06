@@ -131,6 +131,9 @@ import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.REnumType
 import java.util.Optional
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -1256,6 +1259,46 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
 	}
+	
+	@Check
+	def checkConstructorExpression(RosettaConstructorExpression ele) {
+		val rType = ele.RType
+		val baseRType = rType.stripFromTypeAliases
+		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
+			error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
+		}
+		
+		val seenFeatures = newHashSet
+		for (pair : ele.values) {
+			val feature = pair.key
+			val expr = pair.value
+			if (!seenFeatures.add(feature)) {
+				error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
+			}
+			checkType(feature.RTypeOfFeature, expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+			if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
+				error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
+					CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+			}
+		}
+		val absentAttributes = rType
+			.allFeatures(ele)
+			.filter[!seenFeatures.contains(it)]
+		val requiredAbsentAttributes = absentAttributes
+			.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
+		if (ele.implicitEmpty) {
+			if (!requiredAbsentAttributes.empty) {
+				error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
+			}
+			if (absentAttributes.size === requiredAbsentAttributes.size) {
+				error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
+			}
+		} else {
+			if (!absentAttributes.empty) {
+				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF».''', ele.typeCall, null)
+			}
+		}
+	}
 
 	@Check
 	def checkListLiteral(ListLiteral ele) {
@@ -1592,22 +1635,27 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkAsKeyOperation(AsKeyOperation o) {
 		val container = o.eContainer
-		if (!(container instanceof Operation)) {
-			error(''''«o.operator»' may only be used at the most outer operation of an expression."''', o,
+		if (container instanceof Operation) {
+			if (container.path === null) {
+				error(''''«o.operator»' can only be used when assigning an attribute. Example: "set out -> attribute: value as-key"''',
+					o, ROSETTA_OPERATION__OPERATOR)
+				return
+			}
+			val segments = container.path.asSegmentList(container.path)
+			val attr = segments?.last?.attribute
+			if (!attr.hasReferenceAnnotation) {
+				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
+					o, ROSETTA_OPERATION__OPERATOR)
+			}
+		} else if (container instanceof ConstructorKeyValuePair) {
+			val attr = container.key
+			if (!(attr instanceof Attribute) || !(attr as Attribute).hasReferenceAnnotation) {
+				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
+					o, ROSETTA_OPERATION__OPERATOR)
+			}
+		} else {
+			error(''''«o.operator»' may only be used in context of an attribute."''', o,
 				ROSETTA_OPERATION__OPERATOR)
-			return
-		}
-		val opContainer = container as Operation
-		if (opContainer.path === null) {
-			error(''''«o.operator»' can only be used when assigning an attribute. Example: "assign-output out -> attribute: value as-key"''',
-				o, ROSETTA_OPERATION__OPERATOR)
-			return
-		}
-		val segments = opContainer.path.asSegmentList(opContainer.path)
-		val attr = segments?.last?.attribute
-		if (!attr.hasReferenceAnnotation) {
-			error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
-				segments?.last, SEGMENT__ATTRIBUTE)
 		}
 	}
 
@@ -1696,7 +1744,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			error('''Assign expression contains a list of lists, use flatten to create a list.''', o,
 				OPERATION__EXPRESSION)
 		}
-		val isList = cardinality.isMulti(o.path !== null
+		val isList = cardinality.isSymbolMulti(o.path !== null
 				? o.pathAsSegmentList.last.attribute
 				: o.assignRoot)
 		if (o.add && !isList) {

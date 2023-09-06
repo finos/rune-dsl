@@ -199,6 +199,13 @@ class RosettaExtensions {
 		allAnnotations.exists[annotation?.name == "calculation"]
 	}
 	
+	def boolean isReference(Attribute attribute) {
+		return attribute.hasMetaDataAnnotations || attribute.hasMetaDataAddress
+	}
+	def boolean isReference(RAttribute attribute) {
+		return attribute.hasMetaDataAnnotations || attribute.hasMetaDataAddress
+	}
+	
 	def private allAnnotations(Annotated withAnnotations) {
 		withAnnotations?.annotations?.filter[annotation.isResolved]
 	}

@@ -99,10 +99,11 @@ type DrivingLicence extends Person: <"Driving licence authorisation granted by a
 
 #### Record Type
 
-Rosetta defines two additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
+Rosetta defines three additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
 
-- `date` - specified by combining a day, month and year
-- `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time
+- `date` - specified by combining a day, month and year.
+- `dateTime` - combines a `date` and a simple `time`.
+- `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time.
 
 Record types are different from more complex data types in that:
 
@@ -694,9 +695,18 @@ In the example below, the penalty points of a vehicle owner's driving license is
 owner -> drivingLicence -> penaltyPoints
 ```
 
-{{< notice info "Note" >}}
-In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `Owner -> drivingLicence`. Where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
-{{< /notice >}}
+The path operator can also be used to extract the field of a builtin record type such as `date`. In the example below, we define a function that checks whether a date falls before the year 2000.
+
+``` Haskell
+func FallsBefore2000:
+  inputs:
+    d date (1..1)
+  output:
+    result boolean (1..1)
+  
+  set result:
+    d -> year < 2000
+```
 
 #### Null
 

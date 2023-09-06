@@ -24,6 +24,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
@@ -54,7 +55,9 @@ import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
 	protected Return doSwitch(RosettaExpression expr, Context context) {
-		if (expr instanceof ListLiteral) {
+		if (expr instanceof RosettaConstructorExpression) {
+			return caseConstructorExpression((RosettaConstructorExpression)expr, context);
+		} else if (expr instanceof ListLiteral) {
 			return caseListLiteral((ListLiteral)expr, context);
 		} else if (expr instanceof RosettaConditionalExpression) {
 			return caseConditionalExpression((RosettaConditionalExpression)expr, context);
@@ -227,6 +230,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 		String className = expr == null ? "null" : expr.getClass().getCanonicalName();
 		return new UnsupportedOperationException("Unexpected expression of type " + className);
 	}
+	
+	protected abstract Return caseConstructorExpression(RosettaConstructorExpression expr, Context context);
 	
 	protected abstract Return caseListLiteral(ListLiteral expr, Context context);
 	

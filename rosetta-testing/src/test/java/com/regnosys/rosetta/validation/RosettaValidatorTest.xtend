@@ -65,8 +65,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(null, null,
-			""
+		model.assertError(TYPE_CALL, null,
+			"Missing attributes `b`, `c`. Perhaps you forgot a `...` at the end of the constructor?"
 		)
 	}
 	
@@ -87,8 +87,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(null, null,
-			""
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null,
+			"There are no optional attributes left."
 		)
 	}
 	
@@ -110,8 +110,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(null, null,
-			""
+		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, null,
+			"Duplicate attribute `a`."
 		)
 	}
 	
@@ -132,14 +132,14 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(null, null,
-			""
+		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, TYPE_ERROR,
+			"Expected type 'int' but was 'string'"
 		)
 	}
 	
 	@Test
 	def void validRecordConstructor() {
-		val model = '''
+		'''
 		func CreateDate:
 			output: result date (1..1)
 			set result:
@@ -148,11 +148,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					month: 11,
 					year: 1998
 				}
-		'''.parseRosetta
-		
-		model.assertError(null, null,
-			""
-		)
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test
@@ -166,8 +162,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(null, null,
-			""
+		model.assertError(TYPE_CALL, null,
+			"Missing attributes `month`, `year`."
 		)
 	}
 	
@@ -183,8 +179,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(null, null,
-			""
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null,
+			"There are no optional attributes left."
 		)
 	}
 	

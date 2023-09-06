@@ -29,6 +29,7 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.jupiter.api.Assertions.*
 import static org.junit.Assert.assertThrows
 import javax.inject.Inject
+import java.time.LocalDateTime
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -38,6 +39,84 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void constructorExpression() {
+		val code = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					c: A { a: 0, ... },
+					b: ["A", "B"],
+					a: 2*21,
+				}
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val a = classes.createInstanceUsingBuilder('A', #{
+			'a' -> 42,
+			'b' -> #["A", "B"],
+			'c' -> classes.createInstanceUsingBuilder('A', #{'a' -> 0})
+		})
+		
+		val createA = classes.createFunc("CreateA");
+		assertEquals(a, createA.invokeFunc(a.class, #[]))
+	}
+	
+	@Test
+	def void recordConstructorExpression() {
+		val code = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4,
+					month: 11,
+					year: 1998
+				}
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val createDate = classes.createFunc("CreateDate");
+		assertEquals(Date.of(1998, 11, 4), createDate.invokeFunc(Date, #[]))
+	}
+	
+	@Test
+	def void constructorExpressionWithReference() {
+		val code = '''
+		type Key:
+			[metadata key]
+		
+		type OtherType:
+			attrSingle Key (1..1)
+				[metadata reference]
+			attrMulti Key (0..*)
+				[metadata reference]
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 42 as-key
+				}
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val a = classes.createInstanceUsingBuilder('A', #{
+			'a' -> 42,
+			'b' -> #["A", "B"],
+			'c' -> classes.createInstanceUsingBuilder('A', #{'a' -> 0})
+		})
+		
+		val createA = classes.createFunc("CreateA");
+		assertEquals(a, createA.invokeFunc(a.class, #[]))
+	}
 	
 	@Test
 	def void singularExtractWithEmptyValueReturnsEmpty() {
@@ -415,9 +494,41 @@ class FunctionGeneratorTest {
 		
 		val d = Date.of(2023, 1, 19)
 
-		assertEquals(19, getDay.invokeFunc(Date, #[d]))
-		assertEquals(1, getMonth.invokeFunc(Date, #[d]))
-		assertEquals(2023, getYear.invokeFunc(Date, #[d]))
+		assertEquals(19, getDay.invokeFunc(Integer, #[d]))
+		assertEquals(1, getMonth.invokeFunc(Integer, #[d]))
+		assertEquals(2023, getYear.invokeFunc(Integer, #[d]))
+	}
+	
+	@Test
+	def void testAccessToDateTimeMembers() {
+		val code = '''
+		func GetDate:
+			inputs:
+				dt dateTime (1..1)
+			output:
+				result date (1..1)
+			set result:
+				dt -> date
+		
+		func GetTime:
+			inputs:
+				dt dateTime (1..1)
+			output:
+				result time (1..1)
+			set result:
+				dt -> time
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val getDate = classes.createFunc("GetDate");
+		val getTime = classes.createFunc("GetTime");
+		
+		val date = Date.of(2023, 1, 19)
+		val time = LocalTime.of(11, 2)
+		val dt = LocalDateTime.of(date.toLocalDate, time)
+
+		assertEquals(date, getDate.invokeFunc(Date, #[dt]))
+		assertEquals(time, getTime.invokeFunc(LocalTime, #[dt]))
 	}
 	
 	@Test
@@ -461,9 +572,9 @@ class FunctionGeneratorTest {
 		assertEquals(time, zdt.toLocalTime);
 		assertEquals(zone, zdt.zone.id);
 
-		assertEquals(date, getDate.invokeFunc(ZonedDateTime, #[zdt]))
-		assertEquals(time, getTime.invokeFunc(ZonedDateTime, #[zdt]))
-		assertEquals(zone, getZone.invokeFunc(ZonedDateTime, #[zdt]))
+		assertEquals(date, getDate.invokeFunc(Date, #[zdt]))
+		assertEquals(time, getTime.invokeFunc(LocalTime, #[zdt]))
+		assertEquals(zone, getZone.invokeFunc(String, #[zdt]))
 	}
 	
 	@Test
