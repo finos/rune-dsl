@@ -4630,7 +4630,7 @@ class FunctionGeneratorTest {
                 		}
                 		
                 		protected Boolean assignOutput(Boolean result, Date date, ZonedDateTime zonedDateTime) {
-                			result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", _zdt -> Date.of(_zdt.toLocalDate())), CardinalityOperator.All).get();
+                			result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", zdt -> Date.of(zdt.toLocalDate())), CardinalityOperator.All).get();
                 			
                 			return result;
                 		}

@@ -297,7 +297,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		attrs.join(', ')
 	}
 
-	def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature,
+	def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RType receiverType, RosettaFeature feature,
 		JavaScope scope, boolean autoValue) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
@@ -305,7 +305,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			RosettaMetaType: '''«feature.buildMapFunc(scope)»'''
 			RosettaEnumValue:
 				return '''«MapperS».of(«new REnumType(feature.enumeration).toJavaType».«feature.convertValues»)'''
-			RosettaRecordFeature: '''.<«feature.typeCall.typeCallToRType.toJavaReferenceType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(feature, scope)»)'''
+			RosettaRecordFeature: {
+				'''.<«feature.typeCall.typeCallToRType.toJavaReferenceType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType as RRecordType, feature, scope)»)'''
+			}
 			default:
 				throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
@@ -673,7 +675,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 			autoValue = false;
 		}
-		return featureCall(javaCode(expr.receiver, context), expr.feature, context, autoValue)
+		return featureCall(javaCode(expr.receiver, context), typeProvider.getRType(expr.receiver), expr.feature, context, autoValue)
 	}
 
 	override protected caseFilterOperation(FilterOperation expr, JavaScope context) {
@@ -861,7 +863,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 						(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 						autoValue = false;
 					}
-					featureCall(implicitVariable(expr, context), s, context, autoValue)
+					featureCall(implicitVariable(expr, context), implicitType, s, context, autoValue)
 				} else
 					'''«IF s.card.isIsMany»«MapperC».<«attribute.RType.toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(attribute)»)'''
 			}

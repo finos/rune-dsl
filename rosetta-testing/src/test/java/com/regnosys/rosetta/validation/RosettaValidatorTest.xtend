@@ -1731,7 +1731,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  set result -> attr2:
 			     in1 as-key
 		'''.parseRosetta
-		model.assertError(SEGMENT, null,
+		model.assertError(AS_KEY_OPERATION, null,
 			"'as-key' can only be used with attributes annotated with [metadata reference] annotation.")
 	}
 	
@@ -1766,7 +1766,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     in0 as-key
 		'''.parseRosetta
 		model.assertError(AS_KEY_OPERATION, null,
-			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
+			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
 	}
 	
 	@Test

@@ -13,9 +13,33 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 class RecordJavaUtil {
-	def StringConcatenationClient recordFeatureToLambda(RosettaRecordFeature feature, JavaScope scope) {
+	def dispatch StringConcatenationClient recordFeatureToLambda(RDateType recordType, RosettaRecordFeature feature, JavaScope scope) {
 		switch(feature.name) {
-			/* Features of `zonedDateTime` */
+			case "day": 
+				'''«Date»::getDay'''
+			case "month": 
+				'''«Date»::getMonth'''
+			case "year": 
+				'''«Date»::getYear'''
+			default:
+				throw new UnsupportedOperationException("Unsupported record feature named " + feature.name)
+		}
+	}
+	def dispatch StringConcatenationClient recordFeatureToLambda(RDateTimeType recordType, RosettaRecordFeature feature, JavaScope scope) {
+		switch(feature.name) {
+			case "date": {
+				val lambdaScope = scope.lambdaScope
+				val dt = lambdaScope.createUniqueIdentifier("dt")
+				'''«dt» -> «Date».of(«dt».toLocalDate())'''
+			}
+			case "time": 
+				'''«LocalDateTime»::toLocalTime'''
+			default:
+				throw new UnsupportedOperationException("Unsupported record feature named " + feature.name)
+		}
+	}
+	def dispatch StringConcatenationClient recordFeatureToLambda(RZonedDateTimeType recordType, RosettaRecordFeature feature, JavaScope scope) {
+		switch(feature.name) {
 			case "date": {
 				val lambdaScope = scope.lambdaScope
 				val zdt = lambdaScope.createUniqueIdentifier("zdt")
@@ -28,13 +52,6 @@ class RecordJavaUtil {
 				val zdt = lambdaScope.createUniqueIdentifier("zdt")
 				'''«zdt» -> «zdt».getZone().getId()'''
 			}
-			/* Features of `date` */
-			case "day": 
-				'''«Date»::getDay'''
-			case "month": 
-				'''«Date»::getMonth'''
-			case "year": 
-				'''«Date»::getYear'''
 			default:
 				throw new UnsupportedOperationException("Unsupported record feature named " + feature.name)
 		}
