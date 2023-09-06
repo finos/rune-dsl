@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*
 import static org.junit.Assert.assertThrows
 import javax.inject.Inject
 import java.time.LocalDateTime
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -90,32 +91,44 @@ class FunctionGeneratorTest {
 	@Test
 	def void constructorExpressionWithReference() {
 		val code = '''
-		type Key:
+		type TypeWithKey:
 			[metadata key]
 		
 		type OtherType:
-			attrSingle Key (1..1)
+			attrSingle TypeWithKey (1..1)
 				[metadata reference]
-			attrMulti Key (0..*)
+			attrMulti TypeWithKey (0..*)
 				[metadata reference]
 		
-		func CreateA:
-			output: result A (1..1)
+		func CreateOtherType:
+			inputs:
+				key TypeWithKey (1..1)
+			output: result OtherType (1..1)
 			set result:
-				A {
-					a: 42 as-key
+				OtherType {
+					attrSingle: key as-key,
+					attrMulti: [key, key] as-key
 				}
 		'''.generateCode
 		val classes = code.compileToClasses
 		
-		val a = classes.createInstanceUsingBuilder('A', #{
-			'a' -> 42,
-			'b' -> #["A", "B"],
-			'c' -> classes.createInstanceUsingBuilder('A', #{'a' -> 0})
+		val objectWithKey = classes.createInstanceUsingBuilder('TypeWithKey', #{
+			"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"externalKey" -> "external",
+				"globalKey" -> "global"
+			})
+		})
+		val objectWithKeyReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), 'ReferenceWithMetaTypeWithKey', #{
+			"externalReference" -> "external",
+			"globalReference" -> "global"
+		})
+		val otherObject = classes.createInstanceUsingBuilder('OtherType', #{
+			'attrSingle' -> objectWithKeyReference,
+			'attrMulti' -> #[objectWithKeyReference, objectWithKeyReference]
 		})
 		
-		val createA = classes.createFunc("CreateA");
-		assertEquals(a, createA.invokeFunc(a.class, #[]))
+		val createOtherType = classes.createFunc("CreateOtherType");
+		assertEquals(otherObject, createOtherType.invokeFunc(otherObject.class, #[objectWithKey]))
 	}
 	
 	@Test

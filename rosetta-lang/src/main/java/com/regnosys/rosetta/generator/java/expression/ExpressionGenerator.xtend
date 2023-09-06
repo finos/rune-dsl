@@ -112,7 +112,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
 import com.regnosys.rosetta.types.builtin.RRecordType
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import java.util.stream.Collectors
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 
@@ -934,17 +934,50 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				«val attrExpr = pair.value»
 				«val isReference = attr.isReference»
 				«val assignAsKey = attrExpr instanceof AsKeyOperation»
-				.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«evaluateConstructorValue(attrExpr, cardinalityProvider.isSymbolMulti(attr), context)»)
+				.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context)»)
 				«ENDFOR»
 				.build())
 			'''
 		} else { // type instanceof RRecordType
-			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(value, false, context)])
+			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(key, value, false, false, context)])
 			'''«MapperS».of(«recordUtil.recordConstructor(type as RRecordType, featureMap)»)'''
 		}
 	}
-	private def StringConcatenationClient evaluateConstructorValue(RosettaExpression value, boolean isMulti, JavaScope scope) {
-		'''«value.ensureMapperJavaCode(scope, isMulti)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
+	private def StringConcatenationClient evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaScope scope) {
+		if (assignAsKey) {
+			val metaClass = (feature as Attribute).toMetaJavaType
+			if (isMulti) {
+				val lambdaScope = scope.lambdaScope
+				val item = lambdaScope.createUniqueIdentifier("item")
+				'''
+					«value.javaCode(scope)»
+						.getItems()
+						.map(«item» -> «metaClass».builder()
+							.setExternalReference(«item».getMappedObject().getMeta().getExternalKey())
+							.setGlobalReference(«item».getMappedObject().getMeta().getGlobalKey())
+							.build())
+						.collect(«Collectors».toList())
+				'''
+			} else {
+				val lambdaScope = scope.lambdaScope
+				val r = lambdaScope.createUniqueIdentifier("r")
+				val m = lambdaScope.createUniqueIdentifier("m")
+				'''
+					«metaClass».builder()
+						.setGlobalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+							.map(«r» -> «r».getMeta())
+							.map(«m» -> «m».getGlobalKey())
+							.orElse(null))
+						.setExternalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+							.map(«r» -> «r».getMeta())
+							.map(«m» -> «m».getExternalKey())
+							.orElse(null))
+						.build()
+				'''
+			}
+		} else {
+			'''«value.javaCode(scope)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
+		}
 	}
 
 }
