@@ -4,6 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaClass;
+import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
@@ -23,7 +24,7 @@ import com.rosetta.model.lib.process.Processor;
  *         only unique inside that TradeableProduct and should only be looked
  *         for inside that TradeableProduct
  */
-@RosettaClass(value = "Reference", builder = Reference.ReferenceBuilderImpl.class)
+@RosettaDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class)
 public interface Reference extends RosettaModelObject {
 	Reference build();
 

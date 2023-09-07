@@ -4,6 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaClass;
+import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
@@ -30,7 +31,7 @@ import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
  * 	- document - the key must be unique in this document
  *  - the name of the rosetta class e.g. TradeableProduct- the object bearing this key is inside a TradeableProduct and the key is only unique inside that TradeableProduct
  */
-@RosettaClass(value = "Key", builder = Key.KeyBuilderImpl.class)
+@RosettaDataType(value = "Key", builder = Key.KeyBuilderImpl.class)
 public interface Key extends RosettaModelObject{
 
 	public String getScope();

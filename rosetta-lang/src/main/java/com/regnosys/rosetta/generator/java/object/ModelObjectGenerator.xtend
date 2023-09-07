@@ -17,7 +17,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.utils.DottedPath
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.RosettaModelObjectBuilder
-import com.rosetta.model.lib.annotations.RosettaClass
+import com.rosetta.model.lib.annotations.RosettaDataType
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.Collection
 import java.util.Collections
@@ -40,6 +40,7 @@ import com.rosetta.util.types.JavaClass
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
+import com.rosetta.model.lib.annotations.RosettaDataType
 
 class ModelObjectGenerator {
 	
@@ -71,7 +72,7 @@ class ModelObjectGenerator {
 		val implScope = interfaceScope.classScope('''«javaType»Impl''')
 		'''
 			«javadoc(d, version)»
-			@«RosettaClass»(value="«d.name»", builder=«javaType.toBuilderImplType».class, version="«d.model.version»")
+			@«RosettaDataType»(value="«d.name»", builder=«javaType.toBuilderImplType».class, version="«d.model.version»")
 			public interface «javaType» extends «IF d.hasSuperType»«new RDataType(d.superType).toJavaType»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
