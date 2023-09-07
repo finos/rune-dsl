@@ -1,7 +1,7 @@
 ---
 title: "Rosetta Modelling Components"
-date: 2022-02-09T00:38:25+09:00
-description: "This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the Demonstration Model, a sandbox model of the 'vehicle' domain, will be used to illustrate each of those features."
+date: 2023-09-01T12:57:00+02:00
+description: "This document details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the Demonstration Model, a sandbox model of the 'vehicle' domain, are used to illustrate each of those features."
 draft: false
 weight: 2
 ---
@@ -1446,10 +1446,6 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
             then extract firstName + " " + surname
 ```
 
-{{< notice info "Note" >}}
-The `assign-output` keyword also exists as an alternative to `set` and can be used with the same syntax. However, the `assign-output` keyword does not consistently treat single-cardinality (overrides the value) and list (appends the value) objects. It is therefore being phased out in favour of `set` and `add` that clearly separate those two cases.
-{{< /notice >}}
-
 **The Rosetta DSL supports a number of fully defined function cases**, where the output is being built up to a valid state:
 
 - Object qualification
@@ -1484,7 +1480,7 @@ func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
 
 #### Calculation Function
 
-A calculation function defines a calculation output that is often, though not exclusively, of type `number`. It must end with a `set` (or `assign-output`) instruction that fully defines the calculation result.
+A calculation function defines a calculation output that is often, though not exclusively, of type `number`. It must end with a `set` instruction that fully defines the calculation result.
 
 Calculation functions are associated to the `calculation` [annotation](#annotation).
 
@@ -1503,7 +1499,7 @@ func FixedAmount:
   alias fixedRateAmount: fixedRate -> rate
   alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
 
-  assign-output fixedAmount:
+  set fixedAmount:
     calculationAmount * fixedRateAmount * dayCountFraction
 ```
 
@@ -1521,7 +1517,7 @@ Short-hand functions are functions that provide a compact syntax for operations 
 func PaymentDate:
   inputs: economicTerms EconomicTerms (1..1)
   output: result date (0..1)
-  assign-output result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
+  set result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
 ```
 
 which could be invoked as part of multiple other functions that use the `EconomicTerms` object by simply writing:
@@ -1557,8 +1553,8 @@ func Max:
         b number (1..1)
     output:
         r number (1..1)
-    assign-output r:
-        if (a>=b) then a
+    set r:
+        if a >= b then a
         else b
 
 func WhichIsBigger:
@@ -1567,7 +1563,7 @@ func WhichIsBigger:
         b number (1..1)
     output:
         r string (1..1)
-    assign-output r:
+    set r:
         if Max(a,b)=a then "A" else "B"
 ```
 
@@ -1987,7 +1983,7 @@ The next section describes how to define reporting rules as model components.
 
 The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (*f*) that processes an input (*x*) through a set of logical instructions and returns an output (*y*), such that *y = f( x )*. A function can sometimes also be referred to as a *projection*. Using this terminology, the reported data (*y*) are considered projections of the business data (*x*).
 
-For field rules, the output consists of the data to be reported. For eligibility rules, this output is a boolean that returns True when the input is eligible for reporting.
+For field rules, the output consists of the data to be reported. For eligibility rules, this output is a boolean that returns `True` when the input is eligible for reporting.
 
 To provide transparency and auditability to the reporting process, the Rosetta DSL supports the development of reporting rules in both human-readable and machine-executable form.
 
@@ -2013,45 +2009,17 @@ The `<ruleType>` can be either `reporting` or `eligibility` (in which case it mu
 
 The functional expression of reporting rules uses the same [logical expression](#expression-component) components that are already available to define other modelling components, such as data validation or functions.
 
-Functional expressions are composable, so a rule can also call another rule. When multiple rules may need to be applied for a single field or eligibility criteria, those rules can be specified in brackets separated by a comma, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
+Functional expressions are composable, so a rule can also call another rule, as illustrated below. Each of `Euro1Standard`, ..., `Euro6Standard` are themselves reporting rules.
 
 ``` Haskell
 reporting rule EuroEmissionStandard from ReportableEvent:
-   [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
+  [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
     provision "Regulation (EC) No 715/2007 is amended as follows:..."]
-    (
-        Euro1Standard as "Emission Standards",
-        Euro2Standard as "Emission Standards",
-        Euro3Standard as "Emission Standards",
-        Euro4Standard as "Emission Standards",
-        Euro5Standard as "Emission Standards",
-        Euro6Standard as "Emission Standards"
-    )
-```
-
-In addition to those existing functional features, the Rosetta DSL provides specific reporting instruction components:
-
-- extract
-- filter
-- repeat
-
-Those components are documented in the next sections.
-
-##### Extract Instruction
-
-An extraction instruction defines a value to be either reported or used as input into another rule or instruction. The extraction keywords comprise:
-
-- `extract`
-- `then`
-- `as`
-
-The extraction syntax is:
-
-``` Haskell
-extract <Expression1>
-then extract <Expression2>
-<...>
-(optional: as <"Label">)
+  if Euro1Standard exists
+  then Euro1Standard
+  else if Euro2Standard exists
+  then Euro2Standard
+    as "Emission Standards"
 ```
 
 The expressions may use any type of [expression component](#expression-component) available in the Rosetta DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
@@ -2092,23 +2060,7 @@ reporting rule FirstRegistrationDate from VehicleOwnership: <"Date of first regi
         as "First Registration Date"
 ```
 
-##### Filtering Rules
-
-A filter instruction takes a list of input objects and return a subset of them. The output type of the rule is always the same as the input, and of multiple cardinality. The syntax is:
-
-``` Haskell
-filter <FunctionalExpression>
-```
-
-The `filter` keyword takes each input value and uses it as input to a provided test expression. The result type of the test expression must be boolean and its input type must be the input type of the filter rule. If the expression returns true for a given input, that value is included in the output.
-
-The functional expression can be either a direct boolean expression or the output of another rule whose output is a boolean, in which case the syntax is:
-
-``` Haskell
-filter <RuleName>
-```
-
-Filter expressions can be combined with extraction expressions. The example below extracts the date of first registration for a list of passenger-type vehicles only:
+The example below extracts the date of first registration for a list of passenger-type vehicles only:
 
 ``` Haskell
 extract vehicle
