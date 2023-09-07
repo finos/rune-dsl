@@ -674,41 +674,57 @@ Data types and records can be constructed using a syntax similar to JSON, i.e.,
 }
 ```
 
-As an example, consider the following data type representing an employee of a company.
+As an example, consider the following data type representing a person.
 ``` Haskell
-type Employee:
-  name string (1..1)
-  age int (0..1)
-  favouriteAnimal string (0..1)
-  mentor Employee (0..1)
+type Person:
+  honorific string (0..1) <"An honorific title, such as Mr., Ms., Dr. etc.">
+  firstName string (0..1) <"The natural person's first name.">
+  middleName string (0..*)
+  initial string (0..*)
+  surname string (0..1) <"The natural person's surname.">
+  suffix string (0..1) <"Name suffix, such as Jr., III, etc.">
+  dateOfBirth date (0..1) <"The person's date of birth.">
 ```
-To construct an employee called "Dwight Schrute" with a mentor called "Michael Scott" within Rosetta, the following syntax can be used.
+To construct a person called "Dwight Schrute" within Rosetta, the following syntax can be used.
 ``` Haskell
-Employee {
-  name: "Dwight Schrute",
-  age: 42,
-  favouriteAnimal: "bear",
-  mentor: Employee {
-    name: "Michael Scott",
-    age: empty,
-    favouriteAnimal: empty,
-    mentor: empty
+Person {
+  firstName: "Dwight",
+  initial: ["D", "S"],
+  surname: "Schrute",
+  honorific: empty,
+  middleName: empty,
+  suffix: empty,
+  dateOfBirth: empty
+}
+```
+
+In the example above, we used simple literals to set the properties of a person, but these values may actually be any arbitrary Rosetta expression, e.g.,
+
+``` Haskell
+Person {
+  firstName: "Dwight",
+  initial: ComputeInitials("Dwight Schrute"),
+  surname: "Schr" + "ute",
+  honorific: GetDefaultHonorificTitle(),
+  middleName: empty,
+  suffix: variable -> suffixOfDwight,
+  dateOfBirth: date {
+    year: 1998,
+    month: 11,
+    day: 4
   }
 }
 ```
 
 #### Triple-Dot Syntax
 
-Notice that in the example above most fields of Michael Scott are actually `empty`. Types with many optional attributes is common practice in Rosetta models such as the CDM, and assigning `empty` to them explicitly can be verbose. We can solve this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
+Notice that in the first example above most fields of Dwight Schrute are actually `empty`. Types having many optional attributes are common practice in Rosetta models such as the CDM, and assigning `empty` to them explicitly can be verbose. We can solve this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
 ``` Haskell
-Employee {
-  name: "Dwight Schrute",
-  age: 42,
-  favouriteAnimal: "bear",
-  mentor: Employee {
-    name: "Michael Scott",
-    ...
-  }
+Person {
+  firstName: "Dwight",
+  initial: ["D", "S"],
+  surname: "Schrute",
+  ...
 }
 ```
 
