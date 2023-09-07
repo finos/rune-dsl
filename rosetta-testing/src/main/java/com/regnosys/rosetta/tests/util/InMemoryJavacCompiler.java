@@ -30,6 +30,7 @@ import org.mdkt.compiler.SourceCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Based on org.mdkt.compiler.InMemoryJavaCompiler */
 public class InMemoryJavacCompiler {
 	private static Logger LOGGER = LoggerFactory.getLogger(InMemoryJavacCompiler.class);
 	
