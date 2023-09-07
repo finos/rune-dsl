@@ -718,13 +718,22 @@ ListOperation returns RosettaExpression:
  * Primary operations
  */
 RosettaCalcPrimary returns RosettaExpression:
-	RosettaCalcConditionalExpression
+	RosettaCalcConstructorExpression
+	| RosettaCalcConditionalExpression
 	| RosettaReferenceOrFunctionCall
 	| RosettaLiteral
 	| EmptyLiteral
 	| ListLiteral
 	| '(' RosettaCalcExpression ')'
 	| RosettaCalcOnlyExists
+;
+
+RosettaCalcConstructorExpression returns RosettaExpression:
+	{RosettaConstructorExpression} typeCall=TypeCall '{' (values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)*)? (',' | ',' implicitEmpty?='...')? '}'
+;
+
+ConstructorKeyValuePair:
+	key=[RosettaFeature] ':' value=RosettaCalcExpressionWithAsKey
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:

@@ -69,6 +69,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 
@@ -446,6 +447,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseToTimeOperation(ToTimeOperation expr, Map<EObject, RType> context) {
 		TIME
+	}
+	
+	override protected caseConstructorExpression(RosettaConstructorExpression expr, Map<EObject, RType> context) {
+		expr.typeCall.typeCallToRType
 	}
 	
 }

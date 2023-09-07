@@ -38,6 +38,7 @@ import com.regnosys.rosetta.rosetta.expression.ReverseOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
@@ -498,30 +499,36 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	@Override
 	protected RosettaValue caseToStringOperation(ToStringOperation expr, RosettaInterpreterContext context) {
 		// TODO
-				throw new RosettaInterpreterException("ToString operations are not supported yet.");
+		throw new RosettaInterpreterException("ToString operations are not supported yet.");
 	}
 	
 	@Override
 	protected RosettaValue caseToNumberOperation(ToNumberOperation expr, RosettaInterpreterContext context) {
 		// TODO
-				throw new RosettaInterpreterException("ToNumber operations are not supported yet.");
+		throw new RosettaInterpreterException("ToNumber operations are not supported yet.");
 	}
 	
 	@Override
 	protected RosettaValue caseToIntOperation(ToIntOperation expr, RosettaInterpreterContext context) {
 		// TODO
-				throw new RosettaInterpreterException("ToInt operations are not supported yet.");
+		throw new RosettaInterpreterException("ToInt operations are not supported yet.");
 	}
 	
 	@Override
 	protected RosettaValue caseToTimeOperation(ToTimeOperation expr, RosettaInterpreterContext context) {
 		// TODO
-				throw new RosettaInterpreterException("ToTime operations are not supported yet.");
+		throw new RosettaInterpreterException("ToTime operations are not supported yet.");
 	}
 	
 	@Override
 	protected RosettaValue caseToEnumOperation(ToEnumOperation expr, RosettaInterpreterContext context) {
 		// TODO
-				throw new RosettaInterpreterException("ToEnum operations are not supported yet.");
+		throw new RosettaInterpreterException("ToEnum operations are not supported yet.");
+	}
+	@Override
+	protected RosettaValue caseConstructorExpression(RosettaConstructorExpression expr,
+			RosettaInterpreterContext context) {
+		// TODO Auto-generated method stub
+		throw new RosettaInterpreterException("Constructor expressions are not supported yet.");
 	}
 }

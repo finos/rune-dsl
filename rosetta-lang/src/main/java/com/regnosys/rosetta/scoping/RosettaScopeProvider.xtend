@@ -55,6 +55,8 @@ import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 
 /**
  * This class contains custom scoping description.
@@ -100,6 +102,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
 						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver))
+					}
+					return IScope.NULLSCOPE
+				}
+				case CONSTRUCTOR_KEY_VALUE_PAIR__KEY: {
+					if (context instanceof ConstructorKeyValuePair) {
+						val constructor = context.eContainer as RosettaConstructorExpression
+						return Scopes.scopeFor(typeProvider.getRType(constructor).allFeatures(context))
 					}
 					return IScope.NULLSCOPE
 				}

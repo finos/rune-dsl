@@ -99,10 +99,11 @@ type DrivingLicence extends Person: <"Driving licence authorisation granted by a
 
 #### Record Type
 
-Rosetta defines two additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
+Rosetta defines three additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
 
-- `date` - specified by combining a day, month and year
-- `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time
+- `date` - specified by combining a day, month and year.
+- `dateTime` - combines a `date` and a simple `time`.
+- `zonedDateTime` - combines a `date`, simple `time` and time-zone `string` specification to unambiguously refer to a single instant in time.
 
 Record types are different from more complex data types in that:
 
@@ -662,6 +663,82 @@ E.g.:
 [DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
 ```
 
+### Data Type and Record Constructor
+
+Data types and records can be constructed using a syntax similar to JSON, i.e.,
+```
+<type name> {
+  <field name 1>: <field value 1>,
+  <field name 2>: <field value 2>,
+  etc
+}
+```
+
+As an example, consider the following data type representing a person.
+``` Haskell
+type Person:
+  honorific string (0..1) <"An honorific title, such as Mr., Ms., Dr. etc.">
+  firstName string (0..1) <"The natural person's first name.">
+  middleName string (0..*)
+  initial string (0..*)
+  surname string (0..1) <"The natural person's surname.">
+  suffix string (0..1) <"Name suffix, such as Jr., III, etc.">
+  dateOfBirth date (0..1) <"The person's date of birth.">
+```
+To construct a person called "Dwight Schrute" within Rosetta, the following syntax can be used.
+``` Haskell
+Person {
+  firstName: "Dwight",
+  initial: ["D", "S"],
+  surname: "Schrute",
+  honorific: empty,
+  middleName: empty,
+  suffix: empty,
+  dateOfBirth: empty
+}
+```
+
+In the example above, we used simple literals to set the properties of a person, but these values may actually be any arbitrary Rosetta expression, e.g.,
+
+``` Haskell
+Person {
+  firstName: "Dwight",
+  initial: ComputeInitials("Dwight Schrute"),
+  surname: "Schr" + "ute",
+  honorific: GetDefaultHonorificTitle(),
+  middleName: empty,
+  suffix: variable -> suffixOfDwight,
+  dateOfBirth: date {
+    year: 1998,
+    month: 11,
+    day: 4
+  }
+}
+```
+
+#### Triple-Dot Syntax
+
+Notice that in the first example above most fields of Dwight Schrute are actually `empty`. Types having many optional attributes are common practice in Rosetta models such as the CDM, and assigning `empty` to them explicitly can be verbose. We can solve this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
+``` Haskell
+Person {
+  firstName: "Dwight",
+  initial: ["D", "S"],
+  surname: "Schrute",
+  ...
+}
+```
+
+#### Constructing Record Types
+
+The same syntax can be used to construct a record such as `date` or `zonedDateTime`, e.g.,
+``` Haskell
+date {
+  year: 1998,
+  month: 11,
+  day: 4
+}
+```
+
 ### Path Expression
 
 #### Purpose
@@ -694,9 +771,18 @@ In the example below, the penalty points of a vehicle owner's driving license is
 owner -> drivingLicence -> penaltyPoints
 ```
 
-{{< notice info "Note" >}}
-In situations where the context of the object in which the path expression should be evaluated is not already specified (e.g. reporting rules or conditional mapping), the path should begin with the data type name e.g. `Owner -> drivingLicence`. Where applicable, this requirement is enforced by syntax validation in the Rosetta DSL.
-{{< /notice >}}
+The path operator can also be used to extract the field of a builtin record type such as `date`. In the example below, we define a function that checks whether a date falls before the year 2000.
+
+``` Haskell
+func FallsBefore2000:
+  inputs:
+    d date (1..1)
+  output:
+    result boolean (1..1)
+  
+  set result:
+    d -> year < 2000
+```
 
 #### Null
 
@@ -706,7 +792,7 @@ In the above example, if `drivingLicense` is null, the final `penaltyPoints` att
 
 A null value for an expression with multiple cardinality is treated as an empty [list](#list).
 
-### Operator
+### Operators
 
 #### Purpose
 

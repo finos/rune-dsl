@@ -65,6 +65,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -81,14 +82,17 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 		}
 		doSwitch(expr, breakOnClosureParameter)
 	}
-	def boolean isMulti(RosettaSymbol symbol) {
-		isMulti(symbol, false)
+	def boolean isSymbolMulti(RosettaSymbol symbol) {
+		isSymbolMulti(symbol, false)
+	}
+	def boolean isFeatureMulti(RosettaFeature symbol) {
+		isFeatureMulti(symbol, false)
 	}
 	
-	def boolean isMulti(RosettaSymbol symbol, boolean breakOnClosureParameter) {
+	def boolean isSymbolMulti(RosettaSymbol symbol, boolean breakOnClosureParameter) {
 		switch symbol {
 			RosettaFeature: {
-				isMulti(symbol as RosettaFeature, breakOnClosureParameter)
+				isFeatureMulti(symbol as RosettaFeature, breakOnClosureParameter)
 			}
 			ClosureParameter: {
 				isClosureParameterMulti(symbol.function)
@@ -101,7 +105,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 			}
 			Function: {
 				if (symbol.output !== null) {
-					isMulti(symbol.output as RosettaFeature, breakOnClosureParameter)
+					isFeatureMulti(symbol.output as RosettaFeature, breakOnClosureParameter)
 				} else {
 					false
 				}
@@ -128,7 +132,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 			}
 		}
 	}
-	private def boolean isMulti(RosettaFeature feature, boolean breakOnClosureParameter) {
+	def boolean isFeatureMulti(RosettaFeature feature, boolean breakOnClosureParameter) {
 		switch (feature) {
 			Attribute: {
 				if(feature.card === null) {
@@ -341,7 +345,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseFeatureCall(RosettaFeatureCall expr, Boolean breakOnClosureParameter) {
-		if (expr.feature.isMulti(breakOnClosureParameter)) 
+		if (expr.feature.isFeatureMulti(breakOnClosureParameter)) 
 			true 
 		else 
 			expr.receiver.isMulti(breakOnClosureParameter)
@@ -470,7 +474,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 				return true
 			}
 		}
-		return s.isMulti(breakOnClosureParameter)
+		return s.isSymbolMulti(breakOnClosureParameter)
 	}
 	
 	override protected caseThenOperation(ThenOperation expr, Boolean breakOnClosureParameter) {
@@ -494,6 +498,10 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseToTimeOperation(ToTimeOperation expr, Boolean breakOnClosureParameter) {
+		false
+	}
+	
+	override protected caseConstructorExpression(RosettaConstructorExpression expr, Boolean breakOnClosureParameter) {
 		false
 	}
 	

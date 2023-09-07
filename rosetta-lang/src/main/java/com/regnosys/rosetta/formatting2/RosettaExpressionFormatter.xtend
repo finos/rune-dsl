@@ -36,6 +36,7 @@ import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -100,8 +101,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	def void formatExpression(RosettaExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		if (!expr.isGenerated) {
-			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_5_0)
-			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_5_2);
+			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_6_0)
+			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_6_2);
 			if (leftParenthesis !== null && rightParenthesis !== null) {
 				leftParenthesis
 					.append[noSpace]
@@ -116,6 +117,32 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				unsafeFormatExpression(expr, document, mode)
 			}
 		}
+	}
+	
+	private def dispatch void unsafeFormatExpression(RosettaConstructorExpression expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
+				
+		interior(
+			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
+				.prepend[oneSpace]
+				.append[newLine],
+			expr.regionFor.keyword(rightCurlyBracketKeyword_5)
+				.prepend[newLine],
+			[indent]
+		)
+		
+		expr.regionFor.keywords(',').forEach[
+			prepend[noSpace]
+			append[newLine]
+		]
+		
+		expr.values.forEach[
+			indentInner(document)
+			regionFor.keyword(':').
+				prepend[noSpace]
+				.append[oneSpace]
+			value.formatExpression(document, mode)
+		]
 	}
 	
 	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {

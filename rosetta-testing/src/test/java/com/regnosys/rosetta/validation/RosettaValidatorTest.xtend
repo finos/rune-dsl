@@ -31,6 +31,160 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void validConstructor() {
+		'''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					c: A { a: 0, ... },
+					b: ["A", "B"],
+					a: 2*21,
+				}
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void missingFieldsInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21
+				}
+		'''.parseRosetta
+		
+		model.assertError(TYPE_CALL, null,
+			"Missing attributes `b`, `c`. Perhaps you forgot a `...` at the end of the constructor?"
+		)
+	}
+	
+	@Test
+	def void invalidUseOfDotsInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (1..*)
+			c A (1..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21,
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null,
+			"There are no optional attributes left."
+		)
+	}
+	
+	@Test
+	def void duplicateFieldInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: 2*21,
+					a: 0,
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, null,
+			"Duplicate attribute `a`."
+		)
+	}
+	
+	@Test
+	def void wrongTypeInConstructor() {
+		val model = '''
+		type A:
+			a int (1..1)
+			b string (0..*)
+			c A (0..1)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					a: "abc",
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, TYPE_ERROR,
+			"Expected type 'int' but was 'string'"
+		)
+	}
+	
+	@Test
+	def void validRecordConstructor() {
+		'''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4,
+					month: 11,
+					year: 1998
+				}
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void missingFieldInRecordConstructor() {
+		val model = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4
+				}
+		'''.parseRosetta
+		
+		model.assertError(TYPE_CALL, null,
+			"Missing attributes `month`, `year`."
+		)
+	}
+	
+	@Test
+	def void invalidUseOfDotsInRecordConstructor() {
+		val model = '''
+		func CreateDate:
+			output: result date (1..1)
+			set result:
+				date {
+					day: 4,
+					...
+				}
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null,
+			"There are no optional attributes left."
+		)
+	}
+	
+	@Test
 	def void attributeOfImplicitItemWithMultiCardinalityShouldBeMulti() {
 		val model = '''
 		type A:
@@ -1577,7 +1731,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  set result -> attr2:
 			     in1 as-key
 		'''.parseRosetta
-		model.assertError(SEGMENT, null,
+		model.assertError(AS_KEY_OPERATION, null,
 			"'as-key' can only be used with attributes annotated with [metadata reference] annotation.")
 	}
 	
@@ -1612,7 +1766,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     in0 as-key
 		'''.parseRosetta
 		model.assertError(AS_KEY_OPERATION, null,
-			"'as-key' can only be used when assigning an attribute. Example: \"assign-output out -> attribute: value as-key\"")
+			"'as-key' can only be used when assigning an attribute. Example: \"set out -> attribute: value as-key\"")
 	}
 	
 	@Test
