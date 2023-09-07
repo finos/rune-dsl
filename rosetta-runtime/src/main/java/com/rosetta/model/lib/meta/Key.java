@@ -2,6 +2,8 @@ package com.rosetta.model.lib.meta;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaClass;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
@@ -28,6 +30,7 @@ import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
  * 	- document - the key must be unique in this document
  *  - the name of the rosetta class e.g. TradeableProduct- the object bearing this key is inside a TradeableProduct and the key is only unique inside that TradeableProduct
  */
+@RosettaClass(value = "Key", builder = Key.KeyBuilderImpl.class)
 public interface Key extends RosettaModelObject{
 
 	public String getScope();
@@ -70,9 +73,13 @@ public interface Key extends RosettaModelObject{
 			this.scope = builder.getScope();
 			this.keyValue = builder.getKeyValue();
 		}
+		
+		@RosettaAttribute("scope")
 		public String getScope() {
 			return scope;
 		}
+		
+		@RosettaAttribute("value")
 		public String getKeyValue() {
 			return keyValue;
 		}
@@ -126,19 +133,23 @@ public interface Key extends RosettaModelObject{
 			return new KeyImpl(this);
 		}
 
+		@RosettaAttribute("scope")
 		public String getScope() {
 			return scope;
 		}
 
+		@RosettaAttribute("scope")
 		public KeyBuilder setScope(String scope) {
 			this.scope = scope;
 			return this;
 		}
 
+		@RosettaAttribute("value")
 		public String getKeyValue() {
 			return keyValue;
 		}
 
+		@RosettaAttribute("value")
 		public KeyBuilder setKeyValue(String keyValue) {
 			this.keyValue = keyValue;
 			return this;

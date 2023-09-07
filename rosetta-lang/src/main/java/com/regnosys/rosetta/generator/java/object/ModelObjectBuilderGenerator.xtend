@@ -37,7 +37,6 @@ class ModelObjectBuilderGenerator {
 		class «javaType»BuilderImpl«IF c.hasSuperType» extends «new RDataType(c.superType).toJavaType.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
 		
 			«FOR attribute : c.expandedAttributes»
-				@«RosettaAttribute»("«attribute.name»")
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
@@ -118,10 +117,11 @@ class ModelObjectBuilderGenerator {
 	private def StringConcatenationClient builderGetters(Iterable<ExpandedAttribute> attributes, JavaScope scope) '''
 		«FOR attribute : attributes»
 			@Override
+			@«RosettaAttribute»("«attribute.javaAnnotation»")
 			public «attribute.toBuilderTypeExt» get«attribute.name.toFirstUpper»() {
 				return «scope.getIdentifierOrThrow(attribute)»;
 			}
-			
+
 			«IF attribute.isDataType || attribute.hasMetas»
 				«IF !attribute.cardinalityIsListValue»
 					@Override
@@ -139,7 +139,6 @@ class ModelObjectBuilderGenerator {
 						
 						return result;
 					}
-					
 				«ELSE»
 					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int _index) {
 
@@ -186,17 +185,17 @@ class ModelObjectBuilderGenerator {
 			}
 			«IF attribute.hasMetas»
 			
-				@Override
-				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)») {
-					this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
-					return this;
-				}
-				
-				@Override
-				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
-					this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
-					return this;
-				}
+			@Override
+			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)») {
+				this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
+				return this;
+			}
+			
+			@Override
+			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+				this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
+				return this;
+			}
 			«ENDIF»
 			«IF !attribute.overriding»
 				@Override 
@@ -210,6 +209,7 @@ class ModelObjectBuilderGenerator {
 				}
 				
 				@Override 
+				@«RosettaAttribute»("«attribute.javaAnnotation»")
 				public «thisName» set«attribute.name.toFirstUpper»(«List»<? extends «attribute.toMetaOrRegularJavaType»> «scope.getIdentifierOrThrow(attribute)»s) {
 					if («scope.getIdentifierOrThrow(attribute)»s == null)  {
 						this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();
@@ -246,12 +246,12 @@ class ModelObjectBuilderGenerator {
 			
 		«ELSE»
 			@Override
+			@«RosettaAttribute»("«attribute.javaAnnotation»")
 			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «scope.getIdentifierOrThrow(attribute)») {
 				this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»==null?null:«attribute.toBuilder(scope)»;
 				return this;
 			}
 			«IF attribute.hasMetas»
-				
 				@Override
 				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.cardinalityIsListValue)» «scope.getIdentifierOrThrow(attribute)») {
 					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType»«ENDIF»);
