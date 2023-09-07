@@ -17,7 +17,6 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.utils.DottedPath
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.RosettaModelObjectBuilder
-import com.rosetta.model.lib.annotations.RosettaDataType
 import com.rosetta.model.lib.meta.RosettaMetaData
 import java.util.Collection
 import java.util.Collections

@@ -3,7 +3,6 @@ package com.rosetta.model.lib.meta;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
-import com.rosetta.model.lib.annotations.RosettaClass;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
