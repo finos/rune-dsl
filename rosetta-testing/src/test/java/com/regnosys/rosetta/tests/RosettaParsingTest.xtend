@@ -3,7 +3,6 @@
  */
 package com.regnosys.rosetta.tests
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -25,6 +24,7 @@ import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

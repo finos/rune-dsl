@@ -1,19 +1,17 @@
-package com.regnosys.rosetta.generator.java.types;
+package com.rosetta.util.types;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+import com.rosetta.util.DottedPath;
 
-import com.regnosys.rosetta.utils.DottedPath;
 
 public class JavaClass implements JavaReferenceType {
 	private final DottedPath packageName;
 	private final String simpleName;
 	
 	public JavaClass(DottedPath packageName, String simpleName) {
-		Validate.notNull(packageName);
-		Validate.notNull(simpleName);
+		Objects.requireNonNull(packageName);
+		Objects.requireNonNull(simpleName);
 		this.packageName = packageName;
 		this.simpleName = simpleName;
 	}
@@ -25,13 +23,9 @@ public class JavaClass implements JavaReferenceType {
 		if (t.isInterface()) {
 			return JavaInterface.from(t);
 		}
-		String fullName = t.getSimpleName();
-		Class<?> parent = t;
-		while (parent.getDeclaringClass() != null) {
-			parent = t.getDeclaringClass();
-			fullName = parent.getSimpleName() + "." + fullName;
-		}
-		return new JavaClass(DottedPath.splitOnDots(t.getPackageName()), fullName);
+		DottedPath packageName = DottedPath.splitOnDots(t.getCanonicalName()).parent();
+		String simpleName = t.getSimpleName();
+		return new JavaClass(packageName, simpleName);
 	}
 
 	@Override
@@ -47,14 +41,13 @@ public class JavaClass implements JavaReferenceType {
 		return packageName.child(simpleName);
 	}
 	
-	@Override
-	public String toString() {
-		return getCanonicalName().withDots();
+	public Class<?> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
+		return Class.forName(getCanonicalName().toString(), true, classLoader);
 	}
 	
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append(this);
+	public String toString() {
+		return getCanonicalName().withDots();
 	}
 	
 	@Override
@@ -70,5 +63,10 @@ public class JavaClass implements JavaReferenceType {
         JavaClass other = (JavaClass) object;
         return Objects.equals(packageName, other.packageName)
         		&& Objects.equals(simpleName, other.simpleName);
+	}
+	
+	@Override
+	public void accept(JavaTypeVisitor visitor) {
+		visitor.visitType(this);
 	}
 }

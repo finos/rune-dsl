@@ -1,12 +1,12 @@
 package com.regnosys.rosetta.resource
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
 import org.eclipse.xtext.util.IAcceptor
+import javax.inject.Inject
 
 class RosettaResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
 

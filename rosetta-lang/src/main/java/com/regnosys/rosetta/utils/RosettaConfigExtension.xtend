@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.utils
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaQualifiableConfiguration
 import com.regnosys.rosetta.rosetta.RosettaQualifiableType
@@ -10,6 +9,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+import javax.inject.Inject
 
 class RosettaConfigExtension {
 

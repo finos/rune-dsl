@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.scoping
 
 import com.google.common.base.Predicate
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -55,6 +54,7 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import javax.inject.Inject
 
 /**
  * This class contains custom scoping description.

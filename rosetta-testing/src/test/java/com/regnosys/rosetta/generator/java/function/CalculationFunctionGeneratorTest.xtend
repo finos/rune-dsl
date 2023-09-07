@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.function
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.eclipse.xtext.testing.InjectWith
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -19,7 +19,7 @@ class CalculationFunctionGeneratorTest {
 	
 	@Test
 	def void testSimpleTransDep() {
-		val genereated = '''
+		val generatedCode = '''
 			type Period:
 				frequency int (1..1)
 				periodEnum PeriodEnum (1..1)
@@ -42,82 +42,83 @@ class CalculationFunctionGeneratorTest {
 			func PeriodEnumFunc(in1: PeriodEnum -> MONTH ):
 				alias i: in2 -> frequency
 				set out: i * 30.0
-		'''.generateCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
+		'''.generateCode
+		val generated = generatedCode.get("com.rosetta.test.model.functions.PeriodEnumFunc")
 
 		assertEquals(
 			'''
-				package com.rosetta.test.model.functions;
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.expression.MapperMaths;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.mapper.Mapper;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.test.model.Period;
+			import com.rosetta.test.model.PeriodEnum;
+			import java.math.BigDecimal;
+			import javax.inject.Inject;
+			
+			
+			/**
+			 * @version test
+			 */
+			public class PeriodEnumFunc implements RosettaFunction {
 				
-				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
-				import com.rosetta.model.lib.expression.MapperMaths;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.Mapper;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Period;
-				import com.rosetta.test.model.PeriodEnum;
-				import java.math.BigDecimal;
+				@Inject protected PeriodEnumFunc.PeriodEnumFuncMONTH periodEnumFuncMONTH;
 				
-				
-				/**
-				 * @version test
-				 */
-				public class PeriodEnumFunc {
-					
-					@Inject protected PeriodEnumFunc.mONTH_ mONTH_;
-					
-					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-						switch (in1) {
-							case MONTH:
-								return mONTH_.evaluate(in1, in2);
-							default:
-								throw new IllegalArgumentException("Enum value not implemented: " + in1);
-						}
+				public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+					switch (in1) {
+						case MONTH:
+							return periodEnumFuncMONTH.evaluate(in1, in2);
+						default:
+							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
-					
-					
-					@ImplementedBy(mONTH_.mONTH_Default.class)
-					public static abstract class mONTH_ implements RosettaFunction {
-					
-						/**
-						* @param in1 
-						* @param in2 
-						* @return out 
-						*/
-						public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-							BigDecimal out = doEvaluate(in1, in2);
+				}
+				
+				@ImplementedBy(PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
+				public static abstract class PeriodEnumFuncMONTH implements RosettaFunction {
+				
+					/**
+					* @param in1 
+					* @param in2 
+					* @return out 
+					*/
+					public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+						BigDecimal out = doEvaluate(in1, in2);
+						
+						return out;
+					}
+				
+					protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
+				
+					protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
+				
+					public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFuncMONTH {
+						@Override
+						protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+							BigDecimal out = null;
+							return assignOutput(out, in1, in2);
+						}
+						
+						protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
+							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(new BigDecimal("30.0"))).get();
 							
 							return out;
 						}
-					
-						protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
-					
-						protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
-					
-						public static class mONTH_Default extends mONTH_ {
-							@Override
-							protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-								BigDecimal out = null;
-								return assignOutput(out, in1, in2);
-							}
-							
-							protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-								out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(new BigDecimal("30.0"))).get();
-								
-								return out;
-							}
-							
-							@Override
-							protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
-								return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
-							}
+						
+						@Override
+						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+							return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
 						}
 					}
 				}
+			}
 			'''.toString,
-			genereated
+			generated
 		)
 
+		generatedCode.compileToClasses
 	}
 
 
@@ -284,7 +285,6 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
@@ -297,6 +297,7 @@ class CalculationFunctionGeneratorTest {
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -309,11 +310,16 @@ class CalculationFunctionGeneratorTest {
 				* @return res 
 				*/
 				public FoncOut evaluate(FuncIn funIn) {
-					FoncOut.FoncOutBuilder res = doEvaluate(funIn);
+					FoncOut.FoncOutBuilder resBuilder = doEvaluate(funIn);
 					
-					if (res != null) {
+					final FoncOut res;
+					if (resBuilder == null) {
+						res = null;
+					} else {
+						res = resBuilder.build();
 						objectValidator.validate(FoncOut.class, res);
 					}
+					
 					return res;
 				}
 			
@@ -388,7 +394,6 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
@@ -401,6 +406,7 @@ class CalculationFunctionGeneratorTest {
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -413,11 +419,16 @@ class CalculationFunctionGeneratorTest {
 				* @return out 
 				*/
 				public FuncOut evaluate(FuncIn funcIn) {
-					FuncOut.FuncOutBuilder out = doEvaluate(funcIn);
+					FuncOut.FuncOutBuilder outBuilder = doEvaluate(funcIn);
 					
-					if (out != null) {
+					final FuncOut out;
+					if (outBuilder == null) {
+						out = null;
+					} else {
+						out = outBuilder.build();
 						objectValidator.validate(FuncOut.class, out);
 					}
+					
 					return out;
 				}
 			
@@ -492,7 +503,6 @@ class CalculationFunctionGeneratorTest {
 				package com.rosetta.test.model.functions;
 				
 				import com.google.inject.ImplementedBy;
-				import com.google.inject.Inject;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
@@ -504,6 +514,7 @@ class CalculationFunctionGeneratorTest {
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
@@ -516,11 +527,16 @@ class CalculationFunctionGeneratorTest {
 					* @return out 
 					*/
 					public OtherType evaluate(List<? extends WithMeta> withMeta) {
-						OtherType.OtherTypeBuilder out = doEvaluate(withMeta);
+						OtherType.OtherTypeBuilder outBuilder = doEvaluate(withMeta);
 						
-						if (out != null) {
+						final OtherType out;
+						if (outBuilder == null) {
+							out = null;
+						} else {
+							out = outBuilder.build();
 							objectValidator.validate(OtherType.class, out);
 						}
+						
 						return out;
 					}
 				
@@ -584,10 +600,10 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -636,7 +652,7 @@ class CalculationFunctionGeneratorTest {
 	
 	@Test
 	def void shouldResolveExternalFunctionDependenciesWhenEnumCalculation() {
-		val generated = '''
+		val generatedCode = '''
 			type MathInput:
 				mathInput string (1..1)
 				math Math (1..1)
@@ -666,41 +682,41 @@ class CalculationFunctionGeneratorTest {
 			func MathFunc (in1 : Math -> DECR ):
 				set arg1: SubOne(in2 -> mathInput)
 		'''.generateCode
-		.get("com.rosetta.test.model.functions.MathFunc")
+		
+		val generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc")
 		assertEquals(
 			'''
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
+			import javax.inject.Inject;
 			
 			
 			/**
 			 * @version test
 			 */
-			public class MathFunc {
+			public class MathFunc implements RosettaFunction {
 				
-				@Inject protected MathFunc.iNCR_ iNCR_;
-				@Inject protected MathFunc.dECR_ dECR_;
+				@Inject protected MathFunc.MathFuncINCR mathFuncINCR;
+				@Inject protected MathFunc.MathFuncDECR mathFuncDECR;
 				
 				public String evaluate(Math in1, MathInput in2) {
 					switch (in1) {
 						case INCR:
-							return iNCR_.evaluate(in1, in2);
+							return mathFuncINCR.evaluate(in1, in2);
 						case DECR:
-							return dECR_.evaluate(in1, in2);
+							return mathFuncDECR.evaluate(in1, in2);
 						default:
 							throw new IllegalArgumentException("Enum value not implemented: " + in1);
 					}
 				}
 				
-				
-				@ImplementedBy(iNCR_.iNCR_Default.class)
-				public static abstract class iNCR_ implements RosettaFunction {
+				@ImplementedBy(MathFuncINCR.MathFuncINCRDefault.class)
+				public static abstract class MathFuncINCR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -719,7 +735,7 @@ class CalculationFunctionGeneratorTest {
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
 				
-					public static class iNCR_Default extends iNCR_ {
+					public static class MathFuncINCRDefault extends MathFuncINCR {
 						@Override
 						protected String doEvaluate(Math in1, MathInput in2) {
 							String arg1 = null;
@@ -733,9 +749,8 @@ class CalculationFunctionGeneratorTest {
 						}
 					}
 				}
-				
-				@ImplementedBy(dECR_.dECR_Default.class)
-				public static abstract class dECR_ implements RosettaFunction {
+				@ImplementedBy(MathFuncDECR.MathFuncDECRDefault.class)
+				public static abstract class MathFuncDECR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
 					//
@@ -754,7 +769,7 @@ class CalculationFunctionGeneratorTest {
 				
 					protected abstract String doEvaluate(Math in1, MathInput in2);
 				
-					public static class dECR_Default extends dECR_ {
+					public static class MathFuncDECRDefault extends MathFuncDECR {
 						@Override
 						protected String doEvaluate(Math in1, MathInput in2) {
 							String arg1 = null;
@@ -770,6 +785,8 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''.toString, generated)
+		
+		generatedCode.compileToClasses
 	}
 	
 	@Test
@@ -790,10 +807,10 @@ class CalculationFunctionGeneratorTest {
 			package com.rosetta.test.model.functions;
 			
 			import com.google.inject.ImplementedBy;
-			import com.google.inject.Inject;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)

@@ -23,13 +23,11 @@ steps:
 
   BuildDsl:
     title: Maven build
-    no_cache: true
-    no_cf_cache: true
-    fail_fast: false
-    image: regnosys-docker-registry.jfrog.io/regnosys/mvn-docker-build:java-11
+    image: regnosys-docker-registry.jfrog.io/regnosys/rosetta-products-deps:java-17
     commands:
-      - mvn -s /settings.xml org.eclipse.tycho:tycho-versions-plugin:1.0.0:set-version -DnewVersion=${{RELEASE_NAME}} -Dtycho.mode=maven
-      - /xvfb.sh && mvn -s /settings.xml clean deploy -T 1C
+      - rm -rf /codefresh/volume/.m2/com/regnosys  # Necessary for refetching branch artifacts of the form `0.0.0.<branch name>`.
+      - mvn -s /settings.xml versions:set -DnewVersion=${{RELEASE_NAME}}
+      - mvn -U -s /settings.xml clean deploy
 
   NotifySlackOnFail:
     title: Trigger Slack dev channel notification if master build failed

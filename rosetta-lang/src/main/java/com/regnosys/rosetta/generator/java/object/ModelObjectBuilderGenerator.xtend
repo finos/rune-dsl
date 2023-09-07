@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -18,6 +17,7 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
+import javax.inject.Inject
 import com.rosetta.model.lib.annotations.RosettaAttribute
 
 class ModelObjectBuilderGenerator {
@@ -190,7 +190,7 @@ class ModelObjectBuilderGenerator {
 				this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 				return this;
 			}
-			
+
 			@Override
 			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
 				this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);

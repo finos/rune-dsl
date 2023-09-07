@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -20,10 +19,11 @@ import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.generator.java.types.JavaType
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
+import com.rosetta.util.types.JavaType
+import javax.inject.Inject
 
 class ModelObjectBoilerPlate {
 

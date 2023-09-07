@@ -2,7 +2,6 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.BlueprintExtract
@@ -63,7 +62,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
-import com.regnosys.rosetta.rosetta.simple.OutputOperation
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
@@ -131,6 +129,8 @@ import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.REnumType
+import java.util.Optional
+import javax.inject.Inject
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -415,14 +415,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkRuleSource(RosettaBlueprintReport report) {
 		val visitor = new CollectRuleErrorVisitor
 
-		report.reportType.collectRuleErrors(report.ruleSource, visitor)
+		report.reportType.collectRuleErrors(Optional.ofNullable(report.ruleSource), visitor)
 
 		visitor.errorMap.entrySet.forEach [
 			error(value, key, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
 		]
 	}
 
-	private def void collectRuleErrors(Data type, RosettaExternalRuleSource source, CollectRuleErrorVisitor visitor) {
+	private def void collectRuleErrors(Data type, Optional<RosettaExternalRuleSource> source, CollectRuleErrorVisitor visitor) {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
 
 		type.allAttributes.forEach[attr |
@@ -1098,12 +1098,21 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 					} catch (BlueprintUnresolvedTypeException e) {
 					}
 				}
+				// check basic type cardinality supported
+				if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
+					val unsupportedWarning = '''Legacy-syntax rules do not support attributes with a basic type (`«attrType.name»`) and multiple cardinality.'''
+					error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
+				}
 			} else {
 				// check cardinality
 				val ruleSingle = !bp.expression.isMulti
-				if (attrSingle != ruleSingle) {
-					val cardWarning = '''Cardinality mismatch - report field «attr.name» has «IF attrSingle»single«ELSE»multiple«ENDIF» cardinality ''' +
-						'''whereas the reporting rule «bp.name» has «IF ruleSingle»single«ELSE»multiple«ENDIF» cardinality.'''
+				if (attrSingle && !ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «attr.name» has single cardinality ''' +
+						'''whereas the reporting rule «bp.name» has multiple cardinality.'''
+					error(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
+				} else if (!attrSingle && ruleSingle) {
+					val cardWarning = '''Cardinality mismatch - report field «attr.name» has multiple cardinality ''' +
+						'''whereas the reporting rule «bp.name» has single cardinality.'''
 					warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
 				
@@ -1114,12 +1123,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 						'''whereas the reporting rule «bp.name» has type «bpType».'''
 					error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 				}
-			}
-			
-			// check basic type cardinality supported
-			if (!attrSingle && (attrExt.builtInType || attrExt.enum)) {
-				val unsupportedWarning = '''Report attributes with basic type («attrType.name») and multiple cardinality is not supported.'''
-				error(unsupportedWarning, attr, ROSETTA_NAMED__NAME)
 			}
 		}
 	}
@@ -1378,17 +1381,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 								switch qualPath {
 									RosettaAttributeReference: {
 										val attrRef = qualPath as RosettaAttributeReference
-										checkForLocation(attrRef.attribute, it)
+										if (attrRef.attribute.isResolved) {
+											checkForLocation(attrRef.attribute, it)
+											val targetType = attrRef.attribute.typeCall.typeCallToRType
+											val thisType = ele.RTypeOfSymbol
+											if (!targetType.isSubtypeOf(thisType))
+												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+										}
 									}
 									default:
 										error('''Target of an address must be an attribute''', it,
 											ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 								}
-								val targetType = (qualPath as RosettaAttributeReference).attribute.typeCall.typeCallToRType
-								val thisType = ele.RTypeOfSymbol
-								if (!targetType.isSubtypeOf(thisType))
-									error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
-								//Check it has
 							}
 						]
 					} else {
@@ -1684,18 +1688,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}			
 		}
 	}
-	
+
 	@Check
-	def checkAssignOutput(Operation o) {
+	def checkOutputOperation(Operation o) {
 		val expr = o?.expression
 		if (expr !== null && expr.isOutputListOfLists) {
 			error('''Assign expression contains a list of lists, use flatten to create a list.''', o,
 				OPERATION__EXPRESSION)
 		}
-	}
-
-	@Check
-	def checkOutputOperation(OutputOperation o) {
 		val isList = cardinality.isMulti(o.path !== null
 				? o.pathAsSegmentList.last.attribute
 				: o.assignRoot)

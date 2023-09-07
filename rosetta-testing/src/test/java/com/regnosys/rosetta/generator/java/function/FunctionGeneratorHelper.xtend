@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
-import com.google.inject.Inject
 import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -19,6 +18,8 @@ import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import java.lang.reflect.InvocationTargetException
+import javax.inject.Inject
 
 class FunctionGeneratorHelper {
 
@@ -39,17 +40,16 @@ class FunctionGeneratorHelper {
 	}
 	
 	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		val func = classes.get(rootPackage.functions + '.' + funcName) // get abstract func class
-				.declaredClasses.get(0) // get default func implementation (e.g. inner class) 
-				.declaredConstructor.newInstance
-				as RosettaFunction 
-		injector.injectMembers(func)
-		return func
+		injector.getInstance(classes.get(rootPackage.functions + '.' + funcName)) as RosettaFunction
 	}
 	
 	def <T> invokeFunc(RosettaFunction func, Class<T> resultClass, Object... inputs) {
 		val evaluateMethod = func.class.getMatchingMethod("evaluate", inputs.map[it?.class])
-		evaluateMethod.invoke(func, inputs) as T
+		try {
+			evaluateMethod.invoke(func, inputs) as T
+		} catch (InvocationTargetException e) {
+			throw e.cause
+		}
 	}
 
 	def void assertToGeneratedFunction(CharSequence actualModel, CharSequence expected) throws AssertionError {

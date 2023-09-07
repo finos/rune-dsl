@@ -38,10 +38,10 @@ class ConditionGeneratorTest {
 		val classes = code.compileToClasses
 		
 		val foo1 = classes.createInstanceUsingBuilder('Foo', of('a', 42))
-		assertTrue(classes.runDataRule(foo1, 'FooC').isSuccess)
+		assertTrue(classes.runCondition(foo1, 'FooC').isSuccess)
 		
 		val foo2 = classes.createInstanceUsingBuilder('Foo', of())
-		assertFalse(classes.runDataRule(foo2, 'FooC').isSuccess)
+		assertFalse(classes.runCondition(foo2, 'FooC').isSuccess)
 	}
 	
 	@Test
@@ -59,9 +59,9 @@ class ConditionGeneratorTest {
 		val classes = code.compileToClasses
 		
 		val foo1 = classes.createInstanceUsingBuilder('Foo', of('a', 42))
-		assertTrue(classes.runDataRule(foo1, 'FooC').isSuccess)
+		assertTrue(classes.runCondition(foo1, 'FooC').isSuccess)
 		
 		val foo2 = classes.createInstanceUsingBuilder('Foo', of())
-		assertFalse(classes.runDataRule(foo2, 'FooC').isSuccess)
+		assertFalse(classes.runCondition(foo2, 'FooC').isSuccess)
 	}
 }

@@ -65,6 +65,7 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.rosetta.util.DottedPath
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -178,6 +179,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 		return INT_FUNCTION;
 	}
 	val parameters = typeAlias.parameters;
+	val namespace = DottedPath.splitOnDots(typeAlias.model.name)
 	val equations = 
 			typeAlias.typeCall.arguments.map[arg|
 				val ref = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
@@ -186,7 +188,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 				return new Equation(ref, arg.value);
 			].toList;
 	return systemSolver.solve(equations, parameters.toSet).map[solutionSet|
-		RTypeFunction.create(typeAlias.name,
+		RTypeFunction.create(namespace, typeAlias.name,
 			[arguments|
 				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
 			],
@@ -203,7 +205,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 			]
 		)
 	].orElseGet[
-		RTypeFunction.create(typeAlias.name,
+		RTypeFunction.create(namespace, typeAlias.name,
 			[arguments|
 				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
 			],

@@ -31,6 +31,15 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.model.lib.annotations.RosettaAttribute
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.TypeSystem
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.JavaParameterizedType
+import javax.inject.Inject
 
 class ModelObjectGenerator {
 	
@@ -64,9 +73,9 @@ class ModelObjectGenerator {
 			«javadoc(d, version)»
 			@«RosettaClass»(value="«d.name»", builder=«javaType.toBuilderImplType».class, version="«d.model.version»")
 			public interface «javaType» extends «IF d.hasSuperType»«new RDataType(d.superType).toJavaType»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
-			
+
 				«metaType» «metaDataIdentifier» = new «metaType»();
-			
+
 				«startComment('Getter Methods')»
 				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
 
@@ -81,23 +90,23 @@ class ModelObjectGenerator {
 					«pojoBuilderInterfaceGetterMethods(d, javaType, builderScope)»
 
 					«d.builderProcessMethod»
-			
+
 					«javaType.toBuilderType» prune();
 				}
 
 				«startComment('''Immutable Implementation of «d.name»''')»
 				class «javaType»Impl «IF d.hasSuperType»extends «new RDataType(d.superType).toJavaType.toImplType» «ENDIF»implements «d.name» {
 					«d.rosettaClass(implScope)»
-					
+
 					«d.boilerPlate(implScope)»
 				}
-			
+
 				«startComment('''Builder Implementation of «d.name»''')»
 				«d.builderClass(interfaceScope)»
 			}
 		'''
 	}
-	
+
 	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(Data d, JavaClass javaType, JavaScope builderScope) '''
 		«FOR attribute : d.expandedAttributes»
 			«IF attribute.isDataType || attribute.hasMetas»
@@ -128,28 +137,28 @@ class ModelObjectGenerator {
 			«ENDIF»
 		«ENDFOR»
 		'''
-	
-	
+
+
 	protected def StringConcatenationClient pojoInterfaceDefaultOverridenMethods(JavaClass javaType, GeneratedIdentifier metaDataIdentifier, Collection<Object> interfaces, Data d)
 		'''
 		@Override
 		default «RosettaMetaData»<? extends «javaType»> metaData() {
 			return «metaDataIdentifier»;
 		}
-		
+
 		@Override
-		default Class<? extends «javaType»> getType() {
-			return «javaType».class;
-		}
-		
-		«FOR pt :interfaces.filter(JavaParametrizedType).filter[baseType.simpleName=="ReferenceWithMeta" || baseType.simpleName=="FieldWithMeta"]»
-			@Override
-			default Class<«pt.arguments.head»> getValueType() {
-				return «pt.arguments.head».class;
-			}
-		«ENDFOR»
-		
-		«d.processMethod»'''
+        default Class<? extends «javaType»> getType() {
+            return «javaType».class;
+        }
+
+        «FOR pt :interfaces.filter(JavaParameterizedType).filter[getBaseType.simpleName=="ReferenceWithMeta" || getBaseType.simpleName=="FieldWithMeta"]»
+            @Override
+            default Class<«pt.getArguments.head»> getValueType() {
+                return «pt.getArguments.head».class;
+            }
+        «ENDFOR»
+
+        «d.processMethod»'''
 
 
 	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass javaType, JavaClass metaType, GeneratedIdentifier metaDataIdentifier, Data d) '''
@@ -157,7 +166,7 @@ class ModelObjectGenerator {
 			«javadoc(attribute.definition, attribute.docReferences, null)»
 			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
 		«ENDFOR»'''
-	
+
 	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass javaType, Data d) '''
 			«d.name» build();
 
@@ -167,8 +176,8 @@ class ModelObjectGenerator {
 				return new «javaType.toBuilderImplType»();
 			}
 		'''
-		
-			
+
+
 	def dispatch buildify(Object object) {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
@@ -176,9 +185,9 @@ class ModelObjectGenerator {
 	def dispatch buildify(Class<?> clazz) {
 		new JavaClass(DottedPath.splitOnDots(clazz.packageName), clazz.simpleName+"."+clazz.simpleName+"Builder")
 	}
-	def dispatch buildify(JavaParametrizedType clazz) {
-		val builderType = new JavaClass(clazz.baseType.packageName, clazz.baseType.simpleName+"."+clazz.baseType.simpleName+"Builder")
-		new JavaParametrizedType(builderType, clazz.arguments)
+	def dispatch buildify(JavaParameterizedType clazz) {
+		val builderType = new JavaClass(clazz.getBaseType.packageName, clazz.getBaseType.simpleName+"."+clazz.getBaseType.simpleName+"Builder")
+		new JavaParameterizedType(builderType, clazz.getArguments)
 	}
 
 	def boolean globalKeyRecursive(Data class1) {
@@ -255,8 +264,8 @@ class ModelObjectGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient startComment(String msg) ''' 
+	private def StringConcatenationClient startComment(String msg) '''
 	/*********************** «msg»  ***********************/'''
-	
+
 
 }

@@ -4,33 +4,40 @@
  */
 package com.regnosys.rosetta.generator
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.external.ExternalGenerators
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
+import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
-import com.regnosys.rosetta.generator.java.rule.DataRuleGenerator
+import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
 import java.util.Map
+import java.util.Optional
 import java.util.concurrent.CancellationException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.xtext.generator.IGeneratorContext
-import com.regnosys.rosetta.generator.java.function.FunctionGenerator
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IGenerator2
+import org.eclipse.xtext.generator.IGeneratorContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import com.regnosys.rosetta.generator.java.reports.RuleGenerator
+import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
+import com.regnosys.rosetta.generator.java.reports.ReportGenerator
+import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
+import javax.inject.Inject
 
 /**
  * Generates code from your model files on save.
@@ -42,16 +49,19 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
-	@Inject DataRuleGenerator dataRuleGenerator
-	@Inject BlueprintGenerator blueprintGenerator
+	@Inject ConditionGenerator conditionGenerator
+	@Inject TabulatorGenerator tabulatorGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
+	@Inject RuleGenerator ruleGenerator
+	@Inject BlueprintGenerator blueprintGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
+	@Inject ReportGenerator reportGenerator
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -140,13 +150,26 @@ class RosettaGenerator implements IGenerator2 {
 							metaGenerator.generate(packages, fsa, it, version)
 							validatorsGenerator.generate(packages, fsa, it, version)
 							it.conditions.forEach [ cond |
-								dataRuleGenerator.generate(packages, fsa, it, cond, version)
+								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]
+							tabulatorGenerator.generate(fsa, it, Optional.empty)
 						}
 						Function: {
 							if (!isDispatchingFunction) {
 								funcGenerator.generate(packages, fsa, it, version)
 							}
+						}
+						RosettaBlueprint: {
+							ruleGenerator.generate(packages, fsa, it, version)
+						}
+						RosettaBlueprintReport: {
+							reportGenerator.generate(packages, fsa, it, version)
+							tabulatorGenerator.generate(fsa, it)
+						}
+						RosettaExternalRuleSource: {
+							it.externalClasses.forEach [ externalClass |
+								tabulatorGenerator.generate(fsa, externalClass.data, Optional.of(it))
+							]
 						}
 					}
 				]

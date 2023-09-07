@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -41,7 +41,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of('field two value')),
 			of())
 	
-		val validationResult = classes.runDataRule(testInstance, "TestRequiredChoice")
+		val validationResult = classes.runCondition(testInstance, "TestRequiredChoice")
 				
 		assertFalse(validationResult.isSuccess)
 
@@ -58,7 +58,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of()),
 			of())
 	
-		val validationResult = classes.runDataRule(testInstance, "TestRequiredChoice")
+		val validationResult = classes.runCondition(testInstance, "TestRequiredChoice")
 					
 		assertTrue(validationResult.isSuccess)
 	}
@@ -72,7 +72,7 @@ class ChoiceRuleGeneratorTest {
 			'field2', List.of('field two value')),
 			of())
 		
-		val validationResult = classes.runDataRule(testInstance, "TestOptionalChoice")
+		val validationResult = classes.runCondition(testInstance, "TestOptionalChoice")
 				
 		assertFalse(validationResult.isSuccess)
 

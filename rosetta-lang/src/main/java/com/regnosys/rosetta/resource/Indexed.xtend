@@ -1,13 +1,13 @@
 package com.regnosys.rosetta.resource
 
 import com.google.common.collect.Maps
-import com.google.inject.Inject
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import javax.inject.Inject
 
 class Indexed {
 	

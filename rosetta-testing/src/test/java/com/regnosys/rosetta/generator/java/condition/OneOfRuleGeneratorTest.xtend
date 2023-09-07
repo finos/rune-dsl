@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -18,6 +17,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
 import com.rosetta.model.lib.validation.ValidationResult
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

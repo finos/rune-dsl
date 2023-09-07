@@ -4,12 +4,12 @@ import java.util.Set
 import org.eclipse.xtext.generator.OutputConfiguration
 import org.eclipse.xtext.generator.OutputConfigurationProvider
 import org.eclipse.xtext.generator.IFileSystemAccess
-import com.google.inject.Inject
 import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.external.ExternalOutputConfiguration
 import java.util.Map
 import java.util.HashMap
 import java.util.HashSet
+import javax.inject.Inject
 
 class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 

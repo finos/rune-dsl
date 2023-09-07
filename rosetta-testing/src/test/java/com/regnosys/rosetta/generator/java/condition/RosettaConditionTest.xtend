@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
@@ -18,6 +17,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -109,35 +109,35 @@ class RosettaConditionTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
 		// FeatureCallComparisonDecreasing (fail)
-		val dataRuleBarDescreasing = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooFeatureCallComparisonDecreasing'))
-		assertFalse(dataRuleBarDescreasing.success)
-		assertThat(dataRuleBarDescreasing.definition, is("if bar exists then bar -> before > bar -> after"))
-		assertThat(dataRuleBarDescreasing.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getBefore] values [-10] are not > than all elements of paths [Foo->getBar[0]->getAfter] values [0]"))
+		val conditionBarDescreasing = ValidationResult.cast(classes.runCondition(fooInstance, 'FooFeatureCallComparisonDecreasing'))
+		assertFalse(conditionBarDescreasing.success)
+		assertThat(conditionBarDescreasing.definition, is("if bar exists then bar -> before > bar -> after"))
+		assertThat(conditionBarDescreasing.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getBefore] values [-10] are not > than all elements of paths [Foo->getBar[0]->getAfter] values [0]"))
 
 		// BarFeatureCallGreaterThanLiteralZero (fail)
-		val dataRuleBarGreaterThanZero = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
-		assertFalse(dataRuleBarGreaterThanZero.success)
-		assertThat(dataRuleBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
-		assertThat(dataRuleBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [Integer] values [0]"))
+		val conditionBarGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
+		assertFalse(conditionBarGreaterThanZero.success)
+		assertThat(conditionBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
+		assertThat(conditionBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [Integer] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralZero (fail)
-		val dataRuleBazGreaterThanZero = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
-		assertFalse(dataRuleBazGreaterThanZero.success)
-		assertThat(dataRuleBazGreaterThanZero.definition, is("if baz exists then baz -> other > 0"))
-		assertThat(dataRuleBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [0]"))
+		val conditionBazGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
+		assertFalse(conditionBazGreaterThanZero.success)
+		assertThat(conditionBazGreaterThanZero.definition, is("if baz exists then baz -> other > 0"))
+		assertThat(conditionBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralFive (fail)
-		val dataRuleBazGreaterThanFive = ValidationResult.cast(classes.runDataRule(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
-		assertFalse(dataRuleBazGreaterThanFive.success)
-		assertThat(dataRuleBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
-		assertThat(dataRuleBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [5]"))
+		val conditionBazGreaterThanFive = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
+		assertFalse(conditionBazGreaterThanFive.success)
+		assertThat(conditionBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
+		assertThat(conditionBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [5]"))
 	}
 
 	// Util methods
 		
-	def assertCondition(RosettaModelObject model, String dataRuleName, boolean expectedSuccess, String expectedDefinition) {
-		val dataRuleResult = ValidationResult.cast(classes.runDataRule(model, dataRuleName))
-		assertThat(dataRuleResult.success, is(expectedSuccess))	
-		assertThat(dataRuleResult.definition, is(expectedDefinition))
+	def assertCondition(RosettaModelObject model, String conditionName, boolean expectedSuccess, String expectedDefinition) {
+		val conditionResult = ValidationResult.cast(classes.runCondition(model, conditionName))
+		assertThat(conditionResult.success, is(expectedSuccess))	
+		assertThat(conditionResult.definition, is(expectedDefinition))
 	}
 }
