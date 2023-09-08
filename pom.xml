@@ -37,6 +37,7 @@
 		<maven-plugin-annotations.version>3.9.0</maven-plugin-annotations.version>
 		<slf4j.version>2.0.9</slf4j.version>
 		<logback.version>1.4.11</logback.version>
+		<InMemoryJavaCompiler.version>1.3.0</InMemoryJavaCompiler.version>
 
 		<!-- test -->
 		<junit.version>5.10.0</junit.version>
@@ -257,6 +258,12 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>log4j-over-slf4j</artifactId>
 				<version>${slf4j.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mdkt.compiler</groupId>
+				<artifactId>InMemoryJavaCompiler</artifactId>
+				<version>${InMemoryJavaCompiler.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -18,6 +18,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
 import javax.inject.Inject
+import com.rosetta.model.lib.RosettaModelObjectBuilder
 
 class ModelObjectBuilderGenerator {
 	
@@ -85,7 +86,7 @@ class ModelObjectBuilderGenerator {
 	'''
 		@SuppressWarnings("unchecked")
 		@Override
-		public «builderName» merge(RosettaModelObjectBuilder other, «BuilderMerger» merger) {
+		public «builderName» merge(«RosettaModelObjectBuilder» other, «BuilderMerger» merger) {
 			«IF hasSuperType»
 				super.merge(other, merger);
 				
