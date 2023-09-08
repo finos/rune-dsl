@@ -14,9 +14,6 @@ import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.GeneratorContext
 import org.eclipse.xtext.util.CancelIndicator
-import org.eclipse.xtext.util.JavaVersion
-import org.eclipse.xtext.xbase.testing.InMemoryJavaCompiler
-import org.eclipse.xtext.xbase.testing.JavaSource
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static com.google.common.collect.ImmutableMap.*
@@ -89,12 +86,12 @@ class CodeGeneratorTestHelper {
 	}
 
 	def compileToClasses(Map<String, String> code) {
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
+		code.inMemoryCompileToClasses(this.class.classLoader);
 	}
 
 	def compileJava8(CharSequence model) {
 		val code = generateCode(model)
-		code.inMemoryCompileToClasses(this.class.classLoader, JavaVersion.JAVA8);
+		code.inMemoryCompileToClasses(this.class.classLoader);
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet) {
@@ -177,52 +174,15 @@ class CodeGeneratorTestHelper {
 		}
 		return code;
 	}
-	
-	
-	private def toJavaFile(String string) {
-		string.replace('.', '/') + ".java"
-	}
 
-	private def Map<String, Class<?>> inMemoryCompileToClasses(Map<String, String> sources, ClassLoader scope, JavaVersion version) {
-		val InMemoryJavaCompiler inMemoryCompiler = new InMemoryJavaCompiler(scope, version);
+	private def Map<String, Class<?>> inMemoryCompileToClasses(Map<String, String> sources, ClassLoader scope) {
+		val inMemoryCompiler = InMemoryJavacCompiler
+			.newInstance
+			.useParentClassLoader(scope)
+			.useOptions("--release", "8", "-Xlint:all", "-Xdiags:verbose")
+		
+		sources.forEach[className, sourceCode| inMemoryCompiler.addSource(className, sourceCode)]
 
-		val InMemoryJavaCompiler.Result result = inMemoryCompiler.compile(sources.entrySet.map [
-			new JavaSource(key.toJavaFile, value)
-		])
-		try {
-			if (result.compilationProblems.exists[error]) {
-				throw new IllegalArgumentException('''
-					Java code compiled with errors:
-					«FOR error : result.compilationProblems.filter[error]»
-						«new String(error.originatingFileName)» : «error.sourceLineNumber»
-						«error.message» 
-					
-						Problem line is around:						
-						«val sourceLines=sources.get(new String(error.originatingFileName).replace('.java','').replace('/', '.').replace('\\','.')).split("\n")»
-						«sourceLines.subList(Math.max(error.sourceLineNumber - 3, 0) , Math.min(error.sourceLineNumber + 3, sourceLines.size)).join('\n')»
-					
-						«new String(error.originatingFileName)»
-						=========
-						«sources.get(new String(error.originatingFileName).replace('.java','').replace('/', '.'))»
-						=========
-						
-					«ENDFOR»
-					
-					All files generated: «sources.keySet.join('\n')»
-					
-				''')
-			}
-			val classLoader = result.getClassLoader()
-			return sources.keySet.map[classLoader.loadClass(it)].toMap[name]
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException('''
-				«e.message» 
-				source :
-					«sources»
-				
-				PROBLEMS : 
-					«result.getCompilationProblems().join('\n')»
-			''', e)
-		}
+		inMemoryCompiler.compileAll
 	}
 }

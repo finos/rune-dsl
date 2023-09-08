@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.regnosys.rosetta.generator.java.util.RecordFeatureMap
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
@@ -110,6 +109,10 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
 import com.regnosys.rosetta.types.RObjectFactory
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
+import com.regnosys.rosetta.types.builtin.RRecordType
+import java.util.stream.Collectors
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 
@@ -122,7 +125,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImplicitVariableUtil
 	@Inject extension JavaIdentifierRepresentationService
-	@Inject RecordFeatureMap recordFeatureMap
+	@Inject RecordJavaUtil recordUtil
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
 	@Inject RObjectFactory rObjectFactory;
@@ -235,7 +238,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	private def StringConcatenationClient args(RosettaCallableWithArgs func, List<RosettaExpression> arguments,
 		JavaScope scope) {
 		if (func instanceof Function) {
-			'''«FOR i : 0 ..< arguments.size SEPARATOR ', '»«arg(arguments.get(i), typeProvider.getRTypeOfSymbol(func.inputs.get(i)), func.inputs.get(i).isMulti, scope)»«ENDFOR»'''
+			'''«FOR i : 0 ..< arguments.size SEPARATOR ', '»«arg(arguments.get(i), typeProvider.getRTypeOfSymbol(func.inputs.get(i)), func.inputs.get(i).isSymbolMulti, scope)»«ENDFOR»'''
 		} else {
 			'''«FOR argExpr : arguments SEPARATOR ', '»«arg(argExpr, null, false, scope)»«ENDFOR»'''
 		}
@@ -294,7 +297,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		attrs.join(', ')
 	}
 
-	def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RosettaFeature feature,
+	def StringConcatenationClient featureCall(StringConcatenationClient receiverCode, RType receiverType, RosettaFeature feature,
 		JavaScope scope, boolean autoValue) {
 		val StringConcatenationClient right = switch (feature) {
 			Attribute:
@@ -302,7 +305,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			RosettaMetaType: '''«feature.buildMapFunc(scope)»'''
 			RosettaEnumValue:
 				return '''«MapperS».of(«new REnumType(feature.enumeration).toJavaType».«feature.convertValues»)'''
-			RosettaRecordFeature: '''.<«feature.typeCall.typeCallToRType.toJavaReferenceType»>map("«feature.name.toFirstUpper»", «recordFeatureMap.recordFeatureToLambda(feature)»)'''
+			RosettaRecordFeature: {
+				'''.<«feature.typeCall.typeCallToRType.toJavaReferenceType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType as RRecordType, feature, scope)»)'''
+			}
 			default:
 				throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
@@ -386,6 +391,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 					!(it.isEmpty && !(it.eContainer instanceof RosettaConditionalExpression)) ||
 				it instanceof RosettaCountOperation || it instanceof RosettaFunctionalOperation ||
 				it instanceof RosettaOnlyElement || it instanceof RosettaConditionalExpression ||
+				it instanceof RosettaConstructorExpression ||
 				isArithmeticOperation(it)
 		]
 	}
@@ -669,7 +675,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 			autoValue = false;
 		}
-		return featureCall(javaCode(expr.receiver, context), expr.feature, context, autoValue)
+		return featureCall(javaCode(expr.receiver, context), typeProvider.getRType(expr.receiver), expr.feature, context, autoValue)
 	}
 
 	override protected caseFilterOperation(FilterOperation expr, JavaScope context) {
@@ -857,13 +863,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 						(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 						autoValue = false;
 					}
-					featureCall(implicitVariable(expr, context), s, context, autoValue)
+					featureCall(implicitVariable(expr, context), implicitType, s, context, autoValue)
 				} else
 					'''«IF s.card.isIsMany»«MapperC».<«attribute.RType.toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(attribute)»)'''
 			}
 			ShortcutDeclaration: {
 				val shortcut = rObjectFactory.buildRShortcut(s);
-				val multi = cardinalityProvider.isMulti(s)
+				val multi = cardinalityProvider.isSymbolMulti(s)
 				'''«IF multi»«MapperC».<«typeProvider.getRTypeOfSymbol(s).toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«context.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s)»).«IF exprHelper.usesOutputParameter(s.expression)»build()«ELSE»«IF multi»getMulti()«ELSE»get()«ENDIF»«ENDIF»)'''
 			}
 			RosettaEnumeration: '''«new REnumType(s).toJavaType»'''
@@ -917,6 +923,63 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		conversionOperation(expr,
 			context, '''«lambdaParam» -> «LocalTime».parse(s, «DateTimeFormatter».ISO_LOCAL_TIME)''',
 			DateTimeParseException)
+	}
+	
+	override protected caseConstructorExpression(RosettaConstructorExpression expr, JavaScope context) {
+		val type = typeProvider.getRType(expr).stripFromTypeAliases
+		if (type instanceof RDataType) {
+			val clazz = type.toJavaReferenceType
+			'''
+			«MapperS».of(«clazz».builder()
+				«FOR pair : expr.values»
+				«val attr = pair.key as Attribute»
+				«val attrExpr = pair.value»
+				«val isReference = attr.isReference»
+				«val assignAsKey = attrExpr instanceof AsKeyOperation»
+				.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context)»)
+				«ENDFOR»
+				.build())
+			'''
+		} else { // type instanceof RRecordType
+			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(key, value, false, false, context)])
+			'''«MapperS».of(«recordUtil.recordConstructor(type as RRecordType, featureMap)»)'''
+		}
+	}
+	private def StringConcatenationClient evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaScope scope) {
+		if (assignAsKey) {
+			val metaClass = (feature as Attribute).toMetaJavaType
+			if (isMulti) {
+				val lambdaScope = scope.lambdaScope
+				val item = lambdaScope.createUniqueIdentifier("item")
+				'''
+					«value.javaCode(scope)»
+						.getItems()
+						.map(«item» -> «metaClass».builder()
+							.setExternalReference(«item».getMappedObject().getMeta().getExternalKey())
+							.setGlobalReference(«item».getMappedObject().getMeta().getGlobalKey())
+							.build())
+						.collect(«Collectors».toList())
+				'''
+			} else {
+				val lambdaScope = scope.lambdaScope
+				val r = lambdaScope.createUniqueIdentifier("r")
+				val m = lambdaScope.createUniqueIdentifier("m")
+				'''
+					«metaClass».builder()
+						.setGlobalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+							.map(«r» -> «r».getMeta())
+							.map(«m» -> «m».getGlobalKey())
+							.orElse(null))
+						.setExternalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+							.map(«r» -> «r».getMeta())
+							.map(«m» -> «m».getExternalKey())
+							.orElse(null))
+						.build()
+				'''
+			}
+		} else {
+			'''«value.javaCode(scope)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
+		}
 	}
 
 }

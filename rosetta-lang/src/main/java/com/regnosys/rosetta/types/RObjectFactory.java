@@ -260,7 +260,7 @@ public class RObjectFactory {
 				.collect(Collectors.toList());
 
 		return new RAttribute(attribute.getName(), attribute.getDefinition(), rType, metaAnnotations,
-				cardinalityProvider.isMulti(attribute));
+				cardinalityProvider.isSymbolMulti(attribute));
 
 	}
 

@@ -69,13 +69,8 @@ class TabulatorTest {
 			reporting rule Subbasic from ReportableInput:
 				extract title + " - sub"
 			
-			func Create_Subreport:
-				inputs: subbasic string (1..1)
-				output: result Subreport (1..1)
-				set result->subbasic: subbasic + " - created"
-			
 			reporting rule SubreportWithRule from ReportableInput:
-				Create_Subreport(Subbasic)
+				Subreport { subbasic: Subbasic + " - created" }
 					as "Subreport from a rule"
 		'''
 		val code = model.generateCode
@@ -258,20 +253,12 @@ class TabulatorTest {
 			reporting rule N from ReportableInput:
 				extract values first
 			
-			func Create_Subreport:
-				inputs:
-					subbasic string (1..1)
-					n int (0..1)
-				output: result Subreport (1..1)
-				set result->subbasic: subbasic + " - created"
-				set result->n: n
-			
 			reporting rule SubreportList from ReportableInput:
 				extract reportableInput [
 					reportableInput
 						extract values
 						then extract Subbasic(reportableInput) + item to-string
-						then extract Create_Subreport(item, N(reportableInput))
+						then extract Subreport { subbasic: item, n: N(reportableInput)}
 				]
 					as "Subreport group"
 		'''
@@ -404,18 +391,8 @@ class TabulatorTest {
 				extract item
 					as "Basic value of subsubreport"
 			
-			func Create_Subreport:
-				inputs: subsubreportList Subsubreport (0..*)
-				output: result Subreport (1..1)
-				set result->subsubreportList: subsubreportList
-			
-			func Create_Subsubreport:
-				inputs: subsubbasic string (1..1)
-				output: result Subsubreport (1..1)
-				set result->subsubbasic: subsubbasic
-			
 			reporting rule SubsubreportList from string:
-				extract Create_Subsubreport
+				extract Subsubreport { subsubbasic: item }
 					as "List of subsubreports"
 			
 			reporting rule SubreportList from ReportableInput:
@@ -427,7 +404,7 @@ class TabulatorTest {
 								extract titles
 								then extract item + v to-string
 								then extract SubsubreportList
-								then Create_Subreport
+								then Subreport { subsubreportList: item }
 						]
 				]
 					as "Subreport group"

@@ -46,7 +46,6 @@ variables:
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
-  commaSeparatedListEnd: '(?=\))|{{sectionEnd}}'
   expressionEnd: '(?=,|\))|{{sectionEnd}}'
   ruleExpressionEnd: '{{blueprintNodeEnd}}|{{expressionEnd}}'
   functionalOperationEnd: (?=\])|(?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{ruleExpressionEnd}}
@@ -1046,11 +1045,10 @@ repository:
 
       operation:
         name: meta.operation.rosetta
-        begin: '{{wordStart}}(?:(set)|(add)|(assign-output)){{wordEnd}}'
+        begin: '{{wordStart}}(?:(set)|(add)){{wordEnd}}'
         beginCaptures:
           1: { name: keyword.other.set.rosetta }
           2: { name: keyword.other.add.rosetta }
-          3: { name: keyword.other.assing-output.rosetta }
         end: '{{sectionEnd}}'
         patterns:
         - name: meta.operation.attribute.rosetta
@@ -1094,7 +1092,7 @@ repository:
           begin: (\()
           beginCaptures:
             1: { name: punctuation.group.begin.rosetta }
-          end: (\))|{{commaSeparatedListEnd}}
+          end: (\))|{{sectionEnd}}
           endCaptures:
             1: { name: punctuation.group.end.rosetta }
           patterns:
@@ -1103,11 +1101,31 @@ repository:
           begin: (\[)
           beginCaptures:
             1: { name: punctuation.list.begin.rosetta }
-          end: (\])|{{commaSeparatedListEnd}}
+          end: (\])|(?=\))|{{sectionEnd}}
           endCaptures:
             1: { name: punctuation.list.end.rosetta }
           patterns:
           - include: '#expression'
+        - name: meta.constructor.rosetta
+          begin: (\{)
+          beginCaptures:
+            1: { name: punctuation.constructor.begin.rosetta }
+          end: (\})|(?=\))|{{sectionEnd}}
+          endCaptures:
+            1: { name: punctuation.constructor.end.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: meta.constructor.key-value.rosetta
+            begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: variable.other.member.rosetta }
+            end: (?=,|\}|\))|{{sectionEnd}}
+            patterns:
+            - include: '#comment'
+            - include: '#colon'
+            - include: '#expression'
+          - name: keyword.other.triple-dot.rosetta
+            match: '\.\.\.'
         - include: '#functionalOperation'
         - name: meta.then-operation.rosetta
           begin: '{{wordStart}}then{{wordEnd}}'

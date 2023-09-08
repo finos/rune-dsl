@@ -807,7 +807,7 @@ class BlueprintGenerator {
 			«val rule = entry.value»
 			«val ruleClass = new JavaClass(DottedPath.splitOnDots(rule.model.name).child("blueprint"), rule.name + "Rule")»
 			if («ruleClass».class.isAssignableFrom(ruleType)) {
-				«DataItemReportUtils».set«IF attr.card.isMany»List«ENDIF»Field(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «attrBaseClass».class, data, «ruleClass».class);
+				«DataItemReportUtils».<«attrBaseClass»>set«IF attr.card.isMany»List«ENDIF»Field(«builderPath»«path.trimFirst.buildAttributePathGetters»::set«attr.name.toFirstUpper», «attrBaseClass».class, data, «ruleClass».class);
 			}
 		«ENDFOR»
 		'''

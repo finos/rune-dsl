@@ -450,10 +450,6 @@ class FunctionGenerator {
 		'''«expressionGenerator.javaCode(operation.expression, scope)»«IF isAssigneeMulti».getMulti()«ELSE».get()«ENDIF»'''
 	}
 
-	private def boolean isReference(RAttribute attribute) {
-		return attribute.hasMetaDataAnnotations || attribute.hasMetaDataAddress
-	}
-
 	private def StringConcatenationClient assignTarget(ROperation operation, RFunction function, Map<RShortcut, Boolean> outs,
 		JavaScope scope) {
 		val root = operation.pathHead

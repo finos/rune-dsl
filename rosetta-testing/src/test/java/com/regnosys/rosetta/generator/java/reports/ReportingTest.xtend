@@ -157,22 +157,11 @@ class ReportingTest {
 			reporting rule HeroOrganisations from Person: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "9"  provision "."]
 			    extract organisations
-			    then extract CreateOrganisationReport(
-			    	name,
-			    	isGovernmentAgency,
-			    	country
-			    ) as "Hero Organisations"
-			
-			func CreateOrganisationReport:
-				inputs:
-					name string (1..1)
-				    isGovernmentAgency boolean (1..1)
-				    country CountryEnum (1..1)
-				output:
-					result OrganisationReport (1..1)
-				set result -> name: name
-				set result -> isGovernmentAgency: isGovernmentAgency
-				set result -> country: country
+			    then extract OrganisationReport {
+			    	name: name,
+			    	isGovernmentAgency: isGovernmentAgency,
+			    	country: country
+			    } as "Hero Organisations"
 			
 			reporting rule OrganisationName from Organisation: <"Organisation Name">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "10"  provision "."]

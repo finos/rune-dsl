@@ -941,17 +941,7 @@ class ListOperationTest {
 				
 				set foos:
 					bar -> foos 
-						map [ if item -> include = True then Create_Foo( item -> include, item -> attr + "_bar" ) else item ]
-			
-			func Create_Foo:
-				inputs:
-					include boolean (1..1)
-					attr string (1..1)
-				output:
-					foo Foo (1..1)
-				
-				set foo -> include: include
-				set foo -> attr: attr
+						map [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -981,10 +971,6 @@ class ListOperationTest {
 				public abstract class FuncFoo implements RosettaFunction {
 					
 					@Inject protected ModelObjectValidator objectValidator;
-					
-					// RosettaFunction dependencies
-					//
-					@Inject protected Create_Foo create_Foo;
 				
 					/**
 					* @param bar 
@@ -1017,7 +1003,11 @@ class ListOperationTest {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
 								.mapItem(item -> (MapperS<Foo>)MapperUtils.runSinglePolymorphic(() -> {
 									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
-										return MapperS.of(create_Foo.evaluate(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get(), MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get()));
+										return MapperS.of(Foo.builder()
+											.setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
+											.setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
+											.build())
+										;
 									}
 									else {
 										return item;

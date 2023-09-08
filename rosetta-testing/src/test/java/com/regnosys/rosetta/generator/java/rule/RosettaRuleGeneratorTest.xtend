@@ -67,12 +67,11 @@ class RosettaRuleGeneratorTest {
 						extract baz->baz1 as "3 BarBaz"
 
 					reporting rule BarQuxList from Bar:
-						[legacy-syntax]
-						extract repeatable Bar->quxList then
-						(
-							QuxQux1,
-							QuxQux2
-						) as "4 BarQuxList"
+						extract quxList
+						then extract BarQuxReport {
+							bazQux1: QuxQux1,
+							bazQux2: QuxQux2
+						} as "4 BarQuxList"
 
 					reporting rule QuxQux1 from Qux:
 						extract qux1 as "5 QuxQux1"
@@ -262,22 +261,22 @@ class RosettaRuleGeneratorTest {
 									continue;
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 								}
 								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 								}
 							}
 						}
@@ -308,22 +307,22 @@ class RosettaRuleGeneratorTest {
 									listBuilder.set(index, dataItemReportBuilder);
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 								}
 								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 								}
 							}
 						}
@@ -528,22 +527,22 @@ class RosettaRuleGeneratorTest {
 									continue;
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 								}
 								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 								}
 							}
 						}
@@ -574,22 +573,22 @@ class RosettaRuleGeneratorTest {
 									listBuilder.set(index, dataItemReportBuilder);
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 								}
 								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 								}
 								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 								}
 								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 								}
 							}
 						}
@@ -960,10 +959,10 @@ class RosettaRuleGeneratorTest {
 									continue;
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 							}
 						}
@@ -994,10 +993,10 @@ class RosettaRuleGeneratorTest {
 									listBuilder.set(index, dataItemReportBuilder);
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 							}
 						}
@@ -1288,14 +1287,13 @@ class RosettaRuleGeneratorTest {
 			    extract attribute -> heroTime as "Attribute - Time"
 			
 			reporting rule HeroOrganisations from Person: <"Has Special Abilities">
-			    [legacy-syntax]
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
-			    extract repeatable Person -> organisations then
-			    (
-			        OrganisationName,
-			        OrganisationCountry,
-			        IsGovernmentAgency
-			    ) as "Hero Organisations"
+			    extract organisations 
+			    then extract OrganisationReport {
+			    	name: OrganisationName,
+			    	country: OrganisationCountry,
+			    	isGovernmentAgency: IsGovernmentAgency
+			    } as "Hero Organisations"
 			
 			reporting rule OrganisationName from Organisation: <"Has Special Abilities">
 			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
@@ -1386,43 +1384,43 @@ class RosettaRuleGeneratorTest {
 									continue;
 								}
 								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
+									DataItemReportUtils.<Integer>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
 								}
 								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
+									DataItemReportUtils.<BigDecimal>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
 								}
 								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
+									DataItemReportUtils.<LocalTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
 								}
 								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
+									DataItemReportUtils.<ZonedDateTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
 								}
 								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
+									DataItemReportUtils.<Date>setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
 								}
 								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 								}
 								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
+									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
 								}
 								if (NationalityRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
+									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
 								}
 								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
 								}
 								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
 								}
 								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 								}
 								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+									DataItemReportUtils.<PowerEnum>setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
+									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
 								}
 							}
 						}
@@ -1453,43 +1451,43 @@ class RosettaRuleGeneratorTest {
 									listBuilder.set(index, dataItemReportBuilder);
 								}
 								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
+									DataItemReportUtils.<Integer>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
 								}
 								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
+									DataItemReportUtils.<BigDecimal>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
 								}
 								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
+									DataItemReportUtils.<LocalTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
 								}
 								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
+									DataItemReportUtils.<ZonedDateTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
 								}
 								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
+									DataItemReportUtils.<Date>setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
 								}
 								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 								}
 								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
+									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
 								}
 								if (NationalityRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
+									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
 								}
 								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
 								}
 								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
 								}
 								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 								}
 								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+									DataItemReportUtils.<PowerEnum>setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 								}
 								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
+									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
 								}
 							}
 						}
@@ -1587,330 +1585,6 @@ class RosettaRuleGeneratorTest {
 			val classes = blueprint.compileToClasses
 			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Blueprint1Rule")
 			assertNotNull(bpImpl)
-		} finally {
-		}
-	}
-
-	@Test
-	def void complexOr() {
-		val blueprint = '''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(
-					filter when Input->traderef="3" then extract Input->traderef, 
-					extract Input->colour
-				)
-			
-			type Input:
-				traderef string (1..1)
-				colour string (1..1)
-		'''.generateCode
-
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		 //writeOutClasses(blueprint, "complexOr");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.Filter;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Input;
-				import javax.inject.Inject;
-
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-
-				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY> implements Blueprint<Input, String, INKEY, INKEY> {
-					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "Blueprint1"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, String, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, String, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, new Filter<Input, INKEY>("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.0/@node", "Input->traderef = \"3\"", input -> areEqual(MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("3"), CardinalityOperator.All).get(), null))
-								.then(actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.0/@next/@node", "Input->traderef", new RuleIdentifier("Input->traderef", getClass()), input -> MapperS.of(input).<String>map("getTraderef", _input -> _input.getTraderef()))),
-								startsWith(actionFactory, actionFactory.<Input, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.1/@node", "Input->colour", new RuleIdentifier("Input->colour", getClass()), input -> MapperS.of(input).<String>map("getColour", _input -> _input.getColour())))
-								)
-							)
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			assertEquals(expected, blueprintJava)
-			blueprint.compileToClasses
-		} finally {
-		}
-	}
-
-	@Test
-	def void numberOr() {
-		val blueprint = '''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(
-					extract Input->a , 
-					extract Input->b
-				)
-			
-			type Input:
-				a int (1..1)
-				b number (1..1)
-		'''.generateCode
-
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "numberOr");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Input;
-				import java.math.BigDecimal;
-				import javax.inject.Inject;
-				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Number, INKEY, INKEY> {
-					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "Blueprint1"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, Number, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, Number, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input, Integer, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.0/@node", "Input->a", new RuleIdentifier("Input->a", getClass()), input -> MapperS.of(input).<Integer>map("getA", _input -> _input.getA()))),
-								startsWith(actionFactory, actionFactory.<Input, Number, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.1/@node", "Input->b", new RuleIdentifier("Input->b", getClass()), input -> MapperS.of(input).<BigDecimal>map("getB", _input -> _input.getB())))
-								)
-							)
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			assertEquals(expected, blueprintJava)
-			blueprint.compileToClasses
-		} finally {
-		}
-	}
-
-	@Test
-	def void complexOr2() {
-		val blueprint = '''
-			reporting rule Blueprint1 from Input:
-				[legacy-syntax]
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(
-					extract Input -> foo
-					,
-					extract Input -> bar
-				)
-			
-			type Input:
-				foo Foo (1..1)
-				bar Bar (1..1)
-			
-			type Foo:
-				traderef string (1..1)
-				colour string (1..1)
-			
-			type Bar:
-				traderef string (1..1)
-				colour string (1..1)
-			
-		'''.generateCode
-
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "complexOr2");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Input;
-				import javax.inject.Inject;
-
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY> implements Blueprint<Input, Object, INKEY, INKEY> {
-					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "Blueprint1"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input, Object, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input, Object, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input, Foo, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.0/@node", "Input->foo", new RuleIdentifier("Input->foo", getClass()), input -> MapperS.of(input).<Foo>map("getFoo", _input -> _input.getFoo()))),
-								startsWith(actionFactory, actionFactory.<Input, Bar, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.1/@node", "Input->bar", new RuleIdentifier("Input->bar", getClass()), input -> MapperS.of(input).<Bar>map("getBar", _input -> _input.getBar())))
-								)
-							)
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			blueprint.compileToClasses
-			assertEquals(expected, blueprintJava)
-		} finally {
-		}
-	}
-
-	@Test
-	def void complexOr3() {
-		val blueprint = '''
-			reporting rule Blueprint1 from Input1:
-				[legacy-syntax]
-				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
-				(
-					extract Input1->i1
-					,
-					extract Input1->i2
-				) then
-				extract Input2->traderef
-						
-			type Input1:
-				i1 Input2 (1..1)
-				i2 Input2 (1..1)
-			
-			type Input2:
-				traderef string (1..1)
-		'''.generateCode
-
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.Blueprint1Rule")
-		// writeOutClasses(blueprint, "complexOr3");
-		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.Blueprint;
-				import com.regnosys.rosetta.blueprints.BlueprintBuilder;
-				import com.regnosys.rosetta.blueprints.BlueprintInstance;
-				import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Input1;
-				import com.rosetta.test.model.Input2;
-				import javax.inject.Inject;
-				
-				import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-				
-				/**
-				 * @version test
-				 */
-				public class Blueprint1Rule<INKEY> implements Blueprint<Input1, String, INKEY, INKEY> {
-					
-					private final RosettaActionFactory actionFactory;
-					
-					@Inject
-					public Blueprint1Rule(RosettaActionFactory actionFactory) {
-						this.actionFactory = actionFactory;
-					}
-					
-					@Override
-					public String getName() {
-						return "Blueprint1"; 
-					}
-					
-					@Override
-					public String getURI() {
-						return "__synthetic1.rosetta#com.rosetta.test.model.Blueprint1";
-					}
-					
-					
-					@Override
-					public BlueprintInstance<Input1, String, INKEY, INKEY> blueprint() {
-						return 
-							startsWith(actionFactory, BlueprintBuilder.<Input1, Input2, INKEY, INKEY>or(actionFactory,
-								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.0/@node", "Input1->i1", new RuleIdentifier("Input1->i1", getClass()), input1 -> MapperS.of(input1).<Input2>map("getI1", _input1 -> _input1.getI1()))),
-								startsWith(actionFactory, actionFactory.<Input1, Input2, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node/@bps.1/@node", "Input1->i2", new RuleIdentifier("Input1->i2", getClass()), input1 -> MapperS.of(input1).<Input2>map("getI2", _input1 -> _input1.getI2())))
-								)
-							)
-							.then(actionFactory.<Input2, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@next/@node", "Input2->traderef", new RuleIdentifier("Input2->traderef", getClass()), input2 -> MapperS.of(input2).<String>map("getTraderef", _input2 -> _input2.getTraderef())))
-							.toBlueprint(getURI(), getName());
-					}
-				}
-			'''
-			blueprint.compileToClasses
-			assertEquals(expected, blueprintJava)
 		} finally {
 		}
 	}
@@ -2103,93 +1777,6 @@ class RosettaRuleGeneratorTest {
 		assertThat(blueprintJava, CoreMatchers.notNullValue())
 
 		blueprint.compileToClasses
-	}
-
-	@Test
-	def void lookupRule() {
-		val blueprint = '''
-			reporting rule WorthyAvenger from Avengers:
-				[legacy-syntax]
-				extract Avengers -> heros
-				then filter when rule CanWieldMjolnir
-				then filter when Hero -> name <> 'Thor'
-				then extract Hero -> name
-			
-			eligibility rule CanWieldMjolnir from Hero:
-				[legacy-syntax]
-				lookup CanWieldMjolnir boolean
-			
-			type Avengers:
-				heros Hero (0..*)
-			
-			type Hero:
-				name string (1..1)
-			
-		'''.generateCode
-		//blueprint.writeClasses("lookupRule")
-		val blueprintJava = blueprint.get("com.rosetta.test.model.blueprint.WorthyAvengerRule")
-		blueprint.compileToClasses
-
-		val expected = '''
-			package com.rosetta.test.model.blueprint;
-			
-			import com.regnosys.rosetta.blueprints.Blueprint;
-			import com.regnosys.rosetta.blueprints.BlueprintInstance;
-			import com.regnosys.rosetta.blueprints.runner.actions.Filter;
-			import com.regnosys.rosetta.blueprints.runner.actions.FilterByRule;
-			import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory;
-			import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-			import com.rosetta.model.lib.expression.CardinalityOperator;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Avengers;
-			import com.rosetta.test.model.Hero;
-			import javax.inject.Inject;
-			
-			import static com.regnosys.rosetta.blueprints.BlueprintBuilder.*;
-			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
-			
-			/**
-			 * @version test
-			 */
-			public class WorthyAvengerRule<INKEY> implements Blueprint<Avengers, String, INKEY, INKEY> {
-				
-				private final RosettaActionFactory actionFactory;
-				
-				@Inject
-				public WorthyAvengerRule(RosettaActionFactory actionFactory) {
-					this.actionFactory = actionFactory;
-				}
-				
-				@Override
-				public String getName() {
-					return "WorthyAvenger"; 
-				}
-				
-				@Override
-				public String getURI() {
-					return "__synthetic1.rosetta#com.rosetta.test.model.WorthyAvenger";
-				}
-				
-				@Inject protected CanWieldMjolnirRule canWieldMjolnirRef;
-				
-				@Override
-				public BlueprintInstance<Avengers, String, INKEY, INKEY> blueprint() {
-					return 
-						startsWith(actionFactory, actionFactory.<Avengers, Hero, INKEY>newRosettaMultipleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@node", "Avengers->heros", new RuleIdentifier("Avengers->heros", getClass()), avengers -> MapperS.of(avengers).<Hero>mapC("getHeros", _avengers -> _avengers.getHeros())))
-						.then(new FilterByRule<Hero, INKEY>("__synthetic1.rosetta#/0/@elements.0/@nodes/@next/@node", "CanWieldMjolnir",
-											getCanWieldMjolnir(), null))
-						.then(new Filter<Hero, INKEY>("__synthetic1.rosetta#/0/@elements.0/@nodes/@next/@next/@node", "Hero->name <> \"Thor\"", hero -> notEqual(MapperS.of(hero).<String>map("getName", _hero -> _hero.getName()), MapperS.of("Thor"), CardinalityOperator.Any).get(), null))
-						.then(actionFactory.<Hero, String, INKEY>newRosettaSingleMapper("__synthetic1.rosetta#/0/@elements.0/@nodes/@next/@next/@next/@node", "Hero->name", new RuleIdentifier("Hero->name", getClass()), hero -> MapperS.of(hero).<String>map("getName", _hero -> _hero.getName())))
-						.toBlueprint(getURI(), getName());
-				}
-				
-				protected BlueprintInstance<Hero, Boolean, INKEY, INKEY> getCanWieldMjolnir() {
-					return canWieldMjolnirRef.blueprint();
-				}
-			}
-		'''
-		assertEquals(expected, blueprintJava)
-
 	}
 
 	@Test

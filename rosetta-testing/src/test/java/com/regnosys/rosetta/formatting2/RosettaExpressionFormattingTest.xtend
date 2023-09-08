@@ -51,6 +51,54 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testConstructorFormat1() {
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: foo extract
+				if True
+				then ["This is a looong", "expression"]
+				else 42,
+		}
+		''' ->
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: foo
+					extract
+						if True
+						then ["This is a looong", "expression"]
+						else 42,
+		}
+		'''
+	}
+	
+	@Test
+	def void testConstructorFormat2() {
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: foo extract
+				if True
+				then ["This is a looong", "expression"]
+				else 42,
+			...
+		}
+		''' ->
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: foo
+					extract
+						if True
+						then ["This is a looong", "expression"]
+						else 42,
+			...
+		}
+		'''
+	}
+	
+	@Test
 	def void testOperationChainingFormat1() {
 		'''
 		input

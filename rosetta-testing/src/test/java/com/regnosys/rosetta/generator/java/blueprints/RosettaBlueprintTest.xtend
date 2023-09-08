@@ -300,22 +300,22 @@ class RosettaBlueprintTest {
 								continue;
 							}
 							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 							}
 							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 							}
 							if (BarBazRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 							}
 							if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+								DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 							}
 							if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 							}
 							if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 							}
 						}
 					}
@@ -346,22 +346,22 @@ class RosettaBlueprintTest {
 								listBuilder.set(index, dataItemReportBuilder);
 							}
 							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 							}
 							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 							}
 							if (BarBazRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 							}
 							if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+								DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 							}
 							if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 							}
 							if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 							}
 						}
 					}
@@ -566,22 +566,22 @@ class RosettaBlueprintTest {
 								continue;
 							}
 							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 							}
 							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 							}
 							if (BarBazRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 							}
 							if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+								DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 							}
 							if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 							}
 							if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 							}
 						}
 					}
@@ -612,22 +612,22 @@ class RosettaBlueprintTest {
 								listBuilder.set(index, dataItemReportBuilder);
 							}
 							if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 							}
 							if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 							}
 							if (BarBazRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
 							}
 							if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
+								DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
 							}
 							if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
 							}
 							if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
 							}
 						}
 					}
@@ -1002,10 +1002,10 @@ class RosettaBlueprintTest {
 									continue;
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 							}
 						}
@@ -1036,10 +1036,10 @@ class RosettaBlueprintTest {
 									listBuilder.set(index, dataItemReportBuilder);
 								}
 								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
 								}
 								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
+									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
 								}
 							}
 						}
@@ -1443,43 +1443,43 @@ class RosettaBlueprintTest {
 								continue;
 							}
 							if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
+								DataItemReportUtils.<Integer>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
 							}
 							if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
+								DataItemReportUtils.<BigDecimal>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
 							}
 							if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
+								DataItemReportUtils.<LocalTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
 							}
 							if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
+								DataItemReportUtils.<ZonedDateTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
 							}
 							if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
+								DataItemReportUtils.<Date>setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
 							}
 							if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 							}
 							if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
+								DataItemReportUtils.<Boolean>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
 							}
 							if (NationalityRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
+								DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
 							}
 							if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
 							}
 							if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+								DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
 							}
 							if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 							}
 							if (PowersRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+								DataItemReportUtils.<PowerEnum>setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 							}
 							if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
+								DataItemReportUtils.<Boolean>setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
 							}
 						}
 					}
@@ -1510,43 +1510,43 @@ class RosettaBlueprintTest {
 								listBuilder.set(index, dataItemReportBuilder);
 							}
 							if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
+								DataItemReportUtils.<Integer>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
 							}
 							if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
+								DataItemReportUtils.<BigDecimal>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
 							}
 							if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
+								DataItemReportUtils.<LocalTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
 							}
 							if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
+								DataItemReportUtils.<ZonedDateTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
 							}
 							if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
+								DataItemReportUtils.<Date>setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
 							}
 							if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
 							}
 							if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
+								DataItemReportUtils.<Boolean>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
 							}
 							if (NationalityRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
+								DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
 							}
 							if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
 							}
 							if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
+								DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
 							}
 							if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
+								DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
 							}
 							if (PowersRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
+								DataItemReportUtils.<PowerEnum>setField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
 							}
 							if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-								DataItemReportUtils.setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
+								DataItemReportUtils.<Boolean>setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
 							}
 						}
 					}

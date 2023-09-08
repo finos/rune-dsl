@@ -37,6 +37,7 @@ import com.rosetta.util.types.JavaInterface
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.rosetta.util.types.JavaReferenceType
 import java.util.Collections
+import java.util.Arrays
 
 class RuleGenerator {
 	@Inject extension JavaTypeTranslator
@@ -167,7 +168,7 @@ class RuleGenerator {
 				        		.filter(«doEvaluateLambdaParam2» -> «doEvaluateLambdaParam2».getKey() instanceof «RuleIdentifier»)
 				        		.findAny()
 				                .map(«doEvaluateLambdaParam2» -> «doEvaluateLambdaParam2».getValue().getData())
-				                .map(«doEvaluateLambdaParam2» -> («output.toBuilderType»)«IF output.isMulti»(«doEvaluateLambdaParam2» instanceof «List» ? «doEvaluateLambdaParam2» : «List».of(«doEvaluateLambdaParam2»))«ELSE»«doEvaluateLambdaParam2»«ENDIF»)
+				                .map(«doEvaluateLambdaParam2» -> («output.toBuilderType»)«IF output.isMulti»(«doEvaluateLambdaParam2» instanceof «List» ? «doEvaluateLambdaParam2» : «Arrays».asList(«doEvaluateLambdaParam2»))«ELSE»«doEvaluateLambdaParam2»«ENDIF»)
 				                .orElse(null);
 				        «ENDIF»
 					}
