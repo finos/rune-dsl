@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,18 +77,12 @@ public class InMemoryJavacCompiler {
 	 * @return Map containing instances of all compiled classes
 	 * @throws Exception
 	 */
-	public Map<String, Class<?>> compileAll() throws Exception {
+	public Map<String, Class<?>> compileAll() {
 		if (sourceCodes.size() == 0) {
 			return Collections.emptyMap();
 		}
 		Collection<SourceCode> compilationUnits = sourceCodes.values();
-		CompiledCode[] code;
 
-		code = new CompiledCode[compilationUnits.size()];
-		Iterator<SourceCode> iter = compilationUnits.iterator();
-		for (int i = 0; i < code.length; i++) {
-			code[i] = new CompiledCode(iter.next().getClassName());
-		}
 		DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
 		ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(
 				javac.getStandardFileManager(null, null, StandardCharsets.UTF_8), classLoader);
@@ -141,8 +134,12 @@ public class InMemoryJavacCompiler {
 		}
 
 		Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
-		for (String className : sourceCodes.keySet()) {
-			classes.put(className, classLoader.loadClass(className));
+		try {
+			for (String className : sourceCodes.keySet()) {
+				classes.put(className, classLoader.loadClass(className));
+			}
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 		return classes;
 	}
