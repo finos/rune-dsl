@@ -277,7 +277,7 @@ RosettaCardinality:
  */ 
 
 RosettaClassSynonym:
-	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*
+	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource|QualifiedName])*
 	 ('value' value=RosettaClassSynonymValue)?
 	 ('meta' metaValue = RosettaMetaSynonymValue)?
 	 ']'
@@ -289,7 +289,7 @@ RosettaClassSynonymValue returns RosettaSynonymValueBase:
 ;
 
 RosettaSynonym:
-	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource])*
+	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource|QualifiedName])*
 	body=RosettaSynonymBody
 	']'
 ;
@@ -327,7 +327,7 @@ RosettaEnumSynonym:
 	 * is because it needs to accommodate integer values for FIX while there is no Tag nor ComponentID
 	 * an optional definition field has also been added, while the synonymValue is of type STRING to accommodate peculiar values
 	 */
-	'[' 'synonym' sources+=[RosettaSynonymSource] (',' sources += [RosettaSynonymSource])*  
+	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource|QualifiedName])*  
 		'value' synonymValue=STRING ('definition' definition=STRING)?  
 		('pattern' patternMatch=STRING patternReplace=STRING)? 
 		(removeHtml ?= 'removeHtml')?
@@ -407,7 +407,7 @@ RosettaMapPathValue:
 ;
 
 RosettaMapTestFunc:
-	'condition-func' func=[RosettaCallableWithArgs] ('condition-path' predicatePath=RosettaMapPathValue)?
+	'condition-func' func=[RosettaCallableWithArgs|QualifiedName] ('condition-path' predicatePath=RosettaMapPathValue)?
 ;
 
 
@@ -437,7 +437,7 @@ RosettaBody:
 ;
 
 RosettaCorpus:
-	'corpus' corpusType=ID (body=[RosettaBody])? (displayName=STRING)? RosettaNamed RosettaDefinable?
+	'corpus' corpusType=ID (body=[RosettaBody|QualifiedName])? (displayName=STRING)? RosettaNamed RosettaDefinable?
 ;
 
 RosettaSegment:
@@ -501,7 +501,7 @@ Integer returns ecore::EInt hidden():
  * QualifiableConfiguration
  */
 RosettaQualifiableConfiguration:
-	qType = RosettaQualifiableType 'root' rosettaClass = [Data|ValidID]';'
+	qType = RosettaQualifiableType 'root' rosettaClass = [Data|QualifiedName]';'
 ;
 
 enum RosettaQualifiableType :
@@ -632,7 +632,7 @@ ListOperation returns RosettaExpression:
 			|({ToNumberOperation.argument=current} operator='to-number')
 			|({ToIntOperation.argument=current} operator='to-int')
 			|({ToTimeOperation.argument=current} operator='to-time')
-			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration])
+			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -665,7 +665,7 @@ ListOperation returns RosettaExpression:
 			|({ToNumberOperation} operator='to-number')
 			|({ToIntOperation} operator='to-int')
 			|({ToTimeOperation} operator='to-time')
-			|({ToEnumOperation} operator='to-enum' enumeration=[RosettaEnumeration])
+			|({ToEnumOperation} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -698,7 +698,7 @@ ListOperation returns RosettaExpression:
 			|({ToNumberOperation.argument=current} operator='to-number')
 			|({ToIntOperation.argument=current} operator='to-int')
 			|({ToTimeOperation.argument=current} operator='to-time')
-			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration])
+			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -729,11 +729,11 @@ RosettaCalcPrimary returns RosettaExpression:
 ;
 
 RosettaCalcConstructorExpression returns RosettaExpression:
-	{RosettaConstructorExpression} typeCall=TypeCall '{' (values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)*)? (',' | ',' implicitEmpty?='...')? '}'
+	{RosettaConstructorExpression} typeCall=TypeCall '{' ((values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)* (',' | ',' implicitEmpty?='...')?) | implicitEmpty?='...') '}'
 ;
 
 ConstructorKeyValuePair:
-	key=[RosettaFeature] ':' value=RosettaCalcExpressionWithAsKey
+	key=[RosettaFeature|ValidID] ':' value=RosettaCalcExpressionWithAsKey
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:
@@ -764,23 +764,23 @@ fragment ExternalAnnotationSource:
 ;
 // @Compat: move common parts to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed.
 RosettaExternalSynonymSource:
-		'synonym' 'source' RosettaNamed ('extends' superSources+=[RosettaSynonymSource]  (',' superSources+=[RosettaSynonymSource])* )?
+		'synonym' 'source' RosettaNamed ('extends' superSources+=[RosettaSynonymSource|QualifiedName]  (',' superSources+=[RosettaSynonymSource|QualifiedName])* )?
 		ExternalAnnotationSource
 ;
 
 RosettaExternalRuleSource:
-		'rule' 'source' RosettaNamed ('extends' superSources+=[RosettaExternalRuleSource]  (',' superSources+=[RosettaExternalRuleSource])* )?
+		'rule' 'source' RosettaNamed ('extends' superSources+=[RosettaExternalRuleSource|QualifiedName]  (',' superSources+=[RosettaExternalRuleSource|QualifiedName])* )?
 		ExternalAnnotationSource
 ;
 
 RosettaExternalClass:
-	data=[Data] ':'
+	data=[Data|QualifiedName] ':'
 		(externalClassSynonyms += RosettaExternalClassSynonym)*
 		(regularAttributes += RosettaExternalRegularAttribute)*
 ;
 
 RosettaExternalEnum:
-	enumeration=[RosettaEnumeration] ':'
+	enumeration=[RosettaEnumeration|QualifiedName] ':'
 		(regularValues += RosettaExternalEnumValue)*
 ;
 
@@ -796,7 +796,7 @@ RosettaExternalRegularAttribute:
 ;
 
 RosettaExternalEnumValue: 
-	operator=ExternalValueOperator enumRef=[RosettaEnumValue]
+	operator=ExternalValueOperator enumRef=[RosettaEnumValue|ValidID]
 		externalEnumSynonyms += RosettaExternalEnumSynonym*
 ;
 
@@ -826,11 +826,11 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|ValidID] corpuses+=([RosettaCorpus|ValidID])+ (=>segments+=RosettaSegmentRef)*
+	body=[RosettaBody|QualifiedName] corpuses+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
 ;
 
 RosettaSegmentRef:
-	segment=[RosettaSegment|ValidID] segmentRef=STRING
+	segment=[RosettaSegment|QualifiedName] segmentRef=STRING
 ;
 
 /*****************************************
@@ -842,14 +842,14 @@ RosettaBlueprintReport:
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'from' inputType=TypeCall
 	'when'
-	eligibilityRules+=[RosettaBlueprint] ('and' eligibilityRules+=[RosettaBlueprint])*
-	('using' 'standard' reportingStandard=[RosettaCorpus])? // @Compat: this attribute is unnecessary
+	eligibilityRules+=[RosettaBlueprint|QualifiedName] ('and' eligibilityRules+=[RosettaBlueprint|QualifiedName])*
+	('using' 'standard' reportingStandard=[RosettaCorpus|QualifiedName])? // @Compat: this attribute is unnecessary
 	'with' 'type' reportType=[Data|QualifiedName]
-	('with' 'source' ruleSource=[RosettaExternalRuleSource])?
+	('with' 'source' ruleSource=[RosettaExternalRuleSource|QualifiedName])?
 ;
 
 RosettaRuleReference:
-	'[' 'ruleReference' reportingRule=[RosettaBlueprint] ']'	
+	'[' 'ruleReference' reportingRule=[RosettaBlueprint|QualifiedName] ']'	
 ;
 
 RosettaBlueprint:
@@ -896,7 +896,7 @@ BlueprintOr:
 ;
 
 BlueprintRef:
-	blueprint=[RosettaBlueprint]
+	blueprint=[RosettaBlueprint|QualifiedName]
 ;
 
 BlueprintExtract:
