@@ -364,7 +364,7 @@ public class InMemoryJavacCompiler {
 	     * obeyed.
 	     */
 	    public InputStream openInputStream() throws IOException {
-	        throw new UnsupportedOperationException();
+	        return toUri().toURL().openStream();
 	    }
 
 	    /**
