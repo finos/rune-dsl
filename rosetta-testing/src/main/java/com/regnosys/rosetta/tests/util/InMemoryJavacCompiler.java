@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.tests.util;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,12 +21,12 @@ import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 import org.mdkt.compiler.CompilationException;
 import org.mdkt.compiler.CompiledCode;
 import org.mdkt.compiler.DynamicClassLoader;
-import org.mdkt.compiler.SourceCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,6 @@ public class InMemoryJavacCompiler {
 	 * Compile all sources
 	 *
 	 * @return Map containing instances of all compiled classes
-	 * @throws Exception
 	 */
 	public Map<String, Class<?>> compileAll() {
 		if (sourceCodes.size() == 0) {
@@ -150,9 +150,8 @@ public class InMemoryJavacCompiler {
 	 * @param className
 	 * @param sourceCode
 	 * @return
-	 * @throws Exception
 	 */
-	public Class<?> compile(String className, String sourceCode) throws Exception {
+	public Class<?> compile(String className, String sourceCode) {
 		return addSource(className, sourceCode).compileAll().get(className);
 	}
 
@@ -162,10 +161,9 @@ public class InMemoryJavacCompiler {
 	 * @param className
 	 * @param sourceCode
 	 * @return
-	 * @throws Exception
 	 * @see {@link #compileAll()}
 	 */
-	public InMemoryJavacCompiler addSource(String className, String sourceCode) throws Exception {
+	public InMemoryJavacCompiler addSource(String className, String sourceCode) {
 		String normalizedSource = sourceCode.replace("\r\n", "\n").replace("\t", "    ");
 		sourceCodes.put(className, new SourceCode(className, normalizedSource));
 		return this;
@@ -206,4 +204,25 @@ public class InMemoryJavacCompiler {
 			return cl;
 		}
 	}
+	
+	private class SourceCode extends SimpleJavaFileObject {
+		private String contents = null;
+		private String className;
+
+		public SourceCode(String className, String contents) {
+			super(URI.create("string:///" + className.replace('.', '/')
+					+ Kind.SOURCE.extension), Kind.SOURCE);
+			this.contents = contents;
+			this.className = className;
+		}
+
+		public String getClassName() {
+			return className;
+		}
+
+		public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+			return contents;
+		}
+	}
+
 }
