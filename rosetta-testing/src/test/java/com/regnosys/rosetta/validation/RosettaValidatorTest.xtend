@@ -34,7 +34,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void validConstructor() {
 		'''
 		type A:
-			a int (1..1)
+			value int (1..1)
 			b string (0..*)
 			c A (0..1)
 		
@@ -42,9 +42,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			output: result A (1..1)
 			set result:
 				A {
-					c: A { a: 0, ... },
+					c: A { value: 0, ... },
 					b: ["A", "B"],
-					a: 2*21,
+					value: 2*21,
 				}
 		'''.parseRosettaWithNoIssues
 	}

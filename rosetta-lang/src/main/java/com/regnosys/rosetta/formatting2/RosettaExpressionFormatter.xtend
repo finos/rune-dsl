@@ -126,7 +126,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
 				.prepend[oneSpace]
 				.append[newLine],
-			expr.regionFor.keyword(rightCurlyBracketKeyword_5)
+			expr.regionFor.keyword(rightCurlyBracketKeyword_4)
 				.prepend[newLine],
 			[indent]
 		)
