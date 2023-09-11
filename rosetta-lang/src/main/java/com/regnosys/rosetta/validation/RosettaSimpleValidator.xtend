@@ -371,9 +371,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (potentialCodeBlock instanceof RosettaRootElement) {
 			return potentialCodeBlock
 		}
-		val left = potentialCodeBlock.findDirectKeyword('(') ?: potentialCodeBlock.findDirectKeyword('[')
+		val pairs = #{'(' -> ')', '[' -> ']', '{' -> '}'}
+		val left = pairs.keySet.stream
+			.map[potentialCodeBlock.findDirectKeyword(it)]
+			.filter[it !== null]
+			.findFirst.orElse(null)
 		if (left !== null) {
-			val right = potentialCodeBlock.findDirectKeyword(')') ?: potentialCodeBlock.findDirectKeyword(']')
+			val right = potentialCodeBlock.findDirectKeyword(pairs.get(left.text))
 			
 			if (left.offset <= node.offset && (right === null || right.offset >= node.offset)) {
 				return potentialCodeBlock
@@ -1295,7 +1299,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		} else {
 			if (!absentAttributes.empty) {
-				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF».''', ele.typeCall, null)
+				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
 			}
 		}
 	}
