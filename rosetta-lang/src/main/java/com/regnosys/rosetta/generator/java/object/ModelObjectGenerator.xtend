@@ -2,22 +2,24 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.ImmutableList
-import com.google.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaParametrizedType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.utils.DottedPath
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.rosetta.model.lib.annotations.RosettaAttribute
+import com.rosetta.model.lib.annotations.RosettaDataType
 import com.rosetta.model.lib.meta.RosettaMetaData
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParameterizedType
 import java.util.Collection
 import java.util.Collections
 import java.util.List
@@ -29,17 +31,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.rosetta.model.lib.annotations.RosettaAttribute
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.TypeSystem
-import com.rosetta.util.types.JavaClass
-import com.rosetta.util.DottedPath
-import com.rosetta.util.types.JavaParameterizedType
-import javax.inject.Inject
-import com.rosetta.model.lib.annotations.RosettaDataType
 
 class ModelObjectGenerator {
 	
@@ -147,15 +138,15 @@ class ModelObjectGenerator {
 		}
 
 		@Override
-        default Class<? extends «javaType»> getType() {
-            return «javaType».class;
-        }
+		default Class<? extends «javaType»> getType() {
+			return «javaType».class;
+		}
 
         «FOR pt :interfaces.filter(JavaParameterizedType).filter[getBaseType.simpleName=="ReferenceWithMeta" || getBaseType.simpleName=="FieldWithMeta"]»
-            @Override
-            default Class<«pt.getArguments.head»> getValueType() {
-                return «pt.getArguments.head».class;
-            }
+		@Override
+        default Class<«pt.getArguments.head»> getValueType() {
+            return «pt.getArguments.head».class;
+        }
         «ENDFOR»
 
         «d.processMethod»'''
