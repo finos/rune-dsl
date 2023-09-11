@@ -1267,39 +1267,41 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkConstructorExpression(RosettaConstructorExpression ele) {
 		val rType = ele.RType
-		val baseRType = rType.stripFromTypeAliases
-		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
-			error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
-		}
-		
-		val seenFeatures = newHashSet
-		for (pair : ele.values) {
-			val feature = pair.key
-			val expr = pair.value
-			if (!seenFeatures.add(feature)) {
-				error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
+		if (rType !== null) {
+			val baseRType = rType.stripFromTypeAliases
+			if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
+				error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
 			}
-			checkType(feature.RTypeOfFeature, expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
-			if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
-				error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
-					CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+			
+			val seenFeatures = newHashSet
+			for (pair : ele.values) {
+				val feature = pair.key
+				val expr = pair.value
+				if (!seenFeatures.add(feature)) {
+					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
+				}
+				checkType(feature.RTypeOfFeature, expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
+					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
+						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+				}
 			}
-		}
-		val absentAttributes = rType
-			.allFeatures(ele)
-			.filter[!seenFeatures.contains(it)]
-		val requiredAbsentAttributes = absentAttributes
-			.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
-		if (ele.implicitEmpty) {
-			if (!requiredAbsentAttributes.empty) {
-				error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
-			}
-			if (absentAttributes.size === requiredAbsentAttributes.size) {
-				error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
-			}
-		} else {
-			if (!absentAttributes.empty) {
-				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
+			val absentAttributes = rType
+				.allFeatures(ele)
+				.filter[!seenFeatures.contains(it)]
+			val requiredAbsentAttributes = absentAttributes
+				.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
+			if (ele.implicitEmpty) {
+				if (!requiredAbsentAttributes.empty) {
+					error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
+				}
+				if (absentAttributes.size === requiredAbsentAttributes.size) {
+					error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
+				}
+			} else {
+				if (!absentAttributes.empty) {
+					error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
+				}
 			}
 		}
 	}

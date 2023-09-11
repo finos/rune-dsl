@@ -400,7 +400,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseMapOperation(MapOperation expr, Boolean breakOnClosureParameter) {
-		if (expr.function.body.isMulti(breakOnClosureParameter)) {
+		if (expr.function !== null && expr.function.body.isMulti(breakOnClosureParameter)) {
 			true
 		} else {
 			expr.argument.isMulti(breakOnClosureParameter)
@@ -478,7 +478,11 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseThenOperation(ThenOperation expr, Boolean breakOnClosureParameter) {
-		expr.function.body.isMulti(breakOnClosureParameter)
+		if (expr.function !== null) {
+			expr.function.body.isMulti(breakOnClosureParameter)
+		} else {
+			false
+		}
 	}
 	
 	override protected caseToEnumOperation(ToEnumOperation expr, Boolean breakOnClosureParameter) {
