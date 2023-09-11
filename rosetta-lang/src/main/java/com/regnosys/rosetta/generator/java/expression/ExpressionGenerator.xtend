@@ -952,7 +952,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
 				'''
-					«value.javaCode(scope)»
+					«value.ensureMapperJavaCode(scope, isMulti)»
 						.getItems()
 						.map(«item» -> «metaClass».builder()
 							.setExternalReference(«item».getMappedObject().getMeta().getExternalKey())
@@ -966,11 +966,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				val m = lambdaScope.createUniqueIdentifier("m")
 				'''
 					«metaClass».builder()
-						.setGlobalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+						.setGlobalReference(«Optional».ofNullable(«value.ensureMapperJavaCode(scope, isMulti)».get())
 							.map(«r» -> «r».getMeta())
 							.map(«m» -> «m».getGlobalKey())
 							.orElse(null))
-						.setExternalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+						.setExternalReference(«Optional».ofNullable(«value.ensureMapperJavaCode(scope, isMulti)».get())
 							.map(«r» -> «r».getMeta())
 							.map(«m» -> «m».getExternalKey())
 							.orElse(null))
@@ -978,7 +978,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				'''
 			}
 		} else {
-			'''«value.javaCode(scope)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
+			'''«value.ensureMapperJavaCode(scope, isMulti)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
 		}
 	}
 
