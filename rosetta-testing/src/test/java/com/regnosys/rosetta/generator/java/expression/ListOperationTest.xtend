@@ -2733,7 +2733,7 @@ class ListOperationTest {
 										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c")));
 								}
 								else {
-									return MapperC.ofNull();
+									return MapperC.<String>ofNull();
 								}
 							}).getMulti();
 							
