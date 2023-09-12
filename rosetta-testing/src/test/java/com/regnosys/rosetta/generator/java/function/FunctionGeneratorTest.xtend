@@ -42,6 +42,38 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canConstructTypeWithEmptyValue() {
+		val code = '''
+		type A:
+			prop1 int (0..1)
+			prop2 int (0..*)
+			prop3 A (0..1)
+			prop4 A (0..*)
+		
+		func CreateA:
+			output: result A (1..1)
+			set result:
+				A {
+					prop1: empty,
+					prop2: empty,
+					prop3: empty,
+					prop4: empty,
+				}
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val a = classes.createInstanceUsingBuilder('A', #{
+			'prop1' -> null,
+			'prop2' -> #[],
+			'prop3' -> null,
+			'prop4' -> #[]
+		})
+		
+		val createA = classes.createFunc("CreateA");
+		assertEquals(a, createA.invokeFunc(a.class, #[]))
+	}
+	
+	@Test
 	def void constructorExpression() {
 		val code = '''
 		type A:
@@ -4563,7 +4595,7 @@ class FunctionGeneratorTest {
                 					return MapperS.of(Boolean.valueOf(true));
                 				}
                 				else {
-                					return MapperS.ofNull();
+                					return MapperS.<Boolean>ofNull();
                 				}
                 			}).get())).get();
                 			
