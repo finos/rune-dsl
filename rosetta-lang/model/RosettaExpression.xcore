@@ -122,10 +122,16 @@ class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
 	boolean explicitArguments
 	contains RosettaExpression[] rawArgs
 	
-	contains RosettaExpression implicitArgument
+	contains RosettaImplicitVariable implicitArgument
 	
 	op RosettaExpression[] getArgs() {
 		if (!explicitArguments && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
+			if (implicitArgument === null) {
+				val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+				def.setName("item");
+				def.setGenerated(true);
+				implicitArgument = def
+			}
 			return new BasicEList(#[implicitArgument])
 		}
 		return rawArgs
@@ -138,13 +144,12 @@ class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
 			}
 		} else {
 			if (!generatedInputWasSet) {
-				implicitArgument = e
 				generatedInputWasSet = true
 			}
 		}
 	}
 	op boolean needsGeneratedInput() {
-		!explicitArguments
+		false
 	}
 }
 
