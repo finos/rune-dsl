@@ -113,6 +113,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
 import com.regnosys.rosetta.types.builtin.RRecordType
 import java.util.stream.Collectors
+import com.rosetta.util.types.JavaReferenceType
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 
@@ -142,16 +143,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		return importWildcard(method(ExpressionOperators, methodName))
 	}
 
-	private def StringConcatenationClient ensureMapperJavaCode(RosettaExpression expr, JavaScope scope, boolean multi) {
+	private def StringConcatenationClient ensureMapperJavaCode(RosettaExpression expr, JavaReferenceType expectedType, boolean expectedMulti, JavaScope scope) {
 		if (expr.isEmpty) {
-			'''«IF multi»«MapperC»«ELSE»«MapperS»«ENDIF».ofNull()'''
-		} else if (expr instanceof RosettaConditionalExpression && !multi) {
+			'''«IF expectedMulti»«MapperC»«ELSE»«MapperS»«ENDIF».<«expectedType»>ofNull()'''
+		} else if (expr instanceof RosettaConditionalExpression && !expectedMulti) {
 			if (expr.evaluatesToComparisonResult) {
 				'''((«ComparisonResult»)«expr.javaCode(scope)»).asMapper()'''
 			} else {
-				'''((«MapperS»<«typeProvider.getRType(expr).toJavaReferenceType»>)«expr.javaCode(scope)»)'''
+				'''((«MapperS»<«expectedType»>)«expr.javaCode(scope)»)'''
 			}
-		} else if (expr.evaluatesToComparisonResult && !multi) {
+		} else if (expr.evaluatesToComparisonResult && !expectedMulti) {
 			'''«expr.javaCode(scope)».asMapper()'''
 		} else {
 			expr.javaCode(scope)
@@ -180,7 +181,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				«expr.childElseThen.genElseIf(scope)»
 			«ELSE»
 				else {
-					return «expr.elsethen.ensureMapperJavaCode(scope, cardinalityProvider.isMulti(expr.ifthen))»;
+					return «expr.elsethen.ensureMapperJavaCode(typeProvider.getRType(expr.ifthen).toJavaReferenceType, cardinalityProvider.isMulti(expr.ifthen), scope)»;
 				}
 			«ENDIF»
 		'''
@@ -196,7 +197,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 					«next.childElseThen.genElseIf(scope)»
 				«ELSE»
 					else {
-						return «next.elsethen.ensureMapperJavaCode(scope, cardinalityProvider.isMulti(next.ifthen))»;
+						return «next.elsethen.ensureMapperJavaCode(typeProvider.getRType(next.ifthen).toJavaReferenceType, cardinalityProvider.isMulti(next.ifthen), scope)»;
 					}
 				«ENDIF»
 			«ENDIF»
@@ -355,8 +356,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 					.join(«IF expr.right !== null»«expr.right.javaCode(scope)»«ELSE»«MapperS».of("")«ENDIF»)'''
 			}
 			default: {
-				toComparisonOp('''«expr.left.ensureMapperJavaCode(scope, false)»''',
-					expr.operator, '''«expr.right.ensureMapperJavaCode(scope, false)»''',
+				toComparisonOp('''«expr.left.ensureMapperJavaCode(leftRtype.toJavaReferenceType, false, scope)»''',
+					expr.operator, '''«expr.right.ensureMapperJavaCode(rightRtype.toJavaReferenceType, false, scope)»''',
 					(expr as ModifiableBinaryOperation).cardMod)
 			}
 		}
@@ -497,7 +498,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	private def StringConcatenationClient buildListOperationNoBody(RosettaUnaryOperation op, String name,
 		JavaScope scope) {
 		'''
-		«op.argument.ensureMapperJavaCode(scope, true)»
+		«op.argument.ensureMapperJavaCode(typeProvider.getRType(op.argument).toJavaReferenceType, true, scope)»
 			.«name»()'''
 	}
 
@@ -513,7 +514,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	private def StringConcatenationClient buildSingleItemListOperation(RosettaFunctionalOperation op, String name,
 		JavaScope scope) {
 		'''
-		«op.argument.ensureMapperJavaCode(scope, false)»
+		«op.argument.ensureMapperJavaCode(typeProvider.getRType(op.argument).toJavaReferenceType, false, scope)»
 			.«name»(«op.function.inlineFunction(scope, true, true)»)'''
 	}
 
@@ -681,16 +682,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	override protected caseFilterOperation(FilterOperation expr, JavaScope context) {
 		if (!expr.isPreviousOperationMulti) {
 			'''
-			«expr.argument.ensureMapperJavaCode(context, false)»
+			«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, false, context)»
 				.filterSingleNullSafe(«expr.function.inlineFunction(context, true, false)»)'''
 		} else {
 			if (expr.argument.isOutputListOfLists) {
 				'''
-				«expr.argument.ensureMapperJavaCode(context, true)»
+				«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, true, context)»
 					.filterListNullSafe(«expr.function.inlineFunction(context, true, false)»)'''
 			} else {
 				'''
-				«expr.argument.ensureMapperJavaCode(context, true)»
+				«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, true, context)»
 					.filterItemNullSafe(«expr.function.inlineFunction(context, true, false)»)'''
 			}
 		}
@@ -751,7 +752,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		if (!expr.isPreviousOperationMulti) {
 			if (isBodyMulti) {
 				'''
-				«expr.argument.ensureMapperJavaCode(context, false)»
+				«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, false, context)»
 					.mapSingleToList(«funcExpr»)'''
 			} else {
 				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", context)
@@ -760,17 +761,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 			if (expr.argument.isOutputListOfLists) {
 				if (isBodyMulti) {
 					'''
-					«expr.argument.ensureMapperJavaCode(context, true)»
+					«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, true, context)»
 						.mapListToList(«funcExpr»)'''
 				} else {
 					'''
-					«expr.argument.ensureMapperJavaCode(context, true)»
+					«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, true, context)»
 						.mapListToItem(«funcExpr»)'''
 				}
 			} else {
 				if (isBodyMulti) {
 					'''
-					«expr.argument.ensureMapperJavaCode(context, true)»
+					«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, true, context)»
 						.mapItemToList(«funcExpr»)'''
 				} else {
 					buildSingleItemListOperationOptionalBody(expr, "mapItem", context)
@@ -885,13 +886,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	override protected caseThenOperation(ThenOperation expr, JavaScope context) {
 		val funcExpr = expr.function.inlineFunction(context, false, true)
 		'''
-		«expr.argument.ensureMapperJavaCode(context, cardinalityProvider.isMulti(expr.argument))»
+		«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, cardinalityProvider.isMulti(expr.argument), context)»
 			.apply(«funcExpr»)'''
 	}
 
 	private def StringConcatenationClient conversionOperation(RosettaUnaryOperation expr, JavaScope context,
 		StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
-		'''«expr.argument.ensureMapperJavaCode(context, false)».checkedMap("«expr.operator»", «conversion», «errorClass».class)'''
+		'''«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, false, context)».checkedMap("«expr.operator»", «conversion», «errorClass».class)'''
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, JavaScope context) {
@@ -914,7 +915,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		} else {
 			'''«Object»::toString'''
 		}
-		'''«expr.argument.ensureMapperJavaCode(context, false)».map("«expr.operator»", «toStringMethod»)'''
+		'''«expr.argument.ensureMapperJavaCode(typeProvider.getRType(expr.argument).toJavaReferenceType, false, context)».map("«expr.operator»", «toStringMethod»)'''
 	}
 
 	override protected caseToTimeOperation(ToTimeOperation expr, JavaScope context) {
@@ -952,7 +953,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
 				'''
-					«value.javaCode(scope)»
+					«value.ensureMapperJavaCode(metaClass, isMulti, scope)»
 						.getItems()
 						.map(«item» -> «metaClass».builder()
 							.setExternalReference(«item».getMappedObject().getMeta().getExternalKey())
@@ -966,11 +967,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				val m = lambdaScope.createUniqueIdentifier("m")
 				'''
 					«metaClass».builder()
-						.setGlobalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+						.setGlobalReference(«Optional».ofNullable(«value.ensureMapperJavaCode(metaClass, isMulti, scope)».get())
 							.map(«r» -> «r».getMeta())
 							.map(«m» -> «m».getGlobalKey())
 							.orElse(null))
-						.setExternalReference(«Optional».ofNullable(«value.javaCode(scope)».get())
+						.setExternalReference(«Optional».ofNullable(«value.ensureMapperJavaCode(metaClass, isMulti, scope)».get())
 							.map(«r» -> «r».getMeta())
 							.map(«m» -> «m».getExternalKey())
 							.orElse(null))
@@ -978,7 +979,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				'''
 			}
 		} else {
-			'''«value.javaCode(scope)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
+			val clazz = typeProvider.getRTypeOfFeature(feature).toJavaReferenceType
+			'''«value.ensureMapperJavaCode(clazz, isMulti, scope)»«IF isMulti».getMulti()«ELSE».get()«ENDIF»'''
 		}
 	}
 

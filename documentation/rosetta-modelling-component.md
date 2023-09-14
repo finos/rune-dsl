@@ -2089,51 +2089,66 @@ reporting rule VehicleIsM:
 
 ##### Repeat Instruction
 
-The syntax also supports the reporting of *repeatable* fields, when such fields can be of multiple, variable cardinality depending on the scenario. The `repeatable` keyword specifies that a set of extract instruction must be reported as a repeatable set of fields, based on a starting point with multiple cardinality.
+The syntax also supports the reporting of *repeatable* fields, when such fields can be of multiple, variable cardinality depending on the scenario. This can be achieved using the [constructor syntax](#data-type-and-record-constructor), in combination with an `extract` operation.
 
-The syntax is:
+Typically, this will look as follows:
 
 ``` Haskell
-extract repeatable <ExpressionWithMultipleCardinality> then ( <ExtractInstruction1>, <ExtractInstructuction2>, <...> )
+<...>
+then extract <type name> { attribute1: <...>, attribute2: <...>, <etc> }
 ```
 
 For example, in the CFTC Part 45 regulations, fields 33-35 require the reporting of a notional quantity schedule. For each quantity schedule step, the notional amount, effective date and end date must be reported.
 
-In the example below, the `repeatable` keyword in reporting rule `NotionalAmountScheduleLeg1` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data. The rules specified within the brackets define the fields that should be reported for each repeating step.
+In the example below, we have created a separate rule for each attribute of the resulting `NotionalAmountScheduleLeg1Report` type. `repeatable` keyword in reporting rule `NotionalAmountScheduleLeg1` specifies that the extracted list of quantity notional schedule steps should be reported as a repeating set of data. The rules specified within the brackets define the fields that should be reported for each repeating step.
 
 ``` Haskell
 reporting rule NotionalAmountScheduleLeg1 from ReportableEvent: <"Notional Amount Schedule">
-	[legacy-syntax]
 	[regulatoryReference CFTC Part45 appendix "1" dataElement "33-35" field "Notional Amount Schedule"
 		rationale "Model only applicable for back-to-back schedules. Repeatable field 35 (endDate) not applicable and therefore removed"
-        rationale_author "DRR Peer Review Group - 03/12/21"
+    rationale_author "DRR Peer Review Group - 03/12/21"
 		provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
-    extract TradeForEvent( ReportableEvent ) then
-    extract repeatable GetLeg1ResolvablePriceQuantity( Trade ) -> quantitySchedule -> datedValue then
-    (
-        NotionalAmountScheduleLeg1Amount,
-        NotionalAmountScheduleLeg1EffectiveDate
-    )
+  extract TradeForEvent 
+  then extract GetLeg1ResolvablePriceQuantity -> quantitySchedule -> datedValue 
+  then extract NotionalAmountScheduleLeg1Report {
+      amount: NotionalAmountScheduleLeg1Amount,
+      effectiveDate: NotionalAmountScheduleLeg1EffectiveDate
+    }
 
 reporting rule NotionalAmountScheduleLeg1Amount from DatedValue: <"Notional amount in effect on associated effective date of leg 1">
-	[legacy-syntax]
 	[regulatoryReference CFTC Part45 appendix "1" dataElement "33" field "Notional amount in effect on associated effective date of leg 1"
-        provision "For each leg of the transaction, where applicable:
-                   for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:
-                        - Notional amount which becomes effective on the associated unadjusted effective date.
-                   The initial notional amount and associated unadjusted effective and end date are reported as the first values of the schedule.
-                   This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
-		CDENotionalAmountScheduleAmount
-		    as "33/35-$ 33 Notional amount leg 1"
+    provision "For each leg of the transaction, where applicable:
+                for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:
+                    - Notional amount which becomes effective on the associated unadjusted effective date.
+                The initial notional amount and associated unadjusted effective and end date are reported as the first values of the schedule.
+                This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+	CDENotionalAmountScheduleAmount
+		  as "33/35-$ 33 Notional amount leg 1"
 
-  reporting rule NotionalAmountScheduleLeg1EffectiveDate from DatedValue: <"Effective date of the notional amount of leg 1">
-  	[legacy-syntax]
-  	[regulatoryReference CFTC Part45 appendix "1" dataElement "34" field "Effective date of the notional amount of leg 1"
-          provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule: Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
-  		CDENotionalAmountScheduleEffectiveDate
-  		    as "33/35-$ 34 Effective date leg 1"
+reporting rule NotionalAmountScheduleLeg1EffectiveDate from DatedValue: <"Effective date of the notional amount of leg 1">
+  [regulatoryReference CFTC Part45 appendix "1" dataElement "34" field "Effective date of the notional amount of leg 1"
+    provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:     Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
+  CDENotionalAmountScheduleEffectiveDate
+  		as "33/35-$ 34 Effective date leg 1"
 ```
 
 {{< notice info "Note" >}}
 The `-$` symbol in the label is used to index the repeatable group, to ensure that they appear in logical order in the report.
 {{< /notice >}}
+
+In order for the labels to be linked to the right attributes, they should be specified as `ruleReference` annotations on the `NotionalAmountScheduleLeg1Report` type, i.e.,
+
+```
+type CFTCPart43TransactionReport:
+    [rootType]
+    ...
+    notionalAmountScheduleLeg1 NotionalAmountScheduleLeg1Report (0..*)
+      [ruleReference NotionalAmountScheduleLeg1] // this rule reference is used to compute the value of the `notionalAmountScheduleLeg1` attribute
+    ...
+
+type NotionalAmountScheduleLeg1Report:
+    amount number (1..1)
+        [ruleReference NotionalAmountScheduleLeg1Amount] // this rule reference is used to link the label "33/35-$ 33 Notional amount leg 1" to this attribute
+    effectiveDate date (1..1)
+        [ruleReference NotionalAmountScheduleLeg1EffectiveDate]
+```
