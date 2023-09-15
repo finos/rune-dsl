@@ -51,7 +51,7 @@ class EnumGenerator {
 			«FOR value: allEnumsValues(e) SEPARATOR ',\n' AFTER ';'»
 				«javadoc(value)»
 				«value.contributeAnnotations»
-				@«com.rosetta.model.lib.annotations.RosettaEnumValue»("«value.name»") «convertValuesWithDisplay(value)»
+				@«com.rosetta.model.lib.annotations.RosettaEnumValue»(value = "«value.name»"«IF value.display !== null», displayName = "«value.display»"«ENDIF») «convertValuesWithDisplay(value)»
 			«ENDFOR»
 		
 			private static «Map»<«String», «e.name»> values;
