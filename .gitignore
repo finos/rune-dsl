@@ -10,7 +10,7 @@ build.acceleo
 *.class
 .DS_Store
 plugin.xml_gen
-**/.iml
+**/*.iml
 
 **/.settings
 **/src-gen/
