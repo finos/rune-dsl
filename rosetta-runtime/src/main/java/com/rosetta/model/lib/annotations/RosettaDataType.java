@@ -4,11 +4,15 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+
 @Documented
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RosettaClass {
+public @interface RosettaDataType {
 
 	String value() default "";
 	
+	Class<? extends RosettaModelObjectBuilder> builder();
+	
+	String version() default "";
 }

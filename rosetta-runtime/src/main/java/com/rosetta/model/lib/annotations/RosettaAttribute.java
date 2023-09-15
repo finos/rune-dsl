@@ -5,10 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RosettaClass {
-
-	String value() default "";
+public @interface RosettaAttribute {
 	
+	String value()  default "";
 }

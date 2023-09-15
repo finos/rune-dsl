@@ -70,6 +70,15 @@ final class ExpandedAttribute {
 	def builtInType() {
 		getType.isBuiltInType
 	}
+	
+	def javaAnnotation() {
+		if (name === "key" && type.name === "Key" && type.model.name === "com.rosetta.model.lib.meta") {
+			return 'location'
+		} else if (name === "reference" && type.name === "Reference" && type.model.name === "com.rosetta.model.lib.meta") {
+			return 'address'
+		} else
+			return name
+	}
 }
 
 @Data
