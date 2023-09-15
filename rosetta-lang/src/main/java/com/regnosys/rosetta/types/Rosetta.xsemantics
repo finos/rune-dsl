@@ -150,7 +150,8 @@ auxiliary symbolListType(RosettaBlueprint c) {
 }
 
 auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
-	empty |- op.argument : var RListType receiverType
+	var RListType receiverType
+	empty |- op.argument : receiverType or receiverType = null
 	if (receiverType !== null) {
 		if (op instanceof ThenOperation) {
 			return receiverType
