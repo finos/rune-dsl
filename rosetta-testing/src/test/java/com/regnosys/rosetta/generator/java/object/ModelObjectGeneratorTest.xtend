@@ -59,7 +59,6 @@ class ModelObjectGeneratorTest {
 		code.compileToClasses
 	}
 
-
 	@Test
 	def void useBuilderAddMultipleTimes() {
 		val classes = '''
