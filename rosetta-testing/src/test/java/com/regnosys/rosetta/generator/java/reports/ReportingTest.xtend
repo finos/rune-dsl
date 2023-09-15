@@ -285,11 +285,11 @@ class ReportingTest {
 		
 		dateOfBirth: 1970-05-29
 		
-		nationality: UNITED_STATES_OF_AMERICA
+		nationality: UnitedStatesOfAmerica
 		
 		hasSpecialAbilities: true
 		
-		powers: [ARMOUR, FLIGHT, SUPERHUMAN_REFLEXES, SUPERHUMAN_STRENGTH]
+		powers: [Armour, Flight, SuperhumanReflexes, SuperhumanStrength]
 		
 		attribute:
 			heroInt: 9
@@ -300,10 +300,10 @@ class ReportingTest {
 		organisations:
 			name: Avengers
 			isGovernmentAgency: false
-			country: UNITED_STATES_OF_AMERICA
+			country: UnitedStatesOfAmerica
 			name: S.H.I.E.L.D.
 			isGovernmentAgency: true
-			country: UNITED_STATES_OF_AMERICA
+			country: UnitedStatesOfAmerica
 		
 		notModelled: Not modelled
 		'''
