@@ -21,6 +21,10 @@ class RosettaResourceDescriptionManager extends DerivedStateAwareResourceDescrip
 		super.isAffected(deltas, candidate, context) // TODO implement
 	}
 
+	/**
+	 * This is the same implementation as in `DerivedStateAwareResourceDescriptionManager`,
+	 * EXCEPT that this implementation does not remove derived state once installed.
+	 */
 	override IResourceDescription internalGetResourceDescription(Resource resource,
 			IDefaultResourceDescriptionStrategy strategy) {
 		if (resource instanceof DerivedStateAwareResource) {

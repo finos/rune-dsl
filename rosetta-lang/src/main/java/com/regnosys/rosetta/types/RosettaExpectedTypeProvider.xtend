@@ -22,7 +22,7 @@ class RosettaExpectedTypeProvider {
 		switch owner {
 			RosettaConditionalExpression case reference == ROSETTA_CONDITIONAL_EXPRESSION__IF:
 				BOOLEAN
-			RosettaSymbolReference case reference == ROSETTA_SYMBOL_REFERENCE__RAW_ARGS: {
+			RosettaSymbolReference case reference == ROSETTA_SYMBOL_REFERENCE__ARGS: {
 				if(idx >= 0 && owner.symbol instanceof RosettaExternalFunction) {
 					val fun =  (owner.symbol as RosettaExternalFunction)
 					if(idx >= fun.parameters.size) {

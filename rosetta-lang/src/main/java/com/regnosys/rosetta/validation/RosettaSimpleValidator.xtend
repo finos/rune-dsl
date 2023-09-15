@@ -837,18 +837,18 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.inputs.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
 							if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
-									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+									ROSETTA_SYMBOL_REFERENCE__ARGS, callerIdx)
 							}
 						]
 					} else if (callable instanceof RosettaBlueprint) {
 						if (callable.input !== null) {
-							checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
+							checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
 							if (cardinality.isMulti(element.args.head)) {
 								error('''Expecting single cardinality for input to rule.''', element,
-									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
+									ROSETTA_SYMBOL_REFERENCE__ARGS, 0)
 							}
 						}
 					}
