@@ -263,6 +263,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		if (rule.input === null) {
 			error('''A rule must declare its input type: `rule «rule.name» from <input type>: ...`''', rule, ROSETTA_NAMED__NAME)
 		}
+		
+		if (!rule.isLegacy) {
+			if (rule.expression.isOutputListOfLists) {
+				error('''Assign expression contains a list of lists, use flatten to create a list.''', rule.expression,
+					null)
+			}
+		}
 	}
 	
 	// @Compat
