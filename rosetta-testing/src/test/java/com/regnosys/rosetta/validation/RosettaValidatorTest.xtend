@@ -29,6 +29,29 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+		
+	@Test
+	def void testOrderDoesNotMatter() {
+		val model1 = '''
+			namespace test
+			
+			import a.b.c.*
+			
+			reporting rule B from string:
+				A -> a
+			'''
+		val model2 = '''
+			namespace a.b.c
+			
+			type Foo:
+				a int (1..1)
+			
+			reporting rule A from string:
+				[ Foo { a: 1 }, Foo { a: 2 } ] then last
+			'''
+		#[model1, model2].parseRosettaWithNoIssues
+		#[model2, model1].parseRosettaWithNoIssues
+	}
 	
 	@Test
 	def void validConstructor() {

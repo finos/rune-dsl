@@ -22,7 +22,7 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil;
  * - syntactic sugar for `join`: automatically add "" if no
  * explicit separator is given.
  * - syntactic sugar for parameter omission: automatically add
- * `it` if the left operand of an operator is omitted.
+ * `item` if the left operand of an operator is omitted.
  */
 public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	@Inject
@@ -30,9 +30,7 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	
 	@Override
 	public void installDerivedState(DerivedStateAwareResource resource, boolean preLinkingPhase) {
-		if (!preLinkingPhase) {
-			setAllDerivedState(resource.getAllContents());
-		}
+		setAllDerivedState(resource.getAllContents());
 	}
 
 	@Override

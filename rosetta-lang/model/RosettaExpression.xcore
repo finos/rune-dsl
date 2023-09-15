@@ -15,6 +15,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import org.eclipse.emf.common.util.BasicEList
 
 
 interface RosettaExpression {
@@ -119,31 +120,36 @@ class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
 	refers RosettaSymbol symbol
 	
 	boolean explicitArguments
-	contains RosettaExpression[] args
+	contains RosettaExpression[] rawArgs
 	
-
-	op RosettaExpression getInput() {
-		args.head
+	contains RosettaImplicitVariable implicitArgument
+	
+	op RosettaExpression[] getArgs() {
+		if (!explicitArguments && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
+			if (implicitArgument === null) {
+				val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+				def.setName("item");
+				def.setGenerated(true);
+				implicitArgument = def
+			}
+			return new BasicEList(#[implicitArgument])
+		}
+		return rawArgs
 	}
 	op void setGeneratedInputIfAbsent(RosettaExpression e) {
 		if (e === null) {
 			if (generatedInputWasSet) {
-				args.clear
+				implicitArgument = null
 				generatedInputWasSet = false
 			}
 		} else {
 			if (!generatedInputWasSet) {
-				args.add(e)
 				generatedInputWasSet = true
 			}
 		}
 	}
 	op boolean needsGeneratedInput() {
-		if (symbol instanceof RosettaCallableWithArgs) {
-			!explicitArguments && (symbol as RosettaCallableWithArgs).numberOfParameters == 1
-		} else {
-			false
-		}
+		false
 	}
 }
 
