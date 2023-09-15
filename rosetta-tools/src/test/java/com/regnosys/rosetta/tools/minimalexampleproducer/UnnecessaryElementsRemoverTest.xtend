@@ -44,8 +44,9 @@ class UnnecessaryElementsRemoverTest {
 				VALUE2
 			
 			type Foo:
-				attr1 int (1..1)
-				attr2 string (0..1)
+				attr1 int (0..1)
+				attr2 int (0..1)
+				attr3 string (0..1)
 			''', resourceSet)
 		val model2 = parse('''
 			namespace b
@@ -67,22 +68,24 @@ class UnnecessaryElementsRemoverTest {
 			reporting rule R from string:
 				if F = MyEnum -> VALUE1
 				then Foo { attr1: 0, ... }
-				else Foo { attr1: 42, ... }
+				else Foo { attr2: 42, ... }
 			''', resourceSet)
 		val model3 = parse('''
 			namespace c
 			
 			type Unnecessary:
 			''', resourceSet)
-		
-		resourceSet.resources.forEach[assertNoIssues]
-		
+				
 		val rule = model2.elements
 			.findFirst[it instanceof RosettaBlueprint && (it as RosettaBlueprint).name == "R"]
 		
+		resourceSet.resources.forEach[assertNoIssues]
 		assertEquals(5, resourceSet.resources.size)
 		assertTrue(resourceSet.resources.contains(model3.eResource))
+		
 		service.removeUnnecessaryElementsFromResourceSet(rule, false)
+		
+		resourceSet.resources.forEach[assertNoIssues]
 		assertEquals(4, resourceSet.resources.size)
 		assertFalse(resourceSet.resources.contains(model3.eResource))
 		
@@ -93,7 +96,8 @@ class UnnecessaryElementsRemoverTest {
 			VALUE1
 		
 		type Foo:
-			attr1 int (1..1)
+			attr1 int (0..1)
+			attr2 int (0..1)
 		'''
 		assertEquals(expectedModel1, serializer.serialize(model1))
 		
@@ -111,7 +115,7 @@ class UnnecessaryElementsRemoverTest {
 		reporting rule R from string:
 			if F = MyEnum -> VALUE1
 			then Foo { attr1: 0, ... }
-			else Foo { attr1: 42, ... }
+			else Foo { attr2: 42, ... }
 		'''
 		assertEquals(expectedModel2, serializer.serialize(model2))
 	}
