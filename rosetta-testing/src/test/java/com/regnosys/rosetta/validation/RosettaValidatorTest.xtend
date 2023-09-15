@@ -54,6 +54,48 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testOrderDoesNotMatter() {
+		#[
+			'''
+			namespace test
+			
+			import a.b.c.*
+			
+			reporting rule B from string:
+				A -> a
+			''',
+			'''
+			namespace a.b.c
+			
+			type Foo:
+				a int (1..1)
+			
+			reporting rule A from string:
+				[ Foo { a: 1 }, Foo { a: 2 } ] then last
+			'''
+		].parseRosettaWithNoIssues
+		#[
+			'''
+			namespace a.b.c
+			
+			type Foo:
+				a int (1..1)
+			
+			reporting rule A from string:
+				[ Foo { a: 1 }, Foo { a: 2 } ] then last
+			''',
+			'''
+			namespace test
+			
+			import a.b.c.*
+			
+			reporting rule B from string:
+				A -> a
+			'''
+		].parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void validConstructor() {
 		'''
 		type A:

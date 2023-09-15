@@ -453,7 +453,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidID] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidID] (explicitArguments?='(' (rawArgs+=RosettaCalcExpression (',' rawArgs+=RosettaCalcExpression)*)? ')')?
 	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 

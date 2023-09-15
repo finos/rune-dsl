@@ -268,7 +268,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[oneSpace]
 					]
-					expr.args.forEach[formatExpression(doc, mode)]
+					expr.rawArgs.forEach[formatExpression(doc, mode)]
 				],
 				[extension doc | // case: long argument list
 					expr.indentInner(doc)
@@ -282,7 +282,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[newLine]
 					]
-					expr.args.forEach[formatExpression(doc, mode.stopChain)]
+					expr.rawArgs.forEach[formatExpression(doc, mode.stopChain)]
 				]
 			)
 		}
