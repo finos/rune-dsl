@@ -2,6 +2,9 @@ package com.rosetta.model.lib.meta;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.RosettaAttribute;
+import com.rosetta.model.lib.annotations.RosettaClass;
+import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
@@ -21,6 +24,7 @@ import com.rosetta.model.lib.process.Processor;
  *         only unique inside that TradeableProduct and should only be looked
  *         for inside that TradeableProduct
  */
+@RosettaDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class)
 public interface Reference extends RosettaModelObject {
 	Reference build();
 
@@ -74,6 +78,7 @@ public interface Reference extends RosettaModelObject {
 			this.reference = reference;
 		}
 
+		@RosettaAttribute("scope")
 		public String getScope() {
 			return scope;
 		}
@@ -82,6 +87,7 @@ public interface Reference extends RosettaModelObject {
 			return pointsTo;
 		}
 
+		@RosettaAttribute("value")
 		public String getReference() {
 			return reference;
 		}
@@ -144,6 +150,7 @@ public interface Reference extends RosettaModelObject {
 		private String pointsTo;
 		private String reference;
 
+		@RosettaAttribute("scope")
 		public String getScope() {
 			return scope;
 		}
@@ -152,6 +159,7 @@ public interface Reference extends RosettaModelObject {
 			return pointsTo;
 		}
 
+		@RosettaAttribute("value")
 		public String getReference() {
 			return reference;
 		}
@@ -161,6 +169,7 @@ public interface Reference extends RosettaModelObject {
 			return new ReferenceImpl(scope, pointsTo, reference);
 		}
 
+		@RosettaAttribute("value")
 		public ReferenceBuilder setReference(String reference) {
 			this.reference = reference;
 			return this;
@@ -171,6 +180,7 @@ public interface Reference extends RosettaModelObject {
 			return this;
 		}
 
+		@RosettaAttribute("scope")
 		public ReferenceBuilder setScope(String scope) {
 			this.scope = scope;
 			return this;

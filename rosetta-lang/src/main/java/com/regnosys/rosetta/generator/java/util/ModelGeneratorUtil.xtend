@@ -19,14 +19,19 @@ class ModelGeneratorUtil {
 		javadoc(definition, docRef, version)
 	}
 
-	static def javadoc(String definition, List<RosettaDocReference> docRef, String version) '''
-		/**
-		«javadocDefinition(definition)»
-		«javadocVersion(version)»
-		«javadocDocRef(docRef)»
-		 */
-	'''
-		
+	static def javadoc(String definition, List<RosettaDocReference> docRef, String version) {
+		return if (definition === null && docRef.isEmpty && version === null)
+			''
+		else
+			'''
+				/**
+				«javadocDefinition(definition)»
+				«javadocVersion(version)»
+				«javadocDocRef(docRef)»
+				 */
+			'''
+	}
+	
 	static def emptyJavadocWithVersion(String version) '''
 		/**
 		 * @version «version»

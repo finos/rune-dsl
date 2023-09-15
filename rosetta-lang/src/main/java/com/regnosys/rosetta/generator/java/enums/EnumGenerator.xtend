@@ -1,23 +1,24 @@
 package com.regnosys.rosetta.generator.java.enums
 
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.rosetta.model.lib.annotations.RosettaEnum
+import com.rosetta.model.lib.annotations.RosettaSynonym
 import java.util.ArrayList
+import java.util.Collections
 import java.util.List
+import java.util.Map
+import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
+import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import javax.inject.Inject
-import java.util.Map
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.rosetta.model.lib.annotations.RosettaSynonym
-import java.util.concurrent.ConcurrentHashMap
-import java.util.Collections
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
@@ -44,14 +45,15 @@ class EnumGenerator {
 		
 		val StringConcatenationClient classBody = '''
 		«javadoc(e, version)»
+		@«RosettaEnum»("«e.name»")
 		public enum «e.name» {
-		    
+		
 			«FOR value: allEnumsValues(e) SEPARATOR ',\n' AFTER ';'»
 				«javadoc(value)»
 				«value.contributeAnnotations»
-				«convertValuesWithDisplay(value)»
+				@«com.rosetta.model.lib.annotations.RosettaEnumValue»("«value.name»") «convertValuesWithDisplay(value)»
 			«ENDFOR»
-			
+		
 			private static «Map»<«String», «e.name»> values;
 			static {
 		        «Map»<«String», «e.name»> map = new «ConcurrentHashMap»<>();
@@ -63,7 +65,7 @@ class EnumGenerator {
 		
 			private final «String» rosettaName;
 			private final «String» displayName;
-			
+		
 			«e.name»(«String» rosettaName) {
 				this(rosettaName, null);
 			}
@@ -72,7 +74,7 @@ class EnumGenerator {
 				this.rosettaName = rosettaName;
 				this.displayName = displayName;
 			}
-			
+		
 			public static «e.name» fromDisplayName(String name) {
 				«e.name» value = values.get(name);
 				if (value == null) {
@@ -80,18 +82,18 @@ class EnumGenerator {
 				}
 				return value;
 			}
-			
+		
 			@Override
 			public «String» toString() {
-				return displayName != null ?  displayName : name();
+				return toDisplayString();
 			}
-			
+		
 			public «String» toDisplayString() {
 				return displayName != null ?  displayName : rosettaName;
 			}
 		}
 		'''
-		
+
 		buildClass(root, classBody, scope)
 	}
 	
