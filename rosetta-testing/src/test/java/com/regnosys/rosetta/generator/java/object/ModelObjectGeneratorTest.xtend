@@ -44,7 +44,6 @@ class ModelObjectGeneratorTest {
 			condition Foo:
 				new exists
 		'''.generateCode
-//		code.writeClasses('testAttributeWithSameNameAsJavaKeyword')
 		code.compileToClasses
 	}
 
