@@ -13,7 +13,6 @@ import com.regnosys.rosetta.resource.RosettaFragmentProvider
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionManager
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider
-import com.regnosys.rosetta.serialization.IgnoreDerivedStateSerializer
 import org.eclipse.xtext.generator.IOutputConfigurationProvider
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.DerivedStateAwareResource
@@ -22,7 +21,6 @@ import org.eclipse.xtext.resource.IFragmentProvider
 import org.eclipse.xtext.resource.IResourceDescription
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy
-import org.eclipse.xtext.serializer.ISerializer
 import org.eclipse.xtext.parser.IEncodingProvider
 import com.google.inject.Binder
 import org.eclipse.xtext.service.DispatchingProvider
@@ -35,10 +33,11 @@ import com.regnosys.rosetta.parsing.BigDecimalConverter
 import com.regnosys.rosetta.transgest.ModelLoader
 import com.regnosys.rosetta.transgest.ModelLoaderImpl
 import com.regnosys.rosetta.formatting2.RosettaExpressionFormatter
-import org.eclipse.xtext.serializer.impl.Serializer
 import com.regnosys.rosetta.formatting2.FormattingUtil
 import javax.inject.Provider
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
+import com.regnosys.rosetta.serialization.RosettaTransientValueService
+import org.eclipse.xtext.parsetree.reconstr.ITransientValueService
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -71,12 +70,8 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		EmptyExternalGeneratorsProvider
 	}
 	
-	override Class<? extends ISerializer> bindISerializer() {
-		IgnoreDerivedStateSerializer
-	}
-	
-	def Class<? extends Serializer> bindSerializer() {
-		IgnoreDerivedStateSerializer
+	override Class<? extends ITransientValueService> bindITransientValueService() {
+		RosettaTransientValueService
 	}
 	
     override void configureRuntimeEncodingProvider(Binder binder) {
@@ -100,7 +95,7 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
     }
 	
 	override Class<? extends XtextResource> bindXtextResource() {
-		return DerivedStateAwareResource
+		DerivedStateAwareResource
 	}
 	def Class<? extends IDerivedStateComputer> bindIDerivedStateComputer() {
 		RosettaDerivedStateComputer

@@ -34,6 +34,25 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testOnlyExistsInsideFunctionalOperation() {
+		'''
+		type A:
+			b B (1..1)
+		type B:
+			val boolean (0..1)
+		
+		func Foo:
+			inputs: a A (1..1)
+			output: result boolean (1..1)
+			set result:
+				a extract [
+					if item -> b -> val only exists
+					then True
+				]
+		'''.parseRosettaWithNoErrors
+	}
+	
+	@Test
 	def void testLegacyBlueprintSyntax() {
 		val model = '''
 			reporting rule BarBarOne from Bar:

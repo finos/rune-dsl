@@ -552,12 +552,15 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			rosettaRegulatoryReference.docReference.nextHiddenRegion
 		)
 		rosettaRegulatoryReference.rationales.forEach[
-			regionFor.keyword(documentRationaleAccess.rationaleKeyword_0_0)
-				.prepend[newLine]
-				.append[oneSpace]
-			regionFor.keyword(documentRationaleAccess.rationale_authorKeyword_1_0)
-				.prepend[newLine]
-				.append[oneSpace]
+			regionFor.keywords(
+				documentRationaleAccess.rationaleKeyword_0_0,
+				documentRationaleAccess.rationale_authorKeyword_1_0,
+				documentRationaleAccess.rationaleKeyword_1_2_0,
+				documentRationaleAccess.rationale_authorKeyword_0_2_0
+			).forEach[
+				prepend[newLine]
+				append[oneSpace]
+			]
 		]
 		rosettaRegulatoryReference.regionFor.keyword(structured_provisionKeyword_5_0)
 			.prepend[newLine]

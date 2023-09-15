@@ -428,7 +428,10 @@ RosettaDocReference:
 
 DocumentRationale:
 	  'rationale' rationale=STRING
-	& ('rationale_author' rationaleAuthor=STRING)?
+	  (->'rationale_author' rationaleAuthor=STRING)?
+	  |
+	  'rationale_author' rationaleAuthor=STRING
+	  (->'rationale' rationale=STRING)?
 ;
 
 
@@ -450,7 +453,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidID] (explicitArguments?='(' (args+=RosettaCalcExpression (',' args+=RosettaCalcExpression)*)? ')')?
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|ValidID] (explicitArguments?='(' (rawArgs+=RosettaCalcExpression (',' rawArgs+=RosettaCalcExpression)*)? ')')?
 	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 
@@ -720,12 +723,12 @@ ListOperation returns RosettaExpression:
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConstructorExpression
 	| RosettaCalcConditionalExpression
+	| RosettaCalcOnlyExists
 	| RosettaReferenceOrFunctionCall
 	| RosettaLiteral
 	| EmptyLiteral
 	| ListLiteral
 	| '(' RosettaCalcExpression ')'
-	| RosettaCalcOnlyExists
 ;
 
 RosettaCalcConstructorExpression returns RosettaExpression:
@@ -748,8 +751,9 @@ RosettaOnlyExistsElement returns RosettaExpression:
 	RosettaOnlyExistsElementRoot ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
 ;
 
-RosettaOnlyExistsElementRoot returns RosettaSymbolReference:
+RosettaOnlyExistsElementRoot returns RosettaReference:
 	{RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
+	| {RosettaImplicitVariable} name=('item' | 'it')
 ;
 
 /*****************************************
