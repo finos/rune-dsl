@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="CurrencyCode">
+		<xs:annotation>
+			<xs:documentation>A code allocated to a currency.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z]{3,3}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Decimal19">
+		<xs:restriction base="xs:decimal">
+			<xs:minInclusive value="0"/>
+			<xs:totalDigits value="25"/>
+			<xs:fractionDigits value="19"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="CurrencyAnd19DecimalAmount">
+		<xs:annotation>
+			<xs:documentation>A currency and a 19 decimal amount.</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="Decimal19">
+				<xs:attribute name="Currency" type="CurrencyCode" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+</xs:schema>

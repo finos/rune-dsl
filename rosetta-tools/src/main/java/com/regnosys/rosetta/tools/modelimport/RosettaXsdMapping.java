@@ -22,7 +22,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.xsdelements.XsdBuiltInDataType;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
-import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
@@ -57,7 +56,7 @@ public class RosettaXsdMapping {
 	private final Map<XsdSimpleType, RosettaEnumeration> enumTypesMap = new HashMap<>();
 	private final Map<XsdComplexType, Data> complexTypesMap = new HashMap<>();
 	
-	private final Map<XsdElement, Attribute> attributeMap = new HashMap<>();
+	private final Map<XsdNamedElements, Attribute> attributeMap = new HashMap<>();
 	private final Map<XsdEnumeration, RosettaEnumValue> enumValueMap = new HashMap<>();
 
 	private final RBuiltinTypeService builtins;
@@ -173,7 +172,7 @@ public class RosettaXsdMapping {
 		}
 		complexTypesMap.put(complexType, data);
 	}
-	public void registerAttribute(XsdElement elem, Attribute attr) {
+	public void registerAttribute(XsdNamedElements elem, Attribute attr) {
 		if (attributeMap.containsKey(elem)) {
 			throw new IllegalArgumentException("There is already a registered attribute with the name " + elem.getName() + ".");
 		}
@@ -255,7 +254,7 @@ public class RosettaXsdMapping {
 		}
 		return t;
 	}
-	public Attribute getAttribute(XsdElement elem) {
+	public Attribute getAttribute(XsdNamedElements elem) {
 		Attribute a = attributeMap.get(elem);
 		if (a == null) {
 			throw new RuntimeException("No registered attribute " + elem.getName() + " was found.");

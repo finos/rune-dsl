@@ -135,6 +135,10 @@ public class XsdImportTest {
 		runTest("data-and-enum");
 	}
 	
+	@Test
+	void testSimpleTypeExtension() throws IOException {
+		runTest("simple-type-extension");
+	}
 
 	private GenerationProperties mockProperties() {
 		GenerationProperties properties = mock(GenerationProperties.class);

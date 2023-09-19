@@ -1605,6 +1605,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def checkFilterOperation(FilterOperation o) {
 		checkBodyType(o.function, BOOLEAN)
+		checkBodyIsSingleCardinality(o.function)
 	}
 
 	@Check
