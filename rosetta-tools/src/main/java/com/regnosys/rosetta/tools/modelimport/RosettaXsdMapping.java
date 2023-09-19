@@ -1,12 +1,9 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
-import com.regnosys.rosetta.rosetta.RosettaBody;
-import com.regnosys.rosetta.rosetta.RosettaCorpus;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaSegment;
 import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
@@ -43,12 +40,6 @@ public class RosettaXsdMapping {
 	public final URI xsdTypesURI = URI.createHierarchicalURI("classpath", null, null, xsdTypesPath, null, null);
 	public final URL xsdTypesURL = Objects.requireNonNull(this.getClass().getResource(xsdTypesURI.path()));
 	
-	@Deprecated
-	private Optional<RosettaBody> body = Optional.empty();
-	@Deprecated
-	private Optional<RosettaCorpus> corpus = Optional.empty();
-	@Deprecated
-	private Optional<RosettaSegment> segment = Optional.empty();
 	private Optional<RosettaExternalSynonymSource> synonymSource = Optional.empty();
 	
 	private final Map<String, RosettaType> builtinTypesMap = new HashMap<>();
@@ -184,27 +175,6 @@ public class RosettaXsdMapping {
 		}
 		enumValueMap.put(elem, value);
 	}
-	@Deprecated
-	public void registerBody(RosettaBody body) {
-		if (this.body.isPresent()) {
-			throw new IllegalArgumentException("There is already a registered body.");
-		}
-		this.body = Optional.of(body);
-	}
-	@Deprecated
-	public void registerCorpus(RosettaCorpus corpus) {
-		if (this.corpus.isPresent()) {
-			throw new IllegalArgumentException("There is already a registered corpus.");
-		}
-		this.corpus = Optional.of(corpus);
-	}
-	@Deprecated
-	public void registerSegment(RosettaSegment segment) {
-		if (this.segment.isPresent()) {
-			throw new IllegalArgumentException("There is already a registered segment.");
-		}
-		this.segment = Optional.of(segment);
-	}
 	public void registerSynonymSource(RosettaExternalSynonymSource source) {
 		if (this.synonymSource.isPresent()) {
 			throw new IllegalArgumentException("There is already a registered synonym source.");
@@ -269,18 +239,6 @@ public class RosettaXsdMapping {
 		return v;
 	}
 	
-	@Deprecated
-	public RosettaBody getBody() {
-		return this.body.get();
-	}
-	@Deprecated
-	public RosettaCorpus getCorpus() {
-		return this.corpus.get();
-	}
-	@Deprecated
-	public RosettaSegment getSegment() {
-		return this.segment.get();
-	}
 	public RosettaExternalSynonymSource getSynonymSource() {
 		return this.synonymSource.get();
 	}

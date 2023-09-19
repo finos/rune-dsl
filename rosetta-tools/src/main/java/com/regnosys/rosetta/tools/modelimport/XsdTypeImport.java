@@ -16,14 +16,8 @@ import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 import org.xmlet.xsdparser.xsdelements.enums.UsageEnum;
 import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 
-import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
-import com.regnosys.rosetta.rosetta.RosettaBody;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
-import com.regnosys.rosetta.rosetta.RosettaCorpus;
-import com.regnosys.rosetta.rosetta.RosettaDocReference;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
-import com.regnosys.rosetta.rosetta.RosettaSegment;
-import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -168,14 +162,6 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 			rosettaCardinality.setSup(Integer.parseInt(xsdElement.getMaxOccurs()));
 		}
 		attribute.setCard(rosettaCardinality);
-
-		// docReference
-//		RosettaBody body = typeMappings.getBody();
-//		RosettaCorpus corpus = typeMappings.getCorpus();
-//		RosettaSegment segment = typeMappings.getSegment();
-//		Optional.ofNullable(element.getTypeAsSimpleType())
-//			.map(xsdName -> createRosettaDocReference(xsdName.getName(), body, corpus, segment, util.extractDocs(xsdName)))
-//			.ifPresent(attribute.getReferences()::add);
 		
 		xsdMapping.registerAttribute(xsdElement, attribute);
 		
@@ -206,14 +192,6 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 			throw new RuntimeException("Unknown XSD attribute usage: " + xsdAttribute.getUse());
 		}
 		attribute.setCard(rosettaCardinality);
-
-		// docReference
-//		RosettaBody body = typeMappings.getBody();
-//		RosettaCorpus corpus = typeMappings.getCorpus();
-//		RosettaSegment segment = typeMappings.getSegment();
-//		Optional.ofNullable(xsdAttribute.getTypeAsSimpleType())
-//			.map(xsdName -> createRosettaDocReference(xsdName.getName(), body, corpus, segment, util.extractDocs(xsdName)))
-//			.ifPresent(attribute.getReferences()::add);
 		
 		xsdMapping.registerAttribute(xsdAttribute, attribute);
 		
@@ -234,35 +212,9 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		rosettaCardinality.setInf(1);
 		rosettaCardinality.setSup(1);
 		attribute.setCard(rosettaCardinality);
-
-		// docReference
-//		RosettaBody body = typeMappings.getBody();
-//		RosettaCorpus corpus = typeMappings.getCorpus();
-//		RosettaSegment segment = typeMappings.getSegment();
-//		Optional.ofNullable(xsdAttribute.getTypeAsSimpleType())
-//			.map(xsdName -> createRosettaDocReference(xsdName.getName(), body, corpus, segment, util.extractDocs(xsdName)))
-//			.ifPresent(attribute.getReferences()::add);
 		
 		xsdMapping.registerAttribute(extendingType, attribute);
 		
 		return attribute;
-	}
-	
-	private RosettaDocReference createRosettaDocReference(String xsdName, RosettaBody rosettaBody, RosettaCorpus rosettaCorpus, RosettaSegment rosettaSegment, Optional<String> provision) {
-		RosettaDocReference rosettaDocReference = RosettaFactory.eINSTANCE.createRosettaDocReference();
-
-		RegulatoryDocumentReference regulatoryDocumentReference = RosettaFactory.eINSTANCE.createRegulatoryDocumentReference();
-		regulatoryDocumentReference.setBody(rosettaBody);
-		regulatoryDocumentReference.getCorpuses().add(rosettaCorpus);
-		rosettaDocReference.setDocReference(regulatoryDocumentReference);
-
-		provision.ifPresent(rosettaDocReference::setProvision);
-
-		RosettaSegmentRef rosettaSegmentRef = RosettaFactory.eINSTANCE.createRosettaSegmentRef();
-		rosettaSegmentRef.setSegment(rosettaSegment);
-		rosettaSegmentRef.setSegmentRef(xsdName);
-		regulatoryDocumentReference.getSegments().add(rosettaSegmentRef);
-
-		return rosettaDocReference;
 	}
 }
