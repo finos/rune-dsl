@@ -75,6 +75,7 @@ public class RosettaXsdMapping {
 			throw new RuntimeException(e);
 		}
 		RosettaModel xsdModel = (RosettaModel)xsdResource.getContents().get(0);
+		resourceSet.getResources().remove(xsdResource);
 		
 		RosettaBasicType string = builtins.toRosettaType(builtins.UNCONSTRAINED_STRING, RosettaBasicType.class, resourceSet);
 		RosettaBasicType number = builtins.toRosettaType(builtins.UNCONSTRAINED_NUMBER, RosettaBasicType.class, resourceSet);

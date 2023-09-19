@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,8 @@ public class XsdImportTest {
 	
 	@Inject
 	Provider<ResourceSet> resourceSetProvider;
+	@Inject
+	ValidationTestHelper validationTestHelper;
 	
 	@Inject
 	RosettaBuiltinsService builtinResources;
@@ -102,6 +105,8 @@ public class XsdImportTest {
 			
 			assertEquals(expected, actual);
 		}
+		
+		set.getResources().forEach(resource -> validationTestHelper.assertNoIssues(resource));
 	}
 	
 	@Test
