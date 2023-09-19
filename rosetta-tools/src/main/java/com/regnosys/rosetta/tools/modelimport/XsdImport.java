@@ -21,17 +21,15 @@ public class XsdImport {
 	private final XsdEnumImport xsdEnumImport;
 	private final XsdSynonymImport xsdSynonymImport;
 	private final XsdTypeAliasImport xsdTypeAliasImport;
-	private final XsdRegulatoryImport xsdRegulatoryImport;
 	private final RosettaXsdMapping typeMapping;
 
 	@Inject
-	public XsdImport(RosettaModelFactory rosettaModelFactory, XsdTypeImport xsdTypeImport, XsdEnumImport xsdEnumImport, XsdSynonymImport xsdSynonymImport, XsdTypeAliasImport xsdTypeAliasImport, XsdRegulatoryImport xsdRegulatoryImport, RosettaXsdMapping typeMapping) {
+	public XsdImport(RosettaModelFactory rosettaModelFactory, XsdTypeImport xsdTypeImport, XsdEnumImport xsdEnumImport, XsdSynonymImport xsdSynonymImport, XsdTypeAliasImport xsdTypeAliasImport, RosettaXsdMapping typeMapping) {
 		this.rosettaModelFactory = rosettaModelFactory;
 		this.xsdTypeImport = xsdTypeImport;
 		this.xsdEnumImport = xsdEnumImport;
 		this.xsdSynonymImport = xsdSynonymImport;
 		this.xsdTypeAliasImport = xsdTypeAliasImport;
-		this.xsdRegulatoryImport = xsdRegulatoryImport;
 		this.typeMapping = typeMapping;
 	}
 
@@ -39,7 +37,6 @@ public class XsdImport {
 		// First register all rosetta types, which makes it possible to support
 		// forward references and self-references.
 		typeMapping.initializeBuiltinTypeMap(rosettaModelFactory.getResourceSet());
-		// List<? extends RosettaRootElement> regElems = xsdRegulatoryImport.registerTypes(xsdElements, typeMapping, properties);
 		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, typeMapping, properties);
 		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, typeMapping, properties);
 		List<? extends RosettaRootElement> types = xsdTypeImport.registerTypes(xsdElements, typeMapping, properties);
@@ -53,7 +50,6 @@ public class XsdImport {
 		
 		if (aliases.size() > 0 || types.size() > 0) {
 			RosettaModel typeModel = rosettaModelFactory.createRosettaModel(TYPE, properties, namespaces);
-			// typeModel.getElements().addAll(regElems);
 			typeModel.getElements().addAll(aliases);
 			typeModel.getElements().addAll(types);
 		}
@@ -64,7 +60,6 @@ public class XsdImport {
 		}
 		
 		// Then fill in the contents of these types.
-		// xsdRegulatoryImport.completeTypes(xsdElements, typeMapping);
 		xsdEnumImport.completeTypes(xsdElements, typeMapping);
 		xsdTypeAliasImport.completeTypes(xsdElements, typeMapping);
 		xsdTypeImport.completeTypes(xsdElements, typeMapping);

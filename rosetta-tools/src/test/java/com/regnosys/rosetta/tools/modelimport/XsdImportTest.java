@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,22 +45,13 @@ public class XsdImportTest {
 	private static final String NAMESPACE = "test.ns";
 	private static final String NAMESPACE_DEFINITION = "test.ns definition";
 	
-	private static final String BODY_TYPE = "TestBodyType";
-	private static final String BODY_NAME = "TestBodyName";
-	private static final String BODY_DEFINITION = "Test body definition.";
-	
-	private static final String SEGMENT = "TestSegment";
-	
-	private static final String CORPUS_TYPE = "TestCorpusType";
-	private static final String CORPUS_NAME = "TestCorpusName";
-	private static final String CORPUS_DISPLAY_NAME = "Test corpus display name.";
-	private static final String CORPUS_DEFINITION = "Test corpus definition.";
-	
 	private static final String SYN_SOURCE_NAME = "TEST_SYN_SOURCE";
 	
 	
 	@Inject
 	Provider<ResourceSet> resourceSetProvider;
+	@Inject
+	ValidationTestHelper validationTestHelper;
 	
 	@Inject
 	RosettaBuiltinsService builtinResources;
@@ -113,6 +105,8 @@ public class XsdImportTest {
 			
 			assertEquals(expected, actual);
 		}
+		
+		set.getResources().forEach(resource -> validationTestHelper.assertNoIssues(resource));
 	}
 	
 	@Test
@@ -135,19 +129,15 @@ public class XsdImportTest {
 		runTest("data-and-enum");
 	}
 	
+	@Test
+	void testSimpleTypeExtension() throws IOException {
+		runTest("simple-type-extension");
+	}
 
 	private GenerationProperties mockProperties() {
 		GenerationProperties properties = mock(GenerationProperties.class);
 		when(properties.getNamespace()).thenReturn(NAMESPACE);
 		when(properties.getNamespaceDefinition()).thenReturn(NAMESPACE_DEFINITION);
-		when(properties.getBodyName()).thenReturn(BODY_NAME);
-		when(properties.getBodyType()).thenReturn(BODY_TYPE);
-		when(properties.getBodyDefinition()).thenReturn(BODY_DEFINITION);
-		when(properties.getCorpusName()).thenReturn(CORPUS_NAME);
-		when(properties.getCorpusType()).thenReturn(CORPUS_TYPE);
-		when(properties.getCorpusDisplayName()).thenReturn(CORPUS_DISPLAY_NAME);
-		when(properties.getCorpusDefinition()).thenReturn(CORPUS_DEFINITION);
-		when(properties.getSegmentName()).thenReturn(SEGMENT);
 		when(properties.getSynonymSourceName()).thenReturn(SYN_SOURCE_NAME);
 		return properties;
 	}

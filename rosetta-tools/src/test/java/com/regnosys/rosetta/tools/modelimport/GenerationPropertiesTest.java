@@ -23,14 +23,6 @@ public class GenerationPropertiesTest {
 		// assert
 		assertEquals("test.ns", generationProperties.getNamespace());
 		assertEquals("Test namespace definition", generationProperties.getNamespaceDefinition());
-		assertEquals("TestBodyType", generationProperties.getBodyType());
-		assertEquals("TestBodyName", generationProperties.getBodyName());
-		assertEquals("Test body definition", generationProperties.getBodyDefinition());
-		assertEquals("TestCorpusType", generationProperties.getCorpusType());
-		assertEquals("TestCorpusName", generationProperties.getCorpusName());
-		assertEquals("Test corpus display name", generationProperties.getCorpusDisplayName());
-		assertEquals("Test corpus definition", generationProperties.getCorpusDefinition());
-		assertEquals("xsdName", generationProperties.getSegmentName());
 		assertEquals("TEST_SYN_SOURCE", generationProperties.getSynonymSourceName());
 	}
 
