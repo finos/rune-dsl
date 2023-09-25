@@ -8,6 +8,9 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public class DottedPath implements Comparable<DottedPath> {
 	protected final String[] segments;
 	
@@ -32,6 +35,7 @@ public class DottedPath implements Comparable<DottedPath> {
 	public static DottedPath split(String str, String separator) {
 		return new DottedPath(str.split(Pattern.quote(separator)));
 	}
+	@JsonCreator
 	public static DottedPath splitOnDots(String str) {
 		return split(str, ".");
 	}
@@ -56,6 +60,7 @@ public class DottedPath implements Comparable<DottedPath> {
 	public String withSeparator(CharSequence separator) {
 		return String.join(separator, segments);
 	}
+	@JsonValue
 	public String withDots() {
 		return withSeparator(".");
 	}

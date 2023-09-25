@@ -1,6 +1,8 @@
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -16,6 +18,7 @@ import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 import org.xmlet.xsdparser.xsdelements.enums.UsageEnum;
 import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 
+import com.google.common.collect.ImmutableMap;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaType;
@@ -23,6 +26,9 @@ import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.rosetta.util.serialisation.AttributeXMLConfiguration;
+import com.rosetta.util.serialisation.AttributeXMLRepresentation;
+import com.rosetta.util.serialisation.TypeXMLConfiguration;
 
 public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 	public final String UNBOUNDED = "unbounded";
@@ -127,7 +133,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 				call.setType(rosettaType);
 			});
 		
-		// Add types to attributes based on XSD elements.
+		// Add types to attributes based on XSD attributes.
 		getTypedXsdAttributes(xsdType)
 			.forEach(element -> {
 				Attribute attr = xsdMapping.getAttribute(element);
@@ -138,6 +144,64 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 						.get();
 				call.setType(rosettaType);
 			});
+	}
+	
+	public Optional<TypeXMLConfiguration> getXMLConfiguration(XsdComplexType xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace, Map<RosettaType, String> rootTypeNames) {
+		Data type = xsdMapping.getRosettaTypeFromComplex(xsdType);
+		String rootTypeName = rootTypeNames.get(type);
+		Map<String, AttributeXMLConfiguration> attributeConfig = getAttributeConfiguration(xsdType, xsdMapping);
+		if (rootTypeName == null) {
+			if (attributeConfig.isEmpty()) {
+				return Optional.empty();
+			} else {
+				return Optional.of(
+						new TypeXMLConfiguration(
+							Optional.empty(),
+							Optional.empty(),
+							Optional.of(attributeConfig)
+						));
+			}
+		}
+		return Optional.of(
+				new TypeXMLConfiguration(
+					Optional.of(rootTypeName),
+					Optional.of(ImmutableMap.of("xmlns", schemaTargetNamespace, "xmlns:xsi", util.XSI_NAMESPACE)),
+					attributeConfig.isEmpty() ? Optional.empty() : Optional.of(attributeConfig)
+				));
+	}
+	private Map<String, AttributeXMLConfiguration> getAttributeConfiguration(XsdComplexType xsdType, RosettaXsdMapping xsdMapping) {
+		Map<String, AttributeXMLConfiguration> result = new LinkedHashMap<>();
+		
+		Optional<XsdSimpleType> baseSimpleType = getBaseSimpleType(xsdType);
+		if (baseSimpleType.isPresent()) {
+			Attribute attr = xsdMapping.getAttribute(xsdType);
+			result.put(attr.getName(), new AttributeXMLConfiguration(
+					Optional.empty(),
+					Optional.empty(),
+					Optional.of(AttributeXMLRepresentation.VALUE)));
+		}
+		
+		getTypedXsdElements(xsdType)
+			.forEach(element -> {
+				Attribute attr = xsdMapping.getAttribute(element);
+				if (!element.getName().equals(attr.getName())) {
+					result.put(attr.getName(), new AttributeXMLConfiguration(
+							Optional.of(element.getName()),
+							Optional.empty(),
+							Optional.empty()));
+				}
+			});
+		
+		getTypedXsdAttributes(xsdType)
+			.forEach(element -> {
+				Attribute attr = xsdMapping.getAttribute(element);
+				result.put(attr.getName(), new AttributeXMLConfiguration(
+						element.getName().equals(attr.getName()) ? Optional.empty() : Optional.of(element.getName()),
+						Optional.empty(),
+						Optional.of(AttributeXMLRepresentation.ATTRIBUTE)));
+			});
+
+		return result;
 	}
 	
 	private Attribute registerAttribute(XsdElement xsdElement, RosettaXsdMapping xsdMapping) {

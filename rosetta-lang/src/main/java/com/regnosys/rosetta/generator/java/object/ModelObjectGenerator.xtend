@@ -142,21 +142,23 @@ class ModelObjectGenerator {
 			return «javaType».class;
 		}
 
-        «FOR pt :interfaces.filter(JavaParameterizedType).filter[getBaseType.simpleName=="ReferenceWithMeta" || getBaseType.simpleName=="FieldWithMeta"]»
+		«FOR pt :interfaces.filter(JavaParameterizedType).filter[getBaseType.simpleName=="ReferenceWithMeta" || getBaseType.simpleName=="FieldWithMeta"]»
 		@Override
-        default Class<«pt.getArguments.head»> getValueType() {
-            return «pt.getArguments.head».class;
-        }
+		default Class<«pt.getArguments.head»> getValueType() {
+			return «pt.getArguments.head».class;
+		}
         «ENDFOR»
 
-        «d.processMethod»'''
+		«d.processMethod»
+        '''
 
 
 	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass javaType, JavaClass metaType, GeneratedIdentifier metaDataIdentifier, Data d) '''
 		«FOR attribute : d.expandedAttributes»
 			«javadoc(attribute.definition, attribute.docReferences, null)»
 			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
-		«ENDFOR»'''
+		«ENDFOR»
+		'''
 
 	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass javaType, Data d) '''
 			«d.name» build();

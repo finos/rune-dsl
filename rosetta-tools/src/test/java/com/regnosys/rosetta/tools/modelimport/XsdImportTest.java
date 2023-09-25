@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,14 +28,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
-import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdSchema;
-import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
+import com.rosetta.util.serialisation.RosettaXMLConfiguration;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -65,12 +64,12 @@ public class XsdImportTest {
 	
 	private ResourceSet resourceSet;
 	private RosettaXsdMapping rosettaXsdMapping;
-	private RosettaModelFactory modelFactory;
 	@BeforeEach
 	void beforeEach() {
 		rosettaXsdMapping = new RosettaXsdMapping(builtins, util);
 		resourceSet = resourceSetProvider.get();
-		modelFactory = new RosettaModelFactory(resourceSet, builtinResources);
+		// Add builtin types to the resource set
+		new RosettaModelFactory(resourceSet, builtinResources);
 		rosettaXsdMapping.initializeBuiltinTypeMap(resourceSet);
 	}
 	
@@ -81,10 +80,10 @@ public class XsdImportTest {
 		GenerationProperties properties = mockProperties();
 
 		// Load xsd elements
-		List<XsdAbstractElement> xsdElements = getXsdElements(xsdFile);
+		XsdSchema schema = getXsdSchema(xsdFile);
 				
-		// test
-		ResourceSet set = xsdImport.generateRosetta(xsdElements, properties, List.of());
+		// Test rosetta
+		ResourceSet set = xsdImport.generateRosetta(schema, properties);
 		List<String> resourceNames = set.getResources().stream()
 				.map(r -> r.getURI())
 				.filter(uri -> uri.scheme() == null)
@@ -107,6 +106,17 @@ public class XsdImportTest {
 		}
 		
 		set.getResources().forEach(resource -> validationTestHelper.assertNoIssues(resource));
+	
+		// Test XML config
+		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
+		
+		String expected = Resources.toString(Resources.getResource(expectedFolder + "/xml-config.json"), StandardCharsets.UTF_8);
+		ObjectMapper mapper = XsdImportMain.getObjectMapper();
+		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig);
+		assertEquals(expected, actual);
+		
+		// Test deserialisation
+		assertEquals(xmlConfig, mapper.readValue(actual, RosettaXMLConfiguration.class));
 	}
 	
 	@Test
@@ -133,6 +143,11 @@ public class XsdImportTest {
 	void testSimpleTypeExtension() throws IOException {
 		runTest("simple-type-extension");
 	}
+	
+	@Test
+	void testTopLevel() throws IOException {
+		runTest("top-level");
+	}
 
 	private GenerationProperties mockProperties() {
 		GenerationProperties properties = mock(GenerationProperties.class);
@@ -142,13 +157,11 @@ public class XsdImportTest {
 		return properties;
 	}
 	
-	private List<XsdAbstractElement> getXsdElements(String xsdPath) {
+	private XsdSchema getXsdSchema(String xsdPath) {
 		XsdParser xsdParser = new XsdParser(xsdPath);
 		return xsdParser.getResultXsdSchemas()
-                .map(XsdSchema::getElements)
-                .flatMap(Collection::stream)
-                .map(ReferenceBase::getElement)
-                .collect(Collectors.toList());
+				.findAny()
+				.orElseThrow();
 	}
 	
 	private List<String> getResourceFiles(String path) {
@@ -160,7 +173,9 @@ public class XsdImportTest {
 	        String resource;
 
 	        while ((resource = br.readLine()) != null) {
-	            filenames.add(resource);
+	        	if (resource.endsWith(".rosetta")) {
+	        		filenames.add(resource);
+	        	}
 	        }
 	    } catch (IOException e) {
 			throw new RuntimeException(e);

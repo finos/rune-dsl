@@ -1,0 +1,19 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+typeAlias Decimal19: number(digits: 25, fractionalDigits: 19, min: 0)
+
+type Document:
+
+	attr Foo (1..1)
+	value Measure (1..1)
+
+type Foo:
+
+	attr1 int (1..1)
+	xmlValue string (1..1)
+
+type Measure:
+
+	value Decimal19 (1..1)
+	unit UnitEnum (1..1)
