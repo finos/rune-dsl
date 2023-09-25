@@ -203,7 +203,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 
 		return result;
 	}
-	
+
 	private Attribute registerAttribute(XsdElement xsdElement, RosettaXsdMapping xsdMapping) {
 		Attribute attribute = SimpleFactory.eINSTANCE.createAttribute();
 
