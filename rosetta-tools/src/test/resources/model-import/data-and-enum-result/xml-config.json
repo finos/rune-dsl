@@ -1,0 +1,37 @@
+{
+  "test.ns.Bar" : {
+    "attributes" : {
+      "barStrAttr" : {
+        "xmlName" : "BarStrAttr"
+      }
+    }
+  },
+  "test.ns.Foo" : {
+    "attributes" : {
+      "fooBooleanAttr" : {
+        "xmlName" : "FooBooleanAttr"
+      },
+      "fooStrAttr" : {
+        "xmlName" : "FooStrAttr"
+      },
+      "fooDecimalAttr" : {
+        "xmlName" : "FooDecimalAttr"
+      },
+      "fooStringWithRestrictionAttr" : {
+        "xmlName" : "FooStringWithRestrictionAttr"
+      },
+      "fooDecimalWithRestrictionAttr" : {
+        "xmlName" : "FooDecimalWithRestrictionAttr"
+      },
+      "fooEnumAttr" : {
+        "xmlName" : "FooEnumAttr"
+      },
+      "fooStrListAttr" : {
+        "xmlName" : "FooStrListAttr"
+      },
+      "fooBarListAttr" : {
+        "xmlName" : "FooBarListAttr"
+      }
+    }
+  }
+}

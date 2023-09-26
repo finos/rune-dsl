@@ -10,6 +10,9 @@ public class MapperUtils {
 	 */
 	public static <T> Mapper<T> runSingle(Supplier<Mapper<T>> supplier) {
 		Mapper<T> result = supplier.get();
+		if (result == null) {
+			return MapperS.ofNull();
+		}
 		if (result instanceof MapperS<?> || result instanceof ComparisonResult) {
 			return result;
 		}
@@ -18,6 +21,9 @@ public class MapperUtils {
 	// Note: below method is only necessary for JavaC, as the Eclipse compiler manages to solve type boundaries just fine.
 	public static <T> Mapper<? extends T> runSinglePolymorphic(Supplier<Mapper<? extends T>> supplier) {
 		Mapper<? extends T> result = supplier.get();
+		if (result == null) {
+			return MapperS.ofNull();
+		}
 		if (result instanceof MapperS<?> || result instanceof ComparisonResult) {
 			return result;
 		}
@@ -29,6 +35,9 @@ public class MapperUtils {
 	 */
 	public static <T> MapperC<T> runMulti(Supplier<Mapper<T>> supplier) {
 		Mapper<T> result = supplier.get();
+		if (result == null) {
+			return MapperC.ofNull();
+		}
 		if (result instanceof MapperC<?>) {
 			return (MapperC<T>) result;
 		}
@@ -37,6 +46,9 @@ public class MapperUtils {
 	// Note: below method is only necessary for JavaC, as the Eclipse compiler manages to solve type boundaries just fine.
 	public static <T> MapperC<? extends T> runMultiPolymorphic(Supplier<Mapper<? extends T>> supplier) {
 		Mapper<? extends T> result = supplier.get();
+		if (result == null) {
+			return MapperC.ofNull();
+		}
 		if (result instanceof MapperC<?>) {
 			return (MapperC<? extends T>) result;
 		}

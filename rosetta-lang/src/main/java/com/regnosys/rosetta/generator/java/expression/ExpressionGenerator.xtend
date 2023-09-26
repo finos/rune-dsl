@@ -181,7 +181,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 				«expr.childElseThen.genElseIf(scope)»
 			«ELSE»
 				else {
-					return «expr.elsethen.ensureMapperJavaCode(typeProvider.getRType(expr.ifthen).toJavaReferenceType, cardinalityProvider.isMulti(expr.ifthen), scope)»;
+					return «expr.elsethen.javaCode(scope)»;
 				}
 			«ENDIF»
 		'''

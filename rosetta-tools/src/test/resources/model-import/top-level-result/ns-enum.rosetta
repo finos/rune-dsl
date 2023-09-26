@@ -1,0 +1,7 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+enum UnitEnum:
+
+	Meter
+	Kilogram

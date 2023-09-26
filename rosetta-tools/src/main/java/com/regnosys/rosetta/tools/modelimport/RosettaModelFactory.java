@@ -14,7 +14,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 
@@ -37,14 +36,13 @@ public class RosettaModelFactory {
 		return resourceSet;
 	}
 
-	public RosettaModel createRosettaModel(String type, GenerationProperties properties, List<String> imports) {
+	public RosettaModel createRosettaModel(String type, GenerationProperties properties) {
 		Resource resource = createResource(properties.getNamespace(), type);
 
 		RosettaModel rosettaModel = RosettaFactory.eINSTANCE.createRosettaModel();
 		rosettaModel.setName(properties.getNamespace());
 		rosettaModel.setDefinition(properties.getNamespaceDefinition());
 		rosettaModel.setVersion(PROJECT_VERSION);
-		imports.stream().map(this::createImport).forEach(rosettaModel.getImports()::add);
 
 		resource.getContents().add(rosettaModel);
 		return rosettaModel;
@@ -59,12 +57,6 @@ public class RosettaModelFactory {
 			resource.setURI(URI.createFileURI(outputDirectory + "/" + fileName));
 			resource.save(Map.of());
 		}
-	}
-
-	private Import createImport(String imp) {
-		Import anImport = RosettaFactory.eINSTANCE.createImport();
-		anImport.setImportedNamespace(imp);
-		return anImport;
 	}
 
 	private Resource createResource(String namespace, String type) {
