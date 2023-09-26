@@ -496,12 +496,12 @@ class RosettaExternalRuleSource extends ExternalAnnotationSource {
 }
 
 /********************
-* Blueprint - Should be a separate grammar
+* Reports and rules - Should be a separate grammar
 */
 
-class RosettaBlueprintReport extends RosettaRootElement {
+class RosettaReport extends RosettaRootElement {
 	contains RegulatoryDocumentReference regulatoryBody
-	refers RosettaBlueprint[] eligibilityRules
+	refers RosettaRule[] eligibilityRules
 	refers RosettaCorpus reportingStandard // @Compat: this attribute is unnecessary
 	contains TypeCall inputType
 	refers Data reportType
@@ -513,10 +513,8 @@ class RosettaBlueprintReport extends RosettaRootElement {
 	}
 }
 
-class RosettaBlueprint extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable {
-	boolean legacy
+class RosettaRule extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable {
 	contains RosettaDocReference[] references
-	contains BlueprintNodeExp nodes // legacy
 	contains RosettaExpression expression
 	String identifier
 	contains TypeCall input
@@ -525,44 +523,3 @@ class RosettaBlueprint extends RosettaRootElement, RosettaCallableWithArgs, Rose
 		1
 	}
 }
-
-class BlueprintNodeExp {
-	contains BlueprintNode node
-	contains RosettaDocReference reference
-	contains BlueprintNodeExp next
-	String identifier
-}
-
-abstract class BlueprintNode {
-	String name
-	contains TypeCall input
-	contains TypeCall output
-	contains TypeCall inputKey
-	contains TypeCall outputKey
-}
-
-class BlueprintOr extends BlueprintNode {
-	contains BlueprintNodeExp[] bps
-}
-
-class BlueprintRef extends BlueprintNode {
-	refers RosettaBlueprint blueprint
-}
-
-class BlueprintFilter extends BlueprintNode {
-	contains RosettaExpression filter
-	contains BlueprintRef filterBP
-}
-
-class BlueprintExtract extends BlueprintNode {
-	contains RosettaExpression call
-	boolean repeatable
-}
-
-class BlueprintReturn extends BlueprintNode {
-	contains RosettaExpression expression
-}
-
-class BlueprintLookup extends BlueprintNode {
-}
-

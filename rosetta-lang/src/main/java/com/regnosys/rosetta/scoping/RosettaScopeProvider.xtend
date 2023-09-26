@@ -295,7 +295,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			}
 			RosettaModel:
 				filteredScope(defaultScope(object, reference))[ descr |
-					#{DATA, ROSETTA_ENUMERATION, FUNCTION, ROSETTA_EXTERNAL_FUNCTION, ROSETTA_BLUEPRINT}.contains(descr.EClass)
+					#{DATA, ROSETTA_ENUMERATION, FUNCTION, ROSETTA_EXTERNAL_FUNCTION, ROSETTA_RULE}.contains(descr.EClass)
 				]
 			default:
 				parentScope

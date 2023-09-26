@@ -12,7 +12,6 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -60,6 +59,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class FunctionGenerator {
 
@@ -128,7 +128,7 @@ class FunctionGenerator {
 		expressions.flatMap[
 			val rosettaSymbols = EcoreUtil2.eAllOfType(it, RosettaSymbolReference).map[it.symbol]
 			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
-			rosettaSymbols.filter(RosettaBlueprint).map[rTypeBuilderFactory.buildRFunction(it)]
+			rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it)]
 		].toSet.sortBy[it.name]
 	}
 

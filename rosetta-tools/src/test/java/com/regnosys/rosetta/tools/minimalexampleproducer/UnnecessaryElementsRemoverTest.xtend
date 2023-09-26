@@ -7,7 +7,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import javax.inject.Inject
 import com.regnosys.rosetta.tools.minimalexampleproducer.UnnecessaryElementsRemover
 import org.junit.jupiter.api.Test
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 
 import static org.junit.Assert.*
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -16,6 +15,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.serializer.impl.Serializer
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -74,7 +74,7 @@ class UnnecessaryElementsRemoverTest {
 			''', resourceSet)
 				
 		val rule = model2.elements
-			.findFirst[it instanceof RosettaBlueprint && (it as RosettaBlueprint).name == "R"]
+			.findFirst[it instanceof RosettaRule && (it as RosettaRule).name == "R"]
 		
 		resourceSet.resources.forEach[assertNoIssues]
 		assertEquals(5, resourceSet.resources.size)

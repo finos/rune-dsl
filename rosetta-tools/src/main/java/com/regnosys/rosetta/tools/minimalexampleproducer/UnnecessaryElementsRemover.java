@@ -44,7 +44,7 @@ public class UnnecessaryElementsRemover {
 			sPckg.getAnnotated(), Set.of(sPckg.getAnnotated_Annotations()),
 			pckg.getRosettaModel(), Set.of(pckg.getRosettaModel_Elements()),
 			sPckg.getData(), Set.of(sPckg.getData_Attributes(), sPckg.getData_Conditions()),
-			pckg.getRosettaBlueprint(), Set.of(pckg.getRosettaBlueprint_References()),
+			pckg.getRosettaRule(), Set.of(pckg.getRosettaRule_References()),
 			sPckg.getFunction(), Set.of(sPckg.getFunction_Shortcuts(), sPckg.getFunction_Conditions(), sPckg.getFunction_Operations(), sPckg.getFunction_PostConditions()),
 			pckg.getRosettaEnumeration(), Set.of(pckg.getRosettaEnumeration_EnumValues())
 		);

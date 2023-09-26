@@ -40,8 +40,7 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 				result int (1..1)
 		
 		reporting rule OtherRule:
-			[legacy-syntax]
-			return True
+			True
 		
 		reporting rule ExpressionContainer:
 		'''

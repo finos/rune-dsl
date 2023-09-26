@@ -65,7 +65,6 @@
 	<modules>
 		<module>rosetta-xcore-plugin-dependencies</module>
 		<module>rosetta-runtime</module>
-		<module>rosetta-runtime-blueprints</module>
 		<module>rosetta-lang</module>
 		<module>rosetta-ide</module>
 		<module>rosetta-tools</module>

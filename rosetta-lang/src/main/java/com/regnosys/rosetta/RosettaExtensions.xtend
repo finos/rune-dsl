@@ -1,8 +1,6 @@
 package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -37,6 +35,8 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import java.util.Optional
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class RosettaExtensions {
 	
@@ -253,10 +253,10 @@ class RosettaExtensions {
 	}
 	
 	/**
-	 * Get all reporting rules for blueprint report
+	 * Get all reporting rules for a report
 	 */
 	 // TODO: remove `onlyLeafNodes` and `skipRepeatable` once blueprints are removed.
-	def getAllReportingRules(RosettaBlueprintReport report, boolean onlyLeafNodes, boolean skipRepeatable) {
+	def getAllReportingRules(RosettaReport report, boolean onlyLeafNodes, boolean skipRepeatable) {
 		getAllReportingRules(report.reportType, Optional.ofNullable(report.ruleSource), onlyLeafNodes, skipRepeatable)
 	}
 	
@@ -270,7 +270,7 @@ class RosettaExtensions {
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
-	private def void collectReportingRules(Data dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaBlueprint> visitor, Set<Data> collectedTypes, boolean onlyLeafNodes, boolean skipRepeatable) {
+	private def void collectReportingRules(Data dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<Data> collectedTypes, boolean onlyLeafNodes, boolean skipRepeatable) {
 		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
 		
 		dataType.allNonOverridesAttributes.forEach[attr |

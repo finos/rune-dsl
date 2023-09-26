@@ -19,11 +19,11 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -116,10 +116,10 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass toFunctionJavaClass(RosettaExternalFunction func) {
 		return new JavaClass(packages.defaultLibFunctions(), func.getName());
 	}
-	public JavaClass toReportFunctionJavaClass(RosettaBlueprintReport report) {
+	public JavaClass toReportFunctionJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportFunction(getReportId(report));
 	}
-	public JavaClass toReportTabulatorJavaClass(RosettaBlueprintReport report) {
+	public JavaClass toReportTabulatorJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportTabulator(getReportId(report));
 	}
 	public JavaClass toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
@@ -301,7 +301,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		DottedPath namespace = DottedPath.splitOnDots(model.getName());
 		return new ModelSymbolId(namespace, named.getName());
 	}
-	private ModelSymbolId getReportId(RosettaBlueprintReport report) {
+	private ModelSymbolId getReportId(RosettaReport report) {
 		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(report, RosettaRootElement.class);
 		RosettaModel model = rootElement.getModel();
 		if (model == null)

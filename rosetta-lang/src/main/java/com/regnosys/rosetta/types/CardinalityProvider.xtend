@@ -37,7 +37,6 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
@@ -66,6 +65,7 @@ import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -110,7 +110,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 					false
 				}
 			}
-			RosettaBlueprint: {
+			RosettaRule: {
 				if (symbol.expression !== null) {
 					isMulti(symbol.expression, breakOnClosureParameter)
 				} else {
@@ -157,7 +157,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 				false
 			} else if (it instanceof RosettaFunctionalOperation) {
 				isClosureParameterMulti(it.function)
-			} else if (it instanceof RosettaBlueprint) {
+			} else if (it instanceof RosettaRule) {
 				false
 			} else {
 				false

@@ -24,13 +24,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import org.eclipse.xtext.formatting2.FormatterRequest
-import com.regnosys.rosetta.rosetta.BlueprintNodeExp
-import com.regnosys.rosetta.rosetta.BlueprintFilter
-import com.regnosys.rosetta.rosetta.BlueprintOr
-import com.regnosys.rosetta.rosetta.BlueprintRef
-import com.regnosys.rosetta.rosetta.BlueprintExtract
-import com.regnosys.rosetta.rosetta.BlueprintReturn
-import com.regnosys.rosetta.rosetta.BlueprintLookup
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
@@ -91,7 +84,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	override format(Object obj, IFormattableDocument document) {
 		switch (obj) {
 			RosettaExpression: formatExpression(obj, document)
-			BlueprintNodeExp: formatRuleExpression(obj, document)
 			default: throw new UnsupportedOperationException('''«RosettaExpressionFormatter» does not support formatting «obj».''')
 		}
 	}
@@ -470,141 +462,5 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				internalFormatter.apply(doc)
 			]
 		)
-	}
-	
-	
-	
-	def void formatRuleExpression(BlueprintNodeExp expr, extension IFormattableDocument document) {
-		val extension ruleExprGrammarAccess = blueprintNodeExpAccess
-		
-		formatInlineOrMultiline(document, expr, FormattingMode.NORMAL,
-			[extension doc | // case: short operation
-				expr.node.formatRuleNode(doc, FormattingMode.NORMAL)
-				if (expr.next !== null) {
-					expr.regionFor.keyword(thenKeyword_2_0)
-						.prepend[newLine]
-						.append[oneSpace]
-					expr.next.formatRuleExpression(doc)
-				}
-				if (expr.identifier !== null) {
-					expr.regionFor.keyword(asKeyword_3_0)
-						.surround[oneSpace]
-				}
-			],
-			[extension doc | // case: long operation
-				expr.node.formatRuleNode(doc, FormattingMode.NORMAL)
-				if (expr.next !== null) {
-					expr.regionFor.keyword(thenKeyword_2_0)
-						.prepend[newLine]
-						.append[oneSpace]
-					expr.next.formatRuleExpression(doc)
-				}
-				if (expr.identifier !== null) {
-					expr.regionFor.keyword(asKeyword_3_0)
-						.prepend[newLine]
-						.append[oneSpace]
-				}
-			]
-		)
-	}
-	
-	private def dispatch void formatRuleNode(BlueprintFilter expr, extension IFormattableDocument document, FormattingMode mode) {
-		val extension filterGrammarAccess = blueprintFilterAccess
-		
-		expr.regionFor.keyword(whenKeyword_1)
-			.prepend[oneSpace]
-		if (expr.filterBP !== null) {
-			expr.regionFor.keyword(ruleKeyword_2_1_0)
-				.surround[oneSpace]
-		} else {
-			formatInlineOrMultiline(document, expr, mode,
-				[extension doc | // case: short operation
-					expr.regionFor.keyword(whenKeyword_1)
-						.append[oneSpace]
-					expr.filter.formatExpression(doc, mode)
-				],
-				[extension doc | // case: long operation
-					expr.regionFor.keyword(whenKeyword_1)
-						.append[newLine]
-					expr.filter
-						.surround[indent]
-						.formatExpression(doc, mode.stopChain)
-				]
-			)
-		}
-	}
-	
-	private def dispatch void formatRuleNode(BlueprintOr expr, extension IFormattableDocument document, FormattingMode mode) {
-		expr.regionFor.keywords(',').forEach[
-			prepend[noSpace]
-		]
-		interior(
-			expr.regionFor.keyword('('),
-			expr.regionFor.keyword(')'),
-			[indent]
-		)
-		expr.regionFor.keyword('(')
-			.append[newLine]
-		expr.bps.last
-			.append[newLine]
-		expr.regionFor.keywords(',').forEach[
-			append[newLine]
-		]
-		expr.bps.forEach[formatRuleExpression(document)]
-	}
-	
-	private def dispatch void formatRuleNode(BlueprintRef expr, extension IFormattableDocument document, FormattingMode mode) {
-		
-	}
-	
-	private def dispatch void formatRuleNode(BlueprintExtract expr, extension IFormattableDocument document, FormattingMode mode) {
-		val extension extractGrammarAccess = blueprintExtractAccess
-		
-		val lastKeyword = if (expr.repeatable) {
-			expr.regionFor.keyword(repeatableRepeatableKeyword_1_0)
-				.prepend[oneSpace]
-		} else {
-			expr.regionFor.keyword(extractKeyword_0)
-		}
-		formatInlineOrMultiline(document, expr, mode,
-			[extension doc | // case: short operation
-				lastKeyword
-					.append[oneSpace]
-				expr.call.formatExpression(doc, mode)
-			],
-			[extension doc | // case: long operation
-				lastKeyword
-					.append[newLine]
-				expr.call
-					.surround[indent]
-					.formatExpression(doc, mode.stopChain)
-			]
-		)
-	}
-	
-	private def dispatch void formatRuleNode(BlueprintReturn expr, extension IFormattableDocument document, FormattingMode mode) {
-		val extension returnGrammarAccess = blueprintReturnAccess
-		
-		formatInlineOrMultiline(document, expr, mode,
-			[extension doc | // case: short operation
-				expr.regionFor.keyword(returnKeyword_0)
-					.append[oneSpace]
-				expr.expression.formatExpression(doc, mode)
-			],
-			[extension doc | // case: long operation
-				expr.regionFor.keyword(returnKeyword_0)
-					.append[newLine]
-				expr.expression
-					.surround[indent]
-					.formatExpression(doc, mode.stopChain)
-			]
-		)
-	}
-	
-	private def dispatch void formatRuleNode(BlueprintLookup expr, extension IFormattableDocument document, FormattingMode mode) {
-		val extension lookupGrammarAccess = blueprintLookupAccess
-		
-		expr.regionFor.assignment(nameAssignment_1)
-			.surround[oneSpace]
 	}
 }

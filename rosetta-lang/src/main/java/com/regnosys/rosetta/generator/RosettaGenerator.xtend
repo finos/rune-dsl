@@ -16,8 +16,6 @@ import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -36,8 +34,9 @@ import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator
-import com.regnosys.rosetta.generator.java.blueprints.BlueprintGenerator
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.rosetta.RosettaReport
 
 /**
  * Generates code from your model files on save.
@@ -55,7 +54,6 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 	@Inject RuleGenerator ruleGenerator
-	@Inject BlueprintGenerator blueprintGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
@@ -159,10 +157,10 @@ class RosettaGenerator implements IGenerator2 {
 								funcGenerator.generate(packages, fsa, it, version)
 							}
 						}
-						RosettaBlueprint: {
+						RosettaRule: {
 							ruleGenerator.generate(packages, fsa, it, version)
 						}
-						RosettaBlueprintReport: {
+						RosettaReport: {
 							reportGenerator.generate(packages, fsa, it, version)
 							tabulatorGenerator.generate(fsa, it)
 						}
@@ -174,7 +172,6 @@ class RosettaGenerator implements IGenerator2 {
 					}
 				]
 				enumGenerator.generate(packages, fsa, model.elements, version)
-				blueprintGenerator.generate(packages, fsa, model.elements, version)
 
 				// Invoke externally defined code generators
 				externalGenerators.forEach [ generator |

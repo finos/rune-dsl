@@ -33,8 +33,6 @@ import org.eclipse.xtext.formatting2.FormatterRequest
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaCardinality
-import com.regnosys.rosetta.rosetta.BlueprintNodeExp
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -57,6 +55,7 @@ import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.TypeCallArgument
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -627,8 +626,8 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		expressionFormatter.formatExpression(ele, document)
 	}
 	
-	def dispatch void format(RosettaBlueprint ele, extension IFormattableDocument document) {
-		val extension ruleGrammarAccess = rosettaBlueprintAccess
+	def dispatch void format(RosettaRule ele, extension IFormattableDocument document) {
+		val extension ruleGrammarAccess = rosettaRuleAccess
 		
 		val firstKeyword = ele.regionFor.keyword(reportingKeyword_0_0)
 			?: ele.regionFor.keyword(eligibilityKeyword_0_1)
@@ -651,35 +650,20 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[newLine]
 			format
 		]
-		
-		ele.nodes
-			.prepend[newLine]
-			.format
+
 		ele.expression
 			.prepend[newLine]
 			.format
 		if (ele.identifier !== null) {
 			set(
-				ele.regionFor.keyword(asKeyword_6_0_1_1_0)
+				ele.regionFor.keyword(asKeyword_6_1_1_0)
 					.prepend[newLine]
 					.append[oneSpace]
 					.previousHiddenRegion,
-				ele.regionFor.assignment(identifierAssignment_6_0_1_1_1).nextHiddenRegion,
+				ele.regionFor.assignment(identifierAssignment_6_1_1_1).nextHiddenRegion,
 				[indent]
 			)
 		}
-		if (ele.isLegacy) {
-			val legacyKeyword = ele.regionFor.keyword(legacyLegacySyntaxKeyword_6_1_0_0_0_1_0)
-				?: ele.regionFor.keyword(legacyLegacySyntaxKeyword_6_1_0_1_0_1_1_0)
-			legacyKeyword
-				.surround[noSpace]
-				.previousHiddenRegion.previousHiddenRegion
-				.set[newLine]
-		}
-	}
-	
-	def dispatch void format(BlueprintNodeExp ele, extension IFormattableDocument document) {
-		expressionFormatter.formatRuleExpression(ele, document)
 	}
 	
 	def dispatch void format(RosettaSynonymSource synonymSource, extension IFormattableDocument document) {

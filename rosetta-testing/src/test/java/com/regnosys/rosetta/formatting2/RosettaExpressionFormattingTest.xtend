@@ -713,13 +713,10 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testRuleChaining1() {
 		'''
-		[legacy-syntax]
 		OtherRule
 		   then  OtherRule
 		''' => '''
-		[legacy-syntax]
-		OtherRule
-		then OtherRule
+		OtherRule then OtherRule
 		'''
 	}
 	
@@ -745,75 +742,6 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
-	def void testShortRuleFilter2() {
-		'''
-		[legacy-syntax]
-		filter
-		  when  
-		  rule  OtherRule
-		''' => '''
-		[legacy-syntax]
-		filter when rule OtherRule
-		'''
-	}
-	
-	@Test
-	def void testShortRuleFilter3() {
-		'''
-		[legacy-syntax]
-		filter
-		  when  
-		  rule  OtherRule  as"07 Original swap USI"
-		''' => '''
-		[legacy-syntax]
-		filter when rule OtherRule as "07 Original swap USI"
-		'''
-	}
-	
-	@Test
-	def void testLongRuleFilter1() {
-		'''
-		[legacy-syntax]
-		filter   when
-		    ["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
-		''' => '''
-		[legacy-syntax]
-		filter when
-			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
-		'''
-	}
-	
-	@Test
-	def void testLongRuleFilter2() {
-		'''
-		[legacy-syntax]
-		filter
-		       when  ["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
-		 as"07 Original swap USI"
-		''' => '''
-		[legacy-syntax]
-		filter when
-			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
-		as "07 Original swap USI"
-		'''
-	}
-	
-	@Test
-	def void testRuleOr1() {
-		'''
-		[legacy-syntax]
-		( OtherRule
-		,  extract  True)
-		''' => '''
-		[legacy-syntax]
-		(
-			OtherRule,
-			extract True
-		)
-		'''
-	}
-	
-	@Test
 	def void testShortRuleExtract1() {
 		'''
 		extract
@@ -821,19 +749,6 @@ class RosettaExpressionFormattingTest {
 		 42
 		''' => '''
 		extract 42
-		'''
-	}
-	
-	@Test
-	def void testShortRuleExtract2() {
-		'''
-		[legacy-syntax]
-		extract  repeatable
-		
-		 42
-		''' => '''
-		[legacy-syntax]
-		extract repeatable 42
 		'''
 	}
 	
@@ -846,72 +761,6 @@ class RosettaExpressionFormattingTest {
 		''' => '''
 		extract
 			(["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10)
-		'''
-	}
-	
-	@Test
-	def void testLongRuleExtract2() {
-		'''
-		[legacy-syntax]
-		extract   repeatable
-		     ["This", "is", "a", "loooooooooooooooooooooooong", "list"] 
-		   count > 10
-		''' => '''
-		[legacy-syntax]
-		extract repeatable
-			["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10
-		'''
-	}
-	
-	@Test
-	def void testShortRuleReturn1() {
-		'''
-		[legacy-syntax]
-		return
-		
-		 42
-		''' => '''
-		[legacy-syntax]
-		return 42
-		'''
-	}
-	
-	@Test
-	def void testShortRuleReturn2() {
-		'''
-		[legacy-syntax]
-		return
-		
-		 42 as "This is a veeeeeeeeeerrry loooooooooooooooooong `as` operation"
-		''' => '''
-		[legacy-syntax]
-		return 42
-		as "This is a veeeeeeeeeerrry loooooooooooooooooong `as` operation"
-		'''
-	}
-	
-	@Test
-	def void testLongRuleReturn1() {
-		'''
-		[legacy-syntax]
-		return
-		     ["This", "is", "a", "loooooooooooooooooooooooooong", "list"] 
-		   count > 10
-		''' => '''
-		[legacy-syntax]
-		return
-			["This", "is", "a", "loooooooooooooooooooooooooong", "list"] count > 10
-		'''
-	}
-	
-	@Test
-	def void testRuleLookup1() {
-		'''
-		[legacy-syntax]
-		lookup  foo  Foo
-		''' => '''
-		[legacy-syntax]
-		lookup foo Foo
 		'''
 	}
 }

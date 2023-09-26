@@ -4,7 +4,6 @@ import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.InlayHint;
-import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
@@ -12,7 +11,6 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.types.CardinalityProvider;
-import com.regnosys.rosetta.rosetta.RosettaBlueprint;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation;
@@ -41,17 +39,14 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	
 	@InlayHintCheck
 	public InlayHint checkFunctionalOperation(RosettaFunctionalOperation op) {
-		RosettaBlueprint rule = EcoreUtil2.getContainerOfType(op, RosettaBlueprint.class);
-		if (rule == null || !rule.isLegacy()) {
-			if (op.getFunction() != null && operationHasBrackets(op.getFunction())) {
-				if (op instanceof ReduceOperation || op instanceof MapOperation) {
-					if (extensions.isResolved(op.getFunction())) {
-						RType outputType = types.getRType(op);
-						boolean outputMulti = card.isMulti(op);
-			
-						if (outputType != null) {
-							return inlayHintAfter(op, typeInfo(outputType, outputMulti), null);
-						}
+		if (op.getFunction() != null && operationHasBrackets(op.getFunction())) {
+			if (op instanceof ReduceOperation || op instanceof MapOperation) {
+				if (extensions.isResolved(op.getFunction())) {
+					RType outputType = types.getRType(op);
+					boolean outputMulti = card.isMulti(op);
+		
+					if (outputType != null) {
+						return inlayHintAfter(op, typeInfo(outputType, outputMulti), null);
 					}
 				}
 			}
