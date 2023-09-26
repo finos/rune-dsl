@@ -67,7 +67,7 @@ public class RosettaXsdMapping {
 				.findFirst()
 				.orElseThrow();
 	}
-	public void initializeBuiltinTypeMap(ResourceSet resourceSet) {
+	public void initializeBuiltins(ResourceSet resourceSet) {
 		Resource xsdResource = resourceSet.createResource(URI.createURI(xsdTypesFileName));
 		try {
 			xsdResource.load(xsdTypesURL.openStream(), null);

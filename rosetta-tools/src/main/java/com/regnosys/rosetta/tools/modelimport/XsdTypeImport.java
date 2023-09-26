@@ -12,6 +12,7 @@ import org.xmlet.xsdparser.xsdelements.XsdAttribute;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdExtension;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleContent;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
@@ -19,10 +20,13 @@ import org.xmlet.xsdparser.xsdelements.enums.UsageEnum;
 import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 
 import com.google.common.collect.ImmutableMap;
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.TypeCall;
+import com.regnosys.rosetta.rosetta.simple.Annotation;
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
@@ -35,11 +39,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 	public final String SIMPLE_EXTENSION_ATTRIBUTE_NAME = "value";
 
 	private final XsdUtil util;
+	private final RosettaBuiltinsService builtins;
 	
 	@Inject
-	public XsdTypeImport(XsdUtil util) {
+	public XsdTypeImport(XsdUtil util, RosettaBuiltinsService builtins) {
 		super(XsdComplexType.class);
 		this.util = util;
+		this.builtins = builtins;
 	}
 	
 	private Stream<XsdElement> getTypedXsdElements(XsdComplexType xsdType) {
@@ -70,7 +76,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 	}
 
 	@Override
-	public Data registerType(XsdComplexType xsdType, RosettaXsdMapping xsdMapping, GenerationProperties properties) {
+	public Data registerType(XsdComplexType xsdType, RosettaXsdMapping xsdMapping, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
 		Data data = SimpleFactory.eINSTANCE.createData();
 		data.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(data::setDefinition);
@@ -98,7 +104,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 	}
 
 	@Override
-	public void completeType(XsdComplexType xsdType, RosettaXsdMapping xsdMapping) {
+	public void completeType(XsdComplexType xsdType, RosettaXsdMapping xsdMapping, Map<XsdNamedElements, String> rootTypeNames) {
 		Data data = xsdMapping.getRosettaTypeFromComplex(xsdType);
 		
 		// Add supertype
@@ -110,6 +116,19 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 				Data superType = xsdMapping.getRosettaTypeFromComplex(base);
 				data.setSuperType(superType);
 			});
+		
+		// Add `[rootType]` annotation if required.
+		if (rootTypeNames.containsKey(xsdType)) {
+			Annotation rootTypeAnn = builtins.getAnnotationsResource(data.eResource().getResourceSet())
+					.getElements().stream()
+					.filter(elem -> elem instanceof Annotation)
+					.map(elem -> (Annotation)elem)
+					.filter(elem -> elem.getName().equals("rootType"))
+					.findAny().orElseThrow();
+			AnnotationRef rootTypeRef = SimpleFactory.eINSTANCE.createAnnotationRef();
+			rootTypeRef.setAnnotation(rootTypeAnn);
+			data.getAnnotations().add(rootTypeRef);
+		}
 		
 		// If the complex type extends a simple type, add the corresponding type
 		// to the dedicated `value` attribute.
@@ -146,9 +165,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 			});
 	}
 	
-	public Optional<TypeXMLConfiguration> getXMLConfiguration(XsdComplexType xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace, Map<RosettaType, String> rootTypeNames) {
-		Data type = xsdMapping.getRosettaTypeFromComplex(xsdType);
-		String rootTypeName = rootTypeNames.get(type);
+	public Optional<TypeXMLConfiguration> getXMLConfiguration(XsdComplexType xsdType, RosettaXsdMapping xsdMapping, Map<XsdNamedElements, String> rootTypeNames, String schemaTargetNamespace) {
+		String rootTypeName = rootTypeNames.get(xsdType);
 		Map<String, AttributeXMLConfiguration> attributeConfig = getAttributeConfiguration(xsdType, xsdMapping);
 		if (rootTypeName == null) {
 			if (attributeConfig.isEmpty()) {

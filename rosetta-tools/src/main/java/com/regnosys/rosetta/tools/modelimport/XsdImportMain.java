@@ -27,8 +27,8 @@ public class XsdImportMain {
         Options options = new Options()
                 .addOption("x", "xsd-path", true, "Path to the xsd")
                 .addOption("p", "properties-path", true, "Path to generation properties file")
-                .addOption("rosetta-output-path", true, "Path to generation output folder")
-                .addOption("xml-config-output-path", true, "Path to output file for the XML configuration");
+                .addOption("ros", "rosetta-output-path", true, "Path to generation output folder")
+                .addOption("xml", "xml-config-output-path", true, "Path to output file for the XML configuration");
 
         // Parse command line
         CommandLine cmd = new DefaultParser().parse(options, args);

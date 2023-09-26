@@ -70,7 +70,7 @@ public class XsdImportTest {
 		resourceSet = resourceSetProvider.get();
 		// Add builtin types to the resource set
 		new RosettaModelFactory(resourceSet, builtinResources);
-		rosettaXsdMapping.initializeBuiltinTypeMap(resourceSet);
+		rosettaXsdMapping.initializeBuiltins(resourceSet);
 	}
 	
 	private void runTest(String xsdName) throws IOException {

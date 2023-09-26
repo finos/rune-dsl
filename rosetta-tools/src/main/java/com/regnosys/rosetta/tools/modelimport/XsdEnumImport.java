@@ -1,12 +1,14 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
@@ -34,7 +36,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	@Override
-	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
 		RosettaEnumeration rosettaEnumeration = RosettaFactory.eINSTANCE.createRosettaEnumeration();
 		rosettaEnumeration.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(rosettaEnumeration::setDefinition);
@@ -50,7 +52,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	@Override
-	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings) {
+	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames) {
 		
 	}
 

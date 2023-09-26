@@ -4,6 +4,7 @@ version "${project.version}"
 typeAlias Decimal19: number(digits: 25, fractionalDigits: 19, min: 0)
 
 type Document:
+	[rootType]
 
 	attr Foo (1..1)
 	value Measure (1..1)

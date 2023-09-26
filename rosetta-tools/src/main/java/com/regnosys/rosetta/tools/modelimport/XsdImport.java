@@ -11,11 +11,11 @@ import javax.inject.Inject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSchema;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
-import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RDataType;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -47,13 +47,16 @@ public class XsdImport {
 	public ResourceSet generateRosetta(XsdSchema schema, GenerationProperties properties) {
 		List<XsdAbstractElement> xsdElements = schema.getXsdElements().collect(Collectors.toList());
 		
+		// Initialization
+		xsdMapping.initializeBuiltins(rosettaModelFactory.getResourceSet());
+		Map<XsdNamedElements, String> rootTypeNames = getRootTypeNames(xsdElements);
+		
 		// First register all rosetta types and attributes, which makes it possible to support
 		// forward references and self-references.
-		xsdMapping.initializeBuiltinTypeMap(rosettaModelFactory.getResourceSet());
-		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends RosettaRootElement> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends RosettaRootElement> synSources = xsdSynonymImport.registerTypes(xsdElements, xsdMapping, properties);
+		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, rootTypeNames, properties);
+		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, rootTypeNames, properties);
+		List<? extends RosettaRootElement> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, rootTypeNames, properties);
+		List<? extends RosettaRootElement> synSources = xsdSynonymImport.registerTypes(xsdElements, xsdMapping, rootTypeNames, properties);
 		
 		// Then write these types to the appropriate resources.
 		if (enums.size() > 0) {
@@ -73,31 +76,24 @@ public class XsdImport {
 		}
 		
 		// Then fill in the contents of these types.
-		xsdEnumImport.completeTypes(xsdElements, xsdMapping);
-		xsdTypeAliasImport.completeTypes(xsdElements, xsdMapping);
-		xsdTypeImport.completeTypes(xsdElements, xsdMapping);
-		xsdSynonymImport.completeTypes(xsdElements, xsdMapping);
+		xsdEnumImport.completeTypes(xsdElements, xsdMapping, rootTypeNames);
+		xsdTypeAliasImport.completeTypes(xsdElements, xsdMapping, rootTypeNames);
+		xsdTypeImport.completeTypes(xsdElements, xsdMapping, rootTypeNames);
+		xsdSynonymImport.completeTypes(xsdElements, xsdMapping, rootTypeNames);
 		
 		return rosettaModelFactory.getResourceSet();
 	}
 	
 	public RosettaXMLConfiguration generateXMLConfiguration(XsdSchema schema, GenerationProperties properties) {
 		List<XsdAbstractElement> xsdElements = schema.getXsdElements().collect(Collectors.toList());
-				
+		
+		Map<XsdNamedElements, String> rootTypeNames = getRootTypeNames(xsdElements);
 		String targetNamespace = schema.getTargetNamespace();
-		Map<RosettaType, String> rootTypeNames =
-				xsdElements.stream()
-					.filter(XsdElement.class::isInstance)
-					.map(XsdElement.class::cast)
-					.filter(xsdElement -> xsdElement.getType() != null)
-					.collect(Collectors.toMap(
-							elem -> xsdMapping.getRosettaType(elem.getTypeAsXsd()),
-							XsdElement::getName));
 		
 		Map<ModelSymbolId, TypeXMLConfiguration> result = new HashMap<>();
 		xsdTypeImport.filterTypes(xsdElements).stream()
 			.forEach(xsdType -> {
-				xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, targetNamespace, rootTypeNames)
+				xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, rootTypeNames, targetNamespace)
 					.ifPresent(typeXMLConfig -> {
 						Data type = xsdMapping.getRosettaTypeFromComplex(xsdType);
 						result.put(new RDataType(type).getSymbolId(), typeXMLConfig);
@@ -108,5 +104,15 @@ public class XsdImport {
 
 	public void saveResources(String outputPath) throws IOException {
 		rosettaModelFactory.saveResources(outputPath);
+	}
+	
+	private Map<XsdNamedElements, String> getRootTypeNames(List<XsdAbstractElement> xsdElements) {
+		return xsdElements.stream()
+			.filter(XsdElement.class::isInstance)
+			.map(XsdElement.class::cast)
+			.filter(xsdElement -> xsdElement.getType() != null)
+			.collect(Collectors.toMap(
+					elem -> elem.getTypeAsXsd(),
+					XsdElement::getName));
 	}
 }
