@@ -54,7 +54,7 @@ public class XsdImportMain {
         xsdImport.generateRosetta(schema, properties);
         RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
         File xmlConfigOutputFile = new File(xmlConfigOutputPath);
-        xmlConfigOutputFile.mkdirs();
+        xmlConfigOutputFile.getParentFile().mkdirs();
         getObjectMapper().writerWithDefaultPrettyPrinter().writeValue(xmlConfigOutputFile, xmlConfig);
         xsdImport.saveResources(rosettaOutputPath);
     }
