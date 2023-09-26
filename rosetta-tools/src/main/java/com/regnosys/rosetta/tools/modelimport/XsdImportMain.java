@@ -15,7 +15,6 @@ import org.xmlet.xsdparser.xsdelements.XsdSchema;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.cfg.ConstructorDetector;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
@@ -54,15 +53,16 @@ public class XsdImportMain {
         XsdImport xsdImport = injector.getInstance(XsdImport.class);
         xsdImport.generateRosetta(schema, properties);
         RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
-        getObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(xmlConfigOutputPath), xmlConfig);
+        File xmlConfigOutputFile = new File(xmlConfigOutputPath);
+        xmlConfigOutputFile.mkdirs();
+        getObjectMapper().writerWithDefaultPrettyPrinter().writeValue(xmlConfigOutputFile, xmlConfig);
         xsdImport.saveResources(rosettaOutputPath);
     }
     
     public static ObjectMapper getObjectMapper() {
     	return new ObjectMapper()
     			.registerModule(new Jdk8Module())
-    			.setSerializationInclusion(Include.NON_ABSENT)
-    			.setConstructorDetector(ConstructorDetector.USE_PROPERTIES_BASED);
+    			.setSerializationInclusion(Include.NON_ABSENT);
     }
 
     private static GenerationProperties getGenerationProperties(String propertiesPath) throws IOException {
