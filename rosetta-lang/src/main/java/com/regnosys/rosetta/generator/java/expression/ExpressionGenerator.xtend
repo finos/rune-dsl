@@ -173,17 +173,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	})«IF expr.ifthen.evaluatesToComparisonResult»)«ENDIF»'''
 
 	private def StringConcatenationClient genConditional(RosettaConditionalExpression expr, JavaScope scope) {
-		val clazz = typeProvider.getRType(expr).toJavaReferenceType
-		val isMulti = cardinalityProvider.isMulti(expr)
 		return '''
 			if («expr.^if.javaCode(scope)».getOrDefault(false)) {
-				return «expr.ifthen.ensureMapperJavaCode(clazz, isMulti, scope)»;
+				return «expr.ifthen.javaCode(scope)»;
 			}
 			«IF expr.childElseThen !== null»
 				«expr.childElseThen.genElseIf(scope)»
 			«ELSE»
 				else {
-					return «expr.elsethen.ensureMapperJavaCode(clazz, isMulti, scope)»;
+					return «expr.elsethen.javaCode(scope)»;
 				}
 			«ENDIF»
 		'''
