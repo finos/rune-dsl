@@ -19,7 +19,6 @@ import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 import org.xmlet.xsdparser.xsdelements.enums.UsageEnum;
 import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 
-import com.google.common.collect.ImmutableMap;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -180,10 +179,15 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 						));
 			}
 		}
+		Map<String, String> xmlAttributes = new LinkedHashMap<>();
+		if (schemaTargetNamespace != null) {
+			xmlAttributes.put("xmlns", schemaTargetNamespace);
+		}
+		xmlAttributes.put("xmlns:xsi", util.XSI_NAMESPACE);
 		return Optional.of(
 				new TypeXMLConfiguration(
 					Optional.of(rootTypeName),
-					Optional.of(ImmutableMap.of("xmlns", schemaTargetNamespace, "xmlns:xsi", util.XSI_NAMESPACE)),
+					Optional.of(xmlAttributes),
 					attributeConfig.isEmpty() ? Optional.empty() : Optional.of(attributeConfig)
 				));
 	}
