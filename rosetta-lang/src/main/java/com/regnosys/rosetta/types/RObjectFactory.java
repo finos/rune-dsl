@@ -90,11 +90,10 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
-		Map<Attribute, RosettaRule> attributeToRuleMap = rosettaExtensions.getAllReportingRules(report, false, false)
+		Map<Attribute, RosettaRule> attributeToRuleMap = rosettaExtensions.getAllReportingRules(report)
 			.entrySet()
 			.stream()
 			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));
-		
 		
 		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
 		

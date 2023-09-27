@@ -22,7 +22,7 @@ public class ModelSymbolId implements Comparable<ModelSymbolId> {
 	}
 	
 	@JsonCreator
-	public static ModelSymbolId splitOnDots(String str) {
+	public static ModelSymbolId fromQualifiedName(String str) {
 		DottedPath qualifiedName = DottedPath.splitOnDots(str);
 		return new ModelSymbolId(qualifiedName.parent(), qualifiedName.last());
 	}
@@ -30,7 +30,7 @@ public class ModelSymbolId implements Comparable<ModelSymbolId> {
 		Objects.requireNonNull(namespace);
 		Objects.requireNonNull(body);
 		Validate.noNullElements(corpusList);
-		return new ModelReportId(namespace, body, corpusList);
+		return new ModelSymbolId(namespace, body + String.join("", corpusList));
 	}
 	
 	public DottedPath getNamespace() {
@@ -39,33 +39,10 @@ public class ModelSymbolId implements Comparable<ModelSymbolId> {
 	public String getName() {
 		return name;
 	}
+
 	@JsonValue
 	public DottedPath getQualifiedName() {
 		return namespace.child(name);
-	}
-		
-	//TODO: To be removed after removal of legacy Blueprints API
-	@Deprecated
-	public static class ModelReportId extends ModelSymbolId {
-		private String body;
-		private String[] corpusList;
-		
-		public ModelReportId(DottedPath namespace, String body, String[] corpusList) {
-			super(namespace, body + String.join("", corpusList));
-			this.body = body;
-			this.corpusList = corpusList;
-		}
-
-		@Deprecated
-		public String getBody() {
-			return body;
-		}
-
-		@Deprecated
-		public String[] getCorpusList() {
-			return corpusList;
-		}
-		
 	}
 
 	@Override

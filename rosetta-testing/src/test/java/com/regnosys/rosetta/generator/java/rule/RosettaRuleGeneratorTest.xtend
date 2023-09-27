@@ -738,11 +738,11 @@ class RosettaRuleGeneratorTest {
 			type Bar:
 				baz string (1..1)
 			
-			reporting rule Blueprint1 from Foo:
+			reporting rule Rule1 from Foo:
 				extract item->bar
 				then extract item->baz
 		'''.generateCode
-		val ruleJava = code.get("com.rosetta.test.model.reports.Blueprint1Rule")
+		val ruleJava = code.get("com.rosetta.test.model.reports.Rule1Rule")
 		try {
 			assertThat(ruleJava, CoreMatchers.notNullValue())
 			val expected = '''
@@ -755,8 +755,8 @@ class RosettaRuleGeneratorTest {
 			import com.rosetta.test.model.Foo;
 			
 			
-			@ImplementedBy(Blueprint1Rule.Blueprint1RuleDefault.class)
-			public abstract class Blueprint1Rule implements ReportFunction<Foo, String> {
+			@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
+			public abstract class Rule1Rule implements ReportFunction<Foo, String> {
 			
 				/**
 				* @param input 
@@ -771,7 +771,7 @@ class RosettaRuleGeneratorTest {
 			
 				protected abstract String doEvaluate(Foo input);
 			
-				public static class Blueprint1RuleDefault extends Blueprint1Rule {
+				public static class Rule1RuleDefault extends Rule1Rule {
 					@Override
 					protected String doEvaluate(Foo input) {
 						String output = null;
@@ -791,7 +791,7 @@ class RosettaRuleGeneratorTest {
 			'''
 			assertEquals(expected, ruleJava)
 			val classes = code.compileToClasses
-			val ruleImpl = classes.loadRule("com.rosetta.test.model.reports.Blueprint1Rule")
+			val ruleImpl = classes.loadRule("com.rosetta.test.model.reports.Rule1Rule")
 			assertNotNull(ruleImpl)
 		} finally {
 		}
@@ -815,8 +815,8 @@ class RosettaRuleGeneratorTest {
 			
 		'''.parseRosettaWithNoErrors
 		val code = parsed.generateCode
-		val bp = code.get("com.rosetta.test.model.reports.Rule1Rule")
-		assertThat(bp, CoreMatchers.notNullValue())
+		val rule = code.get("com.rosetta.test.model.reports.Rule1Rule")
+		assertThat(rule, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.reports;
 		
@@ -864,7 +864,7 @@ class RosettaRuleGeneratorTest {
 			}
 		}
 		'''
-		assertEquals(expected, bp)
+		assertEquals(expected, rule)
 		val classes = code.compileToClasses
 		val ruleImpl = classes.loadRule("com.rosetta.test.model.reports.Rule1Rule")
 		assertNotNull(ruleImpl)
@@ -873,7 +873,7 @@ class RosettaRuleGeneratorTest {
 	@Test
 	def void filter() {
 		val code = '''
-			reporting rule SimpleBlueprint from Input:
+			reporting rule SimpleRule from Input:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter traderef="Hello"
 			
@@ -881,7 +881,7 @@ class RosettaRuleGeneratorTest {
 				traderef string (1..1)
 			
 		'''.generateCode
-		val ruleJava = code.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
+		val ruleJava = code.get("com.rosetta.test.model.reports.SimpleRuleRule")
 		assertThat(ruleJava, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.reports;
@@ -898,8 +898,8 @@ class RosettaRuleGeneratorTest {
 		
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
-		@ImplementedBy(SimpleBlueprintRule.SimpleBlueprintRuleDefault.class)
-		public abstract class SimpleBlueprintRule implements ReportFunction<Input, Input> {
+		@ImplementedBy(SimpleRuleRule.SimpleRuleRuleDefault.class)
+		public abstract class SimpleRuleRule implements ReportFunction<Input, Input> {
 			
 			@Inject protected ModelObjectValidator objectValidator;
 		
@@ -924,7 +924,7 @@ class RosettaRuleGeneratorTest {
 		
 			protected abstract Input.InputBuilder doEvaluate(Input input);
 		
-			public static class SimpleBlueprintRuleDefault extends SimpleBlueprintRule {
+			public static class SimpleRuleRuleDefault extends SimpleRuleRule {
 				@Override
 				protected Input.InputBuilder doEvaluate(Input input) {
 					Input.InputBuilder output = Input.builder();
@@ -948,8 +948,8 @@ class RosettaRuleGeneratorTest {
 
 	@Test
 	def void filter2() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint from Input:
+		val code = '''
+			reporting rule SimpleRule from Input:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter traderef exists
 									
@@ -957,16 +957,15 @@ class RosettaRuleGeneratorTest {
 				traderef string (0..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "filter2");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.SimpleRuleRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void filterWhenRule() {
-		val blueprint = '''
+		val code = '''
 			reporting rule TestRule from Input:
 				extract item->flag
 						
@@ -978,16 +977,15 @@ class RosettaRuleGeneratorTest {
 				flag boolean (1..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.FilterRuleRule")
-		//writeClasses(blueprint, "filterWhenRule");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.FilterRuleRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void filterWhenCount() {
-		val blueprint = '''
+		val code = '''
 			reporting rule IsFixedFloat from Foo:
 				extract fixed count = 12
 			
@@ -996,9 +994,8 @@ class RosettaRuleGeneratorTest {
 				floating string (0..*)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.IsFixedFloatRule")
-		// writeOutClasses(blueprint, "filterWhenCount");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.IsFixedFloatRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.reports;
 		
@@ -1042,13 +1039,13 @@ class RosettaRuleGeneratorTest {
 			}
 		}
 		'''
-		blueprint.compileToClasses
-		assertEquals(expected, blueprintJava)
+		code.compileToClasses
+		assertEquals(expected, ruleJava)
 	}
 
 	@Test
 	def void functionCallsWithLiteralInputFromExtract() {
-		val blueprint = ''' 
+		val code = ''' 
 			reporting rule FooRule from Foo:
 				extract 
 					if FooFunc( a, "x" ) then "Y"
@@ -1065,12 +1062,11 @@ class RosettaRuleGeneratorTest {
 					result boolean (1..1)
 			'''.parseRosettaWithNoErrors
 			.generateCode
-			//blueprint.writeClasses("functionCallsFromExtract")
-			blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
-	def void shouldUseBlueprintFromDifferentNS() {
+	def void shouldUseRuleFromDifferentNS() {
 		val code = #['''
 			namespace ns1
 			
@@ -1090,33 +1086,6 @@ class RosettaRuleGeneratorTest {
 				Rule1
 		'''
 		].generateCode
-		val classes = code.compileToClasses
-		val ruleImpl = classes.loadRule("ns2.reports.Rule2Rule")
-		assertNotNull(ruleImpl)
-	}
-	 
-	@Test
-	def void shouldUseBlueprintRuleFromDifferentNS() {
-		val code = #['''
-			namespace ns1
-			
-			
-			type TestObject: 
-				fieldOne string (0..1)
-			
-			reporting rule Rule1 from TestObject:
-				extract fieldOne exists
-			
-		''','''
-			namespace ns2
-			
-			import ns1.*
-			
-			reporting rule Rule2 from TestObject:
-				filter Rule1
-		'''
-		].generateCode
-		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
 		val classes = code.compileToClasses
 		val ruleImpl = classes.loadRule("ns2.reports.Rule2Rule")
 		assertNotNull(ruleImpl)
@@ -1170,7 +1139,7 @@ class RosettaRuleGeneratorTest {
 
 	@Test
 	def void longNestedIfElseWithReturn0() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (1..1)
 		
@@ -1215,13 +1184,12 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 		.replace('\r', "")
 		.generateCode
-		//blueprint.writeClasses("longNestedIfElseWithReturn0");
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void longNestedIfElseWithNoReturn() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (1..1)
 		
@@ -1265,13 +1233,12 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 			.replace('\r', "")
 			.generateCode
-			//blueprint.writeClasses("longNestedIfElseWithNoReturn");
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void ifWithSingleCardinality() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			test boolean (1..1)
 			bar Bar (1..1)
@@ -1287,13 +1254,12 @@ class RosettaRuleGeneratorTest {
 				else bar2
 		
 		'''.generateCode
-		//blueprint.writeClasses("ifWithSingleCardinality")
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
 	def void ifWithMultipleCardinality() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			test boolean (1..1)
 			bar Bar (1..*)
@@ -1309,13 +1275,12 @@ class RosettaRuleGeneratorTest {
 				else bar2
 		
 		'''.generateCode
-		//blueprint.writeClasses("ifWithSingleCardinality")
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void shouldGenerateDataType() {
-		val blueprint = '''
+		val code = '''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
 			
@@ -1373,12 +1338,12 @@ class RosettaRuleGeneratorTest {
 					[ruleReference Ff]
 			
 		'''.generateCode
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
 	def void shouldTypeResolutionForListOperation() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (0..*)
 		
@@ -1392,12 +1357,12 @@ class RosettaRuleGeneratorTest {
 			] then extract item -> attr
 		
 		'''.generateCode
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
 	def void shouldTypeResolutionForListOperation2() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (0..*)
 		
@@ -1415,7 +1380,7 @@ class RosettaRuleGeneratorTest {
 			then extract item -> attr
 		
 		'''.generateCode
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test

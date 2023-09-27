@@ -1002,29 +1002,29 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	def void checkAttributeRuleReference(Attribute attr) {
 		val ruleRef = attr.ruleReference
 		if (ruleRef !== null) {
-			val bp = ruleRef.reportingRule
+			val rule = ruleRef.reportingRule
 			
 			val attrExt = attr.toExpandedAttribute
 			val attrSingle = attrExt.cardinalityIsSingleValue
 			val attrType = attr.typeCall.typeCallToRType
 
 			// check cardinality
-			val ruleSingle = !bp.expression.isMulti
+			val ruleSingle = !rule.expression.isMulti
 			if (attrSingle && !ruleSingle) {
 				val cardWarning = '''Cardinality mismatch - report field «attr.name» has single cardinality ''' +
-					'''whereas the reporting rule «bp.name» has multiple cardinality.'''
+					'''whereas the reporting rule «rule.name» has multiple cardinality.'''
 				error(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			} else if (!attrSingle && ruleSingle) {
 				val cardWarning = '''Cardinality mismatch - report field «attr.name» has multiple cardinality ''' +
-					'''whereas the reporting rule «bp.name» has single cardinality.'''
+					'''whereas the reporting rule «rule.name» has single cardinality.'''
 				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 			
 			// check type
-			val bpType = bp.expression.RType
-			if (bpType !== null && bpType !== MISSING && !bpType.isSubtypeOf(attrType)) {
+			val ruleType = rule.expression.RType
+			if (ruleType !== null && ruleType != MISSING && !ruleType.isSubtypeOf(attrType)) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
-					'''whereas the reporting rule «bp.name» has type «bpType».'''
+					'''whereas the reporting rule «rule.name» has type «ruleType».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 		}

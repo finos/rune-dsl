@@ -65,7 +65,7 @@ class TabulatorGenerator {
 	
 	private def Map<Attribute, RosettaRule> getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val context = newHashMap
-		type.getAllReportingRules(ruleSource, false, false).forEach[key, rule| context.put(key.attr, rule)]
+		type.getAllReportingRules(ruleSource).forEach[key, rule| context.put(key.attr, rule)]
 		context
 	}
 	

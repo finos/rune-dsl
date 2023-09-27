@@ -13,9 +13,7 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider
 class RosettaExpressionFormattingTest {
 	@Inject
 	extension ExpressionFormatterTestHelper
-	
-	
-	
+
 	def ->(CharSequence unformated, CharSequence expectation) {
 		assertFormattedExpression[
 			it.expectation = expectation

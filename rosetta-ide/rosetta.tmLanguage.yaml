@@ -40,15 +40,13 @@ variables:
   functionalOperation: '{{wordStart}}(reduce|filter|map|extract|sort|min|max){{wordEnd}}'
   listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}'
   listOperation: ->|{{listOperationWord}}
-  blueprintNodeEnd: '(?={{wordStart}}(then|as){{wordEnd}})|{{rootEnd}}'
   synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
   expressionEnd: '(?=,|\))|{{sectionEnd}}'
-  ruleExpressionEnd: '{{blueprintNodeEnd}}|{{expressionEnd}}'
-  functionalOperationEnd: (?=\])|(?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{ruleExpressionEnd}}
+  functionalOperationEnd: (?=\])|(?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
 
 patterns:
 - include: '#model'
@@ -137,9 +135,9 @@ repository:
           - include: '#rosettaTypeAlias'
           - include: '#rosettaLibraryFunction'
           - include: '#rosettaAnnotationSource'
-          - include: '#rosettaBlueprint'
+          - include: '#rosettaRule'
           - include: '#rosettaMetaType'
-          - include: '#rosettaBlueprintReport'
+          - include: '#rosettaReport'
           - include: '#enumerationDeclaration'
           - include: '#annotationDeclaration'
           - include: '#typeDeclaration'
@@ -443,7 +441,7 @@ repository:
               - include: '#comment'
               - include: '#annotation'
 
-      rosettaBlueprint:
+      rosettaRule:
         patterns:
         - name: meta.rule.rosetta
           begin: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}\s*{{wordStart}}(rule){{wordEnd}}'
@@ -469,72 +467,15 @@ repository:
               - include: '#typeCall'
             - include: '#colon'
             - include: '#documentation'
-            - begin: '\[\s*(legacy-syntax)\s*\]'
-              beginCaptures:
-                1: { name: variable.annotation.legacy-syntax.rosetta }
-              end: '{{rootEnd}}'
-              patterns:
-              - include: '#comment'
-              - include: '#annotation'
-              - include: '#blueprintExpression'
             - include: '#annotation'
-            - include: '#coreExpression'
+            - include: '#expression'
         - name: meta.rule.rosetta
           match: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}'
           captures:
             1: { name: storage.modifier.reporting.rosetta keyword.other.reporting.rosetta }
             2: { name: storage.modifier.eligibility.rosetta keyword.other.eligibility.rosetta }
 
-      blueprintExpression:
-        patterns:
-        - include: '#comment'
-        - include: '#string'
-        - name: keyword.control.rosetta
-          match: '{{wordStart}}(then|filter|as){{wordEnd}}'
-        - begin: '{{wordStart}}(extract|return){{wordEnd}}'
-          beginCaptures:
-            0: { name: keyword.control.rosetta }
-          end: '{{blueprintNodeEnd}}'
-          patterns:
-          - include: '#comment'
-          - name: keyword.control.repeatable.rosetta
-            match: '{{wordStart}}repeatable{{wordEnd}}'
-          - include: '#ruleExpression'
-        - begin: '{{wordStart}}when{{wordEnd}}'
-          beginCaptures:
-            0: { name: keyword.control.when.rosetta }
-          end: '{{blueprintNodeEnd}}'
-          patterns:
-          - include: '#comment'
-          - begin: '{{wordStart}}rule{{wordEnd}}'
-            beginCaptures:
-              0: { name: keyword.control.rule.rosetta }
-            end: '{{blueprintNodeEnd}}'
-            patterns:
-            - include: '#comment'
-            - name: entity.name.rule.rosetta
-              match: '{{identifier}}'
-          - include: '#ruleExpression'
-        - begin: '{{wordStart}}lookup{{wordEnd}}'
-          beginCaptures:
-            0: { name: keyword.control.lookup.rosetta }
-          end: '{{blueprintNodeEnd}}'
-          patterns:
-          - include: '#comment'
-          - begin: '{{identifier}}'
-            beginCaptures:
-              0: { name: entity.name.lookup-ref.rosetta }
-            end: '{{blueprintNodeEnd}}'
-            patterns:
-            - include: '#comment'
-            - begin: '{{identifier}}'
-              beginCaptures:
-                0: { name: entity.name.type.rosetta } # Need semantic tokens to refine type
-              end: '{{blueprintNodeEnd}}'
-        - name: entity.name.rule.rosetta
-          match: '{{identifier}}'
-
-      rosettaBlueprintReport:
+      rosettaReport:
         name: meta.report.rosetta
         begin: '{{wordStart}}report{{wordEnd}}'
         beginCaptures:
@@ -933,7 +874,7 @@ repository:
           - name: entity.name.condition.rosetta
             match: '{{identifier}}'
         - include: '#comment'
-        - include: '#documentationAndAnnotationsFollowedByCoreExpression'
+        - include: '#documentationAndAnnotationsFollowedByExpression'
 
       functionDeclaration:
         name: meta.function.rosetta
@@ -1041,7 +982,7 @@ repository:
           - name: variable.other.alias.rosetta
             match: '{{identifier}}'
         - include: '#comment'
-        - include: '#documentationFollowedByCoreExpression'
+        - include: '#documentationFollowedByExpression'
 
       operation:
         name: meta.operation.rosetta
@@ -1069,23 +1010,12 @@ repository:
             - name: variable.other.member.rosetta
               match: '{{identifier}}'
         - include: '#comment'
-        - include: '#documentationFollowedByCoreExpression'
+        - include: '#documentationFollowedByExpression'
 
-      coreExpression:
+      expression:
         name: meta.expression.rosetta
         begin: (?!\s|^|$)
         end: '{{expressionEnd}}'
-        patterns:
-        - include: '#expression'
-      
-      ruleExpression:
-        name: meta.expression.rosetta
-        begin: (?!\s|^|$)
-        end: '{{ruleExpressionEnd}}'
-        patterns:
-        - include: '#expression'
-
-      expression:
         patterns:
         - include: '#comment'
         - name: meta.parens.rosetta
@@ -1219,7 +1149,7 @@ repository:
           - include: '#expression'
         - include: '#expression'
 
-      documentationAndAnnotationsFollowedByCoreExpression: # Special rule to circumvent clashing of '[' and '<' in expressions
+      documentationAndAnnotationsFollowedByExpression: # Special rule to circumvent clashing of '[' and '<' in expressions
         name: meta.documentation-and-annotations-followed-by-expression.rosetta
         begin: (?!\s|^|$)
         end: '{{sectionEnd}}'
@@ -1238,10 +1168,10 @@ repository:
             patterns:
             - include: '#comment'
             - include: '#string'
-          - include: '#annotationsFollowedByCoreExpression'
-        - include: '#annotationsFollowedByCoreExpression'
+          - include: '#annotationsFollowedByExpression'
+        - include: '#annotationsFollowedByExpression'
 
-      documentationFollowedByCoreExpression:
+      documentationFollowedByExpression:
         name: meta.documentation-followed-by-expression.rosetta
         begin: (?!\s|^|$)
         end: '{{sectionEnd}}'
@@ -1260,10 +1190,10 @@ repository:
             patterns:
             - include: '#comment'
             - include: '#string'
-          - include: '#coreExpression'
-        - include: '#coreExpression'
+          - include: '#expression'
+        - include: '#expression'
 
-      annotationsFollowedByCoreExpression:
+      annotationsFollowedByExpression:
         name: meta.annotations-followed-by-expression.rosetta
         begin: (?!\s|^|$)
         end: '{{sectionEnd}}'
@@ -1286,8 +1216,8 @@ repository:
             - include: '#referenceAnnotationBody'
             - include: '#ruleReferenceAnnotationBody'
             - include: '#customAnnotationBody'
-          - include: '#annotationsFollowedByCoreExpression'
-        - include: '#coreExpression'
+          - include: '#annotationsFollowedByExpression'
+        - include: '#expression'
 
   string:
     patterns:
@@ -1359,6 +1289,7 @@ repository:
         end: \*/
         endCaptures:
           0: { name: punctuation.definition.comment.end.rosetta }
+
   colon:
     name: punctuation.separator.colon.rosetta
     match: ':'

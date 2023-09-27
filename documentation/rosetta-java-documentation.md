@@ -135,24 +135,3 @@ private void testReportFunction() {
     assertEquals(input.getVehicle().getRegistrationID(), reportOutput.getVehicleRegistrationID());
 }
 ```
-
-### Running a report that relies on rules annotated with `[legacy-syntax]`
-
-Some reporting rules you might encounter in a Rosetta model are marked with the `[legacy-syntax]` annotation. They are written in a deprecated syntax, and they need an additional Guice binding in order to work - otherwise you will see an exception during injection. Consequently, a report definition that relies in some way on a reporting rule annotated with `[legacy-syntax]` needs this binding as well.
-
-To run such a report, add the following binding to your Guice module.
-``` Java
-bind(RosettaActionFactory.class).to(RosettaActionFactoryImpl.class);
-```
-You might need to add a dependency to the proprietary `rosetta-reports` artifact in order to import the `RosettaActionFactoryImpl` class.
-``` xml
-<dependency>
-    <groupId>com.regnosys</groupId>
-    <artifactId>rosetta-reports</artifactId>
-    <version>7.6.3</version>
-</dependency>
-```
-
-{{< notice info "Note" >}}
-Support for `[legacy-syntax]` will be dropped in the near future, and the `rosetta-reports` repository will be archived.
-{{< /notice >}}

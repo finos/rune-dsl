@@ -97,9 +97,6 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 			ClosureParameter: {
 				isClosureParameterMulti(symbol.function)
 			}
-			Data: { // @Compat: Data should not be a RosettaSymbol.
-				false
-			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
 				false
 			}

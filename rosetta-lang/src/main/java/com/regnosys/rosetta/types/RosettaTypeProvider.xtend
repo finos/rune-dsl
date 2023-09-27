@@ -115,9 +115,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				} else
 					MISSING
 			}
-			Data: { // @Compat: Data should not be a RosettaSymbol.
-				new RDataType(symbol)
-			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
 				new REnumType(symbol)
 			}

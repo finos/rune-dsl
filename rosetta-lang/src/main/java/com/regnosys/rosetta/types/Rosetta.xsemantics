@@ -123,10 +123,6 @@ auxiliary symbolListType(ClosureParameter c) {
 	return functionalOperationItemType(op)
 }
 
-auxiliary symbolListType(RosettaEnumeration c) {
-	return createListType(new REnumType(c), single)
-}
-
 auxiliary symbolListType(ShortcutDeclaration c) {
 	empty |- c.expression : var RListType t
 	return t
