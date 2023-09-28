@@ -65,7 +65,7 @@ public class ModelReportId extends ModelId implements Comparable<ModelReportId> 
 	@JsonValue
 	@Override
 	public String toString() {
-		return getNamespace().withDots() + "<" + joinRegulatoryReference(" ") + ">";
+		return getNamespace().child("<" + joinRegulatoryReference(" ") + ">").withDots();
 	}
 
 	@Override
