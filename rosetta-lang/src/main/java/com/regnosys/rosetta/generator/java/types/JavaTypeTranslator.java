@@ -306,7 +306,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		RosettaModel model = rootElement.getModel();
 		if (model == null)
 			// Artificial attributes
-			throw new IllegalArgumentException("Can not compute package name for " + report.eClass().getName() + " " + report.getName() + ". Element is not attached to a RosettaModel.");
+			throw new IllegalArgumentException("Can not compute package name for " + report.eClass().getName() + " " + report.getRegulatoryId() + ". Element is not attached to a RosettaModel.");
 		DottedPath namespace = DottedPath.splitOnDots(model.getName());
 		
 		RegulatoryDocumentReference ref = report.getRegulatoryBody();

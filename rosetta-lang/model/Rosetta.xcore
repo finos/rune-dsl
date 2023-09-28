@@ -507,7 +507,7 @@ class RosettaReport extends RosettaRootElement {
 	refers Data reportType
 	refers RosettaExternalRuleSource ruleSource
 	
-	op String getName() {
+	op String getRegulatoryId() {
 		(getRegulatoryBody.getBody.name.toFirstUpper 
 				+ getRegulatoryBody.corpuses.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining()))
 	}
