@@ -2,12 +2,18 @@ package com.rosetta.model.lib;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.Validate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.rosetta.util.DottedPath;
 
 public class ModelReportId extends ModelId implements Comparable<ModelReportId> {
+	private static Pattern REGULATORY_REFERENCE_REPR_PATTERN = Pattern.compile("<(?<body>[a-zA-Z0-9_]+)(?: (?<corpusList>[a-zA-Z0-9_ ]+))>");
+	
 	private final String body;
 	private final String[] corpusList;
 
@@ -18,6 +24,17 @@ public class ModelReportId extends ModelId implements Comparable<ModelReportId> 
 		
 		this.body = body;
 		this.corpusList = corpusList;
+	}
+	
+	@JsonCreator
+	public static ModelReportId fromNamespaceAndRegulatoryReferenceString(String str) {
+		DottedPath parts = DottedPath.splitOnDots(str);
+		DottedPath namespace = parts.parent();
+		Matcher matcher = REGULATORY_REFERENCE_REPR_PATTERN.matcher(parts.last());
+		String body = matcher.group("body");
+		String rawCorpusList = matcher.group("corpusList");
+		String[] corpusList = rawCorpusList == null ? new String[0] : rawCorpusList.split(" ");
+		return new ModelReportId(namespace, body, corpusList);
 	}
 
 	public String getBody() {
@@ -45,6 +62,7 @@ public class ModelReportId extends ModelId implements Comparable<ModelReportId> 
 		return body + bodySeparator + String.join(corpusSeparator, corpusList);
 	}
 
+	@JsonValue
 	@Override
 	public String toString() {
 		return getNamespace().withDots() + "<" + joinRegulatoryReference(" ") + ">";
