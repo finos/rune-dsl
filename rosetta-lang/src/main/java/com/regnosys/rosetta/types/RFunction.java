@@ -51,13 +51,6 @@ public class RFunction {
 		this.reportId = reportId;
 	}
 	
-	public DottedPath getNamespace() {
-		if (symbolId != null) {
-			return symbolId.getNamespace();
-		}
-		return reportId.getNamespace();
-	}
-	
 	public ModelId getId() {
 		if (symbolId != null) {
 			return symbolId;
@@ -71,6 +64,10 @@ public class RFunction {
 	
 	public ModelReportId getReportId() {
 		return reportId;
+	}
+	
+	public DottedPath getNamespace() {
+		return getId().getNamespace();
 	}
 	
 	public String getAlphanumericName() {
