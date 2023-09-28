@@ -17,8 +17,8 @@ import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import java.math.BigDecimal
-import com.rosetta.model.lib.ModelSymbolId
 import javax.inject.Inject
+import com.rosetta.model.lib.ModelReportId
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -75,7 +75,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId =  ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val reportTabulatorClass = reportId.toJavaReportTabulator
 		
 		val reportTabulatorCode = code.get(reportTabulatorClass.canonicalName.withDots)
@@ -662,7 +662,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses
@@ -706,7 +706,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
 		val classes = code.compileToClasses

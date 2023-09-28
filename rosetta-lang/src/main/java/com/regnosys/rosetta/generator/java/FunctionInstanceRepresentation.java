@@ -12,7 +12,7 @@ public class FunctionInstanceRepresentation {
 	
 	@Override
 	public String toString() {
-		return "FunctionInstance[" + func.getQualifiedName().withDots() + "]";
+		return "FunctionInstance[" + func.getId() + "]";
 	}
 	@Override
 	public int hashCode() {

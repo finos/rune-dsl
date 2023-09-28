@@ -48,6 +48,7 @@ import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.GeneratedJavaClassService;
@@ -103,7 +104,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		case FUNCTION:
 			return generatedJavaClassService.toJavaFunction(func.getSymbolId());
 		case REPORT:
-			return generatedJavaClassService.toJavaReportFunction(func.getSymbolId());
+			return generatedJavaClassService.toJavaReportFunction(func.getReportId());
 		case RULE:
 			return generatedJavaClassService.toJavaRule(func.getSymbolId());
 		default:
@@ -301,7 +302,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		DottedPath namespace = DottedPath.splitOnDots(model.getName());
 		return new ModelSymbolId(namespace, named.getName());
 	}
-	private ModelSymbolId getReportId(RosettaReport report) {
+	private ModelReportId getReportId(RosettaReport report) {
 		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(report, RosettaRootElement.class);
 		RosettaModel model = rootElement.getModel();
 		if (model == null)
@@ -313,7 +314,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String body = ref.getBody().getName();
 		String[] corpuses = ref.getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
 		
-		return ModelSymbolId.fromRegulatoryReference(namespace, body, corpuses);
+		return new ModelReportId(namespace, body, corpuses);
 	}
 	private DottedPath modelPackage(RosettaModel model) {
 		return DottedPath.splitOnDots(model.getName());

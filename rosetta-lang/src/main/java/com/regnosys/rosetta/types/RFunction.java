@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.Objects;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Condition;
-import com.rosetta.model.lib.ModelSymbol.AbstractModelSymbol;
+import com.rosetta.model.lib.ModelId;
+import com.rosetta.model.lib.ModelReportId;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
-public class RFunction extends AbstractModelSymbol {
+public class RFunction {
+	private ModelSymbolId symbolId;
+	private ModelReportId reportId;
 	private String definition;
 	private List<RAttribute> inputs;
 	private RAttribute output;
@@ -18,10 +22,9 @@ public class RFunction extends AbstractModelSymbol {
 	private List<ROperation> operations;
 	private List<AnnotationRef> annotations;
 	
-	public RFunction(DottedPath namespace, String name, String definition, List<RAttribute> inputs,
+	private RFunction(String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
-		super(namespace, name);
 		this.definition = definition;
 		this.inputs = inputs;
 		this.output = output;
@@ -31,6 +34,47 @@ public class RFunction extends AbstractModelSymbol {
 		this.shortcuts = shortcuts;
 		this.operations = operations;
 		this.annotations = annotations;
+	}
+	
+	public RFunction(ModelSymbolId symbolId, String definition, List<RAttribute> inputs,
+			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
+			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
+		this(definition, inputs, output, origin, preConditions, postConditions,
+			shortcuts, operations, annotations);
+		this.symbolId = symbolId;
+	}
+	public RFunction(ModelReportId reportId, String definition, List<RAttribute> inputs,
+			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
+			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
+		this(definition, inputs, output, origin, preConditions, postConditions,
+			shortcuts, operations, annotations);
+		this.reportId = reportId;
+	}
+	
+	public DottedPath getNamespace() {
+		if (symbolId != null) {
+			return symbolId.getNamespace();
+		}
+		return reportId.getNamespace();
+	}
+	
+	public ModelId getId() {
+		if (symbolId != null) {
+			return symbolId;
+		}
+		return reportId;
+	}
+	
+	public ModelSymbolId getSymbolId() {
+		return symbolId;
+	}
+	
+	public ModelReportId getReportId() {
+		return reportId;
+	}
+	
+	public String getAlphanumericName() {
+		return getId().getAlphanumericName();
 	}
 
 	public String getDefinition() {
@@ -71,7 +115,7 @@ public class RFunction extends AbstractModelSymbol {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(annotations, definition, inputs, getSymbolId(), operations, origin, output,
+		return Objects.hash(symbolId, reportId, annotations, definition, inputs, operations, origin, output,
 				postConditions, preConditions, shortcuts);
 	}
 
@@ -84,8 +128,9 @@ public class RFunction extends AbstractModelSymbol {
 		if (getClass() != obj.getClass())
 			return false;
 		RFunction other = (RFunction) obj;
-		return Objects.equals(annotations, other.annotations) && Objects.equals(definition, other.definition)
-				&& Objects.equals(inputs, other.inputs) && Objects.equals(getSymbolId(), other.getSymbolId())
+		return Objects.equals(reportId, other.reportId)
+				&& Objects.equals(annotations, other.annotations) && Objects.equals(definition, other.definition)
+				&& Objects.equals(inputs, other.inputs) && Objects.equals(symbolId, other.symbolId)
 				&& Objects.equals(operations, other.operations)
 				&& origin == other.origin && Objects.equals(output, other.output)
 				&& Objects.equals(postConditions, other.postConditions)

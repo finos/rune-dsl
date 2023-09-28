@@ -58,7 +58,7 @@ class ConditionGenerator {
 		val defaultClassScope = classScope.classScope("Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier("Default")
 		
-		funcDeps.forEach[defaultClassScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
+		funcDeps.forEach[defaultClassScope.createIdentifier(it.toFunctionInstance, it.alphanumericName.toFirstLower)]
 		
 		val defaultClassValidateScope = defaultClassScope.methodScope("validate")
 		val defaultClassPathId = defaultClassValidateScope.createUniqueIdentifier("path")

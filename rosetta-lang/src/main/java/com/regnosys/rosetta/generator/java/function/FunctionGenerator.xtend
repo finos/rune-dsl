@@ -60,6 +60,7 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.rosetta.model.lib.ModelSymbolId
 
 class FunctionGenerator {
 
@@ -129,7 +130,7 @@ class FunctionGenerator {
 			val rosettaSymbols = EcoreUtil2.eAllOfType(it, RosettaSymbolReference).map[it.symbol]
 			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
 			rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it)]
-		].toSet.sortBy[it.name]
+		].toSet.sortBy[it.alphanumericName]
 	}
 
 	private def StringConcatenationClient classBody(
@@ -149,7 +150,7 @@ class FunctionGenerator {
 		val postConditions = function.postConditions
 		
 		val classScope = scope.classScope(className.desiredName)
-		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
+		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.alphanumericName.toFirstLower)]
 		
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
@@ -347,8 +348,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					DottedPath.splitOnDots(function.model.name),
-					function.name + formatEnumName(enumFunc.value.value.name),
+					new ModelSymbolId(DottedPath.splitOnDots(function.model.name), function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),

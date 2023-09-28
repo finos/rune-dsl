@@ -22,6 +22,8 @@ import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.rosetta.model.lib.ModelReportId;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 public class RObjectFactory {
@@ -35,7 +37,8 @@ public class RObjectFactory {
 	private RosettaExtensions rosettaExtensions;
 
 	public RFunction buildRFunction(Function function) {
-		return new RFunction(DottedPath.splitOnDots(function.getModel().getName()), function.getName(),
+		return new RFunction(
+				new ModelSymbolId(DottedPath.splitOnDots(function.getModel().getName()), function.getName()),
 				function.getDefinition(),
 				function.getInputs().stream().map(i -> buildRAttribute(i)).collect(Collectors.toList()),
 				buildRAttribute(function.getOutput()),
@@ -53,8 +56,7 @@ public class RObjectFactory {
 		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), outputIsMulti);
 		
 		return new RFunction(
-				DottedPath.splitOnDots(rule.getModel().getName()),
-				rule.getName(), 
+				new ModelSymbolId(DottedPath.splitOnDots(rule.getModel().getName()), rule.getName()), 
 				rule.getDefinition(),
 				List.of(new RAttribute("input", null, inputRType, List.of(), false)),
 				outputAttribute,
@@ -68,11 +70,9 @@ public class RObjectFactory {
 	}
 	
 	public RFunction buildRFunction(RosettaReport report) {
-		String reportName = report.getRegulatoryBody().getBody().getName()
-				+ report.getRegulatoryBody().getCorpuses()
-				.stream()
-				.map(c -> c.getName())
-				.collect(Collectors.joining(""));
+		String body = report.getRegulatoryBody().getBody().getName();
+		String[] corpusList = report.getRegulatoryBody().getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
+
 		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
 				+ report.getRegulatoryBody().getCorpuses()
 				.stream()
@@ -96,10 +96,8 @@ public class RObjectFactory {
 			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));
 		
 		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
-		
 		return new RFunction(
-			DottedPath.splitOnDots(report.getModel().getName()),
-			reportName,
+			new ModelReportId(DottedPath.splitOnDots(report.getModel().getName()), body, corpusList),
 			reportDefinition,
 			List.of(buildRAttribute(inputAttribute)),
 			outputAttribute,

@@ -9,7 +9,6 @@ import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.util.types.GeneratedJavaClassService
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import java.math.BigDecimal
@@ -18,6 +17,7 @@ import java.time.ZonedDateTime
 import com.rosetta.model.lib.records.Date
 import com.rosetta.model.lib.reports.ReportFunction
 import org.junit.jupiter.api.Test
+import com.rosetta.model.lib.ModelReportId
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -181,7 +181,7 @@ class ReportingTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Shield", "Avengers", "SokoviaAccords")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("test.reg"), "Shield", "Avengers", "SokoviaAccords")
 		val reportFunctionClass = reportId.toJavaReportFunction
 		val tabulatorClass = reportId.toJavaReportTabulator
 		

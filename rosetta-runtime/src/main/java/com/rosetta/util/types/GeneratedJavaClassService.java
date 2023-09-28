@@ -1,17 +1,18 @@
 package com.rosetta.util.types;
 
+import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
 public class GeneratedJavaClassService {
-	public JavaClass toJavaReportFunction(ModelSymbolId id) {
+	public JavaClass toJavaReportFunction(ModelReportId id) {
 		DottedPath packageName = id.getNamespace().child("reports");
-		String simpleName = id.getName() + "ReportFunction";
+		String simpleName = id.joinRegulatoryReference() + "ReportFunction";
 		return new JavaClass(packageName, simpleName);
 	}
-	public JavaClass toJavaReportTabulator(ModelSymbolId id) {
+	public JavaClass toJavaReportTabulator(ModelReportId id) {
 		DottedPath packageName = id.getNamespace().child("reports");
-		String simpleName = id.getName() + "ReportTabulator";
+		String simpleName = id.joinRegulatoryReference() + "ReportTabulator";
 		return new JavaClass(packageName, simpleName);
 	}
 	
