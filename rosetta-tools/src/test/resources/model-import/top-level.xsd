@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="urn:my.schema" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:my.schema">
+    <xs:element name="TopLevel" type="Document">
+    </xs:element>
+    <xs:complexType name="Document">
+        <xs:sequence>
+            <xs:element name="Attr" type="Foo" />
+            <xs:element name="Value" type="Measure" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Foo">
+    	<xs:sequence>
+    		<xs:element name="Attr1" type="xs:int" />
+    		<xs:element name="XMLValue" type="xs:string" />
+    	</xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="UnitEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Meter" />
+            <xs:enumeration value="Kilogram" />
+        </xs:restriction>
+    </xs:simpleType>
+	<xs:simpleType name="Decimal19">
+		<xs:restriction base="xs:decimal">
+			<xs:minInclusive value="0"/>
+			<xs:totalDigits value="25"/>
+			<xs:fractionDigits value="19"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="Measure">
+		<xs:simpleContent>
+			<xs:extension base="Decimal19">
+				<xs:attribute name="Unit" type="UnitEnum" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+</xs:schema>

@@ -2,11 +2,13 @@ package com.regnosys.rosetta.tools.modelimport;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdRestriction;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
@@ -42,7 +44,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 	}
 
 	@Override
-	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
 		RosettaTypeAlias typeAlias = RosettaFactory.eINSTANCE.createRosettaTypeAlias();
 		typeAlias.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(typeAlias::setDefinition);
@@ -90,7 +92,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 		return arg;
 	}
 	@Override
-	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings) {
+	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames) {
 		RosettaTypeAlias typeAlias = typeMappings.getRosettaTypeFromSimple(xsdType);
 		
 		TypeCall tc = RosettaFactory.eINSTANCE.createTypeCall();

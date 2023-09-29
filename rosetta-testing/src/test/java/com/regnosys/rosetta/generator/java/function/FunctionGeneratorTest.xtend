@@ -42,6 +42,24 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canReturnEmptyInsideExtract() {
+		val code = '''
+		func Foo:
+			output:
+				result int (0..1)
+			set result:
+				42 extract
+				    if item > 0
+				    then empty
+				    else item
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		assertEquals(null, foo.invokeFunc(Integer, #[]))
+	}
+	
+	@Test
 	def void canConstructTypeWithEmptyValue() {
 		val code = '''
 		type A:

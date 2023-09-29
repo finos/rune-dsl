@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,18 +23,19 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
-import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdSchema;
-import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
+import com.rosetta.util.serialisation.RosettaXMLConfiguration;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -44,22 +44,13 @@ public class XsdImportTest {
 	private static final String NAMESPACE = "test.ns";
 	private static final String NAMESPACE_DEFINITION = "test.ns definition";
 	
-	private static final String BODY_TYPE = "TestBodyType";
-	private static final String BODY_NAME = "TestBodyName";
-	private static final String BODY_DEFINITION = "Test body definition.";
-	
-	private static final String SEGMENT = "TestSegment";
-	
-	private static final String CORPUS_TYPE = "TestCorpusType";
-	private static final String CORPUS_NAME = "TestCorpusName";
-	private static final String CORPUS_DISPLAY_NAME = "Test corpus display name.";
-	private static final String CORPUS_DEFINITION = "Test corpus definition.";
-	
 	private static final String SYN_SOURCE_NAME = "TEST_SYN_SOURCE";
 	
 	
 	@Inject
 	Provider<ResourceSet> resourceSetProvider;
+	@Inject
+	ValidationTestHelper validationTestHelper;
 	
 	@Inject
 	RosettaBuiltinsService builtinResources;
@@ -73,13 +64,13 @@ public class XsdImportTest {
 	
 	private ResourceSet resourceSet;
 	private RosettaXsdMapping rosettaXsdMapping;
-	private RosettaModelFactory modelFactory;
 	@BeforeEach
 	void beforeEach() {
 		rosettaXsdMapping = new RosettaXsdMapping(builtins, util);
 		resourceSet = resourceSetProvider.get();
-		modelFactory = new RosettaModelFactory(resourceSet, builtinResources);
-		rosettaXsdMapping.initializeBuiltinTypeMap(resourceSet);
+		// Add builtin types to the resource set
+		new RosettaModelFactory(resourceSet, builtinResources);
+		rosettaXsdMapping.initializeBuiltins(resourceSet);
 	}
 	
 	private void runTest(String xsdName) throws IOException {
@@ -89,10 +80,10 @@ public class XsdImportTest {
 		GenerationProperties properties = mockProperties();
 
 		// Load xsd elements
-		List<XsdAbstractElement> xsdElements = getXsdElements(xsdFile);
+		XsdSchema schema = getXsdSchema(xsdFile);
 				
-		// test
-		ResourceSet set = xsdImport.generateRosetta(xsdElements, properties, List.of());
+		// Test rosetta
+		ResourceSet set = xsdImport.generateRosetta(schema, properties);
 		List<String> resourceNames = set.getResources().stream()
 				.map(r -> r.getURI())
 				.filter(uri -> uri.scheme() == null)
@@ -113,6 +104,19 @@ public class XsdImportTest {
 			
 			assertEquals(expected, actual);
 		}
+		
+		set.getResources().forEach(resource -> validationTestHelper.assertNoIssues(resource));
+	
+		// Test XML config
+		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
+		
+		String expected = Resources.toString(Resources.getResource(expectedFolder + "/xml-config.json"), StandardCharsets.UTF_8);
+		ObjectMapper mapper = XsdImportMain.getObjectMapper();
+		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig);
+		assertEquals(expected, actual);
+		
+		// Test deserialisation
+		assertEquals(xmlConfig, mapper.readValue(actual, RosettaXMLConfiguration.class));
 	}
 	
 	@Test
@@ -135,30 +139,29 @@ public class XsdImportTest {
 		runTest("data-and-enum");
 	}
 	
+	@Test
+	void testSimpleTypeExtension() throws IOException {
+		runTest("simple-type-extension");
+	}
+	
+	@Test
+	void testTopLevel() throws IOException {
+		runTest("top-level");
+	}
 
 	private GenerationProperties mockProperties() {
 		GenerationProperties properties = mock(GenerationProperties.class);
 		when(properties.getNamespace()).thenReturn(NAMESPACE);
 		when(properties.getNamespaceDefinition()).thenReturn(NAMESPACE_DEFINITION);
-		when(properties.getBodyName()).thenReturn(BODY_NAME);
-		when(properties.getBodyType()).thenReturn(BODY_TYPE);
-		when(properties.getBodyDefinition()).thenReturn(BODY_DEFINITION);
-		when(properties.getCorpusName()).thenReturn(CORPUS_NAME);
-		when(properties.getCorpusType()).thenReturn(CORPUS_TYPE);
-		when(properties.getCorpusDisplayName()).thenReturn(CORPUS_DISPLAY_NAME);
-		when(properties.getCorpusDefinition()).thenReturn(CORPUS_DEFINITION);
-		when(properties.getSegmentName()).thenReturn(SEGMENT);
 		when(properties.getSynonymSourceName()).thenReturn(SYN_SOURCE_NAME);
 		return properties;
 	}
 	
-	private List<XsdAbstractElement> getXsdElements(String xsdPath) {
+	private XsdSchema getXsdSchema(String xsdPath) {
 		XsdParser xsdParser = new XsdParser(xsdPath);
 		return xsdParser.getResultXsdSchemas()
-                .map(XsdSchema::getElements)
-                .flatMap(Collection::stream)
-                .map(ReferenceBase::getElement)
-                .collect(Collectors.toList());
+				.findAny()
+				.orElseThrow();
 	}
 	
 	private List<String> getResourceFiles(String path) {
@@ -170,7 +173,9 @@ public class XsdImportTest {
 	        String resource;
 
 	        while ((resource = br.readLine()) != null) {
-	            filenames.add(resource);
+	        	if (resource.endsWith(".rosetta")) {
+	        		filenames.add(resource);
+	        	}
 	        }
 	    } catch (IOException e) {
 			throw new RuntimeException(e);

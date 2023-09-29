@@ -12,6 +12,8 @@ import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 public class XsdUtil {
 	private final Set<String> documentationSources = Set.of("Definition");
 	
+	public final String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
+	
 	public Optional<String> extractDocs(XsdAnnotatedElements ev) {
 		return Optional.ofNullable(ev)
 			.map(XsdAnnotatedElements::getAnnotation)

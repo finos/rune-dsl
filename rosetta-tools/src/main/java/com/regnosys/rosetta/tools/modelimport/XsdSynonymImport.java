@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -8,6 +9,7 @@ import javax.inject.Inject;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
@@ -40,11 +42,11 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 	}
 
 	@Override
-	public RosettaExternalSynonymSource registerType(XsdAbstractElement xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public RosettaExternalSynonymSource registerType(XsdAbstractElement xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
 		return null;
 	}
 	@Override
-	public List<? extends RosettaRootElement> registerTypes(List<XsdAbstractElement> xsdElements, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public List<? extends RosettaRootElement> registerTypes(List<XsdAbstractElement> xsdElements, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
 		RosettaExternalSynonymSource synonymSource = RosettaFactory.eINSTANCE.createRosettaExternalSynonymSource();
 		synonymSource.setName(properties.getSynonymSourceName());
 		typeMappings.registerSynonymSource(synonymSource);
@@ -53,7 +55,7 @@ public class XsdSynonymImport extends AbstractXsdImport<XsdAbstractElement, Rose
 	}
 
 	@Override
-	public void completeType(XsdAbstractElement xsdType, RosettaXsdMapping typeMappings) {
+	public void completeType(XsdAbstractElement xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames) {
 		RosettaExternalSynonymSource source = typeMappings.getSynonymSource();
 		if (xsdType instanceof XsdComplexType) {
 			RosettaExternalClass c = createRosettaExternalClass((XsdComplexType)xsdType, typeMappings);

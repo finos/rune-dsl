@@ -221,7 +221,7 @@ class DataRuleGeneratorTest {
 										}));
 									}
 									else {
-										return MapperS.<Boolean>ofNull();
+										return null;
 									}
 								}));
 								return result.get() == null ? ComparisonResult.success() : result;
