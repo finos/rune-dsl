@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.rosetta.util.DottedPath;
 
 public class ModelReportId extends ModelId implements Comparable<ModelReportId> {
-	private static Pattern REGULATORY_REFERENCE_REPR_PATTERN = Pattern.compile("<(?<body>[a-zA-Z0-9_]+)(?: (?<corpusList>[a-zA-Z0-9_ ]+))>");
+	private static Pattern REGULATORY_REFERENCE_REPR_PATTERN = Pattern.compile("<(?<body>[a-zA-Z0-9_]+)(?: (?<corpusList>[a-zA-Z0-9_ ]+))?>");
 	
 	private final String body;
 	private final String[] corpusList;
@@ -31,10 +31,13 @@ public class ModelReportId extends ModelId implements Comparable<ModelReportId> 
 		DottedPath parts = DottedPath.splitOnDots(str);
 		DottedPath namespace = parts.parent();
 		Matcher matcher = REGULATORY_REFERENCE_REPR_PATTERN.matcher(parts.last());
-		String body = matcher.group("body");
-		String rawCorpusList = matcher.group("corpusList");
-		String[] corpusList = rawCorpusList == null ? new String[0] : rawCorpusList.split(" ");
-		return new ModelReportId(namespace, body, corpusList);
+		if (matcher.matches()) {
+			String body = matcher.group("body");
+			String rawCorpusList = matcher.group("corpusList");
+			String[] corpusList = rawCorpusList == null ? new String[0] : rawCorpusList.split(" ");
+			return new ModelReportId(namespace, body, corpusList);
+		}
+		throw new IllegalArgumentException("Invalid format for regulatory reference string: " + parts.last());
 	}
 
 	public String getBody() {

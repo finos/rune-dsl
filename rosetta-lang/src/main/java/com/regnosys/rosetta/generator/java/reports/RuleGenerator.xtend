@@ -25,7 +25,7 @@ class RuleGenerator {
 		val clazz = rFunctionRule.toFunctionJavaClass
 		val baseInterface = new JavaParameterizedType(JavaInterface.from(ReportFunction), rFunctionRule.inputs.head.attributeToJavaType, rFunctionRule.output.attributeToJavaType)
 		val topScope = new JavaScope(clazz.packageName)
-		val classBody = functionGenerator.rBuildClass(rFunctionRule, false, #[baseInterface], true, topScope)
+		val classBody = functionGenerator.rBuildClass(rFunctionRule, false, #[baseInterface], emptyMap, true, topScope)
 		
 		val content = buildClass(clazz.packageName, classBody, topScope)
 		fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)

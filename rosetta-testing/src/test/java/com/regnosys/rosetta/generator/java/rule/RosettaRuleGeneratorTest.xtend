@@ -140,6 +140,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -152,6 +153,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -287,6 +289,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -299,6 +302,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -427,6 +431,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -439,6 +444,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -558,6 +564,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -570,6 +577,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -665,6 +673,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
@@ -674,6 +683,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					

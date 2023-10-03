@@ -78,8 +78,8 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	@MarkSemanticToken
 	public List<SemanticToken> markDocumentReferences(RegulatoryDocumentReference docRef) {
 		List<SemanticToken> tokens = new ArrayList<>();
-		for (int i = 0; i < docRef.getCorpuses().size(); i++) {
-			tokens.add(createSemanticToken(docRef, REGULATORY_DOCUMENT_REFERENCE__CORPUSES, i, DOCUMENT_CORPUS));
+		for (int i = 0; i < docRef.getCorpusList().size(); i++) {
+			tokens.add(createSemanticToken(docRef, REGULATORY_DOCUMENT_REFERENCE__CORPUS_LIST, i, DOCUMENT_CORPUS));
 		}
 		for (RosettaSegmentRef seg: docRef.getSegments()) {
 			tokens.add(createSemanticToken(seg, ROSETTA_SEGMENT_REF__SEGMENT, DOCUMENT_SEGMENT));

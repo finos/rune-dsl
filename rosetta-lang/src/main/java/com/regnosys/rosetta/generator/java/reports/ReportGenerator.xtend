@@ -25,7 +25,8 @@ class ReportGenerator {
 		val clazz = rFunction.toFunctionJavaClass
 		val topScope = new JavaScope(clazz.packageName)
 		val baseInterface = new JavaParameterizedType(JavaInterface.from(ReportFunction), rFunction.inputs.head.attributeToJavaType, rFunction.output.attributeToJavaType)
-		val classBody = functionGenerator.rBuildClass(rFunction, false, #[baseInterface], true, topScope);
+		val reportAnnotationArguments = '''namespace="«report.model.name»", body="«report.regulatoryBody.body.name»", corpusList={«FOR corpus: report.regulatoryBody.corpusList SEPARATOR ", "»"«corpus.name»"«ENDFOR»}'''
+		val classBody = functionGenerator.rBuildClass(rFunction, false, #[baseInterface], #{com.rosetta.model.lib.annotations.RosettaReport -> reportAnnotationArguments}, true, topScope);
 		val content = buildClass(clazz.packageName, classBody, topScope)
 		fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
 	}

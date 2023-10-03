@@ -94,16 +94,16 @@ class FunctionGenerator {
 					overridesEvaluate = true
 					functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
 				}
-				rBuildClass(rFunction, false, functionInterfaces, overridesEvaluate, topScope)
+				rBuildClass(rFunction, false, functionInterfaces, emptyMap, overridesEvaluate, topScope)
 			}
 
 		val content = buildClass(root.functions, classBody, topScope)
 		fsa.generateFile(fileName, content)
 	}
 	
-	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, boolean overridesEvaluate, JavaScope topScope) {
+	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, Map<Class<?>, String> annotations, boolean overridesEvaluate, JavaScope topScope) {
 		val dependencies = collectFunctionDependencies(rFunction)
-		rFunction.classBody(isStatic, overridesEvaluate, dependencies, functionInterfaces , topScope)
+		rFunction.classBody(isStatic, overridesEvaluate, dependencies, functionInterfaces, annotations, topScope)
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
@@ -139,6 +139,7 @@ class FunctionGenerator {
 		boolean overridesEvaluate,
 		List<RFunction> dependencies,
 		List<JavaType> functionInterfaces,
+		Map<Class<?>, String> annotations,
 		JavaScope scope
 	) {
 		val className = scope.createIdentifier(function, function.toFunctionJavaClass.simpleName)
@@ -194,6 +195,9 @@ class FunctionGenerator {
 		]
 
 		'''
+			«FOR entry: annotations.entrySet»
+				@«entry.key»(«entry.value»)
+			«ENDFOR»
 			@«ImplementedBy»(«className».«defaultClassName».class)
 			public «IF isStatic»static «ENDIF»abstract class «className» implements «FOR fInterface : functionInterfaces SEPARATOR ","»«fInterface»«ENDFOR» {
 				«IF !preConditions.empty || !postConditions.empty»
@@ -359,7 +363,7 @@ class FunctionGenerator {
 					enumFunc.operations.map[rTypeBuilderFactory.buildROperation(it)],
 					enumFunc.annotations
 				)»
-				«rFunction.rBuildClass(true, #[JavaClass.from(RosettaFunction)], false, classScope)»
+				«rFunction.rBuildClass(true, #[JavaClass.from(RosettaFunction)], emptyMap, false, classScope)»
 			«ENDFOR»
 		}'''
 	}

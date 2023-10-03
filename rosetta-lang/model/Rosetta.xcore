@@ -306,7 +306,7 @@ class RosettaDocReference {
 
 class RegulatoryDocumentReference {
 	refers RosettaBody body
-	refers RosettaCorpus[] corpuses
+	refers RosettaCorpus[] corpusList
 	contains RosettaSegmentRef[] segments
 }
 
@@ -509,7 +509,7 @@ class RosettaReport extends RosettaRootElement {
 	
 	op String getRegulatoryId() {
 		(getRegulatoryBody.getBody.name.toFirstUpper 
-				+ getRegulatoryBody.corpuses.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining()))
+				+ getRegulatoryBody.corpusList.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining()))
 	}
 }
 

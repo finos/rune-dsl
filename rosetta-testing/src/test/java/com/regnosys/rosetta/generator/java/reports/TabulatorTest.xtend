@@ -83,6 +83,7 @@ class TabulatorTest {
 		var expected = '''
 			package com.rosetta.test.model.reports;
 			
+			import com.rosetta.model.lib.annotations.RosettaReport;
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.Field;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
@@ -91,6 +92,7 @@ class TabulatorTest {
 			import javax.inject.Inject;
 			
 			
+			@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"Corp"})
 			public class TEST_REGCorpReportTabulator implements Tabulator<Report> {
 				private final ReportTabulator tabulator;
 				

@@ -71,10 +71,10 @@ public class RObjectFactory {
 	
 	public RFunction buildRFunction(RosettaReport report) {
 		String body = report.getRegulatoryBody().getBody().getName();
-		String[] corpusList = report.getRegulatoryBody().getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
+		String[] corpusList = report.getRegulatoryBody().getCorpusList().stream().map(c -> c.getName()).toArray(String[]::new);
 
 		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
-				+ report.getRegulatoryBody().getCorpuses()
+				+ report.getRegulatoryBody().getCorpusList()
 				.stream()
 				.map(c -> c.getName())
 				.collect(Collectors.joining(" "));

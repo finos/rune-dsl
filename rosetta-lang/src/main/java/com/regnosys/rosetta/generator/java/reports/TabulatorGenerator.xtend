@@ -106,6 +106,7 @@ class TabulatorGenerator {
 			val innerTabulatorClass = reportType.toTabulatorJavaClass(Optional.ofNullable(report.ruleSource))
 			val innerTabulatorInstance = classScope.createUniqueIdentifier("tabulator")
 			'''
+			@«com.rosetta.model.lib.annotations.RosettaReport»(namespace="«report.model.name»", body="«report.regulatoryBody.body.name»", corpusList={«FOR corpus: report.regulatoryBody.corpusList SEPARATOR ", "»"«corpus.name»"«ENDFOR»})
 			public class «tabulatorClass» implements «Tabulator»<«reportClass»> {
 				private final «innerTabulatorClass» «innerTabulatorInstance»;
 				

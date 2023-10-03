@@ -830,7 +830,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|QualifiedName] corpuses+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
+	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
 ;
 
 RosettaSegmentRef:
