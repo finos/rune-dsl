@@ -241,10 +241,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			if (targetRule.isLegacy) {
 				error('''You can only call non-legacy rules.''', ref, null)
 			}
-			val containingRule = EcoreUtil2.getContainerOfType(ref, RosettaBlueprint)
-			if (containingRule === null) {
-				error('''You can only call a rule from within a rule.''', ref, null)
-			}
 		}
 	}
 	
