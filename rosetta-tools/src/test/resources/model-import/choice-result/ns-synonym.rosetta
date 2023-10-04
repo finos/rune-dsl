@@ -1,0 +1,13 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+synonym source TEST_SYN_SOURCE
+{
+	FooChoice:
+		+ opt1
+			[value "Opt1"]
+		+ opt2
+			[value "Opt2"]
+		+ opt3
+			[value "Opt3"]
+}
