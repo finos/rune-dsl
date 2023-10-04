@@ -1,23 +1,25 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
-import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.xtext.testing.extensions.InjectionExtension
-import javax.inject.Inject
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.util.types.GeneratedJavaClassService
-import com.rosetta.model.lib.reports.Tabulator
-import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.ModelSymbolId
-import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.rosetta.model.lib.ModelSymbolId
+import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.records.Date
+import com.rosetta.model.lib.reports.ReportFunction
+import com.rosetta.model.lib.reports.Tabulator
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.GeneratedJavaClassService
 import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import com.rosetta.model.lib.records.Date
-import com.rosetta.model.lib.reports.ReportFunction
+import javax.inject.Inject
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.^extension.ExtendWith
+
+import static org.junit.jupiter.api.Assertions.*
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -308,5 +310,120 @@ class ReportingTest {
 		notModelled: Not modelled
 		'''
 		assertFieldValuesEqual(expectedValues, flatReport)
+	}
+	
+	@Test
+	def void generateReportFromHierarchicalTypes() {
+		val model = '''
+			namespace "test.reg"
+			version "test"
+			
+			type Input:
+			    attr1 string (1..1)
+			    attr2 string (1..1)
+			    attr3 string (1..1)
+			    eligible boolean (1..1)
+			
+			body Authority Auth
+			
+			corpus Act Corpus
+			
+			corpus Regulations Reg
+			
+			report Auth Corpus Reg in real-time
+			    from Input
+			    when IsEligible
+			    with type Baz
+			
+			type Foo:
+			    fooAttr string (1..1)
+			        [ruleReference FooAttr]
+			
+			type Bar extends Foo:
+			    barAttr string (1..1)
+			        [ruleReference BarAttr]
+			
+			type Baz extends Bar:
+			    bazAttr string (1..1)
+			        [ruleReference BazAttr]
+			
+			eligibility rule IsEligible from Input:
+			     filter eligible
+			
+			reporting rule FooAttr from Input:
+			    extract attr1 as "Foo Attr"
+			
+			reporting rule BarAttr from Input:
+			    extract attr2 as "Bar Attr"
+			
+			reporting rule BazAttr from Input:
+			    extract attr3 as "Baz Attr"
+		'''
+		val code = model.generateCode
+		assertEquals(
+			'''
+			package test.reg.reports;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.ModelObjectValidator;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import com.rosetta.model.lib.reports.ReportFunction;
+			import java.util.Optional;
+			import javax.inject.Inject;
+			import test.reg.Baz;
+			import test.reg.Baz.BazBuilder;
+			import test.reg.Input;
+			
+			
+			@ImplementedBy(AuthCorpusRegReportFunction.AuthCorpusRegReportFunctionDefault.class)
+			public abstract class AuthCorpusRegReportFunction implements ReportFunction<Input, Baz> {
+				
+				@Inject protected ModelObjectValidator objectValidator;
+				
+				// RosettaFunction dependencies
+				//
+				@Inject protected BazAttrRule bazAttr;
+			
+				/**
+				* @param input 
+				* @return output 
+				*/
+				@Override
+				public Baz evaluate(Input input) {
+					Baz.BazBuilder outputBuilder = doEvaluate(input);
+					
+					final Baz output;
+					if (outputBuilder == null) {
+						output = null;
+					} else {
+						output = outputBuilder.build();
+						objectValidator.validate(Baz.class, output);
+					}
+					
+					return output;
+				}
+			
+				protected abstract Baz.BazBuilder doEvaluate(Input input);
+			
+				public static class AuthCorpusRegReportFunctionDefault extends AuthCorpusRegReportFunction {
+					@Override
+					protected Baz.BazBuilder doEvaluate(Input input) {
+						Baz.BazBuilder output = Baz.builder();
+						return assignOutput(output, input);
+					}
+					
+					protected Baz.BazBuilder assignOutput(Baz.BazBuilder output, Input input) {
+						output
+							.setBazAttr(MapperS.of(bazAttr.evaluate(MapperS.of(input).get())).get());
+						
+						return Optional.ofNullable(output)
+							.map(o -> o.prune())
+							.orElse(null);
+					}
+				}
+			}
+			'''.toString,
+			code.get("test.reg.reports.AuthCorpusRegReportFunction")
+		)
 	}
 }
