@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAttribute;
+import org.xmlet.xsdparser.xsdelements.XsdChoice;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdExtension;
@@ -24,9 +25,12 @@ import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.TypeCall;
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
+import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.rosetta.util.serialisation.AttributeXMLConfiguration;
@@ -47,6 +51,9 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		this.builtins = builtins;
 	}
 	
+	private boolean isChoice(XsdComplexType xsdType) {
+		return xsdType.getXsdChildElement() instanceof XsdChoice;
+	}
 	private Stream<XsdElement> getTypedXsdElements(XsdComplexType xsdType) {
 		return Optional.of(xsdType)
 				.map(XsdComplexType::getElements).stream()
@@ -81,6 +88,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		util.extractDocs(xsdType).ifPresent(data::setDefinition);
 		xsdMapping.registerComplexType(xsdType, data);
 		
+		boolean isChoice = isChoice(xsdType);
+		
 		// If the complex type extends a simple type, simulate this
 		// by adding a `value` attribute of the corresponding type.
 		if (getBaseSimpleType(xsdType).isPresent()) {
@@ -91,13 +100,25 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		
 		// Map XSD elements to Rosetta attributes.
 		getTypedXsdElements(xsdType)
-			.map(element -> registerAttribute(element, xsdMapping))
+			.map(element -> registerAttribute(element, isChoice, xsdMapping))
 			.forEach(data.getAttributes()::add);
 		
 		// Map XSD attributes to Rosetta attributes.
 		getTypedXsdAttributes(xsdType)
 			.map(attribute -> registerAttribute(attribute, xsdMapping))
 			.forEach(data.getAttributes()::add);
+		
+		// Add a one-of condition if it is a `xs:choice` type.
+		if (isChoice) {
+			Condition choice = SimpleFactory.eINSTANCE.createCondition();
+			choice.setName("Choice");
+			
+			OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
+			oneOf.setOperator("one-of");
+			choice.setExpression(oneOf);
+			
+			data.getConditions().add(choice);
+		}
 		
 		return data;
 	}
@@ -226,7 +247,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 		return result;
 	}
 
-	private Attribute registerAttribute(XsdElement xsdElement, RosettaXsdMapping xsdMapping) {
+	private Attribute registerAttribute(XsdElement xsdElement, boolean isChoice, RosettaXsdMapping xsdMapping) {
 		Attribute attribute = SimpleFactory.eINSTANCE.createAttribute();
 
 		// definition
@@ -241,7 +262,15 @@ public class XsdTypeImport extends AbstractXsdImport<XsdComplexType, Data> {
 
 		// cardinality
 		RosettaCardinality rosettaCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality();
-		rosettaCardinality.setInf(xsdElement.getMinOccurs());
+		if (isChoice) {
+			rosettaCardinality.setInf(0);
+			// If minOccurs is not equal to the default value 1, then throw.
+			if (xsdElement.getMinOccurs() != 1) {
+				throw new UnsupportedOperationException("xs:element inside a xs:choice has a non-zero `minOccurs` attribute of " + xsdElement.getMinOccurs() + ".");
+			}
+		} else {
+			rosettaCardinality.setInf(xsdElement.getMinOccurs());
+		}
 		if (xsdElement.getMaxOccurs().equals(UNBOUNDED)) {
 			rosettaCardinality.setUnbounded(true);
 		} else {

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   <xs:simpleType name="Max3Number">
+        <xs:annotation>
+            <xs:documentation source="Name" xml:lang="EN">Max3Number</xs:documentation>
+            <xs:documentation source="Definition" xml:lang="EN">Number (max 999) of objects represented as an integer.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:decimal">
+            <xs:fractionDigits value="0"/>
+            <xs:totalDigits value="3"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="FooChoice">
+		<xs:annotation>
+			<xs:documentation>FooChoice.</xs:documentation>
+			<xs:appinfo>FooChoice</xs:appinfo>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="Opt1" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>My option 1.</xs:documentation>
+					<xs:appinfo>Opt1</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Opt2" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>My option 2.</xs:documentation>
+					<xs:appinfo>Opt2</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Opt3" type="Max3Number">
+				<xs:annotation>
+					<xs:documentation>My option 3.</xs:documentation>
+					<xs:appinfo>Opt3</xs:appinfo>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+</xs:schema>

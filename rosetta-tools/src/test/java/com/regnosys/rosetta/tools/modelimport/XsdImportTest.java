@@ -135,6 +135,11 @@ public class XsdImportTest {
 	}
 	
 	@Test
+	void testChoice() throws IOException {
+		runTest("choice");
+	}
+	
+	@Test
 	void testDataAndEnum() throws IOException {
 		runTest("data-and-enum");
 	}
