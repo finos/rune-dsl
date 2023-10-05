@@ -1,23 +1,25 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
-import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.xtext.testing.extensions.InjectionExtension
-import javax.inject.Inject
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.util.types.GeneratedJavaClassService
-import com.rosetta.model.lib.reports.Tabulator
-import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.ModelSymbolId
-import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.rosetta.model.lib.ModelSymbolId
+import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.records.Date
+import com.rosetta.model.lib.reports.ReportFunction
+import com.rosetta.model.lib.reports.Tabulator
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.GeneratedJavaClassService
 import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import com.rosetta.model.lib.records.Date
-import com.rosetta.model.lib.reports.ReportFunction
+import javax.inject.Inject
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.^extension.ExtendWith
+
+import static org.junit.jupiter.api.Assertions.*
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -306,6 +308,99 @@ class ReportingTest {
 			country: UnitedStatesOfAmerica
 		
 		notModelled: Not modelled
+		'''
+		assertFieldValuesEqual(expectedValues, flatReport)
+	}
+	
+	@Test
+	def void generateReportFromHierarchicalTypes() {
+		val model = '''
+			namespace "test.reg"
+			version "test"
+			
+			type Input:
+			    attr1 string (1..1)
+			    attr2 string (1..1)
+			    attr3 string (1..1)
+			    eligible boolean (1..1)
+			
+			body Authority Auth
+			
+			corpus Act Corpus
+			
+			corpus Regulations Reg
+			
+			report Auth Corpus Reg in real-time
+			    from Input
+			    when IsEligible
+			    with type Baz
+			
+			type Foo:
+			    fooAttr string (1..1)
+			        [ruleReference FooAttr]
+			
+			type Bar extends Foo:
+			    barAttr string (1..1)
+			        [ruleReference BarAttr]
+			
+			type Baz extends Bar:
+			    bazAttr string (1..1)
+			        [ruleReference BazAttr]
+			
+			eligibility rule IsEligible from Input:
+			     filter eligible
+			
+			reporting rule FooAttr from Input:
+			    extract attr1 as "Foo Attr"
+			
+			reporting rule BarAttr from Input:
+			    extract attr2 as "Bar Attr"
+			
+			reporting rule BazAttr from Input:
+			    extract attr3 as "Baz Attr"
+		'''
+		val code = model.generateCode
+		
+		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Auth", "Corpus", "Reg")
+		val reportFunctionClass = reportId.toJavaReportFunction
+		val tabulatorClass = reportId.toJavaReportTabulator
+		
+		val classes = code.compileToClasses
+		val reportFunction = classes.<ReportFunction<Object, RosettaModelObject>>createInstance(reportFunctionClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		
+		val input = classes.createInstanceUsingBuilder(new RootPackage("test.reg"), "Input",
+			#{
+				"attr1" -> "A1",
+				"attr2" -> "A2",
+				"attr3" -> "A3",
+				"eligible" -> true
+			}
+		)
+		
+		val report = reportFunction.evaluate(input)
+		
+		val expectedFields =
+		'''
+		fooAttr
+		"Foo Attr"
+		
+		barAttr
+		"Bar Attr"
+		
+		bazAttr
+		"Baz Attr"
+		'''
+		assertFieldsEqual(expectedFields, tabulator.fields)
+		
+		val flatReport = tabulator.tabulate(report)
+		val expectedValues =
+		'''
+		fooAttr: A1
+		
+		barAttr: A2
+		
+		bazAttr: A3
 		'''
 		assertFieldValuesEqual(expectedValues, flatReport)
 	}
