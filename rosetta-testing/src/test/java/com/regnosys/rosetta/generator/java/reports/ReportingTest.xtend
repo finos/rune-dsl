@@ -360,70 +360,48 @@ class ReportingTest {
 			    extract attr3 as "Baz Attr"
 		'''
 		val code = model.generateCode
-		assertEquals(
-			'''
-			package test.reg.reports;
-			
-			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.functions.ModelObjectValidator;
-			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.model.lib.reports.ReportFunction;
-			import java.util.Optional;
-			import javax.inject.Inject;
-			import test.reg.Baz;
-			import test.reg.Baz.BazBuilder;
-			import test.reg.Input;
-			
-			
-			@ImplementedBy(AuthCorpusRegReportFunction.AuthCorpusRegReportFunctionDefault.class)
-			public abstract class AuthCorpusRegReportFunction implements ReportFunction<Input, Baz> {
-				
-				@Inject protected ModelObjectValidator objectValidator;
-				
-				// RosettaFunction dependencies
-				//
-				@Inject protected BazAttrRule bazAttr;
-			
-				/**
-				* @param input 
-				* @return output 
-				*/
-				@Override
-				public Baz evaluate(Input input) {
-					Baz.BazBuilder outputBuilder = doEvaluate(input);
-					
-					final Baz output;
-					if (outputBuilder == null) {
-						output = null;
-					} else {
-						output = outputBuilder.build();
-						objectValidator.validate(Baz.class, output);
-					}
-					
-					return output;
-				}
-			
-				protected abstract Baz.BazBuilder doEvaluate(Input input);
-			
-				public static class AuthCorpusRegReportFunctionDefault extends AuthCorpusRegReportFunction {
-					@Override
-					protected Baz.BazBuilder doEvaluate(Input input) {
-						Baz.BazBuilder output = Baz.builder();
-						return assignOutput(output, input);
-					}
-					
-					protected Baz.BazBuilder assignOutput(Baz.BazBuilder output, Input input) {
-						output
-							.setBazAttr(MapperS.of(bazAttr.evaluate(MapperS.of(input).get())).get());
-						
-						return Optional.ofNullable(output)
-							.map(o -> o.prune())
-							.orElse(null);
-					}
-				}
+		
+		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Auth", "Corpus", "Reg")
+		val reportFunctionClass = reportId.toJavaReportFunction
+		val tabulatorClass = reportId.toJavaReportTabulator
+		
+		val classes = code.compileToClasses
+		val reportFunction = classes.<ReportFunction<Object, RosettaModelObject>>createInstance(reportFunctionClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		
+		val input = classes.createInstanceUsingBuilder(new RootPackage("test.reg"), "Input",
+			#{
+				"attr1" -> "A1",
+				"attr2" -> "A2",
+				"attr3" -> "A3",
+				"eligible" -> true
 			}
-			'''.toString,
-			code.get("test.reg.reports.AuthCorpusRegReportFunction")
 		)
+		
+		val report = reportFunction.evaluate(input)
+		
+		val expectedFields =
+		'''
+		fooAttr
+		"Foo Attr"
+		
+		barAttr
+		"Bar Attr"
+		
+		bazAttr
+		"Baz Attr"
+		'''
+		assertFieldsEqual(expectedFields, tabulator.fields)
+		
+		val flatReport = tabulator.tabulate(report)
+		val expectedValues =
+		'''
+		fooAttr: A1
+		
+		barAttr: A2
+		
+		bazAttr: A3
+		'''
+		assertFieldValuesEqual(expectedValues, flatReport)
 	}
 }
