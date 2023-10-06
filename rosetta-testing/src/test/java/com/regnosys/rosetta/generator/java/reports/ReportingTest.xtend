@@ -322,6 +322,7 @@ class ReportingTest {
 			    attr1 string (1..1)
 			    attr2 string (1..1)
 			    attr3 string (1..1)
+			    attr4 string (1..1)
 			    eligible boolean (1..1)
 			
 			body Authority Auth
@@ -339,9 +340,14 @@ class ReportingTest {
 			    fooAttr string (1..1)
 			        [ruleReference FooAttr]
 			
+			type Qux:
+			    quxAttr string (1..1)
+			        [ruleReference QuxAttr]
+			
 			type Bar extends Foo:
 			    barAttr string (1..1)
 			        [ruleReference BarAttr]
+			    qux Qux (1..1)
 			
 			type Baz extends Bar:
 			    bazAttr string (1..1)
@@ -358,6 +364,9 @@ class ReportingTest {
 			
 			reporting rule BazAttr from Input:
 			    extract attr3 as "Baz Attr"
+			
+			reporting rule QuxAttr from Input:
+			    extract attr4 as "Qux Attr"
 		'''
 		val code = model.generateCode
 		
@@ -374,6 +383,7 @@ class ReportingTest {
 				"attr1" -> "A1",
 				"attr2" -> "A2",
 				"attr3" -> "A3",
+				"attr4" -> "A4",
 				"eligible" -> true
 			}
 		)
@@ -388,6 +398,10 @@ class ReportingTest {
 		barAttr
 		"Bar Attr"
 		
+		qux
+			quxAttr
+			"Qux Attr"
+		
 		bazAttr
 		"Baz Attr"
 		'''
@@ -399,6 +413,9 @@ class ReportingTest {
 		fooAttr: A1
 		
 		barAttr: A2
+		
+		qux:
+			quxAttr: A4
 		
 		bazAttr: A3
 		'''
