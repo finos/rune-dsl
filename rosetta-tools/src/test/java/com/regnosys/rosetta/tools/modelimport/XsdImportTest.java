@@ -95,12 +95,13 @@ public class XsdImportTest {
 		assertEquals(new HashSet<>(expectedResources), new HashSet<>(resourceNames));
 		
 		for (String resource: expectedResources) {
-			String expected = Resources.toString(Resources.getResource(expectedFolder + "/" + resource), StandardCharsets.UTF_8);
+			String expected = Resources.toString(Resources.getResource(expectedFolder + "/" + resource), StandardCharsets.UTF_8)
+					.replaceAll("\n", System.lineSeparator());
 			
 			Resource actualResource = set.getResource(URI.createURI(resource), false);
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			actualResource.save(output, null);
-			String actual = new String(output.toByteArray(), StandardCharsets.UTF_8).replaceAll("\r\n", "\n");
+			String actual = new String(output.toByteArray(), StandardCharsets.UTF_8);
 			
 			assertEquals(expected, actual);
 		}
@@ -110,9 +111,10 @@ public class XsdImportTest {
 		// Test XML config
 		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
 		
-		String expected = Resources.toString(Resources.getResource(expectedFolder + "/xml-config.json"), StandardCharsets.UTF_8);
+		String expected = Resources.toString(Resources.getResource(expectedFolder + "/xml-config.json"), StandardCharsets.UTF_8)
+				.replaceAll("\n", System.lineSeparator());
 		ObjectMapper mapper = XsdImportMain.getObjectMapper();
-		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig).replaceAll("\r\n", "\n");
+		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig);
 		assertEquals(expected, actual);
 		
 		// Test deserialisation
