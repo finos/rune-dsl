@@ -100,7 +100,7 @@ public class XsdImportTest {
 			Resource actualResource = set.getResource(URI.createURI(resource), false);
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			actualResource.save(output, null);
-			String actual = new String(output.toByteArray(), StandardCharsets.UTF_8);
+			String actual = new String(output.toByteArray(), StandardCharsets.UTF_8).replaceAll("\r\n", "\n");
 			
 			assertEquals(expected, actual);
 		}
@@ -112,7 +112,7 @@ public class XsdImportTest {
 		
 		String expected = Resources.toString(Resources.getResource(expectedFolder + "/xml-config.json"), StandardCharsets.UTF_8);
 		ObjectMapper mapper = XsdImportMain.getObjectMapper();
-		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig);
+		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig).replaceAll("\r\n", "\n");
 		assertEquals(expected, actual);
 		
 		// Test deserialisation
