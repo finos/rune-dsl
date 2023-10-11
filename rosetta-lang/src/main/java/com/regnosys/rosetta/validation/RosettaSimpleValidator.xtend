@@ -231,17 +231,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
-	def void canOnlyCallANonLegacyRuleFromWithinARule(RosettaSymbolReference ref) {
-		val targetRule = ref.symbol
-		if (targetRule instanceof RosettaRule) {
-			val containingRule = EcoreUtil2.getContainerOfType(ref, RosettaRule)
-			if (containingRule === null) {
-				error('''You can only call a rule from within a rule.''', ref, null)
-			}
-		}
-	}
-	
-	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
 		if (rule.input === null) {
 			error('''A rule must declare its input type: `rule «rule.name» from <input type>: ...`''', rule, ROSETTA_NAMED__NAME)

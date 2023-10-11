@@ -43,13 +43,8 @@ class RosettaAttributeExtensions {
 	/**
 	 * Note that these methods will add a "meta" attribute if the data type has annotations
 	 */
-	static def List<ExpandedAttribute> getExpandedAttributes(Data data, boolean sort) {
-		val attrs = (data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes)
-		return if(sort)attrs.sortBy[ExpandedAttribute a|a.name] else attrs.toList
-	}
-	
-	dispatch static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
-		data.getExpandedAttributes(true)
+	static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
+		(data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
 	}
 	
 	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
@@ -103,7 +98,7 @@ class RosettaAttributeExtensions {
 		metaFieldsCache.get(data)
 	}
 	
-	dispatch static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
+	static def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
 		rosettaEnum.enumValues.map[expandedEnumAttribute]
 	}
 	

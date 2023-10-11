@@ -242,25 +242,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void cannotCallARuleFromAFunction() {
-		val model = '''		
-		func Bar:
-			inputs:
-				x number (1..1)
-			output:
-				result number (1..1)
-			set result:
-				Bar2(x)
-		
-		reporting rule Bar2 from number:
-			item + item
-		'''.parseRosetta
-		
-		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-			"You can only call a rule from within a rule.")
-	}
-	
-	@Test
 	def void canCallARuleFromARule() {
 		'''
 		reporting rule Bar from number:

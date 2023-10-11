@@ -126,6 +126,7 @@ class DocumentationSamples {
 			package test.reg.reports;
 			
 			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.annotations.RosettaReport;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.reports.ReportFunction;
@@ -136,6 +137,7 @@ class DocumentationSamples {
 			import test.reg.VehicleOwnership;
 			
 			
+			@RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
 			@ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
 			public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
 				

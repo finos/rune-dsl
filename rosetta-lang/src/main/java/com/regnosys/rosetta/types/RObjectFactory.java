@@ -111,7 +111,7 @@ public class RObjectFactory {
 	}
 	
 	private List<ROperation> generateReportOperations(Data reportDataType, Map<Attribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
-		List<Attribute> attributes = reportDataType.getAttributes();
+		Iterable<Attribute> attributes = rosettaExtensions.getAllAttributes(reportDataType);
 		List<ROperation> operations = new ArrayList<>();
 		
 		for (Attribute attribute : attributes) {
