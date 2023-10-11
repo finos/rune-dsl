@@ -616,8 +616,7 @@ repository:
           end: '{{synonymAnnotationSectionEnd}}'
           patterns:
           - include: '#comment'
-          - name: punctuation.separator.comma.rosetta
-            match: ','
+          - include: '#comma'
           - name: punctuation.separator.dot.rosetta
             match: '.'
           - name: entity.name.synonym-source.rosetta
@@ -631,8 +630,7 @@ repository:
           - include: '#comment'
           - include: '#synonymValue'
           - include: '#synonymMapping'
-          - name: punctuation.separator.comma.rosetta
-            match: ','
+          - include: '#comma'
         - name: meta.annotated.synonym.set-section.rosetta
           begin: '(?={{wordStart}}set{{wordEnd}})'
           beginCaptures:
@@ -642,16 +640,14 @@ repository:
           - include: '#comment'
           - include: '#synonymValue'
           - include: '#synonymMapping'
-          - name: punctuation.separator.comma.rosetta
-            match: ','
+          - include: '#comma'
 
       synonymValue: # includes RosettaSynonymValue, RosettaClassSynonymValue, RosettaMetaSynonymValue and RosettaMergeSynonymValue
         patterns:
         - include: '#comment'
         - include: '#string'
         - include: '#integer'
-        - name: punctuation.separator.comma.rosetta
-          match: ','
+        - include: '#comma'
         - name: constant.language.rosetta
           match: '{{wordStart}}(tag|componentID){{wordEnd}}'
         - name: keyword.other.rosetta
@@ -663,8 +659,7 @@ repository:
         patterns:
         - include: '#comment'
         - include: '#literal'
-        - name: punctuation.separator.comma.rosetta
-          match: ','
+        - include: '#comma'
         - begin: '{{wordStart}}(set|default){{wordEnd}}'
           beginCaptures:
             0: { name: keyword.other.rosetta }
@@ -1014,7 +1009,7 @@ repository:
 
       expression:
         name: meta.expression.rosetta
-        begin: (?!\s|^|$)
+        begin: (?!,|\(|\s|^|$)
         end: '{{expressionEnd}}'
         patterns:
         - include: '#comment'
@@ -1027,6 +1022,7 @@ repository:
             1: { name: punctuation.group.end.rosetta }
           patterns:
           - include: '#expression'
+          - include: '#comma'
         - name: meta.list.rosetta
           begin: (\[)
           beginCaptures:
@@ -1036,6 +1032,7 @@ repository:
             1: { name: punctuation.list.end.rosetta }
           patterns:
           - include: '#expression'
+          - include: '#comma'
         - name: meta.constructor.rosetta
           begin: (\{)
           beginCaptures:
@@ -1054,6 +1051,7 @@ repository:
             - include: '#comment'
             - include: '#colon'
             - include: '#expression'
+          - include: '#comma'
           - name: keyword.other.triple-dot.rosetta
             match: '\.\.\.'
         - include: '#functionalOperation'
@@ -1293,3 +1291,7 @@ repository:
   colon:
     name: punctuation.separator.colon.rosetta
     match: ':'
+  
+  comma:
+    name: punctuation.separator.comma.rosetta
+    match: ','
