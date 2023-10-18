@@ -7,9 +7,11 @@ import static org.junit.jupiter.api.Assertions.*
 
 class HandleParseErrorGracefullyTest extends AbstractRosettaLanguageServerTest {
 	@Test
-	def void test() {
+	def void testStackoverflowResults() {
 		val uri = initializeContext(new TextDocumentConfiguration => [
 			it.filePath = 'MyModel.' + fileExtension
+			// Create a model containing 1000 `else if`'s, which should cause
+			// a stack overflow during parsing.
 			it.model = '''
 			namespace "test"
 			version "test"

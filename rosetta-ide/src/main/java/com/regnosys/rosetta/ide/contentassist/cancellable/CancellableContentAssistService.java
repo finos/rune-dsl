@@ -25,6 +25,10 @@ import org.eclipse.xtext.xbase.lib.Exceptions;
 
 import com.google.common.base.Strings;
 
+/**
+ * A patch of Xtext's `CancellableContentAssistService` which makes a completion request cancellable.
+ * TODO: contribute to Xtext.
+ */
 public class CancellableContentAssistService extends ContentAssistService {
 	@Inject
 	private Provider<CancellableContentAssistContextFactory> contextFactoryProvider;
@@ -41,6 +45,8 @@ public class CancellableContentAssistService extends ContentAssistService {
 	@Inject
 	private OperationCanceledManager operationCanceledManager;
 	
+	// Patch of super.createCompletionList that passes the `cancelIndicator` on
+	// to the `createProposals` method.
 	@Override
 	public CompletionList createCompletionList(Document document, XtextResource resource, CompletionParams params,
 			CancelIndicator cancelIndicator) {
@@ -71,6 +77,7 @@ public class CancellableContentAssistService extends ContentAssistService {
 		}
 	}
 
+	// Patch of super.createProposals that accepts a `cancelIndicator`.
 	protected void createProposals(String document, TextRegion selection, int caretOffset, XtextResource resource,
 			IIdeContentProposalAcceptor acceptor, CancelIndicator cancelIndicator) {
 		if (caretOffset > document.length()) {
