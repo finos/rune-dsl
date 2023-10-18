@@ -24,6 +24,12 @@ import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider
 import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixProvider
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2
 import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixCodeActionService
+import org.eclipse.xtext.ide.server.contentassist.ContentAssistService
+import org.eclipse.xtext.service.OperationCanceledManager
+import com.regnosys.rosetta.ide.contentassist.cancellable.ICancellableContentAssistParser
+import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableRosettaParser
+import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableContentAssistService
+import com.regnosys.rosetta.ide.contentassist.cancellable.RosettaOperationCanceledManager
 
 /**
  * Use this class to register ide components.
@@ -76,5 +82,17 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends ICodeActionService2> bindICodeActionService2() {
 		RosettaQuickFixCodeActionService
+	}
+	
+	def Class<? extends ICancellableContentAssistParser> bindICancellableContentAssistParser() {
+		CancellableRosettaParser
+	}
+	
+	def Class<? extends ContentAssistService> bindContentAssistService() {
+		CancellableContentAssistService
+	}
+	
+	def Class<? extends OperationCanceledManager> bindOperationCanceledManager() {
+		RosettaOperationCanceledManager
 	}
 }
