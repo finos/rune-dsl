@@ -20,8 +20,6 @@ import com.regnosys.rosetta.ide.util.RangeUtils
 import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
-import org.eclipse.xtext.util.Modules2
-import org.eclipse.xtext.ide.server.concurrent.RequestManager
 import com.regnosys.rosetta.ide.server.RosettaServerModule
 import com.google.inject.Module
 import org.eclipse.lsp4j.DiagnosticSeverity
@@ -40,9 +38,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	
 	protected override Module getServerModule() {
 		RosettaStandaloneSetup.doSetup
-		return Modules2.mixin(RosettaServerModule.create) [
-			// bind(RequestManager).to(DirectRequestManager)
-		]
+		return RosettaServerModule.create
 	}
 	
 	protected def void assertNoIssues() {
