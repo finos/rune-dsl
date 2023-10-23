@@ -74,6 +74,8 @@ public class MapperUtils {
 	public static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;
+		} else if (mapper.getMulti().isEmpty()) {
+			return ComparisonResult.successEmptyOperand("");
 		} else {
 			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
 		}

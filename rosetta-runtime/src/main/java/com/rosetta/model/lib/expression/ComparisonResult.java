@@ -133,7 +133,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 
 	public MapperS<Boolean> asMapper() {
-		return MapperS.of(this.get());
+		return emptyOperand ? MapperS.ofNull() : MapperS.of(this.get());
 	}
 	
 	@Override

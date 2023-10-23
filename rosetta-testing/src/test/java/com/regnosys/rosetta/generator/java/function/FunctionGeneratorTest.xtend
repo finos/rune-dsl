@@ -913,7 +913,7 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func1 = classes.createFunc("F1");
-		assertFalse(func1.invokeFunc(Boolean))
+		assertNull(func1.invokeFunc(Boolean))
 
 		val func2 = classes.createFunc("F2");
 		assertEquals(84, func2.invokeFunc(Integer))
