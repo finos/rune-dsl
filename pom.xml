@@ -52,6 +52,7 @@
 		<maven-clean-plugin.version>3.3.1</maven-clean-plugin.version>
 		<build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
 		<maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
 		<maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
 		<maven-plugin-plugin.version>3.9.0</maven-plugin-plugin.version>
@@ -394,6 +395,18 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
@@ -484,6 +497,11 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
 					<version>${maven-plugin-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven-source-plugin.version}</version>
 				</plugin>
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>

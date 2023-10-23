@@ -15,7 +15,6 @@ import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider
 import org.eclipse.xtext.generator.IOutputConfigurationProvider
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.resource.DerivedStateAwareResource
 import org.eclipse.xtext.resource.IDerivedStateComputer
 import org.eclipse.xtext.resource.IFragmentProvider
 import org.eclipse.xtext.resource.IResourceDescription
@@ -38,6 +37,7 @@ import javax.inject.Provider
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
 import com.regnosys.rosetta.serialization.RosettaTransientValueService
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService
+import com.regnosys.rosetta.resource.RosettaResource
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -55,11 +55,11 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	}
 	
 	override Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
-		return RosettaQualifiedNameProvider
+		RosettaQualifiedNameProvider
 	}
 	
 	def Class<? extends IOutputConfigurationProvider> bindIOutputConfigurationProvider() {
-		return RosettaOutputConfigurationProvider
+		RosettaOutputConfigurationProvider
 	}
 	
 	def Class<? extends IResourceDescription.Manager> bindIResourceDescriptionManager() {
@@ -95,7 +95,7 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
     }
 	
 	override Class<? extends XtextResource> bindXtextResource() {
-		DerivedStateAwareResource
+		RosettaResource
 	}
 	def Class<? extends IDerivedStateComputer> bindIDerivedStateComputer() {
 		RosettaDerivedStateComputer
