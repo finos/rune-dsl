@@ -66,7 +66,6 @@
 	<modules>
 		<module>rosetta-xcore-plugin-dependencies</module>
 		<module>rosetta-runtime</module>
-		<module>rosetta-runtime-blueprints</module>
 		<module>rosetta-lang</module>
 		<module>rosetta-ide</module>
 		<module>rosetta-tools</module>
@@ -578,6 +577,25 @@
 										</artifactId>
 										<versionRange>
 											[${maven-plugin-plugin.version},)
+										</versionRange>
+										<goals>
+											<goal>descriptor</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-checkstyle-plugin
+										</artifactId>
+										<versionRange>
+											[${maven-checkstyle-plugin.version},)
 										</versionRange>
 										<goals>
 											<goal>descriptor</goal>

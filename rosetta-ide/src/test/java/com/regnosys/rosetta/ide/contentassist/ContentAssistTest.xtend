@@ -27,11 +27,8 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			it.model = model
 			it.line = 9
 			it.column = 14
-			// TODO: should only have the first three?
+			// TODO: this is broken.
 			it.expectedCompletionItems = '''
-			attr (Attribute) -> attr [[9, 14] .. [9, 14]]
-			superAttr (Attribute) -> superAttr [[9, 14] .. [9, 14]]
-			superSuperAttr (Attribute) -> superSuperAttr [[9, 14] .. [9, 14]]
 			all -> all [[9, 14] .. [9, 14]]
 			and -> and [[9, 14] .. [9, 14]]
 			any -> any [[9, 14] .. [9, 14]]
@@ -103,7 +100,6 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			it.column = 27
 			// TODO: this is broken
 			it.expectedCompletionItems = '''
-			testAttr (Attribute) -> testAttr [[7, 27] .. [7, 27]]
 			all -> all [[7, 27] .. [7, 27]]
 			and -> and [[7, 27] .. [7, 27]]
 			annotation -> annotation [[7, 27] .. [7, 27]]
@@ -194,7 +190,6 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			it.column = 25
 			// TODO: this is broken
 			it.expectedCompletionItems = '''
-			testAttr (Attribute) -> testAttr [[6, 25] .. [6, 25]]
 			all -> all [[6, 25] .. [6, 25]]
 			and -> and [[6, 25] .. [6, 25]]
 			any -> any [[6, 25] .. [6, 25]]

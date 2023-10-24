@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.regnosys.rosetta.blueprints.runner.actions.rosetta.RosettaActionFactory
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import static org.mockito.Mockito.mock
 import javax.inject.Inject
 
 @InjectWith(RosettaInjectorProvider)
@@ -142,6 +140,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -154,6 +153,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -223,125 +223,6 @@ class RosettaRuleGeneratorTest {
 
 		} finally {
 		}
-		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReport_DataItemReportBuilder")
-		try {
-			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.test.model.BarReport;
-				import com.rosetta.test.model.Quux;
-				import java.util.ArrayList;
-				import java.util.Collection;
-				import java.util.List;
-				import java.util.stream.Collectors;
-				
-				
-				/**
-				 * @version 0.0.0
-				 */
-				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-				
-					@Override
-					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
-						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
-								}
-								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
-								}
-								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
-								}
-								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
-								}
-							}
-						}
-						
-						return dataItemReportBuilder.build();
-					}
-					
-					@Override
-					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
-						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
-								while (index >= listBuilder.size()) {
-									listBuilder.add(null);
-								}
-								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
-								if (dataItemReportBuilder == null) {
-									dataItemReportBuilder = BarReport.builder();
-									listBuilder.set(index, dataItemReportBuilder);
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setListField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
-								}
-								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
-								}
-								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
-								}
-								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
-								}
-							}
-						}
-						
-						return listBuilder.stream()
-							.map((item) -> {
-								if (item != null) {
-									return item.build();
-								}
-								return null;
-							})
-							.collect(Collectors.toList());
-					}
-				}
-			'''
-			assertEquals(expected, reportBuilderJava)
-
-		} finally {
-		}
 		code.compileToClasses
 	}
 
@@ -408,6 +289,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -420,6 +302,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -489,125 +372,6 @@ class RosettaRuleGeneratorTest {
 
 		} finally {
 		}
-		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReport_DataItemReportBuilder")
-		try {
-			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.test.model.BarReport;
-				import com.rosetta.test.model.Quux;
-				import java.util.ArrayList;
-				import java.util.Collection;
-				import java.util.List;
-				import java.util.stream.Collectors;
-				
-				
-				/**
-				 * @version 0.0.0
-				 */
-				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-				
-					@Override
-					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
-						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
-								}
-								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
-								}
-								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
-								}
-								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
-								}
-							}
-						}
-						
-						return dataItemReportBuilder.build();
-					}
-					
-					@Override
-					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
-						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
-								while (index >= listBuilder.size()) {
-									listBuilder.add(null);
-								}
-								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
-								if (dataItemReportBuilder == null) {
-									dataItemReportBuilder = BarReport.builder();
-									listBuilder.set(index, dataItemReportBuilder);
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-								if (BarBazRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarBaz()::setBarBaz1, String.class, data, BarBazRule.class);
-								}
-								if (BarQuuxRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Quux>setField(dataItemReportBuilder::setBarQuux, Quux.class, data, BarQuuxRule.class);
-								}
-								if (QuxQux1Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux1, String.class, data, QuxQux1Rule.class);
-								}
-								if (QuxQux2Rule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateBarQuxList(ruleIdentifier.getRepeatableIndex().orElse(0))::setBazQux2, String.class, data, QuxQux2Rule.class);
-								}
-							}
-						}
-						
-						return listBuilder.stream()
-							.map((item) -> {
-								if (item != null) {
-									return item.build();
-								}
-								return null;
-							})
-							.collect(Collectors.toList());
-					}
-				}
-			'''
-			assertEquals(expected, reportBuilderJava)
-
-		} finally {
-		}
 		code.compileToClasses
 	}
 
@@ -667,6 +431,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -679,6 +444,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -798,6 +564,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
@@ -810,6 +577,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -873,151 +641,6 @@ class RosettaRuleGeneratorTest {
 		}
 		code.compileToClasses
 	}
-
-	@Test
-	def void parseSimpleReportWithDifferentNS() {
-		val model = #['''
-			namespace ns1
-			
-			type Bar:
-				bar1 string (0..1)
-				bar2 string (1..1)
-			
-		''','''
-			namespace ns2
-			
-			import ns1.*
-			
-			reporting rule BarBarTwo from Bar:
-				extract bar2 as "2 BarTwo"
-			
-		''','''
-			namespace ns3
-			
-			import ns1.*
-			import ns2.*
-			
-			body Authority TEST_REG
-			corpus TEST_REG MiFIR
-			
-			report TEST_REG MiFIR in T+1
-			from Bar
-			when FooRule
-			with type BarReport
-			
-			eligibility rule FooRule from Bar:
-				filter bar1 exists
-			
-			reporting rule BarBarOne from Bar:
-				extract bar1 as "1 BarOne"
-			
-			type BarReport:
-				barBarOne string (1..1)
-					[ruleReference BarBarOne]
-				barBarTwo string (1..1)
-					[ruleReference BarBarTwo]
-			
-		'''
-		]
-		val code = model.generateCode
-		//println(code)
-		val reportBuilderJava = code.get("ns3.blueprint.BarReport_DataItemReportBuilder")
-		try {
-			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package ns3.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import java.util.ArrayList;
-				import java.util.Collection;
-				import java.util.List;
-				import java.util.stream.Collectors;
-				import ns2.blueprint.BarBarTwoRule;
-				import ns3.BarReport;
-				
-				
-				/**
-				 * @version 0.0.0
-				 */
-				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-				
-					@Override
-					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
-						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-							}
-						}
-						
-						return dataItemReportBuilder.build();
-					}
-					
-					@Override
-					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
-						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
-								while (index >= listBuilder.size()) {
-									listBuilder.add(null);
-								}
-								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
-								if (dataItemReportBuilder == null) {
-									dataItemReportBuilder = BarReport.builder();
-									listBuilder.set(index, dataItemReportBuilder);
-								}
-								if (BarBarOneRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarOne, String.class, data, BarBarOneRule.class);
-								}
-								if (BarBarTwoRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setBarBarTwo, String.class, data, BarBarTwoRule.class);
-								}
-							}
-						}
-						
-						return listBuilder.stream()
-							.map((item) -> {
-								if (item != null) {
-									return item.build();
-								}
-								return null;
-							})
-							.collect(Collectors.toList());
-					}
-				}
-			'''
-			assertEquals(expected, reportBuilderJava)
-
-		} finally {
-		}
-		code.compileToClasses
-	}
 	
 	@Test
 	def void parseSimpleReportWithEmptyType() {
@@ -1050,6 +673,7 @@ class RosettaRuleGeneratorTest {
 				package com.rosetta.test.model.reports;
 				
 				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
@@ -1059,6 +683,7 @@ class RosettaRuleGeneratorTest {
 				import javax.inject.Inject;
 				
 				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -1104,439 +729,32 @@ class RosettaRuleGeneratorTest {
 
 		} finally {
 		}
-		val reportBuilderJava = code.get("com.rosetta.test.model.blueprint.BarReport_DataItemReportBuilder")
-		try {
-			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package com.rosetta.test.model.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.test.model.BarReport;
-				import java.util.ArrayList;
-				import java.util.Collection;
-				import java.util.List;
-				import java.util.stream.Collectors;
-				
-				
-				/**
-				 * @version test
-				 */
-				public class BarReport_DataItemReportBuilder implements DataItemReportBuilder {
-				
-					@Override
-					public <T> BarReport buildReport(Collection<GroupableData<?, T>> reportData) {
-						BarReport.BarReportBuilder dataItemReportBuilder = BarReport.builder();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-							}
-						}
-						
-						return dataItemReportBuilder.build();
-					}
-					
-					@Override
-					public <T> List<BarReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
-						List<BarReport.BarReportBuilder> listBuilder = new ArrayList();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
-								while (index >= listBuilder.size()) {
-									listBuilder.add(null);
-								}
-								BarReport.BarReportBuilder dataItemReportBuilder = listBuilder.get(index);
-								if (dataItemReportBuilder == null) {
-									dataItemReportBuilder = BarReport.builder();
-									listBuilder.set(index, dataItemReportBuilder);
-								}
-							}
-						}
-						
-						return listBuilder.stream()
-							.map((item) -> {
-								if (item != null) {
-									return item.build();
-								}
-								return null;
-							})
-							.collect(Collectors.toList());
-					}
-				}
-			'''
-			assertEquals(expected, reportBuilderJava)
-
-		} finally {
-		}
 		code.compileToClasses
 	}
 	
-	@Test
-	def void parseReportWithType() {
-		val model = '''
-			namespace "test.reg"
-			version "test"
-			
-			body Authority Shield <"Strategic Homeland Intervention, Enforcement and Logistics Division">
-			
-			corpus Act "Avengers Initiative" Avengers <"The Avengers Initiative (a.k.a Phase 1; originally conceptualized as the Protector Initiative) was a secret project created by S.H.I.E.L.D. to create the Avengers, a response team comprised of the most able individuals humankind has to offer. The Initiative will defend Earth from imminent global threats that are beyond the warfighting capability of conventional military forces. ">
-			
-			corpus Regulations "Sokovia Accords" SokoviaAccords <"The Sokovia Accords are a set of legal documents designed to regulate the activities of enhanced individuals, specifically those who work for either government agencies such as S.H.I.E.L.D. or for private organizations such as the Avengers">
-			
-			segment rationale
-			segment rationale_author
-			segment structured_provision
-			
-			segment section
-			segment field
-			
-			report Shield Avengers SokoviaAccords in real-time
-			from Person
-			when HasSuperPowers
-			with type SokoviaAccordsReport
-			
-			type SokoviaAccordsReport:
-			    heroName string (1..1) <"Basic type - string">
-			        [ruleReference HeroName]
-			    dateOfBirth date (1..1) <"Basic type - date">
-			        [ruleReference DateOfBirth]
-			    nationality CountryEnum (1..1) <"Enum type">
-			        [ruleReference Nationality]
-			    hasSpecialAbilities boolean (1..1) <"Basic type - boolean">
-			        [ruleReference SpecialAbilities]
-			    powers PowerEnum (0..*) <"Enum type - multiple cardinality">
-			        [ruleReference Powers]
-			    attribute AttributeReport (0..1)  <"Nested report">
-			    organisations OrganisationReport (0..*) <"Repeatable rule">
-			        [ruleReference HeroOrganisations]
-			    notModelled string (1..1) <"Not modelled">
-			        [ruleReference NotModelled]
-			
-			type AttributeReport:
-			    heroInt int (1..1) <"Basic type - int">
-			        [ruleReference AttributeInt]
-			    heroNumber number (1..1) <"Basic type - number">
-			        [ruleReference AttributeNumber]
-			    heroTime time (1..1) <"Basic type - time">
-			        [ruleReference AttributeTime]
-			    heroZonedDateTime zonedDateTime (1..1) <"Record type - zonedDateTime">
-			        [ruleReference AttributeZonedDateTime]
-			
-			type OrganisationReport: <"Repeated rule">
-			    name string (1..1)
-			        [ruleReference OrganisationName]
-			    isGovernmentAgency boolean (1..1)
-			        [ruleReference IsGovernmentAgency]
-			    country CountryEnum (1..1)
-			        [ruleReference OrganisationCountry]
-			
-			eligibility rule HasSuperPowers from Person:
-			     filter hasSpecialAbilities
-			
-			reporting rule HeroName from Person: <"Name">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "1" provision "Hero Name."]
-			    extract name as "Hero Name"
-			
-			reporting rule DateOfBirth from Person: <"Date of birth">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Date of birth."]
-			    extract dateOfBirth as "Date of Birth"
-			
-			reporting rule Nationality from Person: <"Nationality">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "2" provision "Nationality."]
-			    extract nationality as "Nationality"
-			
-			reporting rule SpecialAbilities from Person: <"Has Special Abilities">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "3" provision "Has Special Abilities"]
-			    extract hasSpecialAbilities as "Has Special Abilities"
-			
-			reporting rule Powers from Person: <"Super Power Name">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Powers."]
-			    extract powers as "Powers"
-			
-			reporting rule AttributeInt from Person: <"Attribute - Int">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Int."]
-			    extract attribute -> heroInt as "Attribute - Int"
-			
-			reporting rule AttributeNumber from Person: <"Attribute - Number">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Number."]
-			    extract attribute -> heroNumber as "Attribute - Number"
-			
-			reporting rule AttributeZonedDateTime from Person: <"Attribute - ZonedDateTime">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - ZonedDateTime."]
-			    extract attribute -> heroZonedDateTime as "Attribute - ZonedDateTime"
-			
-			reporting rule AttributeTime from Person: <"Attribute - Time">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "4"  provision "Attribute - Time."]
-			    extract attribute -> heroTime as "Attribute - Time"
-			
-			reporting rule HeroOrganisations from Person: <"Has Special Abilities">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
-			    extract organisations 
-			    then extract OrganisationReport {
-			    	name: OrganisationName,
-			    	country: OrganisationCountry,
-			    	isGovernmentAgency: IsGovernmentAgency
-			    } as "Hero Organisations"
-			
-			reporting rule OrganisationName from Organisation: <"Has Special Abilities">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
-			    extract name as "Organisation Name"
-			
-			reporting rule OrganisationCountry from Organisation: <"Has Special Abilities">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
-			    extract country as "Organisation Country"
-			
-			reporting rule IsGovernmentAgency from Organisation: <"Has Special Abilities">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "5"  provision "."]
-			    extract isGovernmentAgency as "Is Government Agency"
-			
-			reporting rule NotModelled from Person: <"Not Modelled">
-			    [regulatoryReference Shield Avengers SokoviaAccords section "1" field "6"  provision "Not Modelled."]
-			    "Not modelled" as "Not Modelled"
-			
-			type Person:
-			    name string (1..1)
-			    dateOfBirth date (1..1)
-			    nationality CountryEnum (1..1)
-			    hasSpecialAbilities boolean (1..1)
-			    powers PowerEnum (0..*)
-			    attribute Attribute (0..1)
-			    organisations Organisation (0..*)
-			
-			type Attribute:
-			    heroInt int (1..1)
-			    heroNumber number (1..1)
-			    heroZonedDateTime zonedDateTime (1..1)
-			    heroTime time (1..1)
-			
-			type Organisation:
-			    name string (1..1)
-			    isGovernmentAgency boolean (1..1)
-			    country CountryEnum (1..1)
-			
-			enum PowerEnum:
-			    Armour
-			    Flight
-			    SuperhumanReflexes
-			    SuperhumanStrength
-			
-			enum CountryEnum:
-			    UnitedStatesOfAmerica
-		'''
-		val code = model.generateCode
-		val reportBuilderJava = code.get("test.reg.blueprint.SokoviaAccordsReport_DataItemReportBuilder")
-		try {
-			assertThat(reportBuilderJava, CoreMatchers.notNullValue())
-			val expected = '''
-				package test.reg.blueprint;
-				
-				import com.regnosys.rosetta.blueprints.DataItemReportBuilder;
-				import com.regnosys.rosetta.blueprints.DataItemReportUtils;
-				import com.regnosys.rosetta.blueprints.runner.data.DataIdentifier;
-				import com.regnosys.rosetta.blueprints.runner.data.GroupableData;
-				import com.regnosys.rosetta.blueprints.runner.data.RuleIdentifier;
-				import com.rosetta.model.lib.records.Date;
-				import java.math.BigDecimal;
-				import java.time.LocalTime;
-				import java.time.ZonedDateTime;
-				import java.util.ArrayList;
-				import java.util.Collection;
-				import java.util.List;
-				import java.util.stream.Collectors;
-				import test.reg.CountryEnum;
-				import test.reg.PowerEnum;
-				import test.reg.SokoviaAccordsReport;
-				
-				
-				/**
-				 * @version test
-				 */
-				public class SokoviaAccordsReport_DataItemReportBuilder implements DataItemReportBuilder {
-				
-					@Override
-					public <T> SokoviaAccordsReport buildReport(Collection<GroupableData<?, T>> reportData) {
-						SokoviaAccordsReport.SokoviaAccordsReportBuilder dataItemReportBuilder = SokoviaAccordsReport.builder();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Integer>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
-								}
-								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<BigDecimal>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
-								}
-								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<LocalTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
-								}
-								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<ZonedDateTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
-								}
-								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Date>setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
-								}
-								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
-								}
-								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
-								}
-								if (NationalityRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
-								}
-								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
-								}
-								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
-								}
-								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
-								}
-								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<PowerEnum>setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
-								}
-								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
-								}
-							}
-						}
-						
-						return dataItemReportBuilder.build();
-					}
-					
-					@Override
-					public <T> List<SokoviaAccordsReport> buildReportList(Collection<GroupableData<?, T>> reportData) {
-						List<SokoviaAccordsReport.SokoviaAccordsReportBuilder> listBuilder = new ArrayList();
-						
-						for (GroupableData<?, T> groupableData : reportData) {
-							DataIdentifier dataIdentifier = groupableData.getIdentifier();
-							if (dataIdentifier instanceof RuleIdentifier) {
-								RuleIdentifier ruleIdentifier = (RuleIdentifier) dataIdentifier;
-								Class<?> ruleType = ruleIdentifier.getRuleType();
-								Object data = groupableData.getData();
-								if (data == null) {
-									continue;
-								}
-								int index = ruleIdentifier.getRepeatableIndex().orElse(0);
-								while (index >= listBuilder.size()) {
-									listBuilder.add(null);
-								}
-								SokoviaAccordsReport.SokoviaAccordsReportBuilder dataItemReportBuilder = listBuilder.get(index);
-								if (dataItemReportBuilder == null) {
-									dataItemReportBuilder = SokoviaAccordsReport.builder();
-									listBuilder.set(index, dataItemReportBuilder);
-								}
-								if (AttributeIntRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Integer>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroInt, Integer.class, data, AttributeIntRule.class);
-								}
-								if (AttributeNumberRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<BigDecimal>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroNumber, BigDecimal.class, data, AttributeNumberRule.class);
-								}
-								if (AttributeTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<LocalTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroTime, LocalTime.class, data, AttributeTimeRule.class);
-								}
-								if (AttributeZonedDateTimeRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<ZonedDateTime>setField(dataItemReportBuilder.getOrCreateAttribute()::setHeroZonedDateTime, ZonedDateTime.class, data, AttributeZonedDateTimeRule.class);
-								}
-								if (DateOfBirthRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Date>setField(dataItemReportBuilder::setDateOfBirth, Date.class, data, DateOfBirthRule.class);
-								}
-								if (HeroNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setHeroName, String.class, data, HeroNameRule.class);
-								}
-								if (IsGovernmentAgencyRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setIsGovernmentAgency, Boolean.class, data, IsGovernmentAgencyRule.class);
-								}
-								if (NationalityRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder::setNationality, CountryEnum.class, data, NationalityRule.class);
-								}
-								if (NotModelledRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder::setNotModelled, String.class, data, NotModelledRule.class);
-								}
-								if (OrganisationCountryRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<CountryEnum>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setCountry, CountryEnum.class, data, OrganisationCountryRule.class);
-								}
-								if (OrganisationNameRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<String>setField(dataItemReportBuilder.getOrCreateOrganisations(ruleIdentifier.getRepeatableIndex().orElse(0))::setName, String.class, data, OrganisationNameRule.class);
-								}
-								if (PowersRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<PowerEnum>setListField(dataItemReportBuilder::setPowers, PowerEnum.class, data, PowersRule.class);
-								}
-								if (SpecialAbilitiesRule.class.isAssignableFrom(ruleType)) {
-									DataItemReportUtils.<Boolean>setField(dataItemReportBuilder::setHasSpecialAbilities, Boolean.class, data, SpecialAbilitiesRule.class);
-								}
-							}
-						}
-						
-						return listBuilder.stream()
-							.map((item) -> {
-								if (item != null) {
-									return item.build();
-								}
-								return null;
-							})
-							.collect(Collectors.toList());
-					}
-				}
-			'''
-			assertEquals(expected, reportBuilderJava)
-
-		} finally {
-		}
-		code.compileToClasses
-	}
-	
-	def loadBlueprint(Map<String, Class<?>> classes, String blueprintName) {
-		val Class<?> bpClass  = classes.get(blueprintName)
-		assertNotNull(bpClass)
-		val RosettaActionFactory raf = mock(RosettaActionFactory)
-		val Injector injector = Guice.createInjector([binder| {
-			binder.bind(RosettaActionFactory).toInstance(raf);
-		}]);
-		return injector.getInstance(bpClass)
+	def loadRule(Map<String, Class<?>> classes, String ruleName) {
+		val Class<?> ruleClass  = classes.get(ruleName)
+		assertNotNull(ruleClass)
+		val Injector injector = Guice.createInjector();
+		return injector.getInstance(ruleClass)
 	}
 
 	@Test
 	def void validPath() {
-		val blueprint = '''
+		val code = '''
 			type Foo:
 				bar Bar (1..1)
 			
 			type Bar:
 				baz string (1..1)
 			
-			reporting rule Blueprint1 from Foo:
+			reporting rule Rule1 from Foo:
 				extract item->bar
 				then extract item->baz
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.Blueprint1Rule")
-		// writeOutClasses(blueprint, "validPath");
+		val ruleJava = code.get("com.rosetta.test.model.reports.Rule1Rule")
 		try {
-			assertThat(blueprintJava, CoreMatchers.notNullValue())
+			assertThat(ruleJava, CoreMatchers.notNullValue())
 			val expected = '''
 			package com.rosetta.test.model.reports;
 			
@@ -1547,8 +765,8 @@ class RosettaRuleGeneratorTest {
 			import com.rosetta.test.model.Foo;
 			
 			
-			@ImplementedBy(Blueprint1Rule.Blueprint1RuleDefault.class)
-			public abstract class Blueprint1Rule implements ReportFunction<Foo, String> {
+			@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
+			public abstract class Rule1Rule implements ReportFunction<Foo, String> {
 			
 				/**
 				* @param input 
@@ -1563,7 +781,7 @@ class RosettaRuleGeneratorTest {
 			
 				protected abstract String doEvaluate(Foo input);
 			
-				public static class Blueprint1RuleDefault extends Blueprint1Rule {
+				public static class Rule1RuleDefault extends Rule1Rule {
 					@Override
 					protected String doEvaluate(Foo input) {
 						String output = null;
@@ -1581,10 +799,10 @@ class RosettaRuleGeneratorTest {
 				}
 			}
 			'''
-			assertEquals(expected, blueprintJava)
-			val classes = blueprint.compileToClasses
-			val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Blueprint1Rule")
-			assertNotNull(bpImpl)
+			assertEquals(expected, ruleJava)
+			val classes = code.compileToClasses
+			val ruleImpl = classes.loadRule("com.rosetta.test.model.reports.Rule1Rule")
+			assertNotNull(ruleImpl)
 		} finally {
 		}
 	}
@@ -1607,8 +825,8 @@ class RosettaRuleGeneratorTest {
 			
 		'''.parseRosettaWithNoErrors
 		val code = parsed.generateCode
-		val bp = code.get("com.rosetta.test.model.reports.Rule1Rule")
-		assertThat(bp, CoreMatchers.notNullValue())
+		val rule = code.get("com.rosetta.test.model.reports.Rule1Rule")
+		assertThat(rule, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.reports;
 		
@@ -1656,16 +874,16 @@ class RosettaRuleGeneratorTest {
 			}
 		}
 		'''
-		assertEquals(expected, bp)
+		assertEquals(expected, rule)
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("com.rosetta.test.model.reports.Rule1Rule")
-		assertNotNull(bpImpl)
+		val ruleImpl = classes.loadRule("com.rosetta.test.model.reports.Rule1Rule")
+		assertNotNull(ruleImpl)
 	}
 
 	@Test
 	def void filter() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint from Input:
+		val code = '''
+			reporting rule SimpleRule from Input:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter traderef="Hello"
 			
@@ -1673,10 +891,8 @@ class RosettaRuleGeneratorTest {
 				traderef string (1..1)
 			
 		'''.generateCode
-		//blueprint.writeClasses("blueprint.filter")
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "filter");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.SimpleRuleRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.reports;
 		
@@ -1692,8 +908,8 @@ class RosettaRuleGeneratorTest {
 		
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		
-		@ImplementedBy(SimpleBlueprintRule.SimpleBlueprintRuleDefault.class)
-		public abstract class SimpleBlueprintRule implements ReportFunction<Input, Input> {
+		@ImplementedBy(SimpleRuleRule.SimpleRuleRuleDefault.class)
+		public abstract class SimpleRuleRule implements ReportFunction<Input, Input> {
 			
 			@Inject protected ModelObjectValidator objectValidator;
 		
@@ -1718,7 +934,7 @@ class RosettaRuleGeneratorTest {
 		
 			protected abstract Input.InputBuilder doEvaluate(Input input);
 		
-			public static class SimpleBlueprintRuleDefault extends SimpleBlueprintRule {
+			public static class SimpleRuleRuleDefault extends SimpleRuleRule {
 				@Override
 				protected Input.InputBuilder doEvaluate(Input input) {
 					Input.InputBuilder output = Input.builder();
@@ -1736,14 +952,14 @@ class RosettaRuleGeneratorTest {
 			}
 		}
 		'''
-		assertEquals(expected, blueprintJava)
-		blueprint.compileToClasses
+		assertEquals(expected, ruleJava)
+		code.compileToClasses
 	}
 
 	@Test
 	def void filter2() {
-		val blueprint = '''
-			reporting rule SimpleBlueprint from Input:
+		val code = '''
+			reporting rule SimpleRule from Input:
 				[regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
 				filter traderef exists
 									
@@ -1751,16 +967,15 @@ class RosettaRuleGeneratorTest {
 				traderef string (0..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.SimpleBlueprintRule")
-		// writeOutClasses(blueprint, "filter2");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.SimpleRuleRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void filterWhenRule() {
-		val blueprint = '''
+		val code = '''
 			reporting rule TestRule from Input:
 				extract item->flag
 						
@@ -1772,16 +987,15 @@ class RosettaRuleGeneratorTest {
 				flag boolean (1..1)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.FilterRuleRule")
-		//writeClasses(blueprint, "filterWhenRule");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.FilterRuleRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void filterWhenCount() {
-		val blueprint = '''
+		val code = '''
 			reporting rule IsFixedFloat from Foo:
 				extract fixed count = 12
 			
@@ -1790,9 +1004,8 @@ class RosettaRuleGeneratorTest {
 				floating string (0..*)
 			
 		'''.generateCode
-		val blueprintJava = blueprint.get("com.rosetta.test.model.reports.IsFixedFloatRule")
-		// writeOutClasses(blueprint, "filterWhenCount");
-		assertThat(blueprintJava, CoreMatchers.notNullValue())
+		val ruleJava = code.get("com.rosetta.test.model.reports.IsFixedFloatRule")
+		assertThat(ruleJava, CoreMatchers.notNullValue())
 		val expected = '''
 		package com.rosetta.test.model.reports;
 		
@@ -1836,13 +1049,13 @@ class RosettaRuleGeneratorTest {
 			}
 		}
 		'''
-		blueprint.compileToClasses
-		assertEquals(expected, blueprintJava)
+		code.compileToClasses
+		assertEquals(expected, ruleJava)
 	}
 
 	@Test
 	def void functionCallsWithLiteralInputFromExtract() {
-		val blueprint = ''' 
+		val code = ''' 
 			reporting rule FooRule from Foo:
 				extract 
 					if FooFunc( a, "x" ) then "Y"
@@ -1859,12 +1072,11 @@ class RosettaRuleGeneratorTest {
 					result boolean (1..1)
 			'''.parseRosettaWithNoErrors
 			.generateCode
-			//blueprint.writeClasses("functionCallsFromExtract")
-			blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
-	def void shouldUseBlueprintFromDifferentNS() {
+	def void shouldUseRuleFromDifferentNS() {
 		val code = #['''
 			namespace ns1
 			
@@ -1885,35 +1097,8 @@ class RosettaRuleGeneratorTest {
 		'''
 		].generateCode
 		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns2.reports.Rule2Rule")
-		assertNotNull(bpImpl)
-	}
-	 
-	@Test
-	def void shouldUseBlueprintRuleFromDifferentNS() {
-		val code = #['''
-			namespace ns1
-			
-			
-			type TestObject: 
-				fieldOne string (0..1)
-			
-			reporting rule Rule1 from TestObject:
-				extract fieldOne exists
-			
-		''','''
-			namespace ns2
-			
-			import ns1.*
-			
-			reporting rule Rule2 from TestObject:
-				filter Rule1
-		'''
-		].generateCode
-		//code.writeClasses("shouldUseBlueprintRuleFromDifferentNS")
-		val classes = code.compileToClasses
-		val bpImpl = classes.loadBlueprint("ns2.reports.Rule2Rule")
-		assertNotNull(bpImpl)
+		val ruleImpl = classes.loadRule("ns2.reports.Rule2Rule")
+		assertNotNull(ruleImpl)
 	}
 	
 	@Test
@@ -1964,7 +1149,7 @@ class RosettaRuleGeneratorTest {
 
 	@Test
 	def void longNestedIfElseWithReturn0() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (1..1)
 		
@@ -2009,13 +1194,12 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 		.replace('\r', "")
 		.generateCode
-		//blueprint.writeClasses("longNestedIfElseWithReturn0");
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void longNestedIfElseWithNoReturn() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (1..1)
 		
@@ -2059,13 +1243,12 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 			.replace('\r', "")
 			.generateCode
-			//blueprint.writeClasses("longNestedIfElseWithNoReturn");
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void ifWithSingleCardinality() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			test boolean (1..1)
 			bar Bar (1..1)
@@ -2081,13 +1264,12 @@ class RosettaRuleGeneratorTest {
 				else bar2
 		
 		'''.generateCode
-		//blueprint.writeClasses("ifWithSingleCardinality")
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
 	def void ifWithMultipleCardinality() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			test boolean (1..1)
 			bar Bar (1..*)
@@ -2103,13 +1285,12 @@ class RosettaRuleGeneratorTest {
 				else bar2
 		
 		'''.generateCode
-		//blueprint.writeClasses("ifWithSingleCardinality")
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test
 	def void shouldGenerateDataType() {
-		val blueprint = '''
+		val code = '''
 			body Authority TEST_REG
 			corpus TEST_REG MiFIR
 			
@@ -2167,12 +1348,12 @@ class RosettaRuleGeneratorTest {
 					[ruleReference Ff]
 			
 		'''.generateCode
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
 	def void shouldTypeResolutionForListOperation() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (0..*)
 		
@@ -2186,12 +1367,12 @@ class RosettaRuleGeneratorTest {
 			] then extract item -> attr
 		
 		'''.generateCode
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 	
 	@Test
 	def void shouldTypeResolutionForListOperation2() {
-		var blueprint = '''
+		val code = '''
 		type Foo:
 			bar Bar (0..*)
 		
@@ -2209,7 +1390,7 @@ class RosettaRuleGeneratorTest {
 			then extract item -> attr
 		
 		'''.generateCode
-		blueprint.compileToClasses
+		code.compileToClasses
 	}
 
 	@Test

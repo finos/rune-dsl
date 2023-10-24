@@ -7,7 +7,6 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.util.types.GeneratedJavaClassService
-import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.util.DottedPath
 import org.junit.jupiter.api.Test
 
@@ -16,6 +15,7 @@ import com.google.inject.Guice
 import com.google.inject.Module
 import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.tests.util.ModelHelper
+import com.rosetta.model.lib.ModelReportId
 
 /**
  * This test class contains sample code used in the documentation of the DSL.
@@ -117,7 +117,7 @@ class DocumentationSamples {
 		model.parseRosettaWithNoIssues
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "EuropeanParliament", "EmissionPerformanceStandardsEU")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("test.reg"), "EuropeanParliament", "EmissionPerformanceStandardsEU")
 		val reportFunctionClassRepr = reportId.toJavaReportFunction
 		
 		val reportFunctionCode = code.get(reportFunctionClassRepr.canonicalName.withDots)
@@ -126,6 +126,7 @@ class DocumentationSamples {
 			package test.reg.reports;
 			
 			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.annotations.RosettaReport;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.reports.ReportFunction;
@@ -136,6 +137,7 @@ class DocumentationSamples {
 			import test.reg.VehicleOwnership;
 			
 			
+			@RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
 			@ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
 			public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
 				

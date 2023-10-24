@@ -19,11 +19,11 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -48,6 +48,7 @@ import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.GeneratedJavaClassService;
@@ -103,7 +104,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		case FUNCTION:
 			return generatedJavaClassService.toJavaFunction(func.getSymbolId());
 		case REPORT:
-			return generatedJavaClassService.toJavaReportFunction(func.getSymbolId());
+			return generatedJavaClassService.toJavaReportFunction(func.getReportId());
 		case RULE:
 			return generatedJavaClassService.toJavaRule(func.getSymbolId());
 		default:
@@ -116,10 +117,10 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass toFunctionJavaClass(RosettaExternalFunction func) {
 		return new JavaClass(packages.defaultLibFunctions(), func.getName());
 	}
-	public JavaClass toReportFunctionJavaClass(RosettaBlueprintReport report) {
+	public JavaClass toReportFunctionJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportFunction(getReportId(report));
 	}
-	public JavaClass toReportTabulatorJavaClass(RosettaBlueprintReport report) {
+	public JavaClass toReportTabulatorJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportTabulator(getReportId(report));
 	}
 	public JavaClass toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
@@ -301,19 +302,19 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		DottedPath namespace = DottedPath.splitOnDots(model.getName());
 		return new ModelSymbolId(namespace, named.getName());
 	}
-	private ModelSymbolId getReportId(RosettaBlueprintReport report) {
+	private ModelReportId getReportId(RosettaReport report) {
 		RosettaRootElement rootElement = EcoreUtil2.getContainerOfType(report, RosettaRootElement.class);
 		RosettaModel model = rootElement.getModel();
 		if (model == null)
 			// Artificial attributes
-			throw new IllegalArgumentException("Can not compute package name for " + report.eClass().getName() + " " + report.name() + ". Element is not attached to a RosettaModel.");
+			throw new IllegalArgumentException("Can not compute package name for " + report.eClass().getName() + " " + report.getRegulatoryId() + ". Element is not attached to a RosettaModel.");
 		DottedPath namespace = DottedPath.splitOnDots(model.getName());
 		
 		RegulatoryDocumentReference ref = report.getRegulatoryBody();
 		String body = ref.getBody().getName();
-		String[] corpuses = ref.getCorpuses().stream().map(c -> c.getName()).toArray(String[]::new);
+		String[] corpusList = ref.getCorpusList().stream().map(c -> c.getName()).toArray(String[]::new);
 		
-		return ModelSymbolId.fromRegulatoryReference(namespace, body, corpuses);
+		return new ModelReportId(namespace, body, corpusList);
 	}
 	private DottedPath modelPackage(RosettaModel model) {
 		return DottedPath.splitOnDots(model.getName());

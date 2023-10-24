@@ -1,9 +1,7 @@
 package com.regnosys.rosetta.generator.java;
 
-import com.google.common.collect.Streams;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.GeneratorScope;
-import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaType;
@@ -11,13 +9,11 @@ import com.rosetta.util.types.JavaType;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.lang.model.SourceVersion;
 
 public class JavaScope extends GeneratorScope<JavaScope> {
 	private final Set<DottedPath> defaultPackages = new HashSet<>();
-	private final Set<BlueprintImplicitVariableRepresentation> blueprintVars = new HashSet<>();
 	
 	public JavaScope(DottedPath packageName) {
 		super("Package[" + packageName.withDots() + "]");
@@ -68,31 +64,7 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 					return Optional.empty();
 				}
 			}
-			if (obj instanceof BlueprintImplicitVariableRepresentation) {
-				BlueprintImplicitVariableRepresentation repr = (BlueprintImplicitVariableRepresentation)obj;
-				return this.getAllBlueprintVars()
-						.filter(otherRepr -> repr.match(otherRepr))
-						.findFirst()
-						.flatMap(otherRepr -> getIdentifier(otherRepr))
-						.or(() -> getIdentifier(new ImplicitVariableRepresentation(repr.getType().getData())));
-			}
 			return Optional.empty();
 		});
-	}
-	
-	@Override
-	public GeneratedIdentifier createIdentifier(Object obj, String name) {
-		GeneratedIdentifier id = super.createIdentifier(obj, name);
-		if (obj instanceof BlueprintImplicitVariableRepresentation) {
-			this.blueprintVars.add((BlueprintImplicitVariableRepresentation)obj);
-		}
-		return id;
-	}
-	
-	private Stream<BlueprintImplicitVariableRepresentation> getAllBlueprintVars() {
-		return Streams.concat(
-				this.getParent().map(p -> p.getAllBlueprintVars()).orElseGet(() -> Stream.empty()),
-				this.blueprintVars.stream()
-			);
 	}
 }

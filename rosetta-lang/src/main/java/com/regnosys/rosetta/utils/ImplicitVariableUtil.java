@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.regnosys.rosetta.rosetta.RosettaBlueprint;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
@@ -40,7 +40,7 @@ public class ImplicitVariableUtil {
 				if (f != null && f.equals(prev) && f.getParameters().size() == 0) {
 					return Optional.of(container);
 				}
-			} else if (container instanceof RosettaBlueprint) {
+			} else if (container instanceof RosettaRule) {
 				return Optional.of(container);
 			}
 			prev = container;

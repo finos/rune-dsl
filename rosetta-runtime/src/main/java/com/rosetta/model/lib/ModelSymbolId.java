@@ -2,70 +2,40 @@ package com.rosetta.model.lib;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.rosetta.util.DottedPath;
 
-public class ModelSymbolId implements Comparable<ModelSymbolId> {
-	private DottedPath namespace;
-	private String name;
+public class ModelSymbolId extends ModelId implements Comparable<ModelSymbolId> {
+	private final String name;
 	
 
 	public ModelSymbolId(DottedPath namespace, String name) {
+		super(namespace);
 		Objects.requireNonNull(namespace);
 		Objects.requireNonNull(name);
 		
-		this.namespace = namespace;
 		this.name = name;
 	}
 	
 	@JsonCreator
-	public static ModelSymbolId splitOnDots(String str) {
+	public static ModelSymbolId fromQualifiedName(String str) {
 		DottedPath qualifiedName = DottedPath.splitOnDots(str);
 		return new ModelSymbolId(qualifiedName.parent(), qualifiedName.last());
 	}
-	public static ModelSymbolId fromRegulatoryReference(DottedPath namespace, String body, String... corpusList) {
-		Objects.requireNonNull(namespace);
-		Objects.requireNonNull(body);
-		Validate.noNullElements(corpusList);
-		return new ModelReportId(namespace, body, corpusList);
-	}
 	
-	public DottedPath getNamespace() {
-		return namespace;
-	}
 	public String getName() {
 		return name;
 	}
+	
+	@Override
+	public String getAlphanumericName() {
+		return name;
+	}
+
 	@JsonValue
 	public DottedPath getQualifiedName() {
-		return namespace.child(name);
-	}
-		
-	//TODO: To be removed after removal of legacy Blueprints API
-	@Deprecated
-	public static class ModelReportId extends ModelSymbolId {
-		private String body;
-		private String[] corpusList;
-		
-		public ModelReportId(DottedPath namespace, String body, String[] corpusList) {
-			super(namespace, body + String.join("", corpusList));
-			this.body = body;
-			this.corpusList = corpusList;
-		}
-
-		@Deprecated
-		public String getBody() {
-			return body;
-		}
-
-		@Deprecated
-		public String[] getCorpusList() {
-			return corpusList;
-		}
-		
+		return getNamespace().child(name);
 	}
 
 	@Override
@@ -75,7 +45,7 @@ public class ModelSymbolId implements Comparable<ModelSymbolId> {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, namespace);
+		return Objects.hash(name, getNamespace());
 	}
 
 	@Override
@@ -87,7 +57,7 @@ public class ModelSymbolId implements Comparable<ModelSymbolId> {
 		if (getClass() != obj.getClass())
 			return false;
 		ModelSymbolId other = (ModelSymbolId) obj;
-		return Objects.equals(name, other.name) && Objects.equals(namespace, other.namespace);
+		return Objects.equals(name, other.name) && Objects.equals(getNamespace(), other.getNamespace());
 	}
 
 	@Override

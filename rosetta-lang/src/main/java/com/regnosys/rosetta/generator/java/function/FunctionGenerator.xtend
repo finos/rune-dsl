@@ -12,7 +12,6 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.generator.util.Util
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -60,6 +59,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaRule
+import com.rosetta.model.lib.ModelSymbolId
 
 class FunctionGenerator {
 
@@ -93,16 +94,16 @@ class FunctionGenerator {
 					overridesEvaluate = true
 					functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
 				}
-				rBuildClass(rFunction, false, functionInterfaces, overridesEvaluate, topScope)
+				rBuildClass(rFunction, false, functionInterfaces, emptyMap, overridesEvaluate, topScope)
 			}
 
 		val content = buildClass(root.functions, classBody, topScope)
 		fsa.generateFile(fileName, content)
 	}
 	
-	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, boolean overridesEvaluate, JavaScope topScope) {
+	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, Map<Class<?>, String> annotations, boolean overridesEvaluate, JavaScope topScope) {
 		val dependencies = collectFunctionDependencies(rFunction)
-		rFunction.classBody(isStatic, overridesEvaluate, dependencies, functionInterfaces , topScope)
+		rFunction.classBody(isStatic, overridesEvaluate, dependencies, functionInterfaces, annotations, topScope)
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
@@ -128,8 +129,8 @@ class FunctionGenerator {
 		expressions.flatMap[
 			val rosettaSymbols = EcoreUtil2.eAllOfType(it, RosettaSymbolReference).map[it.symbol]
 			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
-			rosettaSymbols.filter(RosettaBlueprint).map[rTypeBuilderFactory.buildRFunction(it)]
-		].toSet.sortBy[it.name]
+			rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it)]
+		].toSet.sortBy[it.alphanumericName]
 	}
 
 	private def StringConcatenationClient classBody(
@@ -138,6 +139,7 @@ class FunctionGenerator {
 		boolean overridesEvaluate,
 		List<RFunction> dependencies,
 		List<JavaType> functionInterfaces,
+		Map<Class<?>, String> annotations,
 		JavaScope scope
 	) {
 		val className = scope.createIdentifier(function, function.toFunctionJavaClass.simpleName)
@@ -149,7 +151,7 @@ class FunctionGenerator {
 		val postConditions = function.postConditions
 		
 		val classScope = scope.classScope(className.desiredName)
-		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.name.toFirstLower)]
+		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.alphanumericName.toFirstLower)]
 		
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
@@ -193,6 +195,9 @@ class FunctionGenerator {
 		]
 
 		'''
+			«FOR entry: annotations.entrySet»
+				@«entry.key»(«entry.value»)
+			«ENDFOR»
 			@«ImplementedBy»(«className».«defaultClassName».class)
 			public «IF isStatic»static «ENDIF»abstract class «className» implements «FOR fInterface : functionInterfaces SEPARATOR ","»«fInterface»«ENDFOR» {
 				«IF !preConditions.empty || !postConditions.empty»
@@ -347,8 +352,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					DottedPath.splitOnDots(function.model.name),
-					function.name + formatEnumName(enumFunc.value.value.name),
+					new ModelSymbolId(DottedPath.splitOnDots(function.model.name), function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),
@@ -359,7 +363,7 @@ class FunctionGenerator {
 					enumFunc.operations.map[rTypeBuilderFactory.buildROperation(it)],
 					enumFunc.annotations
 				)»
-				«rFunction.rBuildClass(true, #[JavaClass.from(RosettaFunction)], false, classScope)»
+				«rFunction.rBuildClass(true, #[JavaClass.from(RosettaFunction)], emptyMap, false, classScope)»
 			«ENDFOR»
 		}'''
 	}

@@ -191,25 +191,16 @@ public class MapperS<T> implements MapperBuilder<T> {
 		return f.apply(this);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.rosetta.model.lib.blueprint.Mapper#getPath()
-	 */
 	@Override
 	public List<Path> getPaths() {
 		return !item.isError() ? Collections.singletonList(item.getPath()) : Collections.emptyList();
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.rosetta.model.lib.blueprint.Mapper#getPath()
-	 */
 	@Override
 	public List<Path> getErrorPaths() {
 		return item.isError() ? Collections.singletonList(item.getPath()) : Collections.emptyList();
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.rosetta.model.lib.blueprint.Mapper#getError()
-	 */
 	@Override
 	public List<String> getErrors() {
 		return item.isError() ? Collections.singletonList(item.getPath().toString() +" was null") : Collections.emptyList();

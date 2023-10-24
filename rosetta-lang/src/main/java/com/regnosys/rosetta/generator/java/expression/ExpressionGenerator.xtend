@@ -6,7 +6,6 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -114,6 +113,7 @@ import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
 import com.regnosys.rosetta.types.builtin.RRecordType
 import java.util.stream.Collectors
 import com.rosetta.util.types.JavaReferenceType
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationClient, JavaScope> {
 
@@ -213,11 +213,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 		StringConcatenationClient argsCode, boolean needsMapper) {
 		return switch (callable) {
 			Function,
-			RosettaBlueprint: {
+			RosettaRule: {
 				val rCallable = if (callable instanceof Function)
 						rObjectFactory.buildRFunction(callable)
 					else
-						rObjectFactory.buildRFunction(callable as RosettaBlueprint)
+						rObjectFactory.buildRFunction(callable as RosettaRule)
 				val multi = rCallable.output.multi
 				'''«IF needsMapper»«IF multi»«MapperC».<«rCallable.output.RType.toJavaReferenceType»>«ELSE»«MapperS».«ENDIF»of(«ENDIF»«scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate(«argsCode»)«IF needsMapper»)«ENDIF»'''
 			}
@@ -270,7 +270,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 
 	private def StringConcatenationClient implicitVariable(EObject context, JavaScope scope) {
 		val definingContainer = context.findContainerDefiningImplicitVariable.get
-		if (definingContainer instanceof Data || definingContainer instanceof RosettaBlueprint) {
+		if (definingContainer instanceof Data || definingContainer instanceof RosettaRule) {
 			// For conditions and rules
 			return '''«MapperS».of(«scope.getIdentifierOrThrow(context.implicitVarInContext)»)'''
 		} else {
@@ -848,9 +848,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<StringConcatenationCli
 	override protected caseSymbolReference(RosettaSymbolReference expr, JavaScope context) {
 		val s = expr.symbol
 		switch (s) {
-			Data: { // -------> replace with call to implicit variable?
-				'''«MapperS».of(«context.getIdentifierOrThrow(new RDataType(s).toBlueprintImplicitVar)»)'''
-			}
 			Attribute: {
 				val attribute = rObjectFactory.buildRAttribute(s)
 				// Data attributes can only be called if there is an implicit variable present.

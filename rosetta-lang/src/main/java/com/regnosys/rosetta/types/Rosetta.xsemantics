@@ -64,8 +64,8 @@ import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -123,10 +123,6 @@ auxiliary symbolListType(ClosureParameter c) {
 	return functionalOperationItemType(op)
 }
 
-auxiliary symbolListType(Data c) {
-	return createListType(new RDataType(c), single)
-}
-
 auxiliary symbolListType(RosettaEnumeration c) {
 	return createListType(new REnumType(c), single)
 }
@@ -144,7 +140,7 @@ auxiliary symbolListType(Function c) {
 	return createListType(typeCallToRType(c.^output.typeCall, new RosettaInterpreterContext), c.^output.card)
 }
 
-auxiliary symbolListType(RosettaBlueprint c) {
+auxiliary symbolListType(RosettaRule c) {
 	empty |- c.expression : var RListType t
 	return t
 }
@@ -169,7 +165,7 @@ auxiliary typeOfImplicitVariable(EObject c) {
 			createListType(new RDataType(it), single)
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
-		} else if (it instanceof RosettaBlueprint) {
+		} else if (it instanceof RosettaRule) {
 			input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
 		}
 	]

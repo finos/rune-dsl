@@ -2,11 +2,11 @@ package com.regnosys.rosetta.generator.java;
 
 import java.util.Objects;
 
-import com.regnosys.rosetta.rosetta.RosettaBlueprint;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 
 public class RuleOutputParameterRepresentation {
-	private final RosettaBlueprint rule;
-	public RuleOutputParameterRepresentation(RosettaBlueprint rule) {
+	private final RosettaRule rule;
+	public RuleOutputParameterRepresentation(RosettaRule rule) {
 		this.rule = rule;
 	}
 	

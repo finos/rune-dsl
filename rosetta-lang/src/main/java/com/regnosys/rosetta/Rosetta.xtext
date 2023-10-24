@@ -152,8 +152,8 @@ ListLiteral:
 RosettaRootElement:
 	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
-	RosettaBlueprint | RosettaMetaType | RosettaExternalSynonymSource |
-	RosettaExternalRuleSource | RosettaBlueprintReport | RosettaTypeAlias |
+	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
+	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
 	RosettaQualifiedType | RosettaCalculationType
 ;
 
@@ -830,7 +830,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|QualifiedName] corpuses+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
+	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
 ;
 
 RosettaSegmentRef:
@@ -838,79 +838,29 @@ RosettaSegmentRef:
 ;
 
 /*****************************************
- * Blueprints
+ * Reporting
  */
  
-RosettaBlueprintReport:
+RosettaReport:
 	'report' regulatoryBody=RegulatoryDocumentReference
 	'in' ('real-time'|'T+1'|'T+2'|'T+3'|'T+4'|'T+5'|'ASATP')
 	'from' inputType=TypeCall
 	'when'
-	eligibilityRules+=[RosettaBlueprint|QualifiedName] ('and' eligibilityRules+=[RosettaBlueprint|QualifiedName])*
+	eligibilityRules+=[RosettaRule|QualifiedName] ('and' eligibilityRules+=[RosettaRule|QualifiedName])*
 	('using' 'standard' reportingStandard=[RosettaCorpus|QualifiedName])? // @Compat: this attribute is unnecessary
 	'with' 'type' reportType=[Data|QualifiedName]
 	('with' 'source' ruleSource=[RosettaExternalRuleSource|QualifiedName])?
 ;
 
 RosettaRuleReference:
-	'[' 'ruleReference' reportingRule=[RosettaBlueprint|QualifiedName] ']'	
+	'[' 'ruleReference' reportingRule=[RosettaRule|QualifiedName] ']'	
 ;
 
-RosettaBlueprint:
+RosettaRule:
  	('reporting'|'eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable?
  	(
- 		(
- 			(references += RosettaDocReference)*
- 			(expression = RosettaCalcExpression
-			('as' identifier=STRING)?)
- 		) | ( // legacy
- 			((
- 				('[' ->legacy?='legacy-syntax' ']')
- 				(references += RosettaDocReference)*
- 			) | =>(
- 				(references += RosettaDocReference)*
- 				('[' ->legacy?='legacy-syntax' ']')
- 			))
- 			(nodes = BlueprintNodeExp)?
- 		)
+		(references += RosettaDocReference)*
+		(expression = RosettaCalcExpression
+		('as' identifier=STRING)?)
  	)
-;
-
-BlueprintNodeExp:
-	node=BlueprintNode (reference=RosettaDocReference)?
-	('then' next=BlueprintNodeExp)?
-	(=>'as' identifier=STRING)?
-;
-
-BlueprintNode:
-	BlueprintRef |
-	BlueprintFilter |
-	BlueprintOr |
-	BlueprintExtract |
-	BlueprintReturn | 
-	BlueprintLookup
-;
-
-BlueprintFilter :
-	'filter' 'when' (filter=RosettaCalcOr | 'rule' filterBP=BlueprintRef)
-;
-
-BlueprintOr:
-	'(' bps+=BlueprintNodeExp ( ',' bps+=BlueprintNodeExp)* ')'
-;
-
-BlueprintRef:
-	blueprint=[RosettaBlueprint|QualifiedName]
-;
-
-BlueprintExtract:
-	'extract' (repeatable?='repeatable')? call=RosettaCalcOr 
-;
-
-BlueprintReturn:
-	'return' expression=RosettaCalcOr
-;
-
-BlueprintLookup:
-	'lookup' name=ID output=TypeCall
 ;

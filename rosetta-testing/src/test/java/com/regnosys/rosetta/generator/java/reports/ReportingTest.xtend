@@ -1,25 +1,24 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import org.junit.jupiter.api.^extension.ExtendWith
+import org.eclipse.xtext.testing.extensions.InjectionExtension
+import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.model.lib.ModelSymbolId
+import com.rosetta.util.types.GeneratedJavaClassService
+import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.rosetta.model.lib.records.Date
 import com.rosetta.model.lib.reports.ReportFunction
-import com.rosetta.model.lib.reports.Tabulator
-import com.rosetta.util.DottedPath
-import com.rosetta.util.types.GeneratedJavaClassService
 import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import javax.inject.Inject
-import org.eclipse.xtext.testing.InjectWith
-import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.^extension.ExtendWith
+import com.rosetta.model.lib.ModelReportId
 
-import static org.junit.jupiter.api.Assertions.*
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -183,7 +182,7 @@ class ReportingTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Shield", "Avengers", "SokoviaAccords")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("test.reg"), "Shield", "Avengers", "SokoviaAccords")
 		val reportFunctionClass = reportId.toJavaReportFunction
 		val tabulatorClass = reportId.toJavaReportTabulator
 		
@@ -361,7 +360,7 @@ class ReportingTest {
 		'''
 		val code = model.generateCode
 		
-		val reportId = ModelSymbolId.fromRegulatoryReference(DottedPath.splitOnDots("test.reg"), "Auth", "Corpus", "Reg")
+		val reportId = new ModelReportId(DottedPath.splitOnDots("test.reg"), "Auth", "Corpus", "Reg")
 		val reportFunctionClass = reportId.toJavaReportFunction
 		val tabulatorClass = reportId.toJavaReportTabulator
 		

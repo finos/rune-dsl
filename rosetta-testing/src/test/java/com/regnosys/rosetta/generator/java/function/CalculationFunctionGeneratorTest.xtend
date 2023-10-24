@@ -279,7 +279,6 @@ class CalculationFunctionGeneratorTest {
 				set res -> res2:  arg1 + arg2 
 		'''.generateCode
 		val calcJava = calculation.get("com.rosetta.test.model.functions.Calc")
-		//RosettaBlueprintTest.writeOutClasses(calculation, "testDateTimeAdd")
 		calculation.compileToClasses
 		val expected = '''
 			package com.rosetta.test.model.functions;
@@ -388,7 +387,6 @@ class CalculationFunctionGeneratorTest {
 					tradeDate + tradeTime
 		'''.generateCode
 		val calcJava = calculation.get("com.rosetta.test.model.functions.RTS_22_Fields")
-		//RosettaBlueprintTest.writeOutClasses(calculation, "testWierdness")
 		calculation.compileToClasses
 		val expected = '''
 			package com.rosetta.test.model.functions;

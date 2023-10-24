@@ -28,22 +28,20 @@ import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.generator.java.util.ImportingStringConcatenation
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.rosetta.util.DottedPath
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.generator.ImplicitVariableRepresentation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ExpressionGeneratorTest {
 	@Inject extension ExpressionGenerator expressionGenerator
-	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension ExpressionParser
 	
 	DottedPath testPackageName = DottedPath.of("com", "regnosys", "test")
@@ -67,14 +65,14 @@ class ExpressionGeneratorTest {
 	@Test
 	def void shouldGenerateGreaterThanExpression() {
 		val lhsMockClass = createData("Foo")
-		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr1", "number")
+		val lhsFeatureCall = createItemFeatureCall(lhsMockClass, "attr1", "number")
 		
 		val rhsIntLiteral = createIntLiteral(5)
 		
 		val comparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, rhsIntLiteral, ComparisonOperation)
 		
 		val scope = new JavaScope(testPackageName)
-		scope.createIdentifier(new RDataType(lhsMockClass).toBlueprintImplicitVar, "foo")
+		scope.createIdentifier(new ImplicitVariableRepresentation(lhsMockClass), "foo")
 		val generatedFunction = expressionGenerator.javaCode(comparisonOp, scope)
 		
 		assertNotNull(generatedFunction)
@@ -89,16 +87,16 @@ class ExpressionGeneratorTest {
 	def void shouldGenerateGreaterThanExpressionsWithOr1() {
 		val mockClass = createData("Foo")
 		
-		val lhsFeatureCall = createFeatureCall(mockClass, "attr1", "number")
+		val lhsFeatureCall = createItemFeatureCall(mockClass, "attr1", "number")
 		val lhsComparisonOp = createModifiableBinaryOperation(">", lhsFeatureCall, createIntLiteral(5), ComparisonOperation)
 		
-		val rhsFeatureCall = createFeatureCall(mockClass, "attr2", "number")
+		val rhsFeatureCall = createItemFeatureCall(mockClass, "attr2", "number")
 		val rhsComparisonOp = createModifiableBinaryOperation(">", rhsFeatureCall, createIntLiteral(5), ComparisonOperation)
 		
 		val orOp = createBinaryOperation("or", lhsComparisonOp, rhsComparisonOp, LogicalOperation)
 		
 		val scope = new JavaScope(testPackageName)
-		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
+		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
 		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
@@ -112,11 +110,11 @@ class ExpressionGeneratorTest {
 	@Test
 	def void shouldGenerateExistsExpression() {
 		val lhsMockClass = createData("Foo")
-		val lhsFeatureCall = createFeatureCall(lhsMockClass, "attr", "number")
+		val lhsFeatureCall = createItemFeatureCall(lhsMockClass, "attr", "number")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
 		
 		val scope = new JavaScope(testPackageName)
-		scope.createIdentifier(new RDataType(lhsMockClass).toBlueprintImplicitVar, "foo")
+		scope.createIdentifier(new ImplicitVariableRepresentation(lhsMockClass), "foo")
 		val generatedFunction = expressionGenerator.javaCode(lhsExistsOp, scope)
 		
 		assertNotNull(generatedFunction)
@@ -131,16 +129,16 @@ class ExpressionGeneratorTest {
 	def void shouldGenerateExistsExpressionsWithOr1() {
 		val mockClass = createData("Foo")
 		
-		val lhsFeatureCall = createFeatureCall(mockClass, "attr1", "boolean")
+		val lhsFeatureCall = createItemFeatureCall(mockClass, "attr1", "boolean")
 		val lhsExistsOp = createExistsExpression(lhsFeatureCall)
 		
-		val rhsFeatureCall = createFeatureCall(mockClass, "attr2", "boolean")
+		val rhsFeatureCall = createItemFeatureCall(mockClass, "attr2", "boolean")
 		val rhsExistsOp = createExistsExpression(rhsFeatureCall)
 		
 		val orOp = createBinaryOperation("or", lhsExistsOp, rhsExistsOp, LogicalOperation)
 		
 		val scope = new JavaScope(testPackageName)
-		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
+		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
 		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
@@ -154,20 +152,20 @@ class ExpressionGeneratorTest {
 	def void shouldGenerateEqualityExprWithOr() {
 		val mockClass = createData("Foo")
 		
-		val featureCall1 = createFeatureCall(mockClass, "attr1", "number")
-		val featureCall2 = createFeatureCall(mockClass, "attr2", "number")
+		val featureCall1 = createItemFeatureCall(mockClass, "attr1", "number")
+		val featureCall2 = createItemFeatureCall(mockClass, "attr2", "number")
 		
 		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2, EqualityOperation)
 		
-		val featureCall3 = createFeatureCall(mockClass, "attr3", "string")
-		val featureCall4 = createFeatureCall(mockClass, "attr4", "string")
+		val featureCall3 = createItemFeatureCall(mockClass, "attr3", "string")
+		val featureCall4 = createItemFeatureCall(mockClass, "attr4", "string")
 		
 		val rhsEqualsOp = createModifiableBinaryOperation("=", featureCall3, featureCall4, EqualityOperation)
 		
 		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
 		val scope = new JavaScope(testPackageName)
-		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
+		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
 		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
@@ -179,20 +177,20 @@ class ExpressionGeneratorTest {
 	def void shouldGenerateEnumValueRef() {
 		val mockClass = createData("Foo")
 		
-		val featureCall1 = createFeatureCall(mockClass, "attr1", "number")
-		val featureCall2 = createFeatureCall(mockClass, "attr2", "number")
+		val featureCall1 = createItemFeatureCall(mockClass, "attr1", "number")
+		val featureCall2 = createItemFeatureCall(mockClass, "attr2", "number")
 		
 		val lhsEqualsOp = createModifiableBinaryOperation("=", featureCall1, featureCall2, EqualityOperation)
 		
-		val featureCall3 = createFeatureCall(mockClass, "attr3", "string")
-		val featureCall4 = createFeatureCall(mockClass, "attr4", "string")
+		val featureCall3 = createItemFeatureCall(mockClass, "attr3", "string")
+		val featureCall4 = createItemFeatureCall(mockClass, "attr4", "string")
 		
 		val rhsEqualsOp = createModifiableBinaryOperation("=", featureCall3, featureCall4, EqualityOperation)
 		
 		val orOp = createBinaryOperation("or", lhsEqualsOp, rhsEqualsOp, LogicalOperation)
 		
 		val scope = new JavaScope(testPackageName)
-		scope.createIdentifier(new RDataType(mockClass).toBlueprintImplicitVar, "foo")
+		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
 		val generatedFunction = expressionGenerator.javaCode(orOp, scope)
 		
 		assertNotNull(generatedFunction)
@@ -229,9 +227,10 @@ class ExpressionGeneratorTest {
 		return mockBinaryOperation
 	}
 	
-	private def RosettaFeatureCall createFeatureCall(Data rosettaClass, String attributeName, String attributeType) {
-		val mockSymbolReference = mock(RosettaSymbolReference)
-		when(mockSymbolReference.symbol).thenReturn(rosettaClass)
+	private def RosettaFeatureCall createItemFeatureCall(Data rosettaClass, String attributeName, String attributeType) {
+		val mockReference = mock(RosettaImplicitVariable)
+		when(mockReference.name).thenReturn("item")
+		when(mockReference.eContainer).thenReturn(rosettaClass)
 
 		val mockCardinality = mock(RosettaCardinality)
 		when(mockCardinality.sup).thenReturn(1)
@@ -253,7 +252,7 @@ class ExpressionGeneratorTest {
 		
 		val mockFeatureCall = mock(RosettaFeatureCall)
 		when(mockFeatureCall.feature).thenReturn(mockAttribute)
-		when(mockFeatureCall.receiver).thenReturn(mockSymbolReference)
+		when(mockFeatureCall.receiver).thenReturn(mockReference)
 		return mockFeatureCall
 	}
 

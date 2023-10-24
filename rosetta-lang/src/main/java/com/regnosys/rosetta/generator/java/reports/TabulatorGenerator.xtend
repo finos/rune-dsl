@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.reports
 
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport
 import com.regnosys.rosetta.generator.java.JavaScope
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -16,7 +15,6 @@ import com.rosetta.model.lib.reports.Tabulator.Field
 import com.rosetta.model.lib.reports.Tabulator.FieldImpl
 import java.util.Optional
 import com.regnosys.rosetta.generator.GeneratedIdentifier
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import java.util.List
 import java.util.Arrays
 import com.rosetta.model.lib.reports.Tabulator.FieldValue
@@ -33,6 +31,8 @@ import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
 import com.rosetta.util.types.JavaParameterizedType
 import com.rosetta.model.lib.ModelSymbolId
+import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class TabulatorGenerator {
 	@Inject RosettaTypeProvider typeProvider
@@ -41,7 +41,7 @@ class TabulatorGenerator {
 	
 	@Inject extension RosettaExtensions
 	
-	def generate(IFileSystemAccess2 fsa, RosettaBlueprintReport report) {
+	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
 		val topScope = new JavaScope(tabulatorClass.packageName)
 		
@@ -63,26 +63,26 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def Map<Attribute, RosettaBlueprint> getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+	private def Map<Attribute, RosettaRule> getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val context = newHashMap
-		type.getAllReportingRules(ruleSource, false, false).forEach[key, rule| context.put(key.attr, rule)]
+		type.getAllReportingRules(ruleSource).forEach[key, rule| context.put(key.attr, rule)]
 		context
 	}
 	
-	private def boolean isReportable(Data type, Map<Attribute, RosettaBlueprint> context) {
+	private def boolean isReportable(Data type, Map<Attribute, RosettaRule> context) {
 		isReportable(type, context, newHashSet)
 	}
-	private def boolean isReportable(Data type, Map<Attribute, RosettaBlueprint> context, Set<Data> visited) {
+	private def boolean isReportable(Data type, Map<Attribute, RosettaRule> context, Set<Data> visited) {
 		if (visited.add(type)) {
 			type.allAttributes.exists[isReportable(context, visited)]
 		} else {
 			false
 		}
 	}
-	private def boolean isReportable(Attribute attr, Map<Attribute, RosettaBlueprint> context) {
+	private def boolean isReportable(Attribute attr, Map<Attribute, RosettaRule> context) {
 		isReportable(attr, context, newHashSet)
 	}
-	private def boolean isReportable(Attribute attr, Map<Attribute, RosettaBlueprint> context, Set<Data> visited) {
+	private def boolean isReportable(Attribute attr, Map<Attribute, RosettaRule> context, Set<Data> visited) {
 		val attrType = attr.typeCall.type
 		if (attrType instanceof Data) {
 			isReportable(attrType, context, visited)
@@ -91,7 +91,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient reportTabulatorClassBody(RosettaBlueprintReport report, Map<Attribute, RosettaBlueprint> context, JavaScope topScope, JavaClass tabulatorClass) {
+	private def StringConcatenationClient reportTabulatorClassBody(RosettaReport report, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass tabulatorClass) {
 		val reportType = report.reportType
 		val reportClass = new RDataType(reportType).toJavaReferenceType
 		
@@ -106,6 +106,7 @@ class TabulatorGenerator {
 			val innerTabulatorClass = reportType.toTabulatorJavaClass(Optional.ofNullable(report.ruleSource))
 			val innerTabulatorInstance = classScope.createUniqueIdentifier("tabulator")
 			'''
+			@«com.rosetta.model.lib.annotations.RosettaReport»(namespace="«report.model.name»", body="«report.regulatoryBody.body.name»", corpusList={«FOR corpus: report.regulatoryBody.corpusList SEPARATOR ", "»"«corpus.name»"«ENDFOR»})
 			public class «tabulatorClass» implements «Tabulator»<«reportClass»> {
 				private final «innerTabulatorClass» «innerTabulatorInstance»;
 				
@@ -144,7 +145,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient tabulatorClassBody(Data reportType, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaBlueprint> context, JavaScope topScope, JavaClass tabulatorClass) {
+	private def StringConcatenationClient tabulatorClassBody(Data reportType, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass tabulatorClass) {
 		val reportClass = new RDataType(reportType).toJavaReferenceType
 		
 		val classScope = topScope.classScope(reportClass.simpleName)
@@ -190,7 +191,7 @@ class TabulatorGenerator {
 		'''
 	}
 	
-	private def List<Attribute> findReportedFieldsAndCreateIdentifiers(Data type, Map<Attribute, RosettaBlueprint> context, JavaScope scope) {
+	private def List<Attribute> findReportedFieldsAndCreateIdentifiers(Data type, Map<Attribute, RosettaRule> context, JavaScope scope) {
 		type
 			.allNonOverridesAttributes
 			.filter[isReportable(context)]
@@ -199,7 +200,7 @@ class TabulatorGenerator {
 				it
 			].toList
 	}
-	private def StringConcatenationClient initializeFields(Data type, Map<Attribute, RosettaBlueprint> context, JavaScope scope) {
+	private def StringConcatenationClient initializeFields(Data type, Map<Attribute, RosettaRule> context, JavaScope scope) {
 		'''
 		«FOR attr : type.allNonOverridesAttributes»
 			«IF attr.isReportable(context)»
@@ -210,7 +211,7 @@ class TabulatorGenerator {
 					"«StringEscapeUtils.escapeJava(attr.name)»",
 					«attr.card.isMany»,
 					«rule.map[model].map[name].map[new ModelSymbolId(DottedPath.splitOnDots(it), rule.get.name).toModelSymbolCode].toOptionalCode»,
-					«rule.map[findRuleIdentifier].map['"' + it + '"'].toOptionalCode»,
+					«rule.map[identifier].map['"' + it + '"'].toOptionalCode»,
 					«IF attrType instanceof Data»
 						«scope.getIdentifierOrThrow(attrType.toNestedTabulatorInstance)».getFields()
 					«ELSE»
@@ -222,7 +223,7 @@ class TabulatorGenerator {
 		'''
 	}
 	
-	private def Set<NestedTabulatorInstance> findNestedTabulatorsAndCreateIdentifiers(Data type, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaBlueprint> context, JavaScope scope) {
+	private def Set<NestedTabulatorInstance> findNestedTabulatorsAndCreateIdentifiers(Data type, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaRule> context, JavaScope scope) {
 		val result = type.allNonOverridesAttributes
 			.filter[isReportable(context)]
 			.map[typeCall.type]
@@ -233,7 +234,7 @@ class TabulatorGenerator {
 		result
 	}
 	
-	private def StringConcatenationClient computeFieldValues(Data type, GeneratedIdentifier reportVariable, Map<Attribute, RosettaBlueprint> context, JavaScope scope) {
+	private def StringConcatenationClient computeFieldValues(Data type, GeneratedIdentifier reportVariable, Map<Attribute, RosettaRule> context, JavaScope scope) {
 		'''
 		«FOR attr : type.allNonOverridesAttributes»
 			«IF attr.isReportable(context)»
@@ -290,7 +291,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient fieldValuesAsList(Data type, Map<Attribute, RosettaBlueprint> context, JavaScope scope) {
+	private def StringConcatenationClient fieldValuesAsList(Data type, Map<Attribute, RosettaRule> context, JavaScope scope) {
 		'''
 		«Arrays».asList(
 			«FOR attr : type.allNonOverridesAttributes.filter[isReportable(context)] SEPARATOR ","»
@@ -309,17 +310,6 @@ class TabulatorGenerator {
 		)'''
 	}
 	
-	private def String findRuleIdentifier(RosettaBlueprint rule) {
-		if (rule.isLegacy) {
-			var curr = rule.nodes
-			while (curr.next !== null) {
-				curr = curr.next
-			}
-			curr.identifier
-		} else {
-			rule.identifier
-		}
-	}
 	private def StringConcatenationClient toOptionalCode(Optional<?> object) {
 		if (object.isPresent) {
 			'''«Optional».of(«object.get»)'''

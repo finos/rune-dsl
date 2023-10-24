@@ -34,7 +34,7 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -455,7 +455,7 @@ checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 				looseListSubtypeCheck(e.args.get(idx), f.inputs.get(idx).attributeListType)
 			]
         }
-        RosettaBlueprint: {
+        RosettaRule: {
         	{
 				1 == e.args.size()
 				or

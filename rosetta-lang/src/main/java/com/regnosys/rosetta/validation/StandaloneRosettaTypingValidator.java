@@ -12,13 +12,13 @@ import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
-import com.regnosys.rosetta.rosetta.RosettaBlueprint;
-import com.regnosys.rosetta.rosetta.RosettaBlueprintReport;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
+import com.regnosys.rosetta.rosetta.RosettaReport;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -98,14 +98,14 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	}
 	
 	@Check
-	public void checkReport(RosettaBlueprintReport report) {
+	public void checkReport(RosettaReport report) {
 		RType inputType = ts.typeCallToRType(report.getInputType());
-		List<RosettaBlueprint> eligibilityRules = report.getEligibilityRules();
+		List<RosettaRule> eligibilityRules = report.getEligibilityRules();
 		for (var i = 0; i < eligibilityRules.size(); i++) {
-			RosettaBlueprint eligibilityRule = eligibilityRules.get(i);
+			RosettaRule eligibilityRule = eligibilityRules.get(i);
 			RType ruleInputType = ts.typeCallToRType(eligibilityRule.getInput());
 			if (!ts.isSubtypeOf(ruleInputType, inputType)) {
-				error("Eligibility rule " + eligibilityRule.getName() + " expects a `" + ruleInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_BLUEPRINT_REPORT__ELIGIBILITY_RULES, i);
+				error("Eligibility rule " + eligibilityRule.getName() + " expects a `" + ruleInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);
 			}
 		}
 		
@@ -113,9 +113,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		if (reportTypeInputType != builtins.ANY) {
 			if (!ts.isSubtypeOf(reportTypeInputType, inputType)) {
 				if (report.getRuleSource() != null) {
-					error("Rule source " + report.getRuleSource().getName() + " expects a `" + reportTypeInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_BLUEPRINT_REPORT__RULE_SOURCE);
+					error("Rule source " + report.getRuleSource().getName() + " expects a `" + reportTypeInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_REPORT__RULE_SOURCE);
 				} else {
-					error("Report type " + report.getReportType().getName() + " expects a `" + reportTypeInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_BLUEPRINT_REPORT__REPORT_TYPE);
+					error("Report type " + report.getReportType().getName() + " expects a `" + reportTypeInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_REPORT__REPORT_TYPE);
 				}
 			}
 		}
@@ -135,7 +135,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		for (Attribute attr: data.getAttributes()) {
 			RosettaRuleReference ref = attr.getRuleReference();
 			if (ref != null) {
-				RosettaBlueprint rule = ref.getReportingRule();
+				RosettaRule rule = ref.getReportingRule();
 				RType inputType = ts.typeCallToRType(rule.getInput());
 				RType newCurrent = ts.meet(current, inputType);
 				if (newCurrent.equals(builtins.NOTHING)) {
@@ -175,7 +175,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 						.findAny();
 				RosettaRuleReference ref = ruleReferences.get(attr);
 				if (ref != null) {
-					RosettaBlueprint rule = ref.getReportingRule();
+					RosettaRule rule = ref.getReportingRule();
 					RType inputType = ts.typeCallToRType(rule.getInput());
 					RType newCurrent = ts.meet(current, inputType);
 					if (newCurrent.equals(builtins.NOTHING)) {

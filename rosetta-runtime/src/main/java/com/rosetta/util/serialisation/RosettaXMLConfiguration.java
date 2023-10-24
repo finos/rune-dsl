@@ -15,11 +15,7 @@ import com.rosetta.model.lib.ModelSymbolId;
 public class RosettaXMLConfiguration {
 	@JsonAnyGetter
 	private final SortedMap<ModelSymbolId, TypeXMLConfiguration> typeConfigMap;
-	
-	@JsonCreator
-	private RosettaXMLConfiguration() {
-		this(Collections.emptyMap());
-	}
+
 	public RosettaXMLConfiguration(Map<ModelSymbolId, TypeXMLConfiguration> typeConfigMap) {
 		this.typeConfigMap = new TreeMap<>(typeConfigMap);
 	}
@@ -27,11 +23,7 @@ public class RosettaXMLConfiguration {
 	public Optional<TypeXMLConfiguration> getConfigurationForType(ModelSymbolId symbolId) {
 		return Optional.ofNullable(typeConfigMap.get(symbolId));
 	}
-	
-	@JsonAnySetter
-	private void add(String symbolId, TypeXMLConfiguration config) {
-		typeConfigMap.put(ModelSymbolId.splitOnDots(symbolId), config);
-	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(typeConfigMap);
@@ -46,5 +38,15 @@ public class RosettaXMLConfiguration {
 			return false;
 		RosettaXMLConfiguration other = (RosettaXMLConfiguration) obj;
 		return Objects.equals(typeConfigMap, other.typeConfigMap);
+	}
+	
+	// Jackson support
+	@JsonCreator
+	private RosettaXMLConfiguration() {
+		this(Collections.emptyMap());
+	}
+	@JsonAnySetter
+	private void add(String qualifiedName, TypeXMLConfiguration config) {
+		typeConfigMap.put(ModelSymbolId.fromQualifiedName(qualifiedName), config);
 	}
 }

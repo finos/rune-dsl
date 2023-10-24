@@ -23,8 +23,8 @@ import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import org.eclipse.xtext.EcoreUtil2
 import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -87,7 +87,7 @@ class FunctionDependencyProvider {
 	def Set<RFunction> rFunctionDependencies(RosettaExpression expression) {
 		val rosettaSymbols = EcoreUtil2.eAllOfType(expression, RosettaSymbolReference).map[it.symbol]
 		(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
-			rosettaSymbols.filter(RosettaBlueprint).map[rTypeBuilderFactory.buildRFunction(it)]).toSet
+			rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it)]).toSet
 	}
 
 	def Set<RFunction> rFunctionDependencies(Iterable<? extends RosettaExpression> expressions) {

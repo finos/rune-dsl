@@ -7,14 +7,9 @@ import com.rosetta.util.DottedPath;
 public class RosettaJavaPackages {
 
 	public static final DottedPath DEFAULT_NAMESPACE = DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE);
-	private static final DottedPath BLUEPRINT_NAMESPACE = DottedPath.splitOnDots("com.regnosys.rosetta");
 
 	public DottedPath defaultNamespace() {
 		return DEFAULT_NAMESPACE;
-	}
-
-	public DottedPath blueprintLib() {
-		return BLUEPRINT_NAMESPACE.child("blueprints");
 	}
 
 	public DottedPath defaultLib() {
@@ -85,10 +80,6 @@ public class RosettaJavaPackages {
 		
 		public DottedPath reports() {
 			return child("reports");
-		}
-		
-		public DottedPath legacyBlueprint() {
-			return child("blueprint");
 		}
 
 		public DottedPath qualifyEvent() {

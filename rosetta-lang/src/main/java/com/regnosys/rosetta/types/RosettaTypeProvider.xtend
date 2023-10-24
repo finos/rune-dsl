@@ -51,7 +51,6 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaDataReference
-import com.regnosys.rosetta.rosetta.RosettaBlueprint
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
@@ -70,6 +69,7 @@ import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.rosetta.RosettaRule
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 
@@ -115,9 +115,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				} else
 					MISSING
 			}
-			Data: { // @Compat: Data should not be a RosettaSymbol.
-				new RDataType(symbol)
-			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
 				new REnumType(symbol)
 			}
@@ -128,7 +125,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 					MISSING
 				}
 			}
-			RosettaBlueprint: {
+			RosettaRule: {
 				if (symbol.expression !== null) {
 					safeRType(symbol.expression, cycleTracker)
 				} else {
@@ -193,7 +190,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				new RDataType(it)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
-			} else if (it instanceof RosettaBlueprint) {
+			} else if (it instanceof RosettaRule) {
 				input?.typeCallToRType ?: MISSING
 			}
 		].orElse(MISSING)
