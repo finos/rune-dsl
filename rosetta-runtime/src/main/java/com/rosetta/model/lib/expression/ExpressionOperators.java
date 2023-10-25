@@ -281,13 +281,13 @@ public class ExpressionOperators {
 		List<String> failures = new ArrayList<>();
 		if (value.length() < minLength) {
 		//	failures.add("Expected a minimum of " + minLength + " characters for '" + msgPrefix + "', but found '" + value + "' (" + value.length() + " characters).");
-			failures.add("Field '" + msgPrefix + " must have a value with minimum length of '" + minLength + " characters but value '" + value + "' is length of " + value.length() + " characters.");
+			failures.add("Field '" + msgPrefix + "' must have a value with minimum length of " + minLength + " characters but value '" + value + "' is length of " + value.length() + " characters.");
 
 		}
 		if (maxLength.isPresent()) {
 			int m = maxLength.get();
 			if (value.length() > m) {
-				failures.add("Field '" + msgPrefix + " must have a value with maximum length of '" + m + " characters but value '" + value + "' is length of " + value.length() + " characters.");
+				failures.add("Field '" + msgPrefix + "' must have a value with maximum length of " + m + " characters but value '" + value + "' is length of " + value.length() + " characters.");
 
 				//failures.add("Expected a maximum of " + m + " characters for '" + msgPrefix + "', but found '" + value + "' (" + value.length() + " characters).");
 			}
@@ -297,7 +297,7 @@ public class ExpressionOperators {
 			Matcher match = p.matcher(value);
 			if (!match.matches()) {
 				//failures.add("'" + value + "' does not match the pattern /" + p.toString() + "/ of '" + msgPrefix + "'.");
-				failures.add("Field '" + msgPrefix + "' with value "+ value + "' does not match the pattern / " + p.toString() + " /.");
+				failures.add("Field '" + msgPrefix + "' with value '"+ value + "' does not match the pattern /" + p.toString() + "/.");
 
 			}
 		}
