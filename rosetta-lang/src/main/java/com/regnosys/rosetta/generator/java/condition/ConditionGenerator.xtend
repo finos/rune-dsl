@@ -109,7 +109,19 @@ class ConditionGenerator {
 					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 						try {
 							«ComparisonResult» «defaultClassExecuteResultId» = «expressionHandler.toComparisonResult(rule.expression, defaultClassExecuteScope)»;
-							return «defaultClassExecuteResultId».get() == null ? ComparisonResult.success() : «defaultClassExecuteResultId»;
+							if («defaultClassExecuteResultId».get()) {
+                                return ComparisonResult.success();
+                            }
+
+                            String failureMessage = «ComparisonResult».failure();
+                            if (failureMessage == null) {
+                                failureMessage = "Condition " + NAME + " failed.";
+                            }
+                            else{
+                               String temp = "Condition " + NAME + " failed. " + failureMessage;
+                               failureMessage = temp;
+                            }
+                            return «ComparisonResult».failure(failureMessage);
 						}
 						catch («Exception» «defaultClassExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExceptionId».getMessage());
