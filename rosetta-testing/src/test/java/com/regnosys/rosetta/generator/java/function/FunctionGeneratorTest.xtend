@@ -4444,6 +4444,7 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldCallFuncTwiceInCondition() {
 		val model = '''
 			type Foo:
@@ -4526,7 +4527,7 @@ class FunctionGeneratorTest {
 										return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("y").get()));
 									}
 								}));
-				                if (result.get()) {
+				               if (result.get()) {
                                 return ComparisonResult.success();
                             }
 

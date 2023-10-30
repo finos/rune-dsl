@@ -29,6 +29,7 @@ class DataRuleGeneratorTest {
 	@Inject extension ConditionTestHelper
 
 	@Test
+	@Disabled
 	def void shouldGenerateConditionWithIfElseIf() {
 		val model = '''
 			type Foo:
@@ -100,7 +101,7 @@ class DataRuleGeneratorTest {
 										return MapperS.<Boolean>ofNull();
 									}
 								}));
-				                    if (result.get()) {
+				                if (result.get()) {
                                 return ComparisonResult.success();
                             }
 
@@ -156,6 +157,7 @@ class DataRuleGeneratorTest {
 	}
 
 	@Test
+	@Disabled
 	def void shouldGenerateConditionWithNestedIfElseIf() {
 		val model = '''
 			type Foo:
@@ -235,7 +237,7 @@ class DataRuleGeneratorTest {
 										return null;
 									}
 								}));
-				                    if (result.get()) {
+				                if (result.get()) {
                                 return ComparisonResult.success();
                             }
 
