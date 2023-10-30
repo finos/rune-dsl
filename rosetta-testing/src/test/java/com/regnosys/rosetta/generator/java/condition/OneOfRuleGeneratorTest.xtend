@@ -64,7 +64,7 @@ class OneOfRuleGeneratorTest {
 		val result = doValidate(TEST_PATH, classes.createConditionInstance('FooOneOf'), foo.toBuilder)
 		
 		assertFalse(result.success)
-		assertThat(result.failureReason.orElse(''), is("One and only one field must be set of 'attr1', 'attr2'. No fields are set."))
+		assertThat(result.failureReason.orElse(''), is("FooOneOf:- One and only one field must be set of 'attr1', 'attr2'. No fields are set."))
 	}
 	
 	@Test
@@ -74,7 +74,7 @@ class OneOfRuleGeneratorTest {
 		val result = doValidate(TEST_PATH, classes.createConditionInstance('FooOneOf'), foo.toBuilder)
 		
 		assertFalse(result.success)
-		assertThat(result.failureReason.orElse(''), is("One and only one field must be set of 'attr1', 'attr2'. Set fields are 'attr1', 'attr2'."))
+		assertThat(result.failureReason.orElse(''), is("FooOneOf:- One and only one field must be set of 'attr1', 'attr2'. Set fields are 'attr1', 'attr2'."))
 	}
 	
 	private def getInstance(String className, Map<String, Object> itemsToSet) {
