@@ -4526,7 +4526,18 @@ class FunctionGeneratorTest {
 										return MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), MapperS.of("y").get()));
 									}
 								}));
-								return result.get() == null ? ComparisonResult.success() : result;
+				                if (result.get()) {
+                                    return ComparisonResult.success();
+                                }
+
+                                String failureMessage = result.getError();
+                                if (failureMessage == null) {
+                                    failureMessage = "Condition " + NAME + " failed.";
+                                }
+                                else{
+                                    failureMessage  = NAME + ":- " + result.getError();
+                                }
+                                return ComparisonResult.failure(failureMessage);
 							}
 							catch (Exception ex) {
 								return ComparisonResult.failure(ex.getMessage());
