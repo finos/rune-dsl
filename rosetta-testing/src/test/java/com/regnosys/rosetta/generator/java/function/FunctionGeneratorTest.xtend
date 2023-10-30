@@ -4527,17 +4527,17 @@ class FunctionGeneratorTest {
 									}
 								}));
 				                if (result.get()) {
-                                    return ComparisonResult.success();
-                                }
+                                return ComparisonResult.success();
+                            }
 
-                                String failureMessage = result.getError();
-                                if (failureMessage == null) {
-                                    failureMessage = "Condition " + NAME + " failed.";
-                                }
-                                else{
-                                    failureMessage  = NAME + ":- " + result.getError();
-                                }
-                                return ComparisonResult.failure(failureMessage);
+                            String failureMessage = result.getError();
+                            if (failureMessage == null) {
+                                failureMessage = "Condition " + NAME + " failed.";
+                            }
+                            else{
+                                failureMessage  = NAME + ":- " + result.getError();
+                            }
+                            return ComparisonResult.failure(failureMessage);
 							}
 							catch (Exception ex) {
 								return ComparisonResult.failure(ex.getMessage());
