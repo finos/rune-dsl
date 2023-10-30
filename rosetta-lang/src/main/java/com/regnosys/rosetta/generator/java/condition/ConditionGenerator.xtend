@@ -113,15 +113,14 @@ class ConditionGenerator {
                                 return ComparisonResult.success();
                             }
 
-                            String failureMessage = «ComparisonResult».failure();
-                            if (failureMessage == null) {
-                                failureMessage = "Condition " + NAME + " failed.";
+                            String «defaultClassFailureMessageId» = «defaultClassExecuteResultId».getError();
+                            if («defaultClassFailureMessageId» == null) {
+                                «defaultClassFailureMessageId» = "Condition " + NAME + " failed.";
                             }
                             else{
-                               String temp = "Condition " + NAME + " failed. " + failureMessage;
-                               failureMessage = temp;
+                                «defaultClassFailureMessageId»  = NAME + " :- failed. " + «defaultClassExecuteResultId».getError();
                             }
-                            return «ComparisonResult».failure(failureMessage);
+                            return «ComparisonResult».failure(«defaultClassFailureMessageId»);
 						}
 						catch («Exception» «defaultClassExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExceptionId».getMessage());
