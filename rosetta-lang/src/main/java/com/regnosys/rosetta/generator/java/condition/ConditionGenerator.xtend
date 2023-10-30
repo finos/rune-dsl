@@ -118,7 +118,7 @@ class ConditionGenerator {
                                 «defaultClassFailureMessageId» = "Condition " + NAME + " failed.";
                             }
                             else{
-                                «defaultClassFailureMessageId»  = NAME + " :- failed. " + «defaultClassExecuteResultId».getError();
+                                «defaultClassFailureMessageId»  = NAME + ":- " + «defaultClassExecuteResultId».getError();
                             }
                             return «ComparisonResult».failure(«defaultClassFailureMessageId»);
 						}

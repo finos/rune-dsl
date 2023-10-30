@@ -46,7 +46,7 @@ class ChoiceRuleGeneratorTest {
 		assertFalse(validationResult.isSuccess)
 
 		val failureReason = validationResult.failureReason
-		assertEquals('One and only one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
+		assertEquals('TestRequiredChoice:- One and only one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
 	}
 	
 	@Test
@@ -77,7 +77,7 @@ class ChoiceRuleGeneratorTest {
 		assertFalse(validationResult.isSuccess)
 
 		val failureReason = validationResult.failureReason
-		assertEquals('Zero or one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
+		assertEquals('TestOptionalChoice:- Zero or one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
 	}
 	
 	private def Map<String, Class<?>> createTestClassAndRule() {
