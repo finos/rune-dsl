@@ -236,7 +236,7 @@ class ModelMetaGeneratorTest {
 		assertThat(validator.validate(null, invalidFoo2).success, is(true))
 		val res2 = typeFormatValidator.validate(null, invalidFoo2)
 		assertThat(res2.success, is(false))
-		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Field 'f' must have a value with maximum length of 5 characters but value 'aaaaaa' is length of 6 characters. - Field 'f' must have a value with maximum length of 5 characters but value 'ccccccc' is length of 7 characters.",
+		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Field 'f' must have a value with maximum length of 5 characters but value 'aaaaaa' has length of 6 characters. - Field 'f' must have a value with maximum length of 5 characters but value 'ccccccc' has length of 7 characters.",
 			res2.failureReason.get
 		)
 		assertThat(res2.validationType, is(ValidationType.TYPE_FORMAT))
@@ -264,7 +264,7 @@ class ModelMetaGeneratorTest {
 		))
 		val resA1 = aTypeFormatValidator.validate(null, invalidA1)
 		assertThat(resA1.success, is(false))
-        assertEquals("Field 'a' must have a value with minimum length of 3 characters but value 'AZ' is length of 2 characters. - Field 'a' must have a value with minimum length of 3 characters but value 'AA' is length of 2 characters. Field 'a' with value 'AA' does not match the pattern /A.*Z/.; Field 'b' must have a value with maximum length of 5 characters but value 'AAAAAA' is length of 6 characters.",
+        assertEquals("Field 'a' requires a value with minimum length of 3 characters but value 'AZ' has length of 2 characters. - Field 'a' requires a value with minimum length of 3 characters but value 'AA' has length of 2 characters. Field 'a' with value 'AA' does not match the pattern /A.*Z/.; Field 'b' must have a value with maximum length of 5 characters but value 'AAAAAA' has length of 6 characters.",
             resA1.failureReason.get
 		)
 		

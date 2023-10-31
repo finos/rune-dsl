@@ -284,13 +284,13 @@ public class ExpressionOperators {
 		}
 		List<String> failures = new ArrayList<>();
 		if (value.length() < minLength) {
-			failures.add("Field '" + msgPrefix + "' must have a value with minimum length of " + minLength + " characters but value '" + value + "' is length of " + value.length() + " characters.");
+			failures.add("Field '" + msgPrefix + "' requires a value with minimum length of " + minLength + " characters but value '" + value + "' has length of " + value.length() + " characters.");
 
 		}
 		if (maxLength.isPresent()) {
 			int m = maxLength.get();
 			if (value.length() > m) {
-				failures.add("Field '" + msgPrefix + "' must have a value with maximum length of " + m + " characters but value '" + value + "' is length of " + value.length() + " characters.");
+				failures.add("Field '" + msgPrefix + "' must have a value with maximum length of " + m + " characters but value '" + value + "' has length of " + value.length() + " characters.");
 			}
 		}
 		if (pattern.isPresent()) {
