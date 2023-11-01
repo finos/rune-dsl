@@ -46,11 +46,11 @@ public class ExpressionOperators {
 		if (o.resultCount()>0) {
 			return ComparisonResult.success();
 		}
-		String failuremessage = null;
-		if (o.getErrorPaths()!= null){
-			failuremessage = o.getErrorPaths() + " does not exist";
+		String failureMessage = null;
+		if (o.getErrorPaths()!= null && !o.getErrorPaths().isEmpty()){
+			failureMessage = o.getErrorPaths() + " does not exist";
 		}
-		return ComparisonResult.failure(failuremessage);
+		return ComparisonResult.failure(failureMessage);
 	}
 	
 	// singleExists
