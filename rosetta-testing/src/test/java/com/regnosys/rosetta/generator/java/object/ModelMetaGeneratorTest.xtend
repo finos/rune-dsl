@@ -220,7 +220,7 @@ class ModelMetaGeneratorTest {
 		))
 		val res1 = validator.validate(null, invalidFoo1)
 		assertThat(res1.success, is(false))
-		assertEquals("Maximum of 2 'a' are expected but found 3.; Minimum of 1 'b' is expected but found 0.; Minimum of 1 'c' is expected but found 0.",
+		assertEquals("Maximum of 2 'a' are expected but found 3.; 'b' is a required field but does not exist.; 'c' is a required field but does not exist.",
 			res1.failureReason.get
 		)
 		assertThat(res1.validationType, is(ValidationType.CARDINALITY))
@@ -236,7 +236,7 @@ class ModelMetaGeneratorTest {
 		assertThat(validator.validate(null, invalidFoo2).success, is(true))
 		val res2 = typeFormatValidator.validate(null, invalidFoo2)
 		assertThat(res2.success, is(false))
-		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Expected a maximum of 5 characters for 'f', but found 'aaaaaa' (6 characters). - Expected a maximum of 5 characters for 'f', but found 'ccccccc' (7 characters).",
+		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Field 'f' must have a value with maximum length of 5 characters but value 'aaaaaa' has length of 6 characters. - Field 'f' must have a value with maximum length of 5 characters but value 'ccccccc' has length of 7 characters.",
 			res2.failureReason.get
 		)
 		assertThat(res2.validationType, is(ValidationType.TYPE_FORMAT))
@@ -264,8 +264,8 @@ class ModelMetaGeneratorTest {
 		))
 		val resA1 = aTypeFormatValidator.validate(null, invalidA1)
 		assertThat(resA1.success, is(false))
-		assertEquals("Expected a minimum of 3 characters for 'a', but found 'AZ' (2 characters). - Expected a minimum of 3 characters for 'a', but found 'AA' (2 characters). 'AA' does not match the pattern /A.*Z/ of 'a'.; Expected a maximum of 5 characters for 'b', but found 'AAAAAA' (6 characters).",
-			resA1.failureReason.get
+        assertEquals("Field 'a' requires a value with minimum length of 3 characters but value 'AZ' has length of 2 characters. - Field 'a' requires a value with minimum length of 3 characters but value 'AA' has length of 2 characters. Field 'a' with value 'AA' does not match the pattern /A.*Z/.; Field 'b' must have a value with maximum length of 5 characters but value 'AAAAAA' has length of 6 characters.",
+            resA1.failureReason.get
 		)
 		
 		val bMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.BMeta').declaredConstructor.newInstance)
