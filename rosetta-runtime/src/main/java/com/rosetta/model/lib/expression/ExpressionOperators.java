@@ -46,7 +46,11 @@ public class ExpressionOperators {
 		if (o.resultCount()>0) {
 			return ComparisonResult.success();
 		}
-		return ComparisonResult.failure(o.getErrorPaths() + " does not exist");
+		String failureMessage = null;
+		if (o.getErrorPaths()!= null && !o.getErrorPaths().isEmpty() && !o.getErrorPaths().toString().contains("Null")){
+			failureMessage = o.getErrorPaths() + " does not exist";
+		}
+		return ComparisonResult.failure(failureMessage);
 	}
 	
 	// singleExists
@@ -259,8 +263,14 @@ public class ExpressionOperators {
 	
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		if (actual < min) {
-			return ComparisonResult
-					.failure("Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + ".");
+			if(actual == 0){
+				return ComparisonResult
+						.failure("'" + msgPrefix + "' is a required field but does not exist.");
+			}
+			else {
+				return ComparisonResult
+						.failure("Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + ".");
+			}
 		} else if (max > 0 && actual > max) {
 			return ComparisonResult
 					.failure("Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + ".");
@@ -274,19 +284,21 @@ public class ExpressionOperators {
 		}
 		List<String> failures = new ArrayList<>();
 		if (value.length() < minLength) {
-			failures.add("Expected a minimum of " + minLength + " characters for '" + msgPrefix + "', but found '" + value + "' (" + value.length() + " characters).");
+			failures.add("Field '" + msgPrefix + "' requires a value with minimum length of " + minLength + " characters but value '" + value + "' has length of " + value.length() + " characters.");
+
 		}
 		if (maxLength.isPresent()) {
 			int m = maxLength.get();
 			if (value.length() > m) {
-				failures.add("Expected a maximum of " + m + " characters for '" + msgPrefix + "', but found '" + value + "' (" + value.length() + " characters).");
+				failures.add("Field '" + msgPrefix + "' must have a value with maximum length of " + m + " characters but value '" + value + "' has length of " + value.length() + " characters.");
 			}
 		}
 		if (pattern.isPresent()) {
 			Pattern p = pattern.get();
 			Matcher match = p.matcher(value);
 			if (!match.matches()) {
-				failures.add("'" + value + "' does not match the pattern /" + p.toString() + "/ of '" + msgPrefix + "'.");
+				failures.add("Field '" + msgPrefix + "' with value '"+ value + "' does not match the pattern /" + p.toString() + "/.");
+
 			}
 		}
 		if (failures.isEmpty()) {
