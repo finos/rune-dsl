@@ -101,7 +101,7 @@ class ConditionGenerator {
 						
 						String «defaultClassFailureMessageId» = «defaultClassResultId».getError();
 						if («defaultClassFailureMessageId» == null || «defaultClassFailureMessageId».contains("Null") || «defaultClassFailureMessageId» == "") {
-							«defaultClassFailureMessageId» = "Condition " + NAME + " failed.";
+							«defaultClassFailureMessageId» = "Condition has failed.";
 						}
 						return «ValidationResult».failure(NAME, «ValidationType».DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
 					}
