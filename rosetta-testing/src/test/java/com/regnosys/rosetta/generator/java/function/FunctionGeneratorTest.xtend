@@ -4510,7 +4510,7 @@ class FunctionGeneratorTest {
 							}
 							
 							String failureMessage = result.getError();
-							if (failureMessage == null) {
+							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
 							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
