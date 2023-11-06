@@ -28,7 +28,7 @@
 		<!-- Dependency management -->
 		<xtext.version>2.27.0</xtext.version>
 		<commons-lang3.version>3.13.0</commons-lang3.version>
-		<commons-text.version>1.10.0</commons-text.version>
+		<commons-text.version>1.11.0</commons-text.version>
 		<xsemantics.version>1.22.0</xsemantics.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<org.eclipse.emf.ecore.xcore.lib.version>1.6.0</org.eclipse.emf.ecore.xcore.lib.version>
@@ -41,15 +41,15 @@
 		<jackson.version>2.15.3</jackson.version>
 
 		<!-- test -->
-		<junit.version>5.10.0</junit.version>
-		<mockito-core.version>5.6.0</mockito-core.version>
+		<junit.version>5.10.1</junit.version>
+		<mockito-core.version>5.7.0</mockito-core.version>
 
 		<!-- Plugin and plugin dependency management -->
 		<org.eclipse.emf.ecore.xcore.version>1.23.0</org.eclipse.emf.ecore.xcore.version>
 		<maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
 		<maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
 		<exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
-		<maven-clean-plugin.version>3.3.1</maven-clean-plugin.version>
+		<maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
 		<build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
@@ -59,8 +59,8 @@
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<addjars-maven-plugin.version>1.0.5</addjars-maven-plugin.version>
 		<appassembler-maven-plugin.version>2.1.0</appassembler-maven-plugin.version>
-		<frontend-maven-plugin.version>1.14.0</frontend-maven-plugin.version>
-		<node.version>20.7.0</node.version>
+		<frontend-maven-plugin.version>1.14.2</frontend-maven-plugin.version>
+		<node.version>20.9.0</node.version>
 	</properties>
 
 	<modules>
