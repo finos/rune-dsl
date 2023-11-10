@@ -8,9 +8,17 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
+import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaType;
 
-public abstract class JavaExpression extends JavaStatementBuilder implements JavaLambdaBody {
+public abstract class JavaExpression extends JavaStatementBuilder implements JavaLambdaBody {	
+	public static final JavaExpression NULL = new JavaExpression(JavaPrimitiveType.VOID.toReferenceType()) {	
+		@Override
+		public void appendTo(TargetStringConcatenation target) {
+			target.append("null");
+		}
+	};
+	
 	private final JavaType type;
 	
 	public JavaExpression(JavaType type) {

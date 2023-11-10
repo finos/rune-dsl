@@ -4,16 +4,11 @@ import com.rosetta.util.types.JavaType
 import java.math.BigInteger
 import java.math.BigDecimal
 import com.regnosys.rosetta.generator.java.JavaScope
-import com.rosetta.util.types.JavaClass
 import java.util.List
-import com.rosetta.util.types.JavaParameterizedType
-import com.rosetta.util.types.JavaWildcardTypeArgument
-import com.rosetta.util.types.JavaReferenceType
 import java.util.Optional
 import java.util.Collections
 import java.util.Arrays
 import java.util.stream.Collectors
-import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.expression.ComparisonResult
@@ -21,9 +16,11 @@ import com.rosetta.model.lib.mapper.MapperListOfLists
 import java.util.function.Function
 import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.statement.JavaExpression
-import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.model.lib.mapper.MapperUtils
 import com.regnosys.rosetta.generator.java.statement.JavaVariable
+import javax.inject.Inject
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.util.types.JavaPrimitiveType
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -50,9 +47,11 @@ import com.regnosys.rosetta.generator.java.statement.JavaVariable
  *   - `MapperListOfLists`
  *   - `List`
  * - an "item type" refers to the type of the items of a wrapper type, or to the type itself if it does not refer to a wrapper type.
- * For a precise definition, see the methods `TypeCoercionService#isWrapper` and `TypeCoercionService#getItemType`.
+ * For a precise definition, see the methods `JavaTypeUtil#isWrapper` and `JavaTypeUtil#getItemType`.
  */
 class TypeCoercionService {
+	@Inject extension JavaTypeUtil
+	
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		if (actual.itemType.isVoid) {
@@ -135,6 +134,13 @@ class TypeCoercionService {
 		// - unwrap the given expression.
 		// - perform item to item conversion.
 		
+		// Special case: mapper to primitive boolean
+		if (actual.extendsMapper && expected == JavaPrimitiveType.BOOLEAN) {
+			return expr.mapExpression[
+				JavaExpression.from('''«it».getOrDefault(false)''', expected)
+			]
+		}
+		
 		val unwrappedExpr = expr.mapExpression(getUnwrapConversion(actual))
 		
 		itemToItem(unwrappedExpr, expected, scope)
@@ -173,7 +179,10 @@ class TypeCoercionService {
 		
 		if (actual.extendsNumber && expected.extendsNumber) {
 			return Optional.of([getNumberConversionExpression(it, actual, expected)])
+		} else if (actual.isBoolean && expected == JavaPrimitiveType.BOOLEAN) {
+			return Optional.of([it])
 		}
+		
 		
 		return Optional.empty
 	}
@@ -274,20 +283,19 @@ class TypeCoercionService {
 	}
 	
 	private def JavaExpression empty(JavaType expected) {
-		JavaExpression.from(
-			if (expected.isList) {
-				'''«Collections».emptyList()'''
-			} else if (expected.isMapperS || expected.isMapper) {
-				'''«MapperS».ofNull()'''
-			} else if (expected.isMapperC) {
-				'''«MapperC».ofNull()'''
-			} else if (expected.isComparisonResult) {
-				'''«ComparisonResult».successEmptyOperand("")'''
-			} else {
-				'''null'''
-			},
-			expected
-		)
+		if (expected.isList) {
+			JavaExpression.from('''«Collections».emptyList()''', expected)
+		} else if (expected.isMapperS || expected.isMapper) {
+			JavaExpression.from('''«MapperS».ofNull()''', expected)
+		} else if (expected.isMapperC) {
+			JavaExpression.from('''«MapperC».ofNull()''', expected)
+		} else if (expected.isComparisonResult) {
+			JavaExpression.from('''«ComparisonResult».successEmptyOperand("")''', expected)
+		} else if (expected == JavaPrimitiveType.BOOLEAN) {
+			JavaExpression.from('''false''', expected)
+		} else {
+			JavaExpression.NULL
+		}
 	}
 	
 	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType actual, JavaType expected) {
@@ -360,7 +368,7 @@ class TypeCoercionService {
 		JavaExpression.from('''«MapperC».of(«Arrays».asList(«expression»))''', MapperC.wrap(expression.expressionType))
 	}
 	private def JavaExpression getItemToComparisonResultConversionExpression(JavaExpression expression) {
-		JavaExpression.from('''«ComparisonResult».of(«MapperS».of(«expression»))''', JavaType.from(ComparisonResult))
+		JavaExpression.from('''«ComparisonResult».of(«MapperS».of(«expression»))''', COMPARISON_RESULT)
 	}
 	private def JavaExpression getListToItemConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«expression».get(0)''', expression.expressionType.itemType)
@@ -412,95 +420,6 @@ class TypeCoercionService {
 			MapperListOfLists.wrap(resultMapperC.expressionType.itemType)
 		
 		)
-	}
-	
-	
-	private def boolean extendsNumber(JavaType t) {
-		if (t instanceof JavaClass) {
-			return JavaClass.from(Number).isAssignableFrom(t)
-		}
-		return false
-	}
-	private def boolean isInteger(JavaType t) {
-		t == JavaType.from(Integer)
-	}
-	private def boolean isLong(JavaType t) {
-		t == JavaType.from(Long)
-	}
-	private def boolean isBigInteger(JavaType t) {
-		t == JavaType.from(BigInteger)
-	}
-	private def boolean isBigDecimal(JavaType t) {
-		t == JavaType.from(BigDecimal)
-	}
-	
-	private def boolean isVoid(JavaType t) {
-		t == JavaType.from(Void)
-	}
-	
-	private def boolean isList(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return t.baseType == JavaType.from(List)
-		}
-		return false
-	}
-	
-	private def boolean extendsMapper(JavaType t) {
-		if (JavaClass.from(Mapper).isAssignableFrom(t)) {
-			return true
-		} else if (t instanceof JavaParameterizedType) {
-			return JavaClass.from(Mapper).isAssignableFrom(t.baseType)
-		}
-		return false
-	}
-	private def boolean isMapper(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return t.baseType == JavaClass.from(Mapper)
-		}
-		return false
-	}
-	private def boolean isMapperS(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return t.baseType == JavaClass.from(MapperS)
-		}
-		return false
-	}
-	private def boolean isMapperC(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return t.baseType == JavaClass.from(MapperC)
-		}
-		return false
-	}
-	private def boolean isComparisonResult(JavaType t) {
-		t == JavaClass.from(ComparisonResult)
-	}
-	private def boolean isMapperListOfLists(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return t.baseType == JavaClass.from(MapperListOfLists)
-		}
-		return false
-	}
-	
-	private def boolean isWrapper(JavaType t) {
-		t.isList || t.extendsMapper || t.isMapperListOfLists
-	}
-	private def JavaType getItemType(JavaType t) {
-		if (t.isWrapper) {
-			if (t.isComparisonResult) {
-				return JavaPrimitiveType.BOOLEAN.toReferenceType
-			} else {
-				val arg = (t as JavaParameterizedType).arguments.head
-				if (arg instanceof JavaWildcardTypeArgument) {
-					return arg.bound.orElseThrow
-				}
-				return arg as JavaReferenceType
-			}
-		}
-		return t
-	}
-	
-	private def JavaType wrap(Class<?> wrapperType, JavaType itemType) {
-		new JavaParameterizedType(JavaClass.from(wrapperType), itemType as JavaReferenceType)
 	}
 	
 	private def unexpectedCaseException(JavaType actual, JavaType expected) {

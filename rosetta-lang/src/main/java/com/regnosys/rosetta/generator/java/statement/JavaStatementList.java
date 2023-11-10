@@ -23,9 +23,11 @@ public class JavaStatementList extends ArrayList<JavaStatement> implements Targe
 
 	@Override
 	public void appendTo(TargetStringConcatenation target) {
-		forEach(stat -> {
-			target.append(stat);
-			target.newLine();
-		});
+		for (int i = 0; i < size(); i++) {
+			target.append(get(i));
+			if (i < size() - 1) {
+				target.newLine();
+			}
+		}
 	}
 }

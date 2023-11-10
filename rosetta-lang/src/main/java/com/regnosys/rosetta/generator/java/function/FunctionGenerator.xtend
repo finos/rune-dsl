@@ -40,7 +40,6 @@ import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaPrimitiveType
@@ -65,9 +64,9 @@ import com.rosetta.util.types.JavaWildcardTypeArgument
 import com.rosetta.util.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.statement.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
-import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.mapper.MapperC
 import com.regnosys.rosetta.generator.java.statement.JavaStatement
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class FunctionGenerator {
 
@@ -83,6 +82,7 @@ class FunctionGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject RObjectFactory rTypeBuilderFactory
 	@Inject ImplicitVariableUtil implicitVariableUtil
+	@Inject extension JavaTypeUtil
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -272,8 +272,11 @@ class FunctionGenerator {
 					
 						protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF»);
 				«ELSE»
+					«val multi = cardinality.isMulti(alias.expression)»
+					«val itemReturnType = toJavaReferenceType(typeProvider.getRType(alias.expression))»
+					«val returnType = new JavaParameterizedType(multi ? MAPPER_C : MAPPER_S, needsBuilder(alias) ? JavaWildcardTypeArgument.extendsBound(itemReturnType) : itemReturnType)»
 					
-						protected abstract «IF needsBuilder(alias)»«Mapper»<? extends «toJavaReferenceType(typeProvider.getRType(alias.expression))»>«ELSE»«Mapper»<«toJavaReferenceType(typeProvider.getRType(alias.expression))»>«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)»);
+						protected abstract «returnType» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)»);
 				«ENDIF»
 			«ENDFOR»
 
@@ -300,14 +303,15 @@ class FunctionGenerator {
 							«val itemReturnType = shortcutJavaType(alias)»
 							«val returnType = multi ? new JavaParameterizedType(JavaClass.from(List), itemReturnType) : itemReturnType»
 							«val body = expressionGenerator.javaCode(alias.expression, alias.shortcutExpressionJavaType, aliasScope)
-									.mapExpression[JavaExpression.from('''toBuilder(«it»)''', returnType)]
+									.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', returnType)]
 							»
 							
 							@Override
 							protected «returnType» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF») «body.completeAsReturn.toBlock»
 						«ELSE»
+							«val multi = cardinality.isMulti(alias.expression)»
 							«val itemReturnType = toJavaReferenceType(typeProvider.getRType(alias.expression))»
-							«val returnType = new JavaParameterizedType(JavaClass.from(Mapper), needsBuilder(alias) ? JavaWildcardTypeArgument.extendsBound(itemReturnType) : itemReturnType)»
+							«val returnType = new JavaParameterizedType(multi ? MAPPER_C : MAPPER_S, needsBuilder(alias) ? JavaWildcardTypeArgument.extendsBound(itemReturnType) : itemReturnType)»
 							
 							@Override
 							protected «returnType» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)») «expressionGenerator.javaCode(alias.expression, returnType, aliasScope).completeAsReturn.toBlock»
@@ -392,7 +396,7 @@ class FunctionGenerator {
 			val expressionType = attribute.attributeToJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
 			if (needsBuilder(op.pathHead)) {
-				javaExpr = javaExpr.mapExpression[JavaExpression.from('''toBuilder(«it»)''', attribute.toBuilderType)]
+				javaExpr = javaExpr.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', attribute.toBuilderType)]
 			}
 			switch(op.ROperationType) {
 				case ADD: {
@@ -423,10 +427,10 @@ class FunctionGenerator {
 						'''
 							«op.assignTarget(function, outs, scope)»
 								«FOR seg : op.pathTail.indexed»
-									«IF seg.key < op.pathTail.size - 1».getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
-									«ELSE».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«ENDIF»
-								«ENDFOR»
-						''',
+									«IF seg.key < op.pathTail.size - 1»
+									.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
+									«ELSE»
+									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«ENDIF»«ENDFOR»''',
 						JavaPrimitiveType.VOID
 					)
 				].completeAsExpressionStatement
@@ -543,7 +547,7 @@ class FunctionGenerator {
 		GeneratedIdentifier conditionValidator, JavaScope scope) {
 		'''
 			«conditionValidator».validate(() -> 
-				«expressionGenerator.javaCode(condition.expression, JavaType.from(ComparisonResult), scope.lambdaScope).toLambdaBody», 
+				«expressionGenerator.javaCode(condition.expression, COMPARISON_RESULT, scope.lambdaScope).toLambdaBody», 
 					"«condition.definition»");
 		'''
 	}
@@ -587,8 +591,8 @@ class FunctionGenerator {
 	}
 
 	private def JavaReferenceType shortcutJavaType(RShortcut feature) {
-		val javaType = feature.shortcutJavaType
-		if (needsBuilder)
+		val javaType = feature.shortcutExpressionJavaType
+		if (feature.needsBuilder)
 			(javaType as JavaClass).toBuilderType
 		else
 			javaType
@@ -606,12 +610,5 @@ class FunctionGenerator {
 		} else {
 			return javaType
 		}
-	}
-	
-	private def JavaType wrap(Class<?> wrapperType, JavaReferenceType itemType) {
-		new JavaParameterizedType(JavaClass.from(wrapperType), itemType)
-	}
-	private def JavaType wrap(Class<?> wrapperType, RosettaExpression item) {
-		wrapperType.wrap(typeProvider.getRType(item).toJavaReferenceType)
 	}
 }

@@ -18,7 +18,8 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 		target.append('{');
 		target.newLine();
 		target.append("\t");
-		target.append(statements);
+		target.append(statements, "\t");
+		target.newLine();
 		target.append('}');
 	}
 	

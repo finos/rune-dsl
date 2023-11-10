@@ -11,6 +11,9 @@ public abstract class JavaStatementBuilder {
 	public abstract JavaType getExpressionType();
 	
 	public abstract JavaStatementBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper);
+	public JavaStatementBuilder mapExpressionIfNotNull(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
+		return mapExpression(expr -> expr == JavaExpression.NULL ? JavaExpression.NULL : mapper.apply(expr));
+	}
 	
 	public abstract JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope);
 	
