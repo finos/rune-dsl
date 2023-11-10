@@ -15,6 +15,7 @@ public class RShortcut implements RAssignedRoot {
 		this.expression = expression;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}

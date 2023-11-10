@@ -18,6 +18,7 @@ public class RAttribute implements RAssignedRoot {
 		this.isMulti = isMulti;
 	}
 	
+	@Override
 	public String getName() {
 		return name;
 	}

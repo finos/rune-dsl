@@ -5,6 +5,30 @@ import java.util.Objects;
 import com.rosetta.util.DottedPath;
 
 public class JavaInterface extends JavaClass {
+	protected static class RunningJavaInterface extends JavaInterface {
+		private final Class<?> runningClass;
+
+		public RunningJavaInterface(Class<?> runningClass) {
+			super(DottedPath.splitOnDots(runningClass.getCanonicalName()).parent(), runningClass.getSimpleName());
+			this.runningClass = runningClass;
+		}
+		
+		public Class<?> getRunningClass() {
+			return runningClass;
+		}
+		
+		@Override
+		public boolean isAssignableFrom(JavaType other) {
+			if (other instanceof RunningJavaInterface) {
+				return runningClass.isAssignableFrom(((RunningJavaInterface)other).runningClass);
+			}
+			if (other instanceof RunningJavaClass) {
+				return runningClass.isAssignableFrom(((RunningJavaClass)other).getRunningClass());
+			}
+			return this.equals(other);
+		}
+	}
+	
 	public JavaInterface(DottedPath packageName, String simpleName) {
 		super(packageName, simpleName);
 	}
@@ -13,9 +37,7 @@ public class JavaInterface extends JavaClass {
 		if (t.isArray() || t.isPrimitive() || !t.isInterface() || t.getSimpleName().equals("")) {
 			return null;
 		}
-		DottedPath packageName = DottedPath.splitOnDots(t.getCanonicalName()).parent();
-		String simpleName = t.getSimpleName();
-		return new JavaInterface(packageName, simpleName);
+		return new RunningJavaInterface(t);
 	}
 	
 	@Override

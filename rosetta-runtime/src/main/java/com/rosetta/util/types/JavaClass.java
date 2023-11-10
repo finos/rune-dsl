@@ -6,6 +6,27 @@ import com.rosetta.util.DottedPath;
 
 
 public class JavaClass implements JavaReferenceType {
+	protected static class RunningJavaClass extends JavaClass {
+		private final Class<?> runningClass;
+
+		public RunningJavaClass(Class<?> runningClass) {
+			super(DottedPath.splitOnDots(runningClass.getCanonicalName()).parent(), runningClass.getSimpleName());
+			this.runningClass = runningClass;
+		}
+		
+		public Class<?> getRunningClass() {
+			return runningClass;
+		}
+		
+		@Override
+		public boolean isAssignableFrom(JavaType other) {
+			if (other instanceof RunningJavaClass) {
+				return getRunningClass().isAssignableFrom(((RunningJavaClass)other).getRunningClass());
+			}
+			return this.equals(other);
+		}
+	}
+	
 	private final DottedPath packageName;
 	private final String simpleName;
 	
@@ -23,9 +44,7 @@ public class JavaClass implements JavaReferenceType {
 		if (t.isInterface()) {
 			return JavaInterface.from(t);
 		}
-		DottedPath packageName = DottedPath.splitOnDots(t.getCanonicalName()).parent();
-		String simpleName = t.getSimpleName();
-		return new JavaClass(packageName, simpleName);
+		return new RunningJavaClass(t);
 	}
 
 	@Override
@@ -68,5 +87,9 @@ public class JavaClass implements JavaReferenceType {
 	@Override
 	public void accept(JavaTypeVisitor visitor) {
 		visitor.visitType(this);
+	}
+
+	public boolean isAssignableFrom(JavaType other) {
+		return this.equals(other);
 	}
 }

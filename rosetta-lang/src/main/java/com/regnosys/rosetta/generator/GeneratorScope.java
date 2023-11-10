@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
@@ -178,6 +179,37 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	}
 	
 	/**
+	 * Remove an identifier from this scope. Also removes any key synonyms to this identifier.
+	 * Returns the set of keys to the given removed identifier.
+	 * 
+	 * @throws IllegalStateException if this scope is closed.
+	 */
+	public Set<Object> removeIdentifier(GeneratedIdentifier identifier) {
+		if (isClosed) {
+			throw new IllegalStateException("Cannot delete an identifier in a closed scope. (" + identifier + ")\n" + this);
+		}
+		Set<Object> keys = this.identifiers.entrySet().stream()
+			.filter(e -> e.getValue().equals(identifier))
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toSet());
+		keys.forEach(k -> {
+			this.identifiers.remove(k);
+			removeKeySynonyms(k);
+		});
+		return keys;
+	}
+	private void removeKeySynonyms(Object key) {
+		Set<Object> synonyms = this.keySynonyms.entrySet().stream()
+			.filter(e -> e.getValue().equals(key))
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toSet());
+		synonyms.forEach(s -> {
+			this.keySynonyms.remove(s);
+			removeKeySynonyms(s);
+		});
+	}
+	
+	/**
 	 * Create an synonym between an object and an already existing identifiable object.
 	 * 
 	 * @throws IllegalStateException if this scope is closed.
@@ -196,6 +228,22 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		}
 		
 		this.keySynonyms.put(key, keyWithIdentifier);
+	}
+	/**
+	 * Create another key for a given identifier.
+	 * 
+	 * @throws IllegalStateException if this scope is closed.
+	 * @throws IllegalStateException if this scope already contains an identifier for `key`.
+	 */
+	public void createSynonym(Object key, GeneratedIdentifier identifier) {
+		if (isClosed) {
+			throw new IllegalStateException("Cannot create a new synonym in a closed scope. (" + normalizeKey(key) + " -> " + normalizeKey(identifier) + ")\n" + this);
+		}
+		if (this.getIdentifier(key).isPresent()) {
+			throw new IllegalStateException("There is already a name defined for key `" + normalizeKey(key) + "`.\n" + this);
+		}
+		
+		this.identifiers.put(key, identifier);
 	}
 	
 	/**

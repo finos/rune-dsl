@@ -262,17 +262,6 @@ from {
 	}
 }
 
-rule SEnum // SA-Refl, SA-Enum
-	G |- REnumType t1 <: REnumType t2
-from {
-	{
-		t1 == t2
-	} or
-	{
-		ancestorEnums(t1.enumeration).contains(t2.enumeration)
-	}
-}
-
 rule SNumber
 	G |- RNumberType t1 <: RNumberType t2
 from {

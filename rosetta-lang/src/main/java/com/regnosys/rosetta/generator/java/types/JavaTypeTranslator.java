@@ -216,6 +216,16 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr)), false, namespace);
 	}
 	
+	public JavaReferenceType operationToJavaType(ROperation op) {
+		RAttribute attr;
+		if (op.getPathTail().isEmpty()) {
+			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+		} else {
+			List<RAttribute> segments = op.getPathTail();
+			attr = segments.get(segments.size() - 1);
+		}
+		return attributeToJavaType(attr);
+	}
 	public JavaClass operationToReferenceWithMetaType(ROperation op) {
 		RAttribute attr;
 		if (op.getPathTail().isEmpty()) {

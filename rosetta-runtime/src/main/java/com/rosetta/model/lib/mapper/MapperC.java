@@ -4,6 +4,7 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -193,6 +194,30 @@ public class MapperC<T> implements MapperBuilder<T> {
 				.map(MapperItem::getMappedObject)
 				.map(Integer.class::cast)
 				.reduce(0, Integer::sum));
+	}
+	
+	/**
+	 * Sum list of longs.
+	 * 
+	 * @return total of summed longs.
+	 */
+	public MapperS<Long> sumLong() {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(Long.class::cast)
+				.reduce(0l, Long::sum));
+	}
+	
+	/**
+	 * Sum list of numbers.
+	 * 
+	 * @return total of summed numbers.
+	 */
+	public MapperS<BigInteger> sumBigInteger() {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(BigInteger.class::cast)
+				.reduce(BigInteger.ZERO, BigInteger::add));
 	}
 	
 	/**
