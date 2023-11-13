@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.ide.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.xtext.ide.server.concurrent.AbstractRequest;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
@@ -37,7 +36,7 @@ public class RosettaRequestManager extends RequestManager {
 	 * The code that uses this list fixes a memory leak in the RequestManager and should be contributed
 	 * back to the Xtext project then removed from here
 	 */
-	@VisibleForTesting
+	/* @ProtectedForTesting */
 	protected List<AbstractRequest<?>> removableRequestList = new CopyOnWriteArrayList<>();
 
 	@Inject
