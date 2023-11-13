@@ -179,37 +179,6 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	}
 	
 	/**
-	 * Remove an identifier from this scope. Also removes any key synonyms to this identifier.
-	 * Returns the set of keys to the given removed identifier.
-	 * 
-	 * @throws IllegalStateException if this scope is closed.
-	 */
-	public Set<Object> removeIdentifier(GeneratedIdentifier identifier) {
-		if (isClosed) {
-			throw new IllegalStateException("Cannot delete an identifier in a closed scope. (" + identifier + ")\n" + this);
-		}
-		Set<Object> keys = this.identifiers.entrySet().stream()
-			.filter(e -> e.getValue().equals(identifier))
-			.map(Map.Entry::getKey)
-			.collect(Collectors.toSet());
-		keys.forEach(k -> {
-			this.identifiers.remove(k);
-			removeKeySynonyms(k);
-		});
-		return keys;
-	}
-	private void removeKeySynonyms(Object key) {
-		Set<Object> synonyms = this.keySynonyms.entrySet().stream()
-			.filter(e -> e.getValue().equals(key))
-			.map(Map.Entry::getKey)
-			.collect(Collectors.toSet());
-		synonyms.forEach(s -> {
-			this.keySynonyms.remove(s);
-			removeKeySynonyms(s);
-		});
-	}
-	
-	/**
 	 * Create an synonym between an object and an already existing identifiable object.
 	 * 
 	 * @throws IllegalStateException if this scope is closed.
@@ -299,7 +268,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	}
 	private LinkedListMultimap<String, GeneratedIdentifier> localIdentifiersByDesiredName() {
 		LinkedListMultimap<String, GeneratedIdentifier> result = LinkedListMultimap.create();
-		new HashSet<>(identifiers.values()).forEach(id -> result.put(id.getDesiredName(), id));
+		identifiers.values().stream().distinct().forEach(id -> result.put(id.getDesiredName(), id));
 		return result;
 	}
 	protected Set<String> getTakenNames() {

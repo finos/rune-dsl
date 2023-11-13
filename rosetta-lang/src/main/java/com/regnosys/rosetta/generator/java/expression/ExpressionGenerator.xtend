@@ -160,7 +160,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		'''«importWildcard(method(ExpressionOperators, methodName))»'''
 	}
 	private def JavaStatementBuilder applyRuntimeMethod(JavaStatementBuilder expr, String methodName, JavaType resultType) {
-		return expr.mapExpression[JavaExpression.from('''«importWildcard(method(ExpressionOperators, methodName))»(«it»)''', resultType)]
+		expr.mapExpression[JavaExpression.from('''«runtimeMethod(methodName)»(«it»)''', resultType)]
 	}	
 
 	private def JavaStatementBuilder callableWithArgsCall(RosettaCallableWithArgs callable, List<RosettaExpression> arguments, JavaScope scope) {
