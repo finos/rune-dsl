@@ -24,28 +24,19 @@ class RosettaRequestManagerTest {
 
     @Test
     public void testReadRequestsAreClearedFromRequestList() throws ExecutionException, InterruptedException, TimeoutException {
-        CompletableFuture<Void> voidCompletableFuture = new CompletableFuture<>();
 
-        rosettaRequestManager.runRead((cancelIndicator) -> {
-            voidCompletableFuture.complete(null);
-            return null;
-        });
+        CompletableFuture<Object> completableFuture = rosettaRequestManager.runRead((cancelIndicator) -> null);
 
-        voidCompletableFuture.get(300, TimeUnit.MILLISECONDS);
+       completableFuture.get(300, TimeUnit.MILLISECONDS);
 
         assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
     }
 
     @Test
     public void testWriteRequestsAreClearedFromRequestList() throws ExecutionException, InterruptedException, TimeoutException {
-        CompletableFuture<Void> voidCompletableFuture = new CompletableFuture<>();
+        CompletableFuture<Object> completableFuture = rosettaRequestManager.runWrite(() -> null, (a, b) -> null);
 
-        rosettaRequestManager.runWrite(() -> null, (a, b) -> {
-            voidCompletableFuture.complete(null);
-            return null;
-        });
-
-        voidCompletableFuture.get(300, TimeUnit.MILLISECONDS);
+        completableFuture.get(300, TimeUnit.MILLISECONDS);
 
         assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
     }
