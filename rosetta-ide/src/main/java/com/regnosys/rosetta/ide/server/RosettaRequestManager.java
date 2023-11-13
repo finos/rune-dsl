@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.ide.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.xtext.ide.server.concurrent.AbstractRequest;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
@@ -32,7 +33,12 @@ public class RosettaRequestManager extends RequestManager {
 	                        .setNameFormat("rosetta-language-server-request-timeout-%d")
 	                        .build());
 
-	private List<AbstractRequest<?>> removableRequestList = new CopyOnWriteArrayList<>();
+	/*
+	 * The code that uses this list fixes a memory leak in the RequestManager and should be contributed
+	 * back to the Xtext project then removed from here
+	 */
+	@VisibleForTesting
+	protected List<AbstractRequest<?>> removableRequestList = new CopyOnWriteArrayList<>();
 
 	@Inject
 	public RosettaRequestManager(ExecutorService parallel, OperationCanceledManager operationCanceledManager) {
@@ -50,9 +56,7 @@ public class RosettaRequestManager extends RequestManager {
 	protected <V> CompletableFuture<V> submit(AbstractRequest<V> request) {
 		addRequest(request);
 		submitRequest(request);
-		return request.get().whenComplete((result, error) -> {
-			removableRequestList.remove(request);
-		});
+		return request.get().whenComplete((result, error) -> removableRequestList.remove(request));
 	}
 
 	@Override
