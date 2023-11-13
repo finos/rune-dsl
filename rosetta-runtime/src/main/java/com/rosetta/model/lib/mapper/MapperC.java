@@ -41,7 +41,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return new MapperC<T>(items);
 	}
 
-	public static <T> MapperC<T> of(List<? extends T> ts) {
+	public static <T> MapperC<T> of(List<? extends T> ts) {		
 		List<MapperItem<T, ?>> items = new ArrayList<>();
 		if (ts != null) {
 			for (T ele : ts) {

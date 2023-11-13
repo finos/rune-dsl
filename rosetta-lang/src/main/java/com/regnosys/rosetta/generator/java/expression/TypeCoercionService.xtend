@@ -16,11 +16,12 @@ import com.rosetta.model.lib.mapper.MapperListOfLists
 import java.util.function.Function
 import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.statement.JavaExpression
-import com.rosetta.model.lib.mapper.MapperUtils
 import com.regnosys.rosetta.generator.java.statement.JavaVariable
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.rosetta.util.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.java.statement.JavaConditionalExpression
+import java.util.ArrayList
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -37,6 +38,9 @@ import com.rosetta.util.types.JavaPrimitiveType
  * - `Void` to `LocalDate`
  * - `Void` to `MapperC<LocalDate>`
  * Item to item coercions and item to wrapper coercions are performed null-safe.
+ * 
+ * This service is auto-boxing aware. If the expected type is a wrapper class of a primitive type
+ * and the input expression is of a primitive type as well, the result will be of a primitive type.
  * 
  * Terminology:
  * - a "wrapper type" refers to any of the following classes:
@@ -59,6 +63,9 @@ class TypeCoercionService {
 		}
 		if (actual == expected) {
 			return expr
+		}
+		if (actual == JavaPrimitiveType.VOID) {
+			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
 		}
 		
 		if (actual.isWrapper && expected.isWrapper) {
@@ -103,7 +110,7 @@ class TypeCoercionService {
 		
 		val wrapConversion = getWrapConversion(expected)
 		
-		// Exception: wrapping to a mapper is null safe, so no need to do a null check.
+		// Exception: wrapping to a MapperS or MapperC is null safe, so no need to do a null check.
 		if (expected.extendsMapper) {
 			getItemConversion(actual, expectedItemType)
 				.map[itemConversion|
@@ -134,10 +141,10 @@ class TypeCoercionService {
 		// - unwrap the given expression.
 		// - perform item to item conversion.
 		
-		// Special case: mapper to primitive boolean
-		if (actual.extendsMapper && expected == JavaPrimitiveType.BOOLEAN) {
+		// Special case: mapper to primitive
+		if (actual.extendsMapper && expected instanceof JavaPrimitiveType) {
 			return expr.mapExpression[
-				JavaExpression.from('''«it».getOrDefault(false)''', expected)
+				JavaExpression.from('''«it».getOrDefault(«expected.empty»)''', expected)
 			]
 		}
 		
@@ -155,7 +162,10 @@ class TypeCoercionService {
 		// - then convert the wrapper type to the expected wrapper type (if necessary).
 		
 		val optionalWrappedItemConversion = getWrappedItemConversion(actual, expectedItemType, scope)
-		val optionalWrapperConversion = getWrapperConversion(actual, expected)
+		val optionalWrapperConversion = getWrapperConversion(
+			optionalWrappedItemConversion.empty ? actual : actual.changeItemType(expectedItemType),
+			expected
+		)
 		
 		if (optionalWrappedItemConversion.isEmpty && optionalWrapperConversion.isEmpty) {
 			return expr
@@ -177,12 +187,13 @@ class TypeCoercionService {
 			return Optional.empty
 		}
 		
-		if (actual.extendsNumber && expected.extendsNumber) {
-			return Optional.of([getNumberConversionExpression(it, actual, expected)])
-		} else if (actual.isBoolean && expected == JavaPrimitiveType.BOOLEAN) {
+		if (actual.toReferenceType == expected.toReferenceType) {
+			// Autoboxing and unboxing
 			return Optional.of([it])
-		}
-		
+		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
+			// Number type to number type
+			return Optional.of([getNumberConversionExpression(it, expected)])
+		}		
 		
 		return Optional.empty
 	}
@@ -231,7 +242,7 @@ class TypeCoercionService {
 			if (actual.isComparisonResult) {
 				if (expected.isMapperS) {
 					// Case ComparisonResult to MapperS
-					[JavaExpression.from('''«it».asMapper()''', expected)]
+					[JavaExpression.from('''«it».asMapper()''', MapperS.wrap(BOOLEAN))]
 				} else if (expected.isMapperC) {
 					// Case ComparisonResult to MapperC
 					// Not handled
@@ -240,123 +251,156 @@ class TypeCoercionService {
 					// Not handled
 				} else if (expected.isList) {
 					// Case ComparisonResult to List
-					[JavaExpression.from('''«it».getMulti()''', expected)]
+					[JavaExpression.from('''«it».getMulti()''', List.wrap(BOOLEAN))]
 				}
 			} else if (actual.extendsMapper) {
 				if (expected.isComparisonResult) {
 					// Case Mapper to ComparisonResult
-					[JavaExpression.from('''«MapperUtils».toComparisonResult(«it»)''', expected)]
+					[JavaExpression.from('''«ComparisonResult».of(«it»)''', COMPARISON_RESULT)]
 				} else if (expected.extendsMapper) {
-					// Case Mapper to other Mapper
+					if (actual.isMapperS && actual.hasWildcardArgument && expected.isMapperS && !expected.hasWildcardArgument) {
+						// Case immutable MapperS<? extends T> to mutable MapperS<T>
+						[JavaExpression.from('''«it».map("Make mutable", «Function».identity())''', MapperS.wrap(expected.itemType))]
+					} else if (actual.isMapperC && actual.hasWildcardArgument && expected.isMapperC && !expected.hasWildcardArgument) {
+						// Case immutable MapperC<? extends T> to mutable MapperC<T>
+						[JavaExpression.from('''«it».map("Make mutable", «Function».identity())''', MapperC.wrap(expected.itemType))]
+					}
 					// Not handled for the case of differing Mapper types
 				} else if (expected.isMapperListOfLists) {
 					// Case Mapper to MapperListOfLists
 					// Not handled
 				} else if (expected.isList) {
 					// Case Mapper to List
-					[JavaExpression.from('''«it».getMulti()''', expected)]
+					if (actual.hasWildcardArgument && !expected.hasWildcardArgument) {
+						[JavaExpression.from('''new «ArrayList»(«it».getMulti())''', List.wrap(expected.itemType))]
+					} else {
+						[JavaExpression.from('''«it».getMulti()''', List.wrap(expected.itemType))]
+					}
 				}
 			} else if (actual.isMapperListOfLists) {
 				// Not handled
 			} else if (actual.isList) {
 				if (expected.isComparisonResult) {
 					// Case List to ComparisonResult
-					[JavaExpression.from('''«ComparisonResult».of(«it»)''', expected)]
+					[JavaExpression.from('''«ComparisonResult».of(«MapperC».of(«it»))''', COMPARISON_RESULT)]
 				} else if (expected.isMapperS) {
 					// Case List to MapperS
-					[JavaExpression.from('''«ComparisonResult».of(«it»).asMapper()''', expected)]
+					[JavaExpression.from('''«MapperS».of(«it».get(0))''', MapperS.wrap(expected.itemType))]
 				} else if (expected.isMapperC || expected.isMapper) {
 					// Case List to MapperC/Mapper
-					[JavaExpression.from('''«MapperC».of(«it»)''', expected)]
+					[JavaExpression.from('''«MapperC».<«expected.itemType»>of(«it»)''', MapperC.wrap(expected.itemType))]
 				} else if (expected.isMapperListOfLists) {
 					// Case List to MapperListOfLists
 					// Not handled
+				} else if (expected.isList && actual.hasWildcardArgument && !expected.hasWildcardArgument) {
+					// Case immutable List<? extends T> to mutable List<T>
+					[JavaExpression.from('''new «ArrayList»(«it»)''', List.wrap(expected.itemType))]
 				}
 			}
 		)
 	}
 	private def JavaStatementBuilder convertNullSafe(JavaStatementBuilder expr, Function<JavaExpression, JavaExpression> conversion, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
+		if (actual instanceof JavaPrimitiveType) {
+			return expr.mapExpression(conversion)
+		}
 		return expr
 				.declareAsVariable(true, actual.simpleName.toFirstLower, scope)
-				.mapExpression[JavaExpression.from('''«it» == null ? «expected.empty» : «conversion.apply(it)»''', expected)]
+				.mapExpression[new JavaConditionalExpression(
+					JavaExpression.from('''«it» == null''', JavaPrimitiveType.BOOLEAN),
+					expected.empty,
+					conversion.apply(it),
+					expected
+				)]
 	}
 	
 	private def JavaExpression empty(JavaType expected) {
+		val itemType = expected.itemType
 		if (expected.isList) {
-			JavaExpression.from('''«Collections».emptyList()''', expected)
+			JavaExpression.from('''«Collections».<«itemType»>emptyList()''', List.wrap(itemType))
 		} else if (expected.isMapperS || expected.isMapper) {
-			JavaExpression.from('''«MapperS».ofNull()''', expected)
+			JavaExpression.from('''«MapperS».<«itemType»>ofNull()''', MapperS.wrap(itemType))
 		} else if (expected.isMapperC) {
-			JavaExpression.from('''«MapperC».ofNull()''', expected)
+			JavaExpression.from('''«MapperC».<«itemType»>ofNull()''', MapperC.wrap(itemType))
 		} else if (expected.isComparisonResult) {
-			JavaExpression.from('''«ComparisonResult».successEmptyOperand("")''', expected)
+			JavaExpression.from('''«ComparisonResult».successEmptyOperand("")''', COMPARISON_RESULT)
 		} else if (expected == JavaPrimitiveType.BOOLEAN) {
-			JavaExpression.from('''false''', expected)
+			JavaExpression.from('''false''', JavaPrimitiveType.BOOLEAN)
+		} else if (expected instanceof JavaPrimitiveType) {
+			throw new IllegalArgumentException("No empty representation for primitive type `" + expected + "`.")
 		} else {
 			JavaExpression.NULL
 		}
 	}
 	
-	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType actual, JavaType expected) {
-		JavaExpression.from(
-			if (actual.isInteger) {
-				if (expected.isLong) {
-					// Case Integer to Long
-					'''«expression».longValue()'''
-				} else if (expected.isBigInteger) {
-					// Case Integer to BigInteger
-					'''«BigInteger».valueOf(«expression»)'''
-				} else if (expected.isBigDecimal) {
-					// Case Integer to BigDecimal
-					'''«BigDecimal».valueOf(«expression»)'''
-				} else {
-					throw unexpectedCaseException(actual, expected)
-				}
-			} else if (actual.isLong) {
-				if (expected.isInteger) {
-					// Case Long to Integer
-					'''«Math».toIntExact(«expression»)'''
-				} else if (expected.isBigInteger) {
-					// Case Long to BigInteger
-					'''«BigInteger».valueOf(«expression»)'''
-				} else if (expected.isBigDecimal) {
-					// Case Long to BigDecimal
-					'''«BigDecimal».valueOf(«expression»)'''
-				} else {
-					throw unexpectedCaseException(actual, expected)
-				}
-			} else if (actual.isBigInteger) {
-				if (expected.isInteger) {
-					// Case BigInteger to Integer
-					'''«expression».intValueExact()'''
-				} else if (expected.isLong) {
-					// Case BigInteger to Long
-					'''«expression».longValueExact()'''
-				} else if (expected.isBigDecimal) {
-					// Case BigInteger to BigDecimal
-					'''new «BigDecimal»(«expression»)'''
-				} else {
-					throw unexpectedCaseException(actual, expected)
-				}
-			} else if (actual.isBigDecimal) {
-				if (expected.isInteger) {
-					// Case BigDecimal to Integer
-					'''«expression».intValueExact()'''
-				} else if (expected.isLong) {
-					// Case BigDecimal to Long
-					'''«expression».longValueExact()'''
-				} else if (expected.isBigInteger) {
-					// Case BigDecimal to BigInteger
-					'''«expression».toBigIntegerExact()'''
-				} else {
-					throw unexpectedCaseException(actual, expected)
-				}
+	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType expected) {
+		val actual = expression.expressionType
+		if (actual.toReferenceType.isInteger) {
+			if (expected.toReferenceType.isLong) {
+				JavaExpression.from(
+					if (actual == JavaPrimitiveType.INT) {
+						if (expected == JavaPrimitiveType.LONG) {
+							// Case int to long
+							'''«expression»'''
+						} else {
+							// Case int to Long
+							'''(long) «expression»'''
+						}
+					} else {
+						// Case Integer to long/Long
+						'''«expression».longValue()'''
+					}, JavaPrimitiveType.LONG)
+			} else if (expected.isBigInteger) {
+				// Case int/Integer to BigInteger
+				JavaExpression.from('''«BigInteger».valueOf(«expression»)''', BIG_INTEGER)
+			} else if (expected.isBigDecimal) {
+				// Case int/Integer to BigDecimal
+				JavaExpression.from('''«BigDecimal».valueOf(«expression»)''', BIG_DECIMAL)
 			} else {
 				throw unexpectedCaseException(actual, expected)
-			},
-			actual
-		)
+			}
+		} else if (actual.toReferenceType.isLong) {
+			if (expected.toReferenceType.isInteger) {
+				// Case long/Long to int/Integer
+				JavaExpression.from('''«Math».toIntExact(«expression»)''', JavaPrimitiveType.INT)
+			} else if (expected.isBigInteger) {
+				// Case long/Long to BigInteger
+				JavaExpression.from('''«BigInteger».valueOf(«expression»)''', BIG_INTEGER)
+			} else if (expected.isBigDecimal) {
+				// Case long/Long to BigDecimal
+				JavaExpression.from('''«BigDecimal».valueOf(«expression»)''', BIG_DECIMAL)
+			} else {
+				throw unexpectedCaseException(actual, expected)
+			}
+		} else if (actual.isBigInteger) {
+			if (expected.toReferenceType.isInteger) {
+				// Case BigInteger to int/Integer
+				JavaExpression.from('''«expression».intValueExact()''', JavaPrimitiveType.INT)
+			} else if (expected.toReferenceType.isLong) {
+				// Case BigInteger to long/Long
+				JavaExpression.from('''«expression».longValueExact()''', JavaPrimitiveType.LONG)
+			} else if (expected.isBigDecimal) {
+				// Case BigInteger to BigDecimal
+				JavaExpression.from('''new «BigDecimal»(«expression»)''', BIG_DECIMAL)
+			} else {
+				throw unexpectedCaseException(actual, expected)
+			}
+		} else if (actual.isBigDecimal) {
+			if (expected.toReferenceType.isInteger) {
+				// Case BigDecimal to int/Integer
+				JavaExpression.from('''«expression».intValueExact()''', JavaPrimitiveType.INT)
+			} else if (expected.toReferenceType.isLong) {
+				// Case BigDecimal to long/Long
+				JavaExpression.from('''«expression».longValueExact()''', JavaPrimitiveType.LONG)
+			} else if (expected.isBigInteger) {
+				// Case BigDecimal to BigInteger
+				JavaExpression.from('''«expression».toBigIntegerExact()''', BIG_INTEGER)
+			} else {
+				throw unexpectedCaseException(actual, expected)
+			}
+		} else {
+			throw unexpectedCaseException(actual, expected)
+		}
 	}
 	private def JavaExpression getItemToListConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«Arrays».asList(«expression»)''', List.wrap(expression.expressionType))

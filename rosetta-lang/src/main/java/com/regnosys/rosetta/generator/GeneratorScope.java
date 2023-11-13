@@ -299,7 +299,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	}
 	private LinkedListMultimap<String, GeneratedIdentifier> localIdentifiersByDesiredName() {
 		LinkedListMultimap<String, GeneratedIdentifier> result = LinkedListMultimap.create();
-		identifiers.values().forEach(id -> result.put(id.getDesiredName(), id));
+		new HashSet<>(identifiers.values()).forEach(id -> result.put(id.getDesiredName(), id));
 		return result;
 	}
 	protected Set<String> getTakenNames() {

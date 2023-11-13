@@ -20,6 +20,7 @@ import java.math.BigDecimal
 import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import javax.inject.Inject
+import java.math.BigInteger
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -50,7 +51,7 @@ class RosettaTypingTest {
 		'False'.assertIsValidWithType(singleBoolean)
 		'"Some string"'.assertIsValidWithType(singleString(11, 11))
 		'3.14'.assertIsValidWithType(singleNumber(3, 2, "3.14", "3.14"))
-		'1'.assertIsValidWithType(singleInt(1, 1, 1))
+		'1'.assertIsValidWithType(singleInt(1, "1", "1"))
 		'empty'.assertIsValidWithType(emptyNothing)
 	}
 	
@@ -81,7 +82,7 @@ class RosettaTypingTest {
 		
 		model.elements.get(1) as Function => [operations.head.expression as MapOperation => [
 			function.body as ArithmeticOperation => [
-				left.assertHasType(singleInt(1, 1, 3))
+				left.assertHasType(singleInt(1, "1", "3"))
 			]
 		]];
 	}
@@ -184,22 +185,22 @@ class RosettaTypingTest {
 	// TODO: test arithmetic and comparisons with dates/times/etc
 	@Test
 	def void testArithmeticOperationTypeInference() {
-		'3 + 4'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(7), Optional.of(7)))
+		'3 + 4'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(BigInteger.valueOf(7)), Optional.of(BigInteger.valueOf(7))))
 		'3.0 + 4'.assertIsValidWithType(singleNumber(Optional.empty, Optional.of(1), Optional.of(new BigDecimal("7")), Optional.of(new BigDecimal("7")), Optional.empty))
 		'3 + 4.0'.assertIsValidWithType(singleNumber(Optional.empty, Optional.of(1), Optional.of(new BigDecimal("7")), Optional.of(new BigDecimal("7")), Optional.empty))
 		'3.0 + 4.0'.assertIsValidWithType(singleNumber(Optional.empty, Optional.of(1), Optional.of(new BigDecimal("7")), Optional.of(new BigDecimal("7")), Optional.empty))
 		'"ab" + "cd"'.assertIsValidWithType(singleString(4, 4))
 		
-		'3 - 4'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(-1), Optional.of(-1)))
+		'3 - 4'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(BigInteger.valueOf(-1)), Optional.of(BigInteger.valueOf(-1))))
 		'3 - 4.0'.assertIsValidWithType(singleNumber(Optional.empty, Optional.of(1), Optional.of(new BigDecimal("-1")), Optional.of(new BigDecimal("-1")), Optional.empty))
 		
-		'3 * 4'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(12), Optional.of(12)))
+		'3 * 4'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(BigInteger.valueOf(12)), Optional.of(BigInteger.valueOf(12))))
 		'3.0 * 4'.assertIsValidWithType(singleNumber(Optional.empty, Optional.of(1), Optional.of(new BigDecimal("12")), Optional.of(new BigDecimal("12")), Optional.empty))
 		
 		'3 / 4'.assertIsValidWithType(singleUnconstrainedNumber)
 		
 		// Test loosened version
-        '(if False then 2 else [3, 4]) + 5'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(7), Optional.of(9)))
+        '(if False then 2 else [3, 4]) + 5'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(BigInteger.valueOf(7)), Optional.of(BigInteger.valueOf(9))))
 	}
 	
 	@Test
@@ -489,7 +490,7 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testCountTypeInference() {
-		val singlePositiveInt = singleInt(Optional.empty, Optional.of(0), Optional.empty)
+		val singlePositiveInt = singleInt(Optional.empty, Optional.of(BigInteger.ZERO), Optional.empty)
 		'empty count'.assertIsValidWithType(singlePositiveInt);
 		'42 count'.assertIsValidWithType(singlePositiveInt);
 		'[1, 2, 3] count'.assertIsValidWithType(singlePositiveInt);
@@ -590,7 +591,7 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testOnlyElementTypeInference() {
-		'(if True then 0 else [1, 2]) only-element'.assertIsValidWithType(createListType(constrainedInt(1, 0, 2), 0, 1));
+		'(if True then 0 else [1, 2]) only-element'.assertIsValidWithType(createListType(constrainedInt(1, "0", "2"), 0, 1));
 		'(if True then empty else [True, False]) only-element'.assertIsValidWithType(createListType(BOOLEAN, 0, 1));
 		'(if True then 0 else [1, 2, 3, 42.0]) only-element'.assertIsValidWithType(createListType(constrainedNumber(3, 1, "0", "42.0"), 0, 1));
 	}

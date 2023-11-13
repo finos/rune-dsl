@@ -119,6 +119,7 @@ import com.regnosys.rosetta.generator.java.statement.JavaVariable
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import java.math.BigInteger
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -162,7 +163,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		return expr.mapExpression[JavaExpression.from('''«importWildcard(method(ExpressionOperators, methodName))»(«it»)''', resultType)]
 	}	
 
-	private def JavaStatementBuilder callableWithArgsCall(RosettaCallableWithArgs callable, List<RosettaExpression> arguments, Context context) {
+	private def JavaStatementBuilder callableWithArgsCall(RosettaCallableWithArgs callable, List<RosettaExpression> arguments, JavaScope scope) {
 		return switch (callable) {
 			Function,
 			RosettaRule: {
@@ -172,19 +173,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						rObjectFactory.buildRFunction(callable as RosettaRule)
 				val outputType = rCallable.output.attributeToJavaType
 				if (arguments.empty) {
-					JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate()''', outputType)
+					JavaExpression.from('''«scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate()''', outputType)
 				} else {
 					// First evaluate all arguments
-					var argCode = arguments.head.javaCode(rCallable.inputs.head.attributeToJavaType, context.scope)
+					var argCode = arguments.head.javaCode(rCallable.inputs.head.attributeToJavaType, scope)
 					for (var i = 1; i < arguments.size; i++) {
 						argCode = argCode.then(
-							arguments.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, context.scope),
+							arguments.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, scope),
 							[argList, newArg|JavaExpression.from('''«argList», «newArg»''', null)],
-							context.scope
+							scope
 						)
 					}
 					argCode
-						.mapExpression[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate(«it»)''', outputType)]
+						.collapseToSingleExpression(scope)
+						.mapExpression[JavaExpression.from('''«scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate(«it»)''', outputType)]
 				}
 			}
 			RosettaExternalFunction: {
@@ -199,27 +201,27 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						// TODO: this is a hack
 						// Generic return type for number type e.g. Min(1,2) or Max(2,6)
 						val argAndReturnType = argRTypes.join.toJavaReferenceType
-						argCode = arguments.head.javaCode(argAndReturnType, context.scope)
+						argCode = arguments.head.javaCode(argAndReturnType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
-								arguments.get(i).javaCode(argAndReturnType, context.scope),
+								arguments.get(i).javaCode(argAndReturnType, scope),
 								[argList, newArg|JavaExpression.from('''«argList», «newArg»''', null)],
-								context.scope
+								scope
 							)
 						}
 						argCode
-							.mapExpression[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', argAndReturnType)]
+							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', argAndReturnType)]
 					} else {
-						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.toJavaReferenceType, context.scope)
+						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.toJavaReferenceType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
-								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.toJavaReferenceType, context.scope),
+								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.toJavaReferenceType, scope),
 								[argList, newArg|JavaExpression.from('''«argList», «newArg»''', null)],
-								context.scope
+								scope
 							)
 						}
 						argCode
-							.mapExpression[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', returnRType.toJavaReferenceType)]
+							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', returnRType.toJavaReferenceType)]
 					}
 				}
 			}
@@ -237,7 +239,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			itemType
 		} else {
 			// For inline functions
-			if (context.implicitVariableMulti) {
+			if ((definingContainer as RosettaFunctionalOperation).argument.isOutputListOfLists) {
+				MapperListOfLists.wrap(itemType)
+			} else if (context.implicitVariableMulti) {
 				MapperC.wrap(itemType)
 			} else {
 				MapperS.wrap(itemType)
@@ -279,8 +283,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			default:
 				throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
-		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, Mapper.wrap(resultItemType), scope)
-		val resultType = mapperReceiverCode.expressionType.changeItemType(resultItemType)
+		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, Mapper.wrapExtends(resultItemType), scope)
+		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !cardinalityProvider.isFeatureMulti(feature)) {
+			MapperS
+		} else {
+			MapperC
+		}
+		val resultType = resultWrapper.wrap(resultItemType)
 		return mapperReceiverCode
 			.collapseToSingleExpression(scope)
 			.mapExpression[JavaExpression.from('''«it»«right»''', resultType)]
@@ -315,27 +324,27 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					case "/": "divide"
 				}
 				if (JavaClass.from(Number).isAssignableFrom(leftType) && JavaClass.from(Number).isAssignableFrom(rightType)) {
-					val leftCode = javaCode(left, Mapper.wrap(joined), context.scope)
-					val rightCode = javaCode(right, Mapper.wrap(joined), context.scope)
+					val leftCode = javaCode(left, Mapper.wrapExtends(joined), context.scope)
+					val rightCode = javaCode(right, Mapper.wrapExtends(joined), context.scope)
 					leftCode
 						.then(rightCode, [l, r|JavaExpression.from('''«MapperMaths».<«resultType», «joined», «joined»>«method»(«l», «r»)''', MapperS.wrap(resultType))], context.scope)
 				} else {
-					val leftCode = javaCode(left, Mapper.wrap(leftType), context.scope)
-					val rightCode = javaCode(right, Mapper.wrap(rightType), context.scope)
+					val leftCode = javaCode(left, Mapper.wrapExtends(leftType), context.scope)
+					val rightCode = javaCode(right, Mapper.wrapExtends(rightType), context.scope)
 					leftCode
 						.then(rightCode, [l, r|JavaExpression.from('''«MapperMaths».<«resultType», «leftType», «rightType»>«method»(«l», «r»)''', MapperS.wrap(resultType))], context.scope)
 				}
 			}
 			case "contains",
 			case "disjoint": {
-				val leftCode = javaCode(left, Mapper.wrap(joined), context.scope)
-				val rightCode = javaCode(right, Mapper.wrap(joined), context.scope)
+				val leftCode = javaCode(left, Mapper.wrapExtends(joined), context.scope)
+				val rightCode = javaCode(right, Mapper.wrapExtends(joined), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(expr.operator)»(«l», «r»)''', COMPARISON_RESULT)], context.scope)
 			}
 			case "join": {
-				val leftCode = javaCode(left, MapperC.wrap(JavaClass.from(String)), context.scope)
-				val rightCode = expr.right === null ? JavaExpression.from('''«MapperS».of("")''', resultType) : javaCode(right, MapperS.wrap(JavaClass.from(String)), context.scope)
+				val leftCode = javaCode(left, MapperC.wrapExtends(STRING), context.scope)
+				val rightCode = expr.right === null ? JavaExpression.from('''«MapperS».of("")''', resultType) : javaCode(right, MapperS.wrap(STRING), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«l».join(«r»)''', MapperS.wrap(STRING))], context.scope)
 			}
@@ -359,8 +368,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				} else {
 					CardinalityModifier.ALL
 				}
-				val leftCode = javaCode(left, Mapper.wrap(joined), context.scope)
-				val rightCode = javaCode(right, Mapper.wrap(joined), context.scope)
+				val leftCode = javaCode(left, Mapper.wrapExtends(joined), context.scope)
+				val rightCode = javaCode(right, Mapper.wrapExtends(joined), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(method)»(«l», «r», «toCardinalityOperator(modifier, defaultModifier)»)''', COMPARISON_RESULT)], context.scope)
 			}
@@ -412,7 +421,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 	}
 
-	private def StringConcatenationClient inlineFunction(InlineFunction ref, JavaType expectedType, JavaScope scope) {
+	private def Pair<StringConcatenationClient, JavaType> inlineFunction(InlineFunction ref, JavaType expectedType, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
 		val paramIds = if (ref.parameters.size == 0) {
 				#[lambdaScope.createIdentifier(ref.implicitVarInContext, defaultImplicitVariable.name)]
@@ -420,49 +429,57 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				ref.parameters.stream.map[lambdaScope.createIdentifier(it)].collect(Collectors.toList)
 			}
 		
-		val body = ref.body.javaCode(expectedType, lambdaScope).toLambdaBody
-		if (paramIds.size == 1) {
-			'''«paramIds.head» -> «body»'''
-		} else {
-			'''(«FOR id : paramIds SEPARATOR ', '»«id»«ENDFOR») -> «body»'''
-		}
+		val body = ref.body.javaCode(expectedType, lambdaScope)
+		new Pair<StringConcatenationClient, JavaType>(
+			if (paramIds.size == 1) {
+				'''«paramIds.head» -> «body.toLambdaBody»'''
+			} else {
+				'''(«FOR id : paramIds SEPARATOR ', '»«id»«ENDFOR») -> «body.toLambdaBody»'''
+			},
+			body.expressionType
+		)
 	}
 
 	private def buildConstraint(RosettaExpression arg, Iterable<Attribute> usedAttributes,
 		Necessity validationType, Context context) {
 		val argItemType = typeProvider.getRType(arg).toJavaReferenceType
-		arg.javaCode(Mapper.wrap(argItemType), context.scope)
+		arg.javaCode(Mapper.wrapExtends(argItemType), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('choice')»(«it», «Arrays».asList(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)''', COMPARISON_RESULT)]
 	}
 
-	private def JavaStatementBuilder buildListOperationNoBody(RosettaUnaryOperation op, String name, JavaType expectedArgumentType, JavaType returnType, JavaScope scope) {
-		op.argument.javaCode(expectedArgumentType, scope)
+	private def JavaStatementBuilder buildListOperationNoBody(RosettaUnaryOperation op, String name, JavaType expectedArgumentType, (JavaType) => JavaType argumentTypeToReturnType, JavaScope scope) {
+		val argCode = op.argument.javaCode(expectedArgumentType, scope)
 			.collapseToSingleExpression(scope)
+		argCode
 			.mapExpression[JavaExpression.from(
 				'''
 				«it»
 					.«name»()''',
-				returnType
+				argumentTypeToReturnType.apply(argCode.expressionType)
 			)]
 	}
 
-	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, JavaType returnType, JavaScope scope) {
+	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
 		if (op.function === null) {
-			buildListOperationNoBody(op, name, expectedArgumentType, returnType, scope)
+			buildListOperationNoBody(op, name, expectedArgumentType, [argumentAndBodyTypeToReturnType.apply(it, null)], scope)
 		} else {
-			buildSingleItemListOperation(op, name, expectedArgumentType, expectedBodyType, returnType, scope)
+			buildSingleItemListOperation(op, name, expectedArgumentType, expectedBodyType, argumentAndBodyTypeToReturnType, scope)
 		}
 	}
 
-	private def JavaStatementBuilder buildSingleItemListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, JavaType returnType, JavaScope scope) {
-		op.argument.javaCode(expectedArgumentType, scope)
+	private def JavaStatementBuilder buildSingleItemListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+		val argCode = op.argument.javaCode(expectedArgumentType, scope)
 			.collapseToSingleExpression(scope)
+		val inlineFunctionCodeAndBodyType = op.function.inlineFunction(expectedBodyType, scope)
+		val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
+		val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
+		argCode
 			.mapExpression[JavaExpression.from(
 				'''
 				«it»
-					.«name»(«op.function.inlineFunction(expectedBodyType, scope)»)''',
-				returnType
+					.«name»(«inlineFunctionCode»)''',
+				argumentAndBodyTypeToReturnType.apply(argCode.expressionType, inlineFunctionBodyType)
 			)]
 	}
 
@@ -546,7 +563,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseAbsentOperation(RosettaAbsentExpression expr, Context context) {
-		expr.argument.javaCode(Mapper.wrap(expr.argument), context.scope)
+		expr.argument.javaCode(Mapper.wrapExtends(expr.argument), context.scope)
 			.applyRuntimeMethod('notExists', COMPARISON_RESULT)
 	}
 
@@ -564,7 +581,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Context context) {
-		JavaExpression.from('''«Boolean».valueOf(«expr.value»)''', JavaPrimitiveType.BOOLEAN.toReferenceType)
+		JavaExpression.from('''«expr.value»''', JavaPrimitiveType.BOOLEAN)
 	}
 
 	override protected caseChoiceOperation(ChoiceOperation expr, Context context) {
@@ -576,9 +593,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
 		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
 		
+		// TODO: fix result type (should join both types)
 		condition
 			.collapseToSingleExpression(context.scope)
-			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, context.expectedType)]
+			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, thenBranch.expressionType.join(elseBranch.expressionType))]
 	}
 
 	override protected caseContainsOperation(RosettaContainsExpression expr, Context context) {
@@ -586,8 +604,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseCountOperation(RosettaCountOperation expr, Context context) {
-		expr.argument.javaCode(Mapper.wrap(expr.argument), context.scope)
-			.mapExpression[JavaExpression.from('''«it».resultCount()''', JavaPrimitiveType.INT.toReferenceType)]
+		expr.argument.javaCode(Mapper.wrapExtends(expr.argument), context.scope)
+			.mapExpression[JavaExpression.from('''«it».resultCount()''', JavaPrimitiveType.INT)]
 	}
 
 	override protected caseDisjointOperation(RosettaDisjointExpression expr, Context context) {
@@ -596,8 +614,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseDistinctOperation(DistinctOperation expr, Context context) {
 		val argItemType = typeProvider.getRType(expr.argument).toJavaReferenceType
-		expr.argument.javaCode(Mapper.wrap(argItemType), context.scope)
-			.applyRuntimeMethod('distinct', MapperC.wrap(argItemType))
+		val argCode = expr.argument.javaCode(Mapper.wrapExtends(argItemType), context.scope)
+		val argType = argCode.expressionType
+		argCode
+			.applyRuntimeMethod('distinct', argType.hasWildcardArgument ? MapperC.wrapExtends(argItemType) : MapperC.wrap(argItemType))
 	}
 
 	override protected caseDivideOperation(ArithmeticOperation expr, Context context) {
@@ -615,7 +635,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				'multipleExists'
 			else
 				'exists'
-		expr.argument.javaCode(Mapper.wrap(expr.argument), context.scope)
+		expr.argument.javaCode(Mapper.wrapExtends(expr.argument), context.scope)
 			.applyRuntimeMethod(methodName, COMPARISON_RESULT)
 	}
 
@@ -625,54 +645,55 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
 			autoValue = false;
 		}
-		return featureCall(expr.receiver.javaCode(Mapper.wrap(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, context.scope, autoValue)
+		return featureCall(expr.receiver.javaCode(Mapper.wrapExtends(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, context.scope, autoValue)
 	}
 
 	override protected caseFilterOperation(FilterOperation expr, Context context) {
+		val StringConcatenationClient inlineFunctionCode = expr.function.inlineFunction(JavaPrimitiveType.BOOLEAN.toReferenceType, context.scope).key
 		if (!expr.isPreviousOperationMulti) {
 			// Case MapperS
-			val resultType = MapperS.wrap(expr.argument)
-			expr.argument.javaCode(resultType, context.scope)
+			val argCode = expr.argument.javaCode(MapperS.wrapExtends(expr.argument), context.scope)
 				.collapseToSingleExpression(context.scope)
+			argCode
 				.mapExpression[JavaExpression.from(
 					'''
 					«it»
-						.filterSingleNullSafe(«expr.function.inlineFunction(JavaPrimitiveType.BOOLEAN.toReferenceType, context.scope)»)''',
-					resultType
+						.filterSingleNullSafe(«inlineFunctionCode»)''',
+					argCode.expressionType
 				)]
 		} else {
 			if (expr.argument.isOutputListOfLists) {
 				// Case MapperListOfLists
-				val resultType = MapperListOfLists.wrap(expr.argument)
-				expr.argument.javaCode(resultType, context.scope)
+				val argCode = expr.argument.javaCode(MapperListOfLists.wrapExtends(expr.argument), context.scope)
 					.collapseToSingleExpression(context.scope)
+				argCode
 					.mapExpression[JavaExpression.from(
 						'''
 						«it»
-							.filterListNullSafe(«expr.function.inlineFunction(JavaPrimitiveType.BOOLEAN.toReferenceType, context.scope)»)''',
-						resultType
+							.filterListNullSafe(«inlineFunctionCode»)''',
+						argCode.expressionType
 					)]
 			} else {
 				// Case MapperC
-				val resultType = MapperC.wrap(expr.argument)
-				expr.argument.javaCode(resultType, context.scope)
+				val argCode = expr.argument.javaCode(MapperC.wrapExtends(expr.argument), context.scope)
 					.collapseToSingleExpression(context.scope)
+				argCode
 					.mapExpression[JavaExpression.from(
 						'''
 						«it»
-							.filterItemNullSafe(«expr.function.inlineFunction(JavaPrimitiveType.BOOLEAN.toReferenceType, context.scope)»)''',
-						resultType
+							.filterItemNullSafe(«inlineFunctionCode»)''',
+						argCode.expressionType
 					)]
 			}
 		}
 	}
 
 	override protected caseFirstOperation(FirstOperation expr, Context context) {
-		buildListOperationNoBody(expr, "first", MapperC.wrap(expr.argument), MapperS.wrap(expr.argument), context.scope)
+		buildListOperationNoBody(expr, "first", MapperC.wrapExtends(expr.argument), [MapperS.wrap(it.itemType)], context.scope)
 	}
 
 	override protected caseFlattenOperation(FlattenOperation expr, Context context) {
-		buildListOperationNoBody(expr, "flattenList", MapperListOfLists.wrap(expr.argument), MapperC.wrap(expr.argument), context.scope)
+		buildListOperationNoBody(expr, "flattenList", MapperListOfLists.wrapExtends(expr.argument), [it.hasWildcardArgument ? MapperC.wrapExtends(expr.argument) : MapperC.wrap(expr.argument)], context.scope)
 	}
 
 	override protected caseGreaterThanOperation(ComparisonOperation expr, Context context) {
@@ -688,7 +709,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseIntLiteral(RosettaIntLiteral expr, Context context) {
-		JavaExpression.from('''«Integer».valueOf(«expr.value»)''', JavaPrimitiveType.INT.toReferenceType)
+		val intValue = expr.value.intValue
+		if (BigInteger.valueOf(intValue) == expr.value) {
+			return JavaExpression.from('''«intValue»''', JavaPrimitiveType.INT)
+		}
+		val longValue = expr.value.longValue
+		if (BigInteger.valueOf(intValue) == expr.value) {
+			return JavaExpression.from('''«longValue»l''', JavaPrimitiveType.LONG)
+		}
+		return JavaExpression.from('''new «BigInteger»("«expr.value»")''', BIG_INTEGER)
 	}
 
 	override protected caseJoinOperation(JoinOperation expr, Context context) {
@@ -696,7 +725,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseLastOperation(LastOperation expr, Context context) {
-		buildListOperationNoBody(expr, "last", MapperC.wrap(expr.argument), MapperS.wrap(expr.argument), context.scope)
+		buildListOperationNoBody(expr, "last", MapperC.wrapExtends(expr.argument), [MapperS.wrap(it.itemType)], context.scope)
 	}
 
 	override protected caseLessThanOperation(ComparisonOperation expr, Context context) {
@@ -708,9 +737,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseListLiteral(ListLiteral expr, Context context) {
+		if (expr.elements.empty) {
+			return JavaExpression.NULL
+		}
 		val itemType = typeProvider.getRType(expr).toJavaReferenceType
-		JavaExpression.from(
-			'''«MapperC».<«itemType»>of(«FOR ele : expr.elements SEPARATOR ', '»«ele.javaCode(ele.isMulti ? MapperC.wrap(itemType) : MapperS.wrap(itemType), context.scope)»«ENDFOR»)''',
+		return JavaExpression.from(
+			'''«MapperC».<«itemType»>of(«FOR ele : expr.elements SEPARATOR ', '»«ele.javaCode(ele.isMulti ? MapperC.wrapExtends(itemType) : MapperS.wrapExtends(itemType), context.scope)»«ENDFOR»)''',
 			MapperC.wrap(itemType)
 		)
 	}
@@ -721,73 +753,81 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 		if (!expr.isPreviousOperationMulti) {
 			if (isBodyMulti) {
-				// Case MapperS to MapperS
-				val funcExpr = expr.function.inlineFunction(MapperC.wrap(bodyItemType), context.scope)
-				expr.argument.javaCode(MapperS.wrap(expr.argument), context.scope)
+				// Case MapperS to MapperC
+				val inlineFunctionCodeAndBodyType = expr.function.inlineFunction(MapperC.wrapExtends(bodyItemType), context.scope)
+				val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
+				val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
+				expr.argument.javaCode(MapperS.wrapExtends(expr.argument), context.scope)
 					.collapseToSingleExpression(context.scope)
 					.mapExpression[JavaExpression.from(
 						'''
 						«it»
-							.mapSingleToList(«funcExpr»)''',
-						MapperC.wrap(bodyItemType)
+							.mapSingleToList(«inlineFunctionCode»)''',
+						inlineFunctionBodyType
 					)]
 			} else {
-				// Case MapperS to MapperC
-				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", MapperS.wrap(expr.argument), MapperS.wrap(bodyItemType), MapperS.wrap(bodyItemType), context.scope)
+				// Case MapperS to MapperS
+				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", MapperS.wrapExtends(expr.argument), MapperS.wrapExtends(bodyItemType), [a,b|b], context.scope)
 			}
 		} else {
 			if (expr.argument.isOutputListOfLists) {
 				if (isBodyMulti) {
 					// Case MapperListOfLists to MapperListOfLists
-					val funcExpr = expr.function.inlineFunction(MapperC.wrap(bodyItemType), context.scope)
-					expr.argument.javaCode(MapperListOfLists.wrap(expr.argument), context.scope)
+					val inlineFunctionCodeAndBodyType = expr.function.inlineFunction(MapperC.wrapExtends(bodyItemType), context.scope)
+					val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
+					val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
+					expr.argument.javaCode(MapperListOfLists.wrapExtends(expr.argument), context.scope)
 						.collapseToSingleExpression(context.scope)
 						.mapExpression[JavaExpression.from(
 							'''
 							«it»
-								.mapListToList(«funcExpr»)''',
-							MapperListOfLists.wrap(bodyItemType)
+								.mapListToList(«inlineFunctionCode»)''',
+							inlineFunctionBodyType.hasWildcardArgument ? MapperListOfLists.wrapExtends(bodyItemType) : MapperListOfLists.wrap(bodyItemType)
 						)]
 				} else {
 					// Case MapperListOfLists to MapperC
-					val funcExpr = expr.function.inlineFunction(MapperS.wrap(bodyItemType), context.scope)
-					expr.argument.javaCode(MapperListOfLists.wrap(expr.argument), context.scope)
+					val inlineFunctionCodeAndBodyType = expr.function.inlineFunction(MapperS.wrapExtends(bodyItemType), context.scope)
+					val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
+					val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
+					expr.argument.javaCode(MapperListOfLists.wrapExtends(expr.argument), context.scope)
 						.collapseToSingleExpression(context.scope)
 						.mapExpression[JavaExpression.from(
 							'''
 							«it»
-								.mapListToItem(«funcExpr»)''',
-							MapperC.wrap(bodyItemType)
+								.mapListToItem(«inlineFunctionCode»)''',
+							inlineFunctionBodyType.hasWildcardArgument ? MapperC.wrapExtends(bodyItemType) : MapperC.wrap(bodyItemType)
 						)]
 				}
 			} else {
 				if (isBodyMulti) {
 					// MapperC to MapperListOfLists
-					val funcExpr = expr.function.inlineFunction(MapperC.wrap(bodyItemType), context.scope)
-					expr.argument.javaCode(MapperC.wrap(expr.argument), context.scope)
+					val inlineFunctionCodeAndBodyType = expr.function.inlineFunction(MapperC.wrapExtends(bodyItemType), context.scope)
+					val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
+					val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
+					expr.argument.javaCode(MapperC.wrapExtends(expr.argument), context.scope)
 						.collapseToSingleExpression(context.scope)
 						.mapExpression[JavaExpression.from(
 							'''
 							«it»
-								.mapItemToList(«funcExpr»)''',
-							MapperListOfLists.wrap(bodyItemType)
+								.mapItemToList(«inlineFunctionCode»)''',
+							inlineFunctionBodyType.hasWildcardArgument ? MapperListOfLists.wrapExtends(bodyItemType) : MapperListOfLists.wrap(bodyItemType)
 						)]
 				} else {
 					// MapperC to MapperC
-					buildSingleItemListOperationOptionalBody(expr, "mapItem", MapperC.wrap(expr.argument), MapperS.wrap(bodyItemType), MapperC.wrap(bodyItemType), context.scope)
+					buildSingleItemListOperationOptionalBody(expr, "mapItem", MapperC.wrapExtends(expr.argument), MapperS.wrapExtends(bodyItemType), [a,b|b.hasWildcardArgument ? MapperC.wrapExtends(bodyItemType) : MapperC.wrap(bodyItemType)], context.scope)
 				}
 			}
 		}
 	}
 
 	override protected caseMaxOperation(MaxOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MapperS.wrap(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "max", MapperC.wrap(expr.argument), bodyType, MapperS.wrap(expr.argument), context.scope)
+		val bodyType = if (expr.function !== null) MapperS.wrapExtends(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "max", MapperC.wrapExtends(expr.argument), bodyType, [a,b|MapperS.wrap(a.itemType)], context.scope)
 	}
 
 	override protected caseMinOperation(MinOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MapperS.wrap(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "min", MapperC.wrap(expr.argument), bodyType, MapperS.wrap(expr.argument), context.scope)
+		val bodyType = if (expr.function !== null) MapperS.wrapExtends(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "min", MapperC.wrapExtends(expr.argument), bodyType, [a,b|MapperS.wrap(a.itemType)], context.scope)
 	}
 
 	override protected caseMultiplyOperation(ArithmeticOperation expr, Context context) {
@@ -813,7 +853,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, Context context) {
-		expr.args.map[it.javaCode(Mapper.wrap(it), context.scope)]
+		expr.args.map[it.javaCode(Mapper.wrapExtends(it), context.scope)]
 			.reduce[acc, stat| acc.then(stat, [list, item| JavaExpression.from('''«list», «item»''', null)], context.scope)]
 			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«Arrays».asList(«it»))''', COMPARISON_RESULT)]
 	}
@@ -824,23 +864,26 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseReduceOperation(ReduceOperation expr, Context context) {
 		val outputType = typeProvider.getRType(expr.function.body).toJavaReferenceType
-		expr.argument.javaCode(MapperC.wrap(expr.argument), context.scope)
+		val inlineFunctionCodeAndBodyType = expr.function.inlineFunction(MapperS.wrapExtends(outputType), context.scope)
+		val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
+		val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
+		expr.argument.javaCode(MapperC.wrapExtends(expr.argument), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from(
 				'''
 				«it»
-					.<«outputType»>reduce(«expr.function.inlineFunction(MapperS.wrap(outputType), context.scope)»)''',
-				MapperS.wrap(outputType)
+					.<«outputType»>reduce(«inlineFunctionCode»)''',
+				inlineFunctionBodyType
 			)]
 	}
 
 	override protected caseReverseOperation(ReverseOperation expr, Context context) {
-		buildListOperationNoBody(expr, "reverse", MapperC.wrap(expr.argument), MapperC.wrap(expr.argument), context.scope)
+		buildListOperationNoBody(expr, "reverse", MapperC.wrapExtends(expr.argument), [it], context.scope)
 	}
 
 	override protected caseSortOperation(SortOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MapperS.wrap(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "sort", MapperC.wrap(expr.argument), bodyType, MapperC.wrap(expr.argument), context.scope)
+		val bodyType = if (expr.function !== null) MapperS.wrapExtends(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "sort", MapperC.wrapExtends(expr.argument), bodyType, [a,b|a], context.scope)
 	}
 
 	override protected caseStringLiteral(RosettaStringLiteral expr, Context context) {
@@ -853,7 +896,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseSumOperation(SumOperation expr, Context context) {
 		val itemType = typeProvider.getRType(expr.argument).toJavaReferenceType
-		buildListOperationNoBody(expr, "sum" + itemType.simpleName, MapperC.wrap(itemType), MapperS.wrap(itemType), context.scope)
+		buildListOperationNoBody(expr, "sum" + itemType.simpleName, MapperC.wrapExtends(itemType), [MapperS.wrap(itemType)], context.scope)
 	}
 
 	override protected caseSymbolReference(RosettaSymbolReference expr, Context context) {
@@ -880,7 +923,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val isMulti = s.isSymbolMulti
 				val shortcut = rObjectFactory.buildRShortcut(s)
 				val itemType = typeProvider.getRTypeOfSymbol(s).toJavaReferenceType
-				JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s)»)«IF exprHelper.usesOutputParameter(s.expression)».build()«ENDIF»''', isMulti ? MapperC.wrap(itemType) : MapperS.wrap(itemType))
+				JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s)»)«IF exprHelper.usesOutputParameter(s.expression)».build()«ENDIF»''', isMulti ? MapperC.wrapExtendsIfNotPrimitive(itemType) : MapperS.wrapExtendsIfNotPrimitive(itemType))
 			}
 			RosettaEnumeration: {
 				val t = new REnumType(s).toJavaType
@@ -890,7 +933,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				new JavaVariable(context.scope.getIdentifierOrThrow(s), expr.isMulti ? MapperC.wrap(expr) : MapperS.wrap(expr))
 			}
 			RosettaCallableWithArgs: {
-				callableWithArgsCall(s, expr.args, context)
+				callableWithArgsCall(s, expr.args, context.scope)
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
@@ -898,7 +941,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseThenOperation(ThenOperation expr, Context context) {
-		val thenArgCode = expr.argument.javaCode(expr.argument.isMulti ? MapperC.wrap(expr.argument) : MapperS.wrap(expr.argument), context.scope)
+		val thenArgCode = expr.argument.javaCode(expr.argument.isMulti ? MapperC.wrapExtends(expr.argument) : MapperS.wrapExtends(expr.argument), context.scope)
 		val thenAsVarCode = thenArgCode.declareAsVariable(true, "thenResult", context.scope)
 		if (expr.function.parameters.size == 0) {
 			context.scope.createKeySynonym(expr.function.implicitVarInContext, thenArgCode)
@@ -907,14 +950,14 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 		thenAsVarCode
 			.then(
-				expr.function.body.javaCode(expr.isMulti ? MapperC.wrap(expr) : MapperS.wrap(expr), context.scope),
+				expr.function.body.javaCode(expr.isMulti ? MapperC.wrapExtends(expr) : MapperS.wrapExtends(expr), context.scope),
 				[a, b| b],
 				context.scope
 			)
 	}
 
 	private def JavaStatementBuilder conversionOperation(RosettaUnaryOperation expr, Context context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
-		expr.argument.javaCode(MapperS.wrap(expr.argument), context.scope)
+		expr.argument.javaCode(MapperS.wrapExtends(expr.argument), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«it».checkedMap("«expr.operator»", «conversion», «errorClass».class)''', MapperS.wrap(expr))]
 	}
@@ -939,7 +982,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		} else {
 			'''«Object»::toString'''
 		}
-		expr.argument.javaCode(MapperS.wrap(expr.argument), context.scope)
+		expr.argument.javaCode(MapperS.wrapExtends(expr.argument), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«it».map("«expr.operator»", «toStringMethod»)''', MapperS.wrap(expr))]
 	}
@@ -994,7 +1037,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			if (isMulti) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
-				value.javaCode(MapperC.wrap(value), scope)
+				value.javaCode(MapperC.wrapExtends(value), scope)
 					.collapseToSingleExpression(scope)
 					.mapExpression[
 						JavaExpression.from(

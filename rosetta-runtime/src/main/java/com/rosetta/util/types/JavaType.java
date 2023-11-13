@@ -27,7 +27,7 @@ public interface JavaType {
 		return null;
 	}
 	
-	public String getSimpleName();
-	
-	public void accept(JavaTypeVisitor visitor);
+	JavaReferenceType toReferenceType();
+	String getSimpleName();
+	void accept(JavaTypeVisitor visitor);
 }

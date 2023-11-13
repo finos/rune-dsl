@@ -29,7 +29,8 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	public JavaIfThenElseBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
 		JavaStatementBuilder mappedThenBranch = thenBranch.mapExpression(mapper);
 		JavaStatementBuilder mappedElseBranch = elseBranch.mapExpression(mapper);
-		return new JavaIfThenElseBuilder(condition, mappedThenBranch, mappedElseBranch, mappedThenBranch.getExpressionType());
+		JavaType resultType = mappedThenBranch == JavaExpression.NULL ? mappedElseBranch.getExpressionType() : mappedThenBranch.getExpressionType();
+		return new JavaIfThenElseBuilder(condition, mappedThenBranch, mappedElseBranch, resultType);
 	}
 
 	@Override
@@ -42,10 +43,25 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	public JavaIfThenElseStatement complete(Function<JavaExpression, JavaStatement> completer) {
 		return new JavaIfThenElseStatement(condition, thenBranch.complete(completer), elseBranch.complete(completer));
 	}
+	
+	@Override
+	public JavaBlock completeAsReturn() {
+		return new JavaIfThenStatement(condition, thenBranch.completeAsReturn())
+				.append(elseBranch.completeAsReturn());
+	}
 
 	@Override
 	public JavaBlockBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
 		GeneratedIdentifier id = scope.createIdentifier(this, variableId);
+		if (elseBranch == JavaExpression.NULL) {
+			return new JavaBlockBuilder(
+					JavaStatementList.of(
+						new JavaLocalVariableDeclarationStatement(isFinal, commonType, id, JavaExpression.NULL),
+						new JavaIfThenStatement(condition, thenBranch.completeAsAssignment(id))
+					),
+					new JavaVariable(id, commonType)
+				);
+		}
 		return new JavaBlockBuilder(
 				JavaStatementList.of(
 					new JavaLocalVariableDeclarationStatement(isFinal, commonType, id),

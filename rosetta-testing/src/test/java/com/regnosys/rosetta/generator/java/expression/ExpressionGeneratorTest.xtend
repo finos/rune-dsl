@@ -39,6 +39,7 @@ import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.rosetta.util.types.JavaType
 import com.rosetta.model.lib.expression.ComparisonResult
+import java.math.BigInteger
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -59,7 +60,12 @@ class ExpressionGeneratorTest {
 			.javaCode(JavaType.from(String), scope)
 			.formatGeneratedFunction(scope)
 		
-		assertThat(gen, is('''MapperS.of("Hello \"world\"!")'''))
+		assertEquals(
+			'''
+			return "Hello \"world\"!";
+			'''.toString,
+			gen
+		)
 	}
 	
 	/**
@@ -79,8 +85,18 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionGenerator.javaCode(comparisonOp, JavaType.from(ComparisonResult), scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope),
-			is('greaterThan(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)'))
+		assertEquals(
+			'''
+			import com.rosetta.model.lib.expression.CardinalityOperator;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import java.math.BigDecimal;
+			
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+			
+			return greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All);
+			'''.toString,
+			formatGeneratedFunction(generatedFunction, scope)
+		)
 	}
 
 	/**
@@ -103,8 +119,18 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('greaterThan(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<BigDecimal>map(\"getAttr2\", _foo -> _foo.getAttr2()), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All))'))
+		assertEquals(
+			'''
+			import com.rosetta.model.lib.expression.CardinalityOperator;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import java.math.BigDecimal;
+			
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+			
+			return greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All));
+			'''.toString,
+			formatGeneratedFunction(generatedFunction, scope)
+		)
 	}
 	
 	/**
@@ -121,8 +147,17 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionGenerator.javaCode(lhsExistsOp, JavaType.from(ComparisonResult), scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('exists(MapperS.of(foo).<BigDecimal>map(\"getAttr\", _foo -> _foo.getAttr()))'))
+		assertEquals(
+			'''
+			import com.rosetta.model.lib.mapper.MapperS;
+			import java.math.BigDecimal;
+			
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+			
+			return exists(MapperS.of(foo).<BigDecimal>map("getAttr", _foo -> _foo.getAttr()));
+			'''.toString,
+			formatGeneratedFunction(generatedFunction, scope)
+		)
 	}
 
 	/**
@@ -145,8 +180,16 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('exists(MapperS.of(foo).<Boolean>map(\"getAttr1\", _foo -> _foo.getAttr1())).or(exists(MapperS.of(foo).<Boolean>map(\"getAttr2\", _foo -> _foo.getAttr2())))'))
+		assertEquals(
+			'''
+			import com.rosetta.model.lib.mapper.MapperS;
+			
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+			
+			return exists(MapperS.of(foo).<Boolean>map("getAttr1", _foo -> _foo.getAttr1())).or(exists(MapperS.of(foo).<Boolean>map("getAttr2", _foo -> _foo.getAttr2())));
+			'''.toString,
+			formatGeneratedFunction(generatedFunction, scope)
+		)
 	}
 
 	// ( Foo -> attr1 = Foo -> attr2 ) or ( Foo -> attr1 = Foo -> attr2 )
@@ -172,8 +215,18 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('areEqual(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map(\"getAttr2\", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map(\"getAttr4\", _foo -> _foo.getAttr4()), CardinalityOperator.All))'))
+		assertEquals(
+			'''
+			import com.rosetta.model.lib.expression.CardinalityOperator;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import java.math.BigDecimal;
+			
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+			
+			return areEqual(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getAttr3", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map("getAttr4", _foo -> _foo.getAttr4()), CardinalityOperator.All));
+			'''.toString,
+			formatGeneratedFunction(generatedFunction, scope)
+		)
 	}
 	
 	@Test
@@ -197,8 +250,18 @@ class ExpressionGeneratorTest {
 		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
 		
 		assertNotNull(generatedFunction)
-		assertThat(formatGeneratedFunction(generatedFunction, scope), 
-			is('areEqual(MapperS.of(foo).<BigDecimal>map(\"getAttr1\", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map(\"getAttr2\", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map(\"getAttr3\", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map(\"getAttr4\", _foo -> _foo.getAttr4()), CardinalityOperator.All))'))
+		assertEquals(
+			'''
+			import com.rosetta.model.lib.expression.CardinalityOperator;
+			import com.rosetta.model.lib.mapper.MapperS;
+			import java.math.BigDecimal;
+			
+			import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+			
+			return areEqual(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getAttr3", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map("getAttr4", _foo -> _foo.getAttr4()), CardinalityOperator.All));
+			'''.toString,
+			formatGeneratedFunction(generatedFunction, scope)
+		)
 	}
 	
 	private def String formatGeneratedFunction(JavaStatementBuilder generatedFunction, JavaScope topScope) {
@@ -258,7 +321,7 @@ class ExpressionGeneratorTest {
 
 	private def RosettaIntLiteral createIntLiteral(int value) {
 		val mockIntLiteral = mock(RosettaIntLiteral)
-		when(mockIntLiteral.value).thenReturn(value)
+		when(mockIntLiteral.value).thenReturn(BigInteger.valueOf(value))
 		return mockIntLiteral
 	}
 	

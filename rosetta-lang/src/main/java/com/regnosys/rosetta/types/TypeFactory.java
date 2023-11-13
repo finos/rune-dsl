@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.types;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -53,21 +54,27 @@ public class TypeFactory {
 		this.emptyNothing = createListType(builtinTypes.NOTHING, empty);
 	}
 	
-	public RListType singleInt(Optional<Integer> digits, Optional<Integer> min, Optional<Integer> max) {
+	public RListType singleInt(Optional<Integer> digits, Optional<BigInteger> min, Optional<BigInteger> max) {
 		return createListType(constrainedInt(digits, min, max), single);
 	}
-	public RListType singleInt(int digits, int min, int max) {
+	public RListType singleInt(int digits, BigInteger min, BigInteger max) {
 		return createListType(constrainedInt(digits, min, max), single);
 	}
-	public RAliasType constrainedInt(Optional<Integer> digits, Optional<Integer> min, Optional<Integer> max) {
-		RNumberType refersTo = constrainedNumber(digits, Optional.of(0), min.map(BigDecimal::valueOf), max.map(BigDecimal::valueOf), Optional.empty());
+	public RListType singleInt(int digits, String min, String max) {
+		return createListType(constrainedInt(digits, min, max), single);
+	}
+	public RAliasType constrainedInt(Optional<Integer> digits, Optional<BigInteger> min, Optional<BigInteger> max) {
+		RNumberType refersTo = constrainedNumber(digits, Optional.of(0), min.map(BigDecimal::new), max.map(BigDecimal::new), Optional.empty());
 		LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(refersTo.getArguments());
 		args.remove(RNumberType.FRACTIONAL_DIGITS_PARAM_NAME);
 		args.remove(RNumberType.SCALE_PARAM_NAME);
 		return new RAliasType(builtinTypes.INT_FUNCTION, args, refersTo);
 	}
-	public RAliasType constrainedInt(int digits, int min, int max) {
+	public RAliasType constrainedInt(int digits, BigInteger min, BigInteger max) {
 		return constrainedInt(Optional.of(digits), Optional.of(min), Optional.of(max));
+	}
+	public RAliasType constrainedInt(int digits, String min, String max) {
+		return constrainedInt(Optional.of(digits), Optional.of(new BigInteger(min)), Optional.of(new BigInteger(max)));
 	}
 	
 	public RListType singleNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 

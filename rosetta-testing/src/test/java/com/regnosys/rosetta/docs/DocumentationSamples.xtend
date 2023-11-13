@@ -128,7 +128,6 @@ class DocumentationSamples {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.annotations.RosettaReport;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
-			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.reports.ReportFunction;
 			import java.util.Optional;
 			import javax.inject.Inject;
@@ -178,10 +177,10 @@ class DocumentationSamples {
 					
 					protected EuropeanParliamentReport.EuropeanParliamentReportBuilder assignOutput(EuropeanParliamentReport.EuropeanParliamentReportBuilder output, VehicleOwnership input) {
 						output
-							.setVehicleRegistrationID(MapperS.of(vehicleRegistrationID.evaluate(MapperS.of(input).get())).get());
+							.setVehicleRegistrationID(vehicleRegistrationID.evaluate(input));
 						
 						output
-							.setVehicleClassificationType(MapperS.of(vehicleClassificationType.evaluate(MapperS.of(input).get())).get());
+							.setVehicleClassificationType(vehicleClassificationType.evaluate(input));
 						
 						return Optional.ofNullable(output)
 							.map(o -> o.prune())

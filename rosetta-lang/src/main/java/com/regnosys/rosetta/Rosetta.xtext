@@ -490,7 +490,7 @@ BigDecimal returns ecore::EBigDecimal hidden():
 	('+' | '-')? ('.' INT | INT '.' | INT '.' INT) (('e' | 'E') ('+' | '-') INT | ID)?
 ;
 
-Integer returns ecore::EInt hidden():
+Integer returns ecore::EBigInteger hidden():
 	('+' | '-')? INT
 ;
 

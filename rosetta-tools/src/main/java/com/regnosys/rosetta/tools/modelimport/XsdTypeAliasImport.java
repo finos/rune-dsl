@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,7 +59,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 				.findFirst()
 				.orElseThrow();
 	}
-	private RosettaIntLiteral createIntLiteral(int value) {
+	private RosettaIntLiteral createIntLiteral(BigInteger value) {
 		RosettaIntLiteral lit = ExpressionFactory.eINSTANCE.createRosettaIntLiteral();
 		lit.setValue(value);
 		return lit;
@@ -73,7 +74,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 		lit.setValue(value);
 		return lit;
 	}
-	private TypeCallArgument createTypeArgument(ParametrizedRosettaType baseType, String parameterName, int value) {
+	private TypeCallArgument createTypeArgument(ParametrizedRosettaType baseType, String parameterName, BigInteger value) {
 		TypeCallArgument arg = RosettaFactory.eINSTANCE.createTypeCallArgument();
 		arg.setParameter(findParameter(parameterName, baseType));
 		arg.setValue(createIntLiteral(value));
@@ -110,13 +111,13 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 			}
 			// add type arguments
 			if (restr.getTotalDigits() != null) {
-				int digits = restr.getTotalDigits().getValue();
+				BigInteger digits = BigInteger.valueOf(restr.getTotalDigits().getValue());
 				TypeCallArgument arg = createTypeArgument(paramBaseType, RNumberType.DIGITS_PARAM_NAME, digits);
 				tc.getArguments().add(arg);
 			}
 			if (restr.getFractionDigits() != null) {
-				int fractionalDigits = restr.getFractionDigits().getValue();
-				if (fractionalDigits != 0) {
+				BigInteger fractionalDigits = BigInteger.valueOf(restr.getFractionDigits().getValue());
+				if (!fractionalDigits.equals(BigInteger.ZERO)) {
 					TypeCallArgument arg = createTypeArgument(paramBaseType, RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, fractionalDigits);
 					tc.getArguments().add(arg);
 				}
@@ -133,19 +134,19 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 			}
 			
 			if (restr.getLength() != null) {
-				int length = restr.getLength().getValue();
+				BigInteger length = BigInteger.valueOf(restr.getLength().getValue());
 				TypeCallArgument argMin = createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, length);
 				TypeCallArgument argMax = createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, length);
 				tc.getArguments().add(argMin);
 				tc.getArguments().add(argMax);
 			}
 			if (restr.getMinLength() != null) {
-				int minLength = restr.getMinLength().getValue();
+				BigInteger minLength = BigInteger.valueOf(restr.getMinLength().getValue());
 				TypeCallArgument arg = createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, minLength);
 				tc.getArguments().add(arg);
 			}
 			if (restr.getMaxLength() != null) {
-				int maxLength = restr.getMaxLength().getValue();
+				BigInteger maxLength = BigInteger.valueOf(restr.getMaxLength().getValue());
 				TypeCallArgument arg = createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, maxLength);
 				tc.getArguments().add(arg);
 			}

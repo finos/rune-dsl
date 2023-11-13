@@ -66,6 +66,7 @@ import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.RosettaRule
+import java.math.BigInteger
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -350,7 +351,7 @@ axiom TString
 axiom TNumber
 	G |- RosettaNumberLiteral num : singleNumber(num.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, num.value.scale), num.value, num.value)
 axiom TInt
-	G |- RosettaIntLiteral i : singleInt(if (i.value >= 0) i.value.toString.length else i.value.toString.length - 1, i.value, i.value)
+	G |- RosettaIntLiteral i : singleInt(if (i.value.signum >= 0) i.value.toString.length else i.value.toString.length - 1, i.value, i.value)
 axiom TPattern
 	G |- RosettaPatternLiteral p : singlePattern
 
@@ -511,7 +512,7 @@ axiom TAbsent
 axiom TOnlyExists // TA-OnlyExists
 	G |- RosettaOnlyExistsExpression e : singleBoolean
 axiom TCount // TA-Count
-	G |- RosettaCountOperation e : singleInt(Optional.^empty(), Optional.of(0), Optional.^empty())
+	G |- RosettaCountOperation e : singleInt(Optional.^empty(), Optional.of(BigInteger.ZERO), Optional.^empty())
 rule TOnlyElement // TA-OnlyElement
 	G |- RosettaOnlyElement e : RListType t
 from {

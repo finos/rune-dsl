@@ -50,7 +50,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
@@ -89,18 +88,13 @@ class DataRuleGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
-									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
-										return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-									}
-									else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
-										return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-									}
-									else {
-										return MapperS.<Boolean>ofNull();
-									}
-								}));
-								return result.get() == null ? ComparisonResult.success() : result;
+								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
+									return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+								}
+								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
+									return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
+								}
+								return ComparisonResult.successEmptyOperand("");
 							}
 							catch (Exception ex) {
 								return ComparisonResult.failure(ex.getMessage());
@@ -167,7 +161,6 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.CardinalityOperator;
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
@@ -206,25 +199,16 @@ class DataRuleGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								ComparisonResult result = MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
-									if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).getOrDefault(false)) {
-										return MapperUtils.toComparisonResult(MapperUtils.runSingle(() -> {
-											if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
-												return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-											}
-											else if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
-												return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
-											}
-											else {
-												return MapperS.<Boolean>ofNull();
-											}
-										}));
+								if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).getOrDefault(false)) {
+									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
+										return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
-									else {
-										return null;
+									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
+										return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
-								}));
-								return result.get() == null ? ComparisonResult.success() : result;
+									return ComparisonResult.successEmptyOperand("");
+								}
+								return ComparisonResult.successEmptyOperand("");
 							}
 							catch (Exception ex) {
 								return ComparisonResult.failure(ex.getMessage());

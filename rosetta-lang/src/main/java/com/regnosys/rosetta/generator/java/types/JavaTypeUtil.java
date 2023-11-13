@@ -45,13 +45,41 @@ public class JavaTypeUtil {
 	public final JavaClass MAPPER_LIST_OF_LISTS = JavaClass.from(MapperListOfLists.class);
 
 	public JavaParameterizedType wrap(JavaClass wrapperType, JavaType itemType) {
-		return new JavaParameterizedType(wrapperType, (JavaReferenceType)itemType);
+		return new JavaParameterizedType(wrapperType, itemType.toReferenceType());
 	}
 	public JavaParameterizedType wrap(Class<?> wrapperType, JavaType itemType) {
 		return wrap(JavaClass.from(wrapperType), itemType);
 	}
 	public JavaParameterizedType wrap(Class<?> wrapperType, RosettaExpression item) {
 		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
+	}
+	
+	public JavaParameterizedType wrapExtends(JavaClass wrapperType, JavaType itemType) {
+		return new JavaParameterizedType(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
+	}
+	public JavaParameterizedType wrapExtends(Class<?> wrapperType, JavaType itemType) {
+		return wrapExtends(JavaClass.from(wrapperType), itemType);
+	}
+	public JavaParameterizedType wrapExtends(Class<?> wrapperType, RosettaExpression item) {
+		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
+	}
+	
+	public JavaParameterizedType wrapExtendsIfNotPrimitive(JavaClass wrapperType, JavaType itemType) {
+		if (itemType instanceof JavaPrimitiveType || itemType instanceof JavaClass && JavaPrimitiveType.fromWrapper((JavaClass)itemType) != null) {
+			return wrapExtends(wrapperType, itemType);
+		} else {
+			return wrap(wrapperType, itemType);
+		}
+	}
+	public JavaParameterizedType wrapExtendsIfNotPrimitive(Class<?> wrapperType, JavaType itemType) {
+		return wrapExtendsIfNotPrimitive(JavaClass.from(wrapperType), itemType);
+	}
+	public JavaParameterizedType wrapExtendsIfNotPrimitive(Class<?> wrapperType, RosettaExpression item) {
+		return wrapExtendsIfNotPrimitive(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
+	}
+	
+	public boolean hasWildcardArgument(JavaType t) {
+		return t instanceof JavaParameterizedType && ((JavaParameterizedType) t).getArguments().get(0) instanceof JavaWildcardTypeArgument;
 	}
 	
 	public JavaType getItemType(JavaType t) {
@@ -147,5 +175,31 @@ public class JavaTypeUtil {
 	
 	public boolean isWrapper(JavaType t) {
 		return isList(t) || extendsMapper(t) || isMapperListOfLists(t);
+	}
+	
+	public JavaType join(JavaType t1, JavaType t2) {
+		if (t1.equals(t2)) {
+			return t1;
+		} else if (t1.toReferenceType().equals(t2.toReferenceType())) {
+			return t1.toReferenceType();
+		}
+		
+		if (JavaPrimitiveType.VOID.equals(t1)) {
+			return t2;
+		} else if (JavaPrimitiveType.VOID.equals(t2)) {
+			return t1;
+		} else if (VOID.equals(t1)) {
+			return t2.toReferenceType();
+		} else if (VOID.equals(t2)) {
+			return t1.toReferenceType();
+		}
+		
+		if (t1 instanceof JavaClass && ((JavaClass) t1).isAssignableFrom(t2)) {
+			return t1;
+		} else if (t2 instanceof JavaClass && ((JavaClass) t2).isAssignableFrom(t1)) {
+			return t2;
+		}
+		
+		throw new IllegalArgumentException("Joining Java types `" + t1 + "` and `" + t2 + "` is not supported yet.");
 	}
 }

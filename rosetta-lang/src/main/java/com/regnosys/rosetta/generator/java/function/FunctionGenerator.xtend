@@ -301,7 +301,7 @@ class FunctionGenerator {
 						«IF aliasOut.get(alias)»
 							«val multi = cardinality.isMulti(alias.expression)»
 							«val itemReturnType = shortcutJavaType(alias)»
-							«val returnType = multi ? new JavaParameterizedType(JavaClass.from(List), itemReturnType) : itemReturnType»
+							«val returnType = multi ? List.wrap(itemReturnType) : itemReturnType»
 							«val body = expressionGenerator.javaCode(alias.expression, alias.shortcutExpressionJavaType, aliasScope)
 									.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', returnType)]
 							»

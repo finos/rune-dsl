@@ -22,6 +22,7 @@ import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.expression.ComparisonResult
 import java.util.Arrays
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.rosetta.util.types.JavaPrimitiveType
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -54,34 +55,39 @@ class TypeCoercionTest {
 		var String expected
 		
 		expected = '''
-		{
-			final Integer integer = 42;
-			return integer == null ? null : integer.longValue();
-		}
+		return (long) 42;
 		'''
-		assertCoercion(expected, '''42''', Integer, Long)
+		assertCoercion(expected, '''42''', JavaPrimitiveType.INT, Long)
 		
 		expected = '''
 		import java.math.BigDecimal;
 		
 		
 		{
-			final Integer integer = 42;
+			final Integer integer = Integer.valueOf(42);
 			return integer == null ? null : BigDecimal.valueOf(integer);
 		}
 		'''
-		assertCoercion(expected, '''42''', Integer, BigDecimal)
+		assertCoercion(expected, '''«Integer».valueOf(42)''', Integer, BigDecimal)
 		
 		expected = '''
 		import java.math.BigInteger;
 		
 		
 		{
-			final BigInteger bigInteger = 42;
+			final BigInteger bigInteger = BigInteger.valueOf(42);
 			return bigInteger == null ? null : bigInteger.longValueExact();
 		}
 		'''
-		assertCoercion(expected, '''42''', BigInteger, Long)
+		assertCoercion(expected, '''«BigInteger».valueOf(42)''', BigInteger, Long)
+		
+		expected = '''
+		{
+			final Boolean _boolean = Boolean.valueOf(true);
+			return _boolean == null ? false : _boolean;
+		}
+		'''
+		assertCoercion(expected, '''«Boolean».valueOf(true)''', Boolean, JavaPrimitiveType.BOOLEAN)
 		
 		expected = '''
 		return null;
@@ -97,31 +103,29 @@ class TypeCoercionTest {
 		import com.rosetta.model.lib.mapper.MapperS;
 		
 		
-		{
-			final Integer integer = 42;
-			return integer == null ? MapperS.ofNull() : MapperS.of(integer);
-		}
+		return MapperS.of(42);
 		'''
-		assertCoercion(expected, '''42''', Integer, wrapper(MapperS, Integer))
+		assertCoercion(expected, '''42''', JavaPrimitiveType.INT, wrapper(MapperS, Integer))
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
 		import java.math.BigDecimal;
+		import java.math.BigInteger;
 		import java.util.Arrays;
 		
 		
 		{
-			final BigDecimal bigDecimal = 42;
-			return bigDecimal == null ? MapperC.ofNull() : MapperC.of(Arrays.asList(bigDecimal.toBigIntegerExact()));
+			final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+			return bigDecimal == null ? MapperC.<BigInteger>ofNull() : MapperC.of(Arrays.asList(bigDecimal.toBigIntegerExact()));
 		}
 		'''
-		assertCoercion(expected, '''42''', BigDecimal, wrapper(MapperC, BigInteger))
+		assertCoercion(expected, '''«BigDecimal».valueOf(42)''', BigDecimal, wrapper(MapperC, BigInteger))
 		
 		expected = '''
 		import java.util.Collections;
 		
 		
-		return Collections.emptyList();
+		return Collections.<Long>emptyList();
 		'''
 		assertCoercion(expected, '''null''', Void, wrapper(List, Long))
 				
@@ -130,12 +134,9 @@ class TypeCoercionTest {
 		import com.rosetta.model.lib.mapper.MapperS;
 		
 		
-		{
-			final Boolean _boolean = true;
-			return _boolean == null ? ComparisonResult.successEmptyOperand("") : ComparisonResult.of(MapperS.of(_boolean));
-		}
+		return ComparisonResult.of(MapperS.of(Boolean.valueOf(true)));
 		'''
-		assertCoercion(expected, '''true''', Boolean, ComparisonResult)
+		assertCoercion(expected, '''«Boolean».valueOf(true)''', Boolean, ComparisonResult)
 	}
 	
 	@Test
@@ -193,11 +194,11 @@ class TypeCoercionTest {
 		var String expected
 		
 		expected = '''
+		import com.rosetta.model.lib.expression.ComparisonResult;
 		import com.rosetta.model.lib.mapper.MapperS;
-		import com.rosetta.model.lib.mapper.MapperUtils;
 		
 		
-		return MapperUtils.toComparisonResult(MapperS.of(true));
+		return ComparisonResult.of(MapperS.of(true));
 		'''
 		assertCoercion(expected, '''«MapperS».of(true)''', wrapper(MapperS, Boolean), ComparisonResult)
 		
@@ -231,7 +232,7 @@ class TypeCoercionTest {
 		import java.util.Collections;
 		
 		
-		return Collections.emptyList();
+		return Collections.<String>emptyList();
 		'''
 		assertCoercion(expected, '''«MapperS».ofNull()''', wrapper(MapperS, Void), wrapper(List, String))
 	}

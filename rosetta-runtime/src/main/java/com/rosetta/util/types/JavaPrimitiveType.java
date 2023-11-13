@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class JavaPrimitiveType implements JavaType {
 	private static Map<Class<?>, JavaPrimitiveType> typeMap = new HashMap<>();
+	private static Map<JavaClass, JavaPrimitiveType> wrapperTypeMap = new HashMap<>();
 	
 	public static JavaPrimitiveType INT = create(int.class, Integer.class);
 	public static JavaPrimitiveType BYTE = create(byte.class, Byte.class);
@@ -29,11 +30,18 @@ public class JavaPrimitiveType implements JavaType {
 	private static JavaPrimitiveType create(Class<?> type, Class<?> wrapperType) {
 		JavaPrimitiveType t = new JavaPrimitiveType(type, wrapperType);
 		typeMap.put(type, t);
+		wrapperTypeMap.put(JavaClass.from(wrapperType), t);
 		return t;
 	}
 	
 	public static JavaPrimitiveType from(Class<?> type) {
 		return typeMap.get(type);
+	}
+	public static JavaPrimitiveType fromWrapper(Class<?> wrapperType) {
+		return fromWrapper(JavaClass.from(wrapperType));
+	}
+	public static JavaPrimitiveType fromWrapper(JavaClass wrapperType) {
+		return wrapperTypeMap.get(wrapperType);
 	}
 	
 	public Class<?> getType() {
@@ -43,6 +51,7 @@ public class JavaPrimitiveType implements JavaType {
 		return wrapperType;
 	}
 	
+	@Override
 	public JavaClass toReferenceType() {
 		return JavaClass.from(wrapperType);
 	}

@@ -1,6 +1,7 @@
 package com.rosetta.model.lib;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Objects;
 
@@ -38,6 +39,9 @@ public class RosettaNumber extends Number implements Comparable<RosettaNumber> {
 		return new RosettaNumber(Double.toString(value));
 	}
 	public static RosettaNumber valueOf(long value) {
+		return new RosettaNumber(new BigDecimal(value, DECIMAL_PRECISION));
+	}
+	public static RosettaNumber valueOf(BigInteger value) {
 		return new RosettaNumber(new BigDecimal(value, DECIMAL_PRECISION));
 	}
 	public static RosettaNumber valueOf(BigDecimal value) {
