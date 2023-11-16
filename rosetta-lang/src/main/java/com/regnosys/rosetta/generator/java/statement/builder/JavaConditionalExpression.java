@@ -18,6 +18,10 @@ import com.rosetta.util.types.JavaType;
 
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-ConditionalExpression
+ * 
+ * Example: `cond ? 42 : x + 1`
+ * 
+ * See `JavaStatementBuilder` for more documentation.
  */
 public class JavaConditionalExpression extends JavaStatementBuilder implements JavaLambdaBody {
 	private final JavaExpression condition;

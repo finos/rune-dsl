@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * A simplified model of types in Java, based on the Java specs:
- * https://docs.oracle.com/javase/specs/jls/se19/html/jls-4.html
+ * A simplified model of types in Java, based on the Java specification:
+ * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html
  */
 public interface JavaType {
 	public static <T> JavaType from(Type t) {

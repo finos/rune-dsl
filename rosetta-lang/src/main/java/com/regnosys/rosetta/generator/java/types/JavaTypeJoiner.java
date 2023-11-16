@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.generator.java.types;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,7 +20,22 @@ import com.rosetta.util.types.JavaTypeVariable;
 import com.rosetta.util.types.JavaWildcardTypeArgument;
 
 /**
- * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10
+ * A service that can compute the least common supertype of two given Java types.
+ * 
+ * Examples: given three classes A, B, C with B <: A.
+ * visitTypes(A,             B)                          -> A
+ * visitTypes(A,             C)                          -> Object
+ * visitTypes(B,             B)                          -> B
+ * visitTypes(List<A>,       List<B>)                    -> List<? extends A>
+ * visitTypes(List<A>,       List<C>)                    -> List<?>
+ * visitTypes(List<A>,       B)                          -> Object
+ * visitTypes(boolean,       Boolean)                    -> Boolean
+ * visitTypes(int,           float)                      -> float
+ * visitTypes(Integer,       BigDecimal)                 -> Number
+ * visitTypes(List<Integer>, List<? extends BigDecimal>) -> List<? extends Number>
+ * 
+ * Based on the subtype relation of the Java specification:
+ * https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10
  */
 public class JavaTypeJoiner extends BinaryCommunicativeJavaTypeVisitor<JavaType> {
 	@Inject

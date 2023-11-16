@@ -7,6 +7,10 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-Assignment
+ * 
+ * Example: `x = 42;`
+ * 
+ * See `JavaStatement` for more documentation.
  */
 public class JavaAssignment extends JavaStatement {
 

@@ -15,6 +15,21 @@ import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.rosetta.util.types.JavaType;
 
+/**
+ * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-IfThenElseStatement
+ * 
+ * Example:
+ * ```
+ * if (cond) {
+ *     int x = 42;
+ *     x
+ * } else {
+ *     -1
+ * }
+ * ```
+ * 
+ * See `JavaStatementBuilder` for more documentation.
+ */
 public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	private final JavaExpression condition;
 	private final JavaStatementBuilder thenBranch;

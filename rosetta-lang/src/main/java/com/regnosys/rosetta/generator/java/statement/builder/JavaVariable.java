@@ -6,6 +6,11 @@ import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
 import com.rosetta.util.types.JavaType;
 
+/**
+ * A Java variable.
+ * 
+ * See `JavaStatementBuilder` for more documentation.
+ */
 public class JavaVariable extends JavaExpression {
 	private final GeneratedIdentifier id;
 

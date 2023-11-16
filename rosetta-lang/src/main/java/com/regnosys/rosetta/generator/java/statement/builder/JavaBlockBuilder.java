@@ -11,6 +11,19 @@ import com.regnosys.rosetta.generator.java.statement.JavaStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.rosetta.util.types.JavaType;
 
+/**
+ * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-Block
+ * 
+ * Example:
+ * ```
+ * {
+ *     int x = 42;
+ *     x
+ * }
+ * ```
+ * 
+ * See `JavaStatementBuilder` for more documentation.
+ */
 public class JavaBlockBuilder extends JavaStatementBuilder {
 
 	private final JavaStatementList statements;

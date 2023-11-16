@@ -18,7 +18,15 @@ import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 
-public abstract class JavaExpression extends JavaStatementBuilder implements JavaLambdaBody {	
+/**
+ * An arbitrary Java expression.
+ * 
+ * See `JavaStatementBuilder` for more documentation.
+ */
+public abstract class JavaExpression extends JavaStatementBuilder implements JavaLambdaBody {
+	/**
+	 * An expression representing the value `null`.
+	 */
 	public static final JavaExpression NULL = new JavaExpression(JavaReferenceType.NULL_TYPE) {	
 		@Override
 		public void appendTo(TargetStringConcatenation target) {

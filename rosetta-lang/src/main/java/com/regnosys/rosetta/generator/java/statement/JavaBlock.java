@@ -4,6 +4,16 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-Block
+ * 
+ * Example:
+ * ```
+ * {
+ *     int x = 42;
+ *     return x;
+ * }
+ * ```
+ * 
+ * See `JavaStatement` for more documentation.
  */
 public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 

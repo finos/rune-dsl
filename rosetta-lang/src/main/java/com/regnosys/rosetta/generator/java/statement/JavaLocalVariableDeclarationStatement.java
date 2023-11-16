@@ -8,6 +8,12 @@ import com.rosetta.util.types.JavaType;
 
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-LocalVariableDeclarationStatement
+ * 
+ * Examples:
+ * - `final int x = 42;`
+ * - `float y;`
+ * 
+ * See `JavaStatement` for more documentation.
  */
 public class JavaLocalVariableDeclarationStatement extends JavaStatement {
 	private final boolean isFinal;

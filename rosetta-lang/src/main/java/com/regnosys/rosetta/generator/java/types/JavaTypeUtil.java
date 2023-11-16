@@ -20,7 +20,6 @@ import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaGenericTypeDeclaration;
 import com.rosetta.util.types.JavaParameterizedType;
-import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeArgument;
@@ -51,11 +50,16 @@ public class JavaTypeUtil {
 	public final JavaClass<Cloneable> CLONEABLE = JavaClass.CLONEABLE;
 	public final JavaClass<Serializable> SERIALIZABLE = JavaClass.SERIALIZABLE;
 	
+	@SuppressWarnings("rawtypes")
 	public final JavaClass<List> LIST = JavaClass.from(List.class);
+	@SuppressWarnings("rawtypes")
 	public final JavaClass<Mapper> MAPPER = JavaClass.from(Mapper.class);
+	@SuppressWarnings("rawtypes")
 	public final JavaClass<MapperS> MAPPER_S = JavaClass.from(MapperS.class);
+	@SuppressWarnings("rawtypes")
 	public final JavaClass<MapperC> MAPPER_C = JavaClass.from(MapperC.class);
 	public final JavaClass<ComparisonResult> COMPARISON_RESULT = JavaClass.from(ComparisonResult.class);
+	@SuppressWarnings("rawtypes")
 	public final JavaClass<MapperListOfLists> MAPPER_LIST_OF_LISTS = JavaClass.from(MapperListOfLists.class);
 
 	public <T> JavaParameterizedType<T> wrap(Class<T> wrapperType, JavaType itemType) {
