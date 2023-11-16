@@ -4,6 +4,7 @@ import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,9 +18,9 @@ import java.util.stream.Stream;
 
 public class MapperC<T> implements MapperBuilder<T> {
 	
-	private final List<MapperItem<T,?>> items;
+	private final List<MapperItem<? extends T, ?>> items;
 	
-	protected MapperC(List<MapperItem<T,?>> items) {
+	protected MapperC(List<MapperItem<? extends T,?>> items) {
 		this.items = items;
 	}
 	
@@ -28,10 +29,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	@SafeVarargs
-	public static <T> MapperC<T> of(MapperBuilder<T>... ts) {
-		List<MapperItem<T, ?>> items = new ArrayList<>();
+	public static <T> MapperC<T> of(MapperBuilder<? extends T>... ts) {
+		List<MapperItem<? extends T, ?>> items = new ArrayList<>();
 		if (ts != null) {
-			for (MapperBuilder<T> ele : ts) {
+			for (MapperBuilder<? extends T> ele : ts) {
 				if (ele != null) {
 					ele.getItems().forEach(item -> items.add(item));
 				}
@@ -41,7 +42,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 
 	public static <T> MapperC<T> of(List<? extends T> ts) {
-		List<MapperItem<T, ?>> items = new ArrayList<>();
+		List<MapperItem<? extends T, ?>> items = new ArrayList<>();
 		if (ts != null) {
 			for (T ele : ts) {
 				if (ele == null) {
@@ -64,7 +65,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	@Override
 	public <F> MapperC<F> map(NamedFunction<T, F> mappingFunc) {
-		List<MapperItem<F,?>> results = new ArrayList<>();
+		List<MapperItem<? extends F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {
 			results.add(getMapperItem(items.get(i), mappingFunc));
@@ -82,7 +83,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	@Override
 	public <F> MapperC<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
-		List<MapperItem<F,?>> results = new ArrayList<>();
+		List<MapperItem<? extends F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {
 			results.addAll(getMapperItems(items.get(i), mappingFunc));
@@ -123,7 +124,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F> MapperC<F> mapItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
 		return MapperC.of(nonErrorItems()
-				.map(item -> new MapperS<>(item))
+				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.map(m -> mappingFunc.apply(m))
 				.map(MapperS::get)
 				.collect(Collectors.toList()));
@@ -138,7 +139,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F> MapperListOfLists<F> mapItemToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
 		return MapperListOfLists.of(nonErrorItems()
-				.map(item -> new MapperS<>(item))
+				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.map(m -> mappingFunc.apply(m))
 				.map(MapperC::getMulti)
 				.collect(Collectors.toList()));
@@ -196,6 +197,30 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 	
 	/**
+	 * Sum list of longs.
+	 * 
+	 * @return total of summed longs.
+	 */
+	public MapperS<Long> sumLong() {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(Long.class::cast)
+				.reduce(0l, Long::sum));
+	}
+	
+	/**
+	 * Sum list of numbers.
+	 * 
+	 * @return total of summed numbers.
+	 */
+	public MapperS<BigInteger> sumBigInteger() {
+		return MapperS.of(nonErrorItems()
+				.map(MapperItem::getMappedObject)
+				.map(BigInteger.class::cast)
+				.reduce(BigInteger.ZERO, BigInteger::add));
+	}
+	
+	/**
 	 * Sum list of numbers.
 	 * 
 	 * @return total of summed numbers.
@@ -239,7 +264,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return nonErrorItems()
-				.map(item -> new MapperS<>(item))
+				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.filter(item -> comparableGetter.apply(item).get() != null)
 				.min(Comparator.comparing(item -> comparableGetter.apply(item).get()))
 				.orElse(MapperS.ofNull());
@@ -265,7 +290,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return nonErrorItems()
-				.map(item -> new MapperS<>(item))
+				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.filter(item -> comparableGetter.apply(item).get() != null)
 				.max(Comparator.comparing(item -> comparableGetter.apply(item).get()))
 				.orElse(MapperS.ofNull());
@@ -302,7 +327,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return reversed list
 	 */
 	public MapperC<T> reverse() {
-		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
+		List<MapperItem<? extends T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
 		Collections.reverse(nonErrorItems);
 		return new MapperC<>(nonErrorItems);
 	}
@@ -315,7 +340,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	public MapperS<T> first() {
 		return nonErrorItems()
 				.findFirst()
-				.map(MapperS::new)
+				.<MapperS<T>>map(MapperS::new)
 				.orElse(MapperS.ofNull());
 	}
 	
@@ -327,7 +352,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	public MapperS<T> last() {
 		return nonErrorItems()
 				.reduce((first, second) -> second)
-				.map(MapperS::new)
+				.<MapperS<T>>map(MapperS::new)
 				.orElse(MapperS.ofNull());
 	}
 	
@@ -337,7 +362,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return list item at index
 	 */
 	public MapperS<T> getItem(MapperS<Integer> indexGetter) {
-		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
+		List<MapperItem<? extends T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
 		Integer index = indexGetter.get();
 		if (index != null && index < nonErrorItems.size()) {
 			return new MapperS<>(nonErrorItems.get(index));
@@ -351,7 +376,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return list without specified item
 	 */
 	public MapperC<T> removeItem(MapperS<Integer> indexGetter) {
-		List<MapperItem<T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
+		List<MapperItem<? extends T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
 		Integer index = indexGetter.get();
 		if (index != null && index < nonErrorItems.size()) {
 			nonErrorItems.remove(index.intValue());
@@ -359,11 +384,11 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return new MapperC<>(nonErrorItems);
 	}
 	
-	protected Stream<MapperItem<T,?>> nonErrorItems() {
+	protected Stream<MapperItem<? extends T,?>> nonErrorItems() {
 		return items.stream().filter(i->!i.isError());
 	}
 
-	private Stream<MapperItem<T,?>> errorItems() {
+	private Stream<MapperItem<? extends T,?>> errorItems() {
 		return items.stream().filter(MapperItem::isError);
 	}
 	
@@ -444,7 +469,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	public MapperC<T> unionSame(MapperBuilder<T> other) {
 		if(other instanceof MapperC) {
 			MapperC<T> otherMapperC = (MapperC<T>) other;
-			List<MapperItem<T,?>> unionItems = new ArrayList<>();
+			List<MapperItem<? extends T,?>> unionItems = new ArrayList<>();
 			unionItems.addAll(this.items);
 			unionItems.addAll(otherMapperC.items);
 			return new MapperC<>(unionItems);
@@ -461,7 +486,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	public MapperC<Object> unionDifferent(MapperBuilder<?> other) {
 		if(other instanceof MapperC) {
 			MapperC<?> otherMapperC = (MapperC<?>) other;
-			List<MapperItem<Object,?>> unionItems = new ArrayList<>();
+			List<MapperItem<?,?>> unionItems = new ArrayList<>();
 			unionItems.addAll(upcast(this));
 			unionItems.addAll(upcast(otherMapperC));
 			return new MapperC<>(unionItems);
@@ -504,7 +529,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	}
 
 	@Override
-	public Stream<MapperItem<T, ?>> getItems() {
+	public Stream<MapperItem<? extends T, ?>> getItems() {
 		return items.stream();
 	}
 }

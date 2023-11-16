@@ -1,5 +1,9 @@
 package com.rosetta.util.types;
 
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Map;
 import java.util.Objects;
 
 public class JavaArrayType implements JavaReferenceType {
@@ -10,11 +14,19 @@ public class JavaArrayType implements JavaReferenceType {
 		this.baseType = baseType;
 	}
 	
-	public static JavaArrayType from(Class<?> t) {
-		if (!t.isArray()) {
+	public static JavaArrayType from(Type t, Map<TypeVariable<?>, JavaTypeVariable> context) {
+		if (t instanceof Class<?>) {
+			Class<?> c = (Class<?>) t;
+			if (!c.isArray()) {
+				return null;
+			}
+			return new JavaArrayType(JavaType.from(c.getComponentType(), context));
+		} else if (t instanceof GenericArrayType) {
+			GenericArrayType at = (GenericArrayType) t;
+			return new JavaArrayType(JavaType.from(at.getGenericComponentType(), context));
+		} else {
 			return null;
 		}
-		return new JavaArrayType(JavaType.from(t.getComponentType()));
 	}
 	
 	public JavaType getBaseType() {
@@ -29,6 +41,20 @@ public class JavaArrayType implements JavaReferenceType {
 	@Override
 	public String getSimpleName() {
 		return baseType.getSimpleName();
+	}
+	
+	@Override
+	public boolean isSubtypeOf(JavaType other) {
+		if (other.equals(JavaClass.OBJECT) || other.equals(JavaClass.CLONEABLE) || other.equals(JavaClass.SERIALIZABLE)) {
+			return true;
+		}
+		if (other instanceof JavaArrayType && baseType instanceof JavaReferenceType) {
+			JavaType otherBaseType = ((JavaArrayType)other).getBaseType();
+			if (otherBaseType instanceof JavaReferenceType) {
+				return baseType.isSubtypeOf(otherBaseType);
+			}
+		}
+		return false;
 	}
 	
 	@Override

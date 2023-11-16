@@ -70,6 +70,7 @@ import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.RosettaRule
+import java.math.BigInteger
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 
@@ -158,8 +159,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				}
 				featureType
 			}
-			RosettaEnumValue:
+			RosettaEnumValue: {
 				new REnumType(feature.enumeration)
+			}
 			default:
 				new RErrorType("Cannot infer type of feature.")
 		}
@@ -256,7 +258,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseCountOperation(RosettaCountOperation expr, Map<EObject, RType> context) {
-		constrainedInt(Optional.empty(), Optional.of(0), Optional.empty())
+		constrainedInt(Optional.empty(), Optional.of(BigInteger.ZERO), Optional.empty())
 	}
 	
 	override protected caseDisjointOperation(RosettaDisjointExpression expr, Map<EObject, RType> context) {
@@ -284,7 +286,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		if (!extensions.isResolved(feature)) {
 			return null
 		}
-		feature.safeRType(context)
+		if (feature instanceof RosettaEnumValue) {
+			expr.receiver.safeRType(context)
+		} else {
+			feature.safeRType(context)
+		}
 	}
 	
 	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> context) {
@@ -312,7 +318,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseIntLiteral(RosettaIntLiteral expr, Map<EObject, RType> context) {
-		constrainedInt(if (expr.value >= 0) expr.value.toString.length else expr.value.toString.length - 1, expr.value, expr.value)
+		constrainedInt(if (expr.value.signum >= 0) expr.value.toString.length else expr.value.toString.length - 1, expr.value, expr.value)
 	}
 	
 	override protected caseJoinOperation(JoinOperation expr, Map<EObject, RType> context) {

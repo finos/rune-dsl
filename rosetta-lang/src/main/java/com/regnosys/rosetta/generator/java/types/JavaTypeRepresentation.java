@@ -8,7 +8,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 import com.rosetta.util.types.JavaArrayType;
 import com.rosetta.util.types.JavaClass;
-import com.rosetta.util.types.JavaInterface;
 import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
@@ -65,18 +64,13 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 		}
 
 		@Override
-		public void visitType(JavaClass type) {
+		public void visitType(JavaClass<?> type) {
 			target.append(type);
 		}
 
 		@Override
-		public void visitType(JavaInterface type) {
-			target.append(type);
-		}
-
-		@Override
-		public void visitType(JavaParameterizedType type) {
-			type.getBaseType().accept((JavaTypeVisitor)this);
+		public void visitType(JavaParameterizedType<?> type) {
+			type.getGenericTypeDeclaration().getBaseType().accept((JavaTypeVisitor)this);
 			target.append("<");
 			List<JavaTypeArgument> arguments = type.getArguments();
 			if (!arguments.isEmpty()) {
@@ -97,6 +91,12 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 		@Override
 		public void visitType(JavaTypeVariable type) {
 			target.append(type.getName());
+		}
+		
+		@Override
+		public void visitNullType() {
+			// The null type has no representation - this will throw.
+			target.append(JavaReferenceType.NULL_TYPE.getSimpleName());
 		}
 
 		@Override

@@ -197,6 +197,22 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		
 		this.keySynonyms.put(key, keyWithIdentifier);
 	}
+	/**
+	 * Create another key for a given identifier.
+	 * 
+	 * @throws IllegalStateException if this scope is closed.
+	 * @throws IllegalStateException if this scope already contains an identifier for `key`.
+	 */
+	public void createSynonym(Object key, GeneratedIdentifier identifier) {
+		if (isClosed) {
+			throw new IllegalStateException("Cannot create a new synonym in a closed scope. (" + normalizeKey(key) + " -> " + normalizeKey(identifier) + ")\n" + this);
+		}
+		if (this.getIdentifier(key).isPresent()) {
+			throw new IllegalStateException("There is already a name defined for key `" + normalizeKey(key) + "`.\n" + this);
+		}
+		
+		this.identifiers.put(key, identifier);
+	}
 	
 	/**
 	 * Mark this scope as closed. New identifiers cannot be added to a closed scope.
@@ -251,7 +267,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	}
 	private LinkedListMultimap<String, GeneratedIdentifier> localIdentifiersByDesiredName() {
 		LinkedListMultimap<String, GeneratedIdentifier> result = LinkedListMultimap.create();
-		identifiers.values().forEach(id -> result.put(id.getDesiredName(), id));
+		identifiers.values().stream().distinct().forEach(id -> result.put(id.getDesiredName(), id));
 		return result;
 	}
 	protected Set<String> getTakenNames() {

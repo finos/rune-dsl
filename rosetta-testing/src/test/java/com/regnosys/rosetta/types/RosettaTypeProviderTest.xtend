@@ -36,30 +36,6 @@ class RosettaTypeProviderTest {
 		
 		model.assertNoIssues
 	}
-	
-	@Test
-	def void testEnumCompatibility() {
-		'''
-			namespace "test"
-			version "test"
-			
-			isProduct root ProdType;
-			
-			enum Enumerate: X Y Z
-			enum EnumerateExtended extends Enumerate: A  B  C
-			
-			type ProdType:
-				attr Enumerate (0..1)
-				attrEx EnumerateExtended (0..1)
-			
-			func Qualify_Prod:
-				[qualification Product]
-				inputs: prodType ProdType (1..1)
-				output: is_product boolean (1..1)
-				set is_product:
-					prodType -> attrEx = Enumerate -> X
-		'''.parseRosettaWithNoErrors
-	}
 
 	@Test
 	def void testBinaryExpressionCommonType() {

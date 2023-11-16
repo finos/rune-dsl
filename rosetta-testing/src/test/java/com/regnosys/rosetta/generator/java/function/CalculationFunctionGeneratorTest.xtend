@@ -52,7 +52,6 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Period;
 			import com.rosetta.test.model.PeriodEnum;
@@ -92,7 +91,7 @@ class CalculationFunctionGeneratorTest {
 				
 					protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
 				
-					protected abstract Mapper<Integer> i(PeriodEnum in1, Period in2);
+					protected abstract MapperS<Integer> i(PeriodEnum in1, Period in2);
 				
 					public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFuncMONTH {
 						@Override
@@ -102,13 +101,13 @@ class CalculationFunctionGeneratorTest {
 						}
 						
 						protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-							out = MapperMaths.<BigDecimal, Integer, BigDecimal>multiply(MapperS.of(i(in1, in2).get()), MapperS.of(new BigDecimal("30.0"))).get();
+							out = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(i(in1, in2).<BigDecimal>map("Type coercion", integer -> integer == null ? null : BigDecimal.valueOf(integer)), MapperS.of(new BigDecimal("30.0"))).get();
 							
 							return out;
 						}
 						
 						@Override
-						protected Mapper<Integer> i(PeriodEnum in1, Period in2) {
+						protected MapperS<Integer> i(PeriodEnum in1, Period in2) {
 							return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
 						}
 					}
@@ -138,7 +137,6 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			
 			
@@ -157,7 +155,7 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate(Integer one);
 			
-				protected abstract Mapper<Integer> oneA(Integer one);
+				protected abstract MapperS<Integer> oneA(Integer one);
 			
 				public static class CalcDefault extends Calc {
 					@Override
@@ -167,14 +165,14 @@ class CalculationFunctionGeneratorTest {
 					}
 					
 					protected Integer assignOutput(Integer out, Integer one) {
-						out = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(oneA(one).get()), MapperS.of(oneA(one).get())).get();
+						out = MapperMaths.<Integer, Integer, Integer>add(oneA(one), oneA(one)).get();
 						
 						return out;
 					}
 					
 					@Override
-					protected Mapper<Integer> oneA(Integer one) {
-						return MapperS.of(Integer.valueOf(1));
+					protected MapperS<Integer> oneA(Integer one) {
+						return MapperS.of(1);
 					}
 				}
 			}
@@ -204,7 +202,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.functions.Max;
 			import com.rosetta.model.lib.functions.Min;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			
 			
@@ -224,9 +221,9 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
 			
-				protected abstract Mapper<Integer> a1(Integer arg1, Integer arg2);
+				protected abstract MapperS<Integer> a1(Integer arg1, Integer arg2);
 			
-				protected abstract Mapper<Integer> a2(Integer arg1, Integer arg2);
+				protected abstract MapperS<Integer> a2(Integer arg1, Integer arg2);
 			
 				public static class CalcDefault extends Calc {
 					@Override
@@ -236,19 +233,19 @@ class CalculationFunctionGeneratorTest {
 					}
 					
 					protected Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
-						res = MapperMaths.<Integer, Integer, Integer>add(MapperS.of(a1(arg1, arg2).get()), MapperMaths.<Integer, Integer, Integer>multiply(MapperS.of(a2(arg1, arg2).get()), MapperS.of(Integer.valueOf(215)))).get();
+						res = MapperMaths.<Integer, Integer, Integer>add(a1(arg1, arg2), MapperMaths.<Integer, Integer, Integer>multiply(a2(arg1, arg2), MapperS.of(215))).get();
 						
 						return res;
 					}
 					
 					@Override
-					protected Mapper<Integer> a1(Integer arg1, Integer arg2) {
-						return MapperS.of(new Min().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+					protected MapperS<Integer> a1(Integer arg1, Integer arg2) {
+						return MapperS.of(new Min().execute(1, 2));
 					}
 					
 					@Override
-					protected Mapper<Integer> a2(Integer arg1, Integer arg2) {
-						return MapperS.of(new Max().execute(MapperS.of(Integer.valueOf(1)).get(), MapperS.of(Integer.valueOf(2)).get()));
+					protected MapperS<Integer> a2(Integer arg1, Integer arg2) {
+						return MapperS.of(new Max().execute(1, 2));
 					}
 				}
 			}
@@ -279,7 +276,6 @@ class CalculationFunctionGeneratorTest {
 				set res -> res2:  arg1 + arg2 
 		'''.generateCode
 		val calcJava = calculation.get("com.rosetta.test.model.functions.Calc")
-		calculation.compileToClasses
 		val expected = '''
 			package com.rosetta.test.model.functions;
 			
@@ -287,7 +283,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
 			import com.rosetta.test.model.FoncOut;
@@ -324,9 +319,9 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
 			
-				protected abstract Mapper<Date> arg1(FuncIn funIn);
+				protected abstract MapperS<Date> arg1(FuncIn funIn);
 			
-				protected abstract Mapper<LocalTime> arg2(FuncIn funIn);
+				protected abstract MapperS<LocalTime> arg2(FuncIn funIn);
 			
 				public static class CalcDefault extends Calc {
 					@Override
@@ -337,10 +332,10 @@ class CalculationFunctionGeneratorTest {
 					
 					protected FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
 						res
-							.setRes1(MapperMaths.<LocalDateTime, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+							.setRes1(MapperMaths.<LocalDateTime, Date, LocalTime>add(arg1(funIn), arg2(funIn)).get());
 						
 						res
-							.setRes2(MapperMaths.<LocalDateTime, Date, LocalTime>add(MapperS.of(arg1(funIn).get()), MapperS.of(arg2(funIn).get())).get());
+							.setRes2(MapperMaths.<LocalDateTime, Date, LocalTime>add(arg1(funIn), arg2(funIn)).get());
 						
 						return Optional.ofNullable(res)
 							.map(o -> o.prune())
@@ -348,18 +343,19 @@ class CalculationFunctionGeneratorTest {
 					}
 					
 					@Override
-					protected Mapper<Date> arg1(FuncIn funIn) {
+					protected MapperS<Date> arg1(FuncIn funIn) {
 						return MapperS.of(funIn).<Date>map("getVal1", funcIn -> funcIn.getVal1());
 					}
 					
 					@Override
-					protected Mapper<LocalTime> arg2(FuncIn funIn) {
+					protected MapperS<LocalTime> arg2(FuncIn funIn) {
 						return MapperS.of(funIn).<LocalTime>map("getVal2", funcIn -> funcIn.getVal2());
 					}
 				}
 			}
 			'''
 		assertEquals(expected, calcJava)
+		calculation.compileToClasses
 	}
 
 	@Test
@@ -395,7 +391,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.expression.MapperMaths;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
 			import com.rosetta.test.model.FuncIn;
@@ -432,11 +427,11 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
 			
-				protected abstract Mapper<String> linkId(FuncIn funcIn);
+				protected abstract MapperS<String> linkId(FuncIn funcIn);
 			
-				protected abstract Mapper<Date> tradeDate(FuncIn funcIn);
+				protected abstract MapperS<Date> tradeDate(FuncIn funcIn);
 			
-				protected abstract Mapper<LocalTime> tradeTime(FuncIn funcIn);
+				protected abstract MapperS<LocalTime> tradeTime(FuncIn funcIn);
 			
 				public static class RTS_22_FieldsDefault extends RTS_22_Fields {
 					@Override
@@ -447,10 +442,10 @@ class CalculationFunctionGeneratorTest {
 					
 					protected FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
 						out
-							.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), MapperS.of(linkId(funcIn).get())).get());
+							.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), linkId(funcIn)).get());
 						
 						out
-							.setTradingDateTime(MapperMaths.<LocalDateTime, Date, LocalTime>add(MapperS.of(tradeDate(funcIn).get()), MapperS.of(tradeTime(funcIn).get())).get());
+							.setTradingDateTime(MapperMaths.<LocalDateTime, Date, LocalTime>add(tradeDate(funcIn), tradeTime(funcIn)).get());
 						
 						return Optional.ofNullable(out)
 							.map(o -> o.prune())
@@ -458,17 +453,17 @@ class CalculationFunctionGeneratorTest {
 					}
 					
 					@Override
-					protected Mapper<String> linkId(FuncIn funcIn) {
+					protected MapperS<String> linkId(FuncIn funcIn) {
 						return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
 					}
 					
 					@Override
-					protected Mapper<Date> tradeDate(FuncIn funcIn) {
+					protected MapperS<Date> tradeDate(FuncIn funcIn) {
 						return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
 					}
 					
 					@Override
-					protected Mapper<LocalTime> tradeTime(FuncIn funcIn) {
+					protected MapperS<LocalTime> tradeTime(FuncIn funcIn) {
 						return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
 					}
 				}
@@ -504,11 +499,11 @@ class CalculationFunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.OtherType;
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -543,6 +538,9 @@ class CalculationFunctionGeneratorTest {
 					public static class asKeyUsageDefault extends asKeyUsage {
 						@Override
 						protected OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
+							if (withMeta == null) {
+								withMeta = Collections.emptyList();
+							}
 							OtherType.OtherTypeBuilder out = OtherType.builder();
 							return assignOutput(out, withMeta);
 						}
@@ -558,13 +556,14 @@ class CalculationFunctionGeneratorTest {
 									.collect(Collectors.toList())
 								);
 							
+							final WithMeta outAttrSingle = MapperC.of(withMeta).get();
 							out
 								.setAttrSingle(ReferenceWithMetaWithMeta.builder()
-									.setGlobalReference(Optional.ofNullable(MapperS.of(MapperC.<WithMeta>of(withMeta).get()).get())
+									.setGlobalReference(Optional.ofNullable(outAttrSingle)
 										.map(r -> r.getMeta())
 										.map(m -> m.getGlobalKey())
 										.orElse(null))
-									.setExternalReference(Optional.ofNullable(MapperS.of(MapperC.<WithMeta>of(withMeta).get()).get())
+									.setExternalReference(Optional.ofNullable(outAttrSingle)
 										.map(r -> r.getMeta())
 										.map(m -> m.getExternalKey())
 										.orElse(null))
@@ -599,7 +598,6 @@ class CalculationFunctionGeneratorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import javax.inject.Inject;
 			
@@ -622,7 +620,7 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate();
 			
-				protected abstract Mapper<Integer> arg1();
+				protected abstract MapperS<Integer> arg1();
 			
 				public static class AdderDefault extends Adder {
 					@Override
@@ -632,14 +630,14 @@ class CalculationFunctionGeneratorTest {
 					}
 					
 					protected Integer assignOutput(Integer res) {
-						res = MapperS.of(arg1().get()).get();
+						res = arg1().get();
 						
 						return res;
 					}
 					
 					@Override
-					protected Mapper<Integer> arg1() {
-						return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
+					protected MapperS<Integer> arg1() {
+						return MapperS.of(addOne.evaluate(1));
 					}
 				}
 			}
@@ -741,7 +739,7 @@ class CalculationFunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String arg1, Math in1, MathInput in2) {
-							arg1 = MapperS.of(addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get())).get();
+							arg1 = addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get());
 							
 							return arg1;
 						}
@@ -775,7 +773,7 @@ class CalculationFunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String arg1, Math in1, MathInput in2) {
-							arg1 = MapperS.of(subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get())).get();
+							arg1 = subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get());
 							
 							return arg1;
 						}
@@ -806,7 +804,6 @@ class CalculationFunctionGeneratorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
-			import com.rosetta.model.lib.mapper.Mapper;
 			import com.rosetta.model.lib.mapper.MapperS;
 			import javax.inject.Inject;
 			
@@ -830,7 +827,7 @@ class CalculationFunctionGeneratorTest {
 			
 				protected abstract Integer doEvaluate(Integer arg1);
 			
-				protected abstract Mapper<Integer> addedOne(Integer arg1);
+				protected abstract MapperS<Integer> addedOne(Integer arg1);
 			
 				public static class AdderDefault extends Adder {
 					@Override
@@ -840,14 +837,14 @@ class CalculationFunctionGeneratorTest {
 					}
 					
 					protected Integer assignOutput(Integer res, Integer arg1) {
-						res = MapperS.of(addedOne(arg1).get()).get();
+						res = addedOne(arg1).get();
 						
 						return res;
 					}
 					
 					@Override
-					protected Mapper<Integer> addedOne(Integer arg1) {
-						return MapperS.of(addOne.evaluate(MapperS.of(Integer.valueOf(1)).get()));
+					protected MapperS<Integer> addedOne(Integer arg1) {
+						return MapperS.of(addOne.evaluate(1));
 					}
 				}
 			}

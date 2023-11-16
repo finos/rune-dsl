@@ -6,7 +6,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.util.types.GeneratedJavaClassService
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.util.DottedPath
@@ -18,7 +17,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Test
 import com.rosetta.model.lib.ModelReportId
-
+import com.rosetta.util.types.generated.GeneratedJavaClassService
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)

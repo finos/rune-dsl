@@ -35,13 +35,9 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import java.util.Optional
 import java.util.regex.Pattern
 import org.apache.commons.text.StringEscapeUtils
-import java.util.List
 import java.math.BigDecimal
-import com.rosetta.util.types.JavaWildcardTypeArgument
-import com.rosetta.util.types.JavaReferenceType
-import com.rosetta.util.types.JavaClass
-import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class ValidatorsGenerator {
 
@@ -51,6 +47,7 @@ class ValidatorsGenerator {
 	@Inject extension RosettaTypeProvider
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService
+	@Inject extension JavaTypeUtil
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		val t = new RDataType(data)
@@ -190,13 +187,8 @@ class ValidatorsGenerator {
 			'''o.get«attr.name?.toFirstUpper»()'''
 		} else {
 			val jt = attr.toExpandedAttribute.toMultiMetaOrRegularJavaType
-			if (jt instanceof JavaParameterizedType && (jt as JavaParameterizedType).getBaseType.equals(JavaClass.from(List))) {
-				val typeArg = (jt as JavaParameterizedType).getArguments.head
-				val itemType = if (typeArg instanceof JavaWildcardTypeArgument) {
-					typeArg.bound.get
-				} else {
-					typeArg as JavaReferenceType
-				}
+			if (jt.isList) {
+				val itemType = jt.itemType
 				'''o.get«attr.name?.toFirstUpper»().stream().map(«itemType»::getValue).collect(«Collectors».toList())'''
 			} else {
 				'''o.get«attr.name?.toFirstUpper»().getValue()'''

@@ -129,7 +129,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 
 	@Override
 	public int resultCount() {
-		return 1;
+		return emptyOperand ? 0 : 1;
 	}
 
 	public MapperS<Boolean> asMapper() {

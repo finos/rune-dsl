@@ -60,6 +60,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -95,13 +96,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 							filteredFoos = toBuilder(MapperC.<Foo>of(foos)
-								.filterItemNullSafe(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
+								.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -161,6 +165,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -196,13 +201,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
 							filteredFoos = toBuilder(MapperC.<Foo>of(foos)
-								.filterItemNullSafe(fooItem -> (Boolean)areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti());
+								.filterItemNullSafe(fooItem -> areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -300,6 +308,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo2;
 				import com.rosetta.test.model.Foo2.Foo2Builder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -335,15 +344,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo2.Foo2Builder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
 						protected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
-							filteredFoos = toBuilder(MapperC.<Foo2>of(foos)
-								.filterItemNullSafe(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-								.apply(item -> item
-									.filterItemNullSafe(_item -> (Boolean)areEqual(_item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())).getMulti());
+							final MapperC<Foo2> thenResult = MapperC.<Foo2>of(foos)
+								.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
+							filteredFoos = toBuilder(thenResult
+								.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -404,6 +416,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.FooWithScheme;
 				import com.rosetta.test.model.FooWithScheme.FooWithSchemeBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -439,13 +452,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
 						protected List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
 							filteredFoos = toBuilder(MapperC.<FooWithScheme>of(foos)
-								.filterItemNullSafe(item -> (Boolean)areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
+								.filterItemNullSafe(item -> areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
 							
 							return Optional.ofNullable(filteredFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -585,6 +601,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -607,13 +624,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Boolean> doEvaluate(List<Boolean> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Boolean> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
 						
 						protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
 							filteredFoos = MapperC.<Boolean>of(foos)
-								.filterItemNullSafe(item -> (Boolean)areEqual(item, MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get()).getMulti();
+								.filterItemNullSafe(item -> areEqual(item, MapperS.of(true), CardinalityOperator.All).get()).getMulti();
 							
 							return filteredFoos;
 						}
@@ -955,7 +975,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
@@ -1001,18 +1020,16 @@ class ListOperationTest {
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
 							foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-								.mapItem(item -> (MapperS<Foo>)MapperUtils.runSinglePolymorphic(() -> {
-									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).getOrDefault(false)) {
+								.mapItem(item -> {
+									if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
 										return MapperS.of(Foo.builder()
 											.setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
 											.setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
-											.build())
-										;
+											.build()
+										);
 									}
-									else {
-										return item;
-									}
-								})).getMulti());
+									return item;
+								}).getMulti());
 							
 							return Optional.ofNullable(foos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -1274,9 +1291,9 @@ class ListOperationTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -1298,13 +1315,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, foos);
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
 							strings = MapperC.<Foo>of(foos)
-								.mapItem(item -> (MapperS<String>)item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+								.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
 							
 							return strings;
 						}
@@ -1393,10 +1413,12 @@ class ListOperationTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -1418,15 +1440,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Integer> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Integer> fooCounts = new ArrayList<>();
 							return assignOutput(fooCounts, bars);
 						}
 						
 						protected List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
-							fooCounts = MapperC.<Bar>of(bars)
-								.mapItemToList(bar -> (MapperC<Foo>)bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
-								.apply(item -> item
-									.mapListToItem(fooListItem -> (MapperS<Integer>)MapperS.of(fooListItem.resultCount()))).getMulti();
+							final MapperListOfLists<Foo> thenResult = MapperC.<Bar>of(bars)
+								.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
+							fooCounts = thenResult
+								.mapListToItem(fooListItem -> MapperS.of(fooListItem.resultCount())).getMulti();
 							
 							return fooCounts;
 						}
@@ -1594,10 +1619,12 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -1632,15 +1659,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> foos = new ArrayList<>();
 							return assignOutput(foos, bars);
 						}
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
-							foos = toBuilder(MapperC.<Bar>of(bars)
-								.mapItemToList(bar -> (MapperC<Foo>)bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()))
-								.apply(item -> item
-									.flattenList()).getMulti());
+							final MapperListOfLists<Foo> thenResult = MapperC.<Bar>of(bars)
+								.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
+							foos = toBuilder(thenResult
+								.flattenList().getMulti());
 							
 							return Optional.ofNullable(foos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -1740,10 +1770,11 @@ class ListOperationTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -1765,17 +1796,20 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> attrs = new ArrayList<>();
 							return assignOutput(attrs, bars);
 						}
 						
 						protected List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
-							attrs = MapperC.<Bar>of(bars)
-								.mapItemToList(item -> (MapperC<Foo>)item.<Foo>mapC("getFoos", bar -> bar.getFoos()))
-								.apply(item -> item
-									.flattenList())
-								.apply(item -> item
-									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
+							final MapperListOfLists<Foo> thenResult0 = MapperC.<Bar>of(bars)
+								.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
+							final MapperC<Foo> thenResult1 = thenResult0
+								.flattenList();
+							attrs = thenResult1
+								.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
 							
 							return attrs;
 						}
@@ -1926,11 +1960,13 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
+				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -1970,16 +2006,19 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Bar.BarBuilder> updatedBars = new ArrayList<>();
 							return assignOutput(updatedBars, bars);
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
-							updatedBars = toBuilder(MapperC.<Bar>of(bars)
-								.mapItemToList(bar -> (MapperC<Foo>)bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-									.mapItem(foo -> (MapperS<Foo>)MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))))
-								.apply(item -> item
-									.mapListToItem(updatedFoos -> (MapperS<Bar>)MapperS.of(newBar.evaluate(updatedFoos.getMulti())))).getMulti());
+							final MapperListOfLists<Foo> thenResult = MapperC.<Bar>of(bars)
+								.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+									.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))));
+							updatedBars = toBuilder(thenResult
+								.mapListToItem(updatedFoos -> MapperS.of(newBar.evaluate(updatedFoos.getMulti()))).getMulti());
 							
 							return Optional.ofNullable(updatedBars)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2071,6 +2110,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -2110,14 +2150,17 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Bar.BarBuilder> updatedBars = new ArrayList<>();
 							return assignOutput(updatedBars, bars);
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
 							updatedBars = toBuilder(MapperC.<Bar>of(bars)
-								.mapItem(bar -> (MapperS<Bar>)MapperS.of(newBar.evaluate(bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-									.mapItem(foo -> (MapperS<Foo>)MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
+								.mapItem(bar -> MapperS.of(newBar.evaluate(bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+									.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
 							
 							return Optional.ofNullable(updatedBars)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -2233,6 +2276,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2255,15 +2299,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<String> newFoos = new ArrayList<>();
 							return assignOutput(newFoos, foos);
 						}
 						
 						protected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
-							newFoos = MapperC.<Foo>of(foos)
-								.filterItemNullSafe(item -> (Boolean)areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(Boolean.valueOf(true)), CardinalityOperator.All).get())
-								.apply(item -> item
-									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
+							final MapperC<Foo> thenResult = MapperC.<Foo>of(foos)
+								.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
+							newFoos = thenResult
+								.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
 							
 							return newFoos;
 						}
@@ -2328,6 +2375,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import javax.inject.Inject;
 				import ns1.Bar;
@@ -2356,15 +2404,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-							strings = MapperC.<Bar>of(bars)
-								.mapItem(item -> (MapperS<Foo>)MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())))
-								.apply(item -> item
-									.mapItem(_item -> (MapperS<String>)_item.<String>map("getFooAttr", foo -> foo.getFooAttr()))).getMulti();
+							final MapperC<Foo> thenResult = MapperC.<Bar>of(bars)
+								.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
+							strings = thenResult
+								.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
 							
 							return strings;
 						}
@@ -2412,8 +2463,9 @@ class ListOperationTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
+				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import ns1.Bar;
 				import ns1.Foo;
@@ -2437,17 +2489,20 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-							strings = MapperC.<Bar>of(bars)
-								.mapItemToList(item -> (MapperC<Foo>)item.<Foo>mapC("getFoos", bar -> bar.getFoos()))
-								.apply(item -> item
-									.flattenList())
-								.apply(item -> item
-									.mapItem(_item -> (MapperS<String>)_item.<String>map("getAttr", foo -> foo.getAttr()))).getMulti();
+							final MapperListOfLists<Foo> thenResult0 = MapperC.<Bar>of(bars)
+								.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
+							final MapperC<Foo> thenResult1 = thenResult0
+								.flattenList();
+							strings = thenResult1
+								.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
 							
 							return strings;
 						}
@@ -2502,6 +2557,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import javax.inject.Inject;
 				import ns1.Bar;
@@ -2531,15 +2587,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-							strings = MapperC.<Bar>of(bars)
-								.mapItem(item -> (MapperS<Foo>)MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())))
-								.apply(item -> item
-									.mapItem(_item -> (MapperS<String>)_item.<String>map("getFooAttr", foo -> foo.getFooAttr()))).getMulti();
+							final MapperC<Foo> thenResult = MapperC.<Bar>of(bars)
+								.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
+							strings = thenResult
+								.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
 							
 							return strings;
 						}
@@ -2603,6 +2662,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import javax.inject.Inject;
 				import ns1.Bar;
@@ -2634,15 +2694,18 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-							strings = MapperC.<Bar>of(bars)
-								.mapItem(item -> (MapperS<Foo>)MapperS.of(getFoo.evaluate(MapperS.of(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())).get())))
-								.apply(item -> item
-									.mapItem(_item -> (MapperS<String>)_item.<String>map("getFooAttr", foo -> foo.getFooAttr()))).getMulti();
+							final MapperC<Foo> thenResult = MapperC.<Bar>of(bars)
+								.mapItem(item -> MapperS.of(getFoo.evaluate(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get()))));
+							strings = thenResult
+								.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
 							
 							return strings;
 						}
@@ -2688,9 +2751,9 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.mapper.MapperUtils;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2714,28 +2777,26 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Foo> foos, String test) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, foos, test);
 						}
 						
 						protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
-							strings = MapperUtils.runMulti(() -> {
-								if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).getOrDefault(false)) {
-									return MapperC.<Foo>of(foos)
-										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a")));
-								}
-								else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).getOrDefault(false)) {
-									return MapperC.<Foo>of(foos)
-										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b")));
-								}
-								else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).getOrDefault(false)) {
-									return MapperC.<Foo>of(foos)
-										.mapItem(item -> (MapperS<String>)MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c")));
-								}
-								else {
-									return MapperC.<String>ofNull();
-								}
-							}).getMulti();
+							if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).getOrDefault(false)) {
+								strings = MapperC.<Foo>of(foos)
+									.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a"))).getMulti();
+							} else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).getOrDefault(false)) {
+								strings = MapperC.<Foo>of(foos)
+									.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b"))).getMulti();
+							} else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).getOrDefault(false)) {
+								strings = MapperC.<Foo>of(foos)
+									.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c"))).getMulti();
+							} else {
+								strings = Collections.<String>emptyList();
+							}
 							
 							return strings;
 						}
@@ -2840,7 +2901,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -2862,13 +2923,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected String doEvaluate(List<String> stringList) {
+							if (stringList == null) {
+								stringList = Collections.emptyList();
+							}
 							String concatenatedString = null;
 							return assignOutput(concatenatedString, stringList);
 						}
 						
 						protected String assignOutput(String concatenatedString, List<String> stringList) {
 							concatenatedString = MapperC.<String>of(stringList)
-								.<String>reduce((a, b) -> (MapperS<String>)MapperMaths.<String, String, String>add(a, b)).get();
+								.<String>reduce((a, b) -> MapperMaths.<String, String, String>add(a, b)).get();
 							
 							return concatenatedString;
 						}
@@ -3318,6 +3382,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import javax.inject.Inject;
@@ -3355,13 +3420,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected Foo.FooBuilder doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, foos);
 						}
 						
 						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends Foo> foos) {
 							foo = toBuilder(MapperC.<Foo>of(foos)
-								.<Foo>reduce((foo1, foo2) -> (MapperS<Foo>)MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(foo1.<String>map("getAttr", _foo -> _foo.getAttr()), foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
+								.<Foo>reduce((foo1, foo2) -> MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(foo1.<String>map("getAttr", _foo -> _foo.getAttr()), foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
 							
 							return Optional.ofNullable(foo)
 								.map(o -> o.prune())
@@ -3632,6 +3700,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -3653,6 +3722,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Integer> doEvaluate(List<Integer> numbers) {
+							if (numbers == null) {
+								numbers = Collections.emptyList();
+							}
 							List<Integer> sortedNumbers = new ArrayList<>();
 							return assignOutput(sortedNumbers, numbers);
 						}
@@ -3750,10 +3822,10 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -3788,13 +3860,16 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> sortedFoos = new ArrayList<>();
 							return assignOutput(sortedFoos, foos);
 						}
 						
 						protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
 							sortedFoos = toBuilder(MapperC.<Foo>of(foos)
-								.sort(item -> (MapperS<String>)item.<String>map("getAttr", foo -> foo.getAttr())).getMulti());
+								.sort(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti());
 							
 							return Optional.ofNullable(sortedFoos)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))

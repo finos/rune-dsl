@@ -6,16 +6,16 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.util.types.GeneratedJavaClassService
 import com.rosetta.util.DottedPath
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.*
 import com.google.inject.Guice
 import com.google.inject.Module
-import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.ModelReportId
+import com.rosetta.util.types.generated.GeneratedJavaClassService
+import com.rosetta.util.types.generated.GeneratedJavaClass
 
 /**
  * This test class contains sample code used in the documentation of the DSL.
@@ -128,7 +128,6 @@ class DocumentationSamples {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.annotations.RosettaReport;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
-			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.reports.ReportFunction;
 			import java.util.Optional;
 			import javax.inject.Inject;
@@ -178,10 +177,10 @@ class DocumentationSamples {
 					
 					protected EuropeanParliamentReport.EuropeanParliamentReportBuilder assignOutput(EuropeanParliamentReport.EuropeanParliamentReportBuilder output, VehicleOwnership input) {
 						output
-							.setVehicleRegistrationID(MapperS.of(vehicleRegistrationID.evaluate(MapperS.of(input).get())).get());
+							.setVehicleRegistrationID(vehicleRegistrationID.evaluate(input));
 						
 						output
-							.setVehicleClassificationType(MapperS.of(vehicleClassificationType.evaluate(MapperS.of(input).get())).get());
+							.setVehicleClassificationType(vehicleClassificationType.evaluate(input));
 						
 						return Optional.ofNullable(output)
 							.map(o -> o.prune())
@@ -192,7 +191,7 @@ class DocumentationSamples {
 		'''
 		assertEquals(expected, reportFunctionCode)
 		
-		val runtimeModuleClassRepr = new JavaClass(DottedPath.splitOnDots("test.reg.reports"), "OverridenReportModule")
+		val runtimeModuleClassRepr = new GeneratedJavaClass<Object>(DottedPath.splitOnDots("test.reg.reports"), "OverridenReportModule", Object)
 		val runtimeModuleCode = '''
 		package «runtimeModuleClassRepr.packageName»;
 		

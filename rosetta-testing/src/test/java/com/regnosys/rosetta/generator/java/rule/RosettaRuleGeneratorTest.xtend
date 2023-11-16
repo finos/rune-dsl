@@ -142,11 +142,8 @@ class RosettaRuleGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.BarQuxReport;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
@@ -197,20 +194,20 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarOne(MapperS.of(barBarOne.evaluate(MapperS.of(input).get())).get());
+								.setBarBarOne(barBarOne.evaluate(input));
 							
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarBarTwo(barBarTwo.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+								.setBarBaz1(barBaz.evaluate(input));
 							
 							output
-								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarQuxList(barQuxList.evaluate(input));
 							
 							output
-								.setBarQuux(MapperS.of(barQuux.evaluate(MapperS.of(input).get())).get());
+								.setBarQuux(barQuux.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -292,10 +289,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.BarQuxReport;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
@@ -346,20 +341,20 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarOne(MapperS.of(barBarOne.evaluate(MapperS.of(input).get())).get());
+								.setBarBarOne(barBarOne.evaluate(input));
 							
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).get());
+								.setBarBarTwo(MapperC.of(barBarTwo.evaluate(input)).get());
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+								.setBarBaz1(barBaz.evaluate(input));
 							
 							output
-								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarQuxList(barQuxList.evaluate(input));
 							
 							output
-								.setBarQuux(MapperS.of(barQuux.evaluate(MapperS.of(input).get())).get());
+								.setBarQuux(barQuux.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -433,11 +428,8 @@ class RosettaRuleGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.BarQuxReport;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
@@ -487,17 +479,17 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarOne(MapperS.of(new_BarBarOne.evaluate(MapperS.of(input).get())).get());
+								.setBarBarOne(new_BarBarOne.evaluate(input));
 							
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarBarTwo(barBarTwo.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+								.setBarBaz1(barBaz.evaluate(input));
 							
 							output
-								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarQuxList(barQuxList.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -566,11 +558,8 @@ class RosettaRuleGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.BarQuxReport;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import java.util.Optional;
@@ -619,14 +608,14 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarTwo(MapperC.<String>of(barBarTwo.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarBarTwo(barBarTwo.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(MapperS.of(barBaz.evaluate(MapperS.of(input).get())).get());
+								.setBarBaz1(barBaz.evaluate(input));
 							
 							output
-								.setBarQuxList(MapperC.<BarQuxReport>of(barQuxList.evaluate(MapperS.of(input).get())).getMulti());
+								.setBarQuxList(barQuxList.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -789,10 +778,10 @@ class RosettaRuleGeneratorTest {
 					}
 					
 					protected String assignOutput(String output, Foo input) {
-						output = MapperS.of(input)
-							.mapSingleToItem(item -> (MapperS<Bar>)item.<Bar>map("getBar", foo -> foo.getBar()))
-							.apply(item -> item
-								.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getBaz", bar -> bar.getBaz()))).get();
+						final MapperS<Bar> thenResult = MapperS.of(input)
+							.mapSingleToItem(item -> item.<Bar>map("getBar", foo -> foo.getBar()));
+						output = thenResult
+							.mapSingleToItem(item -> item.<String>map("getBaz", bar -> bar.getBaz())).get();
 						
 						return output;
 					}
@@ -833,6 +822,7 @@ class RosettaRuleGeneratorTest {
 		import com.google.inject.ImplementedBy;
 		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.model.lib.reports.ReportFunction;
+		import com.rosetta.test.model.Bar;
 		import com.rosetta.test.model.Foo;
 		import javax.inject.Inject;
 		
@@ -865,9 +855,9 @@ class RosettaRuleGeneratorTest {
 				}
 				
 				protected String assignOutput(String output, Foo input) {
-					output = MapperS.of(rule2.evaluate(MapperS.of(input).get()))
-						.apply(item -> item
-							.mapSingleToItem(_item -> (MapperS<String>)_item.<String>map("getVal", bar -> bar.getVal()))).get();
+					final MapperS<Bar> thenResult = MapperS.of(rule2.evaluate(input));
+					output = thenResult
+						.mapSingleToItem(item -> item.<String>map("getVal", bar -> bar.getVal())).get();
 					
 					return output;
 				}
@@ -943,7 +933,7 @@ class RosettaRuleGeneratorTest {
 				
 				protected Input.InputBuilder assignOutput(Input.InputBuilder output, Input input) {
 					output = toBuilder(MapperS.of(input)
-						.filterSingleNullSafe(item -> (Boolean)areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
+						.filterSingleNullSafe(item -> areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
 					
 					return Optional.ofNullable(output)
 						.map(o -> o.prune())
@@ -1042,7 +1032,7 @@ class RosettaRuleGeneratorTest {
 				
 				protected Boolean assignOutput(Boolean output, Foo input) {
 					output = MapperS.of(input)
-						.mapSingleToItem(item -> (MapperS<Boolean>)areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(Integer.valueOf(12)), CardinalityOperator.All).asMapper()).get();
+						.mapSingleToItem(item -> areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(12), CardinalityOperator.All).asMapper()).get();
 					
 					return output;
 				}
@@ -1411,7 +1401,6 @@ class RosettaRuleGeneratorTest {
 		package com.rosetta.test.model.reports;
 		
 		import com.google.inject.ImplementedBy;
-		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.FooEnum;
 		
@@ -1440,7 +1429,7 @@ class RosettaRuleGeneratorTest {
 				}
 				
 				protected FooEnum assignOutput(FooEnum output, String input) {
-					output = MapperS.of(FooEnum.BAR).get();
+					output = FooEnum.BAR;
 					
 					return output;
 				}

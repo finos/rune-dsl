@@ -118,19 +118,19 @@ class RosettaConditionTest {
 		val conditionBarGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
 		assertFalse(conditionBarGreaterThanZero.success)
 		assertThat(conditionBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
-		assertThat(conditionBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [Integer] values [0]"))
+		assertThat(conditionBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [BigDecimal] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralZero (fail)
 		val conditionBazGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
 		assertFalse(conditionBazGreaterThanZero.success)
 		assertThat(conditionBazGreaterThanZero.definition, is("if baz exists then baz -> other > 0"))
-		assertThat(conditionBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [0]"))
+		assertThat(conditionBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [BigDecimal] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralFive (fail)
 		val conditionBazGreaterThanFive = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
 		assertFalse(conditionBazGreaterThanFive.success)
 		assertThat(conditionBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
-		assertThat(conditionBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [Integer] values [5]"))
+		assertThat(conditionBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [BigDecimal] values [5]"))
 	}
 
 	// Util methods

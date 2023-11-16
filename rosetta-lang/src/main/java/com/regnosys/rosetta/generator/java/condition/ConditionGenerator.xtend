@@ -25,6 +25,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITI
 import javax.inject.Inject
 import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -33,6 +34,7 @@ class ConditionGenerator {
 	@Inject FunctionDependencyProvider funcDependencies
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
+	@Inject extension JavaTypeUtil
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
 		val topScope = new JavaScope(root.condition)
@@ -66,7 +68,6 @@ class ConditionGenerator {
 		val defaultClassFailureMessageId = defaultClassValidateScope.createUniqueIdentifier("failureMessage")
 		
 		val defaultClassExecuteScope = defaultClassScope.methodScope("execute")
-		val defaultClassExecuteResultId = defaultClassExecuteScope.createUniqueIdentifier("result")
 		val defaultClassExceptionId = defaultClassExecuteScope.createUniqueIdentifier("ex")
 		
 		val noOpClassScope = classScope.classScope("NoOp")
@@ -107,10 +108,8 @@ class ConditionGenerator {
 					}
 					
 					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-						try {
-							«ComparisonResult» «defaultClassExecuteResultId» = «expressionHandler.toComparisonResult(rule.expression, defaultClassExecuteScope)»;
-							return «defaultClassExecuteResultId».get() == null ? ComparisonResult.success() : «defaultClassExecuteResultId»;
-						}
+						try «expressionHandler.javaCode(rule.expression, COMPARISON_RESULT, defaultClassExecuteScope)
+								.completeAsReturn.toBlock»
 						catch («Exception» «defaultClassExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExceptionId».getMessage());
 						}

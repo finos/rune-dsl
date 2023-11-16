@@ -8,10 +8,11 @@ import java.time.LocalTime
 import static java.time.temporal.ChronoUnit.DAYS
 import com.rosetta.model.lib.mapper.Mapper
 import com.rosetta.model.lib.mapper.MapperS
+import java.math.BigInteger
 
 class MapperMaths {
 	
-	def static <R, A, B> MapperS<R> add(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> add(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -20,7 +21,7 @@ class MapperMaths {
 		return MapperS.ofNull;
 	}
 	
-	def static <R, A, B> MapperS<R> subtract(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> subtract(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -28,7 +29,7 @@ class MapperMaths {
 		}
 		return null;
 	}
-	def static <R, A, B> MapperS<R> multiply(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> multiply(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -37,7 +38,7 @@ class MapperMaths {
 		return MapperS.ofNull;
 	}
 	
-	def static <R, A, B> MapperS<R> divide(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> divide(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -67,6 +68,14 @@ class MapperMaths {
 		return a.intValue + b.intValue;
 	}
 	
+	private static def dispatch Long operator_plus(Long a, Long b) {
+		return a.longValue + b.longValue;
+	}
+	
+	private static def dispatch BigInteger operator_plus(BigInteger a, BigInteger b) {
+		return a.add(b)
+	}
+	
 	private static def dispatch BigDecimal operator_plus(Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
@@ -92,6 +101,14 @@ class MapperMaths {
 	
 	private static def dispatch Integer operator_minus(Integer a, Integer b) {
 		return a.intValue - b.intValue;
+	}
+	
+	private static def dispatch Long operator_minus(Long a, Long b) {
+		return a.longValue - b.longValue;
+	}
+	
+	private static def dispatch BigInteger operator_minus(BigInteger a, BigInteger b) {
+		return a.subtract(b)
 	}
 	
 	private static def dispatch BigDecimal operator_minus(Number a, Number b) {
@@ -120,6 +137,14 @@ class MapperMaths {
 		return a.intValue * b.intValue;
 	}
 	
+	private static def dispatch Long * (Long a, Long b) {
+		return a.longValue * b.longValue;
+	}
+	
+	private static def dispatch BigInteger * (BigInteger a, BigInteger b) {
+		return a.multiply(b)
+	}
+	
 	private static def dispatch BigDecimal * (Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
@@ -142,12 +167,6 @@ class MapperMaths {
 		throw new RuntimeException('''Cant divide two strings''')
 	}
 	
-	private static def dispatch BigDecimal / (Integer a, Integer b) {
-		val bigA = toBigD(a);
-		val bigB = toBigD(b);
-		return bigA / bigB;
-	}
-	
 	private static def dispatch BigDecimal / (Number a, Number b) {
 		val bigA = toBigD(a);
 		val bigB = toBigD(b);
@@ -157,6 +176,7 @@ class MapperMaths {
 	def static BigDecimal toBigD(Number n) {
 		switch (n) {
 			BigDecimal: return n
+			BigInteger: return new BigDecimal(n)
 			Long: return new BigDecimal(n.longValue())
 			Integer: return new BigDecimal(n.intValue())
 		}

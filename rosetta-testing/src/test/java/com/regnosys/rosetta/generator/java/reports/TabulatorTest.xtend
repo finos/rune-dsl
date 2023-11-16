@@ -11,14 +11,14 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import com.rosetta.util.DottedPath
-import com.rosetta.util.types.GeneratedJavaClassService
-import com.rosetta.util.types.JavaClass
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.rosetta.model.lib.ModelReportId
+import com.rosetta.util.types.generated.GeneratedJavaClassService
+import com.rosetta.util.types.generated.GeneratedJavaClass
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -114,7 +114,7 @@ class TabulatorTest {
 		'''
 		assertEquals(expected, reportTabulatorCode)
 		
-		val tabulatorClass = new JavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator")
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
 		
 		val tabulatorCode = code.get(tabulatorClass.canonicalName.withDots)
 		assertThat(tabulatorCode, CoreMatchers.notNullValue())
@@ -266,7 +266,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 
-		val tabulatorClass = new JavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator")
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
 		
 		val tabulatorCode = code.get(tabulatorClass.canonicalName.withDots)
 		assertThat(tabulatorCode, CoreMatchers.notNullValue())
@@ -413,7 +413,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 
-		val tabulatorClass = new JavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator")
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
@@ -487,7 +487,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val tabulatorClass = new JavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator")
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
 		
 		val tabulatorCode = code.get(tabulatorClass.canonicalName.withDots)
 		assertThat(tabulatorCode, CoreMatchers.notNullValue())

@@ -50,7 +50,7 @@ public class JavaScope extends GeneratorScope<JavaScope> {
 			JavaType t = JavaType.from(obj);
 			if (t != null) {
 				if (t instanceof JavaClass) {
-					JavaClass clazz = (JavaClass)t;
+					JavaClass<?> clazz = (JavaClass<?>)t;
 					String desiredName = clazz.getSimpleName();
 					if (this.getIdentifiers().stream().anyMatch(id -> id.getDesiredName().equals(desiredName))) {
 						// Another class with the same name is already imported. Use the canonical name instead.

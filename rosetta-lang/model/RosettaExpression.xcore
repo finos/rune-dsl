@@ -78,13 +78,13 @@ class RosettaNumberLiteral extends RosettaLiteral {
 }
 
 class RosettaIntLiteral extends RosettaLiteral {
-	int value
+	BigInteger value
 	
 	op Object containedValue() {
 		return value
 	}
 	op String stringValue() {
-		return Integer.toString(value)
+		return value.toString
 	}
 }
 
