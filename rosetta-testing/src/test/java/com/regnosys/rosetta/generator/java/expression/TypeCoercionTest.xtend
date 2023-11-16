@@ -6,10 +6,8 @@ import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import javax.inject.Inject
 import org.junit.jupiter.api.Test
-import com.regnosys.rosetta.generator.java.statement.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.rosetta.util.types.JavaType
-import com.rosetta.util.types.JavaParameterizedType
-import com.rosetta.util.types.JavaClass
 import java.math.BigDecimal
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.DottedPath
@@ -23,16 +21,15 @@ import com.rosetta.model.lib.expression.ComparisonResult
 import java.util.Arrays
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.util.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class TypeCoercionTest {
 	@Inject TypeCoercionService coercionService
 	@Inject extension ImportManagerExtension
+	@Inject extension JavaTypeUtil
 	
-	private def JavaType wrapper(Class<?> wrapperType, Class<?> itemType) {
-		new JavaParameterizedType(JavaClass.from(wrapperType), JavaClass.from(itemType))
-	}
 	private def void assertCoercion(String expectedCode, StringConcatenationClient expr, Class<?> actual, JavaType expected) {
 		assertCoercion(expectedCode, expr, JavaType.from(actual), expected)
 	}
@@ -105,21 +102,21 @@ class TypeCoercionTest {
 		
 		return MapperS.of(42);
 		'''
-		assertCoercion(expected, '''42''', JavaPrimitiveType.INT, wrapper(MapperS, Integer))
+		assertCoercion(expected, '''42''', JavaPrimitiveType.INT, MapperS.wrap(Integer))
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
 		import java.math.BigDecimal;
 		import java.math.BigInteger;
-		import java.util.Arrays;
+		import java.util.Collections;
 		
 		
 		{
 			final BigDecimal bigDecimal = BigDecimal.valueOf(42);
-			return bigDecimal == null ? MapperC.<BigInteger>ofNull() : MapperC.of(Arrays.asList(bigDecimal.toBigIntegerExact()));
+			return bigDecimal == null ? MapperC.<BigInteger>ofNull() : MapperC.of(Collections.singletonList(bigDecimal.toBigIntegerExact()));
 		}
 		'''
-		assertCoercion(expected, '''«BigDecimal».valueOf(42)''', BigDecimal, wrapper(MapperC, BigInteger))
+		assertCoercion(expected, '''«BigDecimal».valueOf(42)''', BigDecimal, MapperC.wrap(BigInteger))
 		
 		expected = '''
 		import java.util.Collections;
@@ -127,7 +124,7 @@ class TypeCoercionTest {
 		
 		return Collections.<Long>emptyList();
 		'''
-		assertCoercion(expected, '''null''', Void, wrapper(List, Long))
+		assertCoercion(expected, '''null''', Void, List.wrap(Long))
 				
 		expected = '''
 		import com.rosetta.model.lib.expression.ComparisonResult;
@@ -149,7 +146,7 @@ class TypeCoercionTest {
 		
 		return MapperS.of("ABC").get();
 		'''
-		assertCoercion(expected, '''«MapperS».of("ABC")''', wrapper(MapperS, String), String)
+		assertCoercion(expected, '''«MapperS».of("ABC")''', MapperS.wrap(String), String)
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -160,7 +157,7 @@ class TypeCoercionTest {
 			return _long == null ? null : Math.toIntExact(_long);
 		}
 		'''
-		assertCoercion(expected, '''«MapperS».of(42)''', wrapper(MapperS, Long), Integer)
+		assertCoercion(expected, '''«MapperS».of(42)''', MapperS.wrap(Long), Integer)
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -173,7 +170,7 @@ class TypeCoercionTest {
 			return integer == null ? null : BigInteger.valueOf(integer);
 		}
 		'''
-		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', wrapper(MapperC, Integer), BigInteger)
+		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', MapperC.wrap(Integer), BigInteger)
 		
 		expected = '''
 		import com.rosetta.model.lib.expression.ComparisonResult;
@@ -186,7 +183,7 @@ class TypeCoercionTest {
 		expected = '''
 		return null;
 		'''
-		assertCoercion(expected, '''«MapperS».ofNull()''', wrapper(MapperS, Void), Integer)
+		assertCoercion(expected, '''«MapperS».ofNull()''', MapperS.wrap(Void), Integer)
 	}
 	
 	@Test
@@ -200,15 +197,15 @@ class TypeCoercionTest {
 		
 		return ComparisonResult.of(MapperS.of(true));
 		'''
-		assertCoercion(expected, '''«MapperS».of(true)''', wrapper(MapperS, Boolean), ComparisonResult)
+		assertCoercion(expected, '''«MapperS».of(true)''', MapperS.wrap(Boolean), ComparisonResult)
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperS;
 		
 		
-		return MapperS.of(42).map("Type coercion", _long -> _long == null ? null : Math.toIntExact(_long)).getMulti();
+		return MapperS.of(42).<Integer>map("Type coercion", _long -> _long == null ? null : Math.toIntExact(_long)).getMulti();
 		'''
-		assertCoercion(expected, '''«MapperS».of(42)''', wrapper(MapperS, Long), wrapper(List, Integer))
+		assertCoercion(expected, '''«MapperS».of(42)''', MapperS.wrap(Long), List.wrap(Integer))
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -216,9 +213,9 @@ class TypeCoercionTest {
 		import java.util.Arrays;
 		
 		
-		return MapperC.of(Arrays.asList(1, 2, 3)).map("Type coercion", integer -> BigInteger.valueOf(integer)).getMulti();
+		return MapperC.of(Arrays.asList(1, 2, 3)).<BigInteger>map("Type coercion", integer -> BigInteger.valueOf(integer)).getMulti();
 		'''
-		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', wrapper(MapperC, Integer), wrapper(List, BigInteger))
+		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', MapperC.wrap(Integer), List.wrap(BigInteger))
 		
 		expected = '''
 		import com.rosetta.model.lib.expression.ComparisonResult;
@@ -226,7 +223,7 @@ class TypeCoercionTest {
 		
 		return ComparisonResult.success().asMapper();
 		'''
-		assertCoercion(expected, '''«ComparisonResult».success()''', ComparisonResult, wrapper(MapperS, Boolean))
+		assertCoercion(expected, '''«ComparisonResult».success()''', ComparisonResult, MapperS.wrap(Boolean))
 		
 		expected = '''
 		import java.util.Collections;
@@ -234,6 +231,6 @@ class TypeCoercionTest {
 		
 		return Collections.<String>emptyList();
 		'''
-		assertCoercion(expected, '''«MapperS».ofNull()''', wrapper(MapperS, Void), wrapper(List, String))
+		assertCoercion(expected, '''«MapperS».ofNull()''', MapperS.wrap(Void), List.wrap(String))
 	}
 }

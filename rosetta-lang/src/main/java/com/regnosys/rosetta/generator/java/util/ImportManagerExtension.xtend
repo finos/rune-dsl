@@ -14,7 +14,7 @@ class ImportManagerExtension {
 	def importWildcard(Class<?> clazz) {
 		importWildcard(JavaClass.from(clazz))
 	}
-	def importWildcard(JavaClass t) {
+	def importWildcard(JavaClass<?> t) {
 		new PreferWildcardImportClass(t)
 	}
 	def importWildcard(Method method) {

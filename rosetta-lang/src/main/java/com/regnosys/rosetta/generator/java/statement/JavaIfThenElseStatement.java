@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
+
 public class JavaIfThenElseStatement extends JavaStatement {
 	private final JavaExpression condition;
 	private final JavaStatement thenBranch;

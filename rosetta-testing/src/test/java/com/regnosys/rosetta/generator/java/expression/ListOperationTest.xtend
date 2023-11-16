@@ -60,6 +60,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -95,6 +96,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
@@ -161,6 +165,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -196,6 +201,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
@@ -300,6 +308,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo2;
 				import com.rosetta.test.model.Foo2.Foo2Builder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -335,6 +344,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo2.Foo2Builder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
@@ -404,6 +416,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.FooWithScheme;
 				import com.rosetta.test.model.FooWithScheme.FooWithSchemeBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -439,6 +452,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
@@ -585,6 +601,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -607,6 +624,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Boolean> doEvaluate(List<Boolean> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Boolean> filteredFoos = new ArrayList<>();
 							return assignOutput(filteredFoos, foos);
 						}
@@ -1007,9 +1027,8 @@ class ListOperationTest {
 											.setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
 											.build()
 										);
-									} else {
-										return item;
 									}
+									return item;
 								}).getMulti());
 							
 							return Optional.ofNullable(foos)
@@ -1274,6 +1293,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -1295,6 +1315,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, foos);
 						}
@@ -1395,6 +1418,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -1416,6 +1440,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Integer> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Integer> fooCounts = new ArrayList<>();
 							return assignOutput(fooCounts, bars);
 						}
@@ -1597,6 +1624,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -1631,6 +1659,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> foos = new ArrayList<>();
 							return assignOutput(foos, bars);
 						}
@@ -1743,6 +1774,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -1764,6 +1796,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> attrs = new ArrayList<>();
 							return assignOutput(attrs, bars);
 						}
@@ -1931,6 +1966,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -1970,6 +2006,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Bar.BarBuilder> updatedBars = new ArrayList<>();
 							return assignOutput(updatedBars, bars);
 						}
@@ -2071,6 +2110,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -2110,6 +2150,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<Bar.BarBuilder> updatedBars = new ArrayList<>();
 							return assignOutput(updatedBars, bars);
 						}
@@ -2233,6 +2276,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2255,6 +2299,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<String> newFoos = new ArrayList<>();
 							return assignOutput(newFoos, foos);
 						}
@@ -2328,6 +2375,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import javax.inject.Inject;
 				import ns1.Bar;
@@ -2356,6 +2404,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
@@ -2414,6 +2465,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import ns1.Bar;
 				import ns1.Foo;
@@ -2437,6 +2489,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
@@ -2502,6 +2557,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import javax.inject.Inject;
 				import ns1.Bar;
@@ -2531,6 +2587,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
@@ -2603,6 +2662,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import javax.inject.Inject;
 				import ns1.Bar;
@@ -2634,6 +2694,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Bar> bars) {
+							if (bars == null) {
+								bars = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, bars);
 						}
@@ -2714,6 +2777,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(List<? extends Foo> foos, String test) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<String> strings = new ArrayList<>();
 							return assignOutput(strings, foos, test);
 						}
@@ -2835,6 +2901,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.expression.MapperMaths;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -2856,6 +2923,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected String doEvaluate(List<String> stringList) {
+							if (stringList == null) {
+								stringList = Collections.emptyList();
+							}
 							String concatenatedString = null;
 							return assignOutput(concatenatedString, stringList);
 						}
@@ -3312,6 +3382,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import javax.inject.Inject;
@@ -3349,6 +3420,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected Foo.FooBuilder doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, foos);
 						}
@@ -3626,6 +3700,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -3647,6 +3722,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Integer> doEvaluate(List<Integer> numbers) {
+							if (numbers == null) {
+								numbers = Collections.emptyList();
+							}
 							List<Integer> sortedNumbers = new ArrayList<>();
 							return assignOutput(sortedNumbers, numbers);
 						}
@@ -3747,6 +3825,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -3781,6 +3860,9 @@ class ListOperationTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+							if (foos == null) {
+								foos = Collections.emptyList();
+							}
 							List<Foo.FooBuilder> sortedFoos = new ArrayList<>();
 							return assignOutput(sortedFoos, foos);
 						}

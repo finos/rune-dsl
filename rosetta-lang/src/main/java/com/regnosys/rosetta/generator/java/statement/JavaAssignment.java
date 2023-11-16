@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.statement;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-Assignment

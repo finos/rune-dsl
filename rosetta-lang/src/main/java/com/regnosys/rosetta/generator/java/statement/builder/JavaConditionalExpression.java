@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.statement;
+package com.regnosys.rosetta.generator.java.statement.builder;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -6,7 +6,14 @@ import java.util.function.Function;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
+import com.regnosys.rosetta.generator.java.statement.JavaIfThenElseStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
+import com.regnosys.rosetta.generator.java.statement.JavaReturnStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.rosetta.util.types.JavaType;
 
 /**
@@ -17,12 +24,19 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	private final JavaExpression thenBranch;
 	private final JavaExpression elseBranch;
 	private final JavaType commonType;
+	
+	private final JavaTypeUtil typeUtil;
 
-	public JavaConditionalExpression(JavaExpression condition, JavaExpression thenBranch, JavaExpression elseBranch, JavaType commonType) {
+	public JavaConditionalExpression(JavaExpression condition, JavaExpression thenBranch, JavaExpression elseBranch, JavaType commonType, JavaTypeUtil typeUtil) {
 		this.condition = condition;
 		this.thenBranch = thenBranch;
 		this.elseBranch = elseBranch;
 		this.commonType = commonType;
+		
+		this.typeUtil = typeUtil;
+	}
+	public JavaConditionalExpression(JavaExpression condition, JavaExpression thenBranch, JavaExpression elseBranch, JavaTypeUtil typeUtil) {
+		this(condition, thenBranch, elseBranch, typeUtil.join(thenBranch.getExpressionType(), elseBranch.getExpressionType()), typeUtil);
 	}
 
 	@Override
@@ -34,11 +48,10 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	public JavaStatementBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
 		JavaStatementBuilder newThenBranch = mapper.apply(thenBranch);
 		JavaStatementBuilder newElseBranch = mapper.apply(elseBranch);
-		JavaType resultType = newThenBranch == JavaExpression.NULL ? newElseBranch.getExpressionType() : newThenBranch.getExpressionType();
 		if (newThenBranch instanceof JavaExpression && newElseBranch instanceof JavaExpression) {
-			return new JavaConditionalExpression(condition, (JavaExpression)newThenBranch, (JavaExpression)newElseBranch, resultType);
+			return new JavaConditionalExpression(condition, (JavaExpression)newThenBranch, (JavaExpression)newElseBranch, typeUtil);
 		} else {
-			return new JavaIfThenElseBuilder(condition, newThenBranch, newElseBranch, resultType);
+			return new JavaIfThenElseBuilder(condition, newThenBranch, newElseBranch, typeUtil);
 		}
 	}
 
@@ -52,10 +65,17 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	public JavaStatement complete(Function<JavaExpression, JavaStatement> completer) {
 		return completer.apply(this.toExpression());
 	}
-	
 	@Override
-	public JavaStatement completeAsExpressionStatement() {
-		return new JavaIfThenElseBuilder(condition, thenBranch, elseBranch, commonType).completeAsExpressionStatement();
+	public JavaReturnStatement completeAsReturn() {
+		return this.toExpression().completeAsReturn();
+	}
+	@Override
+	public JavaIfThenElseStatement completeAsExpressionStatement() {
+		return new JavaIfThenElseBuilder(condition, thenBranch, elseBranch, commonType, typeUtil).completeAsExpressionStatement();
+	}
+	@Override
+	public JavaAssignment completeAsAssignment(GeneratedIdentifier variableId) {
+		return this.toExpression().completeAsAssignment(variableId);
 	}
 
 	@Override

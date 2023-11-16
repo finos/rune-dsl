@@ -6,29 +6,31 @@ import java.util.Objects;
 
 public class JavaPrimitiveType implements JavaType {
 	private static Map<Class<?>, JavaPrimitiveType> typeMap = new HashMap<>();
-	private static Map<JavaClass, JavaPrimitiveType> wrapperTypeMap = new HashMap<>();
+	private static Map<JavaClass<?>, JavaPrimitiveType> wrapperTypeMap = new HashMap<>();
 	
-	public static JavaPrimitiveType INT = create(int.class, Integer.class);
-	public static JavaPrimitiveType BYTE = create(byte.class, Byte.class);
-	public static JavaPrimitiveType SHORT = create(short.class, Short.class);
-	public static JavaPrimitiveType LONG = create(long.class, Long.class);
-	public static JavaPrimitiveType FLOAT = create(float.class, Float.class);
-	public static JavaPrimitiveType DOUBLE = create(double.class, Double.class);
-	public static JavaPrimitiveType BOOLEAN = create(boolean.class, Boolean.class);
-	public static JavaPrimitiveType CHAR = create(char.class, Character.class);
-	public static JavaPrimitiveType VOID = create(void.class, Void.class);
-		
+	public static JavaPrimitiveType INT = create(int.class, Integer.class, 2);
+	public static JavaPrimitiveType BYTE = create(byte.class, Byte.class, 0);
+	public static JavaPrimitiveType SHORT = create(short.class, Short.class, 1);
+	public static JavaPrimitiveType LONG = create(long.class, Long.class, 3);
+	public static JavaPrimitiveType FLOAT = create(float.class, Float.class, 4);
+	public static JavaPrimitiveType DOUBLE = create(double.class, Double.class, 5);
+	public static JavaPrimitiveType BOOLEAN = create(boolean.class, Boolean.class, -1);
+	public static JavaPrimitiveType CHAR = create(char.class, Character.class, -1);
+	public static JavaPrimitiveType VOID = create(void.class, Void.class, -1);
+	
 	private final Class<?> type;
 	private final Class<?> wrapperType;
-	private JavaPrimitiveType(Class<?> type, Class<?> wrapperType) {
+	private final int numericHierarchy;
+	private JavaPrimitiveType(Class<?> type, Class<?> wrapperType, int numericHierarchy) {
 		Objects.requireNonNull(type);
 		Objects.requireNonNull(wrapperType);
 		this.type = type;
 		this.wrapperType = wrapperType;
+		this.numericHierarchy = numericHierarchy;
 	}
 	
-	private static JavaPrimitiveType create(Class<?> type, Class<?> wrapperType) {
-		JavaPrimitiveType t = new JavaPrimitiveType(type, wrapperType);
+	private static JavaPrimitiveType create(Class<?> type, Class<?> wrapperType, int numericHierarchy) {
+		JavaPrimitiveType t = new JavaPrimitiveType(type, wrapperType, numericHierarchy);
 		typeMap.put(type, t);
 		wrapperTypeMap.put(JavaClass.from(wrapperType), t);
 		return t;
@@ -40,7 +42,7 @@ public class JavaPrimitiveType implements JavaType {
 	public static JavaPrimitiveType fromWrapper(Class<?> wrapperType) {
 		return fromWrapper(JavaClass.from(wrapperType));
 	}
-	public static JavaPrimitiveType fromWrapper(JavaClass wrapperType) {
+	public static JavaPrimitiveType fromWrapper(JavaClass<?> wrapperType) {
 		return wrapperTypeMap.get(wrapperType);
 	}
 	
@@ -52,7 +54,7 @@ public class JavaPrimitiveType implements JavaType {
 	}
 	
 	@Override
-	public JavaClass toReferenceType() {
+	public JavaClass<?> toReferenceType() {
 		return JavaClass.from(wrapperType);
 	}
 	
@@ -83,5 +85,21 @@ public class JavaPrimitiveType implements JavaType {
 	@Override
 	public void accept(JavaTypeVisitor visitor) {
 		visitor.visitType(this);
+	}
+
+	@Override
+	public boolean isSubtypeOf(JavaType other) {
+		if (this.equals(other)) {
+			return true;
+		}
+		if (other instanceof JavaPrimitiveType) {
+			JavaPrimitiveType otherPrim = (JavaPrimitiveType) other;
+			if (this.equals(CHAR)) {
+				return INT.numericHierarchy <= otherPrim.numericHierarchy;
+			} else if (numericHierarchy >= 0 && otherPrim.numericHierarchy >= 0) {
+				return numericHierarchy <= otherPrim.numericHierarchy;
+			}
+		}
+		return false;
 	}
 }

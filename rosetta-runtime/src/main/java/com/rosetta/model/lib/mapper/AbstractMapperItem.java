@@ -6,9 +6,9 @@ public abstract class AbstractMapperItem<P> implements Comparable<AbstractMapper
 
 	private final MapperPath path;
 	private final boolean error;
-	private final Optional<MapperItem<P, ?>> parentItem;
+	private final Optional<MapperItem<? extends P, ?>> parentItem;
 	
-	AbstractMapperItem(MapperPath path, boolean error, Optional<MapperItem<P, ?>> parentItem) {
+	AbstractMapperItem(MapperPath path, boolean error, Optional<MapperItem<? extends P, ?>> parentItem) {
 		this.path = path;
 		this.error = error;
 		this.parentItem = parentItem;
@@ -24,7 +24,7 @@ public abstract class AbstractMapperItem<P> implements Comparable<AbstractMapper
 	
 	// parent
 	
-	public Optional<MapperItem<P, ?>> getParentItem() {
+	public Optional<MapperItem<? extends P, ?>> getParentItem() {
 		return parentItem;
 	}
 

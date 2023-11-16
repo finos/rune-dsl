@@ -2131,6 +2131,7 @@ class FunctionGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.records.Date;
+				import java.util.Collections;
 				import java.util.List;
 				
 				
@@ -2152,6 +2153,9 @@ class FunctionGeneratorTest {
 					public static class F2Default extends F2 {
 						@Override
 						protected Date doEvaluate(List<Date> f2InputList) {
+							if (f2InputList == null) {
+								f2InputList = Collections.emptyList();
+							}
 							Date f2Output = null;
 							return assignOutput(f2Output, f2InputList);
 						}
@@ -2736,6 +2740,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -2758,6 +2763,9 @@ class FunctionGeneratorTest {
 					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
 						protected List<Integer> doEvaluate(List<Integer> n) {
+							if (n == null) {
+								n = Collections.emptyList();
+							}
 							List<Integer> res = new ArrayList<>();
 							return assignOutput(res, n);
 						}
@@ -2962,6 +2970,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -2997,6 +3006,9 @@ class FunctionGeneratorTest {
 					public static class DistinctFuncDefault extends DistinctFunc {
 						@Override
 						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
+							if (barList == null) {
+								barList = Collections.emptyList();
+							}
 							List<Bar.BarBuilder> res = new ArrayList<>();
 							return assignOutput(res, barList);
 						}
@@ -3360,6 +3372,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -3384,6 +3397,12 @@ class FunctionGeneratorTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
+							if (t1 == null) {
+								t1 = Collections.emptyList();
+							}
+							if (t2 == null) {
+								t2 = Collections.emptyList();
+							}
 							List<String> result = new ArrayList<>();
 							return assignOutput(result, test, t1, t2);
 						}
@@ -3504,6 +3523,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.math.BigDecimal;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -3528,6 +3548,12 @@ class FunctionGeneratorTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+							if (t1 == null) {
+								t1 = Collections.emptyList();
+							}
+							if (t2 == null) {
+								t2 = Collections.emptyList();
+							}
 							List<BigDecimal> result = new ArrayList<>();
 							return assignOutput(result, test, t1, t2);
 						}
@@ -3672,6 +3698,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -3709,6 +3736,12 @@ class FunctionGeneratorTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+							if (b1 == null) {
+								b1 = Collections.emptyList();
+							}
+							if (b2 == null) {
+								b2 = Collections.emptyList();
+							}
 							List<Bar.BarBuilder> result = new ArrayList<>();
 							return assignOutput(result, test, b1, b2);
 						}
@@ -3820,6 +3853,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import javax.inject.Inject;
@@ -3853,6 +3887,9 @@ class FunctionGeneratorTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected Foo.FooBuilder doEvaluate(List<String> inList) {
+							if (inList == null) {
+								inList = Collections.emptyList();
+							}
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, inList);
 						}
@@ -3899,6 +3936,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import javax.inject.Inject;
@@ -3932,6 +3970,9 @@ class FunctionGeneratorTest {
 					public static class FuncFooDefault extends FuncFoo {
 						@Override
 						protected Foo.FooBuilder doEvaluate(List<String> inList) {
+							if (inList == null) {
+								inList = Collections.emptyList();
+							}
 							Foo.FooBuilder foo = Foo.builder();
 							return assignOutput(foo, inList);
 						}

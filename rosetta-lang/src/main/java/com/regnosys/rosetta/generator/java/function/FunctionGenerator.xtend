@@ -60,13 +60,16 @@ import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.rosetta.model.lib.ModelSymbolId
-import com.rosetta.util.types.JavaWildcardTypeArgument
 import com.rosetta.util.types.JavaReferenceType
-import com.regnosys.rosetta.generator.java.statement.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.rosetta.model.lib.mapper.MapperC
 import com.regnosys.rosetta.generator.java.statement.JavaStatement
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.model.lib.mapper.MapperS
+import com.rosetta.util.types.generated.GeneratedJavaClass
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import java.util.Collections
 
 class FunctionGenerator {
 
@@ -83,6 +86,7 @@ class FunctionGenerator {
 	@Inject RObjectFactory rTypeBuilderFactory
 	@Inject ImplicitVariableUtil implicitVariableUtil
 	@Inject extension JavaTypeUtil
+	@Inject TypeCoercionService coercionService
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -115,7 +119,7 @@ class FunctionGenerator {
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
 		val parameterVariable = inputs.head.RType.toListOrSingleJavaType(inputs.head.multi)
-		new JavaParameterizedType(JavaClass.from(IQualifyFunctionExtension), parameterVariable)
+		JavaParameterizedType.from(IQualifyFunctionExtension, parameterVariable)
 	}
 
 	private def collectFunctionDependencies(Function func) {
@@ -273,8 +277,7 @@ class FunctionGenerator {
 						protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF»);
 				«ELSE»
 					«val multi = cardinality.isMulti(alias.expression)»
-					«val itemReturnType = toJavaReferenceType(typeProvider.getRType(alias.expression))»
-					«val returnType = new JavaParameterizedType(multi ? MAPPER_C : MAPPER_S, needsBuilder(alias) ? JavaWildcardTypeArgument.extendsBound(itemReturnType) : itemReturnType)»
+					«val returnType = (multi ? MapperC as Class<?> : MapperS).wrapExtendsIfNotFinal(alias.expression)»
 					
 						protected abstract «returnType» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)»);
 				«ENDIF»
@@ -283,6 +286,11 @@ class FunctionGenerator {
 				public static class «defaultClassName» extends «className» {
 					@Override
 					protected «output.toBuilderType» doEvaluate(«inputs.inputsAsParameters(doEvaluateScope)») {
+						«FOR input : inputs.filter[isMulti]»
+						if («doEvaluateScope.getIdentifierOrThrow(input)» == null) {
+							«doEvaluateScope.getIdentifierOrThrow(input)» = «Collections».emptyList();
+						}
+						«ENDFOR»
 						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
 						return assignOutput(«doEvaluateScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsArguments(doEvaluateScope)»);
 					}
@@ -310,8 +318,7 @@ class FunctionGenerator {
 							protected «returnType» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF») «body.completeAsReturn.toBlock»
 						«ELSE»
 							«val multi = cardinality.isMulti(alias.expression)»
-							«val itemReturnType = toJavaReferenceType(typeProvider.getRType(alias.expression))»
-							«val returnType = new JavaParameterizedType(multi ? MAPPER_C : MAPPER_S, needsBuilder(alias) ? JavaWildcardTypeArgument.extendsBound(itemReturnType) : itemReturnType)»
+							«val returnType = (multi ? MapperC : MapperS).wrapExtendsIfNotFinal(alias.expression)»
 							
 							@Override
 							protected «returnType» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)») «expressionGenerator.javaCode(alias.expression, returnType, aliasScope).completeAsReturn.toBlock»
@@ -381,8 +388,8 @@ class FunctionGenerator {
 		}'''
 	}
 
-	private def JavaClass toDispatchClass(FunctionDispatch ele) {
-		return new JavaClass(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name))
+	private def JavaClass<?> toDispatchClass(FunctionDispatch ele) {
+		return new GeneratedJavaClass<Object>(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
 	}
 
 	private def boolean assignAsKey(ROperation op) {
@@ -395,11 +402,23 @@ class FunctionGenerator {
 			// assign function output object
 			val expressionType = attribute.attributeToJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
-			if (needsBuilder(op.pathHead)) {
+			val effectiveExprType = javaExpr.expressionType
+			if (needsBuilder(attribute)) {
 				javaExpr = javaExpr.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', attribute.toBuilderType)]
+			} else {
+				val needsToCopy = 
+					op.ROperationType == ROperationType.SET
+					&& effectiveExprType.isList
+					&& function.operations.exists[o| o.ROperationType == ROperationType.ADD]
+				if (needsToCopy) {
+					javaExpr =
+						javaExpr
+							.mapExpressionIfNotNull[JavaExpression.from('''new «ArrayList»<>(«it»)''', List.wrap(effectiveExprType.itemType))]
+				}
 			}
 			switch(op.ROperationType) {
 				case ADD: {
+					javaExpr = coercionService.addCoercions(javaExpr, attribute.isMulti ? List.wrapExtends(attribute.toBuilderItemType) : attribute.toBuilderItemType, scope)
 					javaExpr
 						.mapExpression[
 							JavaExpression.from(
@@ -409,6 +428,7 @@ class FunctionGenerator {
 						].completeAsExpressionStatement
 				}
 				case SET: {
+					javaExpr = coercionService.addCoercions(javaExpr, attribute.toBuilderType, scope)
 					javaExpr
 						.mapExpression[
 							JavaExpression.from(
@@ -545,10 +565,10 @@ class FunctionGenerator {
 
 	private def StringConcatenationClient contributeCondition(Condition condition,
 		GeneratedIdentifier conditionValidator, JavaScope scope) {
+		val conditionBody = expressionGenerator.javaCode(condition.expression, COMPARISON_RESULT, scope.lambdaScope).toLambdaBody
 		'''
-			«conditionValidator».validate(() -> 
-				«expressionGenerator.javaCode(condition.expression, COMPARISON_RESULT, scope.lambdaScope).toLambdaBody», 
-					"«condition.definition»");
+			«conditionValidator».validate(() -> «conditionBody»,
+				"«condition.definition»");
 		'''
 	}
 
@@ -563,16 +583,7 @@ class FunctionGenerator {
 				typeProvider.getRTypeOfSymbol(out).toListOrSingleJavaType(out.card.isMany)
 			}
 		}
-	}
-	
-	private def JavaType attributeToJavaType(RAttribute rAttribute) {
-		if (rAttribute.needsBuilder) {
-			rAttribute.RType.toPolymorphicListOrSingleJavaType(rAttribute.multi)
-		} else {
-			rAttribute.RType.toListOrSingleJavaType(rAttribute.multi)
-		}
-	}
-	
+	}	
 
 	private def StringConcatenationClient inputsAsArguments(extension Function function, JavaScope scope) {
 		'''«FOR input : getInputs(function) SEPARATOR ', '»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
@@ -593,7 +604,7 @@ class FunctionGenerator {
 	private def JavaReferenceType shortcutJavaType(RShortcut feature) {
 		val javaType = feature.shortcutExpressionJavaType
 		if (feature.needsBuilder)
-			(javaType as JavaClass).toBuilderType
+			(javaType as JavaClass<?>).toBuilderType
 		else
 			javaType
 	}
@@ -602,11 +613,15 @@ class FunctionGenerator {
 		rType.toJavaReferenceType
 	}
 	
-	private def JavaType toBuilderType(RAttribute rAttribute) {
-		var javaType = rAttribute.RType.toJavaReferenceType as JavaClass
+	private def JavaType toBuilderItemType(RAttribute rAttribute) {
+		var javaType = rAttribute.RType.toJavaReferenceType as JavaClass<?>
 		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
+		javaType
+	}
+	private def JavaType toBuilderType(RAttribute rAttribute) {
+		val javaType = rAttribute.toBuilderItemType
 		if (rAttribute.multi) {
-			return new JavaParameterizedType(JavaClass.from(List), javaType)
+			return List.wrap(javaType)
 		} else {
 			return javaType
 		}

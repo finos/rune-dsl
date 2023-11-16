@@ -18,14 +18,14 @@ import com.rosetta.model.lib.RosettaModelObject;
 
 public class MapperS<T> implements MapperBuilder<T> {
 
-	private final MapperItem<T,?> item;
+	private final MapperItem<? extends T,?> item;
 	private final boolean identity;
 	
-	public MapperS(MapperItem<T,?> item) {
+	public MapperS(MapperItem<? extends T,?> item) {
 		this(item, false);
 	}
 	
-	public MapperS(MapperItem<T,?> item, boolean identity) {
+	public MapperS(MapperItem<? extends T,?> item, boolean identity) {
 		this.item = item;
 		this.identity = identity;
 	}
@@ -123,7 +123,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	
 	@Override
 	public T getOrDefault(T defaultValue) {
-		return Optional.ofNullable(item.getMappedObject()).orElse(defaultValue);
+		return Optional.<T>ofNullable(item.getMappedObject()).orElse(defaultValue);
 	}
 	
 	@Override
@@ -218,7 +218,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 			return new MapperC<>(Arrays.asList(this.item, otherMapperS.item));
 		}
 		else if(other instanceof MapperC) {
-			return new MapperC<>(Collections.singletonList(this.item)).unionSame(other);
+			return new MapperC<T>(Collections.singletonList(this.item)).unionSame(other);
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported Mapper type: " + other.getClass().getName());
@@ -265,7 +265,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	}
 
 	@Override
-	public Stream<MapperItem<T, ?>> getItems() {
+	public Stream<MapperItem<? extends T, ?>> getItems() {
 		return Stream.of(item);
 	}
 }

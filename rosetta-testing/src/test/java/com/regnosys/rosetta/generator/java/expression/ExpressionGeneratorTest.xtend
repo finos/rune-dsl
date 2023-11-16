@@ -17,8 +17,6 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static org.hamcrest.CoreMatchers.*
-import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
@@ -35,11 +33,10 @@ import com.rosetta.util.DottedPath
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.generator.ImplicitVariableRepresentation
-import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.rosetta.util.types.JavaType
-import com.rosetta.model.lib.expression.ComparisonResult
 import java.math.BigInteger
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -47,6 +44,7 @@ class ExpressionGeneratorTest {
 	@Inject extension ExpressionGenerator expressionGenerator
 	@Inject extension ExpressionParser
 	@Inject extension ImportManagerExtension
+	@Inject extension JavaTypeUtil
 	
 	DottedPath testPackageName = DottedPath.of("com", "regnosys", "test")
 	
@@ -57,7 +55,7 @@ class ExpressionGeneratorTest {
 		val gen = 
 		'''"Hello \"world\"!"'''
 			.parseExpression
-			.javaCode(JavaType.from(String), scope)
+			.javaCode(STRING, scope)
 			.formatGeneratedFunction(scope)
 		
 		assertEquals(
@@ -82,7 +80,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new ImplicitVariableRepresentation(lhsMockClass), "foo")
-		val generatedFunction = expressionGenerator.javaCode(comparisonOp, JavaType.from(ComparisonResult), scope)
+		val generatedFunction = expressionGenerator.javaCode(comparisonOp, COMPARISON_RESULT, scope)
 		
 		assertNotNull(generatedFunction)
 		assertEquals(
@@ -116,7 +114,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
-		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, COMPARISON_RESULT, scope)
 		
 		assertNotNull(generatedFunction)
 		assertEquals(
@@ -144,7 +142,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new ImplicitVariableRepresentation(lhsMockClass), "foo")
-		val generatedFunction = expressionGenerator.javaCode(lhsExistsOp, JavaType.from(ComparisonResult), scope)
+		val generatedFunction = expressionGenerator.javaCode(lhsExistsOp, COMPARISON_RESULT, scope)
 		
 		assertNotNull(generatedFunction)
 		assertEquals(
@@ -177,7 +175,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
-		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, COMPARISON_RESULT, scope)
 		
 		assertNotNull(generatedFunction)
 		assertEquals(
@@ -212,7 +210,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
-		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, COMPARISON_RESULT, scope)
 		
 		assertNotNull(generatedFunction)
 		assertEquals(
@@ -247,7 +245,7 @@ class ExpressionGeneratorTest {
 		
 		val scope = new JavaScope(testPackageName)
 		scope.createIdentifier(new ImplicitVariableRepresentation(mockClass), "foo")
-		val generatedFunction = expressionGenerator.javaCode(orOp, JavaType.from(ComparisonResult), scope)
+		val generatedFunction = expressionGenerator.javaCode(orOp, COMPARISON_RESULT, scope)
 		
 		assertNotNull(generatedFunction)
 		assertEquals(

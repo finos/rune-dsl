@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
+
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-ReturnStatement
  */

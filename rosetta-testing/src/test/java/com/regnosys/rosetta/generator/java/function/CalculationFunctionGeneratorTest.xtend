@@ -101,7 +101,7 @@ class CalculationFunctionGeneratorTest {
 						}
 						
 						protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-							out = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(i(in1, in2).map("Type coercion", integer -> integer == null ? null : BigDecimal.valueOf(integer)), MapperS.of(new BigDecimal("30.0"))).get();
+							out = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(i(in1, in2).<BigDecimal>map("Type coercion", integer -> integer == null ? null : BigDecimal.valueOf(integer)), MapperS.of(new BigDecimal("30.0"))).get();
 							
 							return out;
 						}
@@ -276,7 +276,6 @@ class CalculationFunctionGeneratorTest {
 				set res -> res2:  arg1 + arg2 
 		'''.generateCode
 		val calcJava = calculation.get("com.rosetta.test.model.functions.Calc")
-		calculation.compileToClasses
 		val expected = '''
 			package com.rosetta.test.model.functions;
 			
@@ -356,6 +355,7 @@ class CalculationFunctionGeneratorTest {
 			}
 			'''
 		assertEquals(expected, calcJava)
+		calculation.compileToClasses
 	}
 
 	@Test
@@ -503,6 +503,7 @@ class CalculationFunctionGeneratorTest {
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
@@ -537,6 +538,9 @@ class CalculationFunctionGeneratorTest {
 					public static class asKeyUsageDefault extends asKeyUsage {
 						@Override
 						protected OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
+							if (withMeta == null) {
+								withMeta = Collections.emptyList();
+							}
 							OtherType.OtherTypeBuilder out = OtherType.builder();
 							return assignOutput(out, withMeta);
 						}
@@ -552,7 +556,7 @@ class CalculationFunctionGeneratorTest {
 									.collect(Collectors.toList())
 								);
 							
-							final WithMeta outAttrSingle = withMeta.get(0);
+							final WithMeta outAttrSingle = MapperC.of(withMeta).get();
 							out
 								.setAttrSingle(ReferenceWithMetaWithMeta.builder()
 									.setGlobalReference(Optional.ofNullable(outAttrSingle)

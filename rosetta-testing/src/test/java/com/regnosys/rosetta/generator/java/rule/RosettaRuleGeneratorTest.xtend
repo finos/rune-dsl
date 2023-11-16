@@ -288,6 +288,7 @@ class RosettaRuleGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
@@ -343,7 +344,7 @@ class RosettaRuleGeneratorTest {
 								.setBarBarOne(barBarOne.evaluate(input));
 							
 							output
-								.setBarBarTwo(barBarTwo.evaluate(input).get(0));
+								.setBarBarTwo(MapperC.of(barBarTwo.evaluate(input)).get());
 							
 							output
 								.getOrCreateBarBaz()

@@ -159,8 +159,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				}
 				featureType
 			}
-			RosettaEnumValue:
+			RosettaEnumValue: {
 				new REnumType(feature.enumeration)
+			}
 			default:
 				new RErrorType("Cannot infer type of feature.")
 		}
@@ -285,7 +286,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		if (!extensions.isResolved(feature)) {
 			return null
 		}
-		feature.safeRType(context)
+		if (feature instanceof RosettaEnumValue) {
+			expr.receiver.safeRType(context)
+		} else {
+			feature.safeRType(context)
+		}
 	}
 	
 	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> context) {

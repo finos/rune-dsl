@@ -6,16 +6,16 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.util.types.GeneratedJavaClassService
 import com.rosetta.util.DottedPath
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.*
 import com.google.inject.Guice
 import com.google.inject.Module
-import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.ModelReportId
+import com.rosetta.util.types.generated.GeneratedJavaClassService
+import com.rosetta.util.types.generated.GeneratedJavaClass
 
 /**
  * This test class contains sample code used in the documentation of the DSL.
@@ -191,7 +191,7 @@ class DocumentationSamples {
 		'''
 		assertEquals(expected, reportFunctionCode)
 		
-		val runtimeModuleClassRepr = new JavaClass(DottedPath.splitOnDots("test.reg.reports"), "OverridenReportModule")
+		val runtimeModuleClassRepr = new GeneratedJavaClass<Object>(DottedPath.splitOnDots("test.reg.reports"), "OverridenReportModule", Object)
 		val runtimeModuleCode = '''
 		package «runtimeModuleClassRepr.packageName»;
 		

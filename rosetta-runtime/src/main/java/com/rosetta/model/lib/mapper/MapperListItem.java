@@ -7,7 +7,7 @@ public class MapperListItem<T, P> extends AbstractMapperItem<P> {
 	
 	private final List<T> mappedObjects;
 	
-	MapperListItem(List<T> mappedObjects, MapperPath path, boolean error, Optional<MapperItem<P, ?>> parentItem) {
+	MapperListItem(List<T> mappedObjects, MapperPath path, boolean error, Optional<MapperItem<? extends P, ?>> parentItem) {
 		super(path, error, parentItem);
 		this.mappedObjects = mappedObjects;
 	}

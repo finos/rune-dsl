@@ -19,7 +19,7 @@ public class RAttribute implements RAssignedRoot {
 	}
 	
 	@Override
-	public String getName() {
+	public String getName() {		
 		return name;
 	}
 

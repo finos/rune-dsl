@@ -7,21 +7,21 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import java.util.List
 import java.util.Optional
 import java.util.Collections
-import java.util.Arrays
 import java.util.stream.Collectors
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.mapper.MapperListOfLists
 import java.util.function.Function
-import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
-import com.regnosys.rosetta.generator.java.statement.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.JavaVariable
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.rosetta.util.types.JavaPrimitiveType
-import com.regnosys.rosetta.generator.java.statement.JavaConditionalExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import java.util.ArrayList
+import com.rosetta.util.types.JavaReferenceType
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -54,11 +54,11 @@ import java.util.ArrayList
  * For a precise definition, see the methods `JavaTypeUtil#isWrapper` and `JavaTypeUtil#getItemType`.
  */
 class TypeCoercionService {
-	@Inject extension JavaTypeUtil
+	@Inject extension JavaTypeUtil typeUtil
 	
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
-		if (actual.itemType.isVoid) {
+		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
 			return expected.empty
 		}
 		if (actual == expected) {
@@ -264,15 +264,20 @@ class TypeCoercionService {
 					} else if (actual.isMapperC && actual.hasWildcardArgument && expected.isMapperC && !expected.hasWildcardArgument) {
 						// Case immutable MapperC<? extends T> to mutable MapperC<T>
 						[JavaExpression.from('''«it».map("Make mutable", «Function».identity())''', MapperC.wrap(expected.itemType))]
+					} else if (actual.isMapperS && expected.isMapperC) {
+						// Case MapperS to MapperC
+						[JavaExpression.from('''«MapperC».of(«it»)''', MapperC.wrap(expected.itemType))]
+					} else if (actual.isMapperC && expected.isMapperS) {
+						// Case MapperC to MapperS
+						[JavaExpression.from('''«MapperS».of(«it».get())''', MapperS.wrap(expected.itemType))]
 					}
-					// Not handled for the case of differing Mapper types
 				} else if (expected.isMapperListOfLists) {
 					// Case Mapper to MapperListOfLists
 					// Not handled
 				} else if (expected.isList) {
 					// Case Mapper to List
 					if (actual.hasWildcardArgument && !expected.hasWildcardArgument) {
-						[JavaExpression.from('''new «ArrayList»(«it».getMulti())''', List.wrap(expected.itemType))]
+						[JavaExpression.from('''new «ArrayList»<>(«it».getMulti())''', List.wrap(expected.itemType))]
 					} else {
 						[JavaExpression.from('''«it».getMulti()''', List.wrap(expected.itemType))]
 					}
@@ -310,7 +315,7 @@ class TypeCoercionService {
 					JavaExpression.from('''«it» == null''', JavaPrimitiveType.BOOLEAN),
 					expected.empty,
 					conversion.apply(it),
-					expected
+					typeUtil
 				)]
 	}
 	
@@ -403,19 +408,19 @@ class TypeCoercionService {
 		}
 	}
 	private def JavaExpression getItemToListConversionExpression(JavaExpression expression) {
-		JavaExpression.from('''«Arrays».asList(«expression»)''', List.wrap(expression.expressionType))
+		JavaExpression.from('''«Collections».singletonList(«expression»)''', List.wrap(expression.expressionType))
 	}
 	private def JavaExpression getItemToMapperSConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«MapperS».of(«expression»)''', MapperS.wrap(expression.expressionType))
 	}
 	private def JavaExpression getItemToMapperCConversionExpression(JavaExpression expression) {
-		JavaExpression.from('''«MapperC».of(«Arrays».asList(«expression»))''', MapperC.wrap(expression.expressionType))
+		JavaExpression.from('''«MapperC».of(«Collections».singletonList(«expression»))''', MapperC.wrap(expression.expressionType))
 	}
 	private def JavaExpression getItemToComparisonResultConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«ComparisonResult».of(«MapperS».of(«expression»))''', COMPARISON_RESULT)
 	}
 	private def JavaExpression getListToItemConversionExpression(JavaExpression expression) {
-		JavaExpression.from('''«expression».get(0)''', expression.expressionType.itemType)
+		JavaExpression.from('''«MapperC».of(«expression»).get()''', expression.expressionType.itemType)
 	}
 	private def JavaExpression getMapperToItemConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«expression».get()''', expression.expressionType.itemType)
@@ -428,7 +433,7 @@ class TypeCoercionService {
 		JavaExpression.from(
 			'''
 			«expression».stream()
-				.map(«lambdaParam» -> «resultItem»)
+				.<«resultItem.expressionType»>map(«lambdaParam» -> «resultItem»)
 				.collect(«Collectors».toList())
 			''',
 			List.wrap(resultItem.expressionType)
@@ -439,9 +444,10 @@ class TypeCoercionService {
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val resultItem = itemConversion.apply(new JavaVariable(lambdaParam, actualItemType))
+		val resultType = MapperS.wrap(resultItem.expressionType)
 		JavaExpression.from(
-			'''«expression».map("Type coercion", «lambdaParam» -> «lambdaParam» == null ? null : «resultItem»)''',
-			MapperS.wrap(resultItem.expressionType)
+			'''«expression».<«resultType.itemType»>map("Type coercion", «lambdaParam» -> «lambdaParam» == null ? null : «resultItem»)''',
+			resultType
 		)
 	}
 	private def JavaExpression getMapperCItemConversionExpression(JavaExpression expression, Function<JavaExpression, JavaExpression> itemConversion, JavaScope scope) {
@@ -449,9 +455,10 @@ class TypeCoercionService {
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val resultItem = itemConversion.apply(new JavaVariable(lambdaParam, actualItemType))
+		val resultType = MapperC.wrap(resultItem.expressionType)
 		JavaExpression.from(
-			'''«expression».map("Type coercion", «lambdaParam» -> «resultItem»)''',
-			MapperC.wrap(resultItem.expressionType)
+			'''«expression».<«resultType.itemType»>map("Type coercion", «lambdaParam» -> «resultItem»)''',
+			resultType
 		)
 	}
 	private def JavaExpression getMapperListOfListsItemConversionExpression(JavaExpression expression, Function<JavaExpression, JavaExpression> itemConversion, JavaScope scope) {
@@ -459,10 +466,10 @@ class TypeCoercionService {
 		val listToListLambdaScope = scope.lambdaScope
 		val mapperCParam = listToListLambdaScope.createUniqueIdentifier("mapperC")
 		val resultMapperC = getMapperCItemConversionExpression(new JavaVariable(mapperCParam, MapperC.wrap(actualItemType)), itemConversion, listToListLambdaScope)
+		val resultType = MapperListOfLists.wrap(resultMapperC.expressionType.itemType)
 		JavaExpression.from(
-			'''«expression».mapListToList(«mapperCParam» -> «resultMapperC»)''',
-			MapperListOfLists.wrap(resultMapperC.expressionType.itemType)
-		
+			'''«expression».<«resultType.itemType»>mapListToList(«mapperCParam» -> «resultMapperC»)''',
+			resultType
 		)
 	}
 	

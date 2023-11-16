@@ -12,7 +12,7 @@ import java.math.BigInteger
 
 class MapperMaths {
 	
-	def static <R, A, B> MapperS<R> add(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> add(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -21,7 +21,7 @@ class MapperMaths {
 		return MapperS.ofNull;
 	}
 	
-	def static <R, A, B> MapperS<R> subtract(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> subtract(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -29,7 +29,7 @@ class MapperMaths {
 		}
 		return null;
 	}
-	def static <R, A, B> MapperS<R> multiply(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> multiply(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()
@@ -38,7 +38,7 @@ class MapperMaths {
 		return MapperS.ofNull;
 	}
 	
-	def static <R, A, B> MapperS<R> divide(Mapper<A> in1, Mapper<B> in2) {
+	def static <R, A, B> MapperS<R> divide(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
 			val arg1 = in1.get()
 			val arg2 = in2.get()

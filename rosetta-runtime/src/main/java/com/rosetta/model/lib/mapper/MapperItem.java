@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class MapperItem<T, P> extends AbstractMapperItem<P> {
 
-	static <C, P> MapperItem<C, P> getMapperItem(MapperItem<P, ?> parentItem, NamedFunction<P, C> mappingFunc) {
+	static <C, P> MapperItem<C, P> getMapperItem(MapperItem<? extends P, ?> parentItem, NamedFunction<P, C> mappingFunc) {
 		if (!parentItem.isError()) {
 			P parent = parentItem.getMappedObject();
 			C child = mappingFunc.apply(parent);
@@ -20,7 +20,7 @@ public class MapperItem<T, P> extends AbstractMapperItem<P> {
 		}
 	}
 	
-	static <C, P> MapperItem<C, P> getCheckedMapperItem(MapperItem<P, ?> parentItem, NamedFunction<P, C> mappingFunc, Class<? extends Exception> errorClass) {
+	static <C, P> MapperItem<C, P> getCheckedMapperItem(MapperItem<? extends P, ?> parentItem, NamedFunction<P, C> mappingFunc, Class<? extends Exception> errorClass) {
 		if (!parentItem.isError()) {
 			P parent = parentItem.getMappedObject();
 			C child;
@@ -41,9 +41,9 @@ public class MapperItem<T, P> extends AbstractMapperItem<P> {
 		}
 	}
 	
-	static <C, P> List<MapperItem<C, ?>> getMapperItems(MapperItem<P, ?> parentItem, NamedFunction<P, List<? extends C>> mappingFunc) {
+	static <C, P> List<MapperItem<? extends C, ?>> getMapperItems(MapperItem<? extends P, ?> parentItem, NamedFunction<P, List<? extends C>> mappingFunc) {
 		if (!parentItem.isError()) {
-			List<MapperItem<C, ?>> childItems = new ArrayList<>();
+			List<MapperItem<? extends C, ?>> childItems = new ArrayList<>();
 			
 			P parent = parentItem.getMappedObject();
 			List<? extends C> children = mappingFunc.apply(parent);
@@ -73,7 +73,7 @@ public class MapperItem<T, P> extends AbstractMapperItem<P> {
 	
 	private final T mappedObject;
 	
-	MapperItem(T mappedObject, MapperPath path, boolean error, Optional<MapperItem<P, ?>> parentItem) {
+	MapperItem(T mappedObject, MapperPath path, boolean error, Optional<MapperItem<? extends P, ?>> parentItem) {
 		super(path, error, parentItem);
 		this.mappedObject = mappedObject;
 	}

@@ -38,7 +38,7 @@ public interface MapperBuilder<T> extends Mapper<T> {
 	
 	MapperBuilder<Object> unionDifferent(MapperBuilder<?> mapper);
 
-	Stream<MapperItem<T, ?>> getItems();
+	Stream<MapperItem<? extends T, ?>> getItems();
 	
 	default Optional<MapperItem<?, ?>> findParent(MapperItem<?, ?> item) {
 		Optional<? extends MapperItem<?, ?>> parentItem = item.getParentItem();

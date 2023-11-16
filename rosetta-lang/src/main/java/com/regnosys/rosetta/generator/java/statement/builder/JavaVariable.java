@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.statement;
+package com.regnosys.rosetta.generator.java.statement.builder;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 

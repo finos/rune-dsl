@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.statement;
+package com.regnosys.rosetta.generator.java.statement.builder;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -8,11 +8,18 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
-import com.rosetta.util.types.JavaPrimitiveType;
+import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
+import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
+import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaReturnStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
+import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 
 public abstract class JavaExpression extends JavaStatementBuilder implements JavaLambdaBody {	
-	public static final JavaExpression NULL = new JavaExpression(JavaPrimitiveType.VOID.toReferenceType()) {	
+	public static final JavaExpression NULL = new JavaExpression(JavaReferenceType.NULL_TYPE) {	
 		@Override
 		public void appendTo(TargetStringConcatenation target) {
 			target.append("null");
@@ -49,7 +56,7 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		if (after instanceof JavaExpression) {
 			return this.then((JavaExpression)after, combineExpressions, scope);
 		}
-		return after.mapExpression(expr -> combineExpressions.apply(this, expr));
+		return after.then(this, (otherExpr, thisExpr) -> combineExpressions.apply(thisExpr, otherExpr), scope);
 	}
 	public JavaExpression then(JavaExpression after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope) {
 		return combineExpressions.apply(this, after);
@@ -58,6 +65,18 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	@Override
 	public JavaStatement complete(Function<JavaExpression, JavaStatement> completer) {
 		return completer.apply(this);
+	}
+	@Override
+	public JavaReturnStatement completeAsReturn() {
+		return new JavaReturnStatement(this);
+	}
+	@Override
+	public JavaExpressionStatement completeAsExpressionStatement() {
+		return new JavaExpressionStatement(this);
+	}
+	@Override
+	public JavaAssignment completeAsAssignment(GeneratedIdentifier variableId) {
+		return new JavaAssignment(variableId, this);
 	}
 
 	@Override

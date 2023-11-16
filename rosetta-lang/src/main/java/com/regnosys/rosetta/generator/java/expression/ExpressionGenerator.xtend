@@ -108,18 +108,17 @@ import com.regnosys.rosetta.types.builtin.RRecordType
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.rosetta.util.types.JavaType
-import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
-import com.rosetta.util.types.JavaClass
 import com.rosetta.model.lib.mapper.Mapper
-import com.regnosys.rosetta.generator.java.statement.JavaExpression
 import com.rosetta.util.types.JavaPrimitiveType
-import com.regnosys.rosetta.generator.java.statement.JavaIfThenElseBuilder
 import com.rosetta.model.lib.mapper.MapperListOfLists
-import com.regnosys.rosetta.generator.java.statement.JavaVariable
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.math.BigInteger
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -142,7 +141,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject extension TypeSystem
 	@Inject RObjectFactory rObjectFactory;
 	@Inject TypeCoercionService typeCoercionService
-	@Inject extension JavaTypeUtil
+	@Inject extension JavaTypeUtil typeUtil
 	
 	/**
 	 * convert a rosetta expression to code
@@ -239,7 +238,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			itemType
 		} else {
 			// For inline functions
-			if ((definingContainer as RosettaFunctionalOperation).argument.isOutputListOfLists) {
+			val f = definingContainer as RosettaFunctionalOperation
+			if (f instanceof ThenOperation && f.argument.isOutputListOfLists) {
 				MapperListOfLists.wrap(itemType)
 			} else if (context.implicitVariableMulti) {
 				MapperC.wrap(itemType)
@@ -254,19 +254,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val output = function.output
 		val inputs = function.inputs
 		'''
-			«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF»
-			«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»
-		'''
+			«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF
+			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
-	private def aliasCallArgs(ShortcutDeclaration alias) {
+	private def StringConcatenationClient aliasCallArgs(ShortcutDeclaration alias, JavaScope scope) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
-		val attrs = <String>newArrayList
-		attrs.addAll(funcExt.getInputs(func).map[name].toList)
-		if (exprHelper.usesOutputParameter(alias.expression)) {
-			attrs.add(0, funcExt.getOutput(func)?.name + '.toBuilder()')
-		}
-		attrs.join(', ')
+		val output = rObjectFactory.buildRAttribute(funcExt.getOutput(func))
+		val inputs = funcExt.getInputs(func).map[rObjectFactory.buildRAttribute(it)]
+		'''
+			«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF
+			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	private def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, JavaScope scope, boolean autoValue) {
@@ -323,7 +321,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					case "*": "multiply"
 					case "/": "divide"
 				}
-				if (JavaClass.from(Number).isAssignableFrom(leftType) && JavaClass.from(Number).isAssignableFrom(rightType)) {
+				if (leftType.extendsNumber && rightType.extendsNumber) {
 					val leftCode = javaCode(left, Mapper.wrapExtends(joined), context.scope)
 					val rightCode = javaCode(right, Mapper.wrapExtends(joined), context.scope)
 					leftCode
@@ -596,7 +594,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		// TODO: fix result type (should join both types)
 		condition
 			.collapseToSingleExpression(context.scope)
-			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, thenBranch.expressionType.join(elseBranch.expressionType))]
+			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]
 	}
 
 	override protected caseContainsOperation(RosettaContainsExpression expr, Context context) {
@@ -741,10 +739,24 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			return JavaExpression.NULL
 		}
 		val itemType = typeProvider.getRType(expr).toJavaReferenceType
-		return JavaExpression.from(
-			'''«MapperC».<«itemType»>of(«FOR ele : expr.elements SEPARATOR ', '»«ele.javaCode(ele.isMulti ? MapperC.wrapExtends(itemType) : MapperS.wrapExtends(itemType), context.scope)»«ENDFOR»)''',
-			MapperC.wrap(itemType)
-		)
+		val first = expr.elements.head
+		var elementsCode = first.javaCode(first.isMulti ? MapperC.wrapExtends(itemType) : MapperS.wrapExtends(itemType), context.scope)
+		for (var i = 1; i < expr.elements.size; i++) {
+			val elem = expr.elements.get(i)
+			elementsCode = elementsCode.then(
+				elem.javaCode(elem.isMulti ? MapperC.wrapExtends(itemType) : MapperS.wrapExtends(itemType), context.scope),
+				[elemList, newElem|JavaExpression.from('''«elemList», «newElem»''', null)],
+				context.scope
+			)
+		}
+		elementsCode
+			.collapseToSingleExpression(context.scope)
+			.mapExpression[
+				JavaExpression.from(
+					'''«MapperC».<«itemType»>of(«it»)''',
+					MapperC.wrap(itemType)
+				)
+			]
 	}
 
 	override protected caseMapOperation(MapOperation expr, Context context) {
@@ -923,7 +935,14 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val isMulti = s.isSymbolMulti
 				val shortcut = rObjectFactory.buildRShortcut(s)
 				val itemType = typeProvider.getRTypeOfSymbol(s).toJavaReferenceType
-				JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s)»)«IF exprHelper.usesOutputParameter(s.expression)».build()«ENDIF»''', isMulti ? MapperC.wrapExtendsIfNotPrimitive(itemType) : MapperS.wrapExtendsIfNotPrimitive(itemType))
+				if (exprHelper.usesOutputParameter(s.expression)) {
+					val aliasType = isMulti ? List.wrap(itemType) : itemType
+					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»).build()''', aliasType)
+				} else {
+					val aliasType = isMulti ? MapperC.wrapExtendsIfNotFinal(itemType) : MapperS.wrapExtendsIfNotFinal(itemType)
+					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»)''', aliasType)
+				}
+				
 			}
 			RosettaEnumeration: {
 				val t = new REnumType(s).toJavaType
@@ -1048,8 +1067,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 										.setExternalReference(«item».getMappedObject().getMeta().getExternalKey())
 										.setGlobalReference(«item».getMappedObject().getMeta().getGlobalKey())
 										.build())
-									.collect(«Collectors».toList())
-							''',
+									.collect(«Collectors».toList())''',
 							List.wrap(metaClass)
 						)
 					]
@@ -1071,8 +1089,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 										.map(«r» -> «r».getMeta())
 										.map(«m» -> «m».getExternalKey())
 										.orElse(null))
-									.build()
-							''',
+									.build()''',
 							metaClass
 						)
 					]

@@ -11,11 +11,14 @@ import com.regnosys.rosetta.types.builtin.RZonedDateTimeType
 import java.util.Map
 import java.time.LocalDateTime
 import java.time.ZoneId
-import com.regnosys.rosetta.generator.java.statement.JavaStatementBuilder
-import com.regnosys.rosetta.generator.java.statement.JavaExpression
-import com.rosetta.util.types.JavaType
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import javax.inject.Inject
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class RecordJavaUtil {
+	@Inject JavaTypeUtil typeUtil
+	
 	def dispatch StringConcatenationClient recordFeatureToLambda(RDateType recordType, RosettaRecordFeature feature, JavaScope scope) {
 		switch(feature.name) {
 			case "day": 
@@ -73,7 +76,7 @@ class RecordJavaUtil {
 				scope
 			)
 			.mapExpression[
-				JavaExpression.from('''«Date».of(«it»)''', JavaType.from(Date))
+				JavaExpression.from('''«Date».of(«it»)''', typeUtil.DATE)
 			]
 	}
 	def dispatch JavaStatementBuilder recordConstructor(RDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
@@ -84,7 +87,7 @@ class RecordJavaUtil {
 				scope
 			)
 			.mapExpression[
-				JavaExpression.from('''«LocalDateTime».of(«it»)''', JavaType.from(LocalDateTime))
+				JavaExpression.from('''«LocalDateTime».of(«it»)''', typeUtil.LOCAL_DATE_TIME)
 			]
 	}
 	def dispatch JavaStatementBuilder recordConstructor(RZonedDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
@@ -100,7 +103,7 @@ class RecordJavaUtil {
 				scope
 			)
 			.mapExpression[
-				JavaExpression.from('''«LocalDateTime».of(«it»)''', JavaType.from(LocalDateTime))
+				JavaExpression.from('''«ZonedDateTime».of(«it»)''', typeUtil.ZONED_DATE_TIME)
 			]
 	}
 }

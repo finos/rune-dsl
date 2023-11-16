@@ -29,10 +29,10 @@ import java.util.Set
 import org.apache.commons.text.StringEscapeUtils
 import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
-import com.rosetta.util.types.JavaParameterizedType
 import com.rosetta.model.lib.ModelSymbolId
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class TabulatorGenerator {
 	@Inject RosettaTypeProvider typeProvider
@@ -40,6 +40,7 @@ class TabulatorGenerator {
 	@Inject extension ImportManagerExtension
 	
 	@Inject extension RosettaExtensions
+	@Inject extension JavaTypeUtil
 	
 	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
@@ -91,7 +92,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient reportTabulatorClassBody(RosettaReport report, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass tabulatorClass) {
+	private def StringConcatenationClient reportTabulatorClassBody(RosettaReport report, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass<Tabulator> tabulatorClass) {
 		val reportType = report.reportType
 		val reportClass = new RDataType(reportType).toJavaReferenceType
 		
@@ -145,7 +146,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient tabulatorClassBody(Data reportType, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass tabulatorClass) {
+	private def StringConcatenationClient tabulatorClassBody(Data reportType, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass<Tabulator> tabulatorClass) {
 		val reportClass = new RDataType(reportType).toJavaReferenceType
 		
 		val classScope = topScope.classScope(reportClass.simpleName)
@@ -256,9 +257,9 @@ class TabulatorGenerator {
 		
 		if (rType instanceof RDataType) {
 			val resultType = if (attr.card.isMany) {
-				new JavaParameterizedType(JavaClass.from(List), new JavaParameterizedType(JavaClass.from(List), JavaClass.from(FieldValue)))
+				List.wrap(List.wrap(JavaClass.from(FieldValue)))
 			} else {
-				new JavaParameterizedType(JavaClass.from(List), JavaClass.from(FieldValue))
+				List.wrap(JavaClass.from(FieldValue))
 			}
 			rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
 			val attrType = rType.data

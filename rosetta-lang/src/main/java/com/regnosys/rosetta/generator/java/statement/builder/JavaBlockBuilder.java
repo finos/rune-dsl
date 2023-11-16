@@ -1,9 +1,14 @@
-package com.regnosys.rosetta.generator.java.statement;
+package com.regnosys.rosetta.generator.java.statement.builder;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.statement.JavaBlock;
+import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
+import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.rosetta.util.types.JavaType;
 
 public class JavaBlockBuilder extends JavaStatementBuilder {
@@ -60,12 +65,24 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		return new JavaBlockBuilder(result, combined);
 	}
 	
+	private JavaBlock completeLastStatement(Function<JavaStatementBuilder, JavaStatement> mapper) {
+		return new JavaBlock(statements).append(mapper.apply(this.lastStatement));
+	}
 	@Override
 	public JavaBlock complete(Function<JavaExpression, JavaStatement> completer) {
-		JavaStatementList result = new JavaStatementList();
-		result.addAll(this.statements);
-		result.add(this.lastStatement.complete(completer));
-		return new JavaBlock(result);
+		return completeLastStatement(l -> l.complete(completer));
+	}
+	@Override
+	public JavaBlock completeAsReturn() {
+		return completeLastStatement(l -> l.completeAsReturn());
+	}
+	@Override
+	public JavaBlock completeAsExpressionStatement() {
+		return completeLastStatement(l -> l.completeAsExpressionStatement());
+	}
+	@Override
+	public JavaBlock completeAsAssignment(GeneratedIdentifier variableId) {
+		return completeLastStatement(l -> l.completeAsAssignment(variableId));
 	}
 
 	@Override
@@ -97,6 +114,6 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 
 	@Override
 	public JavaLambdaBody toLambdaBody() {
-		return complete(JavaReturnStatement::new);
+		return completeAsReturn();
 	}
 }
