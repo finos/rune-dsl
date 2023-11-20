@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 public class RosettaTransientValueService extends DefaultTransientValueService {
 	private EStructuralFeature generatedInputWasSetFeature = ExpressionPackage.eINSTANCE.getHasGeneratedInput_GeneratedInputWasSet();
+	private EStructuralFeature implicitVariableIsInContextFeature = ExpressionPackage.eINSTANCE.getRosettaSymbolReference_ImplicitVariableIsInContext();
 	
 	@Override
 	public boolean isCheckElementsIndividually(EObject owner, EStructuralFeature feature) {
@@ -22,7 +23,7 @@ public class RosettaTransientValueService extends DefaultTransientValueService {
 		if (super.isTransient(owner, feature, index)) {
 			return true;
 		}
-		if (feature.equals(generatedInputWasSetFeature)) {
+		if (feature.equals(generatedInputWasSetFeature) || feature.equals(implicitVariableIsInContextFeature)) {
 			return true;
 		}
 		Object value = owner.eGet(feature);

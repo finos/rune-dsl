@@ -353,7 +353,6 @@ class RosettaParsingTest {
 	    model.elements.head as Function => [
 	    	operations.head.expression as RosettaSymbolReference => [
 	    		assertTrue(explicitArguments)
-	    		assertFalse(needsGeneratedInput)
 	    	]
 	    ]
 	}

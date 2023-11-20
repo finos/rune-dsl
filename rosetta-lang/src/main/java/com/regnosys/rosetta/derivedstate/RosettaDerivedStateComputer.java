@@ -13,6 +13,7 @@ import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
 /**
@@ -43,6 +44,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			this.setDefaultElseToEmpty((RosettaConditionalExpression)obj);
 		} else if (obj instanceof JoinOperation) {
 			this.setDefaultJoinSeparator((JoinOperation)obj);
+		} else if (obj instanceof RosettaSymbolReference) {
+			this.setImplicitVariableInContextOfSymbolReference((RosettaSymbolReference)obj);
 		}
 		if (obj instanceof HasGeneratedInput) {
 			this.setDefaultInput((HasGeneratedInput)obj);
@@ -62,6 +65,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			this.discardDefaultElse((RosettaConditionalExpression)obj);
 		} else if (obj instanceof JoinOperation) {
 			this.discardDefaultJoinSeparator((JoinOperation)obj);
+		} else if (obj instanceof RosettaSymbolReference) {
+			this.discardImplicitVariableInContextOfSymbolReference((RosettaSymbolReference)obj);
 		}
 		if (obj instanceof HasGeneratedInput) {
 			this.discardDefaultInput((HasGeneratedInput)obj);
@@ -116,6 +121,18 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			if (expr.getRight() != null && expr.getRight().isGenerated()) {
 				expr.setRight(null);
 			}
+		}
+	}
+	
+	private void setImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
+		if (implicitVariableUtil.implicitVariableExistsInContext(expr)) {
+			expr.setImplicitVariableIsInContext(true);
+		}
+	}
+	private void discardImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
+		if (expr.isImplicitVariableIsInContext()) {
+			expr.setImplicitVariableIsInContext(false);
+			expr.setImplicitArgument(null);
 		}
 	}
 }
