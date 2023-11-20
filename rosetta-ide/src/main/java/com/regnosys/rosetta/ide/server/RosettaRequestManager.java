@@ -33,6 +33,7 @@ public class RosettaRequestManager extends RequestManager {
 	                        .build());
 
 	/*
+	 * TODO: contribute to Xtext
 	 * The code that uses this list fixes a memory leak in the RequestManager and should be contributed
 	 * back to the Xtext project then removed from here
 	 */

@@ -11,6 +11,7 @@ import com.rosetta.model.lib.reports.ReportFunction
 import com.rosetta.util.types.JavaParameterizedType
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.fasterxml.jackson.core.type.TypeReference
 
 class RuleGenerator {
 	@Inject extension JavaTypeTranslator
@@ -22,7 +23,7 @@ class RuleGenerator {
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaRule rule, String version) {
 		val rFunctionRule = buildRFunction(rule)
 		val clazz = rFunctionRule.toFunctionJavaClass
-		val baseInterface = JavaParameterizedType.from(ReportFunction, rFunctionRule.inputs.head.attributeToJavaType, rFunctionRule.output.attributeToJavaType)
+		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunctionRule.inputs.head.attributeToJavaType, rFunctionRule.output.attributeToJavaType)
 		val topScope = new JavaScope(clazz.packageName)
 		val classBody = functionGenerator.rBuildClass(rFunctionRule, false, #[baseInterface], emptyMap, true, topScope)
 		

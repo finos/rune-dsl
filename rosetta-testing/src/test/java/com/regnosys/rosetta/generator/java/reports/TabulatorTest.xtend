@@ -94,10 +94,10 @@ class TabulatorTest {
 			
 			@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"Corp"})
 			public class TEST_REGCorpReportTabulator implements Tabulator<Report> {
-				private final ReportTabulator tabulator;
+				private final ReportTypeTabulator tabulator;
 				
 				@Inject
-				public TEST_REGCorpReportTabulator(ReportTabulator tabulator) {
+				public TEST_REGCorpReportTabulator(ReportTypeTabulator tabulator) {
 					this.tabulator = tabulator;
 				}
 				
@@ -114,7 +114,7 @@ class TabulatorTest {
 		'''
 		assertEquals(expected, reportTabulatorCode)
 		
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTypeTabulator", Tabulator)
 		
 		val tabulatorCode = code.get(tabulatorClass.canonicalName.withDots)
 		assertThat(tabulatorCode, CoreMatchers.notNullValue())
@@ -136,16 +136,16 @@ class TabulatorTest {
 			import javax.inject.Inject;
 			
 			
-			public class ReportTabulator implements Tabulator<Report> {
+			public class ReportTypeTabulator implements Tabulator<Report> {
 				private final Field basicField;
 				private final Field subreportField;
 				private final Field subreportWithRuleField;
 				
-				private final SubreportTabulator subreportTabulator;
+				private final SubreportTypeTabulator subreportTypeTabulator;
 				
 				@Inject
-				public ReportTabulator(SubreportTabulator subreportTabulator) {
-					this.subreportTabulator = subreportTabulator;
+				public ReportTypeTabulator(SubreportTypeTabulator subreportTypeTabulator) {
+					this.subreportTypeTabulator = subreportTypeTabulator;
 					this.basicField = new FieldImpl(
 						"basic",
 						false,
@@ -158,14 +158,14 @@ class TabulatorTest {
 						false,
 						Optional.empty(),
 						Optional.empty(),
-						subreportTabulator.getFields()
+						subreportTypeTabulator.getFields()
 					);
 					this.subreportWithRuleField = new FieldImpl(
 						"subreportWithRule",
 						false,
 						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "SubreportWithRule")),
 						Optional.of("Subreport from a rule"),
-						subreportTabulator.getFields()
+						subreportTypeTabulator.getFields()
 					);
 				}
 				
@@ -178,9 +178,9 @@ class TabulatorTest {
 				public List<FieldValue> tabulate(Report report) {
 					Optional<String> basic = Optional.ofNullable(report.getBasic());
 					Optional<List<FieldValue>> subreport = Optional.ofNullable(report.getSubreport())
-						.map(x -> subreportTabulator.tabulate(x));
+						.map(x -> subreportTypeTabulator.tabulate(x));
 					Optional<List<FieldValue>> subreportWithRule = Optional.ofNullable(report.getSubreportWithRule())
-						.map(x -> subreportTabulator.tabulate(x));
+						.map(x -> subreportTypeTabulator.tabulate(x));
 					return Arrays.asList(
 						new FieldValueImpl(basicField, basic),
 						new NestedFieldValueImpl(subreportField, subreport),
@@ -266,7 +266,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTypeTabulator", Tabulator)
 		
 		val tabulatorCode = code.get(tabulatorClass.canonicalName.withDots)
 		assertThat(tabulatorCode, CoreMatchers.notNullValue())
@@ -289,15 +289,15 @@ class TabulatorTest {
 			import javax.inject.Inject;
 			
 			
-			public class ReportTabulator implements Tabulator<Report> {
+			public class ReportTypeTabulator implements Tabulator<Report> {
 				private final Field basicListField;
 				private final Field subreportListField;
 				
-				private final SubreportTabulator subreportTabulator;
+				private final SubreportTypeTabulator subreportTypeTabulator;
 				
 				@Inject
-				public ReportTabulator(SubreportTabulator subreportTabulator) {
-					this.subreportTabulator = subreportTabulator;
+				public ReportTypeTabulator(SubreportTypeTabulator subreportTypeTabulator) {
+					this.subreportTypeTabulator = subreportTypeTabulator;
 					this.basicListField = new FieldImpl(
 						"basicList",
 						true,
@@ -310,7 +310,7 @@ class TabulatorTest {
 						true,
 						Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "SubreportList")),
 						Optional.of("Subreport group"),
-						subreportTabulator.getFields()
+						subreportTypeTabulator.getFields()
 					);
 				}
 				
@@ -324,7 +324,7 @@ class TabulatorTest {
 					Optional<List<? extends Integer>> basicList = Optional.ofNullable(report.getBasicList());
 					Optional<List<List<FieldValue>>> subreportList = Optional.ofNullable(report.getSubreportList())
 						.map(x -> x.stream()
-							.map(_x -> subreportTabulator.tabulate(_x))
+							.map(_x -> subreportTypeTabulator.tabulate(_x))
 							.collect(Collectors.toList()));
 					return Arrays.asList(
 						new FieldValueImpl(basicListField, basicList),
@@ -413,7 +413,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTypeTabulator", Tabulator)
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
@@ -487,7 +487,7 @@ class TabulatorTest {
 		'''
 		val code = model.generateCode
 		
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTabulator", Tabulator)
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTypeTabulator", Tabulator)
 		
 		val tabulatorCode = code.get(tabulatorClass.canonicalName.withDots)
 		assertThat(tabulatorCode, CoreMatchers.notNullValue())
@@ -508,12 +508,12 @@ class TabulatorTest {
 			import java.util.Optional;
 			
 			
-			public class ReportTabulator implements Tabulator<Report> {
+			public class ReportTypeTabulator implements Tabulator<Report> {
 				private final Field basic1Field;
 				private final Field basic2Field;
 				private final Field basic3Field;
 				
-				public ReportTabulator() {
+				public ReportTypeTabulator() {
 					this.basic1Field = new FieldImpl(
 						"basic1",
 						false,

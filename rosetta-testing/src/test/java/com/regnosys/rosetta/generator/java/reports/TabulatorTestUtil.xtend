@@ -17,7 +17,7 @@ import com.rosetta.model.lib.reports.Tabulator.NestedFieldValue
 class TabulatorTestUtil {
 	@Inject Injector injector
 	
-	def <T> T createInstance(Map<String, Class<?>> classes, JavaClass tabulatorClassRepr) {
+	def <T> T createInstance(Map<String, Class<?>> classes, JavaClass<?> tabulatorClassRepr) {
 		val tabulatorClass = classes.get(tabulatorClassRepr.canonicalName.withDots)
 		return injector.getInstance(tabulatorClass) as T
 	}
