@@ -92,7 +92,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient reportTabulatorClassBody(RosettaReport report, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass<Tabulator> tabulatorClass) {
+	private def StringConcatenationClient reportTabulatorClassBody(RosettaReport report, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
 		val reportType = report.reportType
 		val reportClass = new RDataType(reportType).toJavaReferenceType
 		
@@ -131,7 +131,7 @@ class TabulatorGenerator {
 			// There is no available tabulator for `reportType`,
 			// so we generate a dummy implementation.
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«reportClass»> {				
+			public class «tabulatorClass» implements «Tabulator»<«reportClass»> {
 				@Override
 				public «List»<«Field»> getFields() {
 					return «Arrays».asList();
@@ -146,7 +146,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient tabulatorClassBody(Data reportType, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass<Tabulator> tabulatorClass) {
+	private def StringConcatenationClient tabulatorClassBody(Data reportType, Optional<RosettaExternalRuleSource> ruleSource, Map<Attribute, RosettaRule> context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
 		val reportClass = new RDataType(reportType).toJavaReferenceType
 		
 		val classScope = topScope.classScope(reportClass.simpleName)
@@ -257,9 +257,9 @@ class TabulatorGenerator {
 		
 		if (rType instanceof RDataType) {
 			val resultType = if (attr.card.isMany) {
-				List.wrap(List.wrap(JavaClass.from(FieldValue)))
+				LIST.wrap(LIST.wrap(JavaClass.from(FieldValue)))
 			} else {
-				List.wrap(JavaClass.from(FieldValue))
+				LIST.wrap(JavaClass.from(FieldValue))
 			}
 			rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
 			val attrType = rType.data

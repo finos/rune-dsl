@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.rosetta.model.lib.expression.ComparisonResult;
@@ -50,39 +51,34 @@ public class JavaTypeUtil {
 	public final JavaClass<Cloneable> CLONEABLE = JavaClass.CLONEABLE;
 	public final JavaClass<Serializable> SERIALIZABLE = JavaClass.SERIALIZABLE;
 	
-	@SuppressWarnings("rawtypes")
-	public final JavaClass<List> LIST = JavaClass.from(List.class);
-	@SuppressWarnings("rawtypes")
-	public final JavaClass<Mapper> MAPPER = JavaClass.from(Mapper.class);
-	@SuppressWarnings("rawtypes")
-	public final JavaClass<MapperS> MAPPER_S = JavaClass.from(MapperS.class);
-	@SuppressWarnings("rawtypes")
-	public final JavaClass<MapperC> MAPPER_C = JavaClass.from(MapperC.class);
+	public final JavaGenericTypeDeclaration<List<?>> LIST = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<Mapper<?>> MAPPER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<MapperS<?>> MAPPER_S = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<MapperC<?>> MAPPER_C = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaClass<ComparisonResult> COMPARISON_RESULT = JavaClass.from(ComparisonResult.class);
-	@SuppressWarnings("rawtypes")
-	public final JavaClass<MapperListOfLists> MAPPER_LIST_OF_LISTS = JavaClass.from(MapperListOfLists.class);
+	public final JavaGenericTypeDeclaration<MapperListOfLists<?>> MAPPER_LIST_OF_LISTS = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 
-	public <T> JavaParameterizedType<T> wrap(Class<T> wrapperType, JavaType itemType) {
+	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, itemType.toReferenceType());
 	}
-	public <T> JavaParameterizedType<T> wrap(Class<T> wrapperType, Class<?> itemType) {
+	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, Class<?> itemType) {
 		return wrap(wrapperType, JavaType.from(itemType));
 	}
-	public <T> JavaParameterizedType<T> wrap(Class<T> wrapperType, RosettaExpression item) {
+	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
 		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
 	}
 	
-	public <T> JavaParameterizedType<T> wrapExtends(Class<T> wrapperType, JavaType itemType) {
+	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
 	}
-	public <T> JavaParameterizedType<T> wrapExtends(Class<T> wrapperType, Class<?> itemType) {
+	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, Class<?> itemType) {
 		return wrapExtends(wrapperType, JavaType.from(itemType));
 	}
-	public <T> JavaParameterizedType<T> wrapExtends(Class<T> wrapperType, RosettaExpression item) {
+	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
 		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
 	}
 	
-	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(Class<T> wrapperType, JavaType itemType) {
+	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		if (itemType instanceof RJavaPojoInterface) {
 			return wrapExtends(wrapperType, itemType);
 		} else {
@@ -95,10 +91,10 @@ public class JavaTypeUtil {
 //			return wrapExtends(wrapperType, itemType);
 //		}
 	}
-	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(Class<T> wrapperType, Class<?> itemType) {
+	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, Class<?> itemType) {
 		return wrapExtendsIfNotFinal(wrapperType, JavaType.from(itemType));
 	}
-	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(Class<T> wrapperType, RosettaExpression item) {
+	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
 		return wrapExtendsIfNotFinal(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
 	}
 	
@@ -156,40 +152,45 @@ public class JavaTypeUtil {
 	
 	public boolean isList(JavaType t) {
 		if (t instanceof JavaParameterizedType) {
-			return LIST.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration().getBaseType());
+			return LIST.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
 		}
 		return LIST.equals(t);
 	}
 	
 	public boolean extendsMapper(JavaType t) {
-		return t.isSubtypeOf(MAPPER);
+		if (t instanceof JavaParameterizedType) {
+			return ((JavaParameterizedType<?>) t).getGenericTypeDeclaration().extendsDeclaration(MAPPER);
+		} else if (t instanceof JavaClass) {
+			return ((JavaClass<?>) t).extendsDeclaration(MAPPER);
+		}
+		return false;
 	}
 	public boolean isMapper(JavaType t) {
 		if (t instanceof JavaParameterizedType) {
-			return MAPPER.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration().getBaseType());
+			return MAPPER.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
 		}
-		return MAPPER.equals(t);
+		return false;
 	}
 	public boolean isMapperS(JavaType t) {
 		if (t instanceof JavaParameterizedType) {
-			return MAPPER_S.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration().getBaseType());
+			return MAPPER_S.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
 		}
-		return MAPPER_S.equals(t);
+		return false;
 	}
 	public boolean isMapperC(JavaType t) {
 		if (t instanceof JavaParameterizedType) {
-			return MAPPER_C.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration().getBaseType());
+			return MAPPER_C.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
 		}
-		return MAPPER_C.equals(t);
+		return false;
 	}
 	public boolean isComparisonResult(JavaType t) {
 		return COMPARISON_RESULT.equals(t);
 	}
 	public boolean isMapperListOfLists(JavaType t) {
 		if (t instanceof JavaParameterizedType) {
-			return MAPPER_LIST_OF_LISTS.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration().getBaseType());
+			return MAPPER_LIST_OF_LISTS.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
 		}
-		return MAPPER_LIST_OF_LISTS.equals(t);
+		return false;
 	}
 	
 	public boolean isWrapper(JavaType t) {

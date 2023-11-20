@@ -1,6 +1,8 @@
 package com.rosetta.util.types;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,21 +12,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.rosetta.util.DottedPath;
 
 
 public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 	protected static class JavaParameterizedTypeImpl<T> extends JavaParameterizedType<T> {
-		private final JavaGenericTypeDeclaration<T> genericTypeDeclaration;
+		private final JavaGenericTypeDeclaration<? super T> genericTypeDeclaration;
 		private final List<JavaTypeArgument> arguments;
 
-		public JavaParameterizedTypeImpl(JavaGenericTypeDeclaration<T> genericTypeDeclaration, List<JavaTypeArgument> arguments) {
+		public JavaParameterizedTypeImpl(JavaGenericTypeDeclaration<? super T> genericTypeDeclaration, List<JavaTypeArgument> arguments) {
 			this.genericTypeDeclaration = genericTypeDeclaration;
 			this.arguments = arguments;
 		}
 
 		@Override
-		public JavaGenericTypeDeclaration<T> getGenericTypeDeclaration() {
+		public JavaGenericTypeDeclaration<? super T> getGenericTypeDeclaration() {
 			return genericTypeDeclaration;
 		}
 
@@ -34,27 +37,47 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 		}
 	}
 	
-	public static <T> JavaParameterizedType<T> from(Class<T> rawType, List<JavaTypeArgument> arguments) {
-		return from(JavaGenericTypeDeclaration.from(rawType), arguments);
+	public static <T> JavaParameterizedType<T> from(TypeReference<T> typeRef, List<JavaTypeArgument> arguments) {
+		Type t = typeRef.getType();
+		if (t instanceof ParameterizedType) {
+			int argLength = ((ParameterizedType)t).getActualTypeArguments().length;
+			if (argLength == arguments.size()) {
+				return from(JavaGenericTypeDeclaration.from(extractRawClass(t)), arguments);
+			}
+			throw new IllegalArgumentException("Type " + ((ParameterizedType)t).getRawType() + " has " + argLength + " type parameters, but only " + arguments.size() + " were given.");
+		}
+		throw new IllegalArgumentException("Type " + t + " is not a parameterized type.");
 	}
-	public static <T> JavaParameterizedType<T> from(Class<T> rawType, JavaTypeArgument... arguments) {
-		return from(rawType, Arrays.asList(arguments));
+	public static <T> JavaParameterizedType<T> from(TypeReference<T> typeRef, JavaTypeArgument... arguments) {
+		return from(typeRef, Arrays.asList(arguments));
 	}
 	public static <T> JavaParameterizedType<T> from(Class<T> rawType, ParameterizedType t, Map<TypeVariable<?>, JavaTypeVariable> context) {
 		return from(
-				rawType, 
+				JavaGenericTypeDeclaration.from(rawType), 
 				Arrays.stream(t.getActualTypeArguments())
 					.map(ta -> JavaTypeArgument.from(ta, context))
 					.collect(Collectors.toList()));
 	}
-	public static <T> JavaParameterizedType<T> from(JavaGenericTypeDeclaration<T> typeDeclaration, JavaTypeArgument... arguments) {
+	public static <T> JavaParameterizedType<T> from(JavaGenericTypeDeclaration<? super T> typeDeclaration, JavaTypeArgument... arguments) {
 		return from(typeDeclaration, Arrays.asList(arguments));
 	}
-	public static <T> JavaParameterizedType<T> from(JavaGenericTypeDeclaration<T> typeDeclaration, List<JavaTypeArgument> arguments) {
+	public static <T> JavaParameterizedType<T> from(JavaGenericTypeDeclaration<? super T> typeDeclaration, List<JavaTypeArgument> arguments) {
 		return new JavaParameterizedTypeImpl<>(typeDeclaration, arguments);
 	}
+	@SuppressWarnings("unchecked")
+	public static <U> Class<? super U> extractRawClass(Type t) {
+		if (t instanceof Class<?>) {
+			return (Class<? super U>) t;
+		} else if (t instanceof GenericArrayType) {
+			return extractRawClass(((GenericArrayType) t).getGenericComponentType());
+		} else if (t instanceof ParameterizedType) {
+			return extractRawClass(((ParameterizedType) t).getRawType());
+		} else {
+			throw new IllegalArgumentException("Cannot use a type reference to " + t + ". No raw class found.");
+		}
+	}
 	
-	public abstract JavaGenericTypeDeclaration<T> getGenericTypeDeclaration();
+	public abstract JavaGenericTypeDeclaration<? super T> getGenericTypeDeclaration();
 	public abstract List<JavaTypeArgument> getArguments();
 	
 	@Override
@@ -163,9 +186,10 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 		return new JavaParameterizedTypeImpl<>(getGenericTypeDeclaration(), newArguments);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Class<? extends T> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
-		return getGenericTypeDeclaration().loadClass(classLoader);
+		return (Class<? extends T>) getGenericTypeDeclaration().loadClass(classLoader);
 	}
 	
 	@Override

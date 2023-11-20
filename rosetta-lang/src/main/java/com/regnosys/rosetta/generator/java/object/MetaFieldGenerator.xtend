@@ -40,6 +40,7 @@ import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
 import com.rosetta.util.types.generated.GeneratedJavaClass
+import com.fasterxml.jackson.core.type.TypeReference
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -231,7 +232,7 @@ class MetaFieldGenerator {
 			valueAttribute, metaAttribute
 		])
 		
-		val FWMType = JavaParameterizedType.from(FieldWithMeta, typeCall.typeCallToRType.toJavaReferenceType)
+		val FWMType = JavaParameterizedType.from(new TypeReference<FieldWithMeta<?>>() {}, typeCall.typeCallToRType.toJavaReferenceType)
 		
 		val scope = new JavaScope(metaJavaType.packageName)
 		
@@ -280,7 +281,7 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
 		d.attributes.addAll(referenceAttributes(typeCall))
-		val refInterface = JavaParameterizedType.from(ReferenceWithMeta, typeCall.typeCallToRType.toJavaReferenceType)
+		val refInterface = JavaParameterizedType.from(new TypeReference<ReferenceWithMeta<?>>() {}, typeCall.typeCallToRType.toJavaReferenceType)
 		
 		val scope = new JavaScope(root.metaField)
 		

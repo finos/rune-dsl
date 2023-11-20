@@ -90,13 +90,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			throw new IllegalArgumentException("Can not compute package name for " + object.eClass().getName() + " " + object.getName() + ". Element is not attached to a RosettaModel.");
 		return modelPackage(model);
 	}
-	private JavaClass<?> rosettaNamedToJavaClass(RosettaNamed object) {
-		ModelSymbolId id = getSymbolId(object);
-		return new GeneratedJavaClass<>(id.getNamespace(), id.getName(), Object.class);
-	}
 	
-	public JavaParameterizedType<List> toPolymorphicList(JavaReferenceType t) {
-		return typeUtil.wrapExtends(List.class, t);
+	public JavaParameterizedType<List<?>> toPolymorphicList(JavaReferenceType t) {
+		return typeUtil.wrapExtends(typeUtil.LIST, t);
 	}
 	public JavaClass<? extends RosettaFunction> toFunctionJavaClass(RFunction func) {
 		switch (func.getOrigin()) {
@@ -116,24 +112,24 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<RosettaFunction> toFunctionJavaClass(RosettaExternalFunction func) {
 		return new GeneratedJavaClass<>(packages.defaultLibFunctions(), func.getName(), RosettaFunction.class);
 	}
-	public JavaClass<ReportFunction> toReportFunctionJavaClass(RosettaReport report) {
+	public JavaClass<ReportFunction<?, ?>> toReportFunctionJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportFunction(getReportId(report));
 	}
-	public JavaClass<Tabulator> toReportTabulatorJavaClass(RosettaReport report) {
+	public JavaClass<Tabulator<?>> toReportTabulatorJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportTabulator(getReportId(report));
 	}
-	public JavaClass<Tabulator> toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		ModelSymbolId typeId = getSymbolId(type);
 		Optional<RosettaExternalRuleSource> containingRuleSource = ruleSource.flatMap((rs) -> findContainingSuperRuleSource(type, rs));
 		if (containingRuleSource.isEmpty()) {
 			DottedPath packageName = typeId.getNamespace().child("reports");
-			String simpleName = typeId.getName() + "Tabulator";
-			return new GeneratedJavaClass<>(packageName, simpleName, Tabulator.class);
+			String simpleName = typeId.getName() + "TypeTabulator";
+			return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
 		}
 		ModelSymbolId sourceId = getSymbolId(containingRuleSource.get());
 		DottedPath packageName = sourceId.getNamespace().child("reports");
-		String simpleName = typeId.getName() + sourceId.getName() + "Tabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, Tabulator.class);
+		String simpleName = typeId.getName() + sourceId.getName() + "TypeTabulator";
+		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
 	}
 	private Optional<RosettaExternalRuleSource> findContainingSuperRuleSource(Data type, RosettaExternalRuleSource ruleSource) {
 		if (ruleSource.getExternalClasses().stream().filter(c -> c.getData().equals(type)).findAny().isPresent()) {
@@ -165,7 +161,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			if (expAttr.isDataType() || expAttr.hasMetas()) {
 				return toPolymorphicList(singleType);
 			} else {
-				return typeUtil.wrap(List.class, singleType);
+				return typeUtil.wrap(typeUtil.LIST, singleType);
 			}
 		}
 		return singleType;
@@ -255,7 +251,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
 		JavaReferenceType itemType = toJavaReferenceType(rAttribute.getRType());
 		if (rAttribute.isMulti()) {
-			return typeUtil.wrapExtendsIfNotFinal(List.class, itemType);
+			return typeUtil.wrapExtendsIfNotFinal(typeUtil.LIST, itemType);
 		} else {
 			return itemType;
 		}
@@ -278,7 +274,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaReferenceType toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
-			return typeUtil.wrap(List.class, toJavaReferenceType(type));
+			return typeUtil.wrap(typeUtil.LIST, toJavaReferenceType(type));
 		} else
 			return toJavaReferenceType(type);
 	}

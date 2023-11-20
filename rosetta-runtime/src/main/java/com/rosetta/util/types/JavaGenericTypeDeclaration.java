@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.rosetta.util.types.JavaClass.JavaClassImpl;
 
 public abstract class JavaGenericTypeDeclaration<T> implements JavaTypeDeclaration<T> {
@@ -120,6 +121,9 @@ public abstract class JavaGenericTypeDeclaration<T> implements JavaTypeDeclarati
 	
 	public static <T> JavaGenericTypeDeclaration<T> from(Class<T> c) {
 		return new JavaGenericTypeDeclarationImpl<>(c);
+	}
+	public static <T> JavaGenericTypeDeclaration<T> from(TypeReference<T> typeRef) {
+		return from(JavaParameterizedType.extractRawClass(typeRef.getType()));
 	}
 
 	public abstract JavaClass<T> getBaseType();

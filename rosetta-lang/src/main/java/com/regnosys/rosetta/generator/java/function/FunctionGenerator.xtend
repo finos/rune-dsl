@@ -63,13 +63,13 @@ import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.util.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
-import com.rosetta.model.lib.mapper.MapperC
 import com.regnosys.rosetta.generator.java.statement.JavaStatement
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import java.util.Collections
+import com.fasterxml.jackson.core.type.TypeReference
+import com.rosetta.util.types.JavaGenericTypeDeclaration
 
 class FunctionGenerator {
 
@@ -119,7 +119,7 @@ class FunctionGenerator {
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
 		val parameterVariable = inputs.head.RType.toListOrSingleJavaType(inputs.head.multi)
-		JavaParameterizedType.from(IQualifyFunctionExtension, parameterVariable)
+		JavaParameterizedType.from(new TypeReference<IQualifyFunctionExtension<?>>() {}, parameterVariable)
 	}
 
 	private def collectFunctionDependencies(Function func) {
@@ -277,7 +277,7 @@ class FunctionGenerator {
 						protected abstract «IF multi»«List»<«returnType»>«ELSE»«returnType»«ENDIF» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF»);
 				«ELSE»
 					«val multi = cardinality.isMulti(alias.expression)»
-					«val returnType = (multi ? MapperC as Class<?> : MapperS).wrapExtendsIfNotFinal(alias.expression)»
+					«val returnType = (multi ? MAPPER_C as JavaGenericTypeDeclaration<?> : MAPPER_S).wrapExtendsIfNotFinal(alias.expression)»
 					
 						protected abstract «returnType» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)»);
 				«ENDIF»
@@ -309,7 +309,7 @@ class FunctionGenerator {
 						«IF aliasOut.get(alias)»
 							«val multi = cardinality.isMulti(alias.expression)»
 							«val itemReturnType = shortcutJavaType(alias)»
-							«val returnType = multi ? List.wrap(itemReturnType) : itemReturnType»
+							«val returnType = multi ? LIST.wrap(itemReturnType) : itemReturnType»
 							«val body = expressionGenerator.javaCode(alias.expression, alias.shortcutExpressionJavaType, aliasScope)
 									.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', returnType)]
 							»
@@ -318,7 +318,7 @@ class FunctionGenerator {
 							protected «returnType» «classScope.getIdentifierOrThrow(alias)»(«output.toBuilderType» «aliasScope.getIdentifierOrThrow(output)», «IF !inputs.empty»«inputs.inputsAsParameters(aliasScope)»«ENDIF») «body.completeAsReturn.toBlock»
 						«ELSE»
 							«val multi = cardinality.isMulti(alias.expression)»
-							«val returnType = (multi ? MapperC : MapperS).wrapExtendsIfNotFinal(alias.expression)»
+							«val returnType = (multi ? MAPPER_C as JavaGenericTypeDeclaration<?> : MAPPER_S).wrapExtendsIfNotFinal(alias.expression)»
 							
 							@Override
 							protected «returnType» «classScope.getIdentifierOrThrow(alias)»(«inputs.inputsAsParameters(aliasScope)») «expressionGenerator.javaCode(alias.expression, returnType, aliasScope).completeAsReturn.toBlock»
@@ -413,12 +413,12 @@ class FunctionGenerator {
 				if (needsToCopy) {
 					javaExpr =
 						javaExpr
-							.mapExpressionIfNotNull[JavaExpression.from('''new «ArrayList»<>(«it»)''', List.wrap(effectiveExprType.itemType))]
+							.mapExpressionIfNotNull[JavaExpression.from('''new «ArrayList»<>(«it»)''', LIST.wrap(effectiveExprType.itemType))]
 				}
 			}
 			switch(op.ROperationType) {
 				case ADD: {
-					javaExpr = coercionService.addCoercions(javaExpr, attribute.isMulti ? List.wrapExtends(attribute.toBuilderItemType) : attribute.toBuilderItemType, scope)
+					javaExpr = coercionService.addCoercions(javaExpr, attribute.isMulti ? LIST.wrapExtends(attribute.toBuilderItemType) : attribute.toBuilderItemType, scope)
 					javaExpr
 						.mapExpression[
 							JavaExpression.from(
@@ -463,7 +463,7 @@ class FunctionGenerator {
 			if (cardinality.isMulti(op.expression)) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
-				expressionGenerator.javaCode(op.expression, MapperC.wrap(op.expression), scope)
+				expressionGenerator.javaCode(op.expression, MAPPER_C.wrap(op.expression), scope)
 					.collapseToSingleExpression(scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -476,7 +476,7 @@ class FunctionGenerator {
 										.build())
 									.collect(«Collectors».toList())
 							''',
-							List.wrap(metaClass)
+							LIST.wrap(metaClass)
 						)
 					]
 			} else {
@@ -621,7 +621,7 @@ class FunctionGenerator {
 	private def JavaType toBuilderType(RAttribute rAttribute) {
 		val javaType = rAttribute.toBuilderItemType
 		if (rAttribute.multi) {
-			return List.wrap(javaType)
+			return LIST.wrap(javaType)
 		} else {
 			return javaType
 		}

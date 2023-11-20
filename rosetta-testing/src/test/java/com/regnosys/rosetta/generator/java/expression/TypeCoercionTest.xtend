@@ -15,7 +15,6 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import static org.junit.jupiter.api.Assertions.*
 import java.math.BigInteger
 import com.rosetta.model.lib.mapper.MapperS
-import java.util.List
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.expression.ComparisonResult
 import java.util.Arrays
@@ -102,7 +101,7 @@ class TypeCoercionTest {
 		
 		return MapperS.of(42);
 		'''
-		assertCoercion(expected, '''42''', JavaPrimitiveType.INT, MapperS.wrap(Integer))
+		assertCoercion(expected, '''42''', JavaPrimitiveType.INT, MAPPER_S.wrap(Integer))
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -116,7 +115,7 @@ class TypeCoercionTest {
 			return bigDecimal == null ? MapperC.<BigInteger>ofNull() : MapperC.of(Collections.singletonList(bigDecimal.toBigIntegerExact()));
 		}
 		'''
-		assertCoercion(expected, '''«BigDecimal».valueOf(42)''', BigDecimal, MapperC.wrap(BigInteger))
+		assertCoercion(expected, '''«BigDecimal».valueOf(42)''', BigDecimal, MAPPER_C.wrap(BigInteger))
 		
 		expected = '''
 		import java.util.Collections;
@@ -124,7 +123,7 @@ class TypeCoercionTest {
 		
 		return Collections.<Long>emptyList();
 		'''
-		assertCoercion(expected, '''null''', Void, List.wrap(Long))
+		assertCoercion(expected, '''null''', Void, LIST.wrap(Long))
 				
 		expected = '''
 		import com.rosetta.model.lib.expression.ComparisonResult;
@@ -146,7 +145,7 @@ class TypeCoercionTest {
 		
 		return MapperS.of("ABC").get();
 		'''
-		assertCoercion(expected, '''«MapperS».of("ABC")''', MapperS.wrap(String), String)
+		assertCoercion(expected, '''«MapperS».of("ABC")''', MAPPER_S.wrap(String), String)
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -157,7 +156,7 @@ class TypeCoercionTest {
 			return _long == null ? null : Math.toIntExact(_long);
 		}
 		'''
-		assertCoercion(expected, '''«MapperS».of(42)''', MapperS.wrap(Long), Integer)
+		assertCoercion(expected, '''«MapperS».of(42)''', MAPPER_S.wrap(Long), Integer)
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -170,7 +169,7 @@ class TypeCoercionTest {
 			return integer == null ? null : BigInteger.valueOf(integer);
 		}
 		'''
-		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', MapperC.wrap(Integer), BigInteger)
+		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', MAPPER_C.wrap(Integer), BigInteger)
 		
 		expected = '''
 		import com.rosetta.model.lib.expression.ComparisonResult;
@@ -183,7 +182,7 @@ class TypeCoercionTest {
 		expected = '''
 		return null;
 		'''
-		assertCoercion(expected, '''«MapperS».ofNull()''', MapperS.wrap(Void), Integer)
+		assertCoercion(expected, '''«MapperS».ofNull()''', MAPPER_S.wrap(Void), Integer)
 	}
 	
 	@Test
@@ -197,7 +196,7 @@ class TypeCoercionTest {
 		
 		return ComparisonResult.of(MapperS.of(true));
 		'''
-		assertCoercion(expected, '''«MapperS».of(true)''', MapperS.wrap(Boolean), ComparisonResult)
+		assertCoercion(expected, '''«MapperS».of(true)''', MAPPER_S.wrap(Boolean), ComparisonResult)
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperS;
@@ -205,7 +204,7 @@ class TypeCoercionTest {
 		
 		return MapperS.of(42).<Integer>map("Type coercion", _long -> _long == null ? null : Math.toIntExact(_long)).getMulti();
 		'''
-		assertCoercion(expected, '''«MapperS».of(42)''', MapperS.wrap(Long), List.wrap(Integer))
+		assertCoercion(expected, '''«MapperS».of(42)''', MAPPER_S.wrap(Long), LIST.wrap(Integer))
 		
 		expected = '''
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -215,7 +214,7 @@ class TypeCoercionTest {
 		
 		return MapperC.of(Arrays.asList(1, 2, 3)).<BigInteger>map("Type coercion", integer -> BigInteger.valueOf(integer)).getMulti();
 		'''
-		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', MapperC.wrap(Integer), List.wrap(BigInteger))
+		assertCoercion(expected, '''«MapperC».of(«Arrays».asList(1, 2, 3))''', MAPPER_C.wrap(Integer), LIST.wrap(BigInteger))
 		
 		expected = '''
 		import com.rosetta.model.lib.expression.ComparisonResult;
@@ -223,7 +222,7 @@ class TypeCoercionTest {
 		
 		return ComparisonResult.success().asMapper();
 		'''
-		assertCoercion(expected, '''«ComparisonResult».success()''', ComparisonResult, MapperS.wrap(Boolean))
+		assertCoercion(expected, '''«ComparisonResult».success()''', ComparisonResult, MAPPER_S.wrap(Boolean))
 		
 		expected = '''
 		import java.util.Collections;
@@ -231,6 +230,6 @@ class TypeCoercionTest {
 		
 		return Collections.<String>emptyList();
 		'''
-		assertCoercion(expected, '''«MapperS».ofNull()''', MapperS.wrap(Void), List.wrap(String))
+		assertCoercion(expected, '''«MapperS».ofNull()''', MAPPER_S.wrap(Void), LIST.wrap(String))
 	}
 }
