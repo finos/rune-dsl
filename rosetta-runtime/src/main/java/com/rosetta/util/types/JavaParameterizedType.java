@@ -12,6 +12,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.rosetta.util.DottedPath;
 
@@ -22,6 +24,7 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 		private final List<JavaTypeArgument> arguments;
 
 		public JavaParameterizedTypeImpl(JavaGenericTypeDeclaration<? super T> genericTypeDeclaration, List<JavaTypeArgument> arguments) {
+			Validate.isTrue(genericTypeDeclaration.getParameters().size() == arguments.size());
 			this.genericTypeDeclaration = genericTypeDeclaration;
 			this.arguments = arguments;
 		}
@@ -40,11 +43,7 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 	public static <T> JavaParameterizedType<T> from(TypeReference<T> typeRef, List<JavaTypeArgument> arguments) {
 		Type t = typeRef.getType();
 		if (t instanceof ParameterizedType) {
-			int argLength = ((ParameterizedType)t).getActualTypeArguments().length;
-			if (argLength == arguments.size()) {
-				return from(JavaGenericTypeDeclaration.from(extractRawClass(t)), arguments);
-			}
-			throw new IllegalArgumentException("Type " + ((ParameterizedType)t).getRawType() + " has " + argLength + " type parameters, but only " + arguments.size() + " were given.");
+			return from(JavaGenericTypeDeclaration.from(extractRawClass(t)), arguments);
 		}
 		throw new IllegalArgumentException("Type " + t + " is not a parameterized type.");
 	}
