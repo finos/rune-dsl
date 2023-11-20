@@ -64,9 +64,9 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 		return new JavaParameterizedTypeImpl<>(typeDeclaration, arguments);
 	}
 	@SuppressWarnings("unchecked")
-	public static <U> Class<? super U> extractRawClass(Type t) {
+	public static <U> Class<U> extractRawClass(Type t) {
 		if (t instanceof Class<?>) {
-			return (Class<? super U>) t;
+			return (Class<U>) t;
 		} else if (t instanceof GenericArrayType) {
 			return extractRawClass(((GenericArrayType) t).getGenericComponentType());
 		} else if (t instanceof ParameterizedType) {
