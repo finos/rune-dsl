@@ -42,6 +42,61 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canEscapeIdentifiers() {
+		val code = '''
+		func Foo:
+			inputs: ^func int (1..1)
+			output: result int (1..1)
+			set result:
+				^func
+		'''.generateCode
+		
+		val funcCode = code.get("com.rosetta.test.model.functions.Foo")
+		assertEquals(
+			'''
+			package com.rosetta.test.model.functions;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.functions.RosettaFunction;
+			
+			
+			@ImplementedBy(Foo.FooDefault.class)
+			public abstract class Foo implements RosettaFunction {
+			
+				/**
+				* @param func 
+				* @return result 
+				*/
+				public Integer evaluate(Integer func) {
+					Integer result = doEvaluate(func);
+					
+					return result;
+				}
+			
+				protected abstract Integer doEvaluate(Integer func);
+			
+				public static class FooDefault extends Foo {
+					@Override
+					protected Integer doEvaluate(Integer func) {
+						Integer result = null;
+						return assignOutput(result, func);
+					}
+					
+					protected Integer assignOutput(Integer result, Integer func) {
+						result = func;
+						
+						return result;
+					}
+				}
+			}
+			'''.toString,
+			funcCode
+		)
+		
+		code.compileToClasses
+	}
+	
+	@Test
 	def void canReturnEmptyInsideExtract() {
 		val code = '''
 		func Foo:
