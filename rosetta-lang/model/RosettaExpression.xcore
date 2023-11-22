@@ -116,16 +116,17 @@ class ListLiteral extends RosettaExpression {
 abstract class RosettaReference extends RosettaExpression {
 }
 
-class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
+class RosettaSymbolReference extends RosettaReference {
 	refers RosettaSymbol symbol
 	
 	boolean explicitArguments
 	contains RosettaExpression[] rawArgs
 	
-	contains RosettaImplicitVariable implicitArgument
+	boolean implicitVariableIsInContext
+	contains RosettaExpression implicitArgument
 	
 	op RosettaExpression[] getArgs() {
-		if (!explicitArguments && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
+		if (!explicitArguments && implicitVariableIsInContext && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
 			if (implicitArgument === null) {
 				val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
 				def.setName("item");
@@ -135,21 +136,6 @@ class RosettaSymbolReference extends RosettaReference, HasGeneratedInput {
 			return new BasicEList(#[implicitArgument])
 		}
 		return rawArgs
-	}
-	op void setGeneratedInputIfAbsent(RosettaExpression e) {
-		if (e === null) {
-			if (generatedInputWasSet) {
-				implicitArgument = null
-				generatedInputWasSet = false
-			}
-		} else {
-			if (!generatedInputWasSet) {
-				generatedInputWasSet = true
-			}
-		}
-	}
-	op boolean needsGeneratedInput() {
-		false
 	}
 }
 

@@ -29,7 +29,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+	
+	@Test
+	def void testCannotCallFuncWithoutInput() {
+		val model = '''
+		func Foo:
+			inputs: a int (1..1)
+			output: result int (1..1)
+			set result:
+				Foo
+		'''.parseRosetta
 		
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+			"Invalid number of arguments. Expecting 1 but passed 0."
+		)
+	}
+	
 	@Test
 	def void testOrderDoesNotMatter() {
 		val model1 = '''
