@@ -11,9 +11,15 @@ import org.eclipse.xtext.conversion.IValueConverter;
 import org.eclipse.xtext.conversion.ValueConverter;
 
 public class RosettaValueConverterService extends DefaultTerminalConverters {
-	@Inject BigIntegerConverter bigIntegerConverter;
-	@Inject BigDecimalConverter bigDecimalConverter;
-	@Inject PATTERNValueConverter patternValueConverter;
+	@Inject private ValidIDConverter validIDValueConverter;
+	@Inject private BigIntegerConverter bigIntegerConverter;
+	@Inject private BigDecimalConverter bigDecimalConverter;
+	@Inject private PATTERNValueConverter patternValueConverter;
+	
+	@ValueConverter(rule = "ValidID")
+	public IValueConverter<String> getValidIDConverter() {
+		return validIDValueConverter;
+	}
 	
 	@ValueConverter(rule = "Integer")
 	public IValueConverter<BigInteger> getBigIntegerConverter() {
