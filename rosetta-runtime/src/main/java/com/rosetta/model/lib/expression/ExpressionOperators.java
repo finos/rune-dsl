@@ -1,9 +1,12 @@
 package com.rosetta.model.lib.expression;
 
+import static com.rosetta.model.lib.expression.ErrorHelper.formatEqualsComparisonResultError;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,7 +18,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +48,7 @@ public class ExpressionOperators {
 		if (o.resultCount()>0) {
 			return ComparisonResult.success();
 		}
-		return ComparisonResult.failure(o.getErrorPaths() + " does not exist");
+		return ComparisonResult.failure(o + " does not exist");
 	}
 	
 	// singleExists
@@ -58,7 +60,7 @@ public class ExpressionOperators {
 		
 		String error = o.resultCount() > 0 ?
 				String.format("Expected single %s but found %s [%s]", o.getPaths(), o.resultCount(), formatMultiError(o)) :
-				String.format("Expected single %s but found zero", o.getErrorPaths());
+				String.format("Expected single %s but found zero", o);
 		
 		return ComparisonResult.failure(error);
 	}
@@ -72,7 +74,7 @@ public class ExpressionOperators {
 		
 		String error = o.resultCount() > 0 ?
 				String.format("Expected multiple %s but only one [%s]", o.getPaths(), formatMultiError(o)) :
-				String.format("Expected multiple %s but found zero", o.getErrorPaths());
+				String.format("Expected multiple %s but found zero", o);
 				
 		return ComparisonResult.failure(error);
 	}
@@ -93,7 +95,7 @@ public class ExpressionOperators {
 
 		// Find attributes to check
 		Set<String> fields = o.stream()
-				.flatMap(m -> Stream.concat(m.getPaths().stream(), m.getErrorPaths().stream()))
+				.flatMap(m -> m.getPaths().stream())
 				.map(ExpressionOperators::getAttributeName)
 				.collect(Collectors.toSet());
 		
@@ -178,13 +180,82 @@ public class ExpressionOperators {
 	// areEqual
 	
 	public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
-		return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::areEqual);
+		// TODO: this is only for backwards compatibility
+		if (m2 instanceof MapperC) {
+			o = CardinalityOperator.None;
+		}
+		
+		switch(o) {
+		case All:
+			U i2All = m2.get();
+			if (m1.getMulti().stream().allMatch(i1 -> checkEquals(i1, i2All))) {
+				return ComparisonResult.success();
+			}
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not all equal " + formatEqualsComparisonResultError(m2));
+		case Any:
+			U i2Any = m2.get();
+			if (m1.getMulti().stream().anyMatch(i1 -> checkEquals(i1, i2Any))) {
+				return ComparisonResult.success();
+			}
+			return ComparisonResult.failure("None of " + formatEqualsComparisonResultError(m1) + " equals " + formatEqualsComparisonResultError(m2));
+		case None:
+			if (checkListEquals(m1.getMulti(), m2.getMulti())) {
+				return ComparisonResult.success();
+			}
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
+		default:
+			throw new IllegalArgumentException("Unknown cardinality operator: " + o);
+		}
 	}
 	
 	// notEqual
 		
 	public static <T, U> ComparisonResult notEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
-		return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::notEqual);
+		// TODO: this is only for backwards compatibility
+		if (m2 instanceof MapperC) {
+			o = CardinalityOperator.None;
+		}
+		
+		switch(o) {
+		case All:
+			U i2All = m2.get();
+			if (m1.getMulti().stream().allMatch(i1 -> !checkEquals(i1, i2All))) {
+				return ComparisonResult.success();
+			}
+			return ComparisonResult.failure("Some of " + formatEqualsComparisonResultError(m1) + " are equal to " + formatEqualsComparisonResultError(m2));
+		case Any:
+			U i2Any = m2.get();
+			if (m1.getMulti().stream().anyMatch(i1 -> !checkEquals(i1, i2Any))) {
+				return ComparisonResult.success();
+			}
+			return ComparisonResult.failure("All of " + formatEqualsComparisonResultError(m1) + " are equal to " + formatEqualsComparisonResultError(m2));
+		case None:
+			if (!checkListEquals(m1.getMulti(), m2.getMulti())) {
+				return ComparisonResult.success();
+			}
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " equals " + formatEqualsComparisonResultError(m2));
+		default:
+			throw new IllegalArgumentException("Unknown cardinality operator: " + o);
+		}
+	}
+	private static boolean checkEquals(Object a, Object b) {
+		if (a instanceof Number && b instanceof Number || a instanceof ZonedDateTime && b instanceof ZonedDateTime) {
+			int compRes = CompareHelper.compare(a, b);
+			return compRes == 0;
+		} else {
+			return a == null ? b == null : a.equals(b);
+		}
+	}
+	private static boolean checkListEquals(List<?> as, List<?> bs) {
+		if (as.size() != bs.size()) {
+			return false;
+		}
+		for (int i=0; i<as.size(); i++) {
+			if (!checkEquals(as.get(i), bs.get(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static <T extends Comparable<? super T>> ComparisonResult notEqual(ComparisonResult r1, ComparisonResult r2) {

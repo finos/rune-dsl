@@ -6,7 +6,7 @@ import com.rosetta.model.lib.mapper.Mapper;
 public class ErrorHelper {
 
 	static String formatEqualsComparisonResultError(Mapper<?> o) {
-		return o.resultCount() > 0 ? String.format("%s %s", o.getPaths(), formatMultiError(o)) : o.getErrorPaths().toString();
+		return o.resultCount() > 0 ? String.format("%s %s", o.getPaths(), formatMultiError(o)) : "Null";
 	}
 
 	static String formatMultiError(Mapper<?> o) {

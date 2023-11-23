@@ -18,10 +18,6 @@ public interface Mapper<T> {
 	int resultCount();
 
 	List<Path> getPaths();
-
-	List<Path> getErrorPaths();
-	
-	List<String> getErrors();
 	
 	interface Path {
 		List<String> getNames();

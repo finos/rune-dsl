@@ -41,7 +41,7 @@ public class MapperItem<T, P> extends AbstractMapperItem<P> {
 		}
 	}
 	
-	static <C, P> List<MapperItem<? extends C, ?>> getMapperItems(MapperItem<? extends P, ?> parentItem, NamedFunction<P, List<? extends C>> mappingFunc) {
+	static <C, P> List<MapperItem<? extends C, ?>> getNonErrorMapperItems(MapperItem<? extends P, ?> parentItem, NamedFunction<P, List<? extends C>> mappingFunc) {
 		if (!parentItem.isError()) {
 			List<MapperItem<? extends C, ?>> childItems = new ArrayList<>();
 			
@@ -52,18 +52,18 @@ public class MapperItem<T, P> extends AbstractMapperItem<P> {
 				for (int j=0; j<children.size(); j++) {
 					C child = children.get(j);
 					MapperPath path = parentItem.getPath().toBuilder().addListFunctionName(mappingFunc.getName(), j);
-					boolean error = child == null;
-					childItems.add(new MapperItem<>(child, path, error, Optional.of(parentItem)));
+					if (child != null) {
+						childItems.add(new MapperItem<>(child, path, false, Optional.of(parentItem)));
+					}
 				}
 				return childItems;
 			}
 			else {
-				MapperPath childPath = parentItem.getPath().toBuilder().addFunctionName(mappingFunc.getName());
-				return Collections.singletonList(getErrorMapperItem(childPath));
+				return Collections.emptyList();
 			}
 		}
 		else {
-			return Collections.singletonList(getErrorMapperItem(parentItem.getPath()));
+			return Collections.emptyList();
 		}
 	}
 	

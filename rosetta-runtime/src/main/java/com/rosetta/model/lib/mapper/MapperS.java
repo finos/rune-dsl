@@ -2,7 +2,7 @@ package com.rosetta.model.lib.mapper;
 
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
 import static com.rosetta.model.lib.mapper.MapperItem.getCheckedMapperItem;
-import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
+import static com.rosetta.model.lib.mapper.MapperItem.getNonErrorMapperItems;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,7 +113,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	 */
 	@Override
 	public <F> MapperC<F> mapC(NamedFunction<T, List<? extends F>> mappingFunc) {
-		return new MapperC<>(getMapperItems(item, mappingFunc));
+		return new MapperC<>(getNonErrorMapperItems(item, mappingFunc));
 	}
 	
 	@Override
@@ -193,17 +193,7 @@ public class MapperS<T> implements MapperBuilder<T> {
 	
 	@Override
 	public List<Path> getPaths() {
-		return !item.isError() ? Collections.singletonList(item.getPath()) : Collections.emptyList();
-	}
-	
-	@Override
-	public List<Path> getErrorPaths() {
-		return item.isError() ? Collections.singletonList(item.getPath()) : Collections.emptyList();
-	}
-	
-	@Override
-	public List<String> getErrors() {
-		return item.isError() ? Collections.singletonList(item.getPath().toString() +" was null") : Collections.emptyList();
+		return Collections.singletonList(item.getPath());
 	}
 	
 	@Override
@@ -215,10 +205,10 @@ public class MapperS<T> implements MapperBuilder<T> {
 	public MapperC<T> unionSame(MapperBuilder<T> other) {
 		if(other instanceof MapperS) {
 			MapperS<T> otherMapperS = (MapperS<T>) other;
-			return new MapperC<>(Arrays.asList(this.item, otherMapperS.item));
+			return MapperC.of(this, otherMapperS);
 		}
 		else if(other instanceof MapperC) {
-			return new MapperC<T>(Collections.singletonList(this.item)).unionSame(other);
+			return MapperC.of(this).unionSame(other);
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported Mapper type: " + other.getClass().getName());
@@ -229,10 +219,10 @@ public class MapperS<T> implements MapperBuilder<T> {
 	public MapperC<Object> unionDifferent(MapperBuilder<?> other) {
 		if(other instanceof MapperS) {
 			MapperS<?> otherMapperS = (MapperS<?>) other;
-			return new MapperC<>(Arrays.asList(this.item.upcast(), otherMapperS.item.upcast()));
+			return MapperC.of(this, otherMapperS);
 		}
 		else if(other instanceof MapperC) {
-			return new MapperC<>(Collections.singletonList(this.item.upcast())).unionDifferent(other);
+			return MapperC.of(this).unionDifferent(other);
 		}
 		else {
 			throw new IllegalArgumentException("Unsupported Mapper type: " + other.getClass().getName());

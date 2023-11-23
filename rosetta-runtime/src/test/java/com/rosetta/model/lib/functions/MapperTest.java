@@ -37,9 +37,7 @@ public class MapperTest {
 		assertTrue(paths.contains("Foo->getListBranchNodes[0]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getListBranchNodes[1]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getListBranchNodes[2]->getIntLeafNode"), "Expected mapper paths not found");
-		
-		assertThat("Unexpected number of error paths", mapper.getErrorPaths().size(), is(0));
-		
+				
 		Integer leafNodeObject = mapper.get();
 		assertNull(leafNodeObject, "Expected null leafNode object because more than 1 element");
 		
@@ -57,8 +55,6 @@ public class MapperTest {
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_1), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_2), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_3), "Expected mapper multi parent object not found");
-		
-		assertTrue(mapper.getErrors().isEmpty(), "Expected errors to be empty");
 	}
 	
 	@Test
@@ -74,11 +70,6 @@ public class MapperTest {
 		assertThat("Unexpected number of paths", paths.size(), is(1));
 		assertThat(paths.get(0), is("Foo->getListBranchNodes[0]->getObjectBranchNodes[0]->getStringLeafNode"));
 		
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of paths", errorPaths.size(), is(2));
-		assertThat(errorPaths.get(0), is("Foo->getListBranchNodes[1]->getObjectBranchNodes"));
-		assertThat(errorPaths.get(1), is("Foo->getListBranchNodes[2]->getObjectBranchNodes"));
-		
 		String leafNodeObject = mapper.get();
 		assertThat("Expected mapper leaf node object did not match", leafNodeObject, is("A"));
 		
@@ -93,11 +84,6 @@ public class MapperTest {
 		List<?> parentMulti = mapper.getParentMulti();
 		assertThat("Unexpected number of multiParent", parentMulti.size(), is(1));
 		assertThat("Expected mapper multi parent object did not match", parentMulti.get(0), is(OBJECT_BRANCH_NODE));
-				
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(2));
-		assertThat("Unexpected error message", errors.get(0), is("[Foo->getListBranchNodes[1]->getObjectBranchNodes] is not set"));
-		assertThat("Unexpected error message", errors.get(1), is("[Foo->getListBranchNodes[2]->getObjectBranchNodes] is not set"));
 	}
 	
 	@Test
@@ -109,8 +95,6 @@ public class MapperTest {
 		List<String> path = mapper.getPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
 		assertThat("Unexpected number of paths", path.size(), is(1));
 		assertTrue(path.contains("Foo->getObjectBranchNode->getStringLeafNode"), "Expected mapper paths not found");
-		
-		assertThat("Unexpected number of error paths", mapper.getErrorPaths().size(), is(0));
 		
 		String leafNodeObject = mapper.get();
 		assertThat("Expected mapper leaf node object did not match", leafNodeObject, is("A"));
@@ -126,8 +110,6 @@ public class MapperTest {
 		List<?> parentMulti = mapper.getParentMulti();
 		assertThat("Unexpected number of multiParent", parentMulti.size(), is(1));
 		assertTrue(parentMulti.contains(OBJECT_BRANCH_NODE), "Expected mapper multi parent object not found");
-		
-		assertTrue(mapper.getErrors().isEmpty(), "Expected errors to be empty");
 	}
 	
 	// Object errors
@@ -138,11 +120,7 @@ public class MapperTest {
 		
 		Mapper<String> mapper = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getStringLeafNode", ObjectBranchNode::getStringLeafNode);
 		
-		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(0));
-		
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of error paths", errorPaths.size(), is(1));
-		assertTrue(errorPaths.contains("Foo->getObjectBranchNode->getStringLeafNode"), "Expected mapper error paths not found");
+		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(1));
 		
 		assertNull(mapper.get(), "Expected null leafNode object because of error");
 		assertThat("Expected zero multi objects because of error", mapper.getMulti().size(), is(0));
@@ -152,10 +130,6 @@ public class MapperTest {
 		assertThat("Expected mapper parent did not match", parentLeafNodeObject.get(), is(OBJECT_BRANCH_NODE_NULL));
 		
 		assertThat("Unexpected zero multiParent objects because of error", mapper.getParentMulti().size(), is(1));
-		
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(1));
-		assertThat("Unexpected error message", errors.get(0), is("Foo->getObjectBranchNode->getStringLeafNode was null"));
 	}
 	
 	@Test
@@ -164,20 +138,12 @@ public class MapperTest {
 		
 		Mapper<String> mapper = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getStringLeafNode", ObjectBranchNode::getStringLeafNode);
 		
-		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(0));
-				
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of error paths", errorPaths.size(), is(1));
-		assertTrue(errorPaths.contains("Foo->getObjectBranchNode"), "Expected mapper error paths not found");
+		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(1));
 		
 		assertNull(mapper.get(), "Expected null leafNode object because of error");
 		assertThat("Expected zero multi objects because of error", mapper.getMulti().size(), is(0));
 		assertFalse(mapper.getParent().isPresent(), "Expected absent parent object");
 		assertThat("Expected zero multiParent objects because of error", mapper.getParentMulti().size(), is(0));
-		
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(1));
-		assertThat("Unexpected error message", errors.get(0), is("Foo->getObjectBranchNode was null"));
 	}
 	
 	@Test
@@ -186,20 +152,12 @@ public class MapperTest {
 		
 		Mapper<String> mapper = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getStringLeafNode", ObjectBranchNode::getStringLeafNode);
 		
-		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(0));
-				
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of paths", errorPaths.size(), is(1));
-		assertTrue(errorPaths.contains("Foo->getObjectBranchNode"), "Expected mapper paths not found");
+		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(1));
 		
 		assertNull(mapper.get(), "Expected null leafNode object because of error");
 		assertThat("Unexpected zero multi objects because of error", mapper.getMulti().size(), is(0));
 		assertFalse(mapper.getParent().isPresent(), "Expected absent parent object because of error");
 		assertThat("Unexpected zero multiParent objects because of error", mapper.getParentMulti().size(), is(0));
-		
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(1));
-		assertThat("Unexpected error message", errors.get(0), is("Foo->getObjectBranchNode was null"));
 	}
 	
 	// List errors
@@ -211,19 +169,11 @@ public class MapperTest {
 		Mapper<Integer> mapper = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", ListBranchNode::getIntLeafNode);
 		
 		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(0));
-				
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of error paths", errorPaths.size(), is(1));
-		assertThat("Expected mapper error paths not found", errorPaths.get(0), is("Foo->getListBranchNodes[0]->getIntLeafNode"));
 		
 		assertNull(mapper.get(), "Expected null leafNode object because of error");
 		assertThat("Unexpected zero multi objects because of error", mapper.getMulti().size(), is(0));
 		assertFalse(mapper.getParent().isPresent(), "Expected absent parent object because of error");
 		assertThat("Unexpected zero multiParent objects because of error", mapper.getParentMulti().size(), is(0));
-		
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(1));
-		assertThat("Unexpected error message", errors.get(0), is("[Foo->getListBranchNodes[0]->getIntLeafNode] is not set"));
 	}
 	
 	@Test
@@ -234,18 +184,10 @@ public class MapperTest {
 		
 		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(0));
 		
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of error paths", errorPaths.size(), is(1));
-		assertThat("Expected mapper error paths not found", errorPaths.get(0), is("Foo->getListBranchNodes"));
-		
 		assertNull(mapper.get(), "Expected null leafNode object because of error");
 		assertThat("Expected zero multi objects because of error", mapper.getMulti().size(), is(0));
 		assertFalse(mapper.getParent().isPresent(), "Expected absent parent object because of error");
 		assertThat("Expected zero multiParent objects because of error", mapper.getParentMulti().size(), is(0));
-		
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(1));
-		assertThat("Unexpected error message", errors.get(0), is("[Foo->getListBranchNodes] is not set"));
 	}
 	
 	@Test
@@ -256,18 +198,10 @@ public class MapperTest {
 		
 		assertThat("Unexpected number of paths", mapper.getPaths().size(), is(0));
 		
-		List<String> errorPaths = mapper.getErrorPaths().stream().map(Mapper.Path::toString).collect(Collectors.toList());
-		assertThat("Unexpected number of error paths", errorPaths.size(), is(1));
-		assertThat("Expected mapper error paths not found", errorPaths.get(0), is("Foo->getListBranchNodes"));
-		
 		assertNull(mapper.get(), "Expected null leafNode object because of error");
 		assertThat("Unexpected zero multi objects because of error", mapper.getMulti().size(), is(0));
 		assertFalse(mapper.getParent().isPresent(), "Expected absent parent object because of error");
 		assertThat("Unexpected zero multiParent objects because of error", mapper.getParentMulti().size(), is(0));
-		
-		List<String> errors = mapper.getErrors();
-		assertThat("Unexpected number of errors", errors.size(), is(1));
-		assertThat("Unexpected error message", errors.get(0), is("[Foo->getListBranchNodes] is not set"));
 	}
 	
 	@Test
@@ -283,9 +217,7 @@ public class MapperTest {
 		assertTrue(paths.contains("Foo->getListBranchNodes[1]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getListBranchNodes[2]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getObjectBranchNode->getIntLeafNode"), "Expected mapper paths not found");
-		
-		assertThat("Unexpected number of error paths", mapper.getErrorPaths().size(), is(0));
-		
+				
 		Object leafNodeObject = mapper.get();
 		assertNull(leafNodeObject, "Expected null leafNode object because more than 1 element");
 		
@@ -305,8 +237,6 @@ public class MapperTest {
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_2), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_3), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(OBJECT_BRANCH_NODE), "Expected mapper multi parent object not found");
-		
-		assertTrue(mapper.getErrors().isEmpty(), "Expected errors to be empty");
 	}
 	
 	@Test
@@ -323,8 +253,6 @@ public class MapperTest {
 		assertTrue(paths.contains("Foo->getListBranchNodes[2]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getObjectBranchNode->getIntLeafNode"), "Expected mapper paths not found");
 
-		assertThat("Unexpected number of error paths", mapper.getErrorPaths().size(), is(0));
-
 		Object leafNodeObject = mapper.get();
 		assertNull(leafNodeObject, "Expected null leafNode object because more than 1 element");
 
@@ -344,8 +272,6 @@ public class MapperTest {
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_2), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_3), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(OBJECT_BRANCH_NODE), "Expected mapper multi parent object not found");
-
-		assertTrue(mapper.getErrors().isEmpty(), "Expected errors to be empty");
 	}
 	
 	@Test
@@ -361,8 +287,6 @@ public class MapperTest {
 		assertTrue(paths.contains("Foo->getListBranchNodes[1]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getListBranchNodes[2]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getObjectBranchNode->getIntLeafNode"), "Expected mapper paths not found");
-		
-		assertThat("Unexpected number of error paths", mapper.getErrorPaths().size(), is(0));
 		
 		Object leafNodeObject = mapper.get();
 		assertNull(leafNodeObject, "Expected null leafNode object because more than 1 element");
@@ -383,8 +307,6 @@ public class MapperTest {
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_2), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_3), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(OBJECT_BRANCH_NODE), "Expected mapper multi parent object not found");
-		
-		assertTrue(mapper.getErrors().isEmpty(), "Expected errors to be empty");
 	}
 	
 	@Test
@@ -400,8 +322,6 @@ public class MapperTest {
 		assertTrue(paths.contains("Foo->getListBranchNodes[1]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getListBranchNodes[2]->getIntLeafNode"), "Expected mapper paths not found");
 		assertTrue(paths.contains("Foo->getObjectBranchNode->getIntLeafNode"), "Expected mapper paths not found");
-		
-		assertThat("Unexpected number of error paths", mapper.getErrorPaths().size(), is(0));
 		
 		Object leafNodeObject = mapper.get();
 		assertNull(leafNodeObject, "Expected null leafNode object because more than 1 element");
@@ -422,8 +342,6 @@ public class MapperTest {
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_2), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(LIST_BRANCH_NODE_3), "Expected mapper multi parent object not found");
 		assertTrue(parentMulti.contains(OBJECT_BRANCH_NODE), "Expected mapper multi parent object not found");
-		
-		assertTrue(mapper.getErrors().isEmpty(), "Expected errors to be empty");
 	}
 	
 	private static class Foo {

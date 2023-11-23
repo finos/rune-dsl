@@ -270,14 +270,14 @@ class RosettaBinaryOperationTest {
 		val baz = classes.createInstanceUsingBuilder('Baz', of('other', BigDecimal.valueOf(5)), of())
 		val foo = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', baz), of('bar', ImmutableList.of(bar1, bar2))))
 		
-		assertResult("FeatureCallEqualToLiteral", foo, true)
+		assertResult("FeatureCallEqualToLiteral", foo, false)
 		assertResult("FeatureCallEqualToFeatureCall", foo, true)
 		assertResult("FeatureCallsEqualToLiteralOr", foo, true)
-		assertResult("FeatureCallsEqualToLiteralAnd", foo, true)
-		assertResult("FeatureCallNotEqualToLiteral", foo, false)
+		assertResult("FeatureCallsEqualToLiteralAnd", foo, false)
+		assertResult("FeatureCallNotEqualToLiteral", foo, true)
 		assertResult("FeatureCallNotEqualToFeatureCall", foo, false)
-		assertResult("FeatureCallListEqualToFeatureCall", foo, true)
-		assertResult("FeatureCallListNotEqualToFeatureCall", foo, false)
+		assertResult("FeatureCallListEqualToFeatureCall", foo, false)
+		assertResult("FeatureCallListNotEqualToFeatureCall", foo, true)
 	}
 	
 	@Test
@@ -286,9 +286,9 @@ class RosettaBinaryOperationTest {
 		val foo = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', baz), of()))
 		
 		assertResult("FeatureCallEqualToLiteral", foo, false)
-		assertResult("FeatureCallEqualToFeatureCall", foo, false)
+		assertResult("FeatureCallEqualToFeatureCall", foo, true)
 		assertResult("FeatureCallNotEqualToLiteral", foo, true)
-		assertResult("FeatureCallNotEqualToFeatureCall", foo, true)
+		assertResult("FeatureCallNotEqualToFeatureCall", foo, false)
 		assertResult("FeatureCallListEqualToFeatureCall", foo, false)
 		assertResult("FeatureCallListNotEqualToFeatureCall", foo, true)
 	}
@@ -390,7 +390,7 @@ class RosettaBinaryOperationTest {
 						}
 						
 						protected Boolean assignOutput(Boolean result, Foo foo) {
-							result = ComparisonResult.of(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).or(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All)).get();
+							result = ComparisonResult.of(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).or(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.None)).get();
 							
 							return result;
 						}

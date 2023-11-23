@@ -88,10 +88,10 @@ class DataRuleGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
+								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.None).getOrDefault(false)) {
 									return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 								}
-								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
+								if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.None).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.None)).getOrDefault(false)) {
 									return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 								}
 								return ComparisonResult.successEmptyOperand("");
@@ -200,10 +200,10 @@ class DataRuleGeneratorTest {
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
 								if (exists(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar())).getOrDefault(false)) {
-									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.All).getOrDefault(false)) {
+									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("Y"), CardinalityOperator.None).getOrDefault(false)) {
 										return exists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
-									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.All)).getOrDefault(false)) {
+									if (areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("I"), CardinalityOperator.None).or(areEqual(MapperS.of(foo).<String>map("getBar", _foo -> _foo.getBar()), MapperS.of("N"), CardinalityOperator.None)).getOrDefault(false)) {
 										return notExists(MapperS.of(foo).<String>map("getBaz", _foo -> _foo.getBaz()));
 									}
 									return ComparisonResult.successEmptyOperand("");
@@ -588,8 +588,9 @@ class DataRuleGeneratorTest {
 		val fooInstance = classes.createInstanceUsingBuilder('Foo', of(), of('bar', ImmutableList.of(barInstance1, barInstance2)))
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
-		assertTrue(validationResult.isSuccess)
+		assertFalse(validationResult.isSuccess)
 		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 1.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
 	@Test

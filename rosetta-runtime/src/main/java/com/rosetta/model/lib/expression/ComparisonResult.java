@@ -140,14 +140,4 @@ public class ComparisonResult implements Mapper<Boolean> {
 	public List<Path> getPaths() {
 		return Collections.emptyList();
 	}
-
-	@Override
-	public List<Path> getErrorPaths() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<String> getErrors() {
-		return Collections.singletonList(getError()); 
-	}
 }

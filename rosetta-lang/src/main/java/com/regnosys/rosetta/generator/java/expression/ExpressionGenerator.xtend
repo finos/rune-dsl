@@ -360,15 +360,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					case ">=": 'greaterThanEquals'
 				}
 				val modifier = (expr as ModifiableBinaryOperation).cardMod
-				val defaultModifier = if (expr.operator == '<>') {
-					CardinalityModifier.ANY
-				} else {
-					CardinalityModifier.ALL
-				}
 				val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
 				val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
 				leftCode
-					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(method)»(«l», «r», «toCardinalityOperator(modifier, defaultModifier)»)''', COMPARISON_RESULT)], context.scope)
+					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(method)»(«l», «r», «toCardinalityOperator(modifier, CardinalityModifier.NONE)»)''', COMPARISON_RESULT)], context.scope)
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported binary operation of " + expr.operator)

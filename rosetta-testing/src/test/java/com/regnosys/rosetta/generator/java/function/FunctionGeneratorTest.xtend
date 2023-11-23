@@ -42,6 +42,67 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void emptyAnyNotEqualsShouldBeFalse() {
+		val code = '''
+		func Foo:
+			output:
+				result boolean (1..1)
+			set result:
+				Empty() any <> 42
+		
+		// TODO: This is a workaround for another issue
+		func Empty:
+			output:
+				result int (0..*)
+			set result:
+				empty
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		assertEquals(false, foo.invokeFunc(Boolean, #[]))
+	}
+	
+	@Test
+	def void emptyAllEqualsShouldBeTrue() {
+		val code = '''
+		func Foo:
+			output:
+				result boolean (1..1)
+			set result:
+				Empty() all = 42
+		
+		// TODO: This is a workaround for another issue
+		func Empty:
+			output:
+				result int (0..*)
+			set result:
+				empty
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		assertEquals(true, foo.invokeFunc(Boolean, #[]))
+	}
+	
+	@Test
+	def void extractShouldFilterOutEmpty() {
+		val code = '''
+		func Foo:
+			output:
+				result boolean (1..1)
+			set result:
+				([1,  2, 3] extract
+					    if item = 2
+					    then item) = 2
+		'''.generateCode
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		assertEquals(true, foo.invokeFunc(Boolean, #[]))
+	}
+	
+	@Test
 	def void canEscapeIdentifiers() {
 		val code = '''
 		func Foo:
@@ -968,7 +1029,7 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func1 = classes.createFunc("F1");
-		assertNull(func1.invokeFunc(Boolean))
+		assertTrue(func1.invokeFunc(Boolean))
 
 		val func2 = classes.createFunc("F2");
 		assertEquals(84, func2.invokeFunc(Integer))
@@ -3384,7 +3445,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected String assignOutput(String result, Boolean test, String t1, String t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 								result = t1;
 							} else {
 								result = t2;
@@ -3463,7 +3524,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 								result.addAll(t1);
 							} else {
 								result.addAll(t2);
@@ -3534,7 +3595,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 								result = t1;
 							} else {
 								result = t2;
@@ -3614,7 +3675,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 								result.addAll(t1);
 							} else {
 								result.addAll(t2);
@@ -3702,7 +3763,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 								result = toBuilder(b1);
 							} else {
 								result = toBuilder(b2);
@@ -3802,7 +3863,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 								result.addAll(toBuilder(b1));
 							} else {
 								result.addAll(toBuilder(b2));
@@ -4575,7 +4636,7 @@ class FunctionGeneratorTest {
 						
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
-								if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+								if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(true), CardinalityOperator.None).getOrDefault(false)) {
 									return ComparisonResult.of(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "x")));
 								}
 								return ComparisonResult.of(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "y")));
@@ -4728,7 +4789,7 @@ class FunctionGeneratorTest {
                 		}
                 		
                 		protected Boolean assignOutput(Boolean result, Date date, ZonedDateTime zonedDateTime) {
-                			result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", zdt -> Date.of(zdt.toLocalDate())), CardinalityOperator.All).get();
+                			result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", zdt -> Date.of(zdt.toLocalDate())), CardinalityOperator.None).get();
                 			
                 			return result;
                 		}

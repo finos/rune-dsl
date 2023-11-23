@@ -933,7 +933,7 @@ class RosettaRuleGeneratorTest {
 				
 				protected Input.InputBuilder assignOutput(Input.InputBuilder output, Input input) {
 					output = toBuilder(MapperS.of(input)
-						.filterSingleNullSafe(item -> areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
+						.filterSingleNullSafe(item -> areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.None).get()).get());
 					
 					return Optional.ofNullable(output)
 						.map(o -> o.prune())
@@ -1032,7 +1032,7 @@ class RosettaRuleGeneratorTest {
 				
 				protected Boolean assignOutput(Boolean output, Foo input) {
 					output = MapperS.of(input)
-						.mapSingleToItem(item -> areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(12), CardinalityOperator.All).asMapper()).get();
+						.mapSingleToItem(item -> areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(12), CardinalityOperator.None).asMapper()).get();
 					
 					return output;
 				}

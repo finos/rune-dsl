@@ -1,7 +1,7 @@
 package com.rosetta.model.lib.mapper;
 
 import static com.rosetta.model.lib.mapper.MapperItem.getMapperItem;
-import static com.rosetta.model.lib.mapper.MapperItem.getMapperItems;
+import static com.rosetta.model.lib.mapper.MapperItem.getNonErrorMapperItems;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,7 +34,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 		if (ts != null) {
 			for (MapperBuilder<? extends T> ele : ts) {
 				if (ele != null) {
-					ele.getItems().forEach(item -> items.add(item));
+					ele.getItems()
+						.filter(item -> !item.isError())
+						.forEach(item -> items.add(item));
 				}
 			}
 		}
@@ -45,9 +47,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 		List<MapperItem<? extends T, ?>> items = new ArrayList<>();
 		if (ts != null) {
 			for (T ele : ts) {
-				if (ele == null) {
-					items.add(new MapperItem<>(ele, MapperPath.builder().addNull(), true, Optional.empty()));
-				} else {
+				if (ele != null) {
 					items.add(new MapperItem<>(ele, MapperPath.builder().addRoot(ele.getClass()), false, Optional.empty()));
 				}
 			}
@@ -68,7 +68,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 		List<MapperItem<? extends F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {
-			results.add(getMapperItem(items.get(i), mappingFunc));
+			MapperItem<? extends F,?> item = getMapperItem(items.get(i), mappingFunc);
+			if (!item.isError()) {
+				results.add(item);
+			}
 		}
 		return new MapperC<>(results);
 	}
@@ -86,7 +89,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 		List<MapperItem<? extends F,?>> results = new ArrayList<>();
 		
 		for (int i=0; i<items.size(); i++) {
-			results.addAll(getMapperItems(items.get(i), mappingFunc));
+			results.addAll(getNonErrorMapperItems(items.get(i), mappingFunc));
 		}
 		return new MapperC<>(results);
 	}
@@ -96,7 +99,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return filtered list 
 	 */
 	public MapperC<T> filterItem(Predicate<MapperS<T>> predicate) {
-		return new MapperC<>(nonErrorItems()
+		return new MapperC<>(items.stream()
 				.filter(item -> predicate.test(new MapperS<>(item)))
 				.collect(Collectors.toList()));
 	}
@@ -107,7 +110,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return filtered list 
 	 */
 	public MapperC<T> filterItemNullSafe(Function<MapperS<T>, Boolean> predicate) {
-		return new MapperC<>(nonErrorItems()
+		return new MapperC<>(items.stream()
 				.filter(item -> {
 					Boolean result = predicate.apply(new MapperS<>(item));
 					return result != null && result;
@@ -123,7 +126,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return mapped list
 	 */
 	public <F> MapperC<F> mapItem(Function<MapperS<T>, MapperS<F>> mappingFunc) {
-		return MapperC.of(nonErrorItems()
+		return MapperC.of(items.stream()
 				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.map(m -> mappingFunc.apply(m))
 				.map(MapperS::get)
@@ -138,7 +141,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return mapped list
 	 */
 	public <F> MapperListOfLists<F> mapItemToList(Function<MapperS<T>, MapperC<F>> mappingFunc) {
-		return MapperListOfLists.of(nonErrorItems()
+		return MapperListOfLists.of(items.stream()
 				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.map(m -> mappingFunc.apply(m))
 				.map(MapperC::getMulti)
@@ -172,7 +175,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <F> MapperS<F> reduce(MapperS<F> initial, BinaryOperator<MapperS<F>> reduceFunc) {
-		return nonErrorItems()
+		return items.stream()
 				.map(item -> new MapperS<>((MapperItem<F, ?>) item))
 				.reduce(initial, (m1, m2) -> {
 						if (m1.isIdentity())
@@ -190,7 +193,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return total of summed integers.
 	 */
 	public MapperS<Integer> sumInteger() {
-		return MapperS.of(nonErrorItems()
+		return MapperS.of(items.stream()
 				.map(MapperItem::getMappedObject)
 				.map(Integer.class::cast)
 				.reduce(0, Integer::sum));
@@ -202,7 +205,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return total of summed longs.
 	 */
 	public MapperS<Long> sumLong() {
-		return MapperS.of(nonErrorItems()
+		return MapperS.of(items.stream()
 				.map(MapperItem::getMappedObject)
 				.map(Long.class::cast)
 				.reduce(0l, Long::sum));
@@ -214,7 +217,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return total of summed numbers.
 	 */
 	public MapperS<BigInteger> sumBigInteger() {
-		return MapperS.of(nonErrorItems()
+		return MapperS.of(items.stream()
 				.map(MapperItem::getMappedObject)
 				.map(BigInteger.class::cast)
 				.reduce(BigInteger.ZERO, BigInteger::add));
@@ -226,7 +229,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return total of summed numbers.
 	 */
 	public MapperS<BigDecimal> sumBigDecimal() {
-		return MapperS.of(nonErrorItems()
+		return MapperS.of(items.stream()
 				.map(MapperItem::getMappedObject)
 				.map(BigDecimal.class::cast)
 				.reduce(BigDecimal.ZERO, BigDecimal::add));
@@ -239,7 +242,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return concatenated string
 	 */
 	public MapperS<String> join(MapperS<String> delimiter) {
-		return MapperS.of(nonErrorItems()
+		return MapperS.of(items.stream()
 				.map(MapperItem::getMappedObject)
 				.map(String.class::cast)
 				.collect(Collectors.joining(delimiter.getOrDefault(""))));
@@ -263,7 +266,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return minimum
 	 */
 	public <F extends Comparable<F>> MapperS<T> min(Function<MapperS<T>, MapperS<F>> comparableGetter) {
-		return nonErrorItems()
+		return items.stream()
 				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.filter(item -> comparableGetter.apply(item).get() != null)
 				.min(Comparator.comparing(item -> comparableGetter.apply(item).get()))
@@ -289,7 +292,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return maximum
 	 */
 	public <F extends Comparable<F>> MapperS<T> max(Function<MapperS<T>, MapperS<F>> comparableGetter) {
-		return nonErrorItems()
+		return items.stream()
 				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.filter(item -> comparableGetter.apply(item).get() != null)
 				.max(Comparator.comparing(item -> comparableGetter.apply(item).get()))
@@ -302,7 +305,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return sorted list
 	 */
 	public MapperC<T> sort() {
-		return MapperC.of(nonErrorItems()
+		return MapperC.of(items.stream()
 				.map(MapperItem::getMappedObject)
 				.sorted()
 				.collect(Collectors.toList()));
@@ -316,9 +319,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return sorted list
 	 */
 	public <F extends Comparable<F>> MapperC<T> sort(Function<MapperS<T>, MapperS<F>> comparableGetter) {
-		return new MapperC<>(nonErrorItems()
-				.sorted(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
-				.collect(Collectors.toList()));
+		List<MapperItem<? extends T, ?>> copy = new ArrayList<>(items);
+		copy.sort(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()));
+		return new MapperC<>(copy);
 	}
 	
 	/**
@@ -327,9 +330,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return reversed list
 	 */
 	public MapperC<T> reverse() {
-		List<MapperItem<? extends T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
-		Collections.reverse(nonErrorItems);
-		return new MapperC<>(nonErrorItems);
+		List<MapperItem<? extends T, ?>> copy = new ArrayList<>(items);
+		Collections.reverse(copy);
+		return new MapperC<>(copy);
 	}
 	
 	/**
@@ -338,10 +341,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return first list item
 	 */
 	public MapperS<T> first() {
-		return nonErrorItems()
-				.findFirst()
-				.<MapperS<T>>map(MapperS::new)
-				.orElse(MapperS.ofNull());
+		if (items.isEmpty()) {
+			return MapperS.ofNull();
+		}
+		return new MapperS<>(items.get(0));
 	}
 	
 	/**
@@ -350,10 +353,10 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return last list item
 	 */
 	public MapperS<T> last() {
-		return nonErrorItems()
-				.reduce((first, second) -> second)
-				.<MapperS<T>>map(MapperS::new)
-				.orElse(MapperS.ofNull());
+		if (items.isEmpty()) {
+			return MapperS.ofNull();
+		}
+		return new MapperS<>(items.get(items.size() - 1));
 	}
 	
 	/**
@@ -362,10 +365,9 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return list item at index
 	 */
 	public MapperS<T> getItem(MapperS<Integer> indexGetter) {
-		List<MapperItem<? extends T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
 		Integer index = indexGetter.get();
-		if (index != null && index < nonErrorItems.size()) {
-			return new MapperS<>(nonErrorItems.get(index));
+		if (index != null && index < items.size()) {
+			return new MapperS<>(items.get(index));
 		}
 		return MapperS.ofNull();
 	}
@@ -376,28 +378,18 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 * @return list without specified item
 	 */
 	public MapperC<T> removeItem(MapperS<Integer> indexGetter) {
-		List<MapperItem<? extends T, ?>> nonErrorItems = nonErrorItems().collect(Collectors.toList());
+		List<MapperItem<? extends T, ?>> copy = new ArrayList<>(items);
 		Integer index = indexGetter.get();
-		if (index != null && index < nonErrorItems.size()) {
-			nonErrorItems.remove(index.intValue());
+		if (index != null && index < copy.size()) {
+			copy.remove(index.intValue());
 		}
-		return new MapperC<>(nonErrorItems);
-	}
-	
-	protected Stream<MapperItem<? extends T,?>> nonErrorItems() {
-		return items.stream().filter(i->!i.isError());
-	}
-
-	private Stream<MapperItem<? extends T,?>> errorItems() {
-		return items.stream().filter(MapperItem::isError);
+		return new MapperC<>(copy);
 	}
 	
 	@Override
 	public T get() {
-		List<T> collect = nonErrorItems()
-				.map(i->i.getMappedObject())
-				.collect(Collectors.toList());
-		return collect.size()!=1 ? null : collect.get(0);
+		List<T> collect = getMulti();
+		return collect.size() != 1 ? null : collect.get(0);
 	}
 	
 	@Override
@@ -407,14 +399,14 @@ public class MapperC<T> implements MapperBuilder<T> {
 	
 	@Override
 	public List<T> getMulti() {
-		return nonErrorItems()
+		return items.stream()
 				.map(i->i.getMappedObject())
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public Optional<?> getParent() {
-		List<?> collect = nonErrorItems()
+		List<?> collect = items.stream()
 			.map(this::findParent)
 			.filter(Optional::isPresent)
 			.map(Optional::get)
@@ -425,7 +417,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	
 	@Override
 	public List<?> getParentMulti() {
-		return nonErrorItems()
+		return items.stream()
 				.map(this::findParent)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
@@ -435,28 +427,13 @@ public class MapperC<T> implements MapperBuilder<T> {
 	
 	@Override
 	public int resultCount() {
-		return (int) nonErrorItems().count();
+		return items.size();
 	}
 
 	@Override
 	public List<Path> getPaths() {
-		return nonErrorItems()
+		return items.stream()
 				.map(MapperItem::getPath)
-				.collect(Collectors.toList());
-	}
-	
-	@Override
-	public List<Path> getErrorPaths() {
-		return errorItems()
-				.map(MapperItem::getPath)
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public List<String> getErrors() {
-		return errorItems()
-				.map(MapperItem::getPath)
-				.map(p -> String.format("[%s] is not set", p.getFullPath()))
 				.collect(Collectors.toList());
 	}
 	
