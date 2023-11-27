@@ -91,14 +91,17 @@ class RosettaExtensions {
 		atts.addAll(data.attributes)
 		if (data.hasSuperType) {
 			val attsWithSuper = data.superType.allNonOverridesAttributes
-				.filter[superAttr| !atts.exists[extendedAttr|					
-					superAttr.name == extendedAttr.name && 
-					superAttr.typeCall.type == extendedAttr.typeCall.type && 
-					superAttr.card.inf == extendedAttr.card.inf &&
-					superAttr.card.sup == extendedAttr.card.sup
-				]].toList
-			attsWithSuper.addAll(atts)
-			return attsWithSuper
+			val result = newArrayList
+			attsWithSuper.forEach[
+				val overridenAtt = atts.findFirst[att| att.name == name]
+				if (overridenAtt !== null) {
+					result.add(overridenAtt)
+				} else {
+					result.add(it)
+				}
+			]
+			result.addAll(atts.filter[att| !result.contains(att)].toList)
+			return result
 		}
 		return atts
 	}
