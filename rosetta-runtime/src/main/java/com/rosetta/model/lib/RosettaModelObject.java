@@ -28,8 +28,8 @@ public interface RosettaModelObject {
 	}
 
 	default <R extends RosettaModelObject> void processRosetta(RosettaPath path, Processor processor, Class<R> clazz, List<? extends R> children, AttributeMeta... metas) {
-		processor.processRosetta(path, clazz, children, this, metas);
-		if (children!=null)  {
+		boolean processFurther = processor.processRosetta(path, clazz, children, this, metas);
+		if (children!=null && processFurther)  {
 			int index=0;
 			// Iterate through a copy of children to prevent a fail-fast ConcurrentModificationException if a mapping processor modifies the children.
 			List<? extends RosettaModelObject> copy = new ArrayList<>(children);

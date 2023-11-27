@@ -156,15 +156,12 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient processMethod(Data c) '''
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
-			«IF c.hasSuperType»
-				«new RDataType(c.superType).toJavaType».super.process(path, processor);
-			«ENDIF»
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
-			«ENDFOR»
-			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+			«FOR a : c.expandedAttributesPlus.filter[!overriding]»
+				«IF a.isDataType || a.hasMetas»
+					processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+				«ELSE»
+					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+				«ENDIF»
 			«ENDFOR»
 		}
 		
@@ -173,16 +170,12 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient builderProcessMethod(Data c) '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
-			«IF c.hasSuperType»
-				«new RDataType(c.superType).toJavaType.toBuilderType».super.process(path, processor);
-			«ENDIF»
-			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[!(isDataType || hasMetas)]»
-				processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
-			«ENDFOR»
-			
-			«FOR a : c.expandedAttributes.filter[!overriding].filter[isDataType || hasMetas]»
-				processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+			«FOR a : c.expandedAttributesPlus.filter[!overriding]»
+				«IF a.isDataType || a.hasMetas»
+					processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
+				«ELSE»
+					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaOrRegularJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
+				«ENDIF»
 			«ENDFOR»
 		}
 		
