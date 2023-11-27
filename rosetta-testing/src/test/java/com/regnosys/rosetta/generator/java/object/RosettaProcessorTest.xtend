@@ -133,11 +133,12 @@ class RosettaProcessorTest {
 		type Foo:
 			attr1 int (0..1)
 			attr2 A (0..2)
+			attr3 string (1..1)
 		
 		type Bar extends Foo:
 			attr1 int (0..1)
 			attr2 A (0..2)
-			attr3 int (1..1)
+			attr4 int (1..1)
 		'''.generateCode
 		val classes = code.compileToClasses
 		
@@ -148,7 +149,8 @@ class RosettaProcessorTest {
 					'a' -> 42
 				})
 			],
-			'attr3' -> 0
+			'attr3' -> "Bla",
+			'attr4' -> 0
 		})
 		assertProcessEquals(
 			'''
@@ -156,6 +158,7 @@ class RosettaProcessorTest {
 			ROOT.attr2
 			ROOT.attr2(0).a
 			ROOT.attr3
+			ROOT.attr4
 			''',
 			bar
 		)

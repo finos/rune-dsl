@@ -48,17 +48,20 @@ class RosettaAttributeExtensions {
 	}
 	
 	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
-		val atts = data.expandedAttributes
+		val atts = data.expandedAttributes;
 		if (data.hasSuperType) {
 			val attsWithSuper = data.superType.expandedAttributesPlus
-				.filter[superAttr| !atts.exists[extendedAttr|					
-					superAttr.name == extendedAttr.name && 
-					superAttr.type == extendedAttr.type && 
-					superAttr.inf == extendedAttr.inf && 
-					superAttr.sup == extendedAttr.sup
-				]].toList
-			attsWithSuper.addAll(atts)
-			return attsWithSuper
+			val result = newArrayList
+			attsWithSuper.forEach[
+				val overridenAtt = atts.findFirst[att| att.name == name]
+				if (overridenAtt !== null) {
+					result.add(overridenAtt)
+				} else {
+					result.add(it)
+				}
+			]
+			result.addAll(atts.filter[att| !result.contains(att)].toList)
+			return result
 		}
 		return atts
 	}
