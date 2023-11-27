@@ -1017,33 +1017,42 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val type = typeProvider.getRType(expr).stripFromTypeAliases
 		val clazz = type.toJavaReferenceType
 		if (type instanceof RDataType) {
-			expr.values.map[pair|
-				val attr = pair.key as Attribute
-				val attrExpr = pair.value
-				val isReference = attr.isReference
-				val assignAsKey = attrExpr instanceof AsKeyOperation
-				evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
-					.collapseToSingleExpression(context.scope)
-					.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
-			].reduce[acc,attrCode|
-				acc.then(attrCode, [allSetCode,setAttr|
-					JavaExpression.from(
-						'''
-						«allSetCode»
-						«setAttr»
-						''',
-						null
-					)], context.scope
-				)
-			].mapExpression[
+			if (expr.values.empty) {
 				JavaExpression.from('''
 					«clazz».builder()
-						«it»
 						.build()
 					''',
 					clazz
 				)
-			]
+			} else {
+				expr.values.map[pair|
+					val attr = pair.key as Attribute
+					val attrExpr = pair.value
+					val isReference = attr.isReference
+					val assignAsKey = attrExpr instanceof AsKeyOperation
+					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
+						.collapseToSingleExpression(context.scope)
+						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
+				].reduce[acc,attrCode|
+					acc.then(attrCode, [allSetCode,setAttr|
+						JavaExpression.from(
+							'''
+							«allSetCode»
+							«setAttr»
+							''',
+							null
+						)], context.scope
+					)
+				].mapExpression[
+					JavaExpression.from('''
+						«clazz».builder()
+							«it»
+							.build()
+						''',
+						clazz
+					)
+				]
+			}
 		} else { // type instanceof RRecordType
 			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(key, value, false, false, context.scope)])
 			recordUtil.recordConstructor(type as RRecordType, featureMap, context.scope)
