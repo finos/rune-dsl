@@ -16,4 +16,24 @@ public class NumberValidationData extends ValidationData{
         this.fractionalDigits = fractionalDigits;
         this.actual = actual;
     }
+
+    public BigDecimal getMin() {
+        return min;
+    }
+
+    public BigDecimal getMax() {
+        return max;
+    }
+
+    public int getDigits() {
+        return digits;
+    }
+
+    public int getFractionalDigits() {
+        return fractionalDigits;
+    }
+
+    public BigDecimal getActual() {
+        return actual;
+    }
 }

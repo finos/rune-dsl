@@ -19,4 +19,20 @@ public class TypeValidation extends ValidationData {
         this.attributeValidations = attributeValidations;
         this.conditionValidation = conditionValidation;
     }
+
+    public ModelSymbolId getTypeID() {
+        return typeID;
+    }
+
+    public List<ValidationResult> getFormatValidations() {
+        return formatValidations;
+    }
+
+    public List<AttributeValidation> getAttributeValidations() {
+        return attributeValidations;
+    }
+
+    public List<ConditionValidation> getConditionValidation() {
+        return conditionValidation;
+    }
 }

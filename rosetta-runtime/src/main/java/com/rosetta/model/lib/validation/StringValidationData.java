@@ -15,4 +15,20 @@ public class StringValidationData extends ValidationData{
         this.pattern = pattern;
         this.actual = actual;
     }
+
+    public int getMinLength() {
+        return minLength;
+    }
+
+    public int getMaxLength() {
+        return maxLength;
+    }
+
+    public Pattern getPattern() {
+        return pattern;
+    }
+
+    public String getActual() {
+        return actual;
+    }
 }
