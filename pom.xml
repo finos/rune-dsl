@@ -5,9 +5,10 @@
 
 	<groupId>com.regnosys.rosetta</groupId>
 	<artifactId>com.regnosys.rosetta.parent</artifactId>
-	<version>0.0.0.master</version>
+	<version>0.0.0.master-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
+	<name>Rosetta DSL Parent POM</name>
 	<description>
 		Rosetta is a Domain-Specific Language (DSL) that supports the modelling
 		of operational processes for the
@@ -20,7 +21,45 @@
 	</description>
 	<url>https://github.com/REGnosys/rosetta-dsl</url>
 
+	<organization>
+		<name>REGnosys</name>
+		<url>https://regnosys.com/</url>
+	</organization>
+
+	<scm>
+		<url>https://github.com/REGnosys/rosetta-dsl</url>
+		<connection>scm:git:https://github.com/REGnosys/rosetta-dsl.git</connection>
+		<developerConnection>scm:git:ssh://github.com/REGnosys/rosetta-dsl.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>SimonCockx</id>
+			<name>Simon Cockx</name>
+			<email>infra@regnosys.com</email>
+			<url>http://github.com/SimonCockx</url>
+			<organization>REGnosys</organization>
+			<organizationUrl>https://regnosys.com</organizationUrl>
+			<timezone>Europe/Brussels</timezone>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
+
 	<properties>
+		<gpg.keyname>configured-by-release-profile</gpg.keyname>
+		<repoServerHost>oss.sonatype.org</repoServerHost>
+
 		<maven.compiler.release>11</maven.compiler.release>
 		<java.enforced.version>[17,18)</java.enforced.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -59,6 +98,7 @@
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<addjars-maven-plugin.version>1.0.5</addjars-maven-plugin.version>
 		<appassembler-maven-plugin.version>2.1.0</appassembler-maven-plugin.version>
+		<maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
 		<frontend-maven-plugin.version>1.14.2</frontend-maven-plugin.version>
 		<node.version>20.10.0</node.version>
 	</properties>
@@ -72,6 +112,34 @@
 		<module>rosetta-testing</module>
 		<module>rosetta-maven-plugin</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>gpg</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven-gpg-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<keyname>${gpg.keyname}</keyname>
+									<passphraseServerId>${gpg.keyname}</passphraseServerId>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<dependencyManagement>
 		<dependencies>

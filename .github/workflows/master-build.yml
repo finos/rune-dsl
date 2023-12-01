@@ -1,0 +1,15 @@
+name: Build master branch and upload dependency graph
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  upload-dependency-graph:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: ./.github/workflows/maven-build.yml
+    # Upload full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@6aafd69a7f213fcf58c6428df9fd5a3784197490
