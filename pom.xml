@@ -3,6 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>org.finos</groupId>
+		<artifactId>finos</artifactId>
+		<version>5</version>
+	</parent>
+
 	<groupId>com.regnosys.rosetta</groupId>
 	<artifactId>com.regnosys.rosetta.parent</artifactId>
 	<version>0.0.0.master-SNAPSHOT</version>
@@ -57,12 +63,13 @@
 	</developers>
 
 	<properties>
-		<gpg.keyname>configured-by-release-profile</gpg.keyname>
-		<repoServerHost>oss.sonatype.org</repoServerHost>
-
 		<maven.compiler.release>11</maven.compiler.release>
 		<java.enforced.version>[17,18)</java.enforced.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		
+		<!-- Release -->
+		<gpg.keyname>configured-by-release-profile</gpg.keyname>
+		<repoServerHost>s01.oss.sonatype.org</repoServerHost>
 
 		<!-- Dependency management -->
 		<xtext.version>2.27.0</xtext.version>
