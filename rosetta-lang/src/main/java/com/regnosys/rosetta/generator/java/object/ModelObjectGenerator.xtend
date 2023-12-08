@@ -115,11 +115,11 @@ class ModelObjectGenerator {
 		«FOR attribute : d.expandedAttributesPlus»
 			«IF attribute.cardinalityIsSingleValue»
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
+				«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 			«ELSE»
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
-				«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
 				«IF !attribute.isOverriding»
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
