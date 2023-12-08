@@ -62,6 +62,6 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
 		if (node != null) {
 			return node.getText();
 		}
-		return serializer.serialize(eObject);
+		return null;
 	}
 }
