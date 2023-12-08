@@ -1,14 +1,11 @@
 package com.regnosys.rosetta.resource;
 
-import javax.inject.Inject;
-
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
-import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.util.IAcceptor;
 
 import com.google.inject.Singleton;
@@ -18,9 +15,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 
 @Singleton
 public class RosettaResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
-	
-	@Inject
-	private ISerializer serializer;
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {		
