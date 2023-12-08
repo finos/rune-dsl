@@ -8,9 +8,9 @@ import org.eclipse.xtext.resource.EObjectDescription;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 
 public class RuleDescription extends EObjectDescription {
-	public static final String TYPE_CALL = "TYPE_CALL";
+	public static final String INPUT = "INPUT";
 
-	public RuleDescription(QualifiedName qualifiedName, RosettaRule rule, String typeCall) {
-		super(qualifiedName, rule, Map.of(TYPE_CALL, typeCall));
+	public RuleDescription(QualifiedName qualifiedName, RosettaRule rule, String input) {
+		super(qualifiedName, rule, Map.of(INPUT, input));
 	}
 }
