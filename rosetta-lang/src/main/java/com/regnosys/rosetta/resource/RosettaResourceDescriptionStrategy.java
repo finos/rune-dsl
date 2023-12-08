@@ -55,6 +55,9 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
 	}
 	
 	private String serialize(EObject eObject) {
+		if (eObject == null) {
+			return null;
+		}
 		INode node = NodeModelUtils.getNode(eObject);
 		if (node != null) {
 			return node.getText();
