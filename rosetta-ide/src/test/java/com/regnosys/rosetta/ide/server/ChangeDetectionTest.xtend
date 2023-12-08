@@ -173,4 +173,34 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerTest {
 		assertEquals(2, issues.size)
 		assertEquals("Expected type 'int' but was 'string'", issues.head.message)
 	}
+	
+	@Test
+	def void testChangeInRuleExpressionIsPropagated() {
+		val ruleAURI = createModel("ruleA.rosetta", '''
+			namespace test
+			
+			reporting rule A from string:
+				42
+		''')
+		val funcURI = createModel("func.rosetta", '''
+			namespace test
+			
+			func Foo:
+				output:
+					result int (1..1)
+				set result:
+					A("")
+		''')
+		
+		// Initial: there should be no issue.
+		assertNoIssues
+		
+		// Introduce a type error by changing the output of rule `A` to be of type `string`.
+		makeChange(ruleAURI, 3, 1, "42", "\"My string\"")
+		
+		// There should be a type error in func Foo
+		val issues = diagnostics.get(funcURI)
+		assertEquals(1, issues.size)
+		assertEquals("Expected type 'int' but was 'string'", issues.head.message)
+	}
 }

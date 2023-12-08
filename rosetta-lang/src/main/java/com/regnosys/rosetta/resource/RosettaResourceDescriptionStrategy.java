@@ -45,7 +45,8 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
 			
 			QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(rule);
 			String input = serialize(rule.getInput());
-			acceptor.accept(new RuleDescription(qualifiedName, rule, input));
+			String expression = serialize(rule.getExpression());
+			acceptor.accept(new RuleDescription(qualifiedName, rule, input, expression));
 			
 			return false;
 		} else {
