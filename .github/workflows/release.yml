@@ -14,13 +14,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
       - name: Publish package
-        run: mvn -S settings.xml -B -U clean deploy -P release
+        run: mvn -s settings.xml -B -U clean deploy -P release
         env:
           GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          CI_DEPLOY_USERNAME: regnosys
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}

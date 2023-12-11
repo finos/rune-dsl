@@ -2,6 +2,11 @@ name: Maven Build
 description: Run a Maven Build
 
 inputs:
+  build-command:
+    description: The Maven command to build the project. The default is `package`.
+    required: false
+    type: string
+    default: package
   run-tests:
     description: Whether or not to run tests. The default is true.
     required: false
@@ -20,4 +25,4 @@ runs:
         cache: maven
     - name: Build with Maven
       shell: bash
-      run: mvn -B -U clean package${{ inputs.run-tests && '' || ' -DskipTests'  }}
+      run: mvn -B -U clean ${{ build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
