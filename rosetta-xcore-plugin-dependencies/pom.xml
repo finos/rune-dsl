@@ -6,11 +6,12 @@
     <parent>
         <groupId>com.regnosys.rosetta</groupId>
         <artifactId>com.regnosys.rosetta.parent</artifactId>
-        <version>0.0.0.master</version>
+        <version>0.0.0.master-SNAPSHOT</version>
     </parent>
     <!-- TODO: this should be packaged as a pom, but Eclipse doesn't handle it well. -->
     <!--<packaging>pom</packaging>-->
 
+	<name>Rosetta DSL Plugin Dependencies</name>
     <artifactId>com.regnosys.rosetta.xcore</artifactId>
 
     <description>

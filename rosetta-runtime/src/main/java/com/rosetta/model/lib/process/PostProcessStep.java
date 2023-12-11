@@ -21,7 +21,7 @@ public interface PostProcessStep {
 	/**
 	 * Process a rosettaObject
 	 * @param topClass the class of the object being passed in to process
-	 * @param builder an object to process
+	 * @param instance an object to process
 	 * @return A resulting report of the processing.
 	 */
 	<T extends RosettaModelObject> PostProcessorReport runProcessStep(Class<? extends T> topClass, T instance);

@@ -11,8 +11,6 @@ import com.rosetta.model.lib.process.BuilderProcessor;
 
 /**
  * @author TomForwood
- *
- * @param <T>
  */
 public interface RosettaModelObjectBuilder extends RosettaModelObject {
 	

@@ -23,3 +23,6 @@ plugin.xml_gen
 com.regnosys.rosetta.web/
 
 .tycho-consumer-pom.xml
+
+# CVE scan reports
+/reports/

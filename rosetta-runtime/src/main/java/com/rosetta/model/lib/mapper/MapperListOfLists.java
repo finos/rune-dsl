@@ -92,8 +92,6 @@ public class MapperListOfLists<T> {
 	/**
 	 * Flatten a list of lists to a list.
 	 * 
-	 * @param <F>
-	 * @param mappingFunc
 	 * @return flattened list
 	 */
 	public MapperC<T> flattenList() {

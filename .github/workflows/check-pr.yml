@@ -1,0 +1,35 @@
+name: PR Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+# Cancel previous jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-on-ubuntu:
+    name: Maven Build on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set version
+      shell: bash
+      run: mvn -B versions:set -DnewVersion=0.0.0.${{ github.head_ref }}-SNAPSHOT
+    - uses: ./.github/actions/maven-build
+      with:
+        build-command: deploy  # Deploy a snapshot build of this branch
+      env:
+        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+        CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+  
+  build-on-windows:
+    name: Maven Build on Windows
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/maven-build
