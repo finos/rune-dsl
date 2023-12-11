@@ -24,6 +24,7 @@ import com.regnosys.rosetta.ide.server.RosettaServerModule
 import com.google.inject.Module
 import org.eclipse.lsp4j.DiagnosticSeverity
 import com.regnosys.rosetta.RosettaStandaloneSetup
+import java.util.HashMap
 
 /**
  * TODO: contribute to Xtext.
@@ -129,7 +130,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	}
 	
 	protected override FileInfo initializeContext(TextDocumentConfiguration configuration) {
-		configuration.filesInScope = #{
+		configuration.filesInScope = new HashMap(configuration.filesInScope) + #{
 			builtins.basicTypesURI.path -> new String(builtins.basicTypesURL.openStream.readAllBytes, StandardCharsets.UTF_8),
 			builtins.annotationsURI.path -> new String(builtins.annotationsURL.openStream.readAllBytes, StandardCharsets.UTF_8)
 		}
