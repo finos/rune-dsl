@@ -74,6 +74,7 @@
 
 		<!-- Release -->
 		<gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+		<gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
 		<repoServerHost>s01.oss.sonatype.org</repoServerHost>
 		<distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
 		<distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
