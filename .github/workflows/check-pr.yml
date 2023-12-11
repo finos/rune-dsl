@@ -33,3 +33,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/actions/maven-build
+  
+  test:
+    name: GPG test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17 for x64
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        architecture: x64
+        cache: maven
+    - name: Build with Maven
+      shell: bash
+      run: mvn -s settings.xml -B package org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign -DskipTests
+      env:
+        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+        CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
