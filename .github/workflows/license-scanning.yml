@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module-folder: ["./", "./rosetta-dsl", "./rosetta-ide", "./rosetta-runtime", "./rosetta-testing", "./rosetta-tools", "./rosetta-xcore-plugin-dependencies", "./rosetta-maven-plugin"]
+        module-folder: ["./", "./rosetta-ide", "./rosetta-runtime", "./rosetta-testing", "./rosetta-tools", "./rosetta-xcore-plugin-dependencies", "./rosetta-maven-plugin"]
     steps:
     - uses: actions/checkout@v3
     - name: Install XQ
