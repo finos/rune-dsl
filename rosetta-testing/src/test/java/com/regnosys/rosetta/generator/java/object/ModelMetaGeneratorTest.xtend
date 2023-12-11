@@ -11,7 +11,7 @@ import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.NoOpModelObjectValidator
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
+import com.rosetta.model.lib.validation.ValidationType
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.List
@@ -116,7 +116,7 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.validation.ValidationResult;
-			import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+			import com.rosetta.model.lib.validation.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
 			import java.math.BigDecimal;
@@ -159,7 +159,7 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.validation.ValidationResult;
-			import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+			import com.rosetta.model.lib.validation.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
 			import java.math.BigDecimal;
