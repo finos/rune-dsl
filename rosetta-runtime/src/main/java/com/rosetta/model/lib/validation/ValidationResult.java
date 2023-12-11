@@ -1,12 +1,10 @@
 package com.rosetta.model.lib.validation;
 
-import java.util.Optional;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.rosetta.model.lib.path.RosettaPath;
 
-import java.util.function.Function;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.rosetta.model.lib.validation.ValidationResult.ValidationType.CHOICE_RULE;
 
@@ -191,14 +189,14 @@ public interface ValidationResult<T> {
 
 		@Override
 		public String getDefinition() {
-			return choiceFieldNames.stream()
-				.collect(Collectors.joining("', '", validationMethod.desc + " of '", "'. "));
+			return choiceFieldNames().stream()
+				.collect(Collectors.joining("', '", validationMethod().getDesc() + " of '", "'. "));
 		}
 		
 		@Override
 		public Optional<String> getFailureReason() {
-			return Optional.of(getDefinition() + (populatedFields.isEmpty() ? "No fields are set." :
-					populatedFields.stream().collect(Collectors.joining("', '", "Set fields are '", "'."))));
+			return Optional.of(getDefinition() + (populatedFields().isEmpty() ? "No fields are set." :
+					populatedFields().stream().collect(Collectors.joining("', '", "Set fields are '", "'."))));
 		}
 
 		@Override
@@ -217,81 +215,4 @@ public interface ValidationResult<T> {
 		}
 	}
 
-	enum ChoiceRuleValidationMethod {
-
-		OPTIONAL("Zero or one field must be set", fieldCount -> fieldCount == 1 || fieldCount == 0),
-		REQUIRED("One and only one field must be set", fieldCount -> fieldCount == 1);
-
-		private final String desc;
-		private final Function<Integer, Boolean> check;
-
-		ChoiceRuleValidationMethod(String desc, Function<Integer, Boolean> check) {
-			this.desc = desc;
-			this.check = check;
-		}
-
-		public boolean check(int fields) {
-			return check.apply(fields);
-		}
-		
-		public String getDescription() {
-			return this.desc;
-		}
-	}
-	
-	@Deprecated
-	class ProcessValidationResult<T> implements ValidationResult<T> {
-		private String message;
-		private String modelObjectName;
-		private String processorName;
-		private RosettaPath path;
-		private final Optional<ValidationData> data;
-		public ProcessValidationResult(String message, String modelObjectName, String processorName, RosettaPath path, Optional<ValidationData> data) {
-			this.message = message;
-			this.modelObjectName = modelObjectName;
-			this.processorName = processorName;
-			this.path = path;
-			this.data = data;
-		}
-
-		@Override
-		public boolean isSuccess() {
-			return false;
-		}
-
-		@Override
-		public String getModelObjectName() {
-			return modelObjectName;
-		}
-
-		@Override
-		public String getName() {
-			return processorName;
-		}
-
-		@Override
-		public ValidationType getValidationType() {
-			return ValidationType.POST_PROCESS_EXCEPTION;
-		}
-
-		@Override
-		public String getDefinition() {
-			return "";
-		}
-
-		@Override
-		public Optional<String> getFailureReason() {
-			return Optional.of(message);
-		}
-
-		@Override
-		public RosettaPath getPath() {
-			return path;
-		}
-
-		@Override
-		public Optional<ValidationData> getData() {
-			return data;
-		}
-	}
 }

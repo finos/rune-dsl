@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
 import org.apache.commons.lang3.StringUtils;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -420,7 +421,7 @@ public class ExpressionOperators {
 	
 	// one-of and choice
 
-	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
+	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ChoiceRuleValidationMethod necessity) {
 		T object = mapper.get();
 		List<String> populatedFieldNames = new LinkedList<>();
 		for (String a: choiceFieldNames) {
