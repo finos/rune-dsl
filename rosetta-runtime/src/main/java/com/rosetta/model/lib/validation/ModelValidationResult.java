@@ -6,13 +6,13 @@ import java.util.Optional;
 
 
 public
-class ModelValidationResult<T> implements ValidationResult<T> {
+class ModelValidationResult<T>{
 
-    private final String modelObjectName;
-    private final String name;
-    private final String definition;
-    private final Optional<String> failureReason;
-    private final ValidationType validationType;
+    private static String modelObjectName;
+    private static String name;
+    private String definition;
+    private Optional<String> failureReason;
+    private static ValidationType validationType;
     private final RosettaPath path;
     private final Optional<ValidationData> data;
 
@@ -26,54 +26,48 @@ class ModelValidationResult<T> implements ValidationResult<T> {
         this.data = data;
     }
 
-    static <T> ModelValidationResult<T> success(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition) {
-        return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty(), Optional.empty());
-    }
-
-    static <T> ModelValidationResult<T> failure(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, String failureMessage) {
-        return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage), Optional.empty());
-    }
-
-    @Override
-    public boolean isSuccess() {
-        return !failureReason.isPresent();
-    }
-
-    @Override
-    public String getModelObjectName() {
+    public static String getModelObjectName() {
         return modelObjectName;
     }
 
-    @Override
-    public String getName() {
+    public static String getName() {
         return name;
+    }
+
+    public String getDefinition() {
+        return definition;
+    }
+
+    public static ValidationType getValidationType() {
+        return validationType;
     }
 
     public RosettaPath getPath() {
         return path;
     }
 
-    @Override
     public Optional<ValidationData> getData() {
         return data;
     }
 
-    @Override
-    public String getDefinition() {
-        return definition;
+    public static <T> ModelValidationResult<T> success(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition) {
+        return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty(), Optional.empty());
     }
 
-    @Override
-    public Optional<String> getFailureReason() {
-        if (failureReason.isPresent() && modelObjectName.endsWith("Report") && ValidationType.DATA_RULE.equals(validationType)) {
+    public static <T> ModelValidationResult<T> failure(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, String failureMessage) {
+        return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage), Optional.empty());
+    }
+
+    public static boolean isSuccess() {
+        return !getFailureReason().isPresent();
+    }
+
+
+    public static Optional<String> getFailureReason() {
+        if (getFailureReason().isPresent() && getModelObjectName().endsWith("Report") && ValidationType.DATA_RULE.equals(getValidationType())) {
             return getUpdatedFailureReason();
         }
-        return failureReason;
-    }
-
-    @Override
-    public ValidationType getValidationType() {
-        return validationType;
+        return getFailureReason();
     }
 
     @Override
@@ -87,12 +81,12 @@ class ModelValidationResult<T> implements ValidationResult<T> {
     }
 
     // TODO: refactor this method. This is an ugly hack.
-    private Optional<String> getUpdatedFailureReason() {
+    private static Optional<String> getUpdatedFailureReason() {
 
-        String conditionName = name.replaceFirst(modelObjectName, "");
-        String failReason = failureReason.get();
+        String conditionName = getName().replaceFirst(getModelObjectName(), "");
+        String failReason = getFailureReason().get();
 
-        failReason = failReason.replaceAll(modelObjectName, "");
+        failReason = failReason.replaceAll(getModelObjectName(), "");
         failReason = failReason.replaceAll("->get", " ");
         failReason = failReason.replaceAll("[^\\w-]+", " ");
         failReason = failReason.replaceAll("^\\s+", "");

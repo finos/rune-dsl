@@ -4,33 +4,29 @@ import com.rosetta.model.lib.path.RosettaPath;
 
 import java.util.Optional;
 
-public interface ValidationResult<T> {
+public class ValidationResult{
 
-	boolean isSuccess();
+	private boolean success;
 
-	@Deprecated
-	String getModelObjectName();
+	private Optional<String> failureReason;
 
-	@Deprecated
-	String getName();
+	private RosettaPath path;
 
-	@Deprecated
-	ValidationType getValidationType();
-	@Deprecated
-	String getDefinition();
-	
-	Optional<String> getFailureReason();
-	
-	RosettaPath getPath();
+	public ValidationResult(boolean success, Optional<String> failureReason, RosettaPath path, Optional<ValidationData> data) {
+		this.success = success;
+		this.failureReason = failureReason;
+		this.path = path;
+		this.data = data;
+	}
 
-	Optional<ValidationData> getData();
+	private Optional<ValidationData> data;
 
-	static <T> ValidationResult<T> success(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition) {
-		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty(), Optional.empty());
+	static ValidationResult success(boolean success, RosettaPath path) {
+		return new ValidationResult(true,Optional.empty(), path, Optional.empty());
 	}
 	
-	static <T> ValidationResult<T> failure(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, String failureMessage) {
-		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage), Optional.empty());
+	static ValidationResult failure(boolean success, RosettaPath path, String failureReason, ValidationData data) {
+		return new ValidationResult(false,Optional.of(failureReason), path, Optional.of(data));
 	}
 
 }

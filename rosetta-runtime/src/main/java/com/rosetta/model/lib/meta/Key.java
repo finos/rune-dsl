@@ -10,15 +10,12 @@ import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory;
 import com.rosetta.model.lib.qualify.QualifyResult;
-import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.Validator;
-import com.rosetta.model.lib.validation.ValidatorFactory;
-import com.rosetta.model.lib.validation.ValidatorWithArg;
+import com.rosetta.model.lib.validation.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import com.rosetta.model.lib.validation.ValidationType;
 
 /**
  * @author TomForwood
@@ -234,14 +231,14 @@ public interface Key extends RosettaModelObject{
 			return new Validator<Key>() {
 
 				@Override
-				public ValidationResult<Key> validate(RosettaPath path, Key key) {
+				public ModelValidationResult<Key> validate(RosettaPath path, Key key) {
 					if (key.getKeyValue()==null) {
-						return ValidationResult.failure("Key.value", ValidationType.KEY, "Key", path, "", "Key value must be set");
+						return ModelValidationResult.failure("Key.value", ValidationType.KEY, "Key", path, "", "Key value must be set");
 					}
 					if (key.getScope()==null) {
-						return ValidationResult.failure("Key.scope", ValidationType.KEY, "Key", path, "", "Key scope must be set");
+						return ModelValidationResult.failure("Key.scope", ValidationType.KEY, "Key", path, "", "Key scope must be set");
 					}
-					return ValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
+					return ModelValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
 				}
 			};
 		}

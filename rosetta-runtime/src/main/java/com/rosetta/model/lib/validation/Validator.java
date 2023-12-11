@@ -5,5 +5,5 @@ import com.rosetta.model.lib.path.RosettaPath;
 
 public interface Validator<T extends RosettaModelObject> {
 
-	ValidationResult<T> validate(RosettaPath path, T objectToBeValidated);
+	ModelValidationResult<T> validate(RosettaPath path, T objectToBeValidated);
 }

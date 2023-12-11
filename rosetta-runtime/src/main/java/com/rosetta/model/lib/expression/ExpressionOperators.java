@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
+import com.rosetta.model.lib.validation.*;
 import org.apache.commons.lang3.StringUtils;
 
 import com.rosetta.model.lib.RosettaModelObject;
@@ -26,9 +26,6 @@ import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
-import com.rosetta.model.lib.validation.ExistenceChecker;
-import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidatorWithArg;
 
 public class ExpressionOperators {
 	
@@ -124,9 +121,9 @@ public class ExpressionOperators {
 		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
 		ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
 		if (onlyExistsValidator != null) {
-			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
+			ModelValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
 			// Translate validationResult into comparisonResult
-			return validationResult.isSuccess() ? 
+			return ModelValidationResult.isSuccess() ?
 					ComparisonResult.success() : 
 					ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
 		} else {
