@@ -25,4 +25,4 @@ runs:
         cache: maven
     - name: Build with Maven
       shell: bash
-      run: mvn -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
+      run: mvn -s settings.xml -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
