@@ -2,7 +2,7 @@ name: Publish package to the Maven Central Repository
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   publish:
@@ -14,6 +14,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Set version
+        shell: bash
+        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
       - name: Publish package
         run: mvn -s settings.xml -B -U clean deploy -P release
         env:
