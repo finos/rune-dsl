@@ -14,24 +14,29 @@ public interface ValidationResult<T> {
 
 	boolean isSuccess();
 
+	@Deprecated
 	String getModelObjectName();
 
+	@Deprecated
 	String getName();
-	
-	ValidationType getValidationType();
 
+	@Deprecated
+	ValidationType getValidationType();
+	@Deprecated
 	String getDefinition();
 	
 	Optional<String> getFailureReason();
 	
 	RosettaPath getPath();
 
+	Optional<ValidationData> getData();
+
 	static <T> ValidationResult<T> success(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition) {
-		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty());
+		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty(), Optional.empty());
 	}
 	
 	static <T> ValidationResult<T> failure(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, String failureMessage) {
-		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage));
+		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage), Optional.empty());
 	}
 
 	// @Compat: MODEL_INSTANCE is replaced by CARDINALITY, TYPE_FORMAT, KEY and can be removed in the future.
@@ -39,6 +44,7 @@ public interface ValidationResult<T> {
 		DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, PRE_PROCESS_EXCEPTION, POST_PROCESS_EXCEPTION
 	}
 
+	@Deprecated
 	class ModelValidationResult<T> implements ValidationResult<T> {
 
 		private final String modelObjectName;
@@ -47,14 +53,16 @@ public interface ValidationResult<T> {
 		private final Optional<String> failureReason;
 		private final ValidationType validationType;
 		private final RosettaPath path;
+		private final Optional<ValidationData> data;
 
-		public ModelValidationResult(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, Optional<String> failureReason) {
+		public ModelValidationResult(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, Optional<String> failureReason, Optional<ValidationData> data) {
 			this.name = name;
 			this.validationType = validationType;
 			this.path = path;
 			this.modelObjectName = modelObjectName;
 			this.definition = definition;
 			this.failureReason = failureReason;
+			this.data = data;
 		}
 
 		@Override
@@ -74,6 +82,11 @@ public interface ValidationResult<T> {
 		
 		public RosettaPath getPath() {
 			return path;
+		}
+
+		@Override
+		public Optional<ValidationData> getData() {
+			return data;
 		}
 
 		@Override
@@ -130,14 +143,16 @@ public interface ValidationResult<T> {
 		private final ChoiceRuleValidationMethod validationMethod;
 		private final RosettaPath path;
 
+		private final Optional<ValidationData> data;
 		public ChoiceRuleFailure(String name, String modelObjectName, List<String> choiceFieldNames, RosettaPath path, List<String> populatedFields,
-								 ChoiceRuleValidationMethod validationMethod) {
+								 ChoiceRuleValidationMethod validationMethod, Optional<ValidationData> data) {
 			this.name = name;
 			this.path = path;
 			this.modelObjectName = modelObjectName;
 			this.populatedFields = populatedFields;
 			this.choiceFieldNames = choiceFieldNames;
 			this.validationMethod = validationMethod;
+			this.data = data;
 		}
 
 		@Override
@@ -153,7 +168,10 @@ public interface ValidationResult<T> {
 		public RosettaPath getPath() {
 			return path;
 		}
-
+		@Override
+		public Optional<ValidationData> getData() {
+			return data;
+		}
 		@Override
 		public String getModelObjectName() {
 			return modelObjectName;
@@ -221,17 +239,19 @@ public interface ValidationResult<T> {
 		}
 	}
 	
+	@Deprecated
 	class ProcessValidationResult<T> implements ValidationResult<T> {
 		private String message;
 		private String modelObjectName;
 		private String processorName;
 		private RosettaPath path;
-
-		public ProcessValidationResult(String message, String modelObjectName, String processorName, RosettaPath path) {
+		private final Optional<ValidationData> data;
+		public ProcessValidationResult(String message, String modelObjectName, String processorName, RosettaPath path, Optional<ValidationData> data) {
 			this.message = message;
 			this.modelObjectName = modelObjectName;
 			this.processorName = processorName;
 			this.path = path;
+			this.data = data;
 		}
 
 		@Override
@@ -267,6 +287,11 @@ public interface ValidationResult<T> {
 		@Override
 		public RosettaPath getPath() {
 			return path;
+		}
+
+		@Override
+		public Optional<ValidationData> getData() {
+			return data;
 		}
 	}
 }
