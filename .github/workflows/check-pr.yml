@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   pull_request:
 
+# Cancel previous jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-on-ubuntu:
     name: Maven Build on Ubuntu

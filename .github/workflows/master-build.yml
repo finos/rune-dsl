@@ -5,6 +5,11 @@ on:
   push:
     branches: [ master ]
 
+# Cancel previous jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   upload-dependency-graph:
     runs-on: ubuntu-latest
