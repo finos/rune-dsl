@@ -54,15 +54,15 @@ class ConditionTestHelper {
 	}
 
 	def isSuccess(Object validationResult) {
-		validationResult.class.getMatchingMethod("isSuccess", null).invoke(validationResult) as Boolean
+		ModelValidationResult.class.getMatchingMethod("isSuccess", null).invoke(validationResult) as Boolean
 	}
 
 	def definition(Object validationResult) {
-		validationResult.class.getMatchingMethod("getDefinition", null).invoke(validationResult) as String
+		ModelValidationResult.class.getMatchingMethod("getDefinition", null).invoke(validationResult) as String
 	}
 
 	def failureReason(Object validationResult) {
-		validationResult.class.getMatchingMethod("getFailureReason", null).invoke(validationResult) as Optional<String>
+		ModelValidationResult.class.getMatchingMethod("getFailureReason", null).invoke(validationResult) as Optional<String>
 	}
 	
 	

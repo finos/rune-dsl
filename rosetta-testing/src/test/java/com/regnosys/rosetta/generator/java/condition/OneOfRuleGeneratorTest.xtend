@@ -16,7 +16,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.validation.ValidationResult
+import com.rosetta.model.lib.validation.ModelValidationResult
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)

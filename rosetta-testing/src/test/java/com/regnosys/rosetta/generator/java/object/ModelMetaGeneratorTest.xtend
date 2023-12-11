@@ -115,7 +115,7 @@ class ModelMetaGeneratorTest {
 			import com.google.common.collect.Lists;
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
-			import com.rosetta.model.lib.validation.ValidationResult;
+			import com.rosetta.model.lib.validation.ModelValidationResult;
 			import com.rosetta.model.lib.validation.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
@@ -124,8 +124,8 @@ class ModelMetaGeneratorTest {
 			
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
-			import static com.rosetta.model.lib.validation.ValidationResult.failure;
-			import static com.rosetta.model.lib.validation.ValidationResult.success;
+			import static com.rosetta.model.lib.validation.ModelValidationResult.failure;
+			import static com.rosetta.model.lib.validation.ModelValidationResult.success;
 			import static java.util.stream.Collectors.joining;
 			
 			public class FooValidator implements Validator<Foo> {
@@ -158,7 +158,7 @@ class ModelMetaGeneratorTest {
 			import com.google.common.collect.Lists;
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
-			import com.rosetta.model.lib.validation.ValidationResult;
+			import com.rosetta.model.lib.validation.ModelValidationResult;
 			import com.rosetta.model.lib.validation.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
@@ -167,8 +167,8 @@ class ModelMetaGeneratorTest {
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkNumber;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkString;
-			import static com.rosetta.model.lib.validation.ValidationResult.failure;
-			import static com.rosetta.model.lib.validation.ValidationResult.success;
+			import static com.rosetta.model.lib.validation.ModelValidationResult.failure;
+			import static com.rosetta.model.lib.validation.ModelValidationResult.success;
 			import static java.util.Optional.empty;
 			import static java.util.Optional.of;
 			import static java.util.stream.Collectors.joining;

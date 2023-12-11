@@ -15,7 +15,7 @@ import com.regnosys.rosetta.types.RDataType
 import com.rosetta.model.lib.annotations.RosettaDataRule
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.path.RosettaPath
-import com.rosetta.model.lib.validation.ValidationResult
+import com.rosetta.model.lib.validation.ModelValidationResult
 import com.rosetta.model.lib.validation.Validator
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -85,7 +85,7 @@ class ConditionGenerator {
 				String NAME = "«ruleName»";
 				String DEFINITION = «definition»;
 				
-				«ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)»);
+				«ModelValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)»);
 				
 				class «defaultClassName» implements «className» {
 				
@@ -94,17 +94,17 @@ class ConditionGenerator {
 						
 					«ENDFOR»
 					@Override
-					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «defaultClassPathId», «rosettaClass.name» «defaultClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+					public «ModelValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «defaultClassPathId», «rosettaClass.name» «defaultClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassValidateScope.getIdentifierOrThrow(implicitVarRepr)»);
 						if (result.get()) {
-							return «ValidationResult».success(NAME, ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION);
+							return «ModelValidationResult».success(NAME, ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION);
 						}
 						
 						String «defaultClassFailureMessageId» = «defaultClassResultId».getError();
 						if («defaultClassFailureMessageId» == null || «defaultClassFailureMessageId».contains("Null") || «defaultClassFailureMessageId» == "") {
 							«defaultClassFailureMessageId» = "Condition has failed.";
 						}
-						return «ValidationResult».failure(NAME, «ValidationType».DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
+						return «ModelValidationResult».failure(NAME, «ValidationType».DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION, «defaultClassFailureMessageId»);
 					}
 					
 					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
@@ -120,8 +120,8 @@ class ConditionGenerator {
 				class «noOpClassName» implements «className» {
 				
 					@Override
-					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «noOpClassPathId», «rosettaClass.name» «noOpClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-						return «ValidationResult».success(NAME, ValidationType.DATA_RULE, "«rosettaClass.name»", «noOpClassPathId», DEFINITION);
+					public «ModelValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «noOpClassPathId», «rosettaClass.name» «noOpClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+						return «ModelValidationResult».success(NAME, ValidationType.DATA_RULE, "«rosettaClass.name»", «noOpClassPathId», DEFINITION);
 					}
 				}
 			}

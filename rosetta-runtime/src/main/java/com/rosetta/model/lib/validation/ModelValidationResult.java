@@ -4,7 +4,7 @@ import com.rosetta.model.lib.path.RosettaPath;
 
 import java.util.Optional;
 
-@Deprecated
+
 public
 class ModelValidationResult<T> implements ValidationResult<T> {
 
