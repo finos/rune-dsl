@@ -26,6 +26,14 @@ class ModelValidationResult<T> implements ValidationResult<T> {
         this.data = data;
     }
 
+    static <T> ModelValidationResult<T> success(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition) {
+        return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.empty(), Optional.empty());
+    }
+
+    static <T> ModelValidationResult<T> failure(String name, ValidationType validationType, String modelObjectName, RosettaPath path, String definition, String failureMessage) {
+        return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage), Optional.empty());
+    }
+
     @Override
     public boolean isSuccess() {
         return !failureReason.isPresent();

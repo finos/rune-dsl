@@ -24,7 +24,7 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 import javax.inject.Inject
 import com.google.inject.ImplementedBy
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
+import com.rosetta.model.lib.validation.ValidationType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class ConditionGenerator {
@@ -97,7 +97,7 @@ class ConditionGenerator {
 					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «defaultClassPathId», «rosettaClass.name» «defaultClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassValidateScope.getIdentifierOrThrow(implicitVarRepr)»);
 						if (result.get()) {
-							return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION);
+							return «ValidationResult».success(NAME, ValidationType.DATA_RULE, "«rosettaClass.name»", «defaultClassPathId», DEFINITION);
 						}
 						
 						String «defaultClassFailureMessageId» = «defaultClassResultId».getError();
@@ -121,7 +121,7 @@ class ConditionGenerator {
 				
 					@Override
 					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «noOpClassPathId», «rosettaClass.name» «noOpClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-						return «ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«rosettaClass.name»", «noOpClassPathId», DEFINITION);
+						return «ValidationResult».success(NAME, ValidationType.DATA_RULE, "«rosettaClass.name»", «noOpClassPathId», DEFINITION);
 					}
 				}
 			}

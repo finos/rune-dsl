@@ -13,7 +13,7 @@ import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ExistenceChecker
 import com.rosetta.model.lib.validation.ValidationResult
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
+import com.rosetta.model.lib.validation.ValidationType
 import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorWithArg
 import java.util.Map
@@ -88,9 +88,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».CARDINALITY, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationType».CARDINALITY, "«t.name»", path, "");
 			}
 		
 		}
@@ -109,9 +109,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "");
 			}
 		
 		}

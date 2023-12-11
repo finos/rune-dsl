@@ -52,7 +52,7 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
-				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+				import com.rosetta.model.lib.validation.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				
@@ -76,7 +76,7 @@ class DataRuleGeneratorTest {
 						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+								return ValidationResult.success(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 							}
 							
 							String failureMessage = result.getError();
@@ -107,7 +107,7 @@ class DataRuleGeneratorTest {
 					
 						@Override
 						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+							return ValidationResult.success(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 					}
 				}
@@ -163,7 +163,7 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
-				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+				import com.rosetta.model.lib.validation.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				
@@ -187,7 +187,7 @@ class DataRuleGeneratorTest {
 						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+								return ValidationResult.success(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 							}
 							
 							String failureMessage = result.getError();
@@ -221,7 +221,7 @@ class DataRuleGeneratorTest {
 					
 						@Override
 						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+							return ValidationResult.success(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 					}
 				}
