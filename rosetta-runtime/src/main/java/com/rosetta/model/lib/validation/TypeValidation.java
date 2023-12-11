@@ -6,22 +6,22 @@ import java.util.List;
 
 public class TypeValidation extends ValidationData {
 
-    private final ModelSymbolId typeID;
+    private final ModelSymbolId typeId;
 
     private final List<ValidationResult> formatValidations;
     private final List<AttributeValidation> attributeValidations;
     private final List<ConditionValidation> conditionValidation;
 
 
-    public TypeValidation(ModelSymbolId typeID, List<ValidationResult> formatValidations, List<AttributeValidation> attributeValidations, List<ConditionValidation> conditionValidation) {
-        this.typeID = typeID;
+    public TypeValidation(ModelSymbolId typeId, List<ValidationResult> formatValidations, List<AttributeValidation> attributeValidations, List<ConditionValidation> conditionValidation) {
+        this.typeId = typeId;
         this.formatValidations = formatValidations;
         this.attributeValidations = attributeValidations;
         this.conditionValidation = conditionValidation;
     }
 
-    public ModelSymbolId getTypeID() {
-        return typeID;
+    public ModelSymbolId getTypeId() {
+        return typeId;
     }
 
     public List<ValidationResult> getFormatValidations() {
