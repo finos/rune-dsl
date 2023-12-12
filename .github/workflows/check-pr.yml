@@ -49,13 +49,17 @@ jobs:
         server-id: ossrh
         server-username: CI_DEPLOY_USERNAME
         server-password: CI_DEPLOY_PASSWORD
-        gpg-private-key: ${{ secrets.GPG_KEY }}
+        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
         gpg-passphrase: GPG_PASSPHRASE
       env:
         GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
         CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+    - id: install-secret-key
+      name: Install gpg secret key
+      run: |
+        gpg --list-secret-keys --keyid-format LONG
     - name: Build with Maven
       shell: bash
       run: mvn -B package org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign -DskipTests
