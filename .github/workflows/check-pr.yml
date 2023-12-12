@@ -49,7 +49,7 @@ jobs:
         server-id: ossrh
         server-username: CI_DEPLOY_USERNAME
         server-password: CI_DEPLOY_PASSWORD
-        gpg-private-key: ${{ secrets.GPG_KEYNAME }}
+        gpg-private-key: ${{ secrets.GPG_KEY }}
         gpg-passphrase: GPG_PASSPHRASE
       env:
         GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
