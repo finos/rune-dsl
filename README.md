@@ -8,7 +8,7 @@ weight: 1
 
 # Overview of the Rosetta DSL 
 
-**Continuous Integration:** [![Maven Central](https://img.shields.io/maven-central/v/com.regnosys.rosetta/rosetta-dsl.svg?maxAge=2592000)](https://search.maven.org/#artifactdetails%7Ccom.regnosys.rosetta%7Crosetta-dsl%7C2%7Cpom)
+**Continuous Integration:** [![Maven Central](https://img.shields.io/maven-central/v/com.regnosys.rosetta/com.regnosys.rosetta.parent.svg?maxAge=2592000)](https://search.maven.org/#artifactdetails%7Ccom.regnosys.rosetta%7Ccom.regnosys.rosetta.parent%7C2%7Cpom)
 
 **License:** [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
