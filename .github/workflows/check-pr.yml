@@ -46,6 +46,12 @@ jobs:
         distribution: 'temurin'
         architecture: x64
         cache: maven
+        overwrite-settings: false
+        # server-id: ossrh
+        # server-username: CI_DEPLOY_USERNAME
+        # server-password: CI_DEPLOY_PASSWORD
+        # gpg-private-key: ${{ secrets.GPG_KEYNAME }}
+        # gpg-passphrase: GPG_PASSPHRASE
     - name: Build with Maven
       shell: bash
       run: mvn -s settings.xml -B package org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign -DskipTests
