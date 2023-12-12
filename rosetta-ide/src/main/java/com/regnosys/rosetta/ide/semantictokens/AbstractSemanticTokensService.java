@@ -118,7 +118,7 @@ public class AbstractSemanticTokensService extends AbstractLanguageServerService
 	}
 	
 	protected SemanticToken createSemanticToken(EObject tokenObject, EStructuralFeature feature, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {
-		return createSemanticToken(tokenObject, feature, -1, tokenType);
+		return createSemanticToken(tokenObject, feature, -1, tokenType, tokenModifiers);
 	}
 	
 	protected SemanticToken createSemanticToken(EObject tokenObject, EStructuralFeature feature, int featureIndex, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {
