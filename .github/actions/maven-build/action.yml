@@ -29,6 +29,7 @@ runs:
     - name: Build with Maven
       shell: bash
       run: mvn -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
+      secrets: inherit
       env:
         CI_DEPLOY_USERNAME: regnosys
         CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
