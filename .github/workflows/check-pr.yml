@@ -58,7 +58,7 @@ jobs:
         CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
     - name: Build with Maven
       shell: bash
-      run: mvn -s settings.xml -B package org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign -DskipTests
+      run: mvn -B package org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign -DskipTests
       env:
         GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
