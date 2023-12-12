@@ -19,9 +19,7 @@ jobs:
       with:
         build-command: deploy  # Deploy a snapshot build of master
       env:
-        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+        CI_DEPLOY_USERNAME: ${{ vars.CI_DEPLOY_USERNAME }}
         CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
     # Upload full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph

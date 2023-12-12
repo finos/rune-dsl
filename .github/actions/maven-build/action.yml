@@ -23,6 +23,9 @@ runs:
         distribution: 'temurin'
         architecture: x64
         cache: maven
+        server-id: ossrh
+        server-username: CI_DEPLOY_USERNAME
+        server-password: CI_DEPLOY_PASSWORD
     - name: Build with Maven
       shell: bash
-      run: mvn -s settings.xml -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
+      run: mvn -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
