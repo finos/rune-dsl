@@ -255,6 +255,7 @@ public class ExpressionOperators {
 				.collect(Collectors.toList()));
 	}
 	
+	@Deprecated
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		if (actual < min) {
 			if(actual == 0){

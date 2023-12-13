@@ -38,6 +38,9 @@ import org.apache.commons.text.StringEscapeUtils
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.model.lib.validation.ValidationResult
+import com.rosetta.model.lib.validation.CardinalityValidationData
+import com.rosetta.model.lib.validation.ValidationUtil
 
 class ValidatorsGenerator {
 
@@ -78,7 +81,7 @@ class ValidatorsGenerator {
 		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
 
 			@Override
-			public «ModelValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
 				/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
@@ -88,9 +91,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ModelValidationResult, "failure")»("«t.name»", «ValidationType».CARDINALITY, "«t.name»", path, "", error);
+					return «method(ValidationResult, "failure")»(true, error, path, new«CardinalityValidationData»(,,,));
 				}
-				return «method(ModelValidationResult, "success")»("«t.name»", «ValidationType».CARDINALITY, "«t.name»", path, "");
+				return «method(ValidationResult, "success")»(true, path);
 			}
 		
 		}
@@ -151,9 +154,9 @@ class ValidatorsGenerator {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
 			«IF attr.isMultiple»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
+				«method(ValidationUtil, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ValidationUtil, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
 			«ENDIF»
 			'''
 		}

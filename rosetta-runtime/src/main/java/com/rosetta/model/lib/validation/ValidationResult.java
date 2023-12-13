@@ -21,11 +21,11 @@ public class ValidationResult{
 
 	private Optional<ValidationData> data;
 
-	static ValidationResult success(boolean success, RosettaPath path) {
+	public static ValidationResult success(boolean success, RosettaPath path) {
 		return new ValidationResult(true,Optional.empty(), path, Optional.empty());
 	}
 	
-	static ValidationResult failure(boolean success, RosettaPath path, String failureReason, ValidationData data) {
+	public static ValidationResult failure(boolean success, RosettaPath path, String failureReason, ValidationData data) {
 		return new ValidationResult(false,Optional.of(failureReason), path, Optional.of(data));
 	}
 
