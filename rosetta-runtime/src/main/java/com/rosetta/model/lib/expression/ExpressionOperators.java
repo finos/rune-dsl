@@ -121,9 +121,9 @@ public class ExpressionOperators {
 		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
 		ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
 		if (onlyExistsValidator != null) {
-			ModelValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
+			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
 			// Translate validationResult into comparisonResult
-			return ModelValidationResult.isSuccess() ?
+			return ValidationResult.isSuccess() ?
 					ComparisonResult.success() : 
 					ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
 		} else {
@@ -255,7 +255,6 @@ public class ExpressionOperators {
 				.collect(Collectors.toList()));
 	}
 	
-	@Deprecated
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		if (actual < min) {
 			if(actual == 0){

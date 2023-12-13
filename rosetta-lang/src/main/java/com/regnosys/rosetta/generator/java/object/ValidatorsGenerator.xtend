@@ -12,7 +12,7 @@ import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ExistenceChecker
-import com.rosetta.model.lib.validation.ModelValidationResult
+import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.validation.ValidationType
 import com.rosetta.model.lib.validation.Validator
 import com.rosetta.model.lib.validation.ValidatorWithArg
@@ -38,9 +38,6 @@ import org.apache.commons.text.StringEscapeUtils
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.rosetta.model.lib.validation.ValidationResult
-import com.rosetta.model.lib.validation.CardinalityValidationData
-import com.rosetta.model.lib.validation.ValidationUtil
 
 class ValidatorsGenerator {
 
@@ -84,16 +81,16 @@ class ValidatorsGenerator {
 			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
 				/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 				String error = 
-					«Lists».<«ComparisonResult»>newArrayList(
+					«Lists».<«ValidationResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»(true, error, path, new«CardinalityValidationData»(,,,));
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»(true, path);
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
 			}
 		
 		}
@@ -103,7 +100,7 @@ class ValidatorsGenerator {
 		public class «t.toTypeFormatValidatorClass» implements «Validator»<«t.toJavaType»> {
 		
 			@Override
-			public «ModelValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
 				String error = 
 					«Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkTypeFormat].filter[it !== null] SEPARATOR ", "»
@@ -112,9 +109,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 				
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ModelValidationResult, "failure")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
 				}
-				return «method(ModelValidationResult, "success")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
 			}
 		
 		}
@@ -125,7 +122,7 @@ class ValidatorsGenerator {
 
 			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			@Override
-			public <T2 extends «t.toJavaType»> «ModelValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
+			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
 						«FOR attr : attributes»
 							.put("«attr.name»", «ExistenceChecker».isSet((«attr.toExpandedAttribute.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()))
@@ -139,9 +136,9 @@ class ValidatorsGenerator {
 						.collect(«Collectors».toSet());
 				
 				if (setFields.equals(fields)) {
-					return «method(ModelValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "");
+					return «method(ValidationResult, "success")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "");
 				}
-				return «method(ModelValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "",
+				return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».ONLY_EXISTS, "«t.name»", path, "",
 						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 			}
 		}
@@ -154,9 +151,9 @@ class ValidatorsGenerator {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
 			«IF attr.isMultiple»
-				«method(ValidationUtil, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
 			«ELSE»
-				«method(ValidationUtil, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
 			«ENDIF»
 			'''
 		}

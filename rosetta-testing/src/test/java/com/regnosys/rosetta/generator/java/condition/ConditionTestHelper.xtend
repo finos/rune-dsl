@@ -16,6 +16,7 @@ import com.rosetta.model.lib.validation.Validator
 import java.util.Map
 import java.util.Optional
 import javax.inject.Inject
+import com.rosetta.model.lib.validation.ValidationResult
 
 class ConditionTestHelper {
 	
@@ -54,15 +55,15 @@ class ConditionTestHelper {
 	}
 
 	def isSuccess(Object validationResult) {
-		ModelValidationResult.class.getMatchingMethod("isSuccess", null).invoke(validationResult) as Boolean
+		ValidationResult.class.getMatchingMethod("isSuccess", null).invoke(validationResult) as Boolean
 	}
 
 	def definition(Object validationResult) {
-		ModelValidationResult.class.getMatchingMethod("getDefinition", null).invoke(validationResult) as String
+		ValidationResult.class.getMatchingMethod("getDefinition", null).invoke(validationResult) as String
 	}
 
 	def failureReason(Object validationResult) {
-		ModelValidationResult.class.getMatchingMethod("getFailureReason", null).invoke(validationResult) as Optional<String>
+		ValidationResult.class.getMatchingMethod("getFailureReason", null).invoke(validationResult) as Optional<String>
 	}
 	
 	

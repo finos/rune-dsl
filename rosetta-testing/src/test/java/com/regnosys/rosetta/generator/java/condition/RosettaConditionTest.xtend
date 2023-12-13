@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.validation.ModelValidationResult
+import com.rosetta.model.lib.validation.ValidationResult
 import java.math.BigDecimal
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
@@ -109,35 +109,30 @@ class RosettaConditionTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
 		// FeatureCallComparisonDecreasing (fail)
-		val conditionBarDescreasing = ModelValidationResult.cast(classes.runCondition(fooInstance, 'FooFeatureCallComparisonDecreasing'))
+		val conditionBarDescreasing = ValidationResult.cast(classes.runCondition(fooInstance, 'FooFeatureCallComparisonDecreasing'))
 		assertFalse(conditionBarDescreasing.success)
-		assertThat(conditionBarDescreasing.definition, is("if bar exists then bar -> before > bar -> after"))
 		assertThat(conditionBarDescreasing.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getBefore] values [-10] are not > than all elements of paths [Foo->getBar[0]->getAfter] values [0]"))
 
 		// BarFeatureCallGreaterThanLiteralZero (fail)
-		val conditionBarGreaterThanZero = ModelValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
+		val conditionBarGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
 		assertFalse(conditionBarGreaterThanZero.success)
-		assertThat(conditionBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
 		assertThat(conditionBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [BigDecimal] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralZero (fail)
-		val conditionBazGreaterThanZero = ModelValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
+		val conditionBazGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero'))
 		assertFalse(conditionBazGreaterThanZero.success)
-		assertThat(conditionBazGreaterThanZero.definition, is("if baz exists then baz -> other > 0"))
 		assertThat(conditionBazGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [BigDecimal] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralFive (fail)
-		val conditionBazGreaterThanFive = ModelValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
+		val conditionBazGreaterThanFive = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralFive'))
 		assertFalse(conditionBazGreaterThanFive.success)
-		assertThat(conditionBazGreaterThanFive.definition, is("if baz exists then baz -> other > 5"))
 		assertThat(conditionBazGreaterThanFive.failureReason.orElse(""), is("all elements of paths [Foo->getBaz->getOther] values [0] are not > than all elements of paths [BigDecimal] values [5]"))
 	}
 
 	// Util methods
 		
 	def assertCondition(RosettaModelObject model, String conditionName, boolean expectedSuccess, String expectedDefinition) {
-		val conditionResult = ModelValidationResult.cast(classes.runCondition(model, conditionName))
+		val conditionResult = ValidationResult.cast(classes.runCondition(model, conditionName))
 		assertThat(conditionResult.success, is(expectedSuccess))	
-		assertThat(conditionResult.definition, is(expectedDefinition))
 	}
 }

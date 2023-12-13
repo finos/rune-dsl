@@ -115,7 +115,7 @@ class ModelMetaGeneratorTest {
 			import com.google.common.collect.Lists;
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
-			import com.rosetta.model.lib.validation.ModelValidationResult;
+			import com.rosetta.model.lib.validation.ValidationResult;
 			import com.rosetta.model.lib.validation.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
@@ -124,8 +124,8 @@ class ModelMetaGeneratorTest {
 			
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
-			import static com.rosetta.model.lib.validation.ModelValidationResult.failure;
-			import static com.rosetta.model.lib.validation.ModelValidationResult.success;
+			import static com.rosetta.model.lib.validation.ValidationResult.failure;
+			import static com.rosetta.model.lib.validation.ValidationResult.success;
 			import static java.util.stream.Collectors.joining;
 			
 			public class FooValidator implements Validator<Foo> {
@@ -158,7 +158,7 @@ class ModelMetaGeneratorTest {
 			import com.google.common.collect.Lists;
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
-			import com.rosetta.model.lib.validation.ModelValidationResult;
+			import com.rosetta.model.lib.validation.ValidationResult;
 			import com.rosetta.model.lib.validation.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
@@ -167,8 +167,8 @@ class ModelMetaGeneratorTest {
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkNumber;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkString;
-			import static com.rosetta.model.lib.validation.ModelValidationResult.failure;
-			import static com.rosetta.model.lib.validation.ModelValidationResult.success;
+			import static com.rosetta.model.lib.validation.ValidationResult.failure;
+			import static com.rosetta.model.lib.validation.ValidationResult.success;
 			import static java.util.Optional.empty;
 			import static java.util.Optional.of;
 			import static java.util.stream.Collectors.joining;
@@ -185,9 +185,9 @@ class ModelMetaGeneratorTest {
 						).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(joining("; "));
 					
 					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "", error);
+						return failure(false, path, error, new ConditionValidationData());
 					}
-					return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
+					return success(true, path);
 				}
 			
 			}
@@ -223,7 +223,6 @@ class ModelMetaGeneratorTest {
 		assertEquals("Maximum of 2 'a' are expected but found 3.; 'b' is a required field but does not exist.; 'c' is a required field but does not exist.",
 			res1.failureReason.get
 		)
-		assertThat(res1.validationType, is(ValidationType.CARDINALITY))
 		assertThat(typeFormatValidator.validate(null, invalidFoo1).success, is(true))
 		
 		val invalidFoo2 = classes.createInstanceUsingBuilder('Foo', of(
@@ -239,7 +238,6 @@ class ModelMetaGeneratorTest {
 		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Field 'f' must have a value with maximum length of 5 characters but value 'aaaaaa' has length of 6 characters. - Field 'f' must have a value with maximum length of 5 characters but value 'ccccccc' has length of 7 characters.",
 			res2.failureReason.get
 		)
-		assertThat(res2.validationType, is(ValidationType.TYPE_FORMAT))
 	}
 	
 	@Test

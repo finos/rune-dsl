@@ -43,9 +43,9 @@ class ChoiceRuleGeneratorTest {
 	
 		val validationResult = classes.runCondition(testInstance, "TestRequiredChoice")
 				
-		assertFalse(ModelValidationResult.isSuccess)
+		assertFalse(validationResult.isSuccess)
 
-		val failureReason = ModelValidationResult.failureReason
+		val failureReason = validationResult.failureReason
 		assertEquals('One and only one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
 	}
 	
@@ -60,7 +60,7 @@ class ChoiceRuleGeneratorTest {
 	
 		val validationResult = classes.runCondition(testInstance, "TestRequiredChoice")
 					
-		assertTrue(ModelValidationResult.isSuccess)
+		assertTrue(validationResult.isSuccess)
 	}
 	
 	@Test
@@ -74,9 +74,9 @@ class ChoiceRuleGeneratorTest {
 		
 		val validationResult = classes.runCondition(testInstance, "TestOptionalChoice")
 				
-		assertFalse(ModelValidationResult.isSuccess)
+		assertFalse(validationResult.isSuccess)
 
-		val failureReason = ModelValidationResult.failureReason
+		val failureReason = validationResult.failureReason
 		assertEquals('Zero or one field must be set of \'field1\', \'field2\'. Set fields are \'field1\', \'field2\'.', failureReason.get)
 	}
 	
