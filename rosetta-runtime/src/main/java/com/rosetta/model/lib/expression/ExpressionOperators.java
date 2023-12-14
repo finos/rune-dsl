@@ -272,6 +272,7 @@ public class ExpressionOperators {
 		return ComparisonResult.success();
 	}
 	
+	@Deprecated
 	public static ComparisonResult checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
 		if (value == null) {
 			return ComparisonResult.success();

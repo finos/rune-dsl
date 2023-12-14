@@ -38,6 +38,7 @@ import org.apache.commons.text.StringEscapeUtils
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.model.lib.validation.ValidationUtil
 
 class ValidatorsGenerator {
 
@@ -78,19 +79,19 @@ class ValidatorsGenerator {
 		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
 
 			@Override
-			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+			public «Lists».«ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
 				/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
-				String error = 
-					«Lists».<«ValidationResult»>newArrayList(
+				//String error = 
+				return «Lists».<«ValidationResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
-					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
+					);
 				
-				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", error);
-				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
+				//if (!«method(Strings, "isNullOrEmpty")»(error)) {
+				//	return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».CARDINALITY, "«t.name»", path, "", error);
+				//}
+				//return «method(ValidationResult, "success")»("«t.name»", «ValidationType».CARDINALITY, "«t.name»", path, "");
 			}
 		
 		}
@@ -100,18 +101,18 @@ class ValidatorsGenerator {
 		public class «t.toTypeFormatValidatorClass» implements «Validator»<«t.toJavaType»> {
 		
 			@Override
-			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
-				String error = 
-					«Lists».<«ComparisonResult»>newArrayList(
+			public «Lists».«ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+				return
+					«Lists».<«ValidationResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkTypeFormat].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
-					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
-				
+					);
+				/*
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
+					return «method(ValidationResult, "failure")»(false, path, error, new «»);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "");*/
 			}
 		
 		}
@@ -151,9 +152,9 @@ class ValidatorsGenerator {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
 			«IF attr.isMultiple»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
+				«method(ValidationUtil, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ValidationUtil, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
 			«ENDIF»
 			'''
 		}
@@ -167,7 +168,7 @@ class ValidatorsGenerator {
 				val max = t.interval.max.optional
 				val pattern = t.pattern.optionalPattern
 								
-				return '''«method(ExpressionOperators, "checkString")»("«attr.name»", «attr.attributeValue», «min», «max», «pattern»)'''
+				return '''«method(ValidationUtil, "checkString")»("«attr.name»", «attr.attributeValue», «min», «max», «pattern»)'''
 			}
 		} else if (t instanceof RNumberType) {
 			if (t != UNCONSTRAINED_NUMBER) {
@@ -176,7 +177,7 @@ class ValidatorsGenerator {
 				val min = t.interval.min.optionalBigDecimal
 				val max = t.interval.max.optionalBigDecimal
 				
-				return '''«method(ExpressionOperators, "checkNumber")»("«attr.name»", «attr.attributeValue», «digits», «fractionalDigits», «min», «max»)'''
+				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»", «attr.attributeValue», «digits», «fractionalDigits», «min», «max»)'''
 			}
 		}
 		return null

@@ -1,15 +1,16 @@
 package com.rosetta.model.lib.validation;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class NumberValidationData extends ValidationData{
-    private BigDecimal min;
-    private BigDecimal max;
+    private Optional<BigDecimal> min;
+    private Optional<BigDecimal> max;
     private int digits;
     private int fractionalDigits;
     private BigDecimal actual;
 
-    public NumberValidationData(BigDecimal min, BigDecimal max, int digits, int fractionalDigits, BigDecimal actual) {
+    public NumberValidationData(Optional<BigDecimal> min, Optional<BigDecimal> max, int digits, int fractionalDigits, BigDecimal actual) {
         this.min = min;
         this.max = max;
         this.digits = digits;
@@ -17,11 +18,11 @@ public class NumberValidationData extends ValidationData{
         this.actual = actual;
     }
 
-    public BigDecimal getMin() {
+    public Optional<BigDecimal> getMin() {
         return min;
     }
 
-    public BigDecimal getMax() {
+    public Optional<BigDecimal> getMax() {
         return max;
     }
 

@@ -18,11 +18,11 @@ public class ValidationResult<T>{
 		this.data = data;
 	}
 
-	static <T> ValidationResult<T> success(boolean success, RosettaPath path) {
+	public static <T> ValidationResult<T> success(boolean success, RosettaPath path) {
 		return new ValidationResult<T>(true,Optional.empty(), path, Optional.empty());
 	}
 	
-	static <T> ValidationResult<T>failure(boolean success, RosettaPath path, String failureReason, ValidationData data) {
+	public static <T> ValidationResult<T>failure(boolean success, RosettaPath path, String failureReason, ValidationData data) {
 		return new ValidationResult<T>(false,Optional.of(failureReason), path, Optional.of(data));
 	}
 
