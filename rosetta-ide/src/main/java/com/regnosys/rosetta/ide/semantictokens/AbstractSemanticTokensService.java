@@ -96,7 +96,7 @@ public class AbstractSemanticTokensService extends AbstractLanguageServerService
 			if (repr == -1) {
 				throw new Error(String.format("Token modifier `%s` not found. Did you forget to bind it in the `%s`?", mod.getValue(), ISemanticTokenModifiersProvider.class.getSimpleName()));
 			}
-			bitmask |= repr;
+			bitmask |= 1 << repr;
 		}
 		return bitmask;
 	}

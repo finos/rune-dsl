@@ -225,12 +225,31 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			type: 14:6:3
 			output.singleCardinality: 16:2:6
 			basicType: 16:9:6
+			output.singleCardinality: 17:5:6
 			parameter.singleCardinality: 18:5:3
 			property.singleCardinality: 18:12:1
 			enumMember: 18:21:1
 			parameter.singleCardinality: 19:7:3
 			property.singleCardinality: 19:14:3
 			metaMember: 19:21:6
+			'''
+		]
+	}
+	
+	@Test
+	def testGeneratedImplicitVariableDoesNotCauseSemanticToken() {
+		testSemanticToken[
+			val model = '''
+			namespace test
+			
+			reporting rule Test from string:
+				/* item */ extract (["a", "b"])
+				then /* item */ only-element
+			'''
+			it.model = model
+			it.expectedSemanticTokenItems = '''
+			rule.singleCardinality: 2:15:4
+			basicType: 2:25:6
 			'''
 		]
 	}

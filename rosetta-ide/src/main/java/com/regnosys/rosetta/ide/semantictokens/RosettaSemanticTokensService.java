@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -30,6 +31,9 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
+import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.types.CardinalityProvider;
 
@@ -128,6 +132,14 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	public SemanticToken markRuleDeclaration(RosettaRule rule) {
 		return markRule(rule, ROSETTA_NAMED__NAME, rule);
 	}
+	@MarkSemanticToken
+	public SemanticToken markRuleReference(RosettaRuleReference ruleRef) {
+		RosettaRule rule = ruleRef.getReportingRule();
+		if (extensions.isResolved(rule)) {
+			return markRule(ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE, rule);
+		}
+		return null;
+	}
 	
 	private SemanticToken markAttribute(EObject objectToMark, EStructuralFeature featureToMark, Attribute attribute) {
 		RosettaSemanticTokenTypesEnum tokenType = null;
@@ -167,45 +179,87 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	@MarkSemanticToken
-	public SemanticToken markFeature(RosettaFeatureCall featureCall) {
-		RosettaFeature feature = featureCall.getFeature();
-		if (extensions.isResolved(feature)) {
-			if (feature instanceof RosettaEnumValue) {
-				return createSemanticToken(featureCall, ROSETTA_FEATURE_CALL__FEATURE, ENUM_MEMBER);
-			} else if (feature instanceof Attribute) {
-				return markAttribute(featureCall, ROSETTA_FEATURE_CALL__FEATURE, (Attribute)feature);
-			} else if (feature instanceof RosettaMetaType) {
-				return createSemanticToken(featureCall, ROSETTA_FEATURE_CALL__FEATURE, META_MEMBER);
+	public List<SemanticToken> markOperation(Operation operation) {
+		List<SemanticToken> result = new ArrayList<>();
+		RosettaSymbol assignRoot = operation.getAssignRoot();
+		if (extensions.isResolved(assignRoot)) {
+			SemanticToken assignRootToken = markSymbol(operation, OPERATION__ASSIGN_ROOT, assignRoot);
+			if (assignRootToken != null) {
+				result.add(assignRootToken);
 			}
+		}
+		for (Segment seg : operation.pathAsSegmentList()) {
+			Attribute segAttr = seg.getAttribute();
+			if (extensions.isResolved(segAttr)) {
+				SemanticToken segmentToken = markAttribute(seg, SEGMENT__ATTRIBUTE, segAttr);
+				if (segmentToken != null) {
+					result.add(segmentToken);
+				}
+			}
+		}
+		return result;
+	}
+	
+	@MarkSemanticToken
+	public SemanticToken markConstructorFeature(ConstructorKeyValuePair pair) {
+		RosettaFeature feature = pair.getKey();
+		if (extensions.isResolved(feature)) {
+			return markFeature(pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY, feature);
 		}
 		return null;
 	}
 	
+	private SemanticToken markFeature(EObject objectToMark, EStructuralFeature featureToMark, RosettaFeature feature) {
+		if (feature instanceof RosettaEnumValue) {
+			return createSemanticToken(objectToMark, featureToMark, ENUM_MEMBER);
+		} else if (feature instanceof Attribute) {
+			return markAttribute(objectToMark, featureToMark, (Attribute)feature);
+		} else if (feature instanceof RosettaMetaType) {
+			return createSemanticToken(objectToMark, featureToMark, META_MEMBER);
+		}
+		return null;
+	}
 	@MarkSemanticToken
-	public SemanticToken markRosettaReference(RosettaSymbolReference reference) {
+	public SemanticToken markFeature(RosettaFeatureCall featureCall) {
+		RosettaFeature feature = featureCall.getFeature();
+		if (extensions.isResolved(feature)) {
+			return markFeature(featureCall, ROSETTA_FEATURE_CALL__FEATURE, feature);
+		}
+		return null;
+	}
+	
+	private SemanticToken markSymbol(EObject objectToMark, EStructuralFeature featureToMark, RosettaSymbol symbol) {
+		if (symbol instanceof Attribute) {
+			return markAttribute(objectToMark, featureToMark, (Attribute)symbol);
+		} else if (symbol instanceof ClosureParameter) {
+			return markClosureParameter(objectToMark, featureToMark, (ClosureParameter)symbol);
+		} else if (symbol instanceof Function) {
+			return markFunction(objectToMark, featureToMark, (Function)symbol);
+		} else if (symbol instanceof RosettaExternalFunction) {
+			return createSemanticToken(objectToMark, featureToMark, RosettaSemanticTokenTypesEnum.FUNCTION, DEFAULT_LIBRARY);
+		} else if (symbol instanceof RosettaRule) {
+			return markRule(objectToMark, featureToMark, (RosettaRule)symbol);
+		} else if (symbol instanceof ShortcutDeclaration) {
+			return markAlias(objectToMark, featureToMark, (ShortcutDeclaration)symbol);
+		} else if (symbol instanceof TypeParameter) {
+			return createSemanticToken(objectToMark, featureToMark, PARAMETER);
+		}
+		return null;
+	}
+	@MarkSemanticToken
+	public SemanticToken markSymbolReference(RosettaSymbolReference reference) {
 		RosettaSymbol symbol = reference.getSymbol();
 		if (extensions.isResolved(symbol)) {
-			if (symbol instanceof Attribute) {
-				return markAttribute(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, (Attribute)symbol);
-			} else if (symbol instanceof ClosureParameter) {
-				return markClosureParameter(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, (ClosureParameter)symbol);
-			} else if (symbol instanceof Function) {
-				return markFunction(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, (Function)symbol);
-			} else if (symbol instanceof RosettaExternalFunction) {
-				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, RosettaSemanticTokenTypesEnum.FUNCTION, DEFAULT_LIBRARY);
-			} else if (symbol instanceof RosettaRule) {
-				return markRule(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, (RosettaRule)symbol);
-			} else if (symbol instanceof ShortcutDeclaration) {
-				return markAlias(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, (ShortcutDeclaration)symbol);
-			} else if (symbol instanceof TypeParameter) {
-				return createSemanticToken(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, PARAMETER);
-			}
+			return markSymbol(reference, ROSETTA_SYMBOL_REFERENCE__SYMBOL, symbol);
 		}
 		return null;
 	}
 	
 	@MarkSemanticToken
 	public SemanticToken markImplicitVariable(RosettaImplicitVariable implicitVar) {
+		if (implicitVar.isGenerated()) {
+			return null;
+		}
 		return createSemanticToken(implicitVar, ROSETTA_NAMED__NAME, IMPLICIT_VARIABLE, getCardinalityModifier(implicitVar));
 	}
 }
