@@ -12,10 +12,10 @@ public class RosettaModelDescription extends EObjectDescription {
 	public static final String IMPORTS = "IMPORTS";
 
 	public RosettaModelDescription(QualifiedName qualifiedName, RosettaModel model) {
-		super(qualifiedName, model, Map.of(IMPORTS, getSortedImportsList(model)));
+		super(qualifiedName, model, Map.of(IMPORTS, getImportsList(model)));
 	}
 	
-	private static String getSortedImportsList(RosettaModel model) {
+	private static String getImportsList(RosettaModel model) {
 		return model.getImports().stream()
 				.map(imp -> imp.getImportedNamespace())
 				.collect(Collectors.joining(";"));

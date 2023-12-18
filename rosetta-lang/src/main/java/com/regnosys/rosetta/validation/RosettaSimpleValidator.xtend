@@ -1011,7 +1011,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			
 			// check type
 			val ruleType = rule.expression.RType
-			if (ruleType !== null && ruleType != MISSING && !ruleType.isSubtypeOf(attrType)) {
+			if (ruleType !== null && ruleType != MISSING && attrType !== null && attrType != MISSING && !ruleType.isSubtypeOf(attrType)) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
 					'''whereas the reporting rule «rule.name» has type «ruleType».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)

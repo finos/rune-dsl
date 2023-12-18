@@ -513,8 +513,7 @@ class RosettaReport extends RosettaRootElement {
 	}
 }
 
-class RosettaRule extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable {
-	contains RosettaDocReference[] references
+class RosettaRule extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable, References {
 	contains RosettaExpression expression
 	String identifier
 	contains TypeCall input
