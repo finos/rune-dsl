@@ -78,15 +78,15 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	private RosettaSemanticTokenModifiersEnum getCardinalityModifier(RosettaSymbol symbol) {
 		if (cardinalityProvider.isSymbolMulti(symbol)) {
-			return RosettaSemanticTokenModifiersEnum.MULTI_CARDINALITY;
+			return MULTI_CARDINALITY;
 		}
-		return RosettaSemanticTokenModifiersEnum.SINGLE_CARDINALITY;
+		return SINGLE_CARDINALITY;
 	}
 	private RosettaSemanticTokenModifiersEnum getCardinalityModifier(RosettaImplicitVariable implicitVar) {
 		if (cardinalityProvider.isMulti(implicitVar)) {
-			return RosettaSemanticTokenModifiersEnum.MULTI_CARDINALITY;
+			return MULTI_CARDINALITY;
 		}
-		return RosettaSemanticTokenModifiersEnum.SINGLE_CARDINALITY;
+		return SINGLE_CARDINALITY;
 	}
 
 	@MarkSemanticToken
