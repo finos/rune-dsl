@@ -514,6 +514,7 @@ class RosettaReport extends RosettaRootElement {
 }
 
 class RosettaRule extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable, References {
+	boolean eligibility
 	contains RosettaExpression expression
 	String identifier
 	contains TypeCall input
