@@ -5,13 +5,13 @@ inputs:
   build-command:
     description: The Maven command to build the project. The default is `package`.
     required: false
-    type: string
+    # type: string  - `type` field is not supported (yet). See comment below.
     default: package
   run-tests:
     description: Whether or not to run tests. The default is true.
     required: false
-    type: boolean
-    default: true
+    # type: boolean  - This is not supported (yet). All inputs are of type `string`. See https://github.com/actions/runner/issues/2238.
+    default: 'true'
 
 runs:
   using: "composite"
@@ -28,4 +28,4 @@ runs:
         server-password: CI_DEPLOY_PASSWORD
     - name: Build with Maven
       shell: bash
-      run: mvn -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests && '' || ' -DskipTests'  }}
+      run: mvn -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests == 'true' && '' || ' -DskipTests'  }}
