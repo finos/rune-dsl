@@ -857,7 +857,7 @@ RosettaRuleReference:
 ;
 
 RosettaRule:
- 	('reporting'|'eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable?
+ 	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable?
  	(
 		References*
 		(expression = RosettaCalcExpression
