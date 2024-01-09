@@ -1,11 +1,9 @@
 package com.regnosys.rosetta.ide.semantictokens.tests
 
 import org.junit.jupiter.api.Test
-import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest
-import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesEnum.*
 
-class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
+class SemanticTokenTest extends AbstractRosettaLanguageServerTest {	
 	@Test
 	def testAttributeTypesAreMarked() {
 		testSemanticToken[
@@ -22,33 +20,16 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 				d date (0..*)
 			'''
 			it.model = model
-			it.assertSemanticTokens = [
-				assertEquals(4, size)
-				get(0) => [ // int
-					assertEquals(TYPE_ALIAS, tokenType)
-					assertEquals(6, line)
-					assertEquals(3, startChar)
-					assertEquals(3, length)
-				]
-				get(1) => [ // Bar
-					assertEquals(ENUM, tokenType)
-					assertEquals(7, line)
-					assertEquals(3, startChar)
-					assertEquals(3, length)
-				]
-				get(2) => [ // Foo
-					assertEquals(TYPE, tokenType)
-					assertEquals(8, line)
-					assertEquals(3, startChar)
-					assertEquals(3, length)
-				]
-				get(3) => [ // date
-					assertEquals(RECORD_TYPE, tokenType)
-					assertEquals(9, line)
-					assertEquals(3, startChar)
-					assertEquals(4, length)
-				]
-			]
+			it.expectedSemanticTokenItems = '''
+			property.singleCardinality: 6:1:1
+			typeAlias: 6:3:3
+			property.singleCardinality: 7:1:1
+			enum: 7:3:3
+			property.singleCardinality: 8:1:1
+			type: 8:3:3
+			property.multiCardinality: 9:1:1
+			recordType: 9:3:4
+			'''
 		]
 	}
 	
@@ -66,27 +47,15 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			'''
 			it.model = model
 			it.assertNoIssues = false
-			it.assertSemanticTokens = [
-				assertEquals(3, size)
-				get(0) => [ // int
-					assertEquals(TYPE_ALIAS, tokenType)
-					assertEquals(3, line)
-					assertEquals(3, startChar)
-					assertEquals(3, length)
-				]
-				get(1) => [ // Foo
-					assertEquals(TYPE, tokenType)
-					assertEquals(5, line)
-					assertEquals(3, startChar)
-					assertEquals(3, length)
-				]
-				get(2) => [ // date
-					assertEquals(RECORD_TYPE, tokenType)
-					assertEquals(6, line)
-					assertEquals(3, startChar)
-					assertEquals(4, length)
-				]
-			]
+			it.expectedSemanticTokenItems = '''
+			property.singleCardinality: 3:1:1
+			typeAlias: 3:3:3
+			property.singleCardinality: 4:1:1
+			property.singleCardinality: 5:1:1
+			type: 5:3:3
+			property.multiCardinality: 6:1:1
+			recordType: 6:3:4
+			'''
 		]
 	}
 	
@@ -101,27 +70,11 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			library function bar(param int) date
 			'''
 			it.model = model
-			it.assertSemanticTokens = [
-				assertEquals(3, size)
-				get(0) => [ // string
-					assertEquals(BASIC_TYPE, tokenType)
-					assertEquals(2, line)
-					assertEquals(13, startChar)
-					assertEquals(6, length)
-				]
-				get(1) => [ // int
-					assertEquals(TYPE_ALIAS, tokenType)
-					assertEquals(4, line)
-					assertEquals(27, startChar)
-					assertEquals(3, length)
-				]
-				get(2) => [ // date
-					assertEquals(RECORD_TYPE, tokenType)
-					assertEquals(4, line)
-					assertEquals(32, startChar)
-					assertEquals(4, length)
-				]
-			]
+			it.expectedSemanticTokenItems = '''
+			basicType: 2:13:6
+			typeAlias: 4:27:3
+			recordType: 4:32:4
+			'''
 		]
 	}
 	
@@ -145,39 +98,14 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 				"Y"
 			'''
 			it.model = model
-			it.assertSemanticTokens = [
-				assertEquals(5, size)
-				get(0) => [ // number
-					assertEquals(BASIC_TYPE, tokenType)
-					assertEquals(10, line)
-					assertEquals(28, startChar)
-					assertEquals(6, length)
-				]
-				get(1) => [ // Part45
-					assertEquals(DOCUMENT_CORPUS, tokenType)
-					assertEquals(11, line)
-					assertEquals(27, startChar)
-					assertEquals(6, length)
-				]
-				get(2) => [ // appendix
-					assertEquals(DOCUMENT_SEGMENT, tokenType)
-					assertEquals(11, line)
-					assertEquals(34, startChar)
-					assertEquals(8, length)
-				]
-				get(3) => [ // dataElement
-					assertEquals(DOCUMENT_SEGMENT, tokenType)
-					assertEquals(11, line)
-					assertEquals(47, startChar)
-					assertEquals(11, length)
-				]
-				get(4) => [ // field
-					assertEquals(DOCUMENT_SEGMENT, tokenType)
-					assertEquals(11, line)
-					assertEquals(63, startChar)
-					assertEquals(5, length)
-				]
-			]
+			it.expectedSemanticTokenItems = '''
+			rule.singleCardinality: 10:15:7
+			basicType: 10:28:6
+			documentCorpus: 11:27:6
+			documentSegment: 11:34:8
+			documentSegment: 11:47:11
+			documentSegment: 11:63:5
+			'''
 		]
 	}
 	
@@ -206,28 +134,12 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			'''
 			it.model = model
 			it.assertNoIssues = false;
-			it.assertSemanticTokens = [
-				assertEquals(2, size)
-				get(0) => [ // int
-					assertEquals(TYPE_ALIAS, tokenType)
-					assertEquals(11, line)
-					assertEquals(3, startChar)
-					assertEquals(3, length)
-				]
-				get(1) => [ // number
-					assertEquals(BASIC_TYPE, tokenType)
-					assertEquals(13, line)
-					assertEquals(28, startChar)
-					assertEquals(6, length)
-				]
-				// TODO
-//				get(2) => [ // string
-//					assertEquals(BASIC_TYPE, tokenType)
-//					assertEquals(17, line)
-//					assertEquals(3, startChar)
-//					assertEquals(6, length)
-//				]
-			]
+			it.expectedSemanticTokenItems = '''
+			property.singleCardinality: 11:1:1
+			typeAlias: 11:3:3
+			rule.singleCardinality: 13:15:7
+			basicType: 13:28:6
+			'''
 		]
 	}
 	
@@ -244,15 +156,12 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 					[metadata scheme]
 			'''
 			it.model = model
-			it.assertSemanticTokens = [
-				assertEquals(3, size)
-				get(2) => [ // scheme
-					assertEquals(META_MEMBER, tokenType)
-					assertEquals(6, line)
-					assertEquals(12, startChar)
-					assertEquals(6, length)
-				]
-			]
+			it.expectedSemanticTokenItems = '''
+			basicType: 2:16:6
+			property.singleCardinality: 5:1:3
+			basicType: 5:5:6
+			metaMember: 6:12:6
+			'''
 		]
 	}
 	
@@ -270,9 +179,11 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			'''
 			it.model = model
 			it.assertNoIssues = false;
-			it.assertSemanticTokens = [
-				assertEquals(2, size)
-			]
+			it.expectedSemanticTokenItems = '''
+			basicType: 2:16:6
+			property.singleCardinality: 5:1:3
+			basicType: 5:5:6
+			'''
 		]
 	}
 	
@@ -302,63 +213,44 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 					then foo -> bar -> scheme
 			'''
 			it.model = model
-			it.assertSemanticTokens = [
-				assertEquals(13, size)
-				get(4) => [ // Foo
-					assertEquals(TYPE, tokenType)
-					assertEquals(14, line)
-					assertEquals(6, startChar)
-					assertEquals(3, length)
-				]
-				get(5) => [ // string
-					assertEquals(BASIC_TYPE, tokenType)
-					assertEquals(16, line)
-					assertEquals(9, startChar)
-					assertEquals(6, length)
-				]
-				get(6) => [ // foo
-					assertEquals(PARAMETER, tokenType)
-					assertEquals(18, line)
-					assertEquals(5, startChar)
-					assertEquals(3, length)
-				]
-				get(7) => [ // a
-					assertEquals(PROPERTY, tokenType)
-					assertEquals(18, line)
-					assertEquals(12, startChar)
-					assertEquals(1, length)
-				]
-				get(8) => [ // A
-					assertEquals(ENUM, tokenType)
-					assertEquals(18, line)
-					assertEquals(16, startChar)
-					assertEquals(1, length)
-				]
-				get(9) => [ // V
-					assertEquals(ENUM_MEMBER, tokenType)
-					assertEquals(18, line)
-					assertEquals(21, startChar)
-					assertEquals(1, length)
-				]
-				get(10) => [ // foo
-					assertEquals(PARAMETER, tokenType)
-					assertEquals(19, line)
-					assertEquals(7, startChar)
-					assertEquals(3, length)
-				]
-				get(11) => [ // bar
-					assertEquals(PROPERTY, tokenType)
-					assertEquals(19, line)
-					assertEquals(14, startChar)
-					assertEquals(3, length)
-				]
-				get(12) => [ // scheme
-					assertEquals(META_MEMBER, tokenType)
-					assertEquals(19, line)
-					assertEquals(21, startChar)
-					assertEquals(6, length)
-				]
-			]
+			it.expectedSemanticTokenItems = '''
+			basicType: 2:16:6
+			property.singleCardinality: 8:1:3
+			basicType: 8:5:6
+			metaMember: 9:12:6
+			property.singleCardinality: 10:1:1
+			enum: 10:3:1
+			function.singleCardinality: 12:5:3
+			parameter.singleCardinality: 14:2:3
+			type: 14:6:3
+			output.singleCardinality: 16:2:6
+			basicType: 16:9:6
+			output.singleCardinality: 17:5:6
+			parameter.singleCardinality: 18:5:3
+			property.singleCardinality: 18:12:1
+			enumMember: 18:21:1
+			parameter.singleCardinality: 19:7:3
+			property.singleCardinality: 19:14:3
+			metaMember: 19:21:6
+			'''
+		]
+	}
+	
+	@Test
+	def testGeneratedImplicitVariableDoesNotCauseSemanticToken() {
+		testSemanticToken[
+			val model = '''
+			namespace test
+			
+			reporting rule Test from string:
+				/* item */ extract (["a", "b"])
+				then /* item */ only-element
+			'''
+			it.model = model
+			it.expectedSemanticTokenItems = '''
+			rule.singleCardinality: 2:15:4
+			basicType: 2:25:6
+			'''
 		]
 	}
 }

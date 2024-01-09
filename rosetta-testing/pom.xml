@@ -6,9 +6,10 @@
 	<parent>
 		<groupId>com.regnosys.rosetta</groupId>
 		<artifactId>com.regnosys.rosetta.parent</artifactId>
-		<version>0.0.0.master</version>
+		<version>0.0.0.master-SNAPSHOT</version>
 	</parent>
 
+	<name>Rosetta DSL Test Project</name>
 	<artifactId>com.regnosys.rosetta.tests</artifactId>
 
 	<dependencies>

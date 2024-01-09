@@ -8,7 +8,7 @@ weight: 1
 
 # Overview of the Rosetta DSL 
 
-**Continuous Integration:** [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/regnosysops/REGnosys%2Frosetta-dsl%2Frosetta-dsl?branch=master&key=eyJhbGciOiJIUzI1NiJ9.NWE1N2EyYTlmM2JiOTMwMDAxNDRiODMz.ZDeqVUhB-oMlbZGj4tfEiOg0cy6azXaBvoxoeidyL0g&type=cf-1)](https://g.codefresh.io/pipelines/rosetta-dsl/builds?repoOwner=REGnosys&repoName=rosetta-dsl&serviceName=REGnosys%2Frosetta-dsl&filter=trigger:build~Build;branch:master;pipeline:5d148a0543bba039bd196117~rosetta-dsl)
+**Continuous Integration:** [![Maven Central](https://img.shields.io/maven-central/v/com.regnosys.rosetta/com.regnosys.rosetta.parent.svg?maxAge=2592000)](https://search.maven.org/#artifactdetails%7Ccom.regnosys.rosetta%7Ccom.regnosys.rosetta.parent%7C2%7Cpom)
 
 **License:** [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 

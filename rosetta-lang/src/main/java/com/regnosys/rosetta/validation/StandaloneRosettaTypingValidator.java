@@ -103,6 +103,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		List<RosettaRule> eligibilityRules = report.getEligibilityRules();
 		for (var i = 0; i < eligibilityRules.size(); i++) {
 			RosettaRule eligibilityRule = eligibilityRules.get(i);
+			if (!eligibilityRule.isEligibility()) {
+				error("Rule " + eligibilityRule.getName() + " is not an eligibility rule.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);
+			}
 			RType ruleInputType = ts.typeCallToRType(eligibilityRule.getInput());
 			if (!ts.isSubtypeOf(ruleInputType, inputType)) {
 				error("Eligibility rule " + eligibilityRule.getName() + " expects a `" + ruleInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);

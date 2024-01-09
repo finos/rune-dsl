@@ -128,6 +128,9 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 			assertEquals(expectedSemanticTokenItems, result.toExpectation)
 		}
 	}
+	protected def dispatch String toExpectation(SemanticToken it) {
+		'''«tokenType.value»«IF !tokenModifiers.empty».«FOR tokenMod : tokenModifiers SEPARATOR '.'»«tokenMod.value»«ENDFOR»«ENDIF»: «line»:«startChar»:«length»'''
+	}
 	
 	protected override FileInfo initializeContext(TextDocumentConfiguration configuration) {
 		configuration.filesInScope = new HashMap(configuration.filesInScope) + #{

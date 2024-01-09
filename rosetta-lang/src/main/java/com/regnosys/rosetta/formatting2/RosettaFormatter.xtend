@@ -630,7 +630,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		val extension ruleGrammarAccess = rosettaRuleAccess
 		
 		val firstKeyword = ele.regionFor.keyword(reportingKeyword_0_0)
-			?: ele.regionFor.keyword(eligibilityKeyword_0_1)
+			?: ele.regionFor.keyword(eligibilityEligibilityKeyword_0_1_0)
 		
 		firstKeyword
 			.append[oneSpace]
