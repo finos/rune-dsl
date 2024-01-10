@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
@@ -17,8 +16,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 
 public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnumeration> {
-	
-	private final String DOC_ANNOTATION_SOURCE_NAME = "Name";
 	
 	private final XsdUtil util;
 
@@ -61,10 +58,6 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		RosettaEnumValue rosettaEnumValue = RosettaFactory.eINSTANCE.createRosettaEnumValue();
 		rosettaEnumValue.setName(value);
 		util.extractDocs(ev).ifPresent(rosettaEnumValue::setDefinition);
-		util.extractDocs(ev, DOC_ANNOTATION_SOURCE_NAME)
-			.filter(x -> StringUtils.isNotEmpty(x))
-			.filter(x -> !x.equals(ev.getValue()))
-			.ifPresent(rosettaEnumValue::setDisplay);
 
 		typeMappings.registerEnumValue(ev, rosettaEnumValue);
 		
