@@ -11,19 +11,19 @@ public class ValidationResult<T>{
 	private Optional<ValidationData> data;
 
 	@SuppressWarnings("static-access")
-	public ValidationResult(boolean success, Optional<String> failureReason, RosettaPath path, Optional<ValidationData> data) {
+	public ValidationResult(boolean success, String failureReason, RosettaPath path, ValidationData data) {
 		this.success = success;
-		this.failureReason = failureReason;
+		this.failureReason = Optional.ofNullable(failureReason);
 		this.path = path;
-		this.data = data;
+		this.data = Optional.ofNullable(data);
 	}
 
-	public static <T> ValidationResult<T> success(boolean success, RosettaPath path) {
-		return new ValidationResult<T>(true,Optional.empty(), path, Optional.empty());
+	public static <T> ValidationResult<T> success(RosettaPath path) {
+		return new ValidationResult<T>(true, "", path, null);
 	}
 	
-	public static <T> ValidationResult<T>failure(boolean success, RosettaPath path, String failureReason, ValidationData data) {
-		return new ValidationResult<T>(false,Optional.of(failureReason), path, Optional.of(data));
+	public static <T> ValidationResult<T>failure(RosettaPath path, String failureReason, ValidationData data) {
+		return new ValidationResult<T>(false, failureReason, path, data);
 	}
 
 	public static boolean isSuccess() {
@@ -40,5 +40,9 @@ public class ValidationResult<T>{
 
 	public Optional<ValidationData> getData() {
 		return data;
+	}
+
+	public static void getValidationType() {
+	  throw new UnsupportedOperationException("TODO: auto-generated method stub");
 	}
 }

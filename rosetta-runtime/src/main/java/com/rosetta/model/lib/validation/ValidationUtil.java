@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class ValidationUtil {
 	
-	public ValidationResult<?> checkCardinality(String msgPrefix, int min, int max, int actual) {
+	public static ValidationResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		
 		CardinalityValidationData cardinalityValidationData = new CardinalityValidationData(min, max, actual);
 		String failureMessage = "";
@@ -19,26 +19,26 @@ public class ValidationUtil {
 			if(actual == 0){
 				failureMessage = "'" + msgPrefix + "' is a required field but does not exist."; 
 				return ValidationResult
-						.failure(true, null, failureMessage, cardinalityValidationData);
+						.failure(null, failureMessage, cardinalityValidationData);
 			}
 			else {
 				failureMessage = "Minimum of " + min + " '" + msgPrefix + "' is expected but found " + actual + ".";
 				return ValidationResult
-						.failure(true, null, failureMessage, cardinalityValidationData);
+						.failure(null, failureMessage, cardinalityValidationData);
 			}
 		} else if (max > 0 && actual > max) {
 			failureMessage = "Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + ".";
 			return ValidationResult
-					.failure(true, null, failureMessage, cardinalityValidationData);
+					.failure(null, failureMessage, cardinalityValidationData);
 		}
-		return ValidationResult.success(true, null);
+		return ValidationResult.success(null);
 	
 		
 	}
 	
-	public ValidationResult<?> checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
+	public static ValidationResult checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
 		if (value == null) {
-			return ValidationResult.success(true, null);
+			return ValidationResult.success(null);
 		}
 		StringValidationData stringValidationData = new StringValidationData(minLength, minLength, pattern, value);
 		List<String> failures = new ArrayList<>();
@@ -61,16 +61,16 @@ public class ValidationUtil {
 			}
 		}
 		if (failures.isEmpty()) {
-			return ValidationResult.success(true, null);
+			return ValidationResult.success(null);
 		}
-		return ValidationResult.failure(false, null,
+		return ValidationResult.failure(null,
 					failures.stream().collect(Collectors.joining(" ")), stringValidationData
 				);
 	}
 	
-	public static ValidationResult<?> checkNumber(String msgPrefix, BigDecimal value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+	public static ValidationResult checkNumber(String msgPrefix, BigDecimal value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
 		if (value == null) {
-			return ValidationResult.success(true, null);
+			return ValidationResult.success(null);
 		}
 		
 		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits.get():0, fractionalDigits.isPresent()?fractionalDigits.get():0, value);
@@ -115,9 +115,9 @@ public class ValidationUtil {
 			}
 		}
 		if (failures.isEmpty()) {
-			return ValidationResult.success(true, null);
+			return ValidationResult.success(null);
 		}
-		return ValidationResult.failure(false, null,
+		return ValidationResult.failure(null,
 				failures.stream().collect(Collectors.joining(" ")), numValData
 			);
 	}

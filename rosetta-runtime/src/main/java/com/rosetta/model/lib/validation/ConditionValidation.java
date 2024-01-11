@@ -3,33 +3,21 @@ package com.rosetta.model.lib.validation;
 import java.util.List;
 
 public class ConditionValidation {
-    private String attributeName;
-    private String modelURI;
+    private String conditionName;
 
-    private ValidationResult cardinalityValidation;
+    private ValidationResult validationResult;
 
-    private List<ValidationResult> itemValidations;
 
-    public ConditionValidation(String attributeName, String modelURI, ValidationResult cardinalityValidation, List<ValidationResult> itemValidations) {
-        this.attributeName = attributeName;
-        this.modelURI = modelURI;
-        this.cardinalityValidation = cardinalityValidation;
-        this.itemValidations = itemValidations;
+    public ConditionValidation(String conditionName, ValidationResult validationResult) {
+        this.conditionName = conditionName;
+        this.validationResult = validationResult;
     }
 
-    public String getAttributeName() {
-        return attributeName;
+    public String getConditionName() {
+        return conditionName;
     }
 
-    public String getModelURI() {
-        return modelURI;
-    }
-
-    public ValidationResult getCardinalityValidation() {
-        return cardinalityValidation;
-    }
-
-    public List<ValidationResult> getItemValidations() {
-        return itemValidations;
+    public ValidationResult getValidationResult() {
+        return validationResult;
     }
 }

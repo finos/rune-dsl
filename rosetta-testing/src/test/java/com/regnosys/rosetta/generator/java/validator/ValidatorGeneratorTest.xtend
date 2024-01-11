@@ -24,6 +24,7 @@ class ValidatorGeneratorTest {
 			
 			type Foo:
 				a int (0..1)
+				b string(pattern: "[a-z]") (1..1)
 				
 				condition C:
 				    it -> a exists and [it, it] any = it
@@ -34,37 +35,50 @@ class ValidatorGeneratorTest {
 			'''
 			package com.rosetta.test.model.validation;
 			
-			import com.google.inject.ImplementedBy;
-			import com.rosetta.model.lib.functions.RosettaFunction;
+			import com.rosetta.model.lib.ModelSymbolId;
+			import com.rosetta.model.lib.validation.AttributeValidation;
+			import com.rosetta.model.lib.validation.RosettaModelObjectValidator;
+			import com.rosetta.model.lib.validation.TypeValidation;
+			import com.rosetta.model.lib.validation.ValidationResult;
+			import com.rosetta.test.model.Foo;
+			import com.rosetta.util.DottedPath;
+			import java.util.ArrayList;
+			import java.util.List;
+			import java.util.regex.Pattern;
 			
+			import static com.rosetta.model.lib.validation.ValidationUtil.checkCardinality;
+			import static com.rosetta.model.lib.validation.ValidationUtil.checkNumber;
+			import static com.rosetta.model.lib.validation.ValidationUtil.checkString;
+			import static java.util.Optional.empty;
+			import static java.util.Optional.of;
 			
-			@ImplementedBy(Foo.FooDefault.class)
-			public abstract class Foo implements RosettaFunction {
-			
-				/**
-				* @param func 
-				* @return result 
-				*/
-				public Integer evaluate(Integer func) {
-					Integer result = doEvaluate(func);
-					
-					return result;
+			public class FooValidator implements RosettaModelObjectValidator<Foo>{
+				
+				@Override
+				public TypeValidation validate(Foo o) {
+				
+					DottedPath packageName = DottedPath.of(o.getClass().getPackage().toString());
+					String simpleName = o.getClass().getSimpleName();
+					ModelSymbolId modelSymbolId = new ModelSymbolId(packageName, simpleName);
+				
+				 	List<AttributeValidation> attributeValidations = new ArrayList<>();
+				 	attributeValidations.add(validateA(o.getA()));
+				 	attributeValidations.add(validateB(o.getB()));
 				}
-			
-				protected abstract Integer doEvaluate(Integer func);
-			
-				public static class FooDefault extends Foo {
-					@Override
-					protected Integer doEvaluate(Integer func) {
-						Integer result = null;
-						return assignOutput(result, func);
-					}
+				
+				public AttributeValidation validateA(int atr) {
+					List<ValidationResult> validationResults = new ArrayList<>();
+					ValidationResult cardinalityValidation = checkCardinality("a", o.getA() != null ? 1 : 0, 0, 1);
+					validationResults.add(checkNumber("a", o.getA(), empty(), of(0), empty(), empty()));
 					
-					protected Integer assignOutput(Integer result, Integer func) {
-						result = func;
-						
-						return result;
-					}
+					return new AttributeValidation("a", cardinalityValidation, validationResults);
+				}
+				public AttributeValidation validateB(String atr) {
+					List<ValidationResult> validationResults = new ArrayList<>();
+					ValidationResult cardinalityValidation = checkCardinality("b", o.getB() != null ? 1 : 0, 1, 1);
+					validationResults.add(checkString("b", o.getB(), 0, empty(), of(Pattern.compile("[a-z]"))));
+					
+					return new AttributeValidation("b", cardinalityValidation, validationResults);
 				}
 			}
 			'''.toString,
