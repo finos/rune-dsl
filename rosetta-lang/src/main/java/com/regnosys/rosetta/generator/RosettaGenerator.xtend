@@ -148,7 +148,7 @@ class RosettaGenerator implements IGenerator2 {
 						Data: {
 							dataGenerator.generate(packages, fsa, it, version)
 							metaGenerator.generate(packages, fsa, it, version)
-							//validatorsGenerator.generate(packages, fsa, it, version)
+							validatorsGenerator.generate(packages, fsa, it, version)
 							it.conditions.forEach [ cond |
 								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]
