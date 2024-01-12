@@ -121,7 +121,7 @@ public class ExpressionOperators {
 		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
 		ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
 		if (onlyExistsValidator != null) {
-			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
+			ValidationResult validationResult = onlyExistsValidator.validate(null, parent, fields);
 			// Translate validationResult into comparisonResult
 			return validationResult.isSuccess() ?
 					ComparisonResult.success() : 

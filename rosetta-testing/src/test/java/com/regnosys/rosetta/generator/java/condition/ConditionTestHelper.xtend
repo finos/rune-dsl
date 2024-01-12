@@ -16,7 +16,6 @@ import com.rosetta.model.lib.validation.Validator
 import java.util.Map
 import java.util.Optional
 import javax.inject.Inject
-import com.rosetta.model.lib.validation.ValidationResult
 
 class ConditionTestHelper {
 	

@@ -4741,14 +4741,14 @@ class FunctionGeneratorTest {
     }
 	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
-		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
+		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of())
 	}
 	
 	private def RosettaModelObject createBar(Map<String, Class<?>> classes, List<RosettaModelObject> foos) {
-		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos)) as RosettaModelObject
+		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos))
 	}
 	
 	private def RosettaModelObject createBaz(Map<String, Class<?>> classes, List<String> attrList) {
-		classes.createInstanceUsingBuilder('Baz', of(), of('attrList', attrList)) as RosettaModelObject
+		classes.createInstanceUsingBuilder('Baz', of(), of('attrList', attrList))
 	}
 }
