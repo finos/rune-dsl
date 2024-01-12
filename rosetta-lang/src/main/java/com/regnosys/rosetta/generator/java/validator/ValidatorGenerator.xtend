@@ -177,4 +177,3 @@ class ValidatorGenerator {
 	
 	
 }
-≈Ω
