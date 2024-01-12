@@ -4563,14 +4563,14 @@ class FunctionGeneratorTest {
 						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(true, path);
+								return ValidationResult.success(path);
 							}
 							
 							String failureMessage = result.getError();
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return ValidationResult.failure(false, path, failureMessage, new ConditionValidationData());
+							return ValidationResult.failure(path, failureMessage, new ConditionValidationData());
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -4591,7 +4591,7 @@ class FunctionGeneratorTest {
 					
 						@Override
 						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(true, path);
+							return ValidationResult.success(path);
 						}
 					}
 				}
