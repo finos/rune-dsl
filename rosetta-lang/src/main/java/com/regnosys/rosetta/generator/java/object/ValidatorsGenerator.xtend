@@ -109,9 +109,9 @@ class ValidatorsGenerator {
 					).stream().filter(res -> !res.get()).map(res -> res.getError()).collect(«method(Collectors, "joining")»("; "));
 
 				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
 				}
-				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationType».TYPE_FORMAT, "«t.name»", path, "");
 			}
 		
 		}
