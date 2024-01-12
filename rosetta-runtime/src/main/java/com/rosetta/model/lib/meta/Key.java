@@ -233,12 +233,12 @@ public interface Key extends RosettaModelObject{
 				@Override
 				public ValidationResult<Key> validate(RosettaPath path, Key key) {
 					if (key.getKeyValue()==null) {
-						return ValidationResult.failure(false, path, "Key value must be set", new ValidationData());
+						return ValidationResult.failure(path, "Key value must be set", new ValidationData());
 					}
 					if (key.getScope()==null) {
-						return ValidationResult.failure(false, path, "Key scope must be set", new ValidationData());
+						return ValidationResult.failure(path, "Key scope must be set", new ValidationData());
 					}
-					return ValidationResult.success(true, path);
+					return ValidationResult.success(path);
 				}
 			};
 		}
