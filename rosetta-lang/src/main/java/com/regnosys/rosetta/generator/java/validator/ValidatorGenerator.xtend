@@ -33,6 +33,8 @@ import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExte
 import java.util.List
 import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.path.RosettaPath
+import com.rosetta.model.lib.validation.ConditionValidation
+import com.rosetta.util.types.generated.GeneratedJavaClass
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
@@ -46,20 +48,23 @@ class ValidatorGenerator {
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		val topScope = new JavaScope(root.typeValidation)
 
-		val classBody = data.classBody(topScope)
+		val classBody = data.classBody(topScope, root)
 		val content = buildClass(root.typeValidation, classBody, topScope)
 		fsa.generateFile('''«root.typeValidation.withForwardSlashes»/«data.name»Validator.java''', content)
 	}
 
-	private def StringConcatenationClient classBody(Data data, JavaScope scope) {
+	private def StringConcatenationClient classBody(Data data, JavaScope scope, RootPackage root) {
 
 		val modelPojo = new RDataType(data).toJavaReferenceType
 		val rDataType = new RDataType(data)
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
-				
+				«FOR con : data.conditions»
+				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(data), Object)» «con.name.toFirstLower»;
+										
+				«ENDFOR»
 				@Override
-				public «TypeValidation» validate(«RosettaPath» path, «rDataType.toJavaType» o) {
+				public «TypeValidation» validate(«RosettaPath» path, «rDataType.toJavaReferenceType» o) {
 				
 					«DottedPath» packageName = «DottedPath».of(o.getClass().getPackage().toString());
 					«String» simpleName = o.getClass().getSimpleName();
@@ -67,17 +72,32 @@ class ValidatorGenerator {
 				
 				 	«List»<«AttributeValidation»> attributeValidations = new «ArrayList»<>();
 				 	«FOR attribute : data.allAttributes»
-				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(o.get«attribute.name.toFirstUpper»(), path));
+				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(«attribute.attributeValue», path));
 				 	«ENDFOR»
+				 	
+				 	«List»<«ConditionValidation»> conditionValidations = new «ArrayList»<>();
+				 	«FOR dataCondition : data.conditions»
+				 		conditionValidations.add(validate«dataCondition.name.toFirstUpper»(o, path));
+				 	«ENDFOR»
+				 	
+				 	return new «TypeValidation»(modelSymbolId, attributeValidations, conditionValidations);
 				}
 				
 				«FOR attribute : data.allAttributes»
-				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.RTypeOfSymbol.toJavaType» atr, «RosettaPath» path) {
+				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.RTypeOfSymbol.toJavaReferenceType» atr, «RosettaPath» path) {
 					«List»<«ValidationResult»> validationResults = new «ArrayList»<>();
 					«ValidationResult» cardinalityValidation = «checkCardinality(attribute)»;
 					validationResults.add(«checkTypeFormat(attribute)»);
 					
 					return new «AttributeValidation»("«attribute.name»", cardinalityValidation, validationResults);
+				}
+				«ENDFOR»
+				
+				«FOR dataCondition : data.conditions»
+				public «ConditionValidation» validate«dataCondition.name.toFirstUpper»(«rDataType.toJavaReferenceType» data, «RosettaPath» path) {
+					«ValidationResult» result = «dataCondition.name.toFirstLower».validate(path, data);
+					
+					return new «ConditionValidation»(«dataCondition.name.toFirstLower».toString(), result);
 				}
 				«ENDFOR»
 			}
@@ -90,9 +110,9 @@ class ValidatorGenerator {
 		} else {
 			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			if (attr.card.isIsMany) {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»() == null ? 0 : o.get«attr.name?.toFirstUpper»().size(), «attr.card.inf», «attr.card.sup» , null)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", atr == null ? 0 : atr.size(), «attr.card.inf», «attr.card.sup» , path)'''
 			} else {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.card.inf», «attr.card.sup», null)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", atr != null ? 1 : 0, «attr.card.inf», «attr.card.sup», path)'''
 			}
 		}
 	}
@@ -105,7 +125,7 @@ class ValidatorGenerator {
 				val max = t.interval.max.optional
 				val pattern = t.pattern.optionalPattern
 								
-				return '''«method(ValidationUtil, "checkString")»("«attr.name»", «attr.attributeValue», «min», «max», «pattern», null)'''
+				return '''«method(ValidationUtil, "checkString")»("«attr.name»", atr, «min», «max», «pattern», path)'''
 			}
 		} else if (t instanceof RNumberType) {
 			if (t != UNCONSTRAINED_NUMBER) {
@@ -114,7 +134,7 @@ class ValidatorGenerator {
 				val min = t.interval.min.optionalBigDecimal
 				val max = t.interval.max.optionalBigDecimal
 				
-				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»", «attr.attributeValue», «digits», «fractionalDigits», «min», «max», null)'''
+				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»",atr, «digits», «IF !t.isInteger»«fractionalDigits», «ENDIF»«min», «max», path)'''
 			}
 		}
 		return null

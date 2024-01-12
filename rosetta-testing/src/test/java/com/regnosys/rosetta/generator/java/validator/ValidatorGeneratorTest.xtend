@@ -38,14 +38,17 @@ class ValidatorGeneratorTest {
 			import com.rosetta.model.lib.ModelSymbolId;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.validation.AttributeValidation;
+			import com.rosetta.model.lib.validation.ConditionValidation;
 			import com.rosetta.model.lib.validation.RosettaModelObjectValidator;
 			import com.rosetta.model.lib.validation.TypeValidation;
 			import com.rosetta.model.lib.validation.ValidationResult;
 			import com.rosetta.test.model.Foo;
+			import com.rosetta.test.model.validation.datarule.FooC;
 			import com.rosetta.util.DottedPath;
 			import java.util.ArrayList;
 			import java.util.List;
 			import java.util.regex.Pattern;
+			import javax.inject.Inject;
 			
 			import static com.rosetta.model.lib.validation.ValidationUtil.checkCardinality;
 			import static com.rosetta.model.lib.validation.ValidationUtil.checkNumber;
@@ -54,7 +57,8 @@ class ValidatorGeneratorTest {
 			import static java.util.Optional.of;
 			
 			public class FooValidator implements RosettaModelObjectValidator<Foo>{
-				
+				@Inject protected FooC c;
+										
 				@Override
 				public TypeValidation validate(RosettaPath path, Foo o) {
 				
@@ -65,21 +69,32 @@ class ValidatorGeneratorTest {
 				 	List<AttributeValidation> attributeValidations = new ArrayList<>();
 				 	attributeValidations.add(validateA(o.getA(), path));
 				 	attributeValidations.add(validateB(o.getB(), path));
+				 	
+				 	List<ConditionValidation> conditionValidations = new ArrayList<>();
+				 	conditionValidations.add(validateC(o, path));
+				 	
+				 	return new TypeValidation(modelSymbolId, attributeValidations, conditionValidations);
 				}
 				
-				public AttributeValidation validateA(int atr, RosettaPath path) {
+				public AttributeValidation validateA(Integer atr, RosettaPath path) {
 					List<ValidationResult> validationResults = new ArrayList<>();
-					ValidationResult cardinalityValidation = checkCardinality("a", o.getA() != null ? 1 : 0, 0, 1, null);
-					validationResults.add(checkNumber("a", o.getA(), empty(), of(0), empty(), empty(), null));
+					ValidationResult cardinalityValidation = checkCardinality("a", atr != null ? 1 : 0, 0, 1, path);
+					validationResults.add(checkNumber("a",atr, empty(), empty(), empty(), path));
 					
 					return new AttributeValidation("a", cardinalityValidation, validationResults);
 				}
 				public AttributeValidation validateB(String atr, RosettaPath path) {
 					List<ValidationResult> validationResults = new ArrayList<>();
-					ValidationResult cardinalityValidation = checkCardinality("b", o.getB() != null ? 1 : 0, 1, 1, null);
-					validationResults.add(checkString("b", o.getB(), 0, empty(), of(Pattern.compile("[a-z]")), null));
+					ValidationResult cardinalityValidation = checkCardinality("b", atr != null ? 1 : 0, 1, 1, path);
+					validationResults.add(checkString("b", atr, 0, empty(), of(Pattern.compile("[a-z]")), path));
 					
 					return new AttributeValidation("b", cardinalityValidation, validationResults);
+				}
+				
+				public ConditionValidation validateC(Foo data, RosettaPath path) {
+					ValidationResult result = c.validate(path, data);
+					
+					return new ConditionValidation(c.toString(), result);
 				}
 			}
 			'''.toString,

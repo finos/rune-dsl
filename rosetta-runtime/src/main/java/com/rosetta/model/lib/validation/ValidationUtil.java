@@ -123,5 +123,49 @@ public class ValidationUtil {
 				failures.stream().collect(Collectors.joining(" ")), numValData
 			);
 	}
+	//integer
+	public static ValidationResult checkNumber(String msgPrefix, Integer value, Optional<Integer> digits, Optional<BigDecimal> min, Optional<BigDecimal> max, RosettaPath path) {
+		if (value == null) {
+			return ValidationResult.success(path);
+		}
+		BigDecimal valuasDecimal = BigDecimal.valueOf(value);
+		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits.get():0, 0, valuasDecimal);
+		List<String> failures = new ArrayList<>();
+		if (digits.isPresent()) {
+			int d = digits.get();
+			BigDecimal normalized = valuasDecimal.stripTrailingZeros();
+			int actual = normalized.precision();
+			if (normalized.scale() >= normalized.precision()) {
+				// case 0.0012 => `actual` should be 5
+				actual = normalized.scale() + 1;
+			}
+			if (normalized.scale() < 0) {
+				// case 12000 => `actual` should include unsignificant zeros
+				actual -= normalized.scale();
+			}
+			if (actual > d) {
+				failures.add("Expected a maximum of " + d + " digits for '" + msgPrefix + "', but the number " + value + " has " + actual + ".");
+			}
+		}
+		if (min.isPresent()) {
+			BigDecimal m = min.get();
+			if (valuasDecimal.compareTo(m) < 0) {
+				failures.add("Expected a number greater than or equal to " + m.toPlainString()+ " for '" + msgPrefix + "', but found " + value + ".");
+			}
+		}
+		if (max.isPresent()) {
+			BigDecimal m = max.get();
+			if (valuasDecimal.compareTo(m) > 0) {
+				failures.add("Expected a number less than or equal to " + m.toPlainString() + " for '" + msgPrefix + "', but found " + value + ".");
+			}
+		}
+		if (failures.isEmpty()) {
+			return ValidationResult.success(path);
+		}
+		return ValidationResult.failure(path,
+				failures.stream().collect(Collectors.joining(" ")), numValData
+			);
+	}
+
 
 }

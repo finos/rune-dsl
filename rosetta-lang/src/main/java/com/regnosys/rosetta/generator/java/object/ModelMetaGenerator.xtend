@@ -84,14 +84,16 @@ class ModelMetaGenerator {
 					«ENDIF»
 				}
 				
+				@Deprecated
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
-					return new «validator»();
+					throw new «UnsupportedOperationException»();
 				}
 				
+				@Deprecated
 				@Override
 				public «Validator»<? super «dataClass»> typeFormatValidator() {
-					return new «typeFormatValidator»();
+					throw new «UnsupportedOperationException»();
 				}
 				
 				@Override
