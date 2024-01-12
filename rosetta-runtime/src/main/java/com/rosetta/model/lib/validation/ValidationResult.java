@@ -4,7 +4,7 @@ import com.rosetta.model.lib.path.RosettaPath;
 
 import java.util.Optional;
 
-public class ValidationResult<T>{
+public class ValidationResult{
 	private static boolean success;
 	private Optional<String> failureReason;
 	private RosettaPath path;
@@ -18,12 +18,12 @@ public class ValidationResult<T>{
 		this.data = Optional.ofNullable(data);
 	}
 
-	public static <T> ValidationResult<T> success(RosettaPath path) {
-		return new ValidationResult<T>(true, "", path, null);
+	public static ValidationResult success(RosettaPath path) {
+		return new ValidationResult(true, "", path, null);
 	}
 	
-	public static <T> ValidationResult<T>failure(RosettaPath path, String failureReason, ValidationData data) {
-		return new ValidationResult<T>(false, failureReason, path, data);
+	public static ValidationResult failure(RosettaPath path, String failureReason, ValidationData data) {
+		return new ValidationResult(false, failureReason, path, data);
 	}
 
 	public static boolean isSuccess() {
@@ -40,9 +40,5 @@ public class ValidationResult<T>{
 
 	public Optional<ValidationData> getData() {
 		return data;
-	}
-
-	public static void getValidationType() {
-	  throw new UnsupportedOperationException("TODO: auto-generated method stub");
 	}
 }

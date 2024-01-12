@@ -89,12 +89,12 @@ public class QualifyResult implements Comparable<QualifyResult> {
 			return this;
 		}
 				
-		public QualifyResultBuilder addAndDataRuleResult(ValidationResult<?> result) {
+		public QualifyResultBuilder addAndDataRuleResult(ValidationResult result) {
 			andDataRuleResults.add(ExpressionDataRuleResult.fromDataRule(result, "and"));
 			return this;
 		}
 		
-		public QualifyResultBuilder addOrDataRuleResult(ValidationResult<?> result) {
+		public QualifyResultBuilder addOrDataRuleResult(ValidationResult result) {
 			orDataRuleResults.add(ExpressionDataRuleResult.fromDataRule(result, "or"));
 			return this;
 		}
@@ -115,7 +115,7 @@ public class QualifyResult implements Comparable<QualifyResult> {
 			return new ExpressionDataRuleResult("Expression", Type.Expression, definition, Optional.empty(), result.get(), result.getError());
 		}
 		
-		static ExpressionDataRuleResult fromDataRule(ValidationResult<?> result, String operator) {
+		static ExpressionDataRuleResult fromDataRule(ValidationResult result, String operator) {
 			return new ExpressionDataRuleResult(
 					null,
 					Type.DataRule,
