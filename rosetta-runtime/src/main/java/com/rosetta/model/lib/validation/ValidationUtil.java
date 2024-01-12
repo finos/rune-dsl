@@ -8,10 +8,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.rosetta.model.lib.path.RosettaPath;
+
 
 public class ValidationUtil {
 	
-	public static ValidationResult checkCardinality(String msgPrefix, int actual, int min, int max) {
+	public static ValidationResult checkCardinality(String msgPrefix, int actual, int min, int max, RosettaPath path) {
 		
 		CardinalityValidationData cardinalityValidationData = new CardinalityValidationData(min, max, actual);
 		String failureMessage = "";
@@ -29,16 +31,16 @@ public class ValidationUtil {
 		} else if (max > 0 && actual > max) {
 			failureMessage = "Maximum of " + max + " '" + msgPrefix + "' are expected but found " + actual + ".";
 			return ValidationResult
-					.failure(null, failureMessage, cardinalityValidationData);
+					.failure(path, failureMessage, cardinalityValidationData);
 		}
-		return ValidationResult.success(null);
+		return ValidationResult.success(path);
 	
 		
 	}
 	
-	public static ValidationResult checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
+	public static ValidationResult checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern, RosettaPath path) {
 		if (value == null) {
-			return ValidationResult.success(null);
+			return ValidationResult.success(path);
 		}
 		StringValidationData stringValidationData = new StringValidationData(minLength, minLength, pattern, value);
 		List<String> failures = new ArrayList<>();
@@ -61,16 +63,16 @@ public class ValidationUtil {
 			}
 		}
 		if (failures.isEmpty()) {
-			return ValidationResult.success(null);
+			return ValidationResult.success(path);
 		}
-		return ValidationResult.failure(null,
+		return ValidationResult.failure(path,
 					failures.stream().collect(Collectors.joining(" ")), stringValidationData
 				);
 	}
 	
-	public static ValidationResult checkNumber(String msgPrefix, BigDecimal value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max) {
+	public static ValidationResult checkNumber(String msgPrefix, BigDecimal value, Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min, Optional<BigDecimal> max, RosettaPath path) {
 		if (value == null) {
-			return ValidationResult.success(null);
+			return ValidationResult.success(path);
 		}
 		
 		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits.get():0, fractionalDigits.isPresent()?fractionalDigits.get():0, value);
@@ -115,9 +117,9 @@ public class ValidationUtil {
 			}
 		}
 		if (failures.isEmpty()) {
-			return ValidationResult.success(null);
+			return ValidationResult.success(path);
 		}
-		return ValidationResult.failure(null,
+		return ValidationResult.failure(path,
 				failures.stream().collect(Collectors.joining(" ")), numValData
 			);
 	}
