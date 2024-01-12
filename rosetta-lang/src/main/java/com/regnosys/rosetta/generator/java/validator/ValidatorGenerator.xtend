@@ -32,6 +32,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import java.util.List
 import com.rosetta.model.lib.validation.ValidationResult
+import com.rosetta.model.lib.path.RosettaPath
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
@@ -58,7 +59,7 @@ class ValidatorGenerator {
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				
 				@Override
-				public «TypeValidation» validate(«rDataType.toJavaType» o) {
+				public «TypeValidation» validate(«RosettaPath» path, «rDataType.toJavaType» o) {
 				
 					«DottedPath» packageName = «DottedPath».of(o.getClass().getPackage().toString());
 					«String» simpleName = o.getClass().getSimpleName();
@@ -66,12 +67,12 @@ class ValidatorGenerator {
 				
 				 	«List»<«AttributeValidation»> attributeValidations = new «ArrayList»<>();
 				 	«FOR attribute : data.allAttributes»
-				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(o.get«attribute.name.toFirstUpper»()));
+				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(o.get«attribute.name.toFirstUpper»(), path));
 				 	«ENDFOR»
 				}
 				
 				«FOR attribute : data.allAttributes»
-				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.RTypeOfSymbol.toJavaType» atr) {
+				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.RTypeOfSymbol.toJavaType» atr, «RosettaPath» path) {
 					«List»<«ValidationResult»> validationResults = new «ArrayList»<>();
 					«ValidationResult» cardinalityValidation = «checkCardinality(attribute)»;
 					validationResults.add(«checkTypeFormat(attribute)»);
@@ -89,9 +90,9 @@ class ValidatorGenerator {
 		} else {
 			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			if (attr.card.isIsMany) {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»() == null ? 0 : o.get«attr.name?.toFirstUpper»().size(), «attr.card.inf», «attr.card.sup»)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»() == null ? 0 : o.get«attr.name?.toFirstUpper»().size(), «attr.card.inf», «attr.card.sup» , null)'''
 			} else {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.card.inf», «attr.card.sup»)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.card.inf», «attr.card.sup», null)'''
 			}
 		}
 	}
@@ -104,7 +105,7 @@ class ValidatorGenerator {
 				val max = t.interval.max.optional
 				val pattern = t.pattern.optionalPattern
 								
-				return '''«method(ValidationUtil, "checkString")»("«attr.name»", «attr.attributeValue», «min», «max», «pattern»)'''
+				return '''«method(ValidationUtil, "checkString")»("«attr.name»", «attr.attributeValue», «min», «max», «pattern», null)'''
 			}
 		} else if (t instanceof RNumberType) {
 			if (t != UNCONSTRAINED_NUMBER) {
@@ -113,7 +114,7 @@ class ValidatorGenerator {
 				val min = t.interval.min.optionalBigDecimal
 				val max = t.interval.max.optionalBigDecimal
 				
-				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»", «attr.attributeValue», «digits», «fractionalDigits», «min», «max»)'''
+				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»", «attr.attributeValue», «digits», «fractionalDigits», «min», «max», null)'''
 			}
 		}
 		return null
@@ -156,3 +157,4 @@ class ValidatorGenerator {
 	
 	
 }
+≈Ω

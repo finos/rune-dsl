@@ -36,6 +36,7 @@ class ValidatorGeneratorTest {
 			package com.rosetta.test.model.validation;
 			
 			import com.rosetta.model.lib.ModelSymbolId;
+			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.validation.AttributeValidation;
 			import com.rosetta.model.lib.validation.RosettaModelObjectValidator;
 			import com.rosetta.model.lib.validation.TypeValidation;
@@ -55,28 +56,28 @@ class ValidatorGeneratorTest {
 			public class FooValidator implements RosettaModelObjectValidator<Foo>{
 				
 				@Override
-				public TypeValidation validate(Foo o) {
+				public TypeValidation validate(RosettaPath path, Foo o) {
 				
 					DottedPath packageName = DottedPath.of(o.getClass().getPackage().toString());
 					String simpleName = o.getClass().getSimpleName();
 					ModelSymbolId modelSymbolId = new ModelSymbolId(packageName, simpleName);
 				
 				 	List<AttributeValidation> attributeValidations = new ArrayList<>();
-				 	attributeValidations.add(validateA(o.getA()));
-				 	attributeValidations.add(validateB(o.getB()));
+				 	attributeValidations.add(validateA(o.getA(), path));
+				 	attributeValidations.add(validateB(o.getB(), path));
 				}
 				
-				public AttributeValidation validateA(int atr) {
+				public AttributeValidation validateA(int atr, RosettaPath path) {
 					List<ValidationResult> validationResults = new ArrayList<>();
-					ValidationResult cardinalityValidation = checkCardinality("a", o.getA() != null ? 1 : 0, 0, 1);
-					validationResults.add(checkNumber("a", o.getA(), empty(), of(0), empty(), empty()));
+					ValidationResult cardinalityValidation = checkCardinality("a", o.getA() != null ? 1 : 0, 0, 1, null);
+					validationResults.add(checkNumber("a", o.getA(), empty(), of(0), empty(), empty(), null));
 					
 					return new AttributeValidation("a", cardinalityValidation, validationResults);
 				}
-				public AttributeValidation validateB(String atr) {
+				public AttributeValidation validateB(String atr, RosettaPath path) {
 					List<ValidationResult> validationResults = new ArrayList<>();
-					ValidationResult cardinalityValidation = checkCardinality("b", o.getB() != null ? 1 : 0, 1, 1);
-					validationResults.add(checkString("b", o.getB(), 0, empty(), of(Pattern.compile("[a-z]"))));
+					ValidationResult cardinalityValidation = checkCardinality("b", o.getB() != null ? 1 : 0, 1, 1, null);
+					validationResults.add(checkString("b", o.getB(), 0, empty(), of(Pattern.compile("[a-z]")), null));
 					
 					return new AttributeValidation("b", cardinalityValidation, validationResults);
 				}
