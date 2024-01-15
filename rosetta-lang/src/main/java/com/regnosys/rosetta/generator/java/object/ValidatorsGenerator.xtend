@@ -51,23 +51,10 @@ class ValidatorsGenerator {
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		val t = new RDataType(data)
-		fsa.generateFile(t.toValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateClass(root, data, version))
-		fsa.generateFile(t.toTypeFormatValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateTypeFormatValidator(root, data, version))
 		fsa.generateFile(t.toOnlyExistsValidatorClass.canonicalName.withForwardSlashes + ".java",
 			generateOnlyExistsValidator(root, data, version))
 	}
 
-	private def generateClass(RootPackage root, Data d, String version) {
-		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, new RDataType(d).classBody(version, d.allNonOverridesAttributes), scope)
-	}
-	
-	private def generateTypeFormatValidator(RootPackage root, Data d, String version) {
-		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, new RDataType(d).typeFormatClassBody(version, d.allNonOverridesAttributes), scope)
-	}
 
 	private def generateOnlyExistsValidator(RootPackage root, Data d, String version) {
 		val scope = new JavaScope(root.existsValidation)

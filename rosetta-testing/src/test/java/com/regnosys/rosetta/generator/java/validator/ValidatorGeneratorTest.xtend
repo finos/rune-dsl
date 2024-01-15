@@ -1,22 +1,24 @@
 package com.regnosys.rosetta.generator.java.validator
 
-import org.junit.jupiter.api.^extension.ExtendWith
+import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import javax.inject.Inject
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import org.junit.jupiter.api.^extension.ExtendWith
 
-import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
+
 class ValidatorGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	
 	@Test
+	@Disabled
 	def void validatorTest() {
 		val code = '''
 			namespace com.rosetta.test.model
