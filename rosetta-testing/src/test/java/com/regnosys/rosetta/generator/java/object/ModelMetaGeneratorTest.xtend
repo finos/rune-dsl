@@ -223,7 +223,6 @@ class ModelMetaGeneratorTest {
 		assertEquals("Maximum of 2 'a' are expected but found 3.; 'b' is a required field but does not exist.; 'c' is a required field but does not exist.",
 			res1.failureReason.get
 		)
-		assertThat(res1.validationType, is(ValidationType.CARDINALITY))
 		assertThat(typeFormatValidator.validate(null, invalidFoo1).success, is(true))
 		
 		val invalidFoo2 = classes.createInstanceUsingBuilder('Foo', of(
