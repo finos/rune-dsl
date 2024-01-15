@@ -43,7 +43,7 @@ class OneOfRuleGeneratorTest {
 		.compileToClasses
 	}
 	
-	def <T extends RosettaModelObject> ValidationResult<T> doValidate(RosettaPath p, Validator<T> validator, RosettaModelObject toVal) {
+	def <T extends RosettaModelObject> ValidationResult doValidate(RosettaPath p, Validator<T> validator, RosettaModelObject toVal) {
 		return validator.validate(p, toVal as T);
 	}
 	
