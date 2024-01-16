@@ -12,7 +12,7 @@ public class TypeValidation extends ValidationData {
     private final List<ConditionValidation> conditionValidation;
 
 
-    public TypeValidation(ModelSymbolId typeId,List<AttributeValidation> attributeValidations, List<ConditionValidation> conditionValidation) {
+    public TypeValidation(ModelSymbolId typeId, List<AttributeValidation> attributeValidations, List<ConditionValidation> conditionValidation) {
         this.typeId = typeId;
         this.attributeValidations = attributeValidations;
         this.conditionValidation = conditionValidation;

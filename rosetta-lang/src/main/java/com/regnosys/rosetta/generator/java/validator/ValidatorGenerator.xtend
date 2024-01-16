@@ -35,6 +35,13 @@ import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ConditionValidation
 import com.rosetta.util.types.generated.GeneratedJavaClass
+import java.util.Set
+import java.util.Map
+import com.rosetta.model.lib.validation.ExistenceChecker
+import com.rosetta.model.lib.validation.ValidatorWithArg
+import com.google.common.collect.ImmutableMap
+import com.rosetta.model.lib.validation.ValidationData
+import java.util.concurrent.ConcurrentHashMap
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
@@ -60,7 +67,7 @@ class ValidatorGenerator {
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				«FOR con : data.conditions»
-				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(data), Object)» «con.name.toFirstLower»;
+				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(data), Object)» «con.conditionName(data).toFirstLower» ;
 										
 				«ENDFOR»
 				@Override
@@ -77,9 +84,9 @@ class ValidatorGenerator {
 				 	
 				 	«List»<«ConditionValidation»> conditionValidations = new «ArrayList»<>();
 				 	«FOR dataCondition : data.conditions»
-				 		conditionValidations.add(validate«dataCondition.name.toFirstUpper»(o, path));
+				 		conditionValidations.add(validate«dataCondition.conditionName(data).toFirstUpper»(o, path));
 				 	«ENDFOR»
-				 	
+
 				 	return new «TypeValidation»(modelSymbolId, attributeValidations, conditionValidations);
 				}
 				
@@ -87,17 +94,18 @@ class ValidatorGenerator {
 				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.RTypeOfSymbol.toJavaReferenceType» atr, «RosettaPath» path) {
 					«List»<«ValidationResult»> validationResults = new «ArrayList»<>();
 					«ValidationResult» cardinalityValidation = «checkCardinality(attribute)»;
-					validationResults.add(«checkTypeFormat(attribute)»);
+					«val typeFormatCheck = checkTypeFormat(attribute)»
+					«IF typeFormatCheck !== null»validationResults.add(«typeFormatCheck»);«ENDIF»
 					
 					return new «AttributeValidation»("«attribute.name»", cardinalityValidation, validationResults);
 				}
 				«ENDFOR»
 				
 				«FOR dataCondition : data.conditions»
-				public «ConditionValidation» validate«dataCondition.name.toFirstUpper»(«rDataType.toJavaReferenceType» data, «RosettaPath» path) {
-					«ValidationResult» result = «dataCondition.name.toFirstLower».validate(path, data);
+				public «ConditionValidation» validate«dataCondition.conditionName(data).toFirstUpper»(«rDataType.toJavaReferenceType» data, «RosettaPath» path) {
+					«ValidationResult» result = «dataCondition.conditionName(data).toFirstLower».validate(path, data);
 					
-					return new «ConditionValidation»(«dataCondition.name.toFirstLower».toString(), result);
+					return new «ConditionValidation»(«dataCondition.conditionName(data).toFirstLower».toString(), result);
 				}
 				«ENDFOR»
 			}
