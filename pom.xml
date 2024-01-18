@@ -127,6 +127,7 @@
 		<module>rosetta-tools</module>
 		<module>rosetta-testing</module>
 		<module>rosetta-maven-plugin</module>
+		<module>rosetta-profiling</module>
 	</modules>
 
 	<dependencyManagement>
@@ -648,25 +649,6 @@
 										</artifactId>
 										<versionRange>
 											[${maven-plugin-plugin.version},)
-										</versionRange>
-										<goals>
-											<goal>descriptor</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-checkstyle-plugin
-										</artifactId>
-										<versionRange>
-											[${maven-checkstyle-plugin.version},)
 										</versionRange>
 										<goals>
 											<goal>descriptor</goal>

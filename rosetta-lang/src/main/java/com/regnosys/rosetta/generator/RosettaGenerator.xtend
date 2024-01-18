@@ -125,6 +125,7 @@ class RosettaGenerator implements IGenerator2 {
 	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
+		System.out.println("Generating for " + resource.URI);
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {
 			LOGGER.trace("Starting the main generate method for " + resource.URI.toString)
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)

@@ -92,7 +92,7 @@ auxiliary {
 }
 
 judgments {
-	inferType |- RosettaExpression expression : output RListType
+	inferType |- RosettaExpression expression : output RListType cached
 		error "Cannot type " + stringRep(expression) + "."
 		source expression
 	subtype |- RType subtype <: RType supertype
