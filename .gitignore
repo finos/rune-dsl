@@ -13,7 +13,6 @@ plugin.xml_gen
 **/*.iml
 .checkstyle
 .classpath
-.project
 
 **/.settings
 **/src-gen/
