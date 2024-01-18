@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.profile.JavaFlightRecorderProfiler;
-import org.openjdk.jmh.profile.StackProfiler;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -25,7 +23,7 @@ public class BenchmarkMain {
 		Path jfrResults = reportsRoot.resolve("profiling");
 
 		Options opt = new OptionsBuilder()
-	            .include(MyBenchmark.class.getCanonicalName())
+	            .include(InitializationBenchmark.class.getCanonicalName())
 	            .resultFormat(ResultFormatType.JSON)
 	            .result(report.toString())
 	            .addProfiler(JavaFlightRecorderProfiler.class, String.format("dir=%s", jfrResults))

@@ -44,11 +44,11 @@ import com.google.inject.Injector;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.ide.server.RosettaServerModule;
 
-public class MyBenchmark {
+public class InitializationBenchmark {
 	
 	@State(Scope.Benchmark)
 	public static class BenchmarkParams {
-		public String workspaceName = "drr";
+		public String workspaceName = "hero-model";
 		public Path workspacePath = Path.of("test-data/test-project").toAbsolutePath();
 		public List<String> fileURIs = new ArrayList<>();
 		@Inject
@@ -139,50 +139,14 @@ public class MyBenchmark {
 		}
 	}
 
-	private static void open(BenchmarkParams params, String uri) throws IOException {
-		DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams(
-  				new TextDocumentItem(
-  						uri,
-  						"rosetta",
-  						1,
-  						Resources.toString(new URL(uri), Charsets.UTF_8)
-  				));
-		System.out.println("didOpen " + uri);
-		params.server.getTextDocumentService().didOpen(openParams);
-	}
-	private static void close(BenchmarkParams params, String uri) {
-		DidCloseTextDocumentParams closeParams = new DidCloseTextDocumentParams(
-				new TextDocumentIdentifier(
-						uri
-				));
-		System.out.println("didClose " + uri);
-		params.server.getTextDocumentService().didClose(closeParams);
-	}
-	private static void openWorkspace(BenchmarkParams params) throws IOException {
-		for (String uri : params.fileURIs) {
-			open(params, uri);
-		}
-	}
-	private static void closeWorkspace(BenchmarkParams params) {
-		for (String uri : params.fileURIs) {
-			close(params, uri);
-		}
-	}
-
     @Benchmark
-    public void testMethod(BenchmarkParams params) throws IOException, InterruptedException, ExecutionException {
+    public void benchmarkInitialize(BenchmarkParams params) throws IOException, InterruptedException, ExecutionException {
     	LanguageServerImpl languageServer = params.server;
     	BenchmarkLanguageClient languageClient = params.client;
-  		
-  		// Open files
-//  		openWorkspace(params);
   		
   		// Wait for diagnostics
   		System.out.println("Wait for diagnostics");
   		languageServer.getRequestManager().runRead((cancelIndicator) -> languageClient.getDiagnostics()).get();
   		System.out.println("Got diagnostics");
-  		
-  		// Close files
-//  		closeWorkspace(params);
     }
 }

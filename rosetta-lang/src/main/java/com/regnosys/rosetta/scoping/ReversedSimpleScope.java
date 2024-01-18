@@ -21,6 +21,12 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
+/**
+ * A simple scope with reverse shadowing: for a given name, first the parent scope will be checked,
+ * and if no element was found, only then local elements will be checked.
+ * 
+ * In that sense, local elements that shadow an element in the parent scope will be hidden.
+ */
 public class ReversedSimpleScope extends SimpleScope {
 	
 	protected static class LocalIterable implements Iterable<IEObjectDescription>, Predicate<IEObjectDescription> {

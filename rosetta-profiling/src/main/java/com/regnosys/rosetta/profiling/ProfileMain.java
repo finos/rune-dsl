@@ -7,9 +7,9 @@ import java.util.concurrent.ExecutionException;
 public class ProfileMain {
 
 	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException, URISyntaxException {
-        MyBenchmark.BenchmarkParams params = new MyBenchmark.BenchmarkParams();
+        InitializationBenchmark.BenchmarkParams params = new InitializationBenchmark.BenchmarkParams();
         params.doSetup();
-        new MyBenchmark().testMethod(params);
+        new InitializationBenchmark().benchmarkInitialize(params);
         params.doTearDown();
 	}
 }

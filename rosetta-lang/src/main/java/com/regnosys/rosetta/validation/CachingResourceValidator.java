@@ -10,6 +10,8 @@ import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.validation.ResourceValidatorImpl;
 
+// See issue https://github.com/eclipse/xtext-core/issues/1127
+// TODO: contribute to Xtext.
 public class CachingResourceValidator extends ResourceValidatorImpl {
 
 	public static String VALIDATION_RESULTS_KEY = CachingResourceValidator.class.getCanonicalName() + ".VALIDATION_CACHE";
