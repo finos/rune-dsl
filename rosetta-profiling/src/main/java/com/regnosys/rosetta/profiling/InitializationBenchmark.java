@@ -96,7 +96,6 @@ public class InitializationBenchmark {
         public void doTearDown() throws InterruptedException, ExecutionException, IOException {
 			// Shut down
 			System.out.println("shutdown");
-			server.getRequestManager().shutdown(); // TODO: do we leave open threads by not calling this???
 	  		server.shutdown().get();
 	  		
 	  		// Delete workspace folder
