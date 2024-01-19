@@ -13,9 +13,9 @@ public class ValidationResult{
 	@SuppressWarnings("static-access")
 	public ValidationResult(boolean success, String failureReason, RosettaPath path, ValidationData data) {
 		this.success = success;
-		this.failureReason = Optional.ofNullable(failureReason);
+		this.failureReason = failureReason!=""?Optional.ofNullable(failureReason):Optional.empty();
 		this.path = path;
-		this.data = Optional.ofNullable(data);
+		this.data = data!=null?Optional.ofNullable(data):Optional.empty();
 	}
 
 	public static ValidationResult success(RosettaPath path) {
