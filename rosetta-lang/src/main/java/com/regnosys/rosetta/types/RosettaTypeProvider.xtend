@@ -71,8 +71,11 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
+import org.eclipse.xtext.resource.XtextResource
+import javax.inject.Provider
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
+	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
 
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
@@ -167,18 +170,31 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 	}
 	private def RType safeRType(RosettaExpression expression, Map<EObject, RType> cycleTracker) {
-		if (cycleTracker.containsKey(expression)) {
-			val computed = cycleTracker.get(expression)
-			if (computed === null) {
-				return new RErrorType('''Can't infer type due to a cyclic reference of «qNames.getFullyQualifiedName(expression)»''')
-			} else {
-				return computed
+		getRTypeFromCache(EXPRESSION_RTYPE_CACHE_KEY, expression, [
+			if (cycleTracker.containsKey(expression)) {
+				val computed = cycleTracker.get(expression)
+				if (computed === null) {
+					return new RErrorType('''Can't infer type due to a cyclic reference of «qNames.getFullyQualifiedName(expression)»''')
+				} else {
+					return computed
+				}
 			}
+			if (!extensions.isResolved(expression)) {
+				return null
+			}
+			doSwitch(expression, cycleTracker)
+		])
+	}
+	private def RType getRTypeFromCache(String cacheKey, EObject object, Provider<RType> typeProvider) {
+		if (object === null) {
+			return typeProvider.get()
 		}
-		if (!extensions.isResolved(expression)) {
-			return null
+		val resource = object.eResource
+		if (resource instanceof XtextResource) {
+			resource.cache.get(cacheKey -> object, resource, [typeProvider.get])
+		} else {
+			typeProvider.get()
 		}
-		doSwitch(expression, cycleTracker)
 	}
 	
 	def typeOfImplicitVariable(EObject context) {

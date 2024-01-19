@@ -47,7 +47,6 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.types.RType
@@ -162,8 +161,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
 						if(inline !== null) {
 							val ps = getSymbolParentScope(context, reference, IScope.NULLSCOPE)
-							return Scopes.scopeFor(
-								implicitFeatures.filterNamesThatAlreadyExist(ps),
+							return ReversedSimpleScope.scopeFor(
+								implicitFeatures,
 								ps
 							)
 						}
@@ -172,15 +171,15 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							val ps = filteredScope(getSymbolParentScope(context, reference, IScope.NULLSCOPE), [
 								descr | descr.EClass !== DATA
 							])
-							return Scopes.scopeFor(
-								implicitFeatures.filterNamesThatAlreadyExist(ps),
+							return ReversedSimpleScope.scopeFor(
+								implicitFeatures,
 								ps
 							)
 						}
 						
 						val ps = getSymbolParentScope(context, reference, defaultScope(context, reference))
-						return Scopes.scopeFor(
-							implicitFeatures.filterNamesThatAlreadyExist(ps),
+						return ReversedSimpleScope.scopeFor(
+							implicitFeatures,
 							ps
 						)
 					}
@@ -235,12 +234,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			//so just return an empty scope here and let the validator do its thing afterwards
 			return IScope.NULLSCOPE;
 		}
-	}
-	
-	private def Iterable<? extends RosettaNamed> filterNamesThatAlreadyExist(Iterable<? extends RosettaNamed> features, IScope parentScope) {
-		features.filter[
-			parentScope.getSingleElement(QualifiedName.create(it.name)) === null
-		]
 	}
 	
 	override protected getImplicitImports(boolean ignoreCase) {
