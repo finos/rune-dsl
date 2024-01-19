@@ -79,6 +79,7 @@
 		<distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
 		<distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
 		<organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
+        <stagingTimeoutInMinutes>10</stagingTimeoutInMinutes>
 
 		<!-- Dependency management -->
 		<xtext.version>2.27.0</xtext.version>
@@ -459,7 +460,7 @@
 					<nexusUrl>https://${repoServerHost}</nexusUrl>
 					<serverId>ossrh</serverId>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-					<stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
+					<stagingProgressTimeoutMinutes>${stagingTimeoutInMinutes}</stagingProgressTimeoutMinutes>
 				</configuration>
 			</plugin>
 		</plugins>
