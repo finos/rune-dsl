@@ -459,6 +459,7 @@
 					<nexusUrl>https://${repoServerHost}</nexusUrl>
 					<serverId>ossrh</serverId>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
 				</configuration>
 			</plugin>
 		</plugins>
