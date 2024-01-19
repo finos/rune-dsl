@@ -133,7 +133,7 @@ class ModelMetaGeneratorTest {
 			public class FooValidator implements Validator<Foo> {
 
 				@Override
-				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
+				public ValidationResult validate(RosettaPath path, Foo o) {
 					/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 					String error =
 						Lists.<ComparisonResult>newArrayList(
@@ -178,7 +178,7 @@ class ModelMetaGeneratorTest {
 			public class FooTypeFormatValidator implements Validator<Foo> {
 
 				@Override
-				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
+				public ValidationResult validate(RosettaPath path, Foo o) {
 					String error =
 						Lists.<ComparisonResult>newArrayList(
 							checkNumber("c", o.getC(), empty(), of(0), empty(), empty()),

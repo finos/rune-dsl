@@ -66,7 +66,7 @@ class ValidatorsGenerator {
 
 			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			@Override
-			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
+			public <T2 extends «t.toJavaType»> «ValidationResult» validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
 						«FOR attr : attributes»
 							.put("«attr.name»", «ExistenceChecker».isSet((«attr.toExpandedAttribute.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()))

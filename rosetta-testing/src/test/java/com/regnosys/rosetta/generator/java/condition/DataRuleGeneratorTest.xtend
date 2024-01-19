@@ -68,12 +68,12 @@ class DataRuleGeneratorTest {
 					String NAME = "FooDataRule0";
 					String DEFINITION = "if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
 					
-					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
+					ValidationResult validate(RosettaPath path, Foo foo);
 					
 					class Default implements FooDataRule0 {
 					
 						@Override
-						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						public ValidationResult validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
 								return ValidationResult.success(path);
@@ -106,7 +106,7 @@ class DataRuleGeneratorTest {
 					class NoOp implements FooDataRule0 {
 					
 						@Override
-						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						public ValidationResult validate(RosettaPath path, Foo foo) {
 							return ValidationResult.success(path);
 						}
 					}
@@ -162,8 +162,8 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
+				import com.rosetta.model.lib.validation.ConditionValidationData;
 				import com.rosetta.model.lib.validation.ValidationResult;
-				import com.rosetta.model.lib.validation.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				

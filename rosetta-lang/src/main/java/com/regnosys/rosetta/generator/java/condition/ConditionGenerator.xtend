@@ -85,7 +85,7 @@ class ConditionGenerator {
 				String NAME = "«ruleName»";
 				String DEFINITION = «definition»;
 				
-				«ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)»);
+				«ValidationResult» validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)»);
 				
 				class «defaultClassName» implements «className» {
 				
@@ -94,7 +94,7 @@ class ConditionGenerator {
 						
 					«ENDFOR»
 					@Override
-					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «defaultClassPathId», «rosettaClass.name» «defaultClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+					public «ValidationResult» validate(«RosettaPath» «defaultClassPathId», «rosettaClass.name» «defaultClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassValidateScope.getIdentifierOrThrow(implicitVarRepr)»);
 						if (result.get()) {
 							return «ValidationResult».success(«defaultClassPathId»);
@@ -120,7 +120,7 @@ class ConditionGenerator {
 				class «noOpClassName» implements «className» {
 				
 					@Override
-					public «ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «noOpClassPathId», «rosettaClass.name» «noOpClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
+					public «ValidationResult» validate(«RosettaPath» «noOpClassPathId», «rosettaClass.name» «noOpClassValidateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
 						return «ValidationResult».success(«noOpClassPathId»);
 					}
 				}

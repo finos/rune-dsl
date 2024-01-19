@@ -4553,14 +4553,14 @@ class FunctionGeneratorTest {
 					String NAME = "FooBar";
 					String DEFINITION = "if test = True then FuncFoo( attr, \"x\" ) else FuncFoo( attr, \"y\" )";
 					
-					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
+					ValidationResult validate(RosettaPath path, Foo foo);
 					
 					class Default implements FooBar {
 					
 						@Inject protected FuncFoo funcFoo;
 						
 						@Override
-						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						public ValidationResult validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
 								return ValidationResult.success(path);
@@ -4590,7 +4590,7 @@ class FunctionGeneratorTest {
 					class NoOp implements FooBar {
 					
 						@Override
-						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						public ValidationResult validate(RosettaPath path, Foo foo) {
 							return ValidationResult.success(path);
 						}
 					}

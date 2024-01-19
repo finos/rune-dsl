@@ -42,6 +42,7 @@ import com.rosetta.model.lib.validation.ValidatorWithArg
 import com.google.common.collect.ImmutableMap
 import com.rosetta.model.lib.validation.ValidationData
 import java.util.concurrent.ConcurrentHashMap
+import com.regnosys.rosetta.types.RObjectFactory
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
@@ -51,6 +52,7 @@ class ValidatorGenerator {
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService
 	@Inject extension JavaTypeUtil
+	@Inject extension RObjectFactory
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		val topScope = new JavaScope(root.typeValidation)
@@ -67,9 +69,10 @@ class ValidatorGenerator {
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				«FOR con : data.conditions»
-				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(data), Object)» «con.conditionName(data).toFirstLower» ;
+				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(data).toConditionJavaType, Object)» «con.conditionName(data).toFirstLower» ;
 										
 				«ENDFOR»
+				
 				@Override
 				public «TypeValidation» validate(«RosettaPath» path, «rDataType.toJavaReferenceType» o) {
 				
@@ -91,9 +94,12 @@ class ValidatorGenerator {
 				}
 				
 				«FOR attribute : data.allAttributes»
-				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.RTypeOfSymbol.toJavaReferenceType» atr, «RosettaPath» path) {
+				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.buildRAttribute.attributeToJavaType» atr, «RosettaPath» path) {
 					«List»<«ValidationResult»> validationResults = new «ArrayList»<>();
-					«ValidationResult» cardinalityValidation = «checkCardinality(attribute)»;
+					«val cardinalityCheck = checkCardinality(attribute)»
+					
+					«ValidationResult» cardinalityValidation =«IF cardinalityCheck !== null»«cardinalityCheck»;«ELSE»«ValidationResult».success(path);«ENDIF»
+					
 					«val typeFormatCheck = checkTypeFormat(attribute)»
 					«IF typeFormatCheck !== null»validationResults.add(«typeFormatCheck»);«ENDIF»
 					
@@ -118,9 +124,9 @@ class ValidatorGenerator {
 		} else {
 			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			if (attr.card.isIsMany) {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", atr == null ? 0 : atr.size(), «attr.card.inf», «attr.card.sup» , path)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr == null ? 0 : atr.size(), «attr.card.inf», «attr.card.sup» , path)'''
 			} else {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name»", atr != null ? 1 : 0, «attr.card.inf», «attr.card.sup», path)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr != null ? 1 : 0, «attr.card.inf», «attr.card.sup», path)'''
 			}
 		}
 	}
