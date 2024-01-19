@@ -100,8 +100,16 @@ class ValidatorGenerator {
 					
 					«ValidationResult» cardinalityValidation =«IF cardinalityCheck !== null»«cardinalityCheck»;«ELSE»«ValidationResult».success(path);«ENDIF»
 					
-					«val typeFormatCheck = checkTypeFormat(attribute)»
-					«IF typeFormatCheck !== null»validationResults.add(«typeFormatCheck»);«ENDIF»
+					«IF !attribute.card.isIsMany»«val typeFormatCheck = checkTypeFormat(attribute, "atr")»
+					    «IF typeFormatCheck !== null»validationResults.add(«typeFormatCheck»);«ENDIF»
+					«ELSE»
+					if (atr != null) {
+					    for («attribute.RTypeOfSymbol.toJavaReferenceType» atrb : atr) {
+							«val typeFormatCheck = checkTypeFormat(attribute, "atrb" )»
+							«IF typeFormatCheck !== null»validationResults.add(«typeFormatCheck»);«ENDIF»
+						}
+					}
+					«ENDIF»
 					
 					return new «AttributeValidation»("«attribute.name»", cardinalityValidation, validationResults);
 				}
@@ -131,7 +139,7 @@ class ValidatorGenerator {
 		}
 	}
 		
-	private def StringConcatenationClient checkTypeFormat(Attribute attr) {
+	private def StringConcatenationClient checkTypeFormat(Attribute attr, String atrVariable) {
 		val t = attr.RTypeOfSymbol.stripFromTypeAliases
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
@@ -139,16 +147,17 @@ class ValidatorGenerator {
 				val max = t.interval.max.optional
 				val pattern = t.pattern.optionalPattern
 								
-				return '''«method(ValidationUtil, "checkString")»("«attr.name»", atr, «min», «max», «pattern», path)'''
+				return '''«method(ValidationUtil, "checkString")»("«attr.name»", «atrVariable», «min», «max», «pattern», path)'''
 			}
 		} else if (t instanceof RNumberType) {
+			val testintomethod = false
 			if (t != UNCONSTRAINED_NUMBER) {
 				val digits = t.digits.optional
 				val fractionalDigits = t.fractionalDigits.optional
 				val min = t.interval.min.optionalBigDecimal
 				val max = t.interval.max.optionalBigDecimal
 				
-				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»",atr, «digits», «IF !t.isInteger»«fractionalDigits», «ENDIF»«min», «max», path)'''
+				return '''«method(ValidationUtil, "checkNumber")»("«attr.name»", «atrVariable», «digits», «IF !t.isInteger»«fractionalDigits», «ENDIF»«min», «max», path)'''
 			}
 		}
 		return null
