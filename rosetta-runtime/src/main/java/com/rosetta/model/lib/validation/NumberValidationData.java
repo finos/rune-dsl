@@ -6,11 +6,11 @@ import java.util.Optional;
 public class NumberValidationData extends ValidationData{
     private Optional<BigDecimal> min;
     private Optional<BigDecimal> max;
-    private int digits;
-    private int fractionalDigits;
+    private Optional<Integer> digits;
+    private Optional<Integer> fractionalDigits;
     private BigDecimal actual;
 
-    public NumberValidationData(Optional<BigDecimal> min, Optional<BigDecimal> max, int digits, int fractionalDigits, BigDecimal actual) {
+    public NumberValidationData(Optional<BigDecimal> min, Optional<BigDecimal> max, Optional<Integer> digits, Optional<Integer> fractionalDigits, BigDecimal actual) {
         this.min = min;
         this.max = max;
         this.digits = digits;
@@ -26,11 +26,11 @@ public class NumberValidationData extends ValidationData{
         return max;
     }
 
-    public int getDigits() {
+    public Optional<Integer> getDigits() {
         return digits;
     }
 
-    public int getFractionalDigits() {
+    public Optional<Integer> getFractionalDigits() {
         return fractionalDigits;
     }
 

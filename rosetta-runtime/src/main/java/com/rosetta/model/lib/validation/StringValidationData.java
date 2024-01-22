@@ -6,11 +6,11 @@ import java.util.regex.Pattern;
 public class StringValidationData extends ValidationData{
 
     private int minLength;
-    private int maxLength;
+    private Optional<Integer> maxLength;
     private Optional<Pattern> pattern;
     private String actual;
 
-    public StringValidationData(int minLength, int maxLength,  Optional<Pattern> pattern, String actual) {
+    public StringValidationData(int minLength, Optional<Integer> maxLength,  Optional<Pattern> pattern, String actual) {
         this.minLength = minLength;
         this.maxLength = maxLength;
         this.pattern = pattern;
@@ -21,7 +21,7 @@ public class StringValidationData extends ValidationData{
         return minLength;
     }
 
-    public int getMaxLength() {
+    public Optional<Integer> getMaxLength() {
         return maxLength;
     }
 

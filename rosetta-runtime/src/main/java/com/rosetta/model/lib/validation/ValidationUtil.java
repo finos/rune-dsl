@@ -42,7 +42,7 @@ public class ValidationUtil {
 		if (value == null) {
 			return ValidationResult.success(path);
 		}
-		StringValidationData stringValidationData = new StringValidationData(minLength, minLength, pattern, value);
+		StringValidationData stringValidationData = new StringValidationData(minLength, maxLength, pattern, value);
 		List<String> failures = new ArrayList<>();
 		if (value.length() < minLength) {
 			failures.add("Field '" + msgPrefix + "' requires a value with minimum length of " + minLength + " characters but value '" + value + "' has length of " + value.length() + " characters.");
@@ -75,7 +75,7 @@ public class ValidationUtil {
 			return ValidationResult.success(path);
 		}
 		
-		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits.get():0, fractionalDigits.isPresent()?fractionalDigits.get():0, value);
+		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits:Optional.of(0), fractionalDigits.isPresent()?fractionalDigits:Optional.of(0), value);
 		List<String> failures = new ArrayList<>();
 		if (digits.isPresent()) {
 			int d = digits.get();
@@ -129,7 +129,7 @@ public class ValidationUtil {
 			return ValidationResult.success(path);
 		}
 		BigDecimal valuasDecimal = BigDecimal.valueOf(value);
-		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits.get():0, 0, valuasDecimal);
+		NumberValidationData numValData = new NumberValidationData(min, max, digits.isPresent()?digits:Optional.of(0), Optional.of(0), valuasDecimal);
 		List<String> failures = new ArrayList<>();
 		if (digits.isPresent()) {
 			int d = digits.get();
