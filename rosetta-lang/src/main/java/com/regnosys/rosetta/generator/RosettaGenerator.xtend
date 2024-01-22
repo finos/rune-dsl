@@ -12,7 +12,6 @@ import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
-import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -38,6 +37,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
+import com.regnosys.rosetta.generator.java.object.OnlyExistsValidatorGenerator
 
 /**
  * Generates code from your model files on save.
@@ -57,7 +57,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject RuleGenerator ruleGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
-	@Inject ValidatorsGenerator validatorsGenerator
+	@Inject OnlyExistsValidatorGenerator onlyExistsValidatorGenerator
 	@Inject ValidatorGenerator validatorGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
@@ -149,7 +149,7 @@ class RosettaGenerator implements IGenerator2 {
 							dataGenerator.generate(packages, fsa, it, version)
 							metaGenerator.generate(packages, fsa, it, version)
 							//legacy
-							validatorsGenerator.generate(packages, fsa, it, version)
+							onlyExistsValidatorGenerator.generate(packages, fsa, it, version)
 							it.conditions.forEach [ cond |
 								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]

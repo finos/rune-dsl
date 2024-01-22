@@ -39,7 +39,7 @@ import java.math.BigDecimal
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
-class ValidatorsGenerator {
+class OnlyExistsValidatorGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension RosettaExtensions
