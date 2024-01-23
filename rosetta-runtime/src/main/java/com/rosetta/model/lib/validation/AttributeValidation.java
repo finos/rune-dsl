@@ -4,11 +4,11 @@ import java.util.List;
 
 public class AttributeValidation {
     private String attributeName;
-    private ValidationResult cardinalityValidation;
+    private ElementValidationResult cardinalityValidation;
 
-    private List<ValidationResult> itemValidations;
+    private List<ElementValidationResult> itemValidations;
 
-    public AttributeValidation(String attributeName, ValidationResult cardinalityValidation, List<ValidationResult> itemValidations) {
+    public AttributeValidation(String attributeName, ElementValidationResult cardinalityValidation, List<ElementValidationResult> itemValidations) {
         this.attributeName = attributeName;
         this.cardinalityValidation = cardinalityValidation;
         this.itemValidations = itemValidations;
@@ -19,11 +19,11 @@ public class AttributeValidation {
     }
 
 
-    public ValidationResult getCardinalityValidation() {
+    public ElementValidationResult getCardinalityValidation() {
         return cardinalityValidation;
     }
 
-    public List<ValidationResult> getItemValidations() {
+    public List<ElementValidationResult> getItemValidations() {
         return itemValidations;
     }
 }

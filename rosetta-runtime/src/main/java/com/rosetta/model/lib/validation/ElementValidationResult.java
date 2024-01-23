@@ -4,25 +4,25 @@ import com.rosetta.model.lib.path.RosettaPath;
 
 import java.util.Optional;
 
-public class ValidationResult{
+public class ElementValidationResult{
 	private boolean success;
 	private Optional<String> failureReason;
 	private RosettaPath path;
 	private Optional<ValidationData> data;
 
-	public ValidationResult(boolean success, String failureReason, RosettaPath path, ValidationData data) {
+	public ElementValidationResult(boolean success, String failureReason, RosettaPath path, ValidationData data) {
 		this.success = success;
 		this.failureReason = failureReason!=""?Optional.ofNullable(failureReason):Optional.empty();
 		this.path = path;
 		this.data = data!=null?Optional.ofNullable(data):Optional.empty();
 	}
 
-	public static ValidationResult success(RosettaPath path) {
-		return new ValidationResult(true, "", path, null);
+	public static ElementValidationResult success(RosettaPath path) {
+		return new ElementValidationResult(true, "", path, null);
 	}
 	
-	public static ValidationResult failure(RosettaPath path, String failureReason, ValidationData data) {
-		return new ValidationResult(false, failureReason, path, data);
+	public static ElementValidationResult failure(RosettaPath path, String failureReason, ValidationData data) {
+		return new ElementValidationResult(false, failureReason, path, data);
 	}
 
 	public boolean isSuccess() {

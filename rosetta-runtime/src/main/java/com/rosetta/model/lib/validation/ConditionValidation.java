@@ -5,10 +5,10 @@ import java.util.List;
 public class ConditionValidation {
     private String conditionName;
 
-    private ValidationResult validationResult;
+    private ElementValidationResult validationResult;
 
 
-    public ConditionValidation(String conditionName, ValidationResult validationResult) {
+    public ConditionValidation(String conditionName, ElementValidationResult validationResult) {
         this.conditionName = conditionName;
         this.validationResult = validationResult;
     }
@@ -17,7 +17,7 @@ public class ConditionValidation {
         return conditionName;
     }
 
-    public ValidationResult getValidationResult() {
+    public ElementValidationResult getValidationResult() {
         return validationResult;
     }
 }

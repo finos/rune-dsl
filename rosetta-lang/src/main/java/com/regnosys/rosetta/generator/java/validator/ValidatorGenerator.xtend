@@ -31,7 +31,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import java.util.List
-import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ConditionValidation
 import com.rosetta.util.types.generated.GeneratedJavaClass
@@ -43,6 +42,7 @@ import com.google.common.collect.ImmutableMap
 import com.rosetta.model.lib.validation.ValidationData
 import java.util.concurrent.ConcurrentHashMap
 import com.regnosys.rosetta.types.RObjectFactory
+import com.rosetta.model.lib.validation.ElementValidationResult
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
@@ -95,10 +95,10 @@ class ValidatorGenerator {
 				
 				«FOR attribute : data.allNonOverridesAttributes»
 				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.buildRAttribute.attributeToJavaType» atr, «RosettaPath» path) {
-					«List»<«ValidationResult»> validationResults = new «ArrayList»<>();
+					«List»<«ElementValidationResult»> validationResults = new «ArrayList»<>();
 					«val cardinalityCheck = checkCardinality(attribute)»
 					
-					«ValidationResult» cardinalityValidation =«IF cardinalityCheck !== null»«cardinalityCheck»;«ELSE»«ValidationResult».success(path);«ENDIF»
+					«ElementValidationResult» cardinalityValidation =«IF cardinalityCheck !== null»«cardinalityCheck»;«ELSE»«ElementValidationResult».success(path);«ENDIF»
 					
 					«IF !attribute.card.isIsMany»«val typeFormatCheck = checkTypeFormat(attribute, "atr")»
 					    «IF typeFormatCheck !== null»validationResults.add(«typeFormatCheck»);«ENDIF»
@@ -117,7 +117,7 @@ class ValidatorGenerator {
 				
 				«FOR dataCondition : data.conditions»
 				public «ConditionValidation» validate«dataCondition.conditionName(data).toFirstUpper»(«rDataType.toJavaReferenceType» data, «RosettaPath» path) {
-					«ValidationResult» result = «dataCondition.conditionName(data).toFirstLower».validate(path, data);
+					«ElementValidationResult» result = «dataCondition.conditionName(data).toFirstLower».validate(path, data);
 					
 					return new «ConditionValidation»(«dataCondition.conditionName(data).toFirstLower».toString(), result);
 				}
