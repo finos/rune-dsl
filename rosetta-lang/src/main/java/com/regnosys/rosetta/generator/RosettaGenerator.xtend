@@ -58,6 +58,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
+	@Inject ValidatorGenerator validatorGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
 	@Inject ReportGenerator reportGenerator
