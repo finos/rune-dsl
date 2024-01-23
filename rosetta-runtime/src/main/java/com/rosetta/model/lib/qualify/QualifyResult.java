@@ -121,7 +121,7 @@ public class QualifyResult implements Comparable<QualifyResult> {
 					Type.DataRule,
 					null,
 					Optional.ofNullable(operator), 
-					ValidationResult.isSuccess(), 
+					result.isSuccess(), 
 					result.getFailureReason().orElse(""));
 		}
 		
