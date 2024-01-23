@@ -130,7 +130,6 @@ class ValidatorGenerator {
 		if (attr.card.inf === 0 && attr.card.unbounded) {
 			null
 		} else {
-			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			if (attr.card.isIsMany) {
 				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr == null ? 0 : atr.size(), «attr.card.inf», «attr.card.sup» , path)'''
 			} else {
