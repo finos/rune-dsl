@@ -154,7 +154,7 @@ class RosettaGenerator implements IGenerator2 {
 								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]
 							//new
-							validatorGenerator.generate(packages, fsa, it, version)
+							//validatorGenerator.generate(packages, fsa, it, version)
 							tabulatorGenerator.generate(fsa, it, Optional.empty)
 						}
 						Function: {
