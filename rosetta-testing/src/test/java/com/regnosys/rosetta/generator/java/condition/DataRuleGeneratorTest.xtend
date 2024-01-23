@@ -51,8 +51,8 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
-				import com.rosetta.model.lib.validation.ConditionValidationData;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				
@@ -68,22 +68,22 @@ class DataRuleGeneratorTest {
 					String NAME = "FooDataRule0";
 					String DEFINITION = "if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
 					
-					ValidationResult validate(RosettaPath path, Foo foo);
+					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
 					
 					class Default implements FooDataRule0 {
 					
 						@Override
-						public ValidationResult validate(RosettaPath path, Foo foo) {
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(path);
+								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 							}
 							
 							String failureMessage = result.getError();
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return ValidationResult.failure(path, failureMessage, new ConditionValidationData());
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -106,8 +106,8 @@ class DataRuleGeneratorTest {
 					class NoOp implements FooDataRule0 {
 					
 						@Override
-						public ValidationResult validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(path);
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 					}
 				}
@@ -162,8 +162,8 @@ class DataRuleGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
-				import com.rosetta.model.lib.validation.ConditionValidationData;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				
@@ -179,22 +179,22 @@ class DataRuleGeneratorTest {
 					String NAME = "FooDataRule0";
 					String DEFINITION = "if bar exists then if bar=\"Y\" then baz exists else if (bar=\"I\" or bar=\"N\") then baz is absent";
 					
-					ValidationResult validate(RosettaPath path, Foo foo);
+					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
 					
 					class Default implements FooDataRule0 {
 					
 						@Override
-						public ValidationResult validate(RosettaPath path, Foo foo) {
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(path);
+								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 							}
 							
 							String failureMessage = result.getError();
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return ValidationResult.failure(path, failureMessage, new ConditionValidationData());
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -220,8 +220,8 @@ class DataRuleGeneratorTest {
 					class NoOp implements FooDataRule0 {
 					
 						@Override
-						public ValidationResult validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(path);
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 					}
 				}
@@ -366,6 +366,7 @@ class DataRuleGeneratorTest {
 
 		val validationResult = classes.runCondition(coinInstance, 'CoinCoinHeadRule')
 		assertFalse(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if head = True then tail = False"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Coin->getTail] [true] does not equal [Boolean] [false]"))
 	}
 
@@ -387,6 +388,7 @@ class DataRuleGeneratorTest {
 
 		val validationResult = classes.runCondition(coinInstance, 'CoinCoinTailRule')
 		assertTrue(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if tail = True then head = False"))
 	}
 	
 	@Test
@@ -409,6 +411,7 @@ class DataRuleGeneratorTest {
 		
 		val validationResult = classes.runCondition(coinInstance, 'CoinEdgeRule')
 		assertTrue(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if tail = False then head = False"))
 	}
 
 	
@@ -549,6 +552,7 @@ class DataRuleGeneratorTest {
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 	}
 	
 	@Test
@@ -564,6 +568,7 @@ class DataRuleGeneratorTest {
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue] [2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -584,6 +589,7 @@ class DataRuleGeneratorTest {
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 	}
 	
 	@Test
@@ -600,6 +606,7 @@ class DataRuleGeneratorTest {
 			
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[0]->getBaz[1]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -618,6 +625,7 @@ class DataRuleGeneratorTest {
 			
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	

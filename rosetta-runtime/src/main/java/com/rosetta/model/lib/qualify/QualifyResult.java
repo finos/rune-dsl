@@ -1,11 +1,10 @@
 package com.rosetta.model.lib.qualify;
 
-import com.rosetta.model.lib.expression.ComparisonResult;
-import com.rosetta.model.lib.validation.ValidationResult;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import com.rosetta.model.lib.expression.ComparisonResult;
+import com.rosetta.model.lib.validation.ValidationResult;
 
 /**
  * Contains results from applying expression and data rules to try to qualify a RosettaModelObject.
@@ -89,12 +88,12 @@ public class QualifyResult implements Comparable<QualifyResult> {
 			return this;
 		}
 				
-		public QualifyResultBuilder addAndDataRuleResult(ValidationResult result) {
+		public QualifyResultBuilder addAndDataRuleResult(ValidationResult<?> result) {
 			andDataRuleResults.add(ExpressionDataRuleResult.fromDataRule(result, "and"));
 			return this;
 		}
 		
-		public QualifyResultBuilder addOrDataRuleResult(ValidationResult result) {
+		public QualifyResultBuilder addOrDataRuleResult(ValidationResult<?> result) {
 			orDataRuleResults.add(ExpressionDataRuleResult.fromDataRule(result, "or"));
 			return this;
 		}
@@ -115,11 +114,11 @@ public class QualifyResult implements Comparable<QualifyResult> {
 			return new ExpressionDataRuleResult("Expression", Type.Expression, definition, Optional.empty(), result.get(), result.getError());
 		}
 		
-		static ExpressionDataRuleResult fromDataRule(ValidationResult result, String operator) {
+		static ExpressionDataRuleResult fromDataRule(ValidationResult<?> result, String operator) {
 			return new ExpressionDataRuleResult(
-					null,
+					result.getName(),
 					Type.DataRule,
-					null,
+					result.getDefinition(),
 					Optional.ofNullable(operator), 
 					result.isSuccess(), 
 					result.getFailureReason().orElse(""));

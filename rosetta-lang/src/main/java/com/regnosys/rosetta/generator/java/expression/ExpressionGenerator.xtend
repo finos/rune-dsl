@@ -86,7 +86,7 @@ import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
-import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod
+import com.rosetta.model.lib.validation.ValidationResult.ChoiceRuleValidationMethod
 import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

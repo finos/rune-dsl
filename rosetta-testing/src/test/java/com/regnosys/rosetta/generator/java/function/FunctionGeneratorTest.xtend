@@ -4534,8 +4534,8 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.expression.ComparisonResult;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
-				import com.rosetta.model.lib.validation.ConditionValidationData;
 				import com.rosetta.model.lib.validation.ValidationResult;
+				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
@@ -4553,24 +4553,24 @@ class FunctionGeneratorTest {
 					String NAME = "FooBar";
 					String DEFINITION = "if test = True then FuncFoo( attr, \"x\" ) else FuncFoo( attr, \"y\" )";
 					
-					ValidationResult validate(RosettaPath path, Foo foo);
+					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
 					
 					class Default implements FooBar {
 					
 						@Inject protected FuncFoo funcFoo;
 						
 						@Override
-						public ValidationResult validate(RosettaPath path, Foo foo) {
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(path);
+								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 							}
 							
 							String failureMessage = result.getError();
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return ValidationResult.failure(path, failureMessage, new ConditionValidationData());
+							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -4590,8 +4590,8 @@ class FunctionGeneratorTest {
 					class NoOp implements FooBar {
 					
 						@Override
-						public ValidationResult validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(path);
+						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
 						}
 					}
 				}
@@ -4741,14 +4741,14 @@ class FunctionGeneratorTest {
     }
 	
 	private def RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {
-		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of())
+		classes.createInstanceUsingBuilder('Foo', of('attr', attr), of()) as RosettaModelObject
 	}
 	
 	private def RosettaModelObject createBar(Map<String, Class<?>> classes, List<RosettaModelObject> foos) {
-		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos))
+		classes.createInstanceUsingBuilder('Bar', of(), of('foos', foos)) as RosettaModelObject
 	}
 	
 	private def RosettaModelObject createBaz(Map<String, Class<?>> classes, List<String> attrList) {
-		classes.createInstanceUsingBuilder('Baz', of(), of('attrList', attrList))
+		classes.createInstanceUsingBuilder('Baz', of(), of('attrList', attrList)) as RosettaModelObject
 	}
 }
