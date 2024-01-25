@@ -37,6 +37,7 @@ import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
 
 /**
  * Generates code from your model files on save.
@@ -57,6 +58,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
+	@Inject ValidatorGenerator validatorGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
 	@Inject ReportGenerator reportGenerator
@@ -146,10 +148,13 @@ class RosettaGenerator implements IGenerator2 {
 						Data: {
 							dataGenerator.generate(packages, fsa, it, version)
 							metaGenerator.generate(packages, fsa, it, version)
+							//Legacy
 							validatorsGenerator.generate(packages, fsa, it, version)
 							it.conditions.forEach [ cond |
 								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]
+							//new
+							//validatorGenerator.generate(packages, fsa, it, version)
 							tabulatorGenerator.generate(fsa, it, Optional.empty)
 						}
 						Function: {

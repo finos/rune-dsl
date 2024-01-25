@@ -83,12 +83,12 @@ class ModelMetaGenerator {
 					return «Collections».emptyList();
 					«ENDIF»
 				}
-				
+
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
 					return new «validator»();
 				}
-				
+
 				@Override
 				public «Validator»<? super «dataClass»> typeFormatValidator() {
 					return new «typeFormatValidator»();

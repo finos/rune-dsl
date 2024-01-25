@@ -125,7 +125,7 @@ public class ExpressionOperators {
 		if (onlyExistsValidator != null) {
 			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
 			// Translate validationResult into comparisonResult
-			return validationResult.isSuccess() ? 
+			return validationResult.isSuccess() ?
 					ComparisonResult.success() : 
 					ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
 		} else {
@@ -273,7 +273,7 @@ public class ExpressionOperators {
 		}
 		return ComparisonResult.success();
 	}
-	
+
 	public static ComparisonResult checkString(String msgPrefix, String value, int minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
 		if (value == null) {
 			return ComparisonResult.success();
