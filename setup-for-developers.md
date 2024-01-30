@@ -6,7 +6,7 @@ If this guide does not work for you, be sure to raise an issue. This way we can 
 # 1. Building with Maven
 Start by cloning the project: `git clone https://github.com/REGnosys/rosetta-dsl`
 
-Our project runs with Java 11. Make sure that your Maven also uses this version of Java by running `mvn -v`.
+Our project runs with Java 17. Make sure that your Maven also uses this version of Java by running `mvn -v`.
 
 To build the project, run `mvn clean install`.
 
