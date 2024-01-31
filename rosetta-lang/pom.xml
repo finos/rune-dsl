@@ -51,6 +51,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
 		</dependency>
+		<dependency>
+            <groupId>com.regnosys.rosetta</groupId>
+            <artifactId>com.regnosys.rosetta.xcore</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

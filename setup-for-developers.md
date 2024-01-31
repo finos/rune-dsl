@@ -14,6 +14,9 @@ To build the project, run `mvn clean install`.
 ## Install Eclipse IDE for Java and DSL Developers
 Install the latest version of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer).
 
+## Install the Checkstyle plugin
+We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).
+
 ## Install the Xsemantics plugin
 We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the type system of Rosetta. To enable language support for it in Eclipse, follow these steps:
 1. Find out which version of Xsemantics you need by looking in the `pom.xml` file of the parent project. There should be a property called `xsemantics.version`.
