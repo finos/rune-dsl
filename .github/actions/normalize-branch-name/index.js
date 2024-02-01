@@ -1,6 +1,9 @@
 const core = require("@actions/core");
 try {
-    const input = core.getInput("branch") ? core.getInput("branch") : process.env.GITHUB_HEAD_REF;
+    const input = core.getInput("branch") ? core.getInput("branch") : process.env.GITHUB_HEAD_REF ? process.env.GITHUB_HEAD_REF : process.env.GITHUB_REF ? process.env.GITHUB_REF.replace("refs/heads/", "") : null;
+    if (!input) {
+        throw new Error("No branch was found.");
+    }
     let output = input
         .trim()
         .toLowerCase()
