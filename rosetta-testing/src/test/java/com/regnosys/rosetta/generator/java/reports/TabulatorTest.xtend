@@ -175,11 +175,11 @@ class TabulatorTest {
 				}
 				
 				@Override
-				public List<FieldValue> tabulate(Report report) {
-					Optional<String> basic = Optional.ofNullable(report.getBasic());
-					Optional<List<FieldValue>> subreport = Optional.ofNullable(report.getSubreport())
+				public List<FieldValue> tabulate(Report input) {
+					Optional<String> basic = Optional.ofNullable(input.getBasic());
+					Optional<List<FieldValue>> subreport = Optional.ofNullable(input.getSubreport())
 						.map(x -> subreportTypeTabulator.tabulate(x));
-					Optional<List<FieldValue>> subreportWithRule = Optional.ofNullable(report.getSubreportWithRule())
+					Optional<List<FieldValue>> subreportWithRule = Optional.ofNullable(input.getSubreportWithRule())
 						.map(x -> subreportTypeTabulator.tabulate(x));
 					return Arrays.asList(
 						new FieldValueImpl(basicField, basic),
