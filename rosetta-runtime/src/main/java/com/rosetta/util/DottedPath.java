@@ -75,6 +75,19 @@ public class DottedPath implements Comparable<DottedPath> {
 		return Arrays.stream(segments);
 	}
 	
+	/* Utility */
+	public boolean startsWith(DottedPath other) {
+		if (segments.length < other.segments.length) {
+			return false;
+		}
+		for (int i=0; i<other.segments.length; i++) {
+			if (!segments[i].equals(other.segments[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	@Override
 	public int compareTo(DottedPath o) {
 		for (int i=0; i<segments.length && i<o.segments.length; i++) {
