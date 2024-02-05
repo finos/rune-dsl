@@ -161,6 +161,7 @@ class RosettaGenerator implements IGenerator2 {
 							if (!isDispatchingFunction) {
 								funcGenerator.generate(packages, fsa, it, version)
 							}
+							tabulatorGenerator.generate(fsa, it)
 						}
 						RosettaRule: {
 							ruleGenerator.generate(packages, fsa, it, version)

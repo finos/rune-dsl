@@ -48,9 +48,15 @@
             <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
         </dependency>
         <dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-text</artifactId>
-		</dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+        <!-- This dependency is only necessary to make it work in Eclipse. TODO: remove this and figure out a better way. -->
+        <dependency>
+            <groupId>com.regnosys.rosetta</groupId>
+            <artifactId>com.regnosys.rosetta.xcore</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

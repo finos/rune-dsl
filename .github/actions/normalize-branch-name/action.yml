@@ -1,0 +1,15 @@
+name: "Normalize branch name"
+description: "Normalizes the branch name"
+inputs:
+  branch:
+    description: "Branch name to normalize. Defaults to $GITHUB_HEAD_REF"
+    required: false
+outputs:
+  normalized:
+    description: "Normalized branch name"
+runs:
+  using: "node12"
+  main: "index.js"
+branding:
+  icon: 'terminal'
+  color: 'green'
