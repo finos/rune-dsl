@@ -1,6 +1,0 @@
-model:
-  name: Test
-dependencies:
-generators:
-  namespaces:
-    - drr.*
