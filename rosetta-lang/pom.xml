@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.regnosys.rosetta</groupId>
@@ -9,7 +9,7 @@
         <version>0.0.0.master-SNAPSHOT</version>
     </parent>
 
-	<name>Rosetta DSL SDK</name>
+    <name>Rosetta DSL SDK</name>
     <artifactId>com.regnosys.rosetta</artifactId>
 
     <description>
@@ -51,7 +51,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
         </dependency>
-        <!-- This dependency is only necessary to make it work in Eclipse. TODO: remove this and figure out a better way. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <!-- This dependency is only necessary to make it work in Eclipse. TODO:
+        remove this and figure out a better way. -->
         <dependency>
             <groupId>com.regnosys.rosetta</groupId>
             <artifactId>com.regnosys.rosetta.xcore</artifactId>
@@ -75,7 +80,8 @@
                 <directory>${project.basedir}/src-gen/main/java</directory>
                 <includes>
                     <include>com/regnosys/rosetta/Rosetta.xtextbin</include>
-                    <include>com/regnosys/rosetta/parser/antlr/internal/InternalRosetta.tokens</include>
+                    <include>
+                        com/regnosys/rosetta/parser/antlr/internal/InternalRosetta.tokens</include>
                 </includes>
             </resource>
         </resources>
@@ -123,7 +129,8 @@
                 <configuration>
                     <mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
                     <arguments>
-                        <argument>/${project.basedir}/src/main/java/com/regnosys/rosetta/GenerateRosetta.mwe2</argument>
+                        <argument>
+                            /${project.basedir}/src/main/java/com/regnosys/rosetta/GenerateRosetta.mwe2</argument>
                         <argument>-p</argument>
                         <argument>parentDir=${project.basedir}/..</argument>
                     </arguments>
@@ -157,35 +164,41 @@
                     <compilerTargetLevel>${maven.compiler.release}</compilerTargetLevel>
                     <!-- TODO: uncomment this line for faster builds once we upgrade Xtext. Also remove the `emf` and `xsemantics` folder from the clean plugin. -->
                     <!-- <incrementalXtextBuild>true</incrementalXtextBuild> -->
-<!--                    <classPathLookupFilter>^.*\.(emf|xtext).*$</classPathLookupFilter>-->
+                    <!--<classPathLookupFilter>^.*\.(emf|xtext).*$</classPathLookupFilter>-->
                     <addOutputDirectoriesToCompileSourceRoots>true</addOutputDirectoriesToCompileSourceRoots>
                     <sourceRoots>
                         <sourceRoot>${project.basedir}/model</sourceRoot>
                         <sourceRoot>${project.basedir}/src/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/src-gen/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/emf-gen/main/java</sourceRoot>
-                        <sourceRoot>${project.build.directory}/xtend-gen/main/java</sourceRoot>
+                        <sourceRoot>
+                            ${project.build.directory}/xtend-gen/main/java</sourceRoot>
                     </sourceRoots>
                     <languages>
                         <language>
                             <setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
                         </language>
                         <language>
-                            <setup>org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
+                            <setup>
+                                org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
                         </language>
                         <language>
-                            <setup>org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
+                            <setup>
+                                org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
                             <outputConfigurations>
                                 <outputConfiguration>
-                                    <outputDirectory>${project.basedir}/emf-gen/main/java</outputDirectory>
+                                    <outputDirectory>
+                                        ${project.basedir}/emf-gen/main/java</outputDirectory>
                                 </outputConfiguration>
                             </outputConfigurations>
                         </language>
                         <language>
-                            <setup>org.eclipse.xsemantics.dsl.XsemanticsStandaloneSetup</setup>
+                            <setup>
+                                org.eclipse.xsemantics.dsl.XsemanticsStandaloneSetup</setup>
                             <outputConfigurations>
                                 <outputConfiguration>
-                                    <outputDirectory>${project.build.directory}/xsemantics-gen/main/java</outputDirectory>
+                                    <outputDirectory>
+                                        ${project.build.directory}/xsemantics-gen/main/java</outputDirectory>
                                 </outputConfiguration>
                             </outputConfigurations>
                         </language>

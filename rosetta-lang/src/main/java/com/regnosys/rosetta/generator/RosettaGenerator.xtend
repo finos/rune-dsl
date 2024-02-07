@@ -38,6 +38,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
+import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 
 /**
  * Generates code from your model files on save.
@@ -65,6 +66,9 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
+	
+	@Inject
+	RosettaGeneratorsConfiguration config;
 
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta', 'basictypes.rosetta', 'annotations.rosetta'}
@@ -79,8 +83,9 @@ class RosettaGenerator implements IGenerator2 {
 			val models = resourceSet.resources
 							.filter[!ignoredFiles.contains(URI.segments.last)]
 							.map[contents.head as RosettaModel]
+							.filter[config.namespaceFilter.test(it.name)]
 							.toList
-			val version = models.head.version // TODO: find a way to access the version of a project directly
+			val version = models.head?.version // TODO: find a way to access the version of a project directly
 			
 			externalGenerators.forEach [ generator |
 				generator.beforeAllGenerate(resourceSet, models, version, [ map |
@@ -108,6 +113,9 @@ class RosettaGenerator implements IGenerator2 {
 				fsaFactory.beforeGenerate(resource)
 				
 				val model = resource.contents.head as RosettaModel
+				if (!config.namespaceFilter.test(model.name)) {
+					return
+				}
 				val version = model.version
 				
 				externalGenerators.forEach [ generator |
@@ -135,6 +143,9 @@ class RosettaGenerator implements IGenerator2 {
 				lock.getWriteLock(true);
 				
 				val model = resource.contents.head as RosettaModel
+				if (!config.namespaceFilter.test(model.name)) {
+					return
+				}
 				val version = model.version
 				
 				// generate
@@ -209,6 +220,9 @@ class RosettaGenerator implements IGenerator2 {
 				lock.getWriteLock(true)
 				
 				val model = resource.contents.head as RosettaModel
+				if (!config.namespaceFilter.test(model.name)) {
+					return
+				}
 				val version = model.version
 				
 				externalGenerators.forEach [ generator |
@@ -217,13 +231,14 @@ class RosettaGenerator implements IGenerator2 {
 					], lock)
 				]
 				fsaFactory.afterGenerate(resource)
-										
-				val models = resource.resourceSet.resources
-								.filter[!ignoredFiles.contains(URI.segments.last)]
-								.map[contents.head as RosettaModel]
-								.toList
 				
-				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
+				// TODO: move this over to `afterAllGenerate` once the language supports that method as well.
+				val models = resource.resourceSet.resources
+                                .filter[!ignoredFiles.contains(URI.segments.last)]
+                                .map[contents.head as RosettaModel]
+                                .filter[config.namespaceFilter.test(it.name)]
+                                .toList
+                javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
@@ -240,12 +255,13 @@ class RosettaGenerator implements IGenerator2 {
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true)
-									
+			
 			val models = resourceSet.resources
 							.filter[!ignoredFiles.contains(URI.segments.last)]
 							.map[contents.head as RosettaModel]
+							.filter[config.namespaceFilter.test(it.name)]
 							.toList
-			val version = models.head.version // TODO: find a way to access the version of a project directly			
+			val version = models.head?.version // TODO: find a way to access the version of a project directly
 			
 			externalGenerators.forEach [ generator |
 				generator.afterAllGenerate(resourceSet, models, version, [ map |

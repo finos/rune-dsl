@@ -43,6 +43,8 @@ import com.regnosys.rosetta.typing.RosettaTypingAuxiliary
 import com.regnosys.rosetta.typing.RosettaTypingChecking
 import org.eclipse.xtext.validation.IResourceValidator
 import com.regnosys.rosetta.validation.CachingResourceValidator
+import com.regnosys.rosetta.config.RosettaConfiguration
+import com.regnosys.rosetta.config.file.FileBasedRosettaConfigurationProvider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -135,5 +137,9 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends IResourceValidator> bindIResourceValidator() {
 		CachingResourceValidator
+	}
+	
+	def Class<? extends Provider<? extends RosettaConfiguration>> provideRosettaConfiguration() {
+		FileBasedRosettaConfigurationProvider
 	}
 }

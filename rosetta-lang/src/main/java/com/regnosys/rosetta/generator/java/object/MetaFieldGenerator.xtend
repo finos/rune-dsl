@@ -41,6 +41,7 @@ import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.fasterxml.jackson.core.type.TypeReference
+import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -48,6 +49,7 @@ class MetaFieldGenerator {
 	@Inject RosettaJavaPackages packages
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
+	@Inject RosettaGeneratorsConfiguration config
 	
 	 
 	def void generate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
@@ -90,25 +92,29 @@ class MetaFieldGenerator {
 			
 			for (ref:refs) {
 				val targetModel = ref.type.model
-				val targetPackage = new RootPackage(targetModel)
-				val metaJt = ref.toMetaJavaType
-				
-				if (ctx.cancelIndicator.canceled) {
-					return
+				if (config.namespaceFilter.test(targetModel.name)) {
+					val targetPackage = new RootPackage(targetModel)
+					val metaJt = ref.toMetaJavaType
+					
+					if (ctx.cancelIndicator.canceled) {
+						return
+					}
+					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, ref.rosettaType))
 				}
-				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, ref.rosettaType))
 			}
 			//find all the metaed types
 			val metas =  nsc.value.filter(Data).flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].toSet
 			for (meta:metas) {
 				val targetModel = meta.type.model
-				val targetPackage = new RootPackage(targetModel)
-				val metaJt = meta.toMetaJavaType
-				
-				if (ctx.cancelIndicator.canceled) {
-					return
+				if (config.namespaceFilter.test(targetModel.name)) {
+					val targetPackage = new RootPackage(targetModel)
+					val metaJt = meta.toMetaJavaType
+					
+					if (ctx.cancelIndicator.canceled) {
+						return
+					}
+					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.rosettaType))
 				}
-				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.rosettaType))
 			}
 		}
 	}
