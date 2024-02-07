@@ -137,8 +137,7 @@
                     <includePluginDependencies>true</includePluginDependencies>
                     <addOutputToClasspath>false</addOutputToClasspath>
                     <addResourcesToClasspath>true</addResourcesToClasspath>
-                    <cleanupDaemonThreads>false</cleanupDaemonThreads><!-- see
-					https://bugs.eclipse.org/bugs/show_bug.cgi?id=475098#c3 -->
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads><!-- see https://bugs.eclipse.org/bugs/show_bug.cgi?id=475098#c3 -->
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -163,12 +162,9 @@
                 <configuration>
                     <compilerSourceLevel>${maven.compiler.release}</compilerSourceLevel>
                     <compilerTargetLevel>${maven.compiler.release}</compilerTargetLevel>
-                    <!-- TODO: uncomment this line for faster builds once we
-					upgrade Xtext. Also remove the `emf` and `xsemantics` folder
-					from the clean plugin. -->
+                    <!-- TODO: uncomment this line for faster builds once we upgrade Xtext. Also remove the `emf` and `xsemantics` folder from the clean plugin. -->
                     <!-- <incrementalXtextBuild>true</incrementalXtextBuild> -->
-                    <!--
-					<classPathLookupFilter>^.*\.(emf|xtext).*$</classPathLookupFilter>-->
+                    <!--<classPathLookupFilter>^.*\.(emf|xtext).*$</classPathLookupFilter>-->
                     <addOutputDirectoriesToCompileSourceRoots>true</addOutputDirectoriesToCompileSourceRoots>
                     <sourceRoots>
                         <sourceRoot>${project.basedir}/model</sourceRoot>
