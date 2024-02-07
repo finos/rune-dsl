@@ -10,6 +10,9 @@ import com.google.inject.ProvidedBy;
 public class RosettaGeneratorsConfiguration {
 	private final Predicate<String> namespaceFilter;
 
+	public RosettaGeneratorsConfiguration() {
+		this(n -> true);
+	}
 	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter) {
 		this.namespaceFilter = namespaceFilter;
 	}

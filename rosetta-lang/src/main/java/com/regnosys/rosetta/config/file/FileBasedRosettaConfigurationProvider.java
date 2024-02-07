@@ -21,19 +21,21 @@ import com.regnosys.rosetta.config.RosettaModelConfiguration;
 
 public class FileBasedRosettaConfigurationProvider implements Provider<RosettaConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedRosettaConfigurationProvider.class);
-	
-	private static final String FILE_NAME = "rosetta-config.yml";
-	
+		
 	private final Provider<RosettaConfiguration> fallback;
+	private final Provider<URL> fileProvider;
 	private final ObjectMapper mapper;
 	
 	@Inject
-	public FileBasedRosettaConfigurationProvider(DefaultRosettaConfigurationProvider fallback) {
+	public FileBasedRosettaConfigurationProvider(DefaultRosettaConfigurationProvider fallback, RosettaConfigurationFileProvider fileProvider) {
 		this.fallback = fallback;
+		this.fileProvider = fileProvider;
 		this.mapper = new ObjectMapper(new YAMLFactory())
 				.addMixIn(RosettaConfiguration.class, RosettaConfigurationMixin.class)
 				.addMixIn(RosettaModelConfiguration.class, RosettaModelConfigurationMixin.class)
 				.addMixIn(RosettaGeneratorsConfiguration.class, RosettaGeneratorsConfigurationMixin.class);
+		mapper.configOverride(RosettaGeneratorsConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+        mapper.configOverride(NamespaceFilter.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 		mapper.configOverride(List.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 	}
 
@@ -48,11 +50,11 @@ public class FileBasedRosettaConfigurationProvider implements Provider<RosettaCo
 	
 	protected RosettaConfiguration readConfigFromFile() {
 		try {
-			URL file = Thread.currentThread().getContextClassLoader().getResource(FILE_NAME);
+			URL file = fileProvider.get();
 			if (file != null) {
 				return mapper.readValue(file, RosettaConfiguration.class);
 			}
-			LOGGER.info("No file named " + FILE_NAME + " was found on the classpath. Falling back to the default configuration.");
+			LOGGER.info("No configuration file was found. Falling back to the default configuration.");
 			return null;
 		} catch (IOException e) {
 			LOGGER.error("Could not read Rosetta configuration.", e);

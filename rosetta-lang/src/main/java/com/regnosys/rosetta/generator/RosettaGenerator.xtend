@@ -85,7 +85,7 @@ class RosettaGenerator implements IGenerator2 {
 							.map[contents.head as RosettaModel]
 							.filter[config.namespaceFilter.test(it.name)]
 							.toList
-			val version = models.head.version // TODO: find a way to access the version of a project directly
+			val version = models.head?.version // TODO: find a way to access the version of a project directly
 			
 			externalGenerators.forEach [ generator |
 				generator.beforeAllGenerate(resourceSet, models, version, [ map |
@@ -172,6 +172,7 @@ class RosettaGenerator implements IGenerator2 {
 							if (!isDispatchingFunction) {
 								funcGenerator.generate(packages, fsa, it, version)
 							}
+							tabulatorGenerator.generate(fsa, it)
 						}
 						RosettaRule: {
 							ruleGenerator.generate(packages, fsa, it, version)
@@ -230,13 +231,6 @@ class RosettaGenerator implements IGenerator2 {
 					], lock)
 				]
 				fsaFactory.afterGenerate(resource)
-										
-				val models = resource.resourceSet.resources
-								.filter[!ignoredFiles.contains(URI.segments.last)]
-								.map[contents.head as RosettaModel]
-								.toList
-				
-				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
@@ -259,7 +253,9 @@ class RosettaGenerator implements IGenerator2 {
 							.map[contents.head as RosettaModel]
 							.filter[config.namespaceFilter.test(it.name)]
 							.toList
-			val version = models.head.version // TODO: find a way to access the version of a project directly			
+			val version = models.head?.version // TODO: find a way to access the version of a project directly
+			
+			javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
 			
 			externalGenerators.forEach [ generator |
 				generator.afterAllGenerate(resourceSet, models, version, [ map |

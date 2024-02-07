@@ -1,26 +1,27 @@
 package com.regnosys.rosetta.config;
 
-import javax.inject.Inject;
-
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.function.Predicate;
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.regnosys.rosetta.RosettaRuntimeModule;
+import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
 
-@ExtendWith(InjectionExtension.class)
-@InjectWith(RosettaInjectorProvider.class)
 public class RosettaConfigurationTest {
-	@Inject
-	private RosettaConfiguration config;
-
 	@Test
 	public void testConfig() {
+		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
+			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
+				return MyConfigFileProvider.class;
+			}
+		});
+		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
+		
 		assertNotNull(config.getModel());
 		assertEquals("XYZ Model", config.getModel().getName());
 		assertEquals(Collections.emptyList(), config.getDependencies());
@@ -34,5 +35,12 @@ public class RosettaConfigurationTest {
 		assertFalse(filter.test("foo"));
 		assertTrue(filter.test("abc.def"));
 		assertFalse(filter.test("abc.def.sub"));
+	}
+	
+	private static class MyConfigFileProvider extends RosettaConfigurationFileProvider {
+		@Override
+		public URL get() {
+			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test.yml");
+		}
 	}
 }

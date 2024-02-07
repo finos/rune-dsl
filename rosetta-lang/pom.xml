@@ -55,7 +55,7 @@
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
 		</dependency>
-
+		<!-- This dependency is only necessary to make it work in Eclipse. TODO: remove this and figure out a better way. -->
 		<dependency>
 			<groupId>com.regnosys.rosetta</groupId>
 			<artifactId>com.regnosys.rosetta.xcore</artifactId>
