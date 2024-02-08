@@ -1106,7 +1106,7 @@ If the conversion fails, the result is an empty value. For example,
 
 If a model name, such as an enum value or attribute name, clashes with a Rosetta DSL keyword then the name must be escaped by prefixing with the `^` operator. The generated code (e.g. Java) and serialised format (e.g. JSON) will not include the `^` prefix.
 
-Given the following enum, the value `E` clashes with the mathematics [E notation](https://en.wikipedia.org/wiki/Scientific_notation#E_notation) which is supported by the Rosetta DSL, so it has been escaped using the `^` operator.  The generated Java would allow `VehicleTaxBandEnum.E` to be specified.
+Given the following enum, the value `E` clashes with the mathematics [E notation](https://en.wikipedia.org/wiki/Scientific_notation#E_notation) which is supported by the Rosetta DSL, so it has been escaped using the `^` operator.  The generated Java source code would allow `VehicleTaxBandEnum.E` to be specified, and the enum value would serialise to JSON as `E`,i.e., without the `^` operator. 
 
 ```
 enum VehicleTaxBandEnum:
