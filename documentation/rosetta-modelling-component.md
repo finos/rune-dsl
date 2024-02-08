@@ -1102,6 +1102,23 @@ If the conversion fails, the result is an empty value. For example,
 - `"VALUE2" to-enum Foo` results in an empty value, (because `Foo -> VALUE2` has a display name "Value 2", this conversion fails)
 - `"3.14" to-int` results in an empty value.
 
+### Keyword clashes
+
+If a model name, such as an enum value or attribute name, clashes with a Rosetta DSL keyword then the name must be escaped by prefixing with the `^` operator. The generated code (e.g. Java) and serialised format (e.g. JSON) will not include the `^` prefix.
+
+Given the following enum, the value `E` clashes with the mathematics [E notation](https://en.wikipedia.org/wiki/Scientific_notation#E_notation) which is supported by the Rosetta DSL, so it has been escaped using the `^` operator.  The generated Java would allow `VehicleTaxBandEnum.E` to be specified.
+
+```
+enum VehicleTaxBandEnum:
+    A
+    B
+    C
+    D
+    ^E
+    F
+    G
+```
+
 ## Data Validation Component
 
 **Data integrity is supported by validation components that are associated to each data type** in the Rosetta DSL. There are two types of validation components:
