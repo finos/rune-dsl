@@ -5,4 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/target/xsemantics-gen/main/java" isTestSource="false" />
     </content>
   </component>
+  <component name="SonarLintModuleSettings">
+    <option name="uniqueId" value="c1f8fdaf-3f26-4f86-a7a9-ce115cfaacac" />
+  </component>
 </module>
