@@ -187,13 +187,13 @@ class ModelObjectBuilderGenerator {
 			«IF attribute.hasMetas»
 			
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)») {
+			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «scope.getIdentifierOrThrow(attribute)») {
 				this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 				return this;
 			}
 
 			@Override
-			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
+			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
 				this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isDataType».toBuilder()«ENDIF»);
 				return this;
 			}
@@ -227,7 +227,7 @@ class ModelObjectBuilderGenerator {
 					@Override
 					public «thisName» add«attribute.name.toFirstUpper»Value(«List»<? extends «attribute.rosettaType.typeCallToRType.toJavaReferenceType»> «scope.getIdentifierOrThrow(attribute)»s) {
 						if («scope.getIdentifierOrThrow(attribute)»s != null) {
-							for («attribute.rosettaType.typeCallToRType.toJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
+							for («attribute.rosettaType.typeCallToRType.toJavaReferenceType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
 								this.add«attribute.name.toFirstUpper»Value(toAdd);
 							}
 						}

@@ -19,11 +19,18 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>org.finos</groupId>
+		<artifactId>finos</artifactId>
+		<version>5</version>
+	</parent>
+
 	<groupId>com.regnosys.rosetta</groupId>
 	<artifactId>com.regnosys.rosetta.parent</artifactId>
-	<version>0.0.0.master</version>
+	<version>0.0.0.master-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
+	<name>Rosetta DSL Parent POM</name>
 	<description>
 		Rosetta is a Domain-Specific Language (DSL) that supports the modelling
 		of operational processes for the
@@ -36,10 +43,59 @@
 	</description>
 	<url>https://github.com/REGnosys/rosetta-dsl</url>
 
+	<organization>
+		<name>REGnosys</name>
+		<url>https://regnosys.com/</url>
+	</organization>
+
+	<scm>
+		<url>https://github.com/REGnosys/rosetta-dsl</url>
+		<connection>scm:git:https://github.com/REGnosys/rosetta-dsl.git</connection>
+		<developerConnection>scm:git:ssh://github.com/REGnosys/rosetta-dsl.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<issueManagement>
+		<url>https://github.com/REGnosys/rosetta-dsl/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>SimonCockx</id>
+			<name>Simon Cockx</name>
+			<email>infra@regnosys.com</email>
+			<url>http://github.com/SimonCockx</url>
+			<organization>REGnosys</organization>
+			<organizationUrl>https://regnosys.com</organizationUrl>
+			<timezone>Europe/Brussels</timezone>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
+
 	<properties>
 		<maven.compiler.release>11</maven.compiler.release>
 		<java.enforced.version>[17,18)</java.enforced.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Release -->
+		<gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+		<gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+		<repoServerHost>s01.oss.sonatype.org</repoServerHost>
+		<distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
+		<distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
+		<organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
+		<stagingTimeoutInMinutes>10</stagingTimeoutInMinutes>
 
 		<!-- Dependency management -->
 		<xtext.version>2.27.0</xtext.version>
@@ -48,17 +104,17 @@
 		<xsemantics.version>1.22.0</xsemantics.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<org.eclipse.emf.ecore.xcore.lib.version>1.6.0</org.eclipse.emf.ecore.xcore.lib.version>
-		<maven-plugin-api.version>3.9.5</maven-plugin-api.version>
-		<maven-core.version>3.9.5</maven-core.version>
+		<maven-plugin-api.version>3.9.6</maven-plugin-api.version>
+		<maven-core.version>3.9.6</maven-core.version>
 		<maven-plugin-annotations.version>3.10.2</maven-plugin-annotations.version>
 		<slf4j.version>2.0.9</slf4j.version>
-		<logback.version>1.4.11</logback.version>
+		<logback.version>1.4.14</logback.version>
 		<InMemoryJavaCompiler.version>1.3.0</InMemoryJavaCompiler.version>
 		<jackson.version>2.16.0</jackson.version>
 
 		<!-- test -->
 		<junit.version>5.10.1</junit.version>
-		<mockito-core.version>5.7.0</mockito-core.version>
+		<mockito-core.version>5.8.0</mockito-core.version>
 
 		<!-- Plugin and plugin dependency management -->
 		<org.eclipse.emf.ecore.xcore.version>1.23.0</org.eclipse.emf.ecore.xcore.version>
@@ -68,14 +124,15 @@
 		<maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
 		<build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
 		<maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
 		<maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
 		<maven-plugin-plugin.version>3.10.2</maven-plugin-plugin.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<addjars-maven-plugin.version>1.0.5</addjars-maven-plugin.version>
 		<appassembler-maven-plugin.version>2.1.0</appassembler-maven-plugin.version>
-		<frontend-maven-plugin.version>1.14.2</frontend-maven-plugin.version>
+		<maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+		<frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
 		<node.version>20.10.0</node.version>
 	</properties>
 
@@ -87,6 +144,7 @@
 		<module>rosetta-tools</module>
 		<module>rosetta-testing</module>
 		<module>rosetta-maven-plugin</module>
+		<module>rosetta-profiling</module>
 	</modules>
 
 	<dependencyManagement>
@@ -286,6 +344,11 @@
 				<artifactId>jackson-datatype-jdk8</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.mdkt.compiler</groupId>
@@ -322,7 +385,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>${maven-enforcer-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>enforce-java</id>
@@ -411,21 +473,26 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>${nexus-staging-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<nexusUrl>https://${repoServerHost}</nexusUrl>
+					<serverId>ossrh</serverId>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<stagingProgressTimeoutMinutes>${stagingTimeoutInMinutes}</stagingProgressTimeoutMinutes>
+				</configuration>
 			</plugin>
 		</plugins>
 
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${maven-enforcer-plugin.version}</version>
+				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
@@ -515,8 +582,20 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-source-plugin</artifactId>
-					<version>${maven-source-plugin.version}</version>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven-javadoc-plugin.version}</version>
+					<configuration>
+						<failOnError>false</failOnError>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<phase>package</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
@@ -593,25 +672,6 @@
 										</artifactId>
 										<versionRange>
 											[${maven-plugin-plugin.version},)
-										</versionRange>
-										<goals>
-											<goal>descriptor</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-checkstyle-plugin
-										</artifactId>
-										<versionRange>
-											[${maven-checkstyle-plugin.version},)
 										</versionRange>
 										<goals>
 											<goal>descriptor</goal>

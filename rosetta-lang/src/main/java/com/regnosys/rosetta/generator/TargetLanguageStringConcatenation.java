@@ -82,7 +82,7 @@ public class TargetLanguageStringConcatenation extends StringConcatenation {
 	}
 	
 	private class Preprocessor implements TargetStringConcatenation {
-		private List<Consumer<TargetStringConcatenation>> replay = new ArrayList<>();
+		private final List<Consumer<TargetStringConcatenation>> replay = new ArrayList<>();
 		
 		@Override
 		public int length() {

@@ -52,7 +52,7 @@ public interface BuilderProcessor {
      * Processes a list of Rosetta objects - allows new values to be added or removed from the list
      * @param path the RosettaPath taken to the objects
      * @param rosettaType the Type of the objects
-     * @param builder a List of RosettaModelObjectBuilder representing the objects
+     * @param builders a List of RosettaModelObjectBuilder representing the objects
      * @param parent the RosettaModelObjectbuilder which contains these object as an attribute
      * @param metas Flags indicating meta information about the attribute
      */

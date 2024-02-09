@@ -112,7 +112,7 @@ public class AbstractSemanticTokensService extends AbstractLanguageServerService
 			if (repr == -1) {
 				throw new Error(String.format("Token modifier `%s` not found. Did you forget to bind it in the `%s`?", mod.getValue(), ISemanticTokenModifiersProvider.class.getSimpleName()));
 			}
-			bitmask |= repr;
+			bitmask |= 1 << repr;
 		}
 		return bitmask;
 	}
@@ -134,7 +134,7 @@ public class AbstractSemanticTokensService extends AbstractLanguageServerService
 	}
 	
 	protected SemanticToken createSemanticToken(EObject tokenObject, EStructuralFeature feature, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {
-		return createSemanticToken(tokenObject, feature, -1, tokenType);
+		return createSemanticToken(tokenObject, feature, -1, tokenType, tokenModifiers);
 	}
 	
 	protected SemanticToken createSemanticToken(EObject tokenObject, EStructuralFeature feature, int featureIndex, ISemanticTokenType tokenType, ISemanticTokenModifier... tokenModifiers) {

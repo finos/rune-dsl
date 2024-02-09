@@ -38,6 +38,12 @@ public class GeneratedJavaClassService {
 		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
 	}
 	
+	public JavaClass<Tabulator<?>> toJavaProjectionTabulator(ModelSymbolId id) {
+		DottedPath packageName = id.getNamespace().child("projections");
+		String simpleName = id.getName() + "ProjectionTabulator";
+		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
+	}
+	
 	public JavaClass<RosettaFunction> toJavaFunction(ModelSymbolId id) {
 		DottedPath packageName = id.getNamespace().child("functions");
 		String simpleName = id.getName();

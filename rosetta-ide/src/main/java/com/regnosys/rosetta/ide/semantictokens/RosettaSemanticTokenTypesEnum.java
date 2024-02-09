@@ -33,7 +33,9 @@ public enum RosettaSemanticTokenTypesEnum implements ISemanticTokenType {
 	DOCUMENT_SEGMENT("documentSegment"),
 	META_MEMBER("metaMember"),
 	INLINE_PARAMETER("inlineParameter"),
-	RULE("rule");
+	OUTPUT("output"),
+	RULE("rule"),
+	IMPLICIT_VARIABLE("implicitVariable");
 	
 	private final String value;
 	

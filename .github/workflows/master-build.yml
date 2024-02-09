@@ -1,0 +1,26 @@
+name: Build master branch and upload dependency graph
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+# Cancel previous jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  upload-dependency-graph:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/maven-build
+      with:
+        build-command: deploy  # Deploy a snapshot build of master
+      env:
+        CI_DEPLOY_USERNAME: ${{ vars.CI_DEPLOY_USERNAME }}
+        CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+    # Upload full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+    - name: Update dependency graph
+      uses: advanced-security/maven-dependency-submission-action@v3

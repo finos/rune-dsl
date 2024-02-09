@@ -19,13 +19,13 @@ package com.rosetta.util;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.apache.commons.lang3.StringUtils;
 
 public class DottedPath implements Comparable<DottedPath> {
 	protected final String[] segments;
@@ -49,7 +49,7 @@ public class DottedPath implements Comparable<DottedPath> {
 		return new DottedPath(Arrays.copyOf(segments, segments.length));
 	}
 	public static DottedPath split(String str, String separator) {
-		return new DottedPath(str.split(Pattern.quote(separator)));
+		return new DottedPath(StringUtils.splitByWholeSeparator(str, separator));
 	}
 	@JsonCreator
 	public static DottedPath splitOnDots(String str) {
@@ -89,6 +89,19 @@ public class DottedPath implements Comparable<DottedPath> {
 	}
 	public Stream<String> stream() {
 		return Arrays.stream(segments);
+	}
+	
+	/* Utility */
+	public boolean startsWith(DottedPath other) {
+		if (segments.length < other.segments.length) {
+			return false;
+		}
+		for (int i=0; i<other.segments.length; i++) {
+			if (!segments[i].equals(other.segments[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	@Override

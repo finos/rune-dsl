@@ -38,9 +38,26 @@ import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
 import com.regnosys.rosetta.serialization.RosettaTransientValueService
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService
 import com.regnosys.rosetta.resource.RosettaResource
+import com.regnosys.rosetta.typing.RosettaTyping
+import com.regnosys.rosetta.typing.RosettaTypingAuxiliary
+import com.regnosys.rosetta.typing.RosettaTypingChecking
+import org.eclipse.xtext.validation.IResourceValidator
+import com.regnosys.rosetta.validation.CachingResourceValidator
+import com.regnosys.rosetta.config.RosettaConfiguration
+import com.regnosys.rosetta.config.file.FileBasedRosettaConfigurationProvider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
+	
+	def void configureXsemanticsTypeSystem(Binder binder) {
+		// During a language server build, the following three classes are injected over and over again
+		// for each Rosetta resource. This means that code generation is spending up to 54% of its time
+		// just injecting these classes. By binding them as singletons, this time virtually disappears
+		// since they will only be instantiated once.
+		binder.bind(RosettaTyping).asEagerSingleton
+		binder.bind(RosettaTypingAuxiliary).asEagerSingleton
+		binder.bind(RosettaTypingChecking).asEagerSingleton
+	}
 	
 	override Class<? extends IFragmentProvider> bindIFragmentProvider() {
 		RosettaFragmentProvider
@@ -116,5 +133,13 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends RecordJavaUtil> bindRecordFeatureMap() {
 		RecordJavaUtil
+	}
+	
+	def Class<? extends IResourceValidator> bindIResourceValidator() {
+		CachingResourceValidator
+	}
+	
+	def Class<? extends Provider<? extends RosettaConfiguration>> provideRosettaConfiguration() {
+		FileBasedRosettaConfigurationProvider
 	}
 }

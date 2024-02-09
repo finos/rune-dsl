@@ -11,6 +11,8 @@ build.acceleo
 .DS_Store
 plugin.xml_gen
 **/*.iml
+.checkstyle
+.classpath
 
 **/.settings
 **/src-gen/
@@ -23,3 +25,6 @@ plugin.xml_gen
 com.regnosys.rosetta.web/
 
 .tycho-consumer-pom.xml
+
+# CVE scan reports
+reports/

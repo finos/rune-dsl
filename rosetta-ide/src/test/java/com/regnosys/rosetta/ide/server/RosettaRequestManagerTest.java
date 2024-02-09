@@ -35,26 +35,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @InjectWith(RosettaIdeInjectorProvider.class)
 class RosettaRequestManagerTest {
 
-    @Inject
-    RosettaRequestManager rosettaRequestManager;
+	@Inject
+	RosettaRequestManager rosettaRequestManager;
 
-    @Test
-    public void testReadRequestsAreClearedFromRequestList() throws ExecutionException, InterruptedException, TimeoutException {
+	@Test
+	public void testReadRequestsAreClearedFromRequestList()
+			throws ExecutionException, InterruptedException, TimeoutException {
 
-        CompletableFuture<Object> completableFuture = rosettaRequestManager.runRead((cancelIndicator) -> null);
+		CompletableFuture<Object> completableFuture = rosettaRequestManager.runRead((cancelIndicator) -> null);
 
-       completableFuture.get(300, TimeUnit.MILLISECONDS);
+		completableFuture.get(300, TimeUnit.MILLISECONDS);
 
-        assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
-    }
+		assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
+	}
 
-    @Test
-    public void testWriteRequestsAreClearedFromRequestList() throws ExecutionException, InterruptedException, TimeoutException {
-        CompletableFuture<Object> completableFuture = rosettaRequestManager.runWrite(() -> null, (a, b) -> null);
+	@Test
+	public void testWriteRequestsAreClearedFromRequestList()
+			throws ExecutionException, InterruptedException, TimeoutException {
+		CompletableFuture<Object> completableFuture = rosettaRequestManager.runWrite(() -> null, (a, b) -> null);
 
-        completableFuture.get(300, TimeUnit.MILLISECONDS);
+		completableFuture.get(300, TimeUnit.MILLISECONDS);
 
-        assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
-    }
+		assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
+	}
 
 }

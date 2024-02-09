@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.commons.lang3.Validate;
 
@@ -38,6 +39,10 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.xbase.lib.Pair;
 
 public class TypeSystem {
 	@Inject
@@ -58,28 +63,38 @@ public class TypeSystem {
 	}
 	private RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source, Set<Data> visited) {
 		Objects.requireNonNull(data);
-		if (!visited.add(data)) {
-			return builtins.ANY;
-		}
-		
-		Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
-		RType result = builtins.ANY;
-		for (Attribute attr: data.getAttributes()) {
-			RosettaRuleReference ref = ruleReferences.get(attr);
-			if (ref != null) {
-				RType inputType = typeCallToRType(ref.getReportingRule().getInput());
-				result = meet(result, inputType);
-			} else {
-				RType attrType = stripFromTypeAliases(typeCallToRType(attr.getTypeCall()));
-				if (attrType instanceof RDataType) {
-					Data attrData = ((RDataType)attrType).getData();
-					RType inputType = getRulesInputType(attrData, source, visited);
-					result = meet(result, inputType);
-				}
-			}
-		}
-		return result;
+        return getRulesInputTypeFromCache(data, source, () -> {
+            if (!visited.add(data)) {
+                return builtins.ANY;
+            }
+
+            Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
+            RType result = builtins.ANY;
+            for (Attribute attr: data.getAttributes()) {
+                RosettaRuleReference ref = ruleReferences.get(attr);
+                if (ref != null) {
+                    RType inputType = typeCallToRType(ref.getReportingRule().getInput());
+                    result = meet(result, inputType);
+                } else {
+                    RType attrType = stripFromTypeAliases(typeCallToRType(attr.getTypeCall()));
+                    if (attrType instanceof RDataType) {
+                        Data attrData = ((RDataType)attrType).getData();
+                        RType inputType = getRulesInputType(attrData, source, visited);
+                        result = meet(result, inputType);
+                    }
+                }
+            }
+            return result;
+        });
 	}
+    private RType getRulesInputTypeFromCache(Data data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
+        Resource resource = source.map(EObject::eResource).orElse(data.eResource());
+        if (resource instanceof XtextResource) {
+            return ((XtextResource) resource).getCache().get(new Pair<>(data, source), resource, typeProvider::get);
+        } else {
+            return typeProvider.get();
+        }
+    }
 
 	public RType join(RType t1, RType t2) {
 		Objects.requireNonNull(t1);

@@ -153,6 +153,16 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
 	}
+	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Function projection) {
+		return generatedJavaClassService.toJavaProjectionTabulator(getSymbolId(projection));
+	}
+	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Function projection) {
+		ModelSymbolId typeId = getSymbolId(type);
+		ModelSymbolId projectionId = getSymbolId(projection);
+		DottedPath packageName = projectionId.getNamespace().child("projections");
+		String simpleName = typeId.getName() + projection.getName() + "TypeTabulator";
+		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
+	}
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
 		DottedPath namespace = getModelPackage(attribute.getTypeCall().getType());

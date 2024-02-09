@@ -940,50 +940,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 	}
 
-	@Check
-	def void checkReportType(Data dataType) {
-		val attrs = dataType.allNonOverridesAttributes
-		val rootRuleReferences = attrs.map[ruleReference].filterNull.toList
-	
-		val reportingRules = rootRuleReferences.map[reportingRule].toList
-
-		// 1. check top level attributes for dupes	
-		val dupedRuleReferences = rootRuleReferences
-				.filter[curr| reportingRules.filter[it === curr.reportingRule].size > 1]
-				.toList
-				
-		// 2 recurse and check if any sub usages contain any dupes from rulesToCheck
-		attrs.map[RTypeOfSymbol].filter(RDataType)
-			.flatMap[data.allNonOverridesAttributes]
-			.flatMap[allRuleReferences(newHashSet(dataType))]
-			.map[curr|rootRuleReferences.filter[it.reportingRule === curr.reportingRule]]
-			.flatten
-			.forEach[dupedRuleReferences.add(it)]
-
-		dupedRuleReferences.forEach [
-			error("Duplicate reporting rule " + it.reportingRule.name, it, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-		]
-
-	}
-	
-	private def List<RosettaRuleReference> allRuleReferences(Attribute attribute, Set<Data> visited) {
-		val listOfRules = newArrayList
-
-		if (attribute.ruleReference !== null) {
-			listOfRules.add(attribute.ruleReference)
-		}
-
-		val attrType = attribute.RTypeOfSymbol
-		if (attrType instanceof RDataType) {
-			if (visited.add(attrType.data)) {
-				attrType.data.allNonOverridesAttributes.forEach[listOfRules.addAll(allRuleReferences(it, visited))]
-			}
-		}
-
-		return listOfRules
-
-	}
-
 	/**
 	 * Check all report attribute type and cardinality match the associated reporting rules
 	 */
@@ -1011,7 +967,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			
 			// check type
 			val ruleType = rule.expression.RType
-			if (ruleType !== null && ruleType != MISSING && !ruleType.isSubtypeOf(attrType)) {
+			if (ruleType !== null && ruleType != MISSING && attrType !== null && attrType != MISSING && !ruleType.isSubtypeOf(attrType)) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
 					'''whereas the reporting rule «rule.name» has type «ruleType».'''
 				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
