@@ -1,8 +1,18 @@
+---
+title: "Rune DSL Overview"
+date: 2022-02-09T00:38:25+09:00
+description: "Rune is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes."
+draft: false
+weight: 1
+---
+
+# Rune DSL
+
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://community.finos.org/docs/governance/Software-Projects/stages/incubating)
 
 [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/regnosysops/REGnosys%2Frosetta-dsl%2Frosetta-dsl?branch=master&key=eyJhbGciOiJIUzI1NiJ9.NWE1N2EyYTlmM2JiOTMwMDAxNDRiODMz.ZDeqVUhB-oMlbZGj4tfEiOg0cy6azXaBvoxoeidyL0g&type=cf-1)](https://g.codefresh.io/pipelines/rosetta-dsl/builds?repoOwner=REGnosys&repoName=rosetta-dsl&serviceName=REGnosys%2Frosetta-dsl&filter=trigger:build~Build;branch:master;pipeline:5d148a0543bba039bd196117~rosetta-dsl)
 
-# Rune DSL
+**Continuous Integration:** [![Maven Central](https://img.shields.io/maven-central/v/com.regnosys.rosetta/com.regnosys.rosetta.parent.svg?maxAge=2592000)](https://search.maven.org/#artifactdetails%7Ccom.regnosys.rosetta%7Ccom.regnosys.rosetta.parent%7C2%7Cpom)
 
 *Rune DSL* is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes.
 
@@ -14,13 +24,23 @@ The key idea behind the Rune DSL is that, whilst financial markets' operational 
 
 For instance, the same data are often represented differently between different applications - usually a reasonable choice when considering the respective purpose of each application. But without any formalised translation between them, data cannot easily flow from one application to another and the overall architecture looses cohesiveness. Applications also tend to mix the specification of their business logic with its technical implementation. Once buried in code, an application's logic is hard to extract and must usually be documented separately, with no guarantee of consistency.
 
-**The Rune DSL allows to represent data and business logic in a system- and technology-agnostic way** into a cohesive domain model. By supporting a shared, formalised understanding of the financial markets' domain, it enables different technology implementations to "talk" to each other in the same native language (hence the naming reference to the Rosetta Stone).
+**The Rune DSL allows to represent data and business logic in a system- and technology-agnostic way** into a cohesive domain model. By supporting a shared, formalised understanding of the financial markets' domain, it enables different technology implementations to "talk" to each other in the same native language.
 
 A model expressed in the Rune DSL provides more than a technical specification: it automatically generates executable code, to be used directly in an implementation. Both the Rune DSL and associated code generators are available in open source.
 
 **One important application of the Rune DSL concerns regulatory reporting**. While many financial institutions share the same reporting obligations, they usually implement their logic in slightly different ways because of siloed technology approaches. This exposes firms to non-compliance risk and fines and degrades the quality and comparability of the data that regulators collect.
 
-Instead, Rosetta empowers many users within firms to take part in interpreting and codifying reporting rules, without the risk of loss-in-translation once they get implemented in IT systems. The language itself is designed to be human-readable, so that domain experts without programming experience (e.g. operations or compliance professionals) can write fully functional regulatory logic directly – a bit like in Excel.
+Instead, Rune empowers many users within firms to take part in interpreting and codifying reporting rules, without the risk of loss-in-translation once they get implemented in IT systems. The language itself is designed to be human-readable, so that domain experts without programming experience (e.g. operations or compliance professionals) can write fully functional regulatory logic directly – a bit like in Excel.
+
+## Rosetta
+
+TODO - tidy
+
+A complete *Software Development Kit (SDK)* also called [Rosetta](https://ui.rosetta-technology.io/) is provided to help industry participants to create, edit or extend models using the Rune DSL. Rosetta also provides integration tools designed to facilitate firms' adoption and implementation of models within their own technology architecture.
+
+Much like how software engineers use programming languages and tools to build and test software, it is useful to think of Rosetta as a platform with a set of tools to build and test a domain model using the Rune DSL. The [Rosetta products documentation](https://docs.rosetta-technology.io/rosetta/rosetta-products/) details the various tools and products that are available in the Rosetta platform.
+
+In order to facilitate the use of the Rune DSL by industry members, a *Community Edition* of Rosetta that already features many of the platform's functionalities is available as a free web application. Through Rosetta, users can also access a number of open-source [modelling projects](https://docs.rosetta-technology.io/rosetta/projects/) that are based on the Rune DSL, allowing them to use, edit or extend those models.
 
 ## Rune DSL Components
 
@@ -33,7 +53,7 @@ The Rune DSL comprises 2 components, both open-source:
 
 The [Rune DSL repository](https://github.com/finos/rune-dsl/) contains the definition of the language. It is based on the [Eclipe Modelling Framework](https://www.eclipse.org/modeling/emf/).
 
-The language components available in the Rune DSL and their syntax are detailed in the [Rosetta Modelling Components](https://docs.rosetta-technology.io/rosetta/rosetta-dsl/rosetta-modelling-component/) section of the documentation.
+The language components available in the Rune DSL and their syntax are detailed in the [Rune Modelling Components](https://docs.rosetta-technology.io/rosetta/rosetta-dsl/rosetta-modelling-component/) section of the documentation.
 
 A [demonstration model](https://github.com/rosetta-models/demo), also available in open source, provides a set of working examples of those modelling components. Snippets extracted from this model are being used to support the DSL documentation.
 
@@ -44,34 +64,6 @@ Code generators remove the need for software developers to translate the model s
 To make models agnostic to the technology platform in which they are being implemented, other code generators have been provided in a variety of languages. A separate [code generator repository](https://github.com/REGnosys/rosetta-code-generators), also open source, allows the community to create and share code generators in potentially any software language.
 
 The [Code Generator documentation](https://docs.rosetta-technology.io/rosetta/rosetta-dsl/rosetta-code-generators/) details the available code generators, the code generation mechanism and how to write and test one.
-
-## The Rosetta SDK
-
-A complete *Software Development Kit (SDK)* also called [Rosetta](https://ui.rosetta-technology.io/) is provided to help industry participants to create, edit or extend models using the Rune DSL. Rosetta also provides integration tools designed to facilitate firms' adoption and implementation of models within their own technology architecture.
-
-Much like how software engineers use programming languages and tools to build and test software, it is useful to think of Rosetta as a platform with a set of tools to build and test a domain model using the Rune DSL. The [Rosetta products documentation](https://docs.rosetta-technology.io/rosetta/rosetta-products/) details the various tools and products that are available in the Rosetta platform.
-
-In order to facilitate the use of the Rune DSL by industry members, a *Community Edition* of Rosetta that already features many of the platform's functionalities is available as a free web application. Through Rosetta, users can also access a number of open-source [modelling projects](https://docs.rosetta-technology.io/rosetta/projects/) that are based on the Rune DSL, allowing them to use, edit or extend those models.
-
-## Installation
-
-OS X & Linux:
-
-```sh
-npm install my-crazy-module --save
-```
-
-Windows:
-
-```sh
-edit autoexec.bat
-```
-
-## Usage example
-
-A few motivating and useful examples of how your project can be used. Spice this up with code blocks and potentially screenshots / videos ([LiceCap](https://www.cockos.com/licecap/) is great for this kind of thing).
-
-_For more examples and usage, please refer to the [Wiki][wiki]._
 
 ## Development setup
 
@@ -95,7 +87,7 @@ Install the latest version of the "Eclipse IDE for Java and DSL Developers" usin
 We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).
 
 #### Install the Xsemantics plugin
-We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the type system of Rosetta. To enable language support for it in Eclipse, follow these steps:
+We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the type system of Rune. To enable language support for it in Eclipse, follow these steps:
 1. Find out which version of Xsemantics you need by looking in the `pom.xml` file of the parent project. There should be a property called `xsemantics.version`.
 2. Go to Help > Install New Software...
 3. In 'Work with' fill in [https://download.eclipse.org/xsemantics/milestones/](https://download.eclipse.org/xsemantics/milestones/).
@@ -132,11 +124,7 @@ Once you do this, the build should succeed.
 
 ## Roadmap
 
-List the roadmap steps; alternatively link the Confluence Wiki page where the project roadmap is published.
-
-1. Item 1
-2. Item 2
-3. ....
+Coming soon...
 
 ## Contributing
 For any questions, bugs or feature requests please open an [issue](https://github.com/finos/rune-dsl/issues)
