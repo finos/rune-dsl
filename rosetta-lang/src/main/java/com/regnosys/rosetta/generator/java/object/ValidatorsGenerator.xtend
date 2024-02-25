@@ -38,6 +38,7 @@ import org.apache.commons.text.StringEscapeUtils
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import java.util.List
 
 class ValidatorsGenerator {
 
@@ -93,6 +94,22 @@ class ValidatorsGenerator {
 				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
 			}
 		
+			@Override
+			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
+				return «Lists».<«ComparisonResult»>newArrayList(
+						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
+							«attrCheck»
+						«ENDFOR»
+					)
+					.stream()
+					.map(res -> {
+						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
+							return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", res.getError());
+						}
+						return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
+					})
+					.collect(«method(Collectors, "toList")»());
+			}
 		}
 	'''
 	
@@ -114,6 +131,23 @@ class ValidatorsGenerator {
 				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
 			}
 		
+				
+			@Override
+			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
+				return «Lists».<«ComparisonResult»>newArrayList(
+						«FOR attrCheck : attributes.map[checkTypeFormat].filter[it !== null] SEPARATOR ", "»
+							«attrCheck»
+						«ENDFOR»
+					)
+					.stream()
+					.map(res -> {
+						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
+							return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", res.getError());
+						}
+						return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
+					})
+					.collect(«method(Collectors, "toList")»());
+			}
 		}
 	'''
 
