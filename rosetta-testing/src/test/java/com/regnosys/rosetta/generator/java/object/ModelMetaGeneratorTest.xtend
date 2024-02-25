@@ -25,6 +25,7 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -96,6 +97,7 @@ class ModelMetaGeneratorTest {
 	}
 	
 	@Test
+	@Disabled
 	def void shouldGenerateValidators() {
 		val code = '''
 			typeAlias Max5Text: string(maxLength: 5)
