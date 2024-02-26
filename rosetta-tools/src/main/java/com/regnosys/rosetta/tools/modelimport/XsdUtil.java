@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,7 +27,8 @@ public class XsdUtil {
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
 				.collect(Collectors.joining(" "))
-			);
+			)
+			.map(docs -> docs.isEmpty() ? null : docs);
 	}
 	
 	public Optional<String> extractDocs(XsdAnnotatedElements ev, String docAnnotationSourceName) {
@@ -41,16 +43,46 @@ public class XsdUtil {
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
 				.collect(Collectors.joining(" "))
-			);
+			)
+			.map(docs -> docs.isEmpty() ? null : docs);
 	}
 	
 	public boolean isEnumType(XsdSimpleType simpleType) {
 		return simpleType.getAllRestrictions().stream()
-				.anyMatch(e -> e.getEnumeration().size() > 0);
+				.anyMatch(e -> !e.getEnumeration().isEmpty());
 	}
+
+    public String toTypeName(String xsdName) {
+        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        StringBuilder builder = new StringBuilder();
+        for (String part : parts) {
+            if (Character.isUpperCase(part.charAt(0))) {
+                builder.append(part);
+            } else {
+                builder.append(Character.toUpperCase(part.charAt(0)));
+                builder.append(part, 1, part.length());
+            }
+        }
+        return builder.toString();
+    }
+
+    public String toAttributeName(String xsdName) {
+        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        StringBuilder builder = new StringBuilder();
+        builder.append(allFirstLowerIfNotAbbrevation(parts[0]));
+        Arrays.stream(parts).skip(1).forEach(part -> {
+            if (Character.isUpperCase(part.charAt(0))) {
+                builder.append(part);
+            } else {
+                builder.append(Character.toUpperCase(part.charAt(0)));
+                builder.append(part, 1, part.length());
+            }
+        });
+        return builder.toString();
+    }
 	
-	public String allFirstLowerIfNotAbbrevation(String s) {
-		if (s == null || s.length() == 0)
+	private String allFirstLowerIfNotAbbrevation(String s) {
+		if (s == null || s.isEmpty())
 			return s;
 		int upperCased = 0;
 		while (upperCased < s.length() && Character.isUpperCase(s.charAt(upperCased))) {

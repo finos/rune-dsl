@@ -3,19 +3,17 @@ package com.regnosys.rosetta.tools.modelimport;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
-import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdRestriction;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType;
-import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeCallArgument;
@@ -26,6 +24,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
+import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdStringRestrictions;
 
 public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, RosettaTypeAlias> {	
 	
@@ -45,7 +44,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 	}
 
 	@Override
-	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
+	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
 		RosettaTypeAlias typeAlias = RosettaFactory.eINSTANCE.createRosettaTypeAlias();
 		typeAlias.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(typeAlias::setDefinition);
@@ -53,11 +52,10 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 		return typeAlias;
 	}
 
-	private TypeParameter findParameter(String name, ParametrizedRosettaType type) {
+	private Optional<TypeParameter> findParameter(String name, ParametrizedRosettaType type) {
 		return type.getParameters().stream()
 				.filter(p -> p.getName().equals(name))
-				.findFirst()
-				.orElseThrow();
+				.findFirst();
 	}
 	private RosettaIntLiteral createIntLiteral(BigInteger value) {
 		RosettaIntLiteral lit = ExpressionFactory.eINSTANCE.createRosettaIntLiteral();
@@ -74,88 +72,98 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 		lit.setValue(value);
 		return lit;
 	}
-	private TypeCallArgument createTypeArgument(ParametrizedRosettaType baseType, String parameterName, BigInteger value) {
-		TypeCallArgument arg = RosettaFactory.eINSTANCE.createTypeCallArgument();
-		arg.setParameter(findParameter(parameterName, baseType));
-		arg.setValue(createIntLiteral(value));
-		return arg;
+	private Optional<TypeCallArgument> createTypeArgument(ParametrizedRosettaType baseType, String parameterName, BigInteger value) {
+		return createTypeArgumentWithoutValue(baseType, parameterName).map(arg -> {
+			arg.setValue(createIntLiteral(value));
+			return arg;
+		});
 	}
-	private TypeCallArgument createTypeArgument(ParametrizedRosettaType baseType, String parameterName, BigDecimal value) {
-		TypeCallArgument arg = RosettaFactory.eINSTANCE.createTypeCallArgument();
-		arg.setParameter(findParameter(parameterName, baseType));
-		arg.setValue(createNumberLiteral(value));
-		return arg;
+	private Optional<TypeCallArgument> createTypeArgument(ParametrizedRosettaType baseType, String parameterName, BigDecimal value) {
+		return createTypeArgumentWithoutValue(baseType, parameterName).map(arg -> {
+			arg.setValue(createNumberLiteral(value));
+			return arg;
+		});
 	}
-	private TypeCallArgument createTypeArgument(ParametrizedRosettaType baseType, String parameterName, String value) {
-		TypeCallArgument arg = RosettaFactory.eINSTANCE.createTypeCallArgument();
-		arg.setParameter(findParameter(parameterName, baseType));
-		arg.setValue(createStringLiteral(value));
-		return arg;
+	private Optional<TypeCallArgument> createTypeArgument(ParametrizedRosettaType baseType, String parameterName, String value) {
+		return createTypeArgumentWithoutValue(baseType, parameterName).map(arg -> {
+			arg.setValue(createStringLiteral(value));
+			return arg;
+		});
+	}
+	private Optional<TypeCallArgument> createTypeArgumentWithoutValue(ParametrizedRosettaType baseType, String parameterName) {
+		return findParameter(parameterName, baseType).map(param -> {
+			TypeCallArgument arg = RosettaFactory.eINSTANCE.createTypeCallArgument();
+			arg.setParameter(param);
+			return arg;
+		});
 	}
 	@Override
-	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames) {
+	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings) {
 		RosettaTypeAlias typeAlias = typeMappings.getRosettaTypeFromSimple(xsdType);
 		
-		TypeCall tc = RosettaFactory.eINSTANCE.createTypeCall();
-		typeAlias.setTypeCall(tc);
-		
 		XsdRestriction restr = xsdType.getRestriction();
-		RosettaType baseType = typeMappings.getRosettaTypeFromBuiltin(restr.getBaseAsBuiltInDataType().getName());
-		if (baseType instanceof ParametrizedRosettaType) {
-			ParametrizedRosettaType paramBaseType = (ParametrizedRosettaType)baseType;
-			// If fractionDigits is 0, use int instead.
+		TypeCall tc;
+		if (restr.getBaseAsBuiltInDataType() != null) {
 			if (restr.getFractionDigits() != null && restr.getFractionDigits().getValue() == 0) {
-				RosettaTypeAlias intType = (RosettaTypeAlias)typeMappings.getRosettaTypeFromBuiltin("integer");
-				baseType = intType;
-				paramBaseType = intType;
+				tc = typeMappings.getRosettaTypeCallFromBuiltin("integer");
+			} else {
+				tc = typeMappings.getRosettaTypeCallFromBuiltin(restr.getBaseAsBuiltInDataType().getName());
 			}
-			// add type arguments
+		} else if (restr.getBaseAsSimpleType() != null) {
+			tc = typeMappings.getRosettaTypeCall(restr.getBaseAsSimpleType());
+		} else if (restr.getBaseAsComplexType() != null) {
+			tc = typeMappings.getRosettaTypeCall(restr.getBaseAsComplexType());
+		} else if (restr.getBase().equals("base64Binary")) {
+			// TODO: hack for FpML
+			tc = typeMappings.getRosettaTypeCallFromBuiltin("base64Binary");
+		} else {
+			throw new RuntimeException("Unrecognized restriction: " + restr.getBase());
+		}
+		typeAlias.setTypeCall(tc);
+		if (tc.getType() instanceof ParametrizedRosettaType paramBaseType) {
+            // add type arguments
 			if (restr.getTotalDigits() != null) {
 				BigInteger digits = BigInteger.valueOf(restr.getTotalDigits().getValue());
-				TypeCallArgument arg = createTypeArgument(paramBaseType, RNumberType.DIGITS_PARAM_NAME, digits);
-				tc.getArguments().add(arg);
+				createTypeArgument(paramBaseType, RNumberType.DIGITS_PARAM_NAME, digits).ifPresent(arg -> tc.getArguments().add(arg));
 			}
 			if (restr.getFractionDigits() != null) {
 				BigInteger fractionalDigits = BigInteger.valueOf(restr.getFractionDigits().getValue());
-				if (!fractionalDigits.equals(BigInteger.ZERO)) {
-					TypeCallArgument arg = createTypeArgument(paramBaseType, RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, fractionalDigits);
-					tc.getArguments().add(arg);
-				}
+				createTypeArgument(paramBaseType, RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, fractionalDigits).ifPresent(arg -> tc.getArguments().add(arg));
 			}
 			if (restr.getMinInclusive() != null) {
 				BigDecimal min = new BigDecimal(restr.getMinInclusive().getValue());
-				TypeCallArgument arg = createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min);
-				tc.getArguments().add(arg);
+				createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min).ifPresent(arg -> tc.getArguments().add(arg));
 			}
 			if (restr.getMaxInclusive() != null) {
 				BigDecimal max = new BigDecimal(restr.getMaxInclusive().getValue());
-				TypeCallArgument arg = createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max);
-				tc.getArguments().add(arg);
+				createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMinExclusive() != null) {
+				BigDecimal min = new BigDecimal(restr.getMinExclusive().getValue());
+				createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMaxExclusive() != null) {
+				BigDecimal max = new BigDecimal(restr.getMaxExclusive().getValue());
+				createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max).ifPresent(arg -> tc.getArguments().add(arg));
 			}
 			
 			if (restr.getLength() != null) {
 				BigInteger length = BigInteger.valueOf(restr.getLength().getValue());
-				TypeCallArgument argMin = createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, length);
-				TypeCallArgument argMax = createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, length);
-				tc.getArguments().add(argMin);
-				tc.getArguments().add(argMax);
+				createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, length).ifPresent(arg -> tc.getArguments().add(arg));;
+				createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, length).ifPresent(arg -> tc.getArguments().add(arg));;
 			}
-			if (restr.getMinLength() != null) {
+			if (restr.getMinLength() != null && restr.getMinLength().getValue() != 0) {
 				BigInteger minLength = BigInteger.valueOf(restr.getMinLength().getValue());
-				TypeCallArgument arg = createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, minLength);
-				tc.getArguments().add(arg);
+				createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, minLength).ifPresent(arg -> tc.getArguments().add(arg));
 			}
 			if (restr.getMaxLength() != null) {
 				BigInteger maxLength = BigInteger.valueOf(restr.getMaxLength().getValue());
-				TypeCallArgument arg = createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, maxLength);
-				tc.getArguments().add(arg);
+				createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, maxLength).ifPresent(arg -> tc.getArguments().add(arg));;
 			}
 			if (restr.getPattern() != null) {
-				String pattern = restr.getPattern().getValue();
-				TypeCallArgument arg = createTypeArgument(paramBaseType, RStringType.PATTERN_PARAM_NAME, pattern);
-				tc.getArguments().add(arg);
+				String pattern = restr.getPattern().stream().map(XsdStringRestrictions::getValue).collect(Collectors.joining("|"));
+				createTypeArgument(paramBaseType, RStringType.PATTERN_PARAM_NAME, pattern).ifPresent(arg -> tc.getArguments().add(arg));;
 			}
 		}
-		tc.setType(baseType);
 	}
 }
