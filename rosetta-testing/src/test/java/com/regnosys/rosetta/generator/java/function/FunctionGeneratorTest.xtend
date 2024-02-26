@@ -42,6 +42,52 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+    def void handlesNullWhenConstructingRecords() {
+        val code = '''
+        func Foo:
+            inputs:
+                date date (0..1)
+                time time (0..1)
+                zone string (0..1)
+            output: result zonedDateTime (0..1)
+            set result:
+                zonedDateTime {
+                    date: date,
+                    time: time,
+                    timezone: zone
+                }
+        
+        func Bar:
+            inputs:
+                day int (0..1)
+            output: result date (0..1)
+            set result:
+                date {
+                    day: day,
+                    year: 2024,
+                    month: 2
+                }
+        '''.generateCode
+        val classes = code.compileToClasses
+        
+        val foo = classes.createFunc("Foo");
+        
+        val date = Date.of(2024, 2, 26)
+        val time = LocalTime.of(11, 10)
+        val zone = "Europe/Paris"
+        val zdt = ZonedDateTime.of(date.toLocalDate, time, ZoneId.of(zone))
+        assertEquals(zdt, foo.invokeFunc(ZonedDateTime, #[date, time, zone]))
+        assertEquals(null, foo.invokeFunc(ZonedDateTime, #[null, time, zone]))
+        assertEquals(null, foo.invokeFunc(ZonedDateTime, #[date, null, zone]))
+        assertEquals(null, foo.invokeFunc(ZonedDateTime, #[date, time, null]))
+        
+        val bar = classes.createFunc("Bar");
+        
+        assertEquals(Date.of(2024, 2, 26), bar.invokeFunc(Date, #[26]))
+        assertEquals(null, bar.invokeFunc(Date, #[null]))
+    }
+	
+	@Test
 	def void canEscapeIdentifiers() {
 		val code = '''
 		func Foo:
