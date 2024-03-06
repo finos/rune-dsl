@@ -73,6 +73,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
 import org.eclipse.xtext.resource.XtextResource
 import javax.inject.Provider
+import com.regnosys.rosetta.rosetta.TranslationParameter
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -145,6 +146,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				cycleTracker.put(symbol, type)
 				type
 			}
+			TranslationParameter: {
+			    symbol.typeCall.typeCallToRType
+			}
 		}
 	}
 	private def RType safeRType(RosettaFeature feature, Map<EObject, RType> cycleTracker) {
@@ -202,14 +206,16 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RType> cycleTracker) {
-		val definingContainer = context.findContainerDefiningImplicitVariable
+		val definingContainer = context.findObjectDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
 				new RDataType(it)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType ?: MISSING
+				input?.typeCallToRType
+			} else if (it instanceof TranslationParameter) {
+			    typeCall.typeCallToRType
 			}
 		].orElse(MISSING)
 	}

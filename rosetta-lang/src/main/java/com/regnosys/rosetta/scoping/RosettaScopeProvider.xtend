@@ -56,6 +56,8 @@ import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import com.regnosys.rosetta.rosetta.TranslationRule
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 /**
  * This class contains custom scoping description.
@@ -285,6 +287,17 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				filteredScope(parentScope, [ descr |
 					object.isPostCondition || descr.EObjectOrProxy.eContainingFeature !== FUNCTION__OUTPUT
 				])
+			}
+			RosettaExpression: {
+			    if (object.eContainmentFeature === TRANSLATION_RULE__LEFT) {
+			        val rule = object.eContainer as TranslationRule
+			        Scopes.scopeFor(rule.translation.leftParameters.filter[name !== null], parentScope)
+			    } else if (object.eContainmentFeature === TRANSLATION_RULE__RIGHT) {
+			        val rule = object.eContainer as TranslationRule
+			        Scopes.scopeFor(rule.translation.rightParameters.filter[name !== null], parentScope)
+			    } else {
+			        parentScope
+			    }
 			}
 			RosettaModel:
 				filteredScope(defaultScope(object, reference))[ descr |

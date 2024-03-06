@@ -154,7 +154,7 @@ RosettaRootElement:
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
-	RosettaQualifiedType | RosettaCalculationType
+	RosettaQualifiedType | RosettaCalculationType | RosettaTranslateSource
 ;
 
 
@@ -759,6 +759,25 @@ RosettaOnlyExistsElementRoot returns RosettaReference:
 /*****************************************
  * Translate external synonym and rule support
  *****************************************/
+RosettaTranslateSource:
+    'translate' 'source' RosettaNamed ('extends' superSources+=[RosettaTranslateSource|QualifiedName]  (',' superSources+=[RosettaTranslateSource|QualifiedName])* )?
+    '{'
+        (translations+=Translation)*
+    '}'
+;
+
+Translation:
+    'translate' leftParameters+=TranslationParameter (',' leftParameters+=TranslationParameter)* '<=>' rightParameters+=TranslationParameter (',' rightParameters+=TranslationParameter)* ':'
+        (rules+=TranslationRule)*
+;
+
+TranslationParameter:
+    RosettaNamed? RosettaTyped
+;
+
+TranslationRule:
+    '+' left=RosettaCalcExpression '<=>' right=RosettaCalcExpression
+;
 
 fragment ExternalAnnotationSource:
 	'{'
