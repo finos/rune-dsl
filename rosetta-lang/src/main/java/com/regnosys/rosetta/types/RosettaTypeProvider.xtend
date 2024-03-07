@@ -77,6 +77,11 @@ import javax.inject.Provider
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
 
+	// MP - Disabling the Expression Cache due to "ISSUE-919: Errors appear in model after adding a type".
+	// The cache can be re-enabled for testing using `-DEXPRESSION_RTYPE_CACHE_KEY_ENABLED=true` in the BSP.
+	public static boolean EXPRESSION_RTYPE_CACHE_KEY_ENABLED = Boolean.getBoolean("EXPRESSION_RTYPE_CACHE_KEY_ENABLED");
+
+
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
 	@Inject RosettaExtensions extensions
@@ -186,6 +191,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		])
 	}
 	private def RType getRTypeFromCache(String cacheKey, EObject object, Provider<RType> typeProvider) {
+		if (!EXPRESSION_RTYPE_CACHE_KEY_ENABLED) {
+			typeProvider.get()
+		}
 		if (object === null) {
 			return typeProvider.get()
 		}
