@@ -192,7 +192,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	private def RType getRTypeFromCache(String cacheKey, EObject object, Provider<RType> typeProvider) {
 		if (!EXPRESSION_RTYPE_CACHE_KEY_ENABLED) {
-			typeProvider.get()
+			return typeProvider.get()
 		}
 		if (object === null) {
 			return typeProvider.get()
