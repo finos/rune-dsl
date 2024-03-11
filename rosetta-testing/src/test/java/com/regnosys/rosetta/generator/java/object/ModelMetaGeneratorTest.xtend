@@ -147,6 +147,7 @@ class ModelMetaGeneratorTest {
 						})
 						.collect(toList());
 				}
+			
 			}
 			'''.toString,
 			code.get('com.rosetta.test.model.validation.FooValidator')
@@ -192,6 +193,7 @@ class ModelMetaGeneratorTest {
 						})
 						.collect(toList());
 				}
+			
 			}
 			'''.toString,
 			code.get('com.rosetta.test.model.validation.FooTypeFormatValidator')

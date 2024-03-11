@@ -77,7 +77,7 @@ class ValidatorsGenerator {
 
 	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
-		
+
 			@Override
 			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
@@ -94,6 +94,7 @@ class ValidatorsGenerator {
 					})
 					.collect(«method(Collectors, "toList")»());
 			}
+
 		}
 	'''
 	
@@ -116,6 +117,7 @@ class ValidatorsGenerator {
 					})
 					.collect(«method(Collectors, "toList")»());
 			}
+
 		}
 	'''
 
