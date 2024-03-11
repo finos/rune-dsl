@@ -94,7 +94,7 @@ class ValidatorsGenerator {
 					})
 					.collect(«method(Collectors, "toList")»());
 			}
-
+		
 		}
 	'''
 	
@@ -117,7 +117,7 @@ class ValidatorsGenerator {
 					})
 					.collect(«method(Collectors, "toList")»());
 			}
-
+		
 		}
 	'''
 
