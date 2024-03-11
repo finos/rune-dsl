@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
+import com.regnosys.rosetta.rosetta.RosettaPackage.Literals;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.Translation;
 import com.regnosys.rosetta.rosetta.TranslationParameter;
@@ -52,14 +53,10 @@ public class ImplicitVariableUtil {
 				Translation trans = rule.getTranslation();
 				TranslationParameter implicitParam = null;
 				
-				RosettaExpression left = rule.getLeft();
-				if (left != null && left.equals(prev)) {
+				if (prev.eContainmentFeature() == Literals.TRANSLATION_RULE__LEFT) {
 					implicitParam = findFirstUnnamedParameter(trans.getLeftParameters());
-				} else {
-					RosettaExpression right = rule.getRight();
-					if (right != null && right.equals(prev)) {
-						implicitParam = findFirstUnnamedParameter(trans.getRightParameters());
-					}
+				} else if (prev.eContainmentFeature() == Literals.TRANSLATION_RULE__RIGHT) {
+					implicitParam = findFirstUnnamedParameter(trans.getRightParameters());
 				}
 				
 				if (implicitParam != null) {

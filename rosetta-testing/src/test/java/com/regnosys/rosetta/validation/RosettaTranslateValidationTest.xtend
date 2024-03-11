@@ -31,12 +31,13 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    
 	    translate source FooBar1 {
 	        translate Foo <=> Bar:
-	           + a <=> b
+	           # a <=> b
+	           # 42 <=> 42
 	    }
 	    
-	    translate source FooBar2 {
-	        translate foo Foo <=> bar Bar:
-	            + foo -> a <=> bar -> b
+	    translate source FooBar2 extends FooBar1 {
+	        translate string, foo Foo <=> bar Bar:
+	            # foo -> a, foo <=> bar -> b
 	    }
 	    '''.parseRosettaWithNoIssues
 	}

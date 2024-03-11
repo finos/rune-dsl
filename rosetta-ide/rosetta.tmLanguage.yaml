@@ -28,7 +28,7 @@ variables:
   # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
   identifiersConflictingWithRootStart: '{{wordStart}}(version){{wordEnd}}'
-  ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
+  ambiguousRootStart: '{{wordStart}}(synonym|rule|translate){{wordEnd}}'
   unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|func){{wordEnd}}'
   rootStart: '{{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   strictRootEnd: (?={{rootStart}})
@@ -135,6 +135,7 @@ repository:
           - include: '#rosettaTypeAlias'
           - include: '#rosettaLibraryFunction'
           - include: '#rosettaAnnotationSource'
+          - include: '#rosettaTranslateSource'
           - include: '#rosettaRule'
           - include: '#rosettaMetaType'
           - include: '#rosettaReport'
@@ -440,6 +441,50 @@ repository:
               patterns:
               - include: '#comment'
               - include: '#annotation'
+
+      rosettaTranslateSource:
+        name: meta.translate-source.rosetta
+        begin: '{{wordStart}}translate{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.rosetta }
+        end: '{{unambiguousRootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '(?<={{wordStart}}translate{{wordEnd}})'
+          end: (?=\{)|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - name: keyword.other.source.rosetta
+            match: '{{wordStart}}source{{wordEnd}}'
+          - name: keyword.other.extends.rosetta
+            match: '{{wordStart}}extends{{wordEnd}}'
+          - name: entity.name.translate-source.rosetta
+            match: '{{identifier}}'
+        - name: meta.translate-source-body.rosetta
+          begin: (\{)
+          beginCaptures:
+            1: { name: punctuation.section.braces.begin.rosetta }
+          end: (\})|{{unambiguousRootEnd}}
+          endCaptures:
+            1: { name: punctuation.section.braces.end.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: meta.translation.rosetta
+            begin: '{{wordStart}}translate{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.rosetta }
+            end: (?={{wordStart}}translate{{wordEnd}}|\})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - begin: (?<={{wordStart}}translate{{wordEnd}})
+              end: ':'
+              patterns:
+              - include: '#comment'
+            - begin: '#'
+              end: (?=#|{{wordStart}}translate{{wordEnd}}|\})|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - include: '#expression'
 
       rosettaRule:
         patterns:

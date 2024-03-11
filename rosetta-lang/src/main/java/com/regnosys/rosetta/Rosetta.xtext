@@ -196,8 +196,8 @@ TypeParameterValidID:
 ;
 
 ValidID:
-	ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
-	| 'pattern'
+	ID | 'condition' | 'source' | 'value' | 'version'
+	| 'pattern' | 'translate'
 ;
 
 
@@ -776,7 +776,7 @@ TranslationParameter:
 ;
 
 TranslationRule:
-    '+' left=RosettaCalcExpression '<=>' right=RosettaCalcExpression
+    '#' left+=RosettaCalcExpression (',' left+=RosettaCalcExpression)* '<=>' right+=RosettaCalcExpression (',' right+=RosettaCalcExpression)*
 ;
 
 fragment ExternalAnnotationSource:
