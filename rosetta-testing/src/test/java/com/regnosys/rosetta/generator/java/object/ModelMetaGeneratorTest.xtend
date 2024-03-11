@@ -25,7 +25,6 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
-import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -97,7 +96,6 @@ class ModelMetaGeneratorTest {
 	}
 	
 	@Test
-	@Disabled
 	def void shouldGenerateValidators() {
 		val code = '''
 			typeAlias Max5Text: string(maxLength: 5)
@@ -129,6 +127,7 @@ class ModelMetaGeneratorTest {
 			import static com.rosetta.model.lib.validation.ValidationResult.failure;
 			import static com.rosetta.model.lib.validation.ValidationResult.success;
 			import static java.util.stream.Collectors.joining;
+			import static java.util.stream.Collectors.toList;
 			
 			public class FooValidator implements Validator<Foo> {
 			
@@ -149,6 +148,23 @@ class ModelMetaGeneratorTest {
 					return success("Foo", ValidationType.CARDINALITY, "Foo", path, "");
 				}
 			
+				@Override
+				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+					return Lists.<ComparisonResult>newArrayList(
+							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
+							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1), 
+							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0), 
+							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
+						)
+						.stream()
+						.map(res -> {
+							if (!isNullOrEmpty(res.getError())) {
+								return failure("Foo", ValidationType.CARDINALITY, "Foo", path, "", res.getError());
+							}
+							return success("Foo", ValidationType.CARDINALITY, "Foo", path, "");
+						})
+						.collect(toList());
+				}
 			}
 			'''.toString,
 			code.get('com.rosetta.test.model.validation.FooValidator')
@@ -165,6 +181,7 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
 			import java.math.BigDecimal;
+			import java.util.List;
 			
 			import static com.google.common.base.Strings.isNullOrEmpty;
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkNumber;
@@ -174,6 +191,7 @@ class ModelMetaGeneratorTest {
 			import static java.util.Optional.empty;
 			import static java.util.Optional.of;
 			import static java.util.stream.Collectors.joining;
+			import static java.util.stream.Collectors.toList;
 			
 			public class FooTypeFormatValidator implements Validator<Foo> {
 			
@@ -192,6 +210,23 @@ class ModelMetaGeneratorTest {
 					return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
 				}
 			
+					
+				@Override
+				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+					return Lists.<ComparisonResult>newArrayList(
+							checkNumber("c", o.getC(), empty(), of(0), empty(), empty()), 
+							checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()), 
+							checkString("f", o.getF(), 0, of(5), empty())
+						)
+						.stream()
+						.map(res -> {
+							if (!isNullOrEmpty(res.getError())) {
+								return failure("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
+							}
+							return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
+						})
+						.collect(toList());
+				}
 			}
 			'''.toString,
 			code.get('com.rosetta.test.model.validation.FooTypeFormatValidator')
