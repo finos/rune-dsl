@@ -20,11 +20,6 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	}
 	
 	@Override
-	public List<Validator<? super T>> choiceRuleValidators() {
-		return Collections.emptyList();
-	}
-	
-	@Override
 	public List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
 		return Collections.emptyList();
 	}

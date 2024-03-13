@@ -25,6 +25,7 @@ import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
 import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
@@ -420,7 +421,11 @@ public class ExpressionOperators {
 	
 	// one-of and choice
 
+	@Deprecated
 	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
+		return choice(mapper, choiceFieldNames, necessity == ValidationResult.ChoiceRuleValidationMethod.OPTIONAL ? ChoiceRuleValidationMethod.OPTIONAL : ChoiceRuleValidationMethod.REQUIRED);
+	}
+	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ChoiceRuleValidationMethod necessity) {
 		T object = mapper.get();
 		List<String> populatedFieldNames = new LinkedList<>();
 		for (String a: choiceFieldNames) {
