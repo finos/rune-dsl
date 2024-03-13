@@ -126,18 +126,37 @@ class ModelMetaGeneratorTest {
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
 			import static com.rosetta.model.lib.validation.ValidationResult.failure;
 			import static com.rosetta.model.lib.validation.ValidationResult.success;
+			import static java.util.stream.Collectors.joining;
 			import static java.util.stream.Collectors.toList;
 			
 			public class FooValidator implements Validator<Foo> {
 			
-				@Override
-				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+				private List<ComparisonResult> getComparisonResults(Foo o) {
 					return Lists.<ComparisonResult>newArrayList(
 							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
 							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1), 
 							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0), 
 							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
-						)
+						);
+				}
+			
+				@Override
+				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
+					String error = getComparisonResults(o)
+						.stream()
+						.filter(res -> !res.get())
+						.map(res -> res.getError())
+						.collect(joining("; "));
+			
+					if (!isNullOrEmpty(error)) {
+						return failure("Foo", ValidationType.CARDINALITY, "Foo", path, "", error);
+					}
+					return success("Foo", ValidationType.CARDINALITY, "Foo", path, "");
+				}
+			
+				@Override
+				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+					return getComparisonResults(o)
 						.stream()
 						.map(res -> {
 							if (!isNullOrEmpty(res.getError())) {
@@ -173,17 +192,36 @@ class ModelMetaGeneratorTest {
 			import static com.rosetta.model.lib.validation.ValidationResult.success;
 			import static java.util.Optional.empty;
 			import static java.util.Optional.of;
+			import static java.util.stream.Collectors.joining;
 			import static java.util.stream.Collectors.toList;
 			
 			public class FooTypeFormatValidator implements Validator<Foo> {
 			
-				@Override
-				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+				private List<ComparisonResult> getComparisonResults(Foo o) {
 					return Lists.<ComparisonResult>newArrayList(
 							checkNumber("c", o.getC(), empty(), of(0), empty(), empty()), 
 							checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()), 
 							checkString("f", o.getF(), 0, of(5), empty())
-						)
+						);
+				}
+			
+				@Override
+				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
+					String error = getComparisonResults(o)
+						.stream()
+						.filter(res -> !res.get())
+						.map(res -> res.getError())
+						.collect(joining("; "));
+			
+					if (!isNullOrEmpty(error)) {
+						return failure("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "", error);
+					}
+					return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
+				}
+			
+				@Override
+				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+					return getComparisonResults(o)
 						.stream()
 						.map(res -> {
 							if (!isNullOrEmpty(res.getError())) {

@@ -77,14 +77,32 @@ class ValidatorsGenerator {
 
 	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
-
-			@Override
-			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
+		
+			private «List»<«ComparisonResult»> getComparisonResults(«t.toJavaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
-					)
+					);
+			}
+		
+			@Override
+			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+				String error = getComparisonResults(o)
+					.stream()
+					.filter(res -> !res.get())
+					.map(res -> res.getError())
+					.collect(«method(Collectors, "joining")»("; "));
+		
+				if (!«method(Strings, "isNullOrEmpty")»(error)) {
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "", error);
+				}
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».CARDINALITY, "«t.name»", path, "");
+			}
+
+			@Override
+			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
+				return getComparisonResults(o)
 					.stream()
 					.map(res -> {
 						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
@@ -101,13 +119,31 @@ class ValidatorsGenerator {
 	def private StringConcatenationClient typeFormatClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
 		public class «t.toTypeFormatValidatorClass» implements «Validator»<«t.toJavaType»> {
 		
-			@Override
-			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
+			private «List»<«ComparisonResult»> getComparisonResults(«t.toJavaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkTypeFormat].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
-					)
+					);
+			}
+		
+			@Override
+			public «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, «t.toJavaType» o) {
+				String error = getComparisonResults(o)
+					.stream()
+					.filter(res -> !res.get())
+					.map(res -> res.getError())
+					.collect(«method(Collectors, "joining")»("; "));
+
+				if (!«method(Strings, "isNullOrEmpty")»(error)) {
+					return «method(ValidationResult, "failure")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "", error);
+				}
+				return «method(ValidationResult, "success")»("«t.name»", «ValidationResult.ValidationType».TYPE_FORMAT, "«t.name»", path, "");
+			}
+		
+			@Override
+			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «t.toJavaType» o) {
+				return getComparisonResults(o)
 					.stream()
 					.map(res -> {
 						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
