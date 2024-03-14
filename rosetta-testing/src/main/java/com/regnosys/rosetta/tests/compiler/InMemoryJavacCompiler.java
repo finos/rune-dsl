@@ -46,9 +46,12 @@ import org.mdkt.compiler.DynamicClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Based on org.mdkt.compiler.InMemoryJavaCompiler.
+/** 
+ * Based on org.mdkt.compiler.InMemoryJavaCompiler.
  * Enhanced with http://atamur.blogspot.com/2009/10/using-built-in-javacompiler-with-custom.html
- * to properly support a parent classloader.
+ * 	to properly support a parent classloader.
+ * Enhanced with https://stackoverflow.com/a/6424879/3083982
+ * 	to support overwriting existing classes with generated classes.
  */
 public class InMemoryJavacCompiler {
 	private static Logger LOGGER = LoggerFactory.getLogger(InMemoryJavacCompiler.class);
@@ -65,11 +68,11 @@ public class InMemoryJavacCompiler {
 
 	private InMemoryJavacCompiler() {
 		this.javac = ToolProvider.getSystemJavaCompiler();
-		this.classLoader = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
+		this.classLoader = new ChildFirstDynamicClassLoader(ClassLoader.getSystemClassLoader());
 	}
 
 	public InMemoryJavacCompiler useParentClassLoader(ClassLoader parent) {
-		this.classLoader = new DynamicClassLoader(parent);
+		this.classLoader = new ChildFirstDynamicClassLoader(parent);
 		return this;
 	}
 
