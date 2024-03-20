@@ -236,11 +236,6 @@ public interface Key extends RosettaModelObject{
 		}
 
 		@Override
-		public List<Validator<? super Key>> choiceRuleValidators() {
-			return Collections.emptyList();
-		}
-
-		@Override
 		public List<Function<? super Key, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
 			return Collections.emptyList();
 		}

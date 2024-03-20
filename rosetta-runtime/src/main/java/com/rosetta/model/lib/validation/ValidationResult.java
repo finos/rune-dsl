@@ -17,14 +17,9 @@
 package com.rosetta.model.lib.validation;
 
 import java.util.Optional;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.rosetta.model.lib.path.RosettaPath;
-
 import java.util.function.Function;
 
-import static com.rosetta.model.lib.validation.ValidationResult.ValidationType.CHOICE_RULE;
+import com.rosetta.model.lib.path.RosettaPath;
 
 public interface ValidationResult<T> {
 
@@ -50,9 +45,8 @@ public interface ValidationResult<T> {
 		return new ModelValidationResult<>(name, validationType, modelObjectName, path, definition, Optional.of(failureMessage));
 	}
 
-	// @Compat: MODEL_INSTANCE is replaced by CARDINALITY, TYPE_FORMAT, KEY and can be removed in the future.
 	enum ValidationType {
-		DATA_RULE, CHOICE_RULE, MODEL_INSTANCE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, PRE_PROCESS_EXCEPTION, POST_PROCESS_EXCEPTION
+		DATA_RULE, CARDINALITY, TYPE_FORMAT, KEY, ONLY_EXISTS, PRE_PROCESS_EXCEPTION, POST_PROCESS_EXCEPTION
 	}
 
 	class ModelValidationResult<T> implements ValidationResult<T> {
@@ -134,87 +128,8 @@ public interface ValidationResult<T> {
 			return Optional.of(conditionName + ":- " + failReason);
 		}
 	}
-
-	// @Compat. Choice rules are now obsolete in favor of data rules.
-	@Deprecated
-	class ChoiceRuleFailure<T> implements ValidationResult<T> {
-
-		private final String name;
-		private final String modelObjectName;
-		private final List<String> populatedFields;
-		private final List<String> choiceFieldNames;
-		private final ChoiceRuleValidationMethod validationMethod;
-		private final RosettaPath path;
-
-		public ChoiceRuleFailure(String name, String modelObjectName, List<String> choiceFieldNames, RosettaPath path, List<String> populatedFields,
-								 ChoiceRuleValidationMethod validationMethod) {
-			this.name = name;
-			this.path = path;
-			this.modelObjectName = modelObjectName;
-			this.populatedFields = populatedFields;
-			this.choiceFieldNames = choiceFieldNames;
-			this.validationMethod = validationMethod;
-		}
-
-		@Override
-		public boolean isSuccess() {
-			return false;
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-		
-		public RosettaPath getPath() {
-			return path;
-		}
-
-		@Override
-		public String getModelObjectName() {
-			return modelObjectName;
-		}
-
-		public List<String> populatedFields() {
-			return populatedFields;
-		}
-
-		public List<String> choiceFieldNames() {
-			return choiceFieldNames;
-		}
-
-		public ChoiceRuleValidationMethod validationMethod() {
-			return validationMethod;
-		}
-
-		@Override
-		public String getDefinition() {
-			return choiceFieldNames.stream()
-				.collect(Collectors.joining("', '", validationMethod.desc + " of '", "'. "));
-		}
-		
-		@Override
-		public Optional<String> getFailureReason() {
-			return Optional.of(getDefinition() + (populatedFields.isEmpty() ? "No fields are set." :
-					populatedFields.stream().collect(Collectors.joining("', '", "Set fields are '", "'."))));
-		}
-
-		@Override
-		public ValidationType getValidationType() {
-			return CHOICE_RULE;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("Validation %s on [%s] for [%s] [%s] %s",
-					isSuccess() ? "SUCCESS" : "FAILURE",
-					path.buildPath(),
-					CHOICE_RULE + ":" + validationMethod,
-					name,
-					getFailureReason().map(reason -> "because " + reason).orElse(""));
-		}
-	}
-
+	
+	@Deprecated // Since 9.7.0
 	enum ChoiceRuleValidationMethod {
 
 		OPTIONAL("Zero or one field must be set", fieldCount -> fieldCount == 1 || fieldCount == 0),

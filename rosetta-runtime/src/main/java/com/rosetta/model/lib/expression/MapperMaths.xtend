@@ -27,7 +27,7 @@ class MapperMaths {
 			val arg2 = in2.get()
 			return MapperS.of((arg1 - arg2) as R)
 		}
-		return null;
+		return MapperS.ofNull;
 	}
 	def static <R, A, B> MapperS<R> multiply(Mapper<? extends A> in1, Mapper<? extends B> in2) {
 		if (in1.resultCount()==1 && in2.resultCount()==1) {
