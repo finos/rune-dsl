@@ -34,8 +34,6 @@ Instead, Rune empowers many users within firms to take part in interpreting and 
 
 ## Rosetta
 
-TODO - tidy
-
 A complete *Software Development Kit (SDK)* also called [Rosetta](https://ui.rosetta-technology.io/) is provided to help industry participants to create, edit or extend models using the Rune DSL. Rosetta also provides integration tools designed to facilitate firms' adoption and implementation of models within their own technology architecture.
 
 Much like how software engineers use programming languages and tools to build and test software, it is useful to think of Rosetta as a platform with a set of tools to build and test a domain model using the Rune DSL. The [Rosetta products documentation](https://docs.rosetta-technology.io/rosetta/rosetta-products/) details the various tools and products that are available in the Rosetta platform.
