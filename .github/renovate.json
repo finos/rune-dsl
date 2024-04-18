@@ -12,17 +12,12 @@
   "timezone": "Europe/London",
   "schedule": ["before 4am on Monday"],
 
-  "major": {
-    "dependencyDashboardApproval": true
-  },
-
   "assignees": ["SimonCockx"],
 
   "packageRules": [
     {
       "description": "Group all Eclipse related dependencies (including Xtext). Because these dependencies often introduce breaking changes in minor version upgrades, we always require an explicit approval in the dependency dashboard before creating a PR.",
       "matchPackagePatterns": ["^org\\.eclipse\\."],
-      "dependencyDashboardApproval": true,
       "groupName": "eclipse dependencies",
       "groupSlug": "eclipse-dependencies"
     },
@@ -49,5 +44,5 @@
     }
   ],
 
-  "ignoreDeps": ["org.eclipse.m2e:lifecycle-mapping"]
+  "ignoreDeps": ["org.eclipse.m2e:lifecycle-mapping", "com.regnosys.rosetta:com.regnosys.rosetta.parent"]
 }
