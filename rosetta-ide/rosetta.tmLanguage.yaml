@@ -27,12 +27,13 @@ variables:
   # - keywords that may also be used as an identifier (e.g., `version`),
   # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
-  identifiersConflictingWithRootStart: '{{wordStart}}(version){{wordEnd}}'
-  ambiguousRootStart: '{{wordStart}}(synonym|rule|translate){{wordEnd}}'
+  identifiersConflictingWithRootStart: '{{wordStart}}(translate){{wordEnd}}'
+  identifiersConflictingWithNamespace: '{{wordStart}}(version){{wordEnd}}'
+  ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
   unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|func){{wordEnd}}'
-  rootStart: '{{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
-  strictRootEnd: (?={{rootStart}})
-  rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
+  rootStart: '{{identifiersConflictingWithRootStart}}|{{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
+  namespaceEnd: (?={{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}})
+  rootEnd: (?={{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}})
   unambiguousRootEnd: (?={{unambiguousRootStart}})
   
   sectionStart: '{{wordStart}}((\Qpost-\E)?condition|set|add|inputs|output|alias){{wordEnd}}'
@@ -45,7 +46,7 @@ variables:
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
-  expressionEnd: '(?=,|\))|{{sectionEnd}}'
+  expressionEnd: '(?=,|\)|\})|{{sectionEnd}}'
   functionalOperationEnd: (?=\])|(?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
 
 patterns:
@@ -67,7 +68,7 @@ repository:
         begin: '{{wordStart}}namespace{{wordEnd}}'
         beginCaptures:
           0: { name: keyword.other.namespace.rosetta }
-        end: '{{strictRootEnd}}'
+        end: '{{namespaceEnd}}'
         patterns:
         - include: '#comment'
         - include: '#documentation'
@@ -447,7 +448,9 @@ repository:
         begin: '{{wordStart}}translate{{wordEnd}}'
         beginCaptures:
           0: { name: keyword.other.rosetta }
-        end: '{{unambiguousRootEnd}}'
+        end: (\})|{{rootEnd}}
+        endCaptures:
+          1: { name: punctuation.section.braces.end.rosetta }
         patterns:
         - include: '#comment'
         - begin: '(?<={{wordStart}}translate{{wordEnd}})'
@@ -464,9 +467,7 @@ repository:
           begin: (\{)
           beginCaptures:
             1: { name: punctuation.section.braces.begin.rosetta }
-          end: (\})|{{unambiguousRootEnd}}
-          endCaptures:
-            1: { name: punctuation.section.braces.end.rosetta }
+          end: (?=\})|{{unambiguousRootEnd}}
           patterns:
           - include: '#comment'
           - name: meta.translation.rosetta
