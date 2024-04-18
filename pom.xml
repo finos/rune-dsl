@@ -27,7 +27,7 @@
 
 	<groupId>com.regnosys.rosetta</groupId>
 	<artifactId>com.regnosys.rosetta.parent</artifactId>
-	<version>0.0.0.master-SNAPSHOT</version>
+	<version>0.0.0.main-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Rosetta DSL Parent POM</name>

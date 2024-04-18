@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'pom.xml'
       - '.github/workflows/license-scanning.yml'
@@ -34,6 +34,7 @@ jobs:
       run: pip install xq
     - uses: ./.github/actions/maven-build
       with:
+        build-command: install
         run-tests: false
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
