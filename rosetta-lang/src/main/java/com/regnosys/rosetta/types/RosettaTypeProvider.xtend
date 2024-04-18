@@ -73,6 +73,9 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
 import org.eclipse.xtext.resource.XtextResource
 import javax.inject.Provider
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -478,6 +481,18 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseConstructorExpression(RosettaConstructorExpression expr, Map<EObject, RType> context) {
 		expr.typeCall.typeCallToRType
+	}
+	
+	override protected caseToDateOperation(ToDateOperation expr, Map<EObject, RType> context) {
+		DATE
+	}
+	
+	override protected caseToDateTimeOperation(ToDateTimeOperation expr, Map<EObject, RType> context) {
+		DATE_TIME
+	}
+	
+	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RType> context) {
+		ZONED_DATE_TIME
 	}
 	
 }

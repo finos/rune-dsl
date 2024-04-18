@@ -118,6 +118,13 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 import com.rosetta.util.types.JavaGenericTypeDeclaration
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
+import com.rosetta.model.lib.records.Date
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1107,4 +1114,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
+	
+	override protected caseToDateOperation(ToDateOperation expr, Context context) {
+		conversionOperation(expr, context, '''«Date»::parse''', DateTimeParseException)
+	}
+	
+	override protected caseToDateTimeOperation(ToDateTimeOperation expr, Context context) {
+		conversionOperation(expr, context, '''«LocalDateTime»::parse''', DateTimeParseException)
+	}
+	
+	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
+		conversionOperation(expr, context, '''«ZonedDateTime»::parse''', DateTimeParseException)
+	}
+	
 }

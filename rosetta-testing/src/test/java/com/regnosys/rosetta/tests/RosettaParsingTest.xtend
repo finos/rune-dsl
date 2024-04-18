@@ -85,7 +85,7 @@ class RosettaParsingTest {
 	}
 	
 	@Test
-	@Disabled // see issue https://github.com/REGnosys/rosetta-dsl/issues/524
+	@Disabled // see issue https://github.com/finos/rune-dsl/issues/524
 	def void testPatternLiterals() {
 		val model = '''
            func Foo:

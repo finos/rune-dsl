@@ -210,7 +210,7 @@
                             -->
                             <programs>
                                 <program>
-                                    <id>rosetta-dsl-ls</id>
+                                    <id>rune-dsl-ls</id>
                                     <mainClass>com.regnosys.rosetta.ide.server.RosettaServerLauncher</mainClass>
                                     <!--uncomment to enable options
                                     <commandLineArguments>

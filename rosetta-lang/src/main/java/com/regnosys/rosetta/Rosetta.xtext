@@ -462,7 +462,7 @@ RosettaLiteral:
 	| RosettaStringLiteral
 	| RosettaNumberLiteral
 	| RosettaIntLiteral
-//	| RosettaPatternLiteral // See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+//	| RosettaPatternLiteral // See issue https://github.com/finos/rune-dsl/issues/524
 ;
 
 RosettaBooleanLiteral:
@@ -481,7 +481,7 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
-// See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+// See issue https://github.com/finos/rune-dsl/issues/524
 //RosettaPatternLiteral:
 //	value = PATTERN
 //;
@@ -494,7 +494,7 @@ Integer returns ecore::EBigInteger hidden():
 	('+' | '-')? INT
 ;
 
-// See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+// See issue https://github.com/finos/rune-dsl/issues/524
 //terminal PATTERN returns Pattern:
 //	'/' ( '\\' . | !('\\'|'/') )* '/'
 //;
@@ -636,6 +636,9 @@ ListOperation returns RosettaExpression:
 			|({ToIntOperation.argument=current} operator='to-int')
 			|({ToTimeOperation.argument=current} operator='to-time')
 			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
+			|({ToDateOperation.argument=current} operator='to-date')
+			|({ToDateTimeOperation.argument=current} operator='to-date-time')
+			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -669,6 +672,9 @@ ListOperation returns RosettaExpression:
 			|({ToIntOperation} operator='to-int')
 			|({ToTimeOperation} operator='to-time')
 			|({ToEnumOperation} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
+			|({ToDateOperation} operator='to-date')
+			|({ToDateTimeOperation} operator='to-date-time')
+			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -702,6 +708,9 @@ ListOperation returns RosettaExpression:
 			|({ToIntOperation.argument=current} operator='to-int')
 			|({ToTimeOperation.argument=current} operator='to-time')
 			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
+			|({ToDateOperation.argument=current} operator='to-date')
+			|({ToDateTimeOperation.argument=current} operator='to-date-time')
+			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

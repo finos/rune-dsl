@@ -1184,8 +1184,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 			val type = arg.RType.stripFromTypeAliases
-			if (!(type instanceof RBasicType || type instanceof REnumType)) {
-				error('''The argument of «ele.operator» should be of a basic type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			if (!(type instanceof RBasicType || type instanceof RRecordType || type instanceof REnumType)) {
+				error('''The argument of «ele.operator» should be of a builtin type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 		}
 	}
