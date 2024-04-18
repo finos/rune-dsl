@@ -62,11 +62,14 @@ import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
 import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
 import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
 
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
@@ -219,6 +222,12 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseToTimeOperation((ToTimeOperation)expr, context);
 		} else if (expr instanceof ToEnumOperation) {
 			return caseToEnumOperation((ToEnumOperation)expr, context);
+		} else if (expr instanceof ToDateOperation) {
+			return caseToDateOperation((ToDateOperation)expr, context);
+		} else if (expr instanceof ToDateTimeOperation) {
+			return caseToDateTimeOperation((ToDateTimeOperation)expr, context);
+		} else if (expr instanceof ToZonedDateTimeOperation) {
+			return caseToZonedDateTimeOperation((ToZonedDateTimeOperation)expr, context);
 		} else if (expr instanceof RosettaFunctionalOperation) {
 			return doSwitch((RosettaFunctionalOperation)expr, context);
 		}
@@ -299,6 +308,9 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseToIntOperation(ToIntOperation expr, Context context);
 	protected abstract Return caseToTimeOperation(ToTimeOperation expr, Context context);
 	protected abstract Return caseToEnumOperation(ToEnumOperation expr, Context context);
+	protected abstract Return caseToDateOperation(ToDateOperation expr, Context context);
+	protected abstract Return caseToDateTimeOperation(ToDateTimeOperation expr, Context context);
+	protected abstract Return caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context);
 	
 	protected abstract Return caseFilterOperation(FilterOperation expr, Context context);
 	protected abstract Return caseMapOperation(MapOperation expr, Context context);

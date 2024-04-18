@@ -582,6 +582,79 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	def void recordConversionTest() {
+		val code = '''
+		func ToDate:
+			inputs: input string (1..1)
+			output: result date (1..1)
+			set result:
+				input to-date
+		
+		func ToDateTime:
+			inputs: input string (1..1)
+			output: result dateTime (1..1)
+			set result:
+				input to-date-time
+		
+		func ToZonedDateTime:
+			inputs: input string (1..1)
+			output: result zonedDateTime (1..1)
+			set result:
+				input to-zoned-date-time
+		
+		func DateToString:
+			inputs: input date (1..1)
+			output: result string (1..1)
+			set result:
+				input to-string
+		
+		func DateTimeToString:
+			inputs: input dateTime (1..1)
+			output: result string (1..1)
+			set result:
+				input to-string
+		
+		func ZonedDateTimeToString:
+			inputs: input zonedDateTime (1..1)
+			output: result string (1..1)
+			set result:
+				input to-string
+		'''.generateCode
+		val classes = code.compileToClasses
+
+		val toDate = classes.createFunc("ToDate");
+		val dateStr = "2024-04-18"
+		val dateRes = Date.of(2024, 4, 18)
+		assertEquals(dateRes, toDate.invokeFunc(Date, #[dateStr]))
+		assertEquals(null, toDate.invokeFunc(Date, #["test"]))
+		
+		val toDateTime = classes.createFunc("ToDateTime");
+		val dateTimeStr = "2024-04-18T13:06:26"
+		val dateTimeRes = LocalDateTime.of(2024, 4, 18, 13, 6, 26)
+		assertEquals(dateTimeRes, toDateTime.invokeFunc(LocalDateTime, #[dateTimeStr]))
+		assertEquals(null, toDateTime.invokeFunc(LocalDateTime, #["test"]))
+		
+		val toZonedDateTime = classes.createFunc("ToZonedDateTime");
+		val zonedDateTimeStr1 = "2024-04-18T13:06:26+02:00[Europe/Brussels]"
+		val zonedDateTimeRes1 = ZonedDateTime.of(2024, 4, 18, 13, 6, 26, 0, ZoneId.of("Europe/Brussels"))
+		val zonedDateTimeStr2 = "2024-04-18T11:06:26Z"
+		val zonedDateTimeRes2 = ZonedDateTime.of(2024, 4, 18, 11, 6, 26, 0, ZoneId.of("Z"))
+		assertEquals(zonedDateTimeRes1, toZonedDateTime.invokeFunc(ZonedDateTime, #[zonedDateTimeStr1]))
+		assertEquals(null, toZonedDateTime.invokeFunc(ZonedDateTime, #["test"]))
+		assertEquals(zonedDateTimeRes2, toZonedDateTime.invokeFunc(ZonedDateTime, #[zonedDateTimeStr2]))
+		
+		val dateToString = classes.createFunc("DateToString");
+		assertEquals(dateStr, dateToString.invokeFunc(String, #[dateRes]))
+		
+		val dateTimeToString = classes.createFunc("DateTimeToString");
+		assertEquals(dateTimeStr, dateTimeToString.invokeFunc(String, #[dateTimeRes]))
+		
+		val zonedDateTimeToString = classes.createFunc("ZonedDateTimeToString");
+		assertEquals(zonedDateTimeStr1, zonedDateTimeToString.invokeFunc(String, #[zonedDateTimeRes1]))
+		assertEquals(zonedDateTimeStr2, zonedDateTimeToString.invokeFunc(String, #[zonedDateTimeRes2]))
+	}
+	
+	@Test
 	def void testSingularFilterOperation() {
 		val code = '''
 		func NonZero:

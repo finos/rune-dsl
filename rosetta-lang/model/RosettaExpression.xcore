@@ -88,7 +88,7 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 }
 
-// Not supported - see issue https://github.com/REGnosys/rosetta-dsl/issues/524
+// Not supported - see issue https://github.com/finos/rune-dsl/issues/524
 type Pattern wraps Pattern
 class RosettaPatternLiteral extends RosettaLiteral {
 	Pattern value
@@ -340,6 +340,15 @@ class ToTimeOperation extends ParseOperation {
 
 class ToEnumOperation extends ParseOperation {
 	refers RosettaEnumeration enumeration 
+}
+
+class ToDateOperation extends ParseOperation {
+}
+
+class ToDateTimeOperation extends ParseOperation {
+}
+
+class ToZonedDateTimeOperation extends ParseOperation {
 }
 
 /**
