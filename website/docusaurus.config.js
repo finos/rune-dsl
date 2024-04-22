@@ -95,7 +95,7 @@ module.exports = {
         docs: {
           path: './docs',
           editUrl:
-            'https://github.com/finos/${projectSlug}/edit/master/website/',
+            'https://github.com/finos/${projectSlug}/edit/main/website/',
           sidebarPath: require.resolve('./sidebars.js')
         },
         theme: {
