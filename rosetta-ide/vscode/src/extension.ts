@@ -27,7 +27,7 @@ let lc: LanguageClient;
 
 export async function activate(context: ExtensionContext) {
     // The server is a locally installed in src/rosetta
-    let launcher = os.platform() === 'win32' ? 'rosetta-dsl-ls.bat' : 'rosetta-dsl-ls';
+    let launcher = os.platform() === 'win32' ? 'rune-dsl-ls.bat' : 'rune-dsl-ls';
     let script = context.asAbsolutePath(path.join('src', 'rosetta', 'languageserver', 'bin', launcher));
     
     let serverOptions: ServerOptions = {

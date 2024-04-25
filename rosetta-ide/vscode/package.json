@@ -1,9 +1,9 @@
 {
-  "name": "rosetta-language",
-  "displayName": "rosetta-language",
-  "description": "Rosetta DSL",
+  "name": "rune-language",
+  "displayName": "rune-language",
+  "description": "Rune DSL",
   "version": "5.0.0",
-  "repository": "https://github.com/REGnosys/rosetta-dsl",
+  "repository": "https://github.com/finos/rune-dsl",
   "license": "LICENSE",
   "engines": {
     "vscode": "^1.73.0"
