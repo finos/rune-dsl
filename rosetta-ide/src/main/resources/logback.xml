@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_FILE_PATH:-./lsp-log.log}</file>
+        <append>true</append>
+        <!-- By default, encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd_HH:mm:ss.SSS} [%thread] %-5level %logger{15} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- By default, the level of the root level is set to DEBUG -->
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
