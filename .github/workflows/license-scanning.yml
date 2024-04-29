@@ -38,6 +38,17 @@ jobs:
         run-tests: false
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+    - name: A
+      run: xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml
+      working-directory: ${{ matrix.module-folder }}
+    - name: B
+      run: xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml | wc -l
+      working-directory: ${{ matrix.module-folder }}
+    - name: C
+      run: |
+        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
+        $LICENSE_REPORT | wc -l
+      working-directory: ${{ matrix.module-folder }}
     - name: Validate XML report
       run: |
         LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
