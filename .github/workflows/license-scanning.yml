@@ -19,7 +19,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ALLOW_LICENSES: "licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='Apache License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license'"
+  ALLOW_LICENSES: "
+    licenses/license/name!='The Apache Software License, Version 2.0' and
+    licenses/license/name!='Apache License, Version 2.0' and
+    licenses/license/name!='BSD' and
+    licenses/license/name!='BSD-style license'
+    "
   REPORT_PATH: "target/generated-resources"
 
 jobs:
@@ -39,7 +44,7 @@ jobs:
       run: |
         LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
         LINES_FOUND=`echo "$LICENSE_REPORT" | wc -l`
-        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found ..." ; echo $LICENSE_REPORT ; exit -1; fi
+        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found ..." ; echo "$LICENSE_REPORT" ; exit -1; fi
     - name: Upload license reports
       uses: actions/upload-artifact@v4
       with:
