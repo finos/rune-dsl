@@ -19,15 +19,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ALLOW_LICENSES: "'The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0'"
-  REPORT_PATH: "target/generated-resources/licenses.xml"
+  ALLOW_LICENSES: "licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='Apache License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license'"
+  REPORT_PATH: "target/generated-resources"
 
 jobs:
-  scan:
+  fetch-licenses:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        module-folder: ["", "rosetta-lang", "rosetta-ide", "rosetta-runtime", "rosetta-testing", "rosetta-tools", "rosetta-xcore-plugin-dependencies", "rosetta-maven-plugin", "rosetta-profiling"]
     steps:
     - uses: actions/checkout@v4
     - name: Install XQ
@@ -37,21 +34,19 @@ jobs:
         build-command: install
         run-tests: false
     - name: License XML report
-      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+      run: mvn org.codehaus.mojo:license-maven-plugin:2.4.0:aggregate-download-licenses
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
-        LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
-        echo "License issues found ..."
-        if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
-      working-directory: ./${{ matrix.module-folder }}
+        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
+        LINES_FOUND=`echo "$LICENSE_REPORT" | wc -l`
+        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found ..." ; echo $LICENSE_REPORT ; exit -1; fi
     - name: Upload license reports
       uses: actions/upload-artifact@v4
       with:
-        name: license-reports-${{ matrix.module-folder }}
-        path: '**/dependencies.html'
+        name: license-reports
+        path: '**/${{ env.REPORT_PATH }}/'
     - name: Upload license XML reports
       uses: actions/upload-artifact@v4
       with:
-        name: license-xml-reports-${{ matrix.module-folder }}
-        path: '**/${{ env.REPORT_PATH }}'
+        name: license-xml-reports
+        path: '**/${{ env.REPORT_PATH }}/licenses.xml'
