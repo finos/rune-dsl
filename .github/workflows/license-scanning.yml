@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ALLOW_LICENSES: "'The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0'"
+  ALLOW_LICENSES: "licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='Apache License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license'"
   REPORT_PATH: "target/generated-resources"
 
 jobs:
@@ -47,7 +47,8 @@ jobs:
     - name: C
       run: |
         LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
-        $LICENSE_REPORT | wc -l
+        echo $LICENSE_REPORT
+        echo $LICENSE_REPORT | wc -l
       working-directory: ${{ matrix.module-folder }}
     - name: Validate XML report
       run: |
