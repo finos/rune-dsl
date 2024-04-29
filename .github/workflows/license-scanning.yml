@@ -23,7 +23,7 @@ env:
   REPORT_PATH: "target/generated-resources"
 
 jobs:
-  fetch-licenses:
+  scan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
