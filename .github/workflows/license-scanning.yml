@@ -34,7 +34,12 @@ jobs:
         build-command: install
         run-tests: false
     - name: License XML report
-      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+      run: mvn org.codehaus.mojo:license-maven-plugin:2.4.0:aggregate-download-licenses
+    - name: Validate XML report
+      run: |
+        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
+        LINES_FOUND=`echo "$LICENSE_REPORT" | wc -l`
+        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found ..." ; echo $LICENSE_REPORT ; exit -1; fi
     - name: Upload license reports
       uses: actions/upload-artifact@v4
       with:
@@ -45,16 +50,3 @@ jobs:
       with:
         name: license-xml-reports
         path: '**/${{ env.REPORT_PATH }}/licenses.xml'
-  check-licenses:
-    needs: fetch-licenses
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        module-folder: ["./", "./rosetta-lang", "./rosetta-ide", "./rosetta-runtime", "./rosetta-testing", "./rosetta-tools", "./rosetta-xcore-plugin-dependencies", "./rosetta-maven-plugin", "./rosetta-profiling"]
-    steps:
-    - name: Validate XML report
-      run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}/licenses.xml`
-        LINES_FOUND=`echo "$LICENSE_REPORT" | wc -l`
-        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found ..." ; echo $LICENSE_REPORT ; exit -1; fi
-      working-directory: ${{ matrix.module-folder }}
