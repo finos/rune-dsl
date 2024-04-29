@@ -20,20 +20,44 @@ concurrency:
 
 env:
   ALLOW_LICENSES: "
-    not(contains(licenses/license/url, '://www.apache.org/licenses/LICENSE-2.0.txt')) and
-    not(contains(licenses/license/url, '://www.antlr.org/license.html')) and
-    not(contains(licenses/license/url, '://www.eclipse.org/legal/epl-v10.html')) and
-    not(contains(licenses/license/url, '://www.eclipse.org/legal/epl-v20.html')) and
-    not(contains(licenses/license/url, '://www.eclipse.org/legal/epl-2.0')) and
-    not(contains(licenses/license/url, '://www.gnu.org/licenses/old-licenses/lgpl-2.1.html')) and
-    not(contains(licenses/license/url, '://openjdk.java.net/legal/gplv2+ce.html')) and
-    not(contains(licenses/license/url, '://opensource.org/licenses/MIT')) and
-    not(contains(licenses/license/url, '://www.opensource.org/licenses/mit-license.php')) and
-    not(contains(licenses/license/url, '://antlr.org/license.html')) and
-    not(contains(licenses/license/url, '://www.opensource.org/licenses/bsd-license.php')) and
-    not(contains(licenses/license/url, '://asm.ow2.io/license.html')) and
     licenses/license/name!='Apache License, Version 2.0' and
+    licenses/license/name!='The Apache License, Version 2.0' and
+    licenses/license/name!='The Apache Software License, Version 2.0' and
+    licenses/license/name!='Apache Software Licenses' and
+    licenses/license/name!='Apache-2.0' and
+    licenses/license/name!='Apache 2.0' and
+    
+    licenses/license/name!='BSD License' and
+    licenses/license/name!='BSD license' and
+    licenses/license/name!='BSD licence' and
+    
+    licenses/license/name!='New BSD License' and
+    
+    licenses/license/name!='BSD-3-Clause' and
+    
+    licenses/license/name!='Eclipse Public License - v 1.0' and
+    licenses/license/name!='Eclipse Public License, Version 1.0' and
+    licenses/license/name!='Eclipse Public License 1.0' and
+    licenses/license/name!='Eclipse Public License' and
+    
+    licenses/license/name!='Eclipse Public License - v 2.0' and
+    licenses/license/name!='Eclipse Public License, Version 2.0' and
+    licenses/license/name!='The Eclipse Public License Version 2.0' and
+    licenses/license/name!='Eclipse Public License 2.0' and
+    licenses/license/name!='Eclipse Public License v2.0' and
+    
+    licenses/license/name!='GNU Lesser General Public License' and
+    
+    licenses/license/name!='GNU General Public License (GPL), version 2, with the Classpath exception' and
+    
+    licenses/license/name!='MIT License' and
+    licenses/license/name!='MIT license' and
+    licenses/license/name!='MIT' and
+    licenses/license/name!='The MIT License' and
+    licenses/license/name!='The MIT License (MIT)' and
+    
     licenses/license/name!='CDDL + GPLv2 with classpath exception' and
+    
     licenses/license/name!='Public Domain'
     "
   REPORT_PATH: "target/generated-resources"
