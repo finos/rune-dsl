@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module-folder: ["./", "./rosetta-ide", "./rosetta-runtime", "./rosetta-testing", "./rosetta-tools", "./rosetta-xcore-plugin-dependencies", "./rosetta-maven-plugin", "./rosetta-profiling"]
+        module-folder: ["", "rosetta-ide", "rosetta-runtime", "rosetta-testing", "rosetta-tools", "rosetta-xcore-plugin-dependencies", "rosetta-maven-plugin", "rosetta-profiling"]
     steps:
     - uses: actions/checkout@v4
     - name: Install XQ
@@ -44,14 +44,14 @@ jobs:
         LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
         echo "License issues found ..."
         if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
-      working-directory: ${{ matrix.module-folder }}
+      working-directory: ./${{ matrix.module-folder }}
     - name: Upload license reports
       uses: actions/upload-artifact@v4
       with:
-        name: license-reports
+        name: license-reports-${{ matrix.module-folder }}
         path: '**/dependencies.html'
     - name: Upload license XML reports
       uses: actions/upload-artifact@v4
       with:
-        name: license-xml-report
+        name: license-xml-reports-${{ matrix.module-folder }}
         path: '**/${{ env.REPORT_PATH }}'
