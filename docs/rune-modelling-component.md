@@ -1036,7 +1036,7 @@ vehicles
 The Rune DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords needed to operate on lists are:
 
 - (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element.  Note that the single cardinality value must be on the right hand side.
-- `contains` - returns true if right hand expression is a subset of the left hand expression. If the right hand side is single cardinality, then the expression is equivalent to an `any =` expression.
+- `contains` - returns true if right hand expression is a subset of the left hand expression. If the right hand expression is single cardinality, then it is equivalent to an `any =` expression.
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
 
 If the `contains` or `disjoint` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
