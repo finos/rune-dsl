@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>com.regnosys.rosetta</groupId>
 			<artifactId>com.regnosys.rosetta</artifactId>
-			<version>${project.version}</version>
+			<version>0.0.0.main-SNAPSHOT</version>
 		</dependency>
 
 		<!-- External dependencies -->
