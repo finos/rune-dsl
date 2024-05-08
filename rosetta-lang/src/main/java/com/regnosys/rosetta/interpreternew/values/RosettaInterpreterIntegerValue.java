@@ -1,6 +1,6 @@
-package com.regnosys.rosetta.interpreternew;
+package com.regnosys.rosetta.interpreternew.values;
 
-public class RosettaInterpreterIntegerValue extends RosettaInterpreterValue{
+public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue{
 	private int value;
 	
 	public RosettaInterpreterIntegerValue(int value) {
