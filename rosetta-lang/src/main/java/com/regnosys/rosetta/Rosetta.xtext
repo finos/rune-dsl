@@ -34,6 +34,7 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation
 	| Data
+	| Choice
 	| Function
 ;
 
@@ -77,6 +78,17 @@ Data:
 	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
+;
+
+Choice:
+	'choice' RosettaNamed ':' RosettaDefinable?
+	(Annotations|ClassSynonyms)*
+	
+	attributes += ChoiceOption*
+;
+
+ChoiceOption:
+	RosettaTyped
 ;
 
 Attribute:

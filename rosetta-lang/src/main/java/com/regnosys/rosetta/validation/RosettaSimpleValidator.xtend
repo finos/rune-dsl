@@ -131,6 +131,7 @@ import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -528,7 +529,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
 		val annotationAttribute = attribute.eContainer instanceof Annotation
-		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
+		val choiceOption = attribute instanceof ChoiceOption
+		if (!choiceOption && !annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}

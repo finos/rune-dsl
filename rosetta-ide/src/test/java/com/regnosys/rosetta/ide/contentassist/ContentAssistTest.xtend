@@ -110,6 +110,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			basicType -> basicType [[7, 27] .. [7, 27]]
 			body -> body [[7, 27] .. [7, 27]]
 			calculationType -> calculationType [[7, 27] .. [7, 27]]
+			choice -> choice [[7, 27] .. [7, 27]]
 			condition -> condition [[7, 27] .. [7, 27]]
 			contains -> contains [[7, 27] .. [7, 27]]
 			corpus -> corpus [[7, 27] .. [7, 27]]

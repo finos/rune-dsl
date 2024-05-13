@@ -29,7 +29,7 @@ variables:
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
   identifiersConflictingWithRootStart: '{{wordStart}}(version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
-  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|func){{wordEnd}}'
+  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
   rootStart: '{{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   strictRootEnd: (?={{rootStart}})
   rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
@@ -141,6 +141,7 @@ repository:
           - include: '#enumerationDeclaration'
           - include: '#annotationDeclaration'
           - include: '#typeDeclaration'
+          - include: '#choiceDeclaration'
           - include: '#functionDeclaration'
 
       rosettaBody:
@@ -870,6 +871,32 @@ repository:
             match: '{{identifier}}'
         - include: '#comment'
         - include: '#documentationAndAnnotationsFollowedByExpression'
+      
+      choiceDeclaration:
+        name: meta.choice.rosetta
+        begin: '{{wordStart}}choice{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.choice.rosetta keyword.declaration.type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - begin: (?<={{wordStart}}choice{{wordEnd}})
+          end: (:)|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: entity.name.type.choice.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.dot.rosetta
+            match: \.
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#annotation'
+        - include: '#choiceOption'
+      
+      choiceOption:
+        patterns:
+        - include: '#typeCall'
 
       functionDeclaration:
         name: meta.function.rosetta
