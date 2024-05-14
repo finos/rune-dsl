@@ -25,6 +25,9 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp)
 	op RosettaInterpreterValue interp (RosettaStringLiteral exp)
 	op RosettaInterpreterValue interp (RosettaNumberLiteral exp)
+	op RosettaInterpreterValue interp (RosettaIntLiteral exp)
+	op RosettaInterpreterValue interp (RosettaPatternLiteral exp)
+	op RosettaInterpreterValue interp (ListLiteral exp)
 }
 
 interface RosettaExpression {
@@ -77,6 +80,9 @@ class RosettaStringLiteral extends RosettaLiteral {
 	op String stringValue() {
 		return '"' + value + '"'
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class RosettaNumberLiteral extends RosettaLiteral {
@@ -88,6 +94,9 @@ class RosettaNumberLiteral extends RosettaLiteral {
 	op String stringValue() {
 		return value.toPlainString
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class RosettaIntLiteral extends RosettaLiteral {
@@ -98,6 +107,9 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 	op String stringValue() {
 		return value.toString
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
 	}
 }
 
@@ -112,6 +124,9 @@ class RosettaPatternLiteral extends RosettaLiteral {
 	op String stringValue() {
 		return '/' + value.toString() + '/'
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 /*
@@ -120,6 +135,9 @@ class RosettaPatternLiteral extends RosettaLiteral {
 
 class ListLiteral extends RosettaExpression {
 	contains RosettaExpression[] elements
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 /*

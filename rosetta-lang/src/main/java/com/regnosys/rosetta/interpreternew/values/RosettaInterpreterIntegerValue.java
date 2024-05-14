@@ -1,12 +1,14 @@
 package com.regnosys.rosetta.interpreternew.values;
 
+import java.math.BigInteger;
+
 public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue{
-	private int value;
+	private BigInteger value;
 	
-	public RosettaInterpreterIntegerValue(int value) {
+	public RosettaInterpreterIntegerValue(BigInteger value) {
 		super();
 		this.value = value;
 	}
 	
-	public int getValue() { return value; }
+	public BigInteger getValue() { return value; }
 }
