@@ -1,0 +1,23 @@
+stages:
+  - build
+  - test
+  - checkstyle
+
+build:
+  image: maven:3.8-openjdk-17
+  stage: build
+  script:
+    - mvn clean package
+
+test:
+  image: maven:3.8-openjdk-17
+  stage: test
+  script:
+    - mvn test -Dtest="/com.regnosys.rosetta.tests/src/test/java/com/regnosys/rosetta/interpreternew/*.java" -Dsurefire.failIfNoSpecifiedTests=false
+
+checkstyle:
+  image: maven:3.8-openjdk-17
+  stage: checkstyle
+  script:
+    - mvn checkstyle:check -Dcheckstyle.config.location=checkstyle-SP.xml -Dcheckstyle.includes=com/regnosys/rosetta/interpreternew/**/*
+
