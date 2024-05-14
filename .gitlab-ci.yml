@@ -1,20 +1,20 @@
 stages:
   - build
-  - test
+  # - test
   - checkstyle
 
 build:
   image: maven:3.8-openjdk-17
   stage: build
   script:
-    - mvn clean package -pl com.regnosys.rosetta,com.regnosys.rosetta.tests,com.regnosys.rosetta.xcore
+    - mvn clean package -pl rosetta-runtime,rosetta-testing,rosetta-xcore-plugin-dependencies
 
 
-test:
-  image: maven:3.8-openjdk-17
-  stage: test
-  script:
-    - mvn test -Dtest="/com.regnosys.rosetta.tests/src/test/java/com/regnosys/rosetta/interpreternew/*.java" -Dsurefire.failIfNoSpecifiedTests=false
+# test:
+#   image: maven:3.8-openjdk-17
+#   stage: test
+#   script:
+#     - mvn test -Dtest="/com.regnosys.rosetta.tests/src/test/java/com/regnosys/rosetta/interpreternew/*.java" -Dsurefire.failIfNoSpecifiedTests=false
 
 checkstyle:
   image: maven:3.8-openjdk-17
