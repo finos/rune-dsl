@@ -23,7 +23,7 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE
       - name: Set version
         shell: bash
-        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
+        run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=${{ github.event.release.tag_name }}
       - name: Publish package
         run: mvn -B -U clean deploy -P release
         env:

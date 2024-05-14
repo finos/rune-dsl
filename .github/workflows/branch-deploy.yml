@@ -13,11 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Set up Maven Central Repository
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        architecture: x64
+        cache: maven
+        server-id: ossrh
+        server-username: CI_DEPLOY_USERNAME
+        server-password: CI_DEPLOY_PASSWORD
     - name: Normalize branch name
       id: normalize-branch-name
       uses: ./.github/actions/normalize-branch-name
     - name: Set version
-      run: mvn -B versions:set -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
+      run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
     - uses: ./.github/actions/maven-build
       with:
         build-command: deploy  # Deploy a snapshot build of main
