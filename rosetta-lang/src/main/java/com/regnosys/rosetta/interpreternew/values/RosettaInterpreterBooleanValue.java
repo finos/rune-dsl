@@ -10,8 +10,4 @@ public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue{
 	}
 	
 	public boolean getValue() { return value; }
-
-	
-
-	
 }
