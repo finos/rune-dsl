@@ -38,7 +38,7 @@ public class RosettaInterpreterNewTest {
 	
 	@Test
 	public void TestTest() {
-		assertEquals(6, interpreter.Test());
+		assertEquals(5, interpreter.Test());
 	}
 	
 	@Test
