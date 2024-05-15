@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.regnosys.rosetta</groupId>
         <artifactId>com.regnosys.rosetta.parent</artifactId>
-        <version>0.0.0.main-SNAPSHOT</version>
+        <version>0.0.0.choice-types-SNAPSHOT</version>
     </parent>
     <!-- TODO: this should be packaged as a pom, but Eclipse doesn't handle it well. -->
     <!--<packaging>pom</packaging>-->
