@@ -25,6 +25,7 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp)
 	op RosettaInterpreterValue interp (RosettaStringLiteral exp)
 	op RosettaInterpreterValue interp (RosettaNumberLiteral exp)
+	op RosettaInterpreterValue interp (LogicalOperation exp)
 }
 
 interface RosettaExpression {

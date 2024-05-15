@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew;
 
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
@@ -23,6 +24,11 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 	@Override
 	public RosettaInterpreterValue interp(RosettaNumberLiteral exp) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(LogicalOperation exp) {
 		return null;
 	}
 
