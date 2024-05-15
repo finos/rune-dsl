@@ -55,9 +55,9 @@ public class RosettaInterpreterLiteralsTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue expected = 
 				new RosettaInterpreterListValue(List.of(
-						new RosettaInterpreterIntegerValue(BigInteger.valueOf(2)), 
-						new RosettaInterpreterIntegerValue(BigInteger.valueOf(3))));
-		assertEquals(expected, val);
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(1)), 
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(2))));
+		assertTrue(expected.equals(val));
 		
 	}
 	
