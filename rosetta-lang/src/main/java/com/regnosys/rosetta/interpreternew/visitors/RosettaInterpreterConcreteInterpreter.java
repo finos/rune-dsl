@@ -6,5 +6,5 @@ import com.regnosys.rosetta.interpreternew.RosettaInterpreterVisitor;
 
 public abstract class RosettaInterpreterConcreteInterpreter {
 	@Inject
-	protected RosettaInterpreterVisitor visitor;
+	protected RosettaInterpreterVisitor visitor = new RosettaInterpreterVisitor();
 }
