@@ -17,10 +17,20 @@ import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.emf.common.util.BasicEList
 
+abstract class RosettaInterpreterValue {
+	
+}
+
+interface InterpreterVisitor {
+	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp)
+	op RosettaInterpreterValue interp (RosettaStringLiteral exp)
+	op RosettaInterpreterValue interp (RosettaNumberLiteral exp)
+}
 
 interface RosettaExpression {
 	// Whether the expression was generated
 	boolean generated
+	op RosettaInterpreterValue accept(InterpreterVisitor v)
 }
 
 /**
@@ -52,6 +62,9 @@ class RosettaBooleanLiteral extends RosettaLiteral {
 	}
 	op String stringValue() {
 		return Boolean.toString(value)
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
 	}
 }
 
