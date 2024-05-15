@@ -22,7 +22,7 @@
 	<parent>
 		<groupId>com.regnosys.rosetta</groupId>
 		<artifactId>com.regnosys.rosetta.parent</artifactId>
-		<version>0.0.0.choice-types-SNAPSHOT</version>
+		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
 
 	<name>Rosetta DSL Scripts</name>
