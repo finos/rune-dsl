@@ -10,6 +10,7 @@ import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
@@ -63,5 +64,22 @@ public class RosettaInterpreterNewTest {
 		assertTrue(val instanceof RosettaInterpreterBooleanValue);
 		RosettaInterpreterBooleanValue boolVal = (RosettaInterpreterBooleanValue)val;
 		assertEquals(testValue, boolVal.getValue());
+	}
+	
+	@Test
+	public void logicalAndInterpTest() {
+		boolean expected = false;
+		RosettaBooleanLiteral trueLiteral = eFactory.createRosettaBooleanLiteral();
+		trueLiteral.setValue(true);
+		RosettaBooleanLiteral falseLiteral = eFactory.createRosettaBooleanLiteral();
+		falseLiteral.setValue(false);
+		
+		LogicalOperation expr = eFactory.createLogicalOperation();
+		expr.setOperator("and");
+		expr.setLeft(trueLiteral);
+		expr.setRight(falseLiteral);
+		
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
 	}
 }
