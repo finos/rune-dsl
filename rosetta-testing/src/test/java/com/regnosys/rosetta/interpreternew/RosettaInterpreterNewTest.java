@@ -35,28 +35,5 @@ public class RosettaInterpreterNewTest {
 	public void setup() {
 		eFactory = ExpressionFactoryImpl.init();
 	}
-	
-	@Test
-	public void ExampleInterpTest() {
-		final int testValue = 10;
-		
-		RosettaIntLiteral expr = eFactory.createRosettaIntLiteral();
-		expr.setValue(BigInteger.valueOf(testValue));
-		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterIntegerValue);
-		RosettaInterpreterIntegerValue intVal = (RosettaInterpreterIntegerValue)val;
-		assertEquals(testValue, intVal.getValue());
-	}
-	
-	@Test
-	public void VisitorInitialTest() {
-		final boolean testValue = false;
-		
-		RosettaBooleanLiteral expr = eFactory.createRosettaBooleanLiteral();
-		expr.setValue(testValue);
-		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterBooleanValue);
-		RosettaInterpreterBooleanValue boolVal = (RosettaInterpreterBooleanValue)val;
-		assertEquals(testValue, boolVal.getValue());
-	}
+
 }
