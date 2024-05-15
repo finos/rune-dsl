@@ -416,6 +416,28 @@ enum RosettaQualifiableType {
  * Translate external synonym support
  *****************************************/
 
+class RosettaTranslateSource extends RosettaRootElement, RosettaNamed {
+    refers RosettaTranslateSource[] superSources
+    contains Translation[] translations
+}
+
+class Translation {
+    contains TranslationParameter[] leftParameters
+    contains TranslationParameter[] rightParameters
+    contains TranslationRule[] rules opposite translation
+}
+
+class TranslationParameter extends RosettaSymbol, RosettaTyped {
+    
+}
+
+class TranslationRule {
+    refers Translation translation opposite rules
+    
+    contains RosettaExpression[] left
+    contains RosettaExpression[] right
+}
+
 abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
 	contains RosettaExternalClass[] externalClasses
 	contains RosettaExternalEnum[] externalEnums

@@ -2,6 +2,7 @@ grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 import "http://www.rosetta-model.com/RosettaExpression"
+import "http://www.rosetta-model.com/RosettaTranslate"
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 // general TODO: naming is inconsistent, e.g., 
@@ -154,7 +155,7 @@ RosettaRootElement:
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
-	RosettaQualifiedType | RosettaCalculationType
+	RosettaQualifiedType | RosettaCalculationType | RosettaTranslateSource
 ;
 
 
@@ -196,8 +197,8 @@ TypeParameterValidID:
 ;
 
 ValidID:
-	ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
-	| 'pattern'
+	ID | 'condition' | 'source' | 'value' | 'version'
+	| 'pattern' | 'translate'
 ;
 
 
@@ -768,6 +769,25 @@ RosettaOnlyExistsElementRoot returns RosettaReference:
 /*****************************************
  * Translate external synonym and rule support
  *****************************************/
+RosettaTranslateSource:
+    'translate' 'source' RosettaNamed ('extends' superSources+=[RosettaTranslateSource|QualifiedName]  (',' superSources+=[RosettaTranslateSource|QualifiedName])* )?
+    '{'
+        (translations+=Translation)*
+    '}'
+;
+
+Translation:
+    'translate' leftParameters+=TranslationParameter (',' leftParameters+=TranslationParameter)* '<=>' rightParameters+=TranslationParameter (',' rightParameters+=TranslationParameter)* ':'
+        (rules+=TranslationRule)*
+;
+
+TranslationParameter:
+    RosettaNamed? RosettaTyped
+;
+
+TranslationRule:
+    '#' left+=RosettaCalcExpression (',' left+=RosettaCalcExpression)* '<=>' right+=RosettaCalcExpression (',' right+=RosettaCalcExpression)*
+;
 
 fragment ExternalAnnotationSource:
 	'{'

@@ -1,0 +1,17 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaTranslate")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+package com.regnosys.rosetta.rosetta.translate
+
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+
+class TranslateSource extends RosettaRootElement, RosettaNamed {
+	refers TranslateSource[] superSources
+	contains Translation[] translations
+}
+
+class Translation {
+	
+}

@@ -32,6 +32,9 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 		if (!EPackage.Registry.INSTANCE.containsKey(ExpressionPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(ExpressionPackage.eNS_URI, ExpressionPackage.eINSTANCE);
 		}
+		if (!EPackage.Registry.INSTANCE.containsKey(TranslatePackage.eNS_URI)) {
+			EPackage.Registry.INSTANCE.put(TranslatePackage.eNS_URI, TranslatePackage.eINSTANCE);
+		}
 		super.register(injector)
 	}
 }

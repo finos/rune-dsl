@@ -69,6 +69,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
+import com.regnosys.rosetta.rosetta.TranslationParameter
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -126,6 +127,9 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 			TypeParameter: {
 				false
 			}
+			TranslationParameter: {
+			    false
+			}
 			default: {
 				LOGGER.error("Cardinality not defined for symbol: " + symbol?.eClass?.name)
 				false
@@ -151,7 +155,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	def isImplicitVariableMulti(EObject context, boolean breakOnClosureParameter) {
-		val definingContainer = context.findContainerDefiningImplicitVariable
+		val definingContainer = context.findObjectDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
 				false
@@ -159,6 +163,8 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 				isClosureParameterMulti(it.function)
 			} else if (it instanceof RosettaRule) {
 				false
+			} else if (it instanceof TranslationParameter) {
+			    false
 			} else {
 				false
 			}
@@ -246,7 +252,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 			}
 		}
 		else if (op instanceof RosettaImplicitVariable) {
-			val definingContainer = op.findContainerDefiningImplicitVariable
+			val definingContainer = op.findObjectDefiningImplicitVariable
 			definingContainer.map [
 				if (it instanceof ThenOperation)
 					(it as RosettaFunctionalOperation).argument.isOutputListOfLists

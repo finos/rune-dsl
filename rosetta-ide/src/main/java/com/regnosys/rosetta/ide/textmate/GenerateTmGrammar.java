@@ -49,7 +49,7 @@ import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
 public class GenerateTmGrammar {
-	private static List<String> ignoredRosettaKeywords = List.of("..", "condition", /* @Compat */"qualifiedType", "calculationType");
+	private static List<String> ignoredRosettaKeywords = List.of("..", "condition", /* @Compat */"qualifiedType", "calculationType", "<=>");
 	
 	/**
 	 * param 0: path to input yaml file

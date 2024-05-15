@@ -238,8 +238,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	private def JavaStatementBuilder implicitVariable(EObject context, JavaScope scope) {
 		val itemType = typeProvider.typeOfImplicitVariable(context).toJavaReferenceType
-		val definingContainer = context.findContainerDefiningImplicitVariable.get
-		val JavaType actualType = if (definingContainer instanceof Data || definingContainer instanceof RosettaRule) {
+		val definingContainer = context.findObjectDefiningImplicitVariable.get
+		val JavaType actualType = if (definingContainer instanceof Data || definingContainer instanceof RosettaRule /* || definingContainer instanceof TranslationParameter TODO */) {
 			// For conditions and rules
 			itemType
 		} else {
