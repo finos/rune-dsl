@@ -67,7 +67,7 @@ public class RosettaInterpreterNewTest {
 	}
 	
 	@Test
-	public void logicalAndInterpTest() {
+	public void logicalAndInterpTestFalse() {
 		boolean expected = false;
 		RosettaBooleanLiteral trueLiteral = eFactory.createRosettaBooleanLiteral();
 		trueLiteral.setValue(true);
@@ -79,7 +79,66 @@ public class RosettaInterpreterNewTest {
 		expr.setLeft(trueLiteral);
 		expr.setRight(falseLiteral);
 		
-		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		assertTrue(result instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue boolResult = (RosettaInterpreterBooleanValue) result;
+		assertEquals(expected, boolResult.getValue());
+	}
+	
+	@Test
+	public void logicalAndInterpTestTrue() {
+		boolean expected = true;
+		RosettaBooleanLiteral trueLiteral1 = eFactory.createRosettaBooleanLiteral();
+		trueLiteral1.setValue(true);
+		RosettaBooleanLiteral trueLiteral2 = eFactory.createRosettaBooleanLiteral();
+		trueLiteral2.setValue(true);
+		
+		LogicalOperation expr = eFactory.createLogicalOperation();
+		expr.setOperator("and");
+		expr.setLeft(trueLiteral1);
+		expr.setRight(trueLiteral2);
+		
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		assertTrue(result instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue boolResult = (RosettaInterpreterBooleanValue) result;
+		assertEquals(expected, boolResult.getValue());
+	}
+	
+	@Test
+	public void logicalOrInterpTestTrue() {
+		boolean expected = true;
+		RosettaBooleanLiteral trueLiteral = eFactory.createRosettaBooleanLiteral();
+		trueLiteral.setValue(true);
+		RosettaBooleanLiteral falseLiteral = eFactory.createRosettaBooleanLiteral();
+		falseLiteral.setValue(false);
+		
+		LogicalOperation expr = eFactory.createLogicalOperation();
+		expr.setOperator("or");
+		expr.setLeft(trueLiteral);
+		expr.setRight(falseLiteral);
+		
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		assertTrue(result instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue boolResult = (RosettaInterpreterBooleanValue) result;
+		assertEquals(expected, boolResult.getValue());
+	}
+	
+	@Test
+	public void logicalOrInterpTestFalse() {
+		boolean expected = false;
+		RosettaBooleanLiteral falseLiteral1 = eFactory.createRosettaBooleanLiteral();
+		falseLiteral1.setValue(false);
+		RosettaBooleanLiteral falseLiteral2 = eFactory.createRosettaBooleanLiteral();
+		falseLiteral2.setValue(false);
+		
+		LogicalOperation expr = eFactory.createLogicalOperation();
+		expr.setOperator("or");
+		expr.setLeft(falseLiteral1);
+		expr.setRight(falseLiteral2);
+		
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		assertTrue(result instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue boolResult = (RosettaInterpreterBooleanValue) result;
+		assertEquals(expected, boolResult.getValue());
 	}
 }
