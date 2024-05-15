@@ -20,6 +20,7 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 	public EClass eClass() {
 		// TODO Auto-generated method stub
 		return null;
+		
 	}
 
 	@Override
