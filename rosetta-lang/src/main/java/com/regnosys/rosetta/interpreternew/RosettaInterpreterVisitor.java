@@ -8,8 +8,11 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaBooleanLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNumberLiteralInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
 
 public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 
@@ -20,19 +23,16 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaStringLiteral exp) {
-		// TODO Auto-generated method stub
-		return null;
+		return new RosettaInterpreterRosettaStringLiteralInterpreter().interp(exp);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaNumberLiteral exp) {
-		// TODO Auto-generated method stub
-		return null;
+		return new RosettaInterpreterRosettaNumberLiteralInterpreter().interp(exp);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaIntLiteral exp) {
-		// TODO Auto-generated method stub
 		return new RosettaInterpreterRosettaIntLiteralInterpreter().interp(exp);
 	}
 
@@ -43,8 +43,7 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 
 	@Override
 	public RosettaInterpreterValue interp(ListLiteral exp) {
-		// TODO Auto-generated method stub
-		return null;
+		return new RosettaInterpreterListLiteralInterpreter().interp(exp);
 	}
 
 }
