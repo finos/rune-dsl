@@ -12,9 +12,16 @@ import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
 
+class RosettaInterpreterBaseError{
+	String message
+}
 
 abstract class RosettaInterpreterValue {
+	refers RosettaInterpreterBaseError[] errors
 	
+	op boolean addError(RosettaInterpreterBaseError error)
+	op boolean addAllErrors(RosettaInterpreterValue other)
+	op boolean addAllErrors(RosettaInterpreterBaseError[] errors)
 }
 
 interface InterpreterVisitor {

@@ -2,6 +2,11 @@ package com.regnosys.rosetta.interpreternew.values;
 
 import java.util.Objects;
 
+import org.eclipse.emf.common.util.EList;
+
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+
 public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue{
 	private boolean value;
 	
@@ -28,6 +33,8 @@ public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue{
 		RosettaInterpreterBooleanValue other = (RosettaInterpreterBooleanValue) obj;
 		return value == other.value;
 	}
+
+	
 	
 	
 }
