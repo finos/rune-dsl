@@ -9,7 +9,7 @@ import com.regnosys.rosetta.interpreternew.RosettaInterpreterVisitor;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterListLiteralInterpreter extends RosettaInterpreterConcreteInterpreter {
 
