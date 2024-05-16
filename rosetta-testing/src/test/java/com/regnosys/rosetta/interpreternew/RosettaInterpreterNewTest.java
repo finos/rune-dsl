@@ -11,11 +11,9 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
-import com.regnosys.rosetta.rosetta.expression.impl.RosettaIntLiteralImpl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import javax.inject.Inject;

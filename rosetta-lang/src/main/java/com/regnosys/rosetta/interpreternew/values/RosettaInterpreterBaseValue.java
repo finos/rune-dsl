@@ -13,7 +13,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterValue{
 	@Override

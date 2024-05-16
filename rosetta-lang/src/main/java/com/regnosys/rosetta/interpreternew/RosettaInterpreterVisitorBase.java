@@ -13,7 +13,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.regnosys.rosetta.rosetta.expression.InterpreterVisitor;
+import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor;
 
 public abstract class RosettaInterpreterVisitorBase implements InterpreterVisitor {
 	@Override
