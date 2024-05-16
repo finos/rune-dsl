@@ -19,11 +19,12 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
-public class RosettaInterpreterBaseValue implements RosettaInterpreterValue{
+public class RosettaInterpreterBaseValue implements RosettaInterpreterValue {
 	List<RosettaInterpreterBaseError> errors;
+	//private List<RosettaInterpreterBaseValue> items;
 	
 	@Override
-	public EList<RosettaInterpreterBaseError> getErrors(){
+	public EList<RosettaInterpreterBaseError> getErrors() {
 		return new BasicEList<RosettaInterpreterBaseError>(errors);
 	}
 	
@@ -137,7 +138,8 @@ public class RosettaInterpreterBaseValue implements RosettaInterpreterValue{
 	}
 
 	@Override
-	public Object eInvoke(EOperation operation, EList<?> arguments) throws InvocationTargetException {
+	public Object eInvoke(EOperation operation, EList<?> arguments) 
+			throws InvocationTargetException {
 		// TODO Auto-generated method stub
 		return null;
 	}
