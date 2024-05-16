@@ -1,12 +1,10 @@
 package com.regnosys.rosetta.interpreternew.values;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -17,41 +15,34 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
-import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
-public class RosettaInterpreterBaseValue implements RosettaInterpreterValue{
-	List<RosettaInterpreterBaseError> errors;
-	
+public class RosettaInterpreterError implements RosettaInterpreterBaseError{
 	@Override
-	public EList<RosettaInterpreterBaseError> getErrors(){
-		return new BasicEList<RosettaInterpreterBaseError>(errors);
-	}
-	
-	@Override
-	public boolean addError(RosettaInterpreterBaseError error) {
-		return errors.add(error);
+	public int hashCode() {
+		return Objects.hash(errorMessage);
 	}
 
 	@Override
-	public boolean addAllErrors(RosettaInterpreterValue other) {
-		return errors.addAll(other.getErrors());
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RosettaInterpreterError other = (RosettaInterpreterError) obj;
+		return Objects.equals(errorMessage, other.errorMessage);
 	}
 
-	@Override
-	public boolean addAllErrors(EList<RosettaInterpreterBaseError> errors) {
-		return errors.addAll(errors);
+	private String errorMessage;
+	
+	public RosettaInterpreterError(String value) {
+		super();
+		this.errorMessage = errorMessage;
 	}
 	
-	
-	public RosettaInterpreterBaseValue() {
-		this.errors = new ArrayList<>();
-	}
-	
-	public RosettaInterpreterBaseValue(RosettaInterpreterError error) {
-		this.errors = new ArrayList<>();
-		errors.add(error);
-	}
-	
+	public String getError() { return errorMessage; }
+
 	@Override
 	public EClass eClass() {
 		// TODO Auto-generated method stub
@@ -162,6 +153,18 @@ public class RosettaInterpreterBaseValue implements RosettaInterpreterValue{
 
 	@Override
 	public void eNotify(Notification notification) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getMessage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setMessage(String value) {
 		// TODO Auto-generated method stub
 		
 	}

@@ -8,14 +8,27 @@ package com.regnosys.rosetta.rosetta.interpreter
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
 
+class RosettaInterpreterBaseError{
+	String message
+}
 
 abstract class RosettaInterpreterValue {
+	refers RosettaInterpreterBaseError[] errors
 	
+	op boolean addError(RosettaInterpreterBaseError error)
+	op boolean addAllErrors(RosettaInterpreterValue other)
+	op boolean addAllErrors(RosettaInterpreterBaseError[] errors)
 }
 
 interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp)
 	op RosettaInterpreterValue interp (RosettaStringLiteral exp)
 	op RosettaInterpreterValue interp (RosettaNumberLiteral exp)
+	op RosettaInterpreterValue interp (RosettaIntLiteral exp)
+	op RosettaInterpreterValue interp (RosettaPatternLiteral exp)
+	op RosettaInterpreterValue interp (ListLiteral exp)
 }
