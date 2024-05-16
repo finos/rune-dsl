@@ -22,8 +22,14 @@ public class RosettaInterpreterListLiteralInterpreter extends RosettaInterpreter
 		List<RosettaInterpreterValue> interpretedExpressions = new ArrayList<>();
 		
 		for(RosettaExpression e : expressions) {
-			interpretedExpressions.add(e.accept(visitor));
+			RosettaInterpreterValue val = e.accept(visitor);
+			
+			if (val instanceof RosettaInterpreterListValue) {
+				interpretedExpressions.addAll(((RosettaInterpreterListValue)val).getExpressions());
+			}
+			else interpretedExpressions.add(e.accept(visitor));
 		}
+		
 		
 		return new RosettaInterpreterListValue(interpretedExpressions);
 	}

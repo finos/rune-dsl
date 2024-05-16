@@ -19,6 +19,11 @@ public class RosettaInterpreterListValue extends RosettaInterpreterBaseValue {
 	}
 
 	@Override
+	public String toString() {
+		return "RosettaInterpreterListValue [expressions=" + expressions + "]";
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
