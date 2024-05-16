@@ -16,16 +16,9 @@ import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue
+import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
 
-abstract class RosettaInterpreterValue {
-	
-}
-
-interface InterpreterVisitor {
-	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp)
-	op RosettaInterpreterValue interp (RosettaStringLiteral exp)
-	op RosettaInterpreterValue interp (RosettaNumberLiteral exp)
-}
 
 interface RosettaExpression {
 	// Whether the expression was generated

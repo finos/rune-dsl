@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterNew {
 	
