@@ -1,6 +1,12 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
@@ -12,14 +18,24 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 public class RosettaInterpreterComparisonOperationInterpreter extends 
 	RosettaInterpreterConcreteInterpreter {
 	
+	private static List<String> comparisonOperators = 
+			Arrays.asList("<", "<=", ">", ">=");
+	
 	/**
 	 * Interprets a comparison operation, evaluating the comparison between two operands.
 	 *
 	 * @param expr The ComparisonOperation expression to interpret
-	 * @return A RosettaInterpreterBooleanValue representing the result
-	 *         of the comparison operation.
+	 * @return If no errors are encountered, a RosettaInterpreterBooleanValue representing
+	 * 		   the result of the comparison operation.
+	 * 		   If errors are encountered, a RosettaInterpreterErrorValue representing
+     *         the error.
 	 */
-	public RosettaInterpreterValue interp(ComparisonOperation expr) {
+	public RosettaInterpreterBaseValue interp(ComparisonOperation expr) {
+		if (!comparisonOperators.contains(expr.getOperator())) {
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"operator not suppported")); 
+		}
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
 		
@@ -36,16 +52,16 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 			return new RosettaInterpreterBooleanValue(result);
 		
 		case ANY:
-			boolean resultAny = compareAny(leftValue, rightValue, expr.getOperator());
-			return new RosettaInterpreterBooleanValue(resultAny);
+			return compareAny(leftValue, rightValue, expr.getOperator());
 			
 		case ALL:
-			boolean resultAll = compareAll(leftValue, rightValue, expr.getOperator());
-			return new RosettaInterpreterBooleanValue(resultAll);
+			return compareAll(leftValue, rightValue, expr.getOperator());
 
 		default:
-			return new RosettaInterpreterBooleanValue(false);
-			//TODO: throw exception, not a supported case
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cardinality modifier " + expr.getCardMod()
+							+ " not supported"));
 			
 		}
 		
@@ -55,7 +71,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 //		return new RosettaInterpreterBooleanValue(result);
 	}
 
-	private boolean compareAny(RosettaInterpreterValue leftValue, 
+	private RosettaInterpreterBaseValue compareAny(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
 			String operator) {
 		//list vs list case:
@@ -80,11 +96,12 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 							rgtList.getExpressions().get(0), 
 							operator);
 				}
-				return anyTrue;
+				return new RosettaInterpreterBooleanValue(anyTrue);
 			}
 			else {
-				return false;
-				//TODO: throw exception, cannot compare two lists.
+				return new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(
+								"cannot compare two lists"));
 			}
 		}
 		
@@ -106,17 +123,19 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 							rightValue, 
 							operator);
 				}
-				return anyTrue; 
+				return new RosettaInterpreterBooleanValue(anyTrue); 
 			}
 		}
 		else {
-			//TODO: throw exception, cannot compare 2 elements
-			return false;
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cannot use \"ANY\" keyword "
+							+ "to compare two elements"));
 		}
-		return false;
+		return new RosettaInterpreterBooleanValue(false);
 	}
 
-	private boolean compareAll(RosettaInterpreterValue leftValue, 
+	private RosettaInterpreterBaseValue compareAll(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
 			String operator) {
 		//list vs list case:
@@ -141,11 +160,12 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 							rgtList.getExpressions().get(0), 
 							operator);
 				}
-				return allTrue;
+				return new RosettaInterpreterBooleanValue(allTrue);
 			}
 			else {
-				return false;
-				//TODO: throw exception, cannot compare two lists.
+				return new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(
+								"cannot compare two lists"));
 			}
 		}
 		
@@ -167,14 +187,16 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 							rightValue, 
 							operator);
 				}
-				return allTrue; 
+				return new RosettaInterpreterBooleanValue(allTrue); 
 			}
 		}
 		else {
-			//TODO: throw exception, cannot compare 2 elements
-			return false;
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cannot use \"ALL\" keyword "
+							+ "to compare two elements"));
 		}
-		return false;
+		return new RosettaInterpreterBooleanValue(false);
 	}
 
 	private boolean checkComparableTypes(RosettaInterpreterValue leftValue, 
@@ -232,10 +254,10 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	}
 
 	private boolean compareComparableValues(int comparisonResult, String operator) {
-		if (comparisonResult == 2) { 
-			//should not happen, means classes are not comparable
-			return false; //TODO: should throw exception
-		}
+//		if (comparisonResult == 2) { 
+//			//should not happen, means classes are not comparable
+//			return false; //TODO: should throw exception
+//		}
 		switch (operator) {
 		case "<":
 			return comparisonResult == -1;
@@ -246,7 +268,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		case ">=":
 			return comparisonResult == 1 || comparisonResult == 0;
 		default:
-			return false; //TODO: should throw exception
+			return false; //should never happen
 		}
 	}
 

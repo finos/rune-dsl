@@ -107,7 +107,8 @@ public class RosettaInterpreterEqualityTest {
 	public void errorThrownAllElementsTest() {
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-						"cannot compare two lists"));
+						"cannot use \"ALL\" keyword "
+								+ "to compare two elements"));
 		RosettaExpression expr = parser.parseExpression("1 all = 3");
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors(),

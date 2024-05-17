@@ -22,9 +22,12 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 	 * determining if they are equal.
 	 *
 	 * @param expr equality operation expression to interpret
-	 * @return A RosettaInterpreterBooleanValue representing the result of the equality 
+	 * @return If no errors are encountered, a RosettaInterpreterBooleanValue representing
+	 * 		   the result of the equality 
 	 *         comparison.
      *         It will be true if both evaluated expressions are equal, otherwise false.
+     *         If errors are encountered, a RosettaInterpreterErrorValue representing
+     *         the error.
 	 */
 	public RosettaInterpreterBaseValue interp(EqualityOperation expr) {
 		if (!equalityOperators.contains(expr.getOperator())) {
