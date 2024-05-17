@@ -2,6 +2,7 @@ package com.regnosys.rosetta.interpreternew;
 
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
@@ -47,6 +48,11 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 	@Override
 	public RosettaInterpreterValue interp(ListLiteral exp) {
 		return new RosettaInterpreterListLiteralInterpreter().interp(exp);
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(RosettaConditionalExpression exp) {
+		return null;
 	}
 
 }

@@ -11,6 +11,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 
 class RosettaInterpreterBaseError{
 	String message
@@ -26,4 +27,5 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaIntLiteral exp)
 	op RosettaInterpreterValue interp (RosettaPatternLiteral exp)
 	op RosettaInterpreterValue interp (ListLiteral exp)
+	op RosettaInterpreterValue interp (RosettaConditionalExpression exp)
 }
