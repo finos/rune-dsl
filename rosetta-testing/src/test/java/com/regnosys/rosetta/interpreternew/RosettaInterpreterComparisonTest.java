@@ -38,6 +38,13 @@ public class RosettaInterpreterComparisonTest {
 	}
 	
 	@Test
+	public void nestedTest() {
+		RosettaExpression expr = parser.parseExpression("True = (1 < 3)");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(((RosettaInterpreterBooleanValue)val).getValue());
+	}
+	
+	@Test
 	public void intSmallerTest() {
 		RosettaExpression expr = parser.parseExpression("1 < 2");
 		RosettaInterpreterValue val = interpreter.interp(expr);
@@ -105,8 +112,8 @@ public class RosettaInterpreterComparisonTest {
 		assertEquals(expectedError.getErrors(),
 				(errorVal.getErrors()));
 		
-		assertEquals(expectedError.getErrors().get(0).getMessage(),
-				(errorVal.getErrors().get(0).getMessage()));
+		assertEquals(((RosettaInterpreterError) expectedError.getErrors().get(0)).getError(),
+				(((RosettaInterpreterError) (errorVal.getErrors().get(0))).getError()));
 	}
 	
 }
