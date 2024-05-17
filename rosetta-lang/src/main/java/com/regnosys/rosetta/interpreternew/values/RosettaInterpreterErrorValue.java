@@ -7,6 +7,7 @@ import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue{
 	List<RosettaInterpreterBaseError> errors;
