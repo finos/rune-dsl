@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
@@ -38,8 +39,8 @@ public class RosettaInterpreterErrorTest {
 		RosettaInterpreterError e2 = new RosettaInterpreterError("e2");
 		List<RosettaInterpreterError> el = List.of(e1, e2);
 		
-		RosettaInterpreterStringValue val1 = new RosettaInterpreterStringValue("a");
-		RosettaInterpreterStringValue val2 = new RosettaInterpreterStringValue("b");
+		RosettaInterpreterErrorValue val1 = new RosettaInterpreterErrorValue();
+		RosettaInterpreterErrorValue val2 = new RosettaInterpreterErrorValue();
 		
 		val1.addError(e1);
 		val2.addError(e2);
