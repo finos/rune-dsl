@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
+<<<<<<< HEAD
 public class RosettaInterpreterBaseValue implements RosettaInterpreterValue {
 	List<RosettaInterpreterBaseError> errors;
 	//private List<RosettaInterpreterBaseValue> items;
@@ -53,6 +54,9 @@ public class RosettaInterpreterBaseValue implements RosettaInterpreterValue {
 		errors.add(error);
 	}
 	
+=======
+public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterValue{	
+>>>>>>> dev
 	@Override
 	public EClass eClass() {
 		// TODO Auto-generated method stub

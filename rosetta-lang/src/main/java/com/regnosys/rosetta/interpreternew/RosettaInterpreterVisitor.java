@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterEqualityOperationInterpreter;
@@ -43,7 +44,7 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaPatternLiteral exp) {
-		return new RosettaInterpreterBaseValue(
+		return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Pattern literals are not supported"));
 	}
 

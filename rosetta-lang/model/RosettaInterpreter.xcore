@@ -19,11 +19,6 @@ class RosettaInterpreterBaseError{
 }
 
 abstract class RosettaInterpreterValue {
-	refers RosettaInterpreterBaseError[] errors
-	
-	op boolean addError(RosettaInterpreterBaseError error)
-	op boolean addAllErrors(RosettaInterpreterValue other)
-	op boolean addAllErrors(RosettaInterpreterBaseError[] errors)
 }
 
 interface InterpreterVisitor {
