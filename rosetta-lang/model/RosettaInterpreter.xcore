@@ -1,0 +1,31 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaInterpreter")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+
+package com.regnosys.rosetta.rosetta.interpreter
+
+import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation
+
+class RosettaInterpreterBaseError{
+	String message
+}
+
+abstract class RosettaInterpreterValue {
+}
+
+interface InterpreterVisitor {
+	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp)
+	op RosettaInterpreterValue interp (RosettaStringLiteral exp)
+	op RosettaInterpreterValue interp (RosettaNumberLiteral exp)
+	op RosettaInterpreterValue interp (RosettaIntLiteral exp)
+	op RosettaInterpreterValue interp (RosettaPatternLiteral exp)
+	op RosettaInterpreterValue interp (ListLiteral exp)
+	op RosettaInterpreterValue interp (LogicalOperation exp)
+}

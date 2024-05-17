@@ -12,8 +12,8 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 import static org.junit.jupiter.api.Assertions.*;
 import javax.inject.Inject;

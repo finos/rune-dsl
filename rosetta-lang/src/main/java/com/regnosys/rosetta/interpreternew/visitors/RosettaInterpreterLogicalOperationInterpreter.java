@@ -2,9 +2,8 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
-import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterpreterConcreteInterpreter{
 

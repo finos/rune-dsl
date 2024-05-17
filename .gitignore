@@ -28,3 +28,7 @@ com.regnosys.rosetta.web/
 
 # CVE scan reports
 reports/
+rosetta-lang/META-INF/
+rosetta-lang/build.properties
+rosetta-lang/plugin.properties
+rosetta-lang/plugin.xml

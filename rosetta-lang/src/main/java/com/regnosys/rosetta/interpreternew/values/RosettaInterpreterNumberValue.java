@@ -1,9 +1,18 @@
 package com.regnosys.rosetta.interpreternew.values;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.Objects;
 
-public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue{
+public class RosettaInterpreterNumberValue extends RosettaInterpreterBaseValue {
+	private BigDecimal value;
+	
+	public RosettaInterpreterNumberValue(BigDecimal value) {
+		super();
+		this.value = value;
+	}
+	
+	public BigDecimal getValue() { return value; }
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(value);
@@ -17,16 +26,8 @@ public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RosettaInterpreterIntegerValue other = (RosettaInterpreterIntegerValue) obj;
+		RosettaInterpreterNumberValue other = (RosettaInterpreterNumberValue) obj;
 		return Objects.equals(value, other.value);
 	}
-
-	private BigInteger value;
 	
-	public RosettaInterpreterIntegerValue(BigInteger value) {
-		super();
-		this.value = value;
-	}
-	
-	public BigInteger getValue() { return value; }
 }
