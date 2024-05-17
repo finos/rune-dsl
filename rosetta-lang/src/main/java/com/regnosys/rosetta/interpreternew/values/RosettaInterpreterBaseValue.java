@@ -19,44 +19,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
-<<<<<<< HEAD
-public class RosettaInterpreterBaseValue implements RosettaInterpreterValue {
-	List<RosettaInterpreterBaseError> errors;
-	//private List<RosettaInterpreterBaseValue> items;
-	
-	@Override
-	public EList<RosettaInterpreterBaseError> getErrors() {
-		return new BasicEList<RosettaInterpreterBaseError>(errors);
-	}
-	
-	@Override
-	public boolean addError(RosettaInterpreterBaseError error) {
-		return errors.add(error);
-	}
 
-	@Override
-	public boolean addAllErrors(RosettaInterpreterValue other) {
-		return errors.addAll(other.getErrors());
-	}
-
-	@Override
-	public boolean addAllErrors(EList<RosettaInterpreterBaseError> errors) {
-		return errors.addAll(errors);
-	}
-	
-	
-	public RosettaInterpreterBaseValue() {
-		this.errors = new ArrayList<>();
-	}
-	
-	public RosettaInterpreterBaseValue(RosettaInterpreterError error) {
-		this.errors = new ArrayList<>();
-		errors.add(error);
-	}
-	
-=======
 public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterValue{	
->>>>>>> dev
 	@Override
 	public EClass eClass() {
 		// TODO Auto-generated method stub
