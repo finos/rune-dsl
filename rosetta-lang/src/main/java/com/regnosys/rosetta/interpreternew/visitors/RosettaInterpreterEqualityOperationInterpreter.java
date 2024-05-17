@@ -1,6 +1,12 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -8,6 +14,8 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterEqualityOperationInterpreter extends 
 	RosettaInterpreterConcreteInterpreter {
+	
+	private static List<String> equalityOperators = Arrays.asList("=", "<>");
 	
 	/**
 	 * Interprets an equality operation by evaluating both sides of the expression and
@@ -18,7 +26,12 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 	 *         comparison.
      *         It will be true if both evaluated expressions are equal, otherwise false.
 	 */
-	public RosettaInterpreterBooleanValue interp(EqualityOperation expr) {
+	public RosettaInterpreterBaseValue interp(EqualityOperation expr) {
+		if (!equalityOperators.contains(expr.getOperator())) {
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"operator not suppported")); 
+		}
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
 		
@@ -35,28 +48,21 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 			return new RosettaInterpreterBooleanValue(result);
 		
 		case ANY:
-			boolean resultAny = compareAny(leftValue, rightValue, expr.getOperator());
-			return new RosettaInterpreterBooleanValue(resultAny);
+			return compareAny(leftValue, rightValue, expr.getOperator());
 			
 		case ALL:
-			boolean resultAll = compareAll(leftValue, rightValue, expr.getOperator());
-			return new RosettaInterpreterBooleanValue(resultAll);
+			return compareAll(leftValue, rightValue, expr.getOperator());
 
 		default:
-			return new RosettaInterpreterBooleanValue(false);
-			//TODO: throw exception, not a supported case
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cardinality modifier " + expr.getCardMod()
+							+ " not supported"));
 			
-		}
-		
-//		boolean comparisonResult = leftValue.equals(rightValue);
-//		
-//		boolean result = compareComparableValues(comparisonResult,
-//				expr.getOperator());
-//		return new RosettaInterpreterBooleanValue(result);
-		
+		}		
 	}
 	
-	private boolean compareAny(RosettaInterpreterValue leftValue, 
+	private RosettaInterpreterBaseValue compareAny(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
 			String operator) {
 		//list vs list case:
@@ -82,11 +88,12 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 					anyTrue |= compareComparableValues(comparisonResult, 
 							operator);
 				}
-				return anyTrue;
+				return new RosettaInterpreterBooleanValue(anyTrue);
 			}
 			else {
-				return false;
-				//TODO: throw exception, cannot compare two lists.
+				return new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(
+								"cannot compare two lists"));
 			}
 		}
 		
@@ -108,17 +115,19 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 					anyTrue |= compareComparableValues(comparisonResult, 
 							operator);
 				}
-				return anyTrue; 
+				return new RosettaInterpreterBooleanValue(anyTrue); 
 			}
 		}
 		else {
-			//TODO: throw exception, cannot compare 2 elements
-			return false;
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cannot use \"ANY\" keyword "
+							+ "to compare two elements"));
 		}
-		return false;
+		return new RosettaInterpreterBooleanValue(false);
 	}
 	
-	private boolean compareAll(RosettaInterpreterValue leftValue, 
+	private RosettaInterpreterBaseValue compareAll(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
 			String operator) {
 		//list vs list case:
@@ -144,11 +153,13 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 					allTrue &= compareComparableValues(comparisonResult, 
 							operator);
 				}
-				return allTrue;
+				return new RosettaInterpreterBooleanValue(allTrue);
 			}
 			else {
-				return false;
 				//TODO: throw exception, cannot compare two lists.
+				return new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(
+								"cannot compare two lists"));
 			}
 		}
 		
@@ -170,24 +181,25 @@ public class RosettaInterpreterEqualityOperationInterpreter extends
 					allTrue &= compareComparableValues(comparisonResult,
 							operator);
 				}
-				return allTrue; 
+				return new RosettaInterpreterBooleanValue(allTrue); 
 			}
 		}
 		else {
-			//TODO: throw exception, cannot compare 2 elements
-			return false;
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cannot use \"ALL\" keyword "
+							+ "to compare two elements"));
+			
 		}
-		return false;
+		return new RosettaInterpreterBooleanValue(false);
 	}
 	
 	private boolean compareComparableValues(boolean comparisonResult, String operator) {
-		switch (operator) {
-		case "=":
+		if (operator.equals("=")) {
 			return comparisonResult;
-		case "<>":
+		}
+		else {
 			return !comparisonResult ;
-		default:
-			return false; //TODO: should throw exception
 		}
 	}
 
