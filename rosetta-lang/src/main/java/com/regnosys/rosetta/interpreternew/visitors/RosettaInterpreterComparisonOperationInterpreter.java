@@ -11,7 +11,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
-import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
@@ -19,7 +19,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	RosettaInterpreterConcreteInterpreter {
 	
 	private static List<String> comparisonOperators = 
-			Arrays.asList("<", "<=", ">", ">=");
+			Arrays.asList("<", "<=", ">", ">=", "=", "<>");
 	
 	/**
 	 * Interprets a comparison operation, evaluating the comparison between two operands.
@@ -30,7 +30,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	 * 		   If errors are encountered, a RosettaInterpreterErrorValue representing
      *         the error.
 	 */
-	public RosettaInterpreterBaseValue interp(ComparisonOperation expr) {
+	public RosettaInterpreterBaseValue interp(ModifiableBinaryOperation expr) {		
 		if (!comparisonOperators.contains(expr.getOperator())) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
@@ -90,7 +90,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 				
 				//for all elements in left list, check if the comparison 
 				// between them and right-hand side is true
-				boolean anyTrue = true;
+				boolean anyTrue = false;
 				for (RosettaInterpreterValue e : lfList.getExpressions()) {
 					anyTrue |= checkComparableTypes(e, 
 							rgtList.getExpressions().get(0), 
@@ -117,7 +117,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 			
 				//for all elements in left list, check if the comparison 
 				// between them and right-hand side is true
-				boolean anyTrue = true;
+				boolean anyTrue = false;
 				for (RosettaInterpreterValue e : lfList.getExpressions()) {
 					anyTrue |= checkComparableTypes(e, 
 							rightValue, 
@@ -254,11 +254,11 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	}
 
 	private boolean compareComparableValues(int comparisonResult, String operator) {
-//		if (comparisonResult == 2) { 
-//			//should not happen, means classes are not comparable
-//			return false; //TODO: should throw exception
-//		}
 		switch (operator) {
+		case "=":
+			return comparisonResult == 0;
+		case "<>":
+			return comparisonResult != 0;
 		case "<":
 			return comparisonResult == -1;
 		case "<=":

@@ -67,7 +67,7 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	public void cardinalityAllListsTest() {
-		RosettaExpression expr = parser.parseExpression("[1,2,3] all > [0]");
+		RosettaExpression expr = parser.parseExpression("[1,2,3] all >= [0]");
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(((RosettaInterpreterBooleanValue)val).getValue());
 	}
