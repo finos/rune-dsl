@@ -36,12 +36,17 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError{
 
 	private String errorMessage;
 	
-	public RosettaInterpreterError(String value) {
+	public RosettaInterpreterError(String errorMessage) {
 		super();
 		this.errorMessage = errorMessage;
 	}
 	
 	public String getError() { return errorMessage; }
+	
+	@Override
+	public String toString() {
+		return "RosettaInterpreterError [errorMessage=" + errorMessage + "]";
+	}
 
 	@Override
 	public EClass eClass() {
@@ -159,8 +164,7 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError{
 
 	@Override
 	public String getMessage() {
-		// TODO Auto-generated method stub
-		return null;
+		return errorMessage;
 	}
 
 	@Override
