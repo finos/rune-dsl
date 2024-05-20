@@ -51,7 +51,8 @@ public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue
 		return Stream.of(this);
 	}
 
-	
-	
-	
+	@Override
+	public String toString() {
+		return "RosettaInterpreterBooleanValue [value=" + value + "]";
+	}
 }
