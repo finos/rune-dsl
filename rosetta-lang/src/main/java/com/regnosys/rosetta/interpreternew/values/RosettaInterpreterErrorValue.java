@@ -2,6 +2,7 @@ package com.regnosys.rosetta.interpreternew.values;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
@@ -37,8 +38,90 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue{
 	public boolean addAllErrors(RosettaInterpreterErrorValue other) {
 		return errors.addAll(other.getErrors());
 	}
-
-	public boolean addAllErrors(EList<RosettaInterpreterBaseError> errors) {
-		return errors.addAll(errors);
+	public boolean addAllErrors(RosettaInterpreterValue other) {
+		if (!(other instanceof RosettaInterpreterErrorValue)) return false;
+		return errors.addAll(((RosettaInterpreterErrorValue)other).getErrors());
 	}
+
+	public boolean addAllErrors(List<RosettaInterpreterBaseError> errors) {
+		return this.errors.addAll(errors);
+	}
+	
+	/**
+	 * Checks if there is at least one error within the supplied values
+	 * @param val1
+	 * @param val2
+	 * @return
+	 */
+	public static boolean errorsExist(RosettaInterpreterValue val1, RosettaInterpreterValue val2) {
+		return val1 instanceof RosettaInterpreterErrorValue
+				|| val2 instanceof RosettaInterpreterErrorValue;
+	}
+	
+	/**
+	 * Checks if the supplied value is an error
+	 * @param val1
+	 * @return
+	 */
+	public static boolean errorsExist(RosettaInterpreterValue val1) {
+		return val1 instanceof RosettaInterpreterErrorValue;
+	}
+	
+	/**
+	 * Checks if there is at least one error within the supplied values
+	 * @param vals
+	 * @return
+	 */
+	public static boolean errorsExist(List<RosettaInterpreterValue> vals) {
+		for(RosettaInterpreterValue v : vals) {
+			if (v instanceof RosettaInterpreterErrorValue) return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Merges all errors existing within a list into one error value
+	 * @param vals - list of values with at least one error value
+	 * @return error value with all error messages
+	 */
+	public static RosettaInterpreterErrorValue merge(List<RosettaInterpreterValue> vals) {
+		if (!errorsExist(vals)) throw new IllegalArgumentException("None of the values are errors");
+		RosettaInterpreterErrorValue baseVal = new RosettaInterpreterErrorValue();
+		
+		for(RosettaInterpreterValue val : vals) {
+			baseVal.addAllErrors(val);
+		}
+		
+		return baseVal;
+	}
+	
+	public static RosettaInterpreterErrorValue merge(RosettaInterpreterValue val) {
+		return merge(List.of(val));
+	}
+	public static RosettaInterpreterErrorValue merge(RosettaInterpreterValue val1, RosettaInterpreterValue val2) {
+		return merge(List.of(val1, val2));
+	}
+	
+	@Override
+	public String toString() {
+		return "RosettaInterpreterErrorValue [errors=" + errors + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(errors);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RosettaInterpreterErrorValue other = (RosettaInterpreterErrorValue) obj;
+		return Objects.equals(errors, other.errors);
+	}
+	
 }
