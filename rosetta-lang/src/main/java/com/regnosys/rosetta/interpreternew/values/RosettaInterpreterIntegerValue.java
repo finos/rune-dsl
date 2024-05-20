@@ -3,7 +3,8 @@ package com.regnosys.rosetta.interpreternew.values;
 import java.math.BigInteger;
 import java.util.Objects;
 
-public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue{
+public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue
+	implements Comparable<RosettaInterpreterIntegerValue> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(value);
@@ -29,4 +30,9 @@ public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue{
 	}
 	
 	public BigInteger getValue() { return value; }
+
+	@Override
+	public int compareTo(RosettaInterpreterIntegerValue o) {
+		 return this.value.compareTo(o.value);
+	}
 }
