@@ -2,7 +2,8 @@ package com.regnosys.rosetta.interpreternew.values;
 
 import java.util.Objects;
 
-public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue{
+public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue 
+	implements Comparable<RosettaInterpreterStringValue> {
 	private String value;
 	
 	public RosettaInterpreterStringValue(String value) {
@@ -27,6 +28,20 @@ public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue{
 			return false;
 		RosettaInterpreterStringValue other = (RosettaInterpreterStringValue) obj;
 		return Objects.equals(value, other.value);
+	}
+
+	@Override
+	public int compareTo(RosettaInterpreterStringValue o) {
+		int compareValue = this.value.compareTo(o.value);
+		if (compareValue < 0) {
+			return -1;
+		}
+		else if (compareValue > 0) {
+			return 1;
+		} 
+		else {
+			return 0;
+		}
 	}
 	
 }

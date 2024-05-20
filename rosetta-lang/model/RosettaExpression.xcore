@@ -237,9 +237,15 @@ interface ModifiableBinaryOperation extends RosettaBinaryOperation {
 }
 
 class EqualityOperation extends ModifiableBinaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class ComparisonOperation extends ModifiableBinaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class RosettaContainsExpression extends RosettaBinaryOperation {

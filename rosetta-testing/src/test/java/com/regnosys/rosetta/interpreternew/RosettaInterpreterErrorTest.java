@@ -49,4 +49,11 @@ public class RosettaInterpreterErrorTest {
 		
 		assertEquals(el, val1.getErrors());
 	}
+	
+	@Test
+	public void ErrorMessageExists() {
+		RosettaInterpreterError e1 = new RosettaInterpreterError("e1");
+		RosettaInterpreterErrorValue val1 = new RosettaInterpreterErrorValue(e1);
+		assertEquals("e1", val1.getErrors().get(0).getMessage());
+	}
 }
