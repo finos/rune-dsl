@@ -20,12 +20,12 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
-import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
+import com.regnosys.rosetta.tests.util.ExpressionValidationHelper;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -34,6 +34,8 @@ public class RosettaInterpreterLiteralsTest {
 	private ExpressionParser parser;
 	@Inject
 	RosettaInterpreterNew interpreter;
+	@Inject
+	private ExpressionValidationHelper validation;
 	
 	private ExpressionFactory eFactory;
 	
@@ -52,12 +54,43 @@ public class RosettaInterpreterLiteralsTest {
 	@Test
 	public void ListTest() {
 		RosettaExpression expr = parser.parseExpression("[1,2]");
+		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue expected = 
 				new RosettaInterpreterListValue(List.of(
 						new RosettaInterpreterIntegerValue(BigInteger.valueOf(1)), 
 						new RosettaInterpreterIntegerValue(BigInteger.valueOf(2))));
-		assertTrue(expected.equals(val));
+		assertEquals(expected, val);
+		
+	}
+	
+	@Test
+	public void NestedListTest() {
+		RosettaExpression expr = parser.parseExpression("[1,[2,3]]");
+		validation.assertNoIssues(expr);
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		RosettaInterpreterListValue expected = 
+				new RosettaInterpreterListValue(List.of(
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(1)), 
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(2)),
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(3))));
+		assertEquals(expected, val);
+		
+	}
+	
+	@Test
+	public void VeryNestedListTest() {
+		RosettaExpression expr = parser.parseExpression("[1,[2,[3, [4, [5]]]]]");
+		validation.assertNoIssues(expr);
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		RosettaInterpreterListValue expected = 
+				new RosettaInterpreterListValue(List.of(
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(1)), 
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(2)),
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(3)),
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(4)),
+						new RosettaInterpreterIntegerValue(BigInteger.valueOf(5))));
+		assertEquals(expected, val);
 		
 	}
 	
