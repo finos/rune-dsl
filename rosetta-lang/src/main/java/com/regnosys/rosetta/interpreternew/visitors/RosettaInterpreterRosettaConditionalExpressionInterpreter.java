@@ -40,7 +40,7 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends R
 				
 				RosettaInterpreterBaseValue elseInstance = checkInstance(elseThenValue, true);
 				
-				if (!result.getClass().equals(elseInstance.getClass())) {
+				if (!result.getClass().equals(elseInstance.getClass()) && !(result instanceof RosettaInterpreterErrorValue) && !(elseInstance instanceof RosettaInterpreterErrorValue)) {
 					return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
 				}
 			}
@@ -52,7 +52,7 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends R
 			RosettaInterpreterBaseValue result = checkInstance(elseThenValue, true);
 			RosettaInterpreterBaseValue ifInstance = checkInstance(ifThenValue, true);
 			
-			if (!result.getClass().equals(ifInstance.getClass())) {
+			if (!result.getClass().equals(ifInstance.getClass()) && !(result instanceof RosettaInterpreterErrorValue) && !(ifInstance instanceof RosettaInterpreterErrorValue)) {
 				return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
 			}
 			return result;
@@ -82,7 +82,7 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends R
 		} else if (expr instanceof RosettaInterpreterListValue) {
 			result = new RosettaInterpreterListValue(((RosettaInterpreterListValue) expr).getExpressions());
 		} else if (expr instanceof RosettaInterpreterErrorValue) {
-			result = createErrors(expr, "Conditional expression: " + message + " is an error value");
+			result = createErrors(expr, "Conditional expression: " + message + " is an error value.");
 		}
 		
 		return result;
