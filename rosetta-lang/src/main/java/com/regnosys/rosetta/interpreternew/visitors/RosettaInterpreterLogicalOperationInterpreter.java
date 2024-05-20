@@ -1,9 +1,5 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
