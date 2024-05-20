@@ -8,10 +8,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -259,7 +256,9 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	}
 
 	private boolean compareComparableValues(int comparisonResult, String operator) {
-		if(comparisonResult == 2) return false;
+		if (comparisonResult == 2) {
+			return false;
+		}
 		switch (operator) {
 		case "=":
 			return comparisonResult == 0;
