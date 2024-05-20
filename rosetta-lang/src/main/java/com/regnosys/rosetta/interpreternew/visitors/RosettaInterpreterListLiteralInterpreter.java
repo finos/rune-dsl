@@ -27,7 +27,7 @@ public class RosettaInterpreterListLiteralInterpreter extends RosettaInterpreter
 			if (val instanceof RosettaInterpreterListValue) {
 				interpretedExpressions.addAll(((RosettaInterpreterListValue)val).getExpressions());
 			}
-			else interpretedExpressions.add(e.accept(visitor));
+			else interpretedExpressions.add(val);
 		}
 		
 		
