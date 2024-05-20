@@ -74,7 +74,7 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue{
 	 */
 	public static boolean errorsExist(List<RosettaInterpreterValue> vals) {
 		for(RosettaInterpreterValue v : vals) {
-			if (v instanceof RosettaInterpreterErrorValue) return true;
+			if (errorsExist(v)) return true;
 		}
 		return false;
 	}
