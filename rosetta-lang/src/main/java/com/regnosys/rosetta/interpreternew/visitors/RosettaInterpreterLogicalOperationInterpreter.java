@@ -1,5 +1,9 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
@@ -40,8 +44,11 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 			else if(rightSideCheck == null) return leftSideCheck;
 			else { 
 				// There were errors on both sides => Combine the error messages
-				RosettaInterpreterErrorValue newErrorValue = new RosettaInterpreterErrorValue(leftSideCheck.getErrors());
-				newErrorValue.addAllErrors(rightSideCheck.getErrors());
+				// ???????????? HERE, SHOULD I JUST CHECK THE LEFTSIDE? If we have the expression ("string" or (true and 0)),
+				// do we even check the rightside, or do we just say there was an error on the left?
+				RosettaInterpreterErrorValue newErrorValue = new RosettaInterpreterErrorValue();
+				newErrorValue.addAllErrors(leftSideCheck);
+				newErrorValue.addAllErrors(rightSideCheck);
 				return newErrorValue;
 			}
 		}
@@ -52,7 +59,7 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 			return new RosettaInterpreterBooleanValue(leftBoolean || rightBoolean);
 		} else {
 			// Wrong logical operator -> only "and" / "or" supported
-			return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: Wrong operator - try 'and' / 'or'"));
+			return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: Wrong operator - only 'and' / 'or' supported"));
 		}
 	}
 	
@@ -65,17 +72,18 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 	 * @return The correct RosettaInterpreterErrorValue, or "null" if the interpretedValue does not cause an error
 	 */
 	private RosettaInterpreterErrorValue checkForErrors(RosettaInterpreterValue interpretedValue, String side) {
-		if(interpretedValue instanceof RosettaInterpreterErrorValue) {
+		if(interpretedValue instanceof RosettaInterpreterBooleanValue) {
+			// No errors found
+			return null;
+		} else if(interpretedValue instanceof RosettaInterpreterErrorValue) {
 			// The interpreted value was an error (so we need to add a new error message to the existing ones)
 			RosettaInterpreterErrorValue oldErrorValue = (RosettaInterpreterErrorValue) interpretedValue;
 			RosettaInterpreterErrorValue newErrorValue = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: " + side + " is an error value"));
-			newErrorValue.addAllErrors(oldErrorValue.getErrors());
+			newErrorValue.addAllErrors(oldErrorValue);
 			return newErrorValue;
-		} else if (!(interpretedValue instanceof RosettaInterpreterBooleanValue)) {
+		} else {
 			// The interpreted value was not an error, but something other than a boolean
 			return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: " + side + " is not of type Boolean"));
 		}
-		
-		return null;
 	}
 }
