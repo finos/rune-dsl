@@ -144,13 +144,8 @@ public class RosettaInterpreterLogicalOperationsTest {
     @Test
     public void errorsOnBothSidesTest() {
     	List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
-    	// The order of these might be wrong, I am not sure if they which order they get added in
-    	// The way I did it now, it technically gets more specific the further you go,
-    	// so for the example below, it will first say (True or 1) is an error value, and then say that 1 is not a boolean
-    	
     	// This is the case: ("string" and (True or 1))
     	expected.add(new RosettaInterpreterError("Logical Operation: Leftside is not of type Boolean"));
-    	expected.add(new RosettaInterpreterError("Logical Operation: Rightside is an error value"));
     	expected.add(new RosettaInterpreterError("Logical Operation: Rightside is not of type Boolean"));
     	
     	RosettaIntLiteral intLiteral = eFactory.createRosettaIntLiteral();

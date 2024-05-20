@@ -40,8 +40,6 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 			else if(rightSideCheck == null) return leftSideCheck;
 			else { 
 				// There were errors on both sides => Combine the error messages
-				// ???????????? HERE, SHOULD I JUST CHECK THE LEFTSIDE? If we have the expression ("string" or (true and 0)),
-				// do we even check the rightside, or do we just say there was an error on the left?
 				RosettaInterpreterErrorValue newErrorValue = new RosettaInterpreterErrorValue();
 				newErrorValue.addAllErrors(leftSideCheck);
 				newErrorValue.addAllErrors(rightSideCheck);
@@ -73,10 +71,7 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 			return null;
 		} else if(interpretedValue instanceof RosettaInterpreterErrorValue) {
 			// The interpreted value was an error (so we need to add a new error message to the existing ones)
-			RosettaInterpreterErrorValue oldErrorValue = (RosettaInterpreterErrorValue) interpretedValue;
-			RosettaInterpreterErrorValue newErrorValue = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: " + side + " is an error value"));
-			newErrorValue.addAllErrors(oldErrorValue);
-			return newErrorValue;
+			return (RosettaInterpreterErrorValue) interpretedValue;
 		} else {
 			// The interpreted value was not an error, but something other than a boolean
 			return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: " + side + " is not of type Boolean"));
