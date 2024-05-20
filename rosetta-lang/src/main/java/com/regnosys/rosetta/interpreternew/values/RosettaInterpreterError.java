@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 
-public class RosettaInterpreterError implements RosettaInterpreterBaseError{
+public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 	@Override
 	public int hashCode() {
 		return Objects.hash(errorMessage);
@@ -24,12 +24,15 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError{
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		RosettaInterpreterError other = (RosettaInterpreterError) obj;
 		return Objects.equals(errorMessage, other.errorMessage);
 	}
@@ -133,7 +136,8 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError{
 	}
 
 	@Override
-	public Object eInvoke(EOperation operation, EList<?> arguments) throws InvocationTargetException {
+	public Object eInvoke(EOperation operation, EList<?> arguments)
+			throws InvocationTargetException {
 		// TODO Auto-generated method stub
 		return null;
 	}

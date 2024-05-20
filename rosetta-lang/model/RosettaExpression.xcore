@@ -246,13 +246,22 @@ class ComparisonOperation extends ModifiableBinaryOperation {
 }
 
 class RosettaContainsExpression extends RosettaBinaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class RosettaDisjointExpression extends RosettaBinaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class JoinOperation extends RosettaBinaryOperation {
 	boolean explicitSeparator
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 /**
@@ -306,15 +315,24 @@ enum ExistsModifier {
 
 class RosettaExistsExpression extends RosettaUnaryOperation {
     ExistsModifier modifier
+    op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class RosettaAbsentExpression extends RosettaUnaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class RosettaOnlyElement extends ListOperation {
 }
 
 class RosettaCountOperation extends RosettaUnaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class FlattenOperation extends ListOperation, CanHandleListOfLists {
@@ -327,9 +345,15 @@ class ReverseOperation extends ListOperation {
 }
 
 class FirstOperation extends ListOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class LastOperation extends ListOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class SumOperation extends ListOperation {
