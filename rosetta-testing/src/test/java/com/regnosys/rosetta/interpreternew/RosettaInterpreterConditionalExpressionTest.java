@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
@@ -88,5 +90,18 @@ public class RosettaInterpreterConditionalExpressionTest {
 		BigDecimal number = BigDecimal.valueOf(1.2);
 		
 		assertEquals(number, ((RosettaInterpreterNumberValue) result).getValue());
+	}
+	
+	@Test
+	public void notSameType() {
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
+		
+		RosettaExpression expr = parser.parseExpression("if True then 1.2 else \"abc\"");
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
+		
+		assertEquals(expected.getErrors(), errorResult.getErrors());
+		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		
 	}
 }
