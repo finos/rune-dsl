@@ -54,8 +54,7 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue{
 	 * @return
 	 */
 	public static boolean errorsExist(RosettaInterpreterValue val1, RosettaInterpreterValue val2) {
-		return val1 instanceof RosettaInterpreterErrorValue
-				|| val2 instanceof RosettaInterpreterErrorValue;
+		return errorsExist(List.of(val1, val2));
 	}
 	
 	/**
@@ -64,7 +63,7 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue{
 	 * @return
 	 */
 	public static boolean errorsExist(RosettaInterpreterValue val1) {
-		return val1 instanceof RosettaInterpreterErrorValue;
+		return errorsExist(List.of(val1));
 	}
 	
 	/**
@@ -74,7 +73,9 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue{
 	 */
 	public static boolean errorsExist(List<RosettaInterpreterValue> vals) {
 		for(RosettaInterpreterValue v : vals) {
-			if (errorsExist(v)) return true;
+			if (v instanceof RosettaInterpreterErrorValue) {
+				return true;
+			}
 		}
 		return false;
 	}
