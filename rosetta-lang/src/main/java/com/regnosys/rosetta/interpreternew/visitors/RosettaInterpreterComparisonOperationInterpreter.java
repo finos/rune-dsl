@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +21,17 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	
 	private static List<String> comparisonOperators = 
 			Arrays.asList("<", "<=", ">", ">=", "=", "<>");
+	
+	private static List<String> comparableClasses = 
+			Arrays.asList(
+					"com.regnosys.rosetta.interpreternew.values."
+					+ "RosettaInterpreterBooleanValue",
+					"com.regnosys.rosetta.interpreternew.values."
+					+ "RosettaInterpreterIntegerValue",
+					"com.regnosys.rosetta.interpreternew.values."
+					+ "RosettaInterpreterNumberValue",
+					"com.regnosys.rosetta.interpreternew.values."
+					+ "RosettaInterpreterStringValue");
 	
 	/**
 	 * Interprets a comparison operation, evaluating the comparison between two operands.
@@ -204,56 +216,50 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 			String operator) {
 		int comparisonResult = 2;
 		
-		//compare integers
-		if (leftValue instanceof RosettaInterpreterIntegerValue 
-				&&  rightValue instanceof RosettaInterpreterIntegerValue) {
-			RosettaInterpreterIntegerValue leftInt = 
-					(RosettaInterpreterIntegerValue) leftValue;
-			RosettaInterpreterIntegerValue rightInt = 
-					(RosettaInterpreterIntegerValue) rightValue;
-			
-			comparisonResult = leftInt.compareTo(rightInt);
+		
+		boolean isComparable = false;
+		
+		//left and right will be of type comparableClazz
+		Class<?> comparableClazz = null; 
+		
+		try {
+			for (String clazzString : comparableClasses) {
+				Class<?> clazz = Class.forName(clazzString);
+				
+				//check that both expressions are of the same type
+				boolean isInstance = (clazz.isInstance(leftValue) 
+						&& clazz.isInstance(rightValue));
+				if (isInstance) {
+					comparableClazz = clazz;
+				}
+				isComparable |= isInstance;
+			}  
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Not a class");
+			e.printStackTrace();
 		}
 		
-		//compare booleans
-		else if (leftValue instanceof RosettaInterpreterBooleanValue 
-				&&  rightValue instanceof RosettaInterpreterBooleanValue) {
-			RosettaInterpreterBooleanValue leftBool = 
-					(RosettaInterpreterBooleanValue) leftValue;
-			RosettaInterpreterBooleanValue rightBool = 
-					(RosettaInterpreterBooleanValue) rightValue;
-			
-			comparisonResult = leftBool.compareTo(rightBool);
+		if (isComparable) {
+			try {
+				//compare the two expressions
+				comparisonResult = (int) comparableClazz
+						.getDeclaredMethod("compareTo",comparableClazz)
+						.invoke(leftValue, rightValue);
+			} catch (IllegalAccessException | IllegalArgumentException 
+					| InvocationTargetException | NoSuchMethodException 
+					| SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
-		//compare strings
-		else if (leftValue instanceof RosettaInterpreterStringValue 
-				&&  rightValue instanceof RosettaInterpreterStringValue) {
-			RosettaInterpreterStringValue leftString = 
-					(RosettaInterpreterStringValue) leftValue;
-			RosettaInterpreterStringValue rightString = 
-					(RosettaInterpreterStringValue) rightValue;
-			
-			comparisonResult = leftString.compareTo(rightString);
-		}
-		
-		//compare numbers
-		else if (leftValue instanceof RosettaInterpreterNumberValue 
-				&&  rightValue instanceof RosettaInterpreterNumberValue) {
-			RosettaInterpreterNumberValue leftNumber = 
-					(RosettaInterpreterNumberValue) leftValue;
-			RosettaInterpreterNumberValue rightNumber = 
-					(RosettaInterpreterNumberValue) rightValue;
-			
-			comparisonResult = leftNumber.compareTo(rightNumber);
-		}
-		
-		
+				
 		return compareComparableValues(comparisonResult, 
 				operator);
 	}
 
 	private boolean compareComparableValues(int comparisonResult, String operator) {
+		if(comparisonResult == 2) return false;
 		switch (operator) {
 		case "=":
 			return comparisonResult == 0;
