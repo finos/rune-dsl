@@ -1,12 +1,9 @@
 package com.regnosys.rosetta.interpreternew.values;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -16,7 +13,6 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 

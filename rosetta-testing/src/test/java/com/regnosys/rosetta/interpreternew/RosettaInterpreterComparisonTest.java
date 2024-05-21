@@ -30,11 +30,12 @@ public class RosettaInterpreterComparisonTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	private ExpressionFactory eFactory;
+	@SuppressWarnings("unused")
+	private ExpressionFactory exFactory;
 	
 	@BeforeEach
 	public void setup() {
-		eFactory = ExpressionFactoryImpl.init();
+		exFactory = ExpressionFactoryImpl.init();
 	}
 	
 	@Test
@@ -67,9 +68,14 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	public void cardinalityAllListsTest() {
+		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"cannot compare two lists"));
 		RosettaExpression expr = parser.parseExpression("[1,2,3] all >= [0]");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(((RosettaInterpreterBooleanValue)val).getValue());
+		assertEquals(expectedError.getErrors().get(0).getMessage(),
+				((RosettaInterpreterErrorValue)val)
+					.getErrors().get(0).getMessage());
 	}
 	
 	@Test
@@ -112,8 +118,9 @@ public class RosettaInterpreterComparisonTest {
 		assertEquals(expectedError.getErrors(),
 				(errorVal.getErrors()));
 		
-		assertEquals(((RosettaInterpreterError) expectedError.getErrors().get(0)).getError(),
-				(((RosettaInterpreterError) (errorVal.getErrors().get(0))).getError()));
+		assertEquals(((RosettaInterpreterError)expectedError.getErrors().get(0)).getError(),
+				(((RosettaInterpreterError)(errorVal.getErrors().get(0)))
+						.getError()));
 	}
 	
 }
