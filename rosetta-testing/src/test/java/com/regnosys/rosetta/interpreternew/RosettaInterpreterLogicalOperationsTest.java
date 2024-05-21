@@ -41,23 +41,24 @@ public class RosettaInterpreterLogicalOperationsTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	private ExpressionFactory eFactory;
+	private ExpressionFactory exFactory;
 	
 	@BeforeEach
 	public void setup() {
-		eFactory = ExpressionFactoryImpl.init();
+		exFactory = ExpressionFactoryImpl.init();
 		
 	}
 	
 	// ------------- Helper Methods -------------
 	private RosettaBooleanLiteral createBooleanLiteral(boolean value) {
-        RosettaBooleanLiteral literal = eFactory.createRosettaBooleanLiteral();
+        RosettaBooleanLiteral literal = exFactory.createRosettaBooleanLiteral();
         literal.setValue(value);
         return literal;
     }
 
-    private LogicalOperation createLogicalOperation(String operator, RosettaExpression left, RosettaExpression right) {
-        LogicalOperation operation = eFactory.createLogicalOperation();
+    private LogicalOperation createLogicalOperation(
+    		String operator, RosettaExpression left, RosettaExpression right) {
+        LogicalOperation operation = exFactory.createLogicalOperation();
         operation.setOperator(operator);
         operation.setLeft(left);
         operation.setRight(right);
@@ -70,9 +71,11 @@ public class RosettaInterpreterLogicalOperationsTest {
         assertEquals(expected, boolResult.getValue());
     }
 
-    private void compareErrors(List<RosettaInterpreterError> expected, EList<RosettaInterpreterBaseError> errors) {
+    private void compareErrors(
+    		List<RosettaInterpreterError> expected, 
+    		EList<RosettaInterpreterBaseError> errors) {
 		assertEquals(expected.size(), errors.size());
-		for(int i = 0; i < expected.size(); i++) {
+		for (int i = 0; i < expected.size(); i++) {
 			RosettaInterpreterError newError = (RosettaInterpreterError) errors.get(i);
 			assertEquals(expected.get(i).getError(), newError.getError());
 		}
@@ -117,7 +120,8 @@ public class RosettaInterpreterLogicalOperationsTest {
     @Test
     public void wrongOperatorTest() {
     	List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
-    	expected.add(new RosettaInterpreterError("Logical Operation: Wrong operator - only 'and' / 'or' supported"));
+    	expected.add(new RosettaInterpreterError(
+    			"Logical Operation: Wrong operator - only 'and' / 'or' supported"));
     	
     	RosettaBooleanLiteral trueLiteral = createBooleanLiteral(true);
     	RosettaBooleanLiteral falseLiteral = createBooleanLiteral(false);
@@ -132,7 +136,8 @@ public class RosettaInterpreterLogicalOperationsTest {
     @Test
     public void notBooleanValueTest() {
     	List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
-    	expected.add(new RosettaInterpreterError("Logical Operation: Leftside is not of type Boolean"));
+    	expected.add(new RosettaInterpreterError(
+    			"Logical Operation: Leftside is not of type Boolean"));
     	
     	RosettaExpression expr = parser.parseExpression("1 and False");
     	RosettaInterpreterValue result = interpreter.interp(expr);
@@ -145,15 +150,17 @@ public class RosettaInterpreterLogicalOperationsTest {
     public void errorsOnBothSidesTest() {
     	List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
     	// This is the case: ("string" and (True or 1))
-    	expected.add(new RosettaInterpreterError("Logical Operation: Leftside is not of type Boolean"));
-    	expected.add(new RosettaInterpreterError("Logical Operation: Rightside is not of type Boolean"));
+    	expected.add(new RosettaInterpreterError(
+    			"Logical Operation: Leftside is not of type Boolean"));
+    	expected.add(new RosettaInterpreterError(
+    			"Logical Operation: Rightside is not of type Boolean"));
     	
-    	RosettaIntLiteral intLiteral = eFactory.createRosettaIntLiteral();
+    	RosettaIntLiteral intLiteral = exFactory.createRosettaIntLiteral();
     	intLiteral.setValue(BigInteger.valueOf(1));
     	RosettaBooleanLiteral trueLiteral = createBooleanLiteral(true);
     	LogicalOperation expr = createLogicalOperation("or", trueLiteral, intLiteral);
     	
-    	RosettaStringLiteral stringLiteral = eFactory.createRosettaStringLiteral();
+    	RosettaStringLiteral stringLiteral = exFactory.createRosettaStringLiteral();
     	stringLiteral.setValue("string");
     	LogicalOperation nestedExpr = createLogicalOperation("and", stringLiteral, expr);
     	
