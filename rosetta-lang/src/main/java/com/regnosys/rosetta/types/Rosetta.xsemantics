@@ -67,7 +67,7 @@ import com.regnosys.rosetta.interpreter.RosettaValue
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
-import com.regnosys.rosetta.rosetta.TranslationParameter
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util

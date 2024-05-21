@@ -22,14 +22,12 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.regnosys.rosetta.rosetta.RosettaPackage.Literals;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.Translation;
-import com.regnosys.rosetta.rosetta.TranslationParameter;
-import com.regnosys.rosetta.rosetta.TranslationRule;
+import com.regnosys.rosetta.rosetta.translate.Translation;
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
+import com.regnosys.rosetta.rosetta.translate.TranslationRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -50,7 +48,7 @@ public class ImplicitVariableUtil {
 	/**
 	 * Find the enclosing object that defines the implicit variable in the given expression.
 	 */
-	public Optional<EObject> findObjectDefiningImplicitVariable(EObject context) {
+	public Optional<? extends EObject> findObjectDefiningImplicitVariable(EObject context) {
 		Iterable<EObject> containers = EcoreUtil2.getAllContainers(context);
 		EObject prev = context;
 		for (EObject container: containers) {
@@ -67,24 +65,14 @@ public class ImplicitVariableUtil {
 			} else if (container instanceof TranslationRule) {
 				TranslationRule rule = (TranslationRule)container;
 				Translation trans = rule.getTranslation();
-				TranslationParameter implicitParam = null;
-				
-				if (prev.eContainmentFeature() == Literals.TRANSLATION_RULE__LEFT) {
-					implicitParam = findFirstUnnamedParameter(trans.getLeftParameters());
-				} else if (prev.eContainmentFeature() == Literals.TRANSLATION_RULE__RIGHT) {
-					implicitParam = findFirstUnnamedParameter(trans.getRightParameters());
-				}
-				
-				if (implicitParam != null) {
-					return Optional.of(implicitParam);
-				}
+				return findFirstUnnamedParameter(trans.getParameters());
 			}
 			prev = container;
 		}
 		return Optional.empty();
 	}
-	private TranslationParameter findFirstUnnamedParameter(List<TranslationParameter> params) {
-		return params.stream().filter(p -> p.getName() == null).findFirst().orElse(null);
+	private Optional<TranslationParameter> findFirstUnnamedParameter(List<TranslationParameter> params) {
+		return params.stream().filter(p -> p.getName() == null).findFirst();
 	}
 	
 	/**

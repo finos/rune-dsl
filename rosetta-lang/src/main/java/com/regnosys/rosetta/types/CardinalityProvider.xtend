@@ -69,7 +69,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
-import com.regnosys.rosetta.rosetta.TranslationParameter
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)

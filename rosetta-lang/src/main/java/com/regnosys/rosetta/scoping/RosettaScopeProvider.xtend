@@ -37,6 +37,7 @@ import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.translate.TranslatePackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import java.util.List
@@ -56,8 +57,9 @@ import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
-import com.regnosys.rosetta.rosetta.TranslationRule
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.translate.Translation
+import com.regnosys.rosetta.rosetta.translate.TranslationRule
+import com.regnosys.rosetta.types.TypeSystem
 
 /**
  * This class contains custom scoping description.
@@ -72,6 +74,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	static Logger LOGGER = LoggerFactory.getLogger(RosettaScopeProvider)
 	
 	@Inject RosettaTypeProvider typeProvider
+	@Inject TypeSystem typeSystem
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
@@ -199,7 +202,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							return Scopes.scopeFor(classRef.allAttributes)
 					}
 					return IScope.NULLSCOPE
-				}			
+				}
 				case ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF: {
 					if (context instanceof RosettaExternalEnumValue) {
 						val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
@@ -223,6 +226,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
+				}
+				case TRANSLATION_RULE__FEATURE: {
+					if (context instanceof TranslationRule) {
+						val translation = context.translation
+						return createExtendedFeatureScope(translation, typeSystem.typeCallToRType(translation.resultType))
+					}
+					return IScope.NULLSCOPE
 				}
 			}
 			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')
@@ -288,16 +298,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					object.isPostCondition || descr.EObjectOrProxy.eContainingFeature !== FUNCTION__OUTPUT
 				])
 			}
-			RosettaExpression: {
-			    if (object.eContainmentFeature === TRANSLATION_RULE__LEFT) {
-			        val rule = object.eContainer as TranslationRule
-			        Scopes.scopeFor(rule.translation.leftParameters.filter[name !== null], parentScope)
-			    } else if (object.eContainmentFeature === TRANSLATION_RULE__RIGHT) {
-			        val rule = object.eContainer as TranslationRule
-			        Scopes.scopeFor(rule.translation.rightParameters.filter[name !== null], parentScope)
-			    } else {
-			        parentScope
-			    }
+			Translation: {
+				Scopes.scopeFor(object.parameters.filter[name !== null], parentScope)
 			}
 			RosettaModel:
 				filteredScope(defaultScope(object, reference))[ descr |

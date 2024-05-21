@@ -44,16 +44,10 @@ interface RosettaTyped {
 	}
 }
 
-class RosettaFeature extends RosettaNamed {
-	/**
-	 * @return The name or 'value' if it's <code>null</code>
-	 */
-	derived String getNameOrDefault get {
-		return name ?: 'value'
-	}
+interface RosettaFeature extends RosettaNamed {
 }
 
-class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
+interface RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
 
 /**
  * A named symbol that may be used in an expression to reference an object
@@ -415,28 +409,6 @@ enum RosettaQualifiableType {
 /*****************************************
  * Translate external synonym support
  *****************************************/
-
-class RosettaTranslateSource extends RosettaRootElement, RosettaNamed {
-    refers RosettaTranslateSource[] superSources
-    contains Translation[] translations
-}
-
-class Translation {
-    contains TranslationParameter[] leftParameters
-    contains TranslationParameter[] rightParameters
-    contains TranslationRule[] rules opposite translation
-}
-
-class TranslationParameter extends RosettaSymbol, RosettaTyped {
-    
-}
-
-class TranslationRule {
-    refers Translation translation opposite rules
-    
-    contains RosettaExpression[] left
-    contains RosettaExpression[] right
-}
 
 abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
 	contains RosettaExternalClass[] externalClasses

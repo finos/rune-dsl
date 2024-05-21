@@ -4,8 +4,14 @@
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 package com.regnosys.rosetta.rosetta.translate
 
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 class TranslateSource extends RosettaRootElement, RosettaNamed {
 	refers TranslateSource[] superSources
@@ -13,5 +19,31 @@ class TranslateSource extends RosettaRootElement, RosettaNamed {
 }
 
 class Translation {
+	contains TypeCall resultType
+	contains TranslationParameter[] parameters
+	contains TranslateInstruction[] typeInstructions
+	contains TranslateMetaInstruction[] typeMetaInstructions
 	
+    contains TranslationRule[] rules opposite translation
+}
+
+class TranslationParameter extends RosettaSymbol, RosettaTyped {
+    
+}
+
+class TranslationRule {
+    refers Translation translation opposite rules
+    
+    refers RosettaFeature feature
+    contains TranslateInstruction[] instructions
+    contains TranslateMetaInstruction[] metaInstructions
+}
+
+class TranslateInstruction {
+	contains RosettaExpression expression
+}
+
+class TranslateMetaInstruction {
+	refers RosettaMetaType metaFeature
+	contains RosettaExpression expression
 }

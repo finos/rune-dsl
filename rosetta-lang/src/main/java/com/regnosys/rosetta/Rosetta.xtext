@@ -155,7 +155,7 @@ RosettaRootElement:
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
-	RosettaQualifiedType | RosettaCalculationType | RosettaTranslateSource
+	RosettaQualifiedType | RosettaCalculationType | TranslateSource
 ;
 
 
@@ -769,25 +769,6 @@ RosettaOnlyExistsElementRoot returns RosettaReference:
 /*****************************************
  * Translate external synonym and rule support
  *****************************************/
-RosettaTranslateSource:
-    'translate' 'source' RosettaNamed ('extends' superSources+=[RosettaTranslateSource|QualifiedName]  (',' superSources+=[RosettaTranslateSource|QualifiedName])* )?
-    '{'
-        (translations+=Translation)*
-    '}'
-;
-
-Translation:
-    'translate' leftParameters+=TranslationParameter (',' leftParameters+=TranslationParameter)* '<=>' rightParameters+=TranslationParameter (',' rightParameters+=TranslationParameter)* ':'
-        (rules+=TranslationRule)*
-;
-
-TranslationParameter:
-    RosettaNamed? RosettaTyped
-;
-
-TranslationRule:
-    '#' left+=RosettaCalcExpression (',' left+=RosettaCalcExpression)* '<=>' right+=RosettaCalcExpression (',' right+=RosettaCalcExpression)*
-;
 
 fragment ExternalAnnotationSource:
 	'{'
@@ -893,3 +874,37 @@ RosettaRule:
 		('as' identifier=STRING)?)
  	)
 ;
+
+/***********
+ * Translate
+ ************/
+TranslateSource:
+    'translate' 'source' RosettaNamed ('extends' superSources+=[TranslateSource|QualifiedName]  (',' superSources+=[TranslateSource|QualifiedName])* )?
+    '{'
+        (translations+=Translation)*
+    '}'
+;
+
+Translation:
+    resultType=TypeCall ('from' parameters+=TranslationParameter (',' parameters+=TranslationParameter)*)? ':'
+    	(typeInstructions+=TranslateInstruction | typeMetaInstructions+=TranslateMetaInstruction)*
+        rules+=TranslationRule*
+;
+
+TranslationParameter:
+    RosettaNamed? RosettaTyped
+;
+
+TranslationRule:
+    '+' feature=[RosettaFeature]
+    	(instructions+=TranslateInstruction | metaInstructions+=TranslateMetaInstruction)*
+;
+
+TranslateInstruction:
+	'[' 'from' expression=RosettaCalcExpression ']'
+;
+
+TranslateMetaInstruction:
+	'[' 'meta' metaFeature=[RosettaMetaType] 'from' expression=RosettaCalcExpression ']'
+;
+

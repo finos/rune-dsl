@@ -30,14 +30,15 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	       b string (1..1)
 	    
 	    translate source FooBar1 {
-	        translate Foo <=> Bar:
-	           # a <=> b
-	           # 42 <=> 42
+	        Foo from Bar:
+	        	+ a
+	           		[from b]
 	    }
 	    
 	    translate source FooBar2 extends FooBar1 {
-	        translate string, foo Foo <=> bar Bar:
-	            # foo -> a, foo <=> bar -> b
+	        Foo from bar Bar, string:
+	        	+ a
+	            	[from bar -> b + item]
 	    }
 	    '''.parseRosettaWithNoIssues
 	}
