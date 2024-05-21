@@ -101,7 +101,8 @@ public abstract class RosettaInterpreterVisitorBase implements InterpreterVisito
 	}
 
 	@Override
-	public Object eInvoke(EOperation operation, EList<?> arguments) throws InvocationTargetException {
+	public Object eInvoke(EOperation operation, EList<?> arguments) 
+			throws InvocationTargetException {
 		// TODO Auto-generated method stub
 		return null;
 	}

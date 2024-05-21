@@ -2,8 +2,6 @@ package com.regnosys.rosetta.interpreternew;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigInteger;
-
 import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
@@ -16,10 +14,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
-import com.regnosys.rosetta.rosetta.expression.ListLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
@@ -34,11 +29,12 @@ public class RosettaInterpreterEqualityTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	private ExpressionFactory eFactory;
+	@SuppressWarnings("unused")
+	private ExpressionFactory exFactory;
 	
 	@BeforeEach
 	public void setup() {
-		eFactory = ExpressionFactoryImpl.init();
+		exFactory = ExpressionFactoryImpl.init();
 	}
 	
 	@Test
