@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.RosettaInterpreterNew;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
@@ -75,6 +76,35 @@ class RosettaInterpreterListOperationsInterpreterTest {
 				"2 contains 1"
 		};
 		testHelper(new RosettaInterpreterBooleanValue(false), expressionsFalse);
+	}
+	
+	@Test
+	void testInterpDisjoint() {
+		String[] expressionsTrue = new String[] {
+				"[1,2,3] disjoint [4]",
+				"[1,2,[3]] disjoint []",
+				"[] disjoint [1]",
+				"[1,2,3,4] disjoint [0,5,6,7,8]"
+		};
+		testHelper(new RosettaInterpreterBooleanValue(true), expressionsTrue);
+		
+		String[] expressionsFalse = new String[] {
+				"[1] disjoint [1]",
+				"[1,2,3,4] disjoint [4]",
+				"[2] disjoint [1,2,3,4,5,6,7]",
+				"[1,2,3,4,5,6,7] disjoint [1,2,3,4,5,6,7]"
+		};
+		testHelper(new RosettaInterpreterBooleanValue(false), expressionsFalse);
+	}
+	
+	@Test
+	void testInterpJoin() {
+		String msg = "[\"abc\", \"cde\"] join \", \"";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterStringValue val =
+				(RosettaInterpreterStringValue)interpreter.interp(msgExp);
+		assertEquals("abc, cde", val.getValue());
 	}
 
 }
