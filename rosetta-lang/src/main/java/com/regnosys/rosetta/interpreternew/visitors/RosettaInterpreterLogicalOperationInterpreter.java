@@ -56,9 +56,9 @@ public class RosettaInterpreterLogicalOperationInterpreter
 	}
 	
 	/**
-	 * Helper method that takes an interpretedValue and a string
-	 * , and returns the correct error which
-	 * that interpretedValue causes, if any.
+	 * Helper method that takes an interpretedValue and a string,
+	 * and returns the correct error which
+	 * interpretedValue causes, if any.
 	 *
 	 * @param interpretedValue The interpreted value which we check for errors
 	 * @param side String containing either "Leftside" or "Rightside", 
