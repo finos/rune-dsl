@@ -23,35 +23,23 @@ public class RosettaInterpreterLogicalOperationInterpreter
 		boolean leftBool = false;
 		boolean rightBool = false;
 		
-		
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
 		RosettaInterpreterValue leftInterpreted = left.accept(visitor);
 		RosettaInterpreterValue rightInterpreted = right.accept(visitor);
 		
-		Boolean errorLeftSide = RosettaInterpreterErrorValue.errorsExist(leftInterpreted);
-		Boolean errorRightSide = RosettaInterpreterErrorValue.errorsExist(leftInterpreted);
-		
 		if (leftInterpreted instanceof RosettaInterpreterBooleanValue 
 				&& rightInterpreted instanceof RosettaInterpreterBooleanValue) {
 			leftBool = ((RosettaInterpreterBooleanValue) leftInterpreted).getValue();
 			rightBool = ((RosettaInterpreterBooleanValue) rightInterpreted).getValue();
-		} else if (errorLeftSide || errorRightSide) {
+		} else {
 			// Check for errors in the left or right side of the binary operation
+			RosettaInterpreterErrorValue leftErrors = 
+					checkForErrors(leftInterpreted, "Leftside");
+			RosettaInterpreterErrorValue rightErrors = 
+					checkForErrors(rightInterpreted, "Rightside");
 			
-			if (errorLeftSide == false) {
-				return (RosettaInterpreterErrorValue) rightInterpreted;
-			}
-			else if (errorRightSide == false) { 
-				return (RosettaInterpreterErrorValue) leftInterpreted;
-			}
-			else {
-				// There were errors on both sides => Combine the error messages
-				return RosettaInterpreterErrorValue
-						.merge(List.of(leftInterpreted, rightInterpreted));
-			}
-		} else { // The interpreted value was not error, but something other than a boolean
-			return makeNewError(leftInterpreted, rightInterpreted); 
+			return RosettaInterpreterErrorValue.merge(List.of(leftErrors, rightErrors));
 		}
 			
 		if (expr.getOperator().equals("and")) {
@@ -68,27 +56,33 @@ public class RosettaInterpreterLogicalOperationInterpreter
 	}
 	
 	/**
-	 * Helper method that takes an interpretedValue and a string,
-	 * and returns the correct error which that interpretedValue causes, if any.
+	 * Helper method that takes an interpretedValue and a string
+	 * , and returns the correct error which
+	 * that interpretedValue causes, if any.
 	 *
 	 * @param interpretedValue The interpreted value which we check for errors
 	 * @param side String containing either "Leftside" or "Rightside", 
-	 * 		  purely for clearer error messages
-	 * @return The correct RosettaInterpreterErrorValue, 
-	 * 		   or "null" if the interpretedValue does not cause an error
+	 *        purely for clearer error messages
+	 * @return The correct RosettaInterpreterErrorValue, or "null" 
+	 *         if the interpretedValue does not cause an error
 	 */
-	private RosettaInterpreterErrorValue makeNewError(
-			RosettaInterpreterValue left, RosettaInterpreterValue right) {
-		RosettaInterpreterErrorValue newError = new RosettaInterpreterErrorValue();
-		if (!(left instanceof RosettaInterpreterBooleanValue)) {
-			newError.addError(new RosettaInterpreterError(
-					"Logical Operation: Leftside is not of type Boolean"));
+	private RosettaInterpreterErrorValue checkForErrors(
+			RosettaInterpreterValue interpretedValue, String side) {
+		if (interpretedValue instanceof RosettaInterpreterBooleanValue) {
+			// No errors found.
+			// I return an error value without any errors in its list,
+			// So that I can still use the merge method with 2 elements
+			return new RosettaInterpreterErrorValue();
+		} else if (RosettaInterpreterErrorValue.errorsExist(interpretedValue)) {
+			// The interpreted value was an error so we propagate it
+			return (RosettaInterpreterErrorValue) interpretedValue;
+		} else {
+			// The interpreted value was not an error,
+			// but something other than a boolean
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"Logical Operation: " + side + 
+							" is not of type Boolean"));
 		}
-		if (!(right instanceof RosettaInterpreterBooleanValue)) {
-			newError.addError(new RosettaInterpreterError(
-					"Logical Operation: Rightside is not of type Boolean"));
-		}
-		
-		return newError;
 	}
 }

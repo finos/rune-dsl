@@ -147,6 +147,27 @@ public class RosettaInterpreterLogicalOperationsTest {
     }
     
     @Test
+    public void errorOnRightSideTest() {
+    	List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
+    	// This is the case: (False and (True or 1))
+    	expected.add(new RosettaInterpreterError(
+    			"Logical Operation: Rightside is not of type Boolean"));
+    	
+    	RosettaIntLiteral intLiteral = exFactory.createRosettaIntLiteral();
+    	intLiteral.setValue(BigInteger.valueOf(1));
+    	RosettaBooleanLiteral trueLiteral = createBooleanLiteral(true);
+    	LogicalOperation expr = createLogicalOperation("or", trueLiteral, intLiteral);
+    	
+    	RosettaBooleanLiteral falseLiteral = createBooleanLiteral(false);
+    	LogicalOperation nestedExpr = createLogicalOperation("and", falseLiteral, expr);
+    	
+    	RosettaInterpreterValue result = interpreter.interp(nestedExpr);
+    	assertTrue(result instanceof RosettaInterpreterErrorValue);
+    	RosettaInterpreterErrorValue castedResult = (RosettaInterpreterErrorValue) result;
+    	compareErrors(expected, castedResult.getErrors());
+    }
+    
+    @Test
     public void errorsOnBothSidesTest() {
     	List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
     	// This is the case: ("string" and (True or 1))
