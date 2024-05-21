@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.RosettaInterpreterNew;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -98,7 +99,7 @@ class RosettaInterpreterListOperationsInterpreterTest {
 	}
 	
 	@Test
-	void testInterpJoin() {
+	void testInterpJoinSimple() {
 		String msg = "[\"abc\", \"cde\"] join \", \"";
 		RosettaExpression msgExp = parser.parseExpression(msg);
 		validation.assertNoIssues(msgExp);
@@ -106,5 +107,64 @@ class RosettaInterpreterListOperationsInterpreterTest {
 				(RosettaInterpreterStringValue)interpreter.interp(msgExp);
 		assertEquals("abc, cde", val.getValue());
 	}
+	
+	@Test
+	void testInterpJoinEmpty() {
+		String msg = "[] join \", \"";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterStringValue val =
+				(RosettaInterpreterStringValue)interpreter.interp(msgExp);
+		assertEquals("", val.getValue());
+	}
+	
+	@Test
+	void testInterpJoinOneElement() {
+		String msg = "[\"a\"] join \", \"";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterStringValue val =
+				(RosettaInterpreterStringValue)interpreter.interp(msgExp);
+		assertEquals("a", val.getValue());
+	}
+	
+	@Test
+	void testInterpJoinNoDelimiter() {
+		String msg = "[\"a\", \"b\"] join \"\"";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterStringValue val =
+				(RosettaInterpreterStringValue)interpreter.interp(msgExp);
+		assertEquals("ab", val.getValue());
+	}
+	
+	@Test
+	void testInterpJoinLonger() {
+		String msg = "[\"abc\", \"cde\", \"cde\", \"cde\"] join \", \"";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterStringValue val =
+				(RosettaInterpreterStringValue)interpreter.interp(msgExp);
+		assertEquals("abc, cde, cde, cde", val.getValue());
+	}
+	
+	@Test
+	void testInterpJoinNotAllString() {
+		String msg = "[\"abc\", \"cde\", 5, \"cde\"] join \", \"";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterValue val = interpreter.interp(msgExp);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+	}
+	
+	@Test
+	void testInterpJoinDelimiterNotString() {
+		String msg = "[\"abc\", \"cde\", \"cde\"] join 5";
+		RosettaExpression msgExp = parser.parseExpression(msg);
+		validation.assertNoIssues(msgExp);
+		RosettaInterpreterValue val = interpreter.interp(msgExp);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+	}
+
 
 }

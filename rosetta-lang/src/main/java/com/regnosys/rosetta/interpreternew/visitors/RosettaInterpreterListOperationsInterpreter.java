@@ -118,6 +118,12 @@ public class RosettaInterpreterListOperationsInterpreter
 					new RosettaInterpreterError("The delimiter for a join"
 							+ " operation must be a string"));
 		}
+		
+		if (RosettaInterpreterBaseValue.valueStream(stringsVal)
+				.count() < 1L) {
+			return new RosettaInterpreterStringValue("");
+		}
+		
 		String delimString = ((RosettaInterpreterStringValue)delimVal).getValue();
 		
 		RosettaInterpreterStringValue result =
