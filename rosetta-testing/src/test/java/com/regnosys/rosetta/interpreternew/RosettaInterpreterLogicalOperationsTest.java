@@ -95,10 +95,17 @@ public class RosettaInterpreterLogicalOperationsTest {
         RosettaInterpreterValue result = interpreter.interp(expr);
         assertBooleanResult(result, true);
     }
-
+    
     @Test
     public void logicalOrInterpTestTrue() {
     	RosettaExpression expr = parser.parseExpression("True or False");
+        RosettaInterpreterValue result = interpreter.interp(expr);
+        assertBooleanResult(result, true);
+    }
+    
+    @Test
+    public void logicalOrInterpTestTrue2() {
+        RosettaExpression expr = parser.parseExpression("False or True");
         RosettaInterpreterValue result = interpreter.interp(expr);
         assertBooleanResult(result, true);
     }
@@ -108,7 +115,7 @@ public class RosettaInterpreterLogicalOperationsTest {
         RosettaExpression expr = parser.parseExpression("False or False");
         RosettaInterpreterValue result = interpreter.interp(expr);
         assertBooleanResult(result, false);
-    }
+    }   
 
     @Test
     public void nestedBooleansLogicalTest() {
