@@ -221,6 +221,9 @@ class ArithmeticOperation extends RosettaBinaryOperation {
 }
 
 class LogicalOperation extends RosettaBinaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 enum CardinalityModifier {

@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew;
 
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
@@ -9,6 +10,8 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
@@ -52,6 +55,11 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 	}
 
 	@Override
+	public RosettaInterpreterValue interp(LogicalOperation exp) {
+		return new RosettaInterpreterLogicalOperationInterpreter().interp(exp);
+	}
+	
+	@Override
 	public RosettaInterpreterValue interp(EqualityOperation exp) {
 		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp);
 	}
@@ -60,5 +68,4 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 	public RosettaInterpreterValue interp(ComparisonOperation exp) {
 		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp);
 	}
-
 }
