@@ -37,6 +37,7 @@ class RosettaInterpreterListOperationsInterpreterTest {
 	@Inject
 	private ExpressionValidationHelper validation;
 	
+	@SuppressWarnings("unused")
 	private ExpressionFactory expFactory;
 	
 	@BeforeEach

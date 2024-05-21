@@ -65,7 +65,8 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue {
 	 * @param val2 - second value to check
 	 * @return true iff at least one of the values is an error value
 	 */
-	public static boolean errorsExist(RosettaInterpreterValue val1, RosettaInterpreterValue val2) {
+	public static boolean errorsExist(RosettaInterpreterValue val1,
+			RosettaInterpreterValue val2) {
 		return errorsExist(List.of(val1, val2));
 	}
 	

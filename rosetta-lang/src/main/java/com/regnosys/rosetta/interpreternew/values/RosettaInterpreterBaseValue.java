@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.interpreternew.values;
 
 import java.lang.reflect.InvocationTargetException;
+
 import java.util.stream.Stream;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -13,10 +14,8 @@ import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-
 import com.regnosys.rosetta.interpreternew.RosettaInterpreterNewException;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
-
 
 public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterValue {
 	
@@ -58,7 +57,7 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 	 * @param val - value to convert
 	 * @return stream of value or its contained values
 	 */
-	public static Stream<RosettaInterpreterValue> valueStream(RosettaInterpreterValue val){
+	public static Stream<RosettaInterpreterValue> valueStream(RosettaInterpreterValue val) {
 		if (!(val instanceof RosettaInterpreterBaseValue)) {
 			throw new RosettaInterpreterNewException("Cannot take value stream"
 					+ "of RosettaInterpreterValue");

@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew;
 
+import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FirstOperation;
@@ -17,6 +18,7 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
@@ -27,7 +29,7 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaInt
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNumberLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
 
-public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
+public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaBooleanLiteral exp) {
@@ -60,6 +62,11 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 		return new RosettaInterpreterListLiteralInterpreter().interp(exp);
 	}
 
+	@Override
+	public RosettaInterpreterValue interp(LogicalOperation exp) {
+		return new RosettaInterpreterLogicalOperationInterpreter().interp(exp);
+	}
+	
 	@Override
 	public RosettaInterpreterValue interp(EqualityOperation exp) {
 		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp);
@@ -114,5 +121,4 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
-
 }
