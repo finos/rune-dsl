@@ -86,32 +86,9 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		//list vs list case:
 		if (leftValue instanceof RosettaInterpreterListValue 
 				&& rightValue instanceof RosettaInterpreterListValue) {
-			
-			//only way this is allowed is if rightValue has a length of 1
-			// and left has length more than 1
-			RosettaInterpreterListValue rgtList =
-					(RosettaInterpreterListValue) rightValue;
-			RosettaInterpreterListValue lfList = 
-					(RosettaInterpreterListValue) leftValue;
-			if (rgtList.getExpressions().size() == 1
-					&& lfList.getExpressions().size() > 1) {
-				
-				
-				//for all elements in left list, check if the comparison 
-				// between them and right-hand side is true
-				boolean anyTrue = false;
-				for (RosettaInterpreterValue e : lfList.getExpressions()) {
-					anyTrue |= checkComparableTypes(e, 
-							rgtList.getExpressions().get(0), 
-							operator);
-				}
-				return new RosettaInterpreterBooleanValue(anyTrue);
-			}
-			else {
-				return new RosettaInterpreterErrorValue(
-						new RosettaInterpreterError(
-								"cannot compare two lists"));
-			}
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cannot compare two lists"));
 		}
 		
 		//list vs element case:
@@ -150,32 +127,9 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		//list vs list case:
 		if (leftValue instanceof RosettaInterpreterListValue 
 				&& rightValue instanceof RosettaInterpreterListValue) {
-			
-			//only way this is allowed is if rightValue has a length of 1
-			// and left has length more than 1
-			RosettaInterpreterListValue rgtList =
-					(RosettaInterpreterListValue) rightValue;
-			RosettaInterpreterListValue lfList = 
-					(RosettaInterpreterListValue) leftValue;
-			if (rgtList.getExpressions().size() == 1
-					&& lfList.getExpressions().size() > 1) {
-				
-				
-				//for all elements in left list, check if the comparison 
-				// between them and right-hand side is true
-				boolean allTrue = true;
-				for (RosettaInterpreterValue e : lfList.getExpressions()) {
-					allTrue &= checkComparableTypes(e, 
-							rgtList.getExpressions().get(0), 
-							operator);
-				}
-				return new RosettaInterpreterBooleanValue(allTrue);
-			}
-			else {
-				return new RosettaInterpreterErrorValue(
-						new RosettaInterpreterError(
-								"cannot compare two lists"));
-			}
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+							"cannot compare two lists"));
 		}
 		
 		//list vs element case:
