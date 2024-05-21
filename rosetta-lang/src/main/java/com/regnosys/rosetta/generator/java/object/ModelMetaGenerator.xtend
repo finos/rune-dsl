@@ -66,7 +66,7 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : conditions SEPARATOR ','»
-							factory.create(«r.containingClassNamespace.condition».«r.ruleName.toConditionJavaType».class)
+							factory.<«dataClass»>create(«r.containingClassNamespace.condition».«r.ruleName.toConditionJavaType».class)
 						«ENDFOR»
 					);
 				}
