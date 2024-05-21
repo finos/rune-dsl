@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.util.List;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
@@ -7,6 +9,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 
 public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterpreterConcreteInterpreter{
 
@@ -26,27 +29,26 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 		RosettaInterpreterValue leftInterpreted = left.accept(visitor);
 		RosettaInterpreterValue rightInterpreted = right.accept(visitor);
 		
+		Boolean errorLeftSide = RosettaInterpreterErrorValue.errorsExist(leftInterpreted);
+		Boolean errorRightSide = RosettaInterpreterErrorValue.errorsExist(leftInterpreted);
+		
 		if(leftInterpreted instanceof RosettaInterpreterBooleanValue 
 				&& rightInterpreted instanceof RosettaInterpreterBooleanValue) {
 			leftBoolean = ((RosettaInterpreterBooleanValue) leftInterpreted).getValue();
 			rightBoolean = ((RosettaInterpreterBooleanValue) rightInterpreted).getValue();
-		} else {
+		} else if(errorLeftSide || errorRightSide) {
 			// Check for errors in the left or right side of the binary operation
-			RosettaInterpreterErrorValue leftSideCheck = checkForErrors(leftInterpreted, "Leftside");
-			RosettaInterpreterErrorValue rightSideCheck = checkForErrors(rightInterpreted, "Rightside");
 			
-			// Null means there were no errors on that side
-			if(leftSideCheck == null) return rightSideCheck;
-			else if(rightSideCheck == null) return leftSideCheck;
-			else { 
+			if(errorLeftSide == false) return (RosettaInterpreterErrorValue) rightInterpreted;
+			else if(errorRightSide == false) return (RosettaInterpreterErrorValue) leftInterpreted;
+			else {
 				// There were errors on both sides => Combine the error messages
-				RosettaInterpreterErrorValue newErrorValue = new RosettaInterpreterErrorValue();
-				newErrorValue.addAllErrors(leftSideCheck);
-				newErrorValue.addAllErrors(rightSideCheck);
-				return newErrorValue;
+				return RosettaInterpreterErrorValue.merge(List.of(leftInterpreted, rightInterpreted));
 			}
+		} else { // The interpreted value was not an error, but something other than a boolean
+			return makeNewError(leftInterpreted, rightInterpreted); 
 		}
-		
+			
 		if(expr.getOperator().equals("and")) {
 			return new RosettaInterpreterBooleanValue(leftBoolean && rightBoolean);
 		} else if(expr.getOperator().equals("or")) {
@@ -65,16 +67,15 @@ public class RosettaInterpreterLogicalOperationInterpreter extends RosettaInterp
 	 * @param side String containing either "Leftside" or "Rightside", purely for clearer error messages
 	 * @return The correct RosettaInterpreterErrorValue, or "null" if the interpretedValue does not cause an error
 	 */
-	private RosettaInterpreterErrorValue checkForErrors(RosettaInterpreterValue interpretedValue, String side) {
-		if(interpretedValue instanceof RosettaInterpreterBooleanValue) {
-			// No errors found
-			return null;
-		} else if(interpretedValue instanceof RosettaInterpreterErrorValue) {
-			// The interpreted value was an error (so we need to add a new error message to the existing ones)
-			return (RosettaInterpreterErrorValue) interpretedValue;
-		} else {
-			// The interpreted value was not an error, but something other than a boolean
-			return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Logical Operation: " + side + " is not of type Boolean"));
+	private RosettaInterpreterErrorValue makeNewError(RosettaInterpreterValue left, RosettaInterpreterValue right) {
+		RosettaInterpreterErrorValue newError = new RosettaInterpreterErrorValue();
+		if(!(left instanceof RosettaInterpreterBooleanValue)) {
+			newError.addError(new RosettaInterpreterError("Logical Operation: Leftside is not of type Boolean"));
 		}
+		if(!(right instanceof RosettaInterpreterBooleanValue)) {
+			newError.addError(new RosettaInterpreterError("Logical Operation: Rightside is not of type Boolean"));
+		}
+		
+		return newError;
 	}
 }
