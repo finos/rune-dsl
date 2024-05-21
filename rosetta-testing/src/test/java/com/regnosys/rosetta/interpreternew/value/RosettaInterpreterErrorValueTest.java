@@ -70,7 +70,7 @@ class RosettaInterpreterErrorValueTest {
 	}
 
 	@Test
-	void testAddAllErrorsEListOfRosettaInterpreterBaseError() {
+	void testAddAllErrorsElistOfRosettaInterpreterBaseError() {
 		v3.addAllErrors(List.of(e1,e2));
 		assertThat(v3.getErrors()).containsExactlyInAnyOrderElementsOf(List.of(e1,e2,e3));
 	}

@@ -30,11 +30,12 @@ public class RosettaInterpreterComparisonTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	private ExpressionFactory eFactory;
+	@SuppressWarnings("unused")
+	private ExpressionFactory exFactory;
 	
 	@BeforeEach
 	public void setup() {
-		eFactory = ExpressionFactoryImpl.init();
+		exFactory = ExpressionFactoryImpl.init();
 	}
 	
 	@Test
@@ -117,8 +118,9 @@ public class RosettaInterpreterComparisonTest {
 		assertEquals(expectedError.getErrors(),
 				(errorVal.getErrors()));
 		
-		assertEquals(((RosettaInterpreterError) expectedError.getErrors().get(0)).getError(),
-				(((RosettaInterpreterError) (errorVal.getErrors().get(0))).getError()));
+		assertEquals(((RosettaInterpreterError)expectedError.getErrors().get(0)).getError(),
+				(((RosettaInterpreterError)(errorVal.getErrors().get(0)))
+						.getError()));
 	}
 	
 }

@@ -21,7 +21,7 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaInt
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNumberLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
 
-public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase{
+public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaBooleanLiteral exp) {
