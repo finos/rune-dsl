@@ -66,7 +66,9 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : conditions SEPARATOR ','»
-							factory.<«dataClass»>create(«r.containingClassNamespace.condition».«r.ruleName.toConditionJavaType».class)
+							«val containingClassName = r.containingClassNamespace + '.' + r.className»
+							«val conditionClassName = r.containingClassNamespace.condition + '.' + r.ruleName.toConditionJavaType»
+							factory.<«containingClassName»>create(«conditionClassName».class)
 						«ENDFOR»
 					);
 				}
@@ -76,7 +78,7 @@ class ModelMetaGenerator {
 					«IF !qualifierFuncs.nullOrEmpty»
 					return Arrays.asList(
 						«FOR qf : qualifierFuncs SEPARATOR ','»
-							factory.create(«qf.toFunctionJavaClass».class)
+							factory.<«dataClass»>create(«qf.toFunctionJavaClass».class)
 						«ENDFOR»
 					);
 					«ELSE»
