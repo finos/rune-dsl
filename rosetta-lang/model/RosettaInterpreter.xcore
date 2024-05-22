@@ -28,7 +28,6 @@ class RosettaInterpreterBaseError{
 }
 
 abstract class RosettaInterpreterValue {
-	
 }
 
 interface InterpreterVisitor {

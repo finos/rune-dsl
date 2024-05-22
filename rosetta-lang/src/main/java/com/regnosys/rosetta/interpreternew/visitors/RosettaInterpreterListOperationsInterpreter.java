@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
@@ -125,23 +126,13 @@ public class RosettaInterpreterListOperationsInterpreter
 		}
 		
 		String delimString = ((RosettaInterpreterStringValue)delimVal).getValue();
+		List<String> texts = RosettaInterpreterBaseValue.valueStream(stringsVal)
+				.map(x -> ((RosettaInterpreterStringValue)x).getValue())
+				.collect(Collectors.toList());
 		
-		RosettaInterpreterStringValue result =
-				RosettaInterpreterBaseValue.valueStream(stringsVal)
-				.map(x -> (RosettaInterpreterStringValue)x)
-				.reduce(new RosettaInterpreterStringValue("dummy please ignore"),
-						(x,y) -> {
-							if (x.getValue().equals("dummy"
-									+ " please ignore")) {
-					return new RosettaInterpreterStringValue(y.getValue());
-							}
-							return new RosettaInterpreterStringValue(
-									x.getValue() 
-									+ delimString
-									+ y.getValue());
-						});
+		String result = String.join(delimString, texts);
 		
-		return result;
+		return new RosettaInterpreterStringValue(result);
 	}
 		
 }

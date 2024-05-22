@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.RosettaInterpreterNew;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -81,6 +82,17 @@ class RosettaInterpreterListOperationsInterpreterTest {
 	}
 	
 	@Test
+	void testInterpContainsError() {
+		RosettaExpression expr = parser.parseExpression("[1,2,3] contains (1 and False)");
+		validation.assertNoIssues(expr);
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		RosettaInterpreterErrorValue err = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+				"Logical Operation: Leftside is not of type Boolean"));
+		assertEquals(err, val);
+	}
+	
+	@Test
 	void testInterpDisjoint() {
 		String[] expressionsTrue = new String[] {
 				"[1,2,3] disjoint [4]",
@@ -97,6 +109,17 @@ class RosettaInterpreterListOperationsInterpreterTest {
 				"[1,2,3,4,5,6,7] disjoint [1,2,3,4,5,6,7]"
 		};
 		testHelper(new RosettaInterpreterBooleanValue(false), expressionsFalse);
+	}
+	
+	@Test
+	void testInterpDisjointError() {
+		RosettaExpression expr = parser.parseExpression("[1,2,3] disjoint (1 and False)");
+		validation.assertNoIssues(expr);
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		RosettaInterpreterErrorValue err = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+				"Logical Operation: Leftside is not of type Boolean"));
+		assertEquals(err, val);
 	}
 	
 	@Test
@@ -166,6 +189,15 @@ class RosettaInterpreterListOperationsInterpreterTest {
 		RosettaInterpreterValue val = interpreter.interp(msgExp);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 	}
-
-
+	
+	@Test
+	void testInterpJoinError() {
+		RosettaExpression expr = parser.parseExpression("[1,2,3] join (1 and False)");
+		validation.assertNoIssues(expr);
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		RosettaInterpreterErrorValue err = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+				"Logical Operation: Leftside is not of type Boolean"));
+		assertEquals(err, val);
+	}
 }
