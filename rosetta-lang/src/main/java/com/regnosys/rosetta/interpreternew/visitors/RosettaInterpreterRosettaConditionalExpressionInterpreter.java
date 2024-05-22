@@ -12,36 +12,55 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
-public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends RosettaInterpreterConcreteInterpreter {
+public class RosettaInterpreterRosettaConditionalExpressionInterpreter 
+extends RosettaInterpreterConcreteInterpreter {
 	
+	/**
+	 * Interpreter method for Conditional Expressions.
+	 *
+	 * @param expr RosettaConditionalExpression to be interpreted
+	 * @return The interpreted value
+	 */
 	public RosettaInterpreterBaseValue interp(RosettaConditionalExpression expr) {
 		boolean ifResult = false;
 		
-		RosettaExpression if_ = expr.getIf();
+		RosettaExpression ifExression = expr.getIf();
 		RosettaExpression ifThen = expr.getIfthen();
 		
-		RosettaInterpreterValue ifValue = if_.accept(visitor); 
+		RosettaInterpreterValue ifValue = ifExression.accept(visitor); 
 		RosettaInterpreterValue ifThenValue = ifThen.accept(visitor);
 		
 		if (ifValue instanceof RosettaInterpreterBooleanValue) {
 			ifResult = ((RosettaInterpreterBooleanValue) ifValue).getValue();
-		} else if (ifValue instanceof RosettaInterpreterErrorValue) {
-			return createErrors(ifValue, "Conditional expression: condition is an error value.");
+		} else if (RosettaInterpreterErrorValue.errorsExist(ifValue)) {
+			return createErrors(ifValue, 
+					"Conditional expression: condition is an error value.");
 		} else {
-			return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: condition is not a boolean value."));
+			return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+					"Conditional expression: condition "
+					+ "is not a boolean value."));
 		}
 		
-		if (ifResult == true) {
+		if (ifResult) {
 			RosettaInterpreterBaseValue result =  checkInstance(ifThenValue, false);
 			
 			if (expr.isFull()) {
 				RosettaExpression elseThen = expr.getElsethen();
 				RosettaInterpreterValue elseThenValue = elseThen.accept(visitor);
 				
-				RosettaInterpreterBaseValue elseInstance = checkInstance(elseThenValue, true);
+				RosettaInterpreterBaseValue elseInstance = 
+						checkInstance(elseThenValue, true);
 				
-				if (!result.getClass().equals(elseInstance.getClass()) && !(result instanceof RosettaInterpreterErrorValue) && !(elseInstance instanceof RosettaInterpreterErrorValue)) {
-					return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
+				if (!result.getClass().equals(elseInstance.getClass()) 
+						&& !(result 
+							instanceof RosettaInterpreterErrorValue) 
+						&& !(elseInstance 
+							instanceof RosettaInterpreterErrorValue)) {
+					return new RosettaInterpreterErrorValue(
+							new RosettaInterpreterError(
+								"Conditional expression: "
+								+ "consequent and alternative "
+								+ "need to have the same type."));
 				}
 			}
 			return result;
@@ -52,8 +71,14 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends R
 			RosettaInterpreterBaseValue result = checkInstance(elseThenValue, true);
 			RosettaInterpreterBaseValue ifInstance = checkInstance(ifThenValue, true);
 			
-			if (!result.getClass().equals(ifInstance.getClass()) && !(result instanceof RosettaInterpreterErrorValue) && !(ifInstance instanceof RosettaInterpreterErrorValue)) {
-				return new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
+			if (!result.getClass().equals(ifInstance.getClass()) 
+					&& !(result instanceof RosettaInterpreterErrorValue) 
+					&& !(ifInstance instanceof RosettaInterpreterErrorValue)) {
+				return new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(
+								"Conditional expression: "
+								+ "consequent and alternative "
+								+ "need to have the same type."));
 			}
 			return result;
 		}
@@ -61,7 +86,8 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends R
 		return null;
 	}
 	
-	private RosettaInterpreterBaseValue checkInstance(RosettaInterpreterValue expr, boolean branch) {
+	private RosettaInterpreterBaseValue 
+	checkInstance(RosettaInterpreterValue expr, boolean branch) {
 		RosettaInterpreterBaseValue result = null;
 		String message = null;
 		
@@ -72,25 +98,35 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter extends R
 		}
 		
 		if (expr instanceof RosettaInterpreterBooleanValue) {
-			result = new RosettaInterpreterBooleanValue(((RosettaInterpreterBooleanValue) expr).getValue());
+			result = new RosettaInterpreterBooleanValue(((
+					RosettaInterpreterBooleanValue) expr).getValue());
 		} else if (expr instanceof RosettaInterpreterIntegerValue) {
-			result = new RosettaInterpreterIntegerValue(((RosettaInterpreterIntegerValue) expr).getValue());
+			result = new RosettaInterpreterIntegerValue(((
+					RosettaInterpreterIntegerValue) expr).getValue());
 		} else if (expr instanceof RosettaInterpreterNumberValue) {
-			result = new RosettaInterpreterNumberValue(((RosettaInterpreterNumberValue) expr).getValue());
+			result = new RosettaInterpreterNumberValue(((
+					RosettaInterpreterNumberValue) expr).getValue());
 		} else if (expr instanceof RosettaInterpreterStringValue) {
-			result = new RosettaInterpreterStringValue(((RosettaInterpreterStringValue) expr).getValue());
+			result = new RosettaInterpreterStringValue(((
+					RosettaInterpreterStringValue) expr).getValue());
 		} else if (expr instanceof RosettaInterpreterListValue) {
-			result = new RosettaInterpreterListValue(((RosettaInterpreterListValue) expr).getExpressions());
+			result = new RosettaInterpreterListValue(((
+					RosettaInterpreterListValue) expr).getExpressions());
 		} else if (expr instanceof RosettaInterpreterErrorValue) {
-			result = createErrors(expr, "Conditional expression: " + message + " is an error value.");
+			result = createErrors(expr, 
+					"Conditional expression: "
+					+ "" + message + " is an error value.");
 		}
 		
 		return result;
 	}
 	
-	private RosettaInterpreterBaseValue createErrors(RosettaInterpreterValue exp, String message) {
+	private RosettaInterpreterBaseValue 
+	createErrors(RosettaInterpreterValue exp, String message) {
 		RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) exp;
-		RosettaInterpreterErrorValue newExpError = new RosettaInterpreterErrorValue(new RosettaInterpreterError(message));
+		RosettaInterpreterErrorValue newExpError = 
+				new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(message));
 		
 		newExpError.addAllErrors(expError);
 		return newExpError;
