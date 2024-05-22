@@ -17,8 +17,8 @@ jobs:
           architecture: x64
           cache: maven
           server-id: ossrh
-          server-username: ${{ secrets.CI_DEPLOY_USERNAME }}
-          server-password: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          server-username: CI_DEPLOY_USERNAME
+          server-password: CI_DEPLOY_PASSWORD
           gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
       - name: Set version
@@ -29,3 +29,5 @@ jobs:
         env:
           GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
           GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
