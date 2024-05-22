@@ -116,6 +116,16 @@ public class RosettaInterpreterConditionalExpressionTest {
 	}
 	
 	@Test
+	public void complexTest() {
+		RosettaExpression expr = parser.parseExpression("if 3 > 2 then 1 else 2");
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		
+		BigInteger number = BigInteger.valueOf(1);
+		
+		assertEquals(number, ((RosettaInterpreterIntegerValue) result).getValue());
+	}
+	
+	@Test
 	public void errorThenTest() {
 		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then is an error value."));
 		expected.addError(new RosettaInterpreterError("cannot use \"ALL\" keyword " + "to compare two elements"));
