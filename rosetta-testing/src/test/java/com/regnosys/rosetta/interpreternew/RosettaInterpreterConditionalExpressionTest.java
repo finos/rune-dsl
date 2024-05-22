@@ -117,7 +117,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Test
 	public void errorThenTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent is an error value."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then is an error value."));
 		expected.addError(new RosettaInterpreterError("cannot use \"ALL\" keyword " + "to compare two elements"));
 		
 		RosettaExpression expr = parser.parseExpression("if True then 1 all = 3 else 2");
@@ -130,7 +130,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Test
 	public void errorElseTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: alternative is an error value."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: else is an error value."));
 		expected.addError(new RosettaInterpreterError("cannot use \"ALL\" keyword " + "to compare two elements"));
 		
 		RosettaExpression expr = parser.parseExpression("if False then 2 else 1 all = 3");
@@ -143,7 +143,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Test
 	public void notSameTypeThenTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then and else need to have the same type."));
 		
 		RosettaExpression expr = parser.parseExpression("if True then 1.2 else \"abc\"");
 		RosettaInterpreterValue result = interpreter.interp(expr);
@@ -155,7 +155,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Test
 	public void notSameTypeElseTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: consequent and alternative need to have the same type."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then and else need to have the same type."));
 		
 		RosettaExpression expr = parser.parseExpression("if False then 1.2 else \"abc\"");
 		RosettaInterpreterValue result = interpreter.interp(expr);
