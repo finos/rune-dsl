@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 
-public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterValue{	
+public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterValue {
 	@Override
 	public EClass eClass() {
 		// TODO Auto-generated method stub
@@ -131,4 +131,5 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 		// TODO Auto-generated method stub
 		
 	}
+	
 }
