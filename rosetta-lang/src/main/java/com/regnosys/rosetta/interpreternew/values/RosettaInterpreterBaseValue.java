@@ -179,4 +179,5 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 		// TODO Auto-generated method stub
 		
 	}
+	
 }
