@@ -38,13 +38,6 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Inject
 	RosettaInterpreterNew interpreter;
-
-	private ExpressionFactory eFactory;
-	
-	@BeforeEach
-	public void setup() {
-		eFactory = ExpressionFactoryImpl.init();
-	}
 	
 	@Test
 	public void integerTest() {
@@ -107,8 +100,10 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if True then [1, 2]");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		RosettaInterpreterIntegerValue one = new RosettaInterpreterIntegerValue(BigInteger.valueOf(1));
-		RosettaInterpreterIntegerValue two = new RosettaInterpreterIntegerValue(BigInteger.valueOf(2));
+		RosettaInterpreterIntegerValue one = 
+				new RosettaInterpreterIntegerValue(BigInteger.valueOf(1));
+		RosettaInterpreterIntegerValue two = 
+				new RosettaInterpreterIntegerValue(BigInteger.valueOf(2));
 		
 		List<RosettaInterpreterValue> list = List.of(one, two);
 		
@@ -127,77 +122,98 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Test
 	public void errorThenTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then is an error value."));
-		expected.addError(new RosettaInterpreterError("cannot use \"ALL\" keyword " + "to compare two elements"));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"Conditional expression: then is an error value."));
+		expected.addError(new RosettaInterpreterError(
+				"cannot use \"ALL\" keyword " + "to compare two elements"));
 		
 		RosettaExpression expr = parser.parseExpression("if True then 1 all = 3 else 2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
 		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		assertEquals(expected.getErrors().get(0).getMessage(), 
+				errorResult.getErrors().get(0).getMessage());
 	}
 	
 	@Test
 	public void errorElseTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: else is an error value."));
-		expected.addError(new RosettaInterpreterError("cannot use \"ALL\" keyword " + "to compare two elements"));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"Conditional expression: else is an error value."));
+		expected.addError(new RosettaInterpreterError(
+				"cannot use \"ALL\" keyword " + "to compare two elements"));
 		
 		RosettaExpression expr = parser.parseExpression("if False then 2 else 1 all = 3");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
 		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		assertEquals(expected.getErrors().get(0).getMessage(), 
+				errorResult.getErrors().get(0).getMessage());
 	}
 	
 	@Test
 	public void notSameTypeThenTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then and else need to have the same type."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Conditional expression: "
+						+ "then and else need to have the same type."));
 		
 		RosettaExpression expr = parser.parseExpression("if True then 1.2 else \"abc\"");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
 		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		assertEquals(expected.getErrors().get(0).getMessage(), 
+				errorResult.getErrors().get(0).getMessage());
 	}
 	
 	@Test
 	public void notSameTypeElseTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: then and else need to have the same type."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Conditional expression: "
+						+ "then and else need to have the same type."));
 		
 		RosettaExpression expr = parser.parseExpression("if False then 1.2 else \"abc\"");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
 		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		assertEquals(expected.getErrors().get(0).getMessage(), 
+				errorResult.getErrors().get(0).getMessage());
 	}
 	
 	@Test
 	public void conditionNotBooleanTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: condition is not a boolean value."));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Conditional expression: "
+						+ "condition is not a boolean value."));
 		
 		RosettaExpression expr = parser.parseExpression("if 1 then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
 		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		assertEquals(expected.getErrors().get(0).getMessage(), 
+				errorResult.getErrors().get(0).getMessage());
 	}
 	
 	@Test
 	public void conditionErrorTypeTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError("Conditional expression: condition is an error value."));
-		expected.addError(new RosettaInterpreterError("cannot use \"ALL\" keyword " + "to compare two elements"));
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Conditional expression: "
+						+ "condition is an error value."));
+		expected.addError(new RosettaInterpreterError(
+				"cannot use \"ALL\" keyword " + "to compare two elements"));
 		
 		RosettaExpression expr = parser.parseExpression("if 1 all = 3 then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
 		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), errorResult.getErrors().get(0).getMessage());
+		assertEquals(expected.getErrors().get(0).getMessage(), 
+				errorResult.getErrors().get(0).getMessage());
 	}
 	
 	@Test

@@ -44,9 +44,4 @@ public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue
 		}
 	}
 	
-	@Override
-	public RosettaInterpreterBaseValue createInstance() { 
-		return new RosettaInterpreterStringValue(this.value);
-	}
-	
 }

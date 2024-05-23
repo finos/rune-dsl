@@ -39,11 +39,5 @@ public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue
 	public int compareTo(RosettaInterpreterBooleanValue o) {
 		return Boolean.compare(this.value, o.value);
 	}
-
-	
-	@Override
-	public RosettaInterpreterBaseValue createInstance() { 
-		return new RosettaInterpreterBooleanValue(this.value);
-	}
 	
 }

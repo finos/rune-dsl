@@ -36,9 +36,4 @@ public class RosettaInterpreterNumberValue extends RosettaInterpreterBaseValue
 		return this.value.compareTo(o.value);
 	}
 	
-	@Override
-	public RosettaInterpreterBaseValue createInstance() { 
-		return new RosettaInterpreterNumberValue(this.value);
-	}
-	
 }

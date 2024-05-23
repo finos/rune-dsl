@@ -132,5 +132,4 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 		
 	}
 	
-	public abstract RosettaInterpreterBaseValue createInstance();
 }

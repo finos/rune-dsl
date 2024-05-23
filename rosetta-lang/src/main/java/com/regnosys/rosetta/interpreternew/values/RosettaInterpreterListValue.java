@@ -37,8 +37,4 @@ public class RosettaInterpreterListValue extends RosettaInterpreterBaseValue {
 
 	public List<RosettaInterpreterValue> getExpressions() { return expressions; }
 	
-	@Override
-	public RosettaInterpreterBaseValue createInstance() { 
-		return new RosettaInterpreterListValue(this.expressions);
-	}
 }

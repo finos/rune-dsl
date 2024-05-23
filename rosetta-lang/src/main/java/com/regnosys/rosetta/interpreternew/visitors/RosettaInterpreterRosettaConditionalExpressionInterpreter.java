@@ -22,11 +22,14 @@ extends RosettaInterpreterConcreteInterpreter {
 	public RosettaInterpreterBaseValue interp(RosettaConditionalExpression expr) {
 		boolean ifResult = false;
 		
-		RosettaExpression ifExression = expr.getIf();
+		RosettaExpression ifExpression = expr.getIf();
 		RosettaExpression ifThen = expr.getIfthen();
 		
-		RosettaInterpreterValue ifValue = ifExression.accept(visitor); 
+		RosettaInterpreterValue ifValue = ifExpression.accept(visitor); 
 		RosettaInterpreterValue ifThenValue = ifThen.accept(visitor);
+		
+		RosettaExpression elseThen = null;
+		RosettaInterpreterValue elseThenValue = null;
 		
 		if (ifValue instanceof RosettaInterpreterBooleanValue) {
 			ifResult = ((RosettaInterpreterBooleanValue) ifValue).getValue();
@@ -39,59 +42,44 @@ extends RosettaInterpreterConcreteInterpreter {
 					+ "is not a boolean value."));
 		}
 		
+		if (expr.isFull()) {
+			elseThen = expr.getElsethen();
+			elseThenValue = elseThen.accept(visitor);
+			
+			RosettaInterpreterBaseValue ifInstance = 
+					((RosettaInterpreterBaseValue) ifThenValue);
+			
+			RosettaInterpreterBaseValue elseInstance = 
+			((RosettaInterpreterBaseValue) elseThenValue);
+			
+			if (!ifInstance.getClass().equals(elseInstance.getClass()) 
+					&& !(ifInstance 
+						instanceof RosettaInterpreterErrorValue) 
+					&& !(elseInstance 
+						instanceof RosettaInterpreterErrorValue)) {
+				return new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError(
+							"Conditional expression: "
+							+ "then and else "
+							+ "need to have the same type."));
+			}
+		}
+		
 		if (ifResult) {
 			if (RosettaInterpreterErrorValue.errorsExist(ifThenValue)) {
 				return createErrors(ifThenValue, 
 						"Conditional expression: then is an error value.");
 			}
-			RosettaInterpreterBaseValue result =  ((RosettaInterpreterBaseValue) 
-					ifThenValue).createInstance();
 			
-			if (expr.isFull()) {
-				RosettaExpression elseThen = expr.getElsethen();
-				RosettaInterpreterValue elseThenValue = elseThen.accept(visitor);
-				
-				RosettaInterpreterBaseValue elseInstance = 
-				((RosettaInterpreterBaseValue) elseThenValue).createInstance();
-				
-				if (!result.getClass().equals(elseInstance.getClass()) 
-						&& !(result 
-							instanceof RosettaInterpreterErrorValue) 
-						&& !(elseInstance 
-							instanceof RosettaInterpreterErrorValue)) {
-					return new RosettaInterpreterErrorValue(
-							new RosettaInterpreterError(
-								"Conditional expression: "
-								+ "then and else "
-								+ "need to have the same type."));
-				}
-			}
-			return result;
+			return ((RosettaInterpreterBaseValue) ifThenValue);
 			
 		} else if (expr.isFull()) {
-			RosettaExpression elseThen = expr.getElsethen();
-			RosettaInterpreterValue elseThenValue = elseThen.accept(visitor);
-			
 			if (RosettaInterpreterErrorValue.errorsExist(elseThenValue)) {
 				return createErrors(elseThenValue, 
 						"Conditional expression: else is an error value.");
 			}
 			
-			RosettaInterpreterBaseValue result = ((RosettaInterpreterBaseValue) 
-			elseThenValue).createInstance();
-			RosettaInterpreterBaseValue ifInstance = ((RosettaInterpreterBaseValue) 
-					ifThenValue).createInstance();
-			
-			if (!result.getClass().equals(ifInstance.getClass()) 
-					&& !(result instanceof RosettaInterpreterErrorValue) 
-					&& !(ifInstance instanceof RosettaInterpreterErrorValue)) {
-				return new RosettaInterpreterErrorValue(
-						new RosettaInterpreterError(
-								"Conditional expression: "
-								+ "then and else "
-								+ "need to have the same type."));
-			}
-			return result;
+			return ((RosettaInterpreterBaseValue) elseThenValue);
 		}
 		
 		return null;
