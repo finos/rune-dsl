@@ -57,6 +57,7 @@ repository:
     patterns:
     - include: '#namespace'
     - include: '#version'
+    - include: '#overridden'
     - include: '#import'
     - include: '#configuration'
     - include: '#rootElement'
@@ -83,6 +84,16 @@ repository:
         begin: '{{wordStart}}version{{wordEnd}}'
         beginCaptures:
           0: { name: keyword.other.version.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - include: '#string'
+
+      overridden:
+        name: meta.overridden.rosetta
+        begin: '{{wordStart}}overridden{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.overridden.rosetta }
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'

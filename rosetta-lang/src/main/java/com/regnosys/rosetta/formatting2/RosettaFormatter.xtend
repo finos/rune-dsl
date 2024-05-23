@@ -77,7 +77,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		rosettaModel.regionFor.keyword(namespaceKeyword_0)
 			.prepend[noSpace]
 			.append[oneSpace]
-		rosettaModel.regionFor.keyword(versionKeyword_3_0)
+		rosettaModel.regionFor.keyword(versionKeyword_4_0)
 			.prepend[newLine]
 			.append[oneSpace]
 		
