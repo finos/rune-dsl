@@ -81,8 +81,8 @@ public class RosettaInterpreterLogicalOperationInterpreter
 			// but something other than a boolean
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"Logical Operation: " + side + 
-							" is not of type Boolean"));
+							"Logical Operation: " + side 
+							+ " is not of type Boolean"));
 		}
 	}
 }

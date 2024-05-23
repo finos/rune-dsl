@@ -1,9 +1,13 @@
 package com.regnosys.rosetta.interpreternew.values;
 
 import java.util.Objects;
+import java.util.stream.Stream;
+
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue 
 	implements Comparable<RosettaInterpreterStringValue> {
+	
 	private String value;
 	
 	public RosettaInterpreterStringValue(String value) {
@@ -20,12 +24,15 @@ public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		RosettaInterpreterStringValue other = (RosettaInterpreterStringValue) obj;
 		return Objects.equals(value, other.value);
 	}
@@ -42,6 +49,16 @@ public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue
 		else {
 			return 0;
 		}
+	}
+
+	@Override
+	public Stream<Object> toElementStream() {
+		return Stream.of(value);
+	}
+
+	@Override
+	public Stream<RosettaInterpreterValue> toValueStream() {
+		return Stream.of(this);
 	}
 	
 }

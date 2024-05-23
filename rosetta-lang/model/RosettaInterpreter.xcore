@@ -15,6 +15,14 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.JoinOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.FirstOperation
+import com.regnosys.rosetta.rosetta.expression.LastOperation
 
 class RosettaInterpreterBaseError{
 	String message
@@ -34,4 +42,12 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (LogicalOperation exp)
 	op RosettaInterpreterValue interp (EqualityOperation exp)
 	op RosettaInterpreterValue interp (ComparisonOperation exp)	
+	op RosettaInterpreterValue interp (RosettaContainsExpression exp)	
+	op RosettaInterpreterValue interp (RosettaDisjointExpression exp)	
+	op RosettaInterpreterValue interp (JoinOperation exp)	
+	op RosettaInterpreterValue interp (RosettaExistsExpression exp)	
+	op RosettaInterpreterValue interp (RosettaAbsentExpression exp)	
+	op RosettaInterpreterValue interp (RosettaCountOperation exp)	
+	op RosettaInterpreterValue interp (FirstOperation exp)	
+	op RosettaInterpreterValue interp (LastOperation exp)	
 }

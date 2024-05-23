@@ -1,8 +1,9 @@
 package com.regnosys.rosetta.interpreternew.values;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterListValue extends RosettaInterpreterBaseValue {
@@ -25,16 +26,28 @@ public class RosettaInterpreterListValue extends RosettaInterpreterBaseValue {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		RosettaInterpreterListValue other = (RosettaInterpreterListValue) obj;
 		return Objects.equals(expressions, other.expressions);
 	}
 
 	public List<RosettaInterpreterValue> getExpressions() { return expressions; }
-	
+
+	@Override
+	public Stream<Object> toElementStream() {
+		return Stream.of(expressions.toArray());
+	}
+
+	@Override
+	public Stream<RosettaInterpreterValue> toValueStream() {
+		return expressions.stream();
+	}
 }
