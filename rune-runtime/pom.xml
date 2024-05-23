@@ -24,47 +24,51 @@
 		<artifactId>com.regnosys.rosetta.parent</artifactId>
 		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
-	<artifactId>rosetta-maven-plugin</artifactId>
-	<packaging>maven-plugin</packaging>
 
-	<name>Rosetta DSL Maven Plugin</name>
+	<name>Rune DSL Runtime</name>
+	<artifactId>com.regnosys.rosetta.lib</artifactId>
+
 	<description>
-		Responsibilities: calling the Rosetta code generator from Maven.
+		Responsibilities: defining the Java runtime necessary for running
+		generated Java code.
 	</description>
 
+	<properties>
+		<maven.compiler.release>8</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<dependencies>
-		<!-- Inter-project dependencies -->
 		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.eclipse.xtend</groupId>
+			<artifactId>org.eclipse.xtend.lib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
-		<!-- External dependencies -->
+		<!-- Test dependencies -->
 		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-plugin-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-core</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.plugin-tools</groupId>
-			<artifactId>maven-plugin-annotations</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtext</groupId>
-			<artifactId>xtext-maven-plugin</artifactId>
+			<groupId>
+				org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-plugin-plugin</artifactId>
+				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

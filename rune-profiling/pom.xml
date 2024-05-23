@@ -9,7 +9,7 @@
 		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
 
-	<name>Profiling tools for the Rosetta DSL.</name>
+	<name>Profiling tools for the Rune DSL.</name>
 	<artifactId>com.regnosys.rosetta.profiling</artifactId>
 	<packaging>jar</packaging>
 

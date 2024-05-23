@@ -137,14 +137,14 @@
 	</properties>
 
 	<modules>
-		<module>rosetta-xcore-plugin-dependencies</module>
-		<module>rosetta-runtime</module>
-		<module>rosetta-lang</module>
-		<module>rosetta-ide</module>
-		<module>rosetta-tools</module>
-		<module>rosetta-testing</module>
-		<module>rosetta-maven-plugin</module>
-		<module>rosetta-profiling</module>
+		<module>rune-xcore-plugin-dependencies</module>
+		<module>rune-runtime</module>
+		<module>rune-lang</module>
+		<module>rune-ide</module>
+		<module>rune-tools</module>
+		<module>rune-testing</module>
+		<module>rune-maven-plugin</module>
+		<module>rune-profiling</module>
 	</modules>
 
 	<dependencyManagement>

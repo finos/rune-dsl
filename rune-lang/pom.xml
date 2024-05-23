@@ -25,11 +25,11 @@
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
-    <name>Rosetta DSL SDK</name>
+    <name>Rune DSL SDK</name>
     <artifactId>com.regnosys.rosetta</artifactId>
 
     <description>
-        Responsibilities: defining the core of the Rosetta DSL, including
+        Responsibilities: defining the core of the Rune DSL, including
         - the AST
         - parsing
         - scoping and cross-reference resolution
@@ -107,22 +107,22 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets combine.children="append">
-                        <!-- rosetta-lang -->
+                        <!-- rune-lang -->
                         <fileset>
-                            <directory>${basedir}/../rosetta-lang/src-gen</directory>
+                            <directory>${basedir}/../rune-lang/src-gen</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>${basedir}/../rosetta-lang/emf-gen</directory>
+                            <directory>${basedir}/../rune-lang/emf-gen</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
-                        <!-- rosetta-ide -->
+                        <!-- rune-ide -->
                         <fileset>
-                            <directory>${basedir}/../rosetta-ide/src-gen/</directory>
+                            <directory>${basedir}/../rune-ide/src-gen/</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>

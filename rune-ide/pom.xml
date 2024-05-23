@@ -29,7 +29,7 @@
     <artifactId>com.regnosys.rosetta.ide</artifactId>
 
     <description>
-        Responsibilities: adding support for developing Rosetta in an IDE, including
+        Responsibilities: adding support for developing Rune in an IDE, including
         - language server features (semantic highlighting, inlay hints, etc)
         - syntax highlighting
     </description>

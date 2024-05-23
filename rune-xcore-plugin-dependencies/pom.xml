@@ -27,7 +27,7 @@
     <!-- TODO: this should be packaged as a pom, but Eclipse doesn't handle it well. -->
     <!--<packaging>pom</packaging>-->
 
-	<name>Rosetta DSL Plugin Dependencies</name>
+	<name>Rune DSL Plugin Dependencies</name>
     <artifactId>com.regnosys.rosetta.xcore</artifactId>
 
     <description>

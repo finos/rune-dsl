@@ -22,7 +22,7 @@ git clone https://github.com/finos/rune-dsl.git
 ### Build and run
 
 ```
-mvn clean install && cd rosetta-ide/vscode && npm install
+mvn clean install && cd rune-ide/vscode && npm install
 ```
 
 ### Start VS Code

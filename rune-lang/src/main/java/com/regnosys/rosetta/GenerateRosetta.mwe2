@@ -20,24 +20,24 @@ Workflow {
 				createEclipseMetaData = false
 				runtime = {
 				    enabled = true
-				    name = "rosetta-lang"
-				    root = "${parentDir}/rosetta-lang"
-				    src = "${parentDir}/rosetta-lang/src/main/java"
-				    srcGen = "${parentDir}/rosetta-lang/src-gen/main/java"
+				    name = "rune-lang"
+				    root = "${parentDir}/rune-lang"
+				    src = "${parentDir}/rune-lang/src/main/java"
+				    srcGen = "${parentDir}/rune-lang/src-gen/main/java"
 				}
 				runtimeTest = {
 					enabled = true
-					name = "rosetta-testing"
-					root = "${parentDir}/rosetta-testing"
-					src = "${parentDir}/rosetta-testing/src/test/java"
-					srcGen = "${parentDir}/rosetta-testing/src-gen/main/java"
+					name = "rune-testing"
+					root = "${parentDir}/rune-testing"
+					src = "${parentDir}/rune-testing/src/test/java"
+					srcGen = "${parentDir}/rune-testing/src-gen/main/java"
 				}
 				genericIde = {
                     enabled = true
-                    name = "rosetta-ide"
-                    root = "${parentDir}/rosetta-ide"
-                    src = "${parentDir}/rosetta-ide/src/main/java"
-                    srcGen = "${parentDir}/rosetta-ide/src-gen/main/java"
+                    name = "rune-ide"
+                    root = "${parentDir}/rune-ide"
+                    src = "${parentDir}/rune-ide/src/main/java"
+                    srcGen = "${parentDir}/rune-ide/src-gen/main/java"
                 }
 				eclipsePlugin = {
 					enabled = false
