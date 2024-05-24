@@ -10,6 +10,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
@@ -168,6 +169,29 @@ public class RosettaInterpreterListOperationsInterpreter
 		}
 		
 		return new RosettaInterpreterBooleanValue(exists);
+	}
+
+	
+	/**
+	 * Interprets an "is absent" expression.
+	 * If the argument of the expression is of size 0, so:
+	 * 	- either it is optional, (0..*), and it was not instantiated
+	 *  - or it is a list with 0 elements []
+	 *
+	 * @param exp "Is absent" expression to intepret
+	 * @return Boolean indicating if the interpreted argument is absent
+	 */
+	public RosettaInterpreterValue interp(RosettaAbsentExpression exp) {
+		RosettaExpression argument = exp.getArgument();
+		RosettaInterpreterValue interpretedArgument = argument.accept(visitor);
+		
+		if (RosettaInterpreterErrorValue.errorsExist(interpretedArgument)) {
+			return interpretedArgument;
+		}
+		
+		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
+		boolean isAbsent = count == 0;
+		return new RosettaInterpreterBooleanValue(isAbsent);
 	}
 		
 }
