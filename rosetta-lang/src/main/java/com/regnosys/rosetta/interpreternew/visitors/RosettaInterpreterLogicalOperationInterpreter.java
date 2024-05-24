@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
@@ -12,6 +13,10 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterLogicalOperationInterpreter 
 	extends RosettaInterpreterConcreteInterpreter {
+	
+	public RosettaInterpreterBaseValue interp(LogicalOperation expr) {
+		return interp(expr, new RosettaInterpreterEnvironment());
+	}
 
 	/**
 	 * Interpreter method for Logical Operations.
@@ -19,14 +24,15 @@ public class RosettaInterpreterLogicalOperationInterpreter
 	 * @param expr LogicalOperaation to be interpreted
 	 * @return The interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(LogicalOperation expr) {
+	public RosettaInterpreterBaseValue interp(LogicalOperation expr, 
+			RosettaInterpreterEnvironment env) {
 		boolean leftBool = false;
 		boolean rightBool = false;
 		
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
-		RosettaInterpreterValue leftInterpreted = left.accept(visitor);
-		RosettaInterpreterValue rightInterpreted = right.accept(visitor);
+		RosettaInterpreterValue leftInterpreted = left.accept(visitor, env);
+		RosettaInterpreterValue rightInterpreted = right.accept(visitor, env);
 		
 		if (leftInterpreted instanceof RosettaInterpreterBooleanValue 
 				&& rightInterpreted instanceof RosettaInterpreterBooleanValue) {
@@ -81,8 +87,8 @@ public class RosettaInterpreterLogicalOperationInterpreter
 			// but something other than a boolean
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"Logical Operation: " + side + 
-							" is not of type Boolean"));
+							"Logical Operation: " + side 
+							+ " is not of type Boolean"));
 		}
 	}
 }

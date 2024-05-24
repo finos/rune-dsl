@@ -6,9 +6,11 @@ import java.util.List;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
+import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -39,7 +41,24 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 	 * 		   If errors are encountered, a RosettaInterpreterErrorValue representing
      *         the error.
 	 */
-	public RosettaInterpreterBaseValue interp(ModifiableBinaryOperation expr) {		
+	public RosettaInterpreterBaseValue interp(ModifiableBinaryOperation expr) {
+		return interp(expr, new RosettaInterpreterEnvironment());
+	}
+	
+	
+	/**
+	 * Interprets a comparison operation, evaluating the comparison between two operands.
+	 *
+	 * @param expr The ComparisonOperation expression to interpret
+	 * @param env RosettaInterpreterBaseEnvironment that keeps track
+	 *		   of the current state of the program
+	 * @return If no errors are encountered, a RosettaInterpreterBooleanValue representing
+	 * 		   the result of the comparison operation.
+	 * 		   If errors are encountered, a RosettaInterpreterErrorValue representing
+     *         the error.
+	 */
+	public RosettaInterpreterBaseValue interp(ModifiableBinaryOperation expr,
+			RosettaInterpreterBaseEnvironment env) {		
 		if (!comparisonOperators.contains(expr.getOperator())) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
@@ -48,8 +67,21 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
 		
-		RosettaInterpreterValue leftValue = left.accept(visitor);
-		RosettaInterpreterValue rightValue = right.accept(visitor);
+		RosettaInterpreterValue leftValue = left.accept(visitor, env);
+		RosettaInterpreterValue rightValue = right.accept(visitor, env);
+		
+		if (RosettaInterpreterErrorValue.errorsExist(leftValue)
+				&& RosettaInterpreterErrorValue.errorsExist(rightValue)) {
+			return RosettaInterpreterErrorValue
+					.merge((RosettaInterpreterErrorValue)leftValue,
+					(RosettaInterpreterErrorValue)rightValue);
+		}
+		else if (RosettaInterpreterErrorValue.errorsExist(leftValue)) {
+			return (RosettaInterpreterErrorValue)leftValue;
+		}
+		else if (RosettaInterpreterErrorValue.errorsExist(rightValue)) {
+			return (RosettaInterpreterErrorValue)rightValue;
+		}
 		
 		//check cardinality operation
 		switch (expr.getCardMod()) {
@@ -112,13 +144,13 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 				return new RosettaInterpreterBooleanValue(anyTrue); 
 			}
 		}
-		else {
-			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError(
-							"cannot use \"ANY\" keyword "
-							+ "to compare two elements"));
-		}
-		return new RosettaInterpreterBooleanValue(false);
+		
+		return new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"cannot use \"ANY\" keyword "
+						+ "to compare two elements"));
+		
+		//return new RosettaInterpreterBooleanValue(false);
 	}
 
 	private RosettaInterpreterBaseValue compareAll(RosettaInterpreterValue leftValue, 
@@ -153,13 +185,13 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 				return new RosettaInterpreterBooleanValue(allTrue); 
 			}
 		}
-		else {
-			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError(
-							"cannot use \"ALL\" keyword "
-							+ "to compare two elements"));
-		}
-		return new RosettaInterpreterBooleanValue(false);
+		
+		return new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"cannot use \"ALL\" keyword "
+						+ "to compare two elements"));
+		
+		//return new RosettaInterpreterBooleanValue(false);
 	}
 
 	private boolean checkComparableTypes(RosettaInterpreterValue leftValue, 
