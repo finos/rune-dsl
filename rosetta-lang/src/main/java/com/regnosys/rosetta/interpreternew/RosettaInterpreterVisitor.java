@@ -25,6 +25,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperationsInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperatorInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaBooleanLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConditionalExpressionInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
@@ -101,27 +102,26 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaExistsExpression exp) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaAbsentExpression exp) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaCountOperation exp) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(FirstOperation exp) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(LastOperation exp) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
 	}
 }
