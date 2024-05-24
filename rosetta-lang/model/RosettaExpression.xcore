@@ -253,6 +253,10 @@ interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
 }
 
 class ArithmeticOperation extends RosettaBinaryOperation {
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class LogicalOperation extends RosettaBinaryOperation {
