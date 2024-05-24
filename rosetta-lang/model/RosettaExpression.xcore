@@ -257,6 +257,9 @@ class ArithmeticOperation extends RosettaBinaryOperation {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class LogicalOperation extends RosettaBinaryOperation {

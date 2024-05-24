@@ -147,15 +147,20 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	}
 	
 	@Override
-	public RosettaInterpreterValue interp(ArithmeticOperation exp) {
-		return new RosettaInterpreterRosettaArithmeticOperationsInterpreter().interp(exp);
-	}
-
-	@Override
 	public RosettaInterpreterValue interp(ComparisonOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		// TODO Auto-generated method stub
 		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp, env);
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(ArithmeticOperation exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(ArithmeticOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterRosettaArithmeticOperationsInterpreter().interp(exp, env);
 	}
 
 	@Override
@@ -266,4 +271,6 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+
+	
 }
