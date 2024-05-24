@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,10 +9,12 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -192,6 +195,25 @@ public class RosettaInterpreterListOperationsInterpreter
 		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
 		boolean isAbsent = count == 0;
 		return new RosettaInterpreterBooleanValue(isAbsent);
+	}
+
+	/**
+	 * Interprets a count operation.
+	 * Return the number of elements in a list
+	 * 
+	 * @param exp Expression to perform 'count' on
+	 * @return Integer indicating how many elements there are in the list
+	 */
+	public RosettaInterpreterValue interp(RosettaCountOperation exp) {
+		RosettaExpression argument = exp.getArgument();
+		RosettaInterpreterValue interpretedArgument = argument.accept(visitor);
+		
+		if (RosettaInterpreterErrorValue.errorsExist(interpretedArgument)) {
+			return interpretedArgument;
+		}
+		
+		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
+		return new RosettaInterpreterIntegerValue(BigInteger.valueOf(count));
 	}
 		
 }

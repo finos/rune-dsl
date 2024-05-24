@@ -2,6 +2,7 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +19,7 @@ import com.regnosys.rosetta.interpreternew.RosettaInterpreterNew;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -302,6 +304,41 @@ class RosettaInterpreterListOperationsInterpreterTest {
 				new RosettaInterpreterError("Logical Operation: "
 						+ "Rightside is not of type Boolean"));
 		RosettaExpression expr = parser.parseExpression("(True and 1) is absent");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testCountEmptyList() {
+		RosettaInterpreterIntegerValue expected = 
+				new RosettaInterpreterIntegerValue(BigInteger.valueOf(0));
+		RosettaExpression expr = parser.parseExpression("[] count");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterIntegerValue);
+		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testCount() {
+		RosettaInterpreterIntegerValue expected = 
+				new RosettaInterpreterIntegerValue(BigInteger.valueOf(3));
+		RosettaExpression expr = parser.parseExpression("[1, 2, 3] count");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterIntegerValue);
+		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testCountError() {
+		RosettaInterpreterErrorValue expected = 
+				new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Logical Operation: "
+						+ "Rightside is not of type Boolean"));
+		RosettaExpression expr = parser.parseExpression("(True and 1) count");
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;

@@ -111,8 +111,7 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaCountOperation exp) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new RosettaInterpreterListOperationsInterpreter().interp(exp);
 	}
 
 	@Override
