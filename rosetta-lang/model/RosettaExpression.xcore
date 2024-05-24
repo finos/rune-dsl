@@ -153,12 +153,6 @@ class ListLiteral extends RosettaExpression {
  */
 
 abstract class RosettaReference extends RosettaExpression {
-//	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-//		v.interp(this)
-//	}
-//	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
-//		v.interp(this,nv)
-//	}
 }
 
 class RosettaSymbolReference extends RosettaReference {

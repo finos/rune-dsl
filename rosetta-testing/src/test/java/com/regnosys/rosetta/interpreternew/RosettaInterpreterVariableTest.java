@@ -58,7 +58,7 @@ public class RosettaInterpreterVariableTest {
 
 		//give the same environment to the parser
 		RosettaExpression expr = parser.parseExpression("a >= 2", 
-				List.of("a" + " " + "int (1..1)"));
+				List.of("a int (1..1)"));
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
@@ -79,7 +79,7 @@ public class RosettaInterpreterVariableTest {
 
 		//give a different environment to the parser
 		RosettaExpression expr = parser.parseExpression("b >= 2", 
-				List.of("b" + " " + "int (1..1)"));
+				List.of("b int (1..1)"));
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
@@ -99,7 +99,7 @@ public class RosettaInterpreterVariableTest {
 
 		//give a different environment to the parser
 		RosettaExpression expr = parser.parseExpression("1 = b", 
-				List.of("b" + " " + "int (1..1)"));
+				List.of("b int (1..1)"));
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
@@ -121,7 +121,7 @@ public class RosettaInterpreterVariableTest {
 
 		//give a different environment to the parser
 		RosettaExpression expr = parser.parseExpression("a <= b", 
-				List.of("a" + " " + "int (1..1)", "b" + " " + "int (1..1)"));
+				List.of("a int (1..1)", "b int (1..1)"));
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
