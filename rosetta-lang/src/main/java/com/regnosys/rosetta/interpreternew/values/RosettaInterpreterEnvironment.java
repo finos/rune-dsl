@@ -3,7 +3,9 @@ package com.regnosys.rosetta.interpreternew.values;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RosettaInterpreterEnvironment {
+import com.regnosys.rosetta.rosetta.impl.RosettaInterpreterBaseEnvironmentImpl;
+
+public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnvironmentImpl {
 	private Map<String, RosettaInterpreterBaseValue> environment;
 	
 	public RosettaInterpreterEnvironment() {
@@ -36,7 +38,8 @@ public class RosettaInterpreterEnvironment {
 		else {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"no such variable in the environment"));
+							name 
+							+ " does not exist in the environment"));
 		}
 		
 	}
