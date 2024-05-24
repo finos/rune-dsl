@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
@@ -11,6 +12,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
+import com.regnosys.rosetta.rosetta.expression.FirstOperation;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
@@ -200,7 +202,7 @@ public class RosettaInterpreterListOperationsInterpreter
 	/**
 	 * Interprets a count operation.
 	 * Return the number of elements in a list
-	 * 
+	 *
 	 * @param exp Expression to perform 'count' on
 	 * @return Integer indicating how many elements there are in the list
 	 */
@@ -215,5 +217,33 @@ public class RosettaInterpreterListOperationsInterpreter
 		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
 		return new RosettaInterpreterIntegerValue(BigInteger.valueOf(count));
 	}
+
+	/**
+	 * Interprets a first operation.
+	 * If a list is not empty, it returns the first element.
+	 * Otherwise, it returns an error.
+	 *
+	 * @param exp Expression on which to perform 'first' operation
+	 * @return First element of the list
+	 */
+	public RosettaInterpreterValue interp(FirstOperation exp) {
+		RosettaExpression argument = exp.getArgument();
+		RosettaInterpreterValue interpretedArgument = argument.accept(visitor);
 		
+		if (RosettaInterpreterErrorValue.errorsExist(interpretedArgument)) {
+			return interpretedArgument;
+		}
+		
+		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
+		if (count == 0L) {
+			// List is empty
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError("List is empty"));
+		} else {
+			// List has at least one element
+			return RosettaInterpreterBaseValue.valueStream(interpretedArgument)
+					.collect(Collectors.toList()).get(0);
+		}
+	}
+
 }

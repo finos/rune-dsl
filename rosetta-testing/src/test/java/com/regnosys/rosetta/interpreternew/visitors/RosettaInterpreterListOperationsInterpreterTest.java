@@ -344,4 +344,40 @@ class RosettaInterpreterListOperationsInterpreterTest {
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
 		assertEquals(expected, castedVal);
 	}
+	
+	@Test
+	void testFirstEmptyList() {
+		RosettaInterpreterErrorValue expected = 
+				new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("List is empty"));
+		RosettaExpression expr = parser.parseExpression("[] first");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testFirst() {
+		RosettaInterpreterIntegerValue expected = 
+				new RosettaInterpreterIntegerValue(BigInteger.valueOf(3));
+		RosettaExpression expr = parser.parseExpression("[3, 4, 5] first");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterIntegerValue);
+		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testFirstError() {
+		RosettaInterpreterErrorValue expected = 
+				new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Logical Operation: "
+						+ "Rightside is not of type Boolean"));
+		RosettaExpression expr = parser.parseExpression("(True and 1) first");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
+		assertEquals(expected, castedVal);
+	}
 }
