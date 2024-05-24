@@ -143,13 +143,11 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	@Override
 	public RosettaInterpreterValue interp(ComparisonOperation exp) {
 		return interp(exp, new RosettaInterpreterEnvironment());
-		//return new RosettaInterpreterComparisonOperationInterpreter().interp(exp);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(ComparisonOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		// TODO Auto-generated method stub
 		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp, env);
 	}
 	
@@ -209,31 +207,26 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaExistsExpression exp) {
-		// TODO Auto-generated method stub
 		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaAbsentExpression exp) {
-		// TODO Auto-generated method stub
 		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaCountOperation exp) {
-		// TODO Auto-generated method stub
 		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(FirstOperation exp) {
-		// TODO Auto-generated method stub
 		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(LastOperation exp) {
-		// TODO Auto-generated method stub
 		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 

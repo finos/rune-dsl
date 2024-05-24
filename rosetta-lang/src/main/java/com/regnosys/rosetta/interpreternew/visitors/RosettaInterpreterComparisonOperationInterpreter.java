@@ -105,11 +105,6 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 							+ " not supported"));
 			
 		}
-		
-		//check if these types are actually comparable 
-//		boolean result = checkComparableTypes(leftValue, rightValue, expr.getOperator());
-//		
-//		return new RosettaInterpreterBooleanValue(result);
 	}
 
 	private RosettaInterpreterBaseValue compareAny(RosettaInterpreterValue leftValue, 
@@ -149,8 +144,6 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 				new RosettaInterpreterError(
 						"cannot use \"ANY\" keyword "
 						+ "to compare two elements"));
-		
-		//return new RosettaInterpreterBooleanValue(false);
 	}
 
 	private RosettaInterpreterBaseValue compareAll(RosettaInterpreterValue leftValue, 
@@ -190,8 +183,6 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 				new RosettaInterpreterError(
 						"cannot use \"ALL\" keyword "
 						+ "to compare two elements"));
-		
-		//return new RosettaInterpreterBooleanValue(false);
 	}
 
 	private boolean checkComparableTypes(RosettaInterpreterValue leftValue, 
