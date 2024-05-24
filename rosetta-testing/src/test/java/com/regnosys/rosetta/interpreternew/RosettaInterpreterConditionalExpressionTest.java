@@ -24,6 +24,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
+import com.rosetta.model.lib.RosettaNumber;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -86,7 +87,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if True then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		BigDecimal number = BigDecimal.valueOf(1.2);
+		RosettaNumber number = RosettaNumber.valueOf(BigDecimal.valueOf(1.2));
 		
 		assertEquals(number, ((RosettaInterpreterNumberValue) result).getValue());
 	}
