@@ -109,6 +109,12 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	public RosettaInterpreterValue interp(RosettaConditionalExpression exp) {
 		return new RosettaInterpreterRosettaConditionalExpressionInterpreter().interp(exp);
 	}
+	
+	@Override
+	public RosettaInterpreterValue interp(RosettaConditionalExpression exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterRosettaConditionalExpressionInterpreter().interp(exp, env);
+	}
 
 	@Override
 	public RosettaInterpreterValue interp(LogicalOperation exp) {
@@ -192,29 +198,64 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	@Override
 	public RosettaInterpreterValue interp(RosettaExistsExpression exp) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaAbsentExpression exp) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaCountOperation exp) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(FirstOperation exp) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(LastOperation exp) {
+		// TODO Auto-generated method stub
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(RosettaExistsExpression exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(RosettaAbsentExpression exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(RosettaCountOperation exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(FirstOperation exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(LastOperation exp, 
+			RosettaInterpreterBaseEnvironment env) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}

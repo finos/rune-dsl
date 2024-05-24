@@ -64,6 +64,7 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaIntLiteral exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaPatternLiteral exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (ListLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaConditionalExpression exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (LogicalOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (EqualityOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (ComparisonOperation exp, RosettaInterpreterBaseEnvironment env)
