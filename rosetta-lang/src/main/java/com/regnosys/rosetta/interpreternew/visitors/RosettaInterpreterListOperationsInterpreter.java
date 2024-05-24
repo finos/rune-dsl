@@ -12,6 +12,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
@@ -133,6 +134,40 @@ public class RosettaInterpreterListOperationsInterpreter
 		String result = String.join(delimString, texts);
 		
 		return new RosettaInterpreterStringValue(result);
+	}
+
+	/**
+	 * Interprets an exists operation.
+	 * If the argument of the expression is an error, it returns it.
+	 * Otherwise, it checks to see if the interpreted argument
+	 * is of single or multiple cardinality.
+	 *
+	 * @param exp Exists operation to interpret
+	 * @return Boolean indicating if the argument exists or not
+	 */
+	public RosettaInterpreterValue interp(RosettaExistsExpression exp) {
+		RosettaExpression argument = exp.getArgument();
+		RosettaInterpreterValue interpretedArgument = argument.accept(visitor);
+		
+		if (RosettaInterpreterErrorValue.errorsExist(interpretedArgument)) {
+			return interpretedArgument;
+		}
+		
+		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
+		
+		boolean exists;
+		switch (exp.getModifier()) {
+			case SINGLE:
+				exists = count == 1;
+				break;
+			case MULTIPLE:
+				exists = count > 1;
+				break;
+			default:
+				exists = count > 0;
+		}
+		
+		return new RosettaInterpreterBooleanValue(exists);
 	}
 		
 }

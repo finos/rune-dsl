@@ -200,4 +200,78 @@ class RosettaInterpreterListOperationsInterpreterTest {
 				"Logical Operation: Leftside is not of type Boolean"));
 		assertEquals(err, val);
 	}
+	
+	
+	@Test
+	void testExistsTrue() {
+		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(true);
+		RosettaExpression expr = parser.parseExpression("(True and False) exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testExistsFalse() {
+		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(false);
+		RosettaExpression expr = parser.parseExpression("[] exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testExistsSingleTrue() {
+		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(true);
+		RosettaExpression expr = parser.parseExpression("[1] single exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testExistsSingleFalse() {
+		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(false);
+		RosettaExpression expr = parser.parseExpression("[1,2] single exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testExistsMultipleTrue() {
+		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(true);
+		RosettaExpression expr = parser.parseExpression("[1,2,3] multiple exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testExistsMultipleFalse() {
+		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(false);
+		RosettaExpression expr = parser.parseExpression("[True] multiple exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
+	void testExistsError() {
+		RosettaInterpreterErrorValue expected = 
+				new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError("Logical Operation: "
+						+ "Rightside is not of type Boolean"));
+		RosettaExpression expr = parser.parseExpression("(True and 1) single exists");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
+		assertEquals(expected, castedVal);
+	}
 }
