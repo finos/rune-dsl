@@ -1,14 +1,12 @@
 package com.regnosys.rosetta.interpreternew.values;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
-import org.eclipse.emf.common.util.EList;
-
-import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue 
-	implements Comparable<RosettaInterpreterBooleanValue>{
+	implements Comparable<RosettaInterpreterBooleanValue> {
 	private boolean value;
 	
 	public RosettaInterpreterBooleanValue(boolean value) {
@@ -25,12 +23,15 @@ public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		RosettaInterpreterBooleanValue other = (RosettaInterpreterBooleanValue) obj;
 		return value == other.value;
 	}
@@ -40,7 +41,18 @@ public class RosettaInterpreterBooleanValue extends RosettaInterpreterBaseValue
 		return Boolean.compare(this.value, o.value);
 	}
 
-	
-	
-	
+	@Override
+	public Stream<Object> toElementStream() {
+		return Stream.of(value);
+	}
+
+	@Override
+	public Stream<RosettaInterpreterValue> toValueStream() {
+		return Stream.of(this);
+	}
+
+	@Override
+	public String toString() {
+		return "RosettaInterpreterBooleanValue [value=" + value + "]";
+	}
 }

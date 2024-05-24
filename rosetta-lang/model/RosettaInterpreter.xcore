@@ -11,12 +11,22 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaReference
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+
+import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
+import com.regnosys.rosetta.rosetta.expression.JoinOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.FirstOperation
+import com.regnosys.rosetta.rosetta.expression.LastOperation
 
 class RosettaInterpreterBaseError{
 	String message
@@ -32,12 +42,20 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaIntLiteral exp)
 	op RosettaInterpreterValue interp (RosettaPatternLiteral exp)
 	op RosettaInterpreterValue interp (ListLiteral exp)
+	op RosettaInterpreterValue interp (RosettaConditionalExpression exp)
 	op RosettaInterpreterValue interp (LogicalOperation exp)
 	op RosettaInterpreterValue interp (EqualityOperation exp)
 	op RosettaInterpreterValue interp (ComparisonOperation exp)	
-	//op RosettaInterpreterValue interp (RosettaImplicitVariable exp)
 	op RosettaInterpreterValue interp (RosettaSymbolReference exp)
-	//op RosettaInterpreterValue interp (RosettaReference exp)
+
+	op RosettaInterpreterValue interp (RosettaContainsExpression exp)	
+	op RosettaInterpreterValue interp (RosettaDisjointExpression exp)	
+	op RosettaInterpreterValue interp (JoinOperation exp)	
+	op RosettaInterpreterValue interp (RosettaExistsExpression exp)	
+	op RosettaInterpreterValue interp (RosettaAbsentExpression exp)	
+	op RosettaInterpreterValue interp (RosettaCountOperation exp)	
+	op RosettaInterpreterValue interp (FirstOperation exp)	
+	op RosettaInterpreterValue interp (LastOperation exp)	
 	
 	
 	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp, RosettaInterpreterBaseEnvironment env)
@@ -49,7 +67,16 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (LogicalOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (EqualityOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (ComparisonOperation exp, RosettaInterpreterBaseEnvironment env)
-	//op RosettaInterpreterValue interp (RosettaImplicitVariable exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaSymbolReference exp, RosettaInterpreterBaseEnvironment env)
-	//op RosettaInterpreterValue interp (RosettaReference exp, RosettaInterpreterBaseEnvironment env)	
+
+	op RosettaInterpreterValue interp (RosettaContainsExpression exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (RosettaDisjointExpression exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (JoinOperation exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (RosettaExistsExpression exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (RosettaAbsentExpression exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (RosettaCountOperation exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (FirstOperation exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (LastOperation exp, RosettaInterpreterBaseEnvironment env)
+	
+	
 }
