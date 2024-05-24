@@ -14,6 +14,9 @@ import com.regnosys.rosetta.rosetta.expression.ListLiteral
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaReference
+import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
 
 class RosettaInterpreterBaseError{
 	String message
@@ -32,4 +35,21 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (LogicalOperation exp)
 	op RosettaInterpreterValue interp (EqualityOperation exp)
 	op RosettaInterpreterValue interp (ComparisonOperation exp)	
+	//op RosettaInterpreterValue interp (RosettaImplicitVariable exp)
+	op RosettaInterpreterValue interp (RosettaSymbolReference exp)
+	//op RosettaInterpreterValue interp (RosettaReference exp)
+	
+	
+	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaStringLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaNumberLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaIntLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaPatternLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ListLiteral exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (LogicalOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (EqualityOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ComparisonOperation exp, RosettaInterpreterBaseEnvironment env)
+	//op RosettaInterpreterValue interp (RosettaImplicitVariable exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaSymbolReference exp, RosettaInterpreterBaseEnvironment env)
+	//op RosettaInterpreterValue interp (RosettaReference exp, RosettaInterpreterBaseEnvironment env)	
 }

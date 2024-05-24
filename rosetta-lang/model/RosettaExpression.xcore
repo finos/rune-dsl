@@ -19,11 +19,14 @@ import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
 
+import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+
 
 interface RosettaExpression {
 	// Whether the expression was generated
 	boolean generated
 	op RosettaInterpreterValue accept(InterpreterVisitor v)
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment env)
 }
 
 /**
@@ -59,6 +62,9 @@ class RosettaBooleanLiteral extends RosettaLiteral {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class RosettaStringLiteral extends RosettaLiteral {
@@ -72,6 +78,9 @@ class RosettaStringLiteral extends RosettaLiteral {
 	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
 	}
 }
 
@@ -87,6 +96,9 @@ class RosettaNumberLiteral extends RosettaLiteral {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class RosettaIntLiteral extends RosettaLiteral {
@@ -100,6 +112,9 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
 	}
 }
 
@@ -128,6 +143,9 @@ class ListLiteral extends RosettaExpression {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 /*
@@ -135,6 +153,12 @@ class ListLiteral extends RosettaExpression {
  */
 
 abstract class RosettaReference extends RosettaExpression {
+//	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+//		v.interp(this)
+//	}
+//	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+//		v.interp(this,nv)
+//	}
 }
 
 class RosettaSymbolReference extends RosettaReference {
@@ -157,6 +181,10 @@ class RosettaSymbolReference extends RosettaReference {
 			return new BasicEList(#[implicitArgument])
 		}
 		return rawArgs
+	}
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this, nv)
 	}
 }
 
@@ -224,6 +252,9 @@ class LogicalOperation extends RosettaBinaryOperation {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 enum CardinalityModifier {
@@ -240,12 +271,16 @@ class EqualityOperation extends ModifiableBinaryOperation {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ComparisonOperation extends ModifiableBinaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
 	}
+	
 }
 
 class RosettaContainsExpression extends RosettaBinaryOperation {
