@@ -403,9 +403,15 @@ class FlattenOperation extends ListOperation, CanHandleListOfLists {
 }
 
 class DistinctOperation extends ListOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class ReverseOperation extends ListOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class FirstOperation extends ListOperation {
@@ -427,6 +433,9 @@ class LastOperation extends ListOperation {
 }
 
 class SumOperation extends ListOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
 }
 
 class AsKeyOperation extends RosettaUnaryOperation {

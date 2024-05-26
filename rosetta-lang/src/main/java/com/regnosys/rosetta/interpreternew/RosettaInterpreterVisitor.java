@@ -3,7 +3,9 @@ package com.regnosys.rosetta.interpreternew;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.expression.ReverseOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FirstOperation;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
@@ -22,8 +24,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
+import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
-
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
@@ -31,6 +33,7 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparison
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaArithmeticOperationsInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperationsInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperatorInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaBooleanLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConditionalExpressionInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
@@ -265,5 +268,36 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 		throw new UnsupportedOperationException();
 	}
 
-	
+	@Override
+	public RosettaInterpreterValue interp(DistinctOperation exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(DistinctOperation exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ReverseOperation exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ReverseOperation exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(SumOperation exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(SumOperation exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+	}
 }
