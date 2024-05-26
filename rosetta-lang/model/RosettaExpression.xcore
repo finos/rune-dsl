@@ -406,11 +406,17 @@ class DistinctOperation extends ListOperation {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
 	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this, nv)
+	}
 }
 
 class ReverseOperation extends ListOperation {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this, nv)
 	}
 }
 
@@ -435,6 +441,9 @@ class LastOperation extends ListOperation {
 class SumOperation extends ListOperation {
 	op RosettaInterpreterValue accept(InterpreterVisitor v) {
 		v.interp(this)
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this, nv)
 	}
 }
 
