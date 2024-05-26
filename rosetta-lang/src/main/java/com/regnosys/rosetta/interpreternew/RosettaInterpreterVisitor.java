@@ -1,7 +1,9 @@
 package com.regnosys.rosetta.interpreternew;
 
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
+import com.regnosys.rosetta.rosetta.expression.ReverseOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FirstOperation;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
@@ -19,12 +21,14 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperationsInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperatorInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaBooleanLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConditionalExpressionInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
@@ -127,5 +131,20 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	public RosettaInterpreterValue interp(LastOperation exp) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(DistinctOperation exp) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ReverseOperation exp) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(SumOperation exp) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp);
 	}
 }

@@ -1,7 +1,8 @@
 package com.regnosys.rosetta.interpreternew.values;
 
 import java.lang.reflect.InvocationTargetException;
-
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -63,6 +64,20 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 					+ "of RosettaInterpreterValue");
 			}
 		return ((RosettaInterpreterBaseValue)val).toValueStream();
+	}
+	
+	/**
+	 * Converts a rosetta value to a list of itself or values it contains.
+	 *
+	 * @param val - value to convert
+	 * @return - list of value or its contained values
+	 */
+	public static List<RosettaInterpreterValue> toValueList(RosettaInterpreterValue val){
+		if (!(val instanceof RosettaInterpreterBaseValue)) {
+			throw new RosettaInterpreterNewException("Cannot take value stream"
+					+ "of RosettaInterpreterValue");
+			}
+		return valueStream(val).collect(Collectors.toList());
 	}
 	
 	@Override
