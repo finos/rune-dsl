@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
+import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
@@ -18,6 +20,9 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 public class RosettaInterpreterListOperationsInterpreter
 	extends RosettaInterpreterConcreteInterpreter {
 
+	public RosettaInterpreterValue interp(RosettaContainsExpression exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
 
 	/**
 	 * Interprets a rosetta contains expression.
@@ -27,12 +32,13 @@ public class RosettaInterpreterListOperationsInterpreter
 	 * @param exp - expression to evaluate
 	 * @return value of contains expression
 	 */
-	public RosettaInterpreterValue interp(RosettaContainsExpression exp) {
+	public RosettaInterpreterValue interp(RosettaContainsExpression exp,
+			RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression leftExp = exp.getLeft();
 		RosettaExpression rightExp = exp.getRight();
 		
-		RosettaInterpreterValue leftVal = leftExp.accept(visitor);
-		RosettaInterpreterValue rightVal = rightExp.accept(visitor);
+		RosettaInterpreterValue leftVal = leftExp.accept(visitor, env);
+		RosettaInterpreterValue rightVal = rightExp.accept(visitor, env);
 		
 		if (RosettaInterpreterErrorValue.errorsExist(leftVal, rightVal)) {
 			return RosettaInterpreterErrorValue.merge(leftVal, rightVal);
@@ -53,6 +59,10 @@ public class RosettaInterpreterListOperationsInterpreter
 		return new RosettaInterpreterBooleanValue(contains);
 	}
 	
+	public RosettaInterpreterValue interp(RosettaDisjointExpression exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+	
 	/**
 	 * Interprets a rosetta disjoint expression.
 	 * Checks if the right element, which may be a single element or a list,
@@ -61,12 +71,13 @@ public class RosettaInterpreterListOperationsInterpreter
 	 * @param exp - expression to evaluate
 	 * @return value of contains expression
 	 */
-	public RosettaInterpreterValue interp(RosettaDisjointExpression exp) {
+	public RosettaInterpreterValue interp(RosettaDisjointExpression exp,
+			RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression leftExp = exp.getLeft();
 		RosettaExpression rightExp = exp.getRight();
 		
-		RosettaInterpreterValue leftVal = leftExp.accept(visitor);
-		RosettaInterpreterValue rightVal = rightExp.accept(visitor);
+		RosettaInterpreterValue leftVal = leftExp.accept(visitor, env);
+		RosettaInterpreterValue rightVal = rightExp.accept(visitor, env);
 		
 		if (RosettaInterpreterErrorValue.errorsExist(leftVal, rightVal)) {
 			return RosettaInterpreterErrorValue.merge(leftVal, rightVal);
@@ -86,6 +97,10 @@ public class RosettaInterpreterListOperationsInterpreter
 		
 		return new RosettaInterpreterBooleanValue(notContains);
 	}
+	
+	public RosettaInterpreterValue interp(JoinOperation exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
 
 	/**
 	 * Interprets a join operation.
@@ -95,12 +110,13 @@ public class RosettaInterpreterListOperationsInterpreter
 	 * @param exp - join operation to interpret
 	 * @return concatenated string
 	 */
-	public RosettaInterpreterValue interp(JoinOperation exp) {
+	public RosettaInterpreterValue interp(JoinOperation exp,
+			RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression stringsExp = exp.getLeft();
 		RosettaExpression delimExp = exp.getRight();
 		
-		RosettaInterpreterValue stringsVal = stringsExp.accept(visitor);
-		RosettaInterpreterValue delimVal = delimExp.accept(visitor);
+		RosettaInterpreterValue stringsVal = stringsExp.accept(visitor, env);
+		RosettaInterpreterValue delimVal = delimExp.accept(visitor, env);
 		
 		if (RosettaInterpreterErrorValue.errorsExist(stringsVal, delimVal)) {
 			return RosettaInterpreterErrorValue.merge(stringsVal, delimVal);

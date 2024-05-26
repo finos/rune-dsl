@@ -2,12 +2,13 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.List;
 
-
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
+import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -15,6 +16,12 @@ import com.rosetta.model.lib.RosettaNumber;
 
 public class RosettaInterpreterRosettaArithmeticOperationsInterpreter 
 					extends RosettaInterpreterConcreteInterpreter {
+	
+	
+	public RosettaInterpreterValue interp(ArithmeticOperation expr) {
+		return interp(expr, new RosettaInterpreterEnvironment());
+	}
+	
 	/**
 	 * Interprets an arithmetic operation, evaluating the operation between the two terms.
 	 *
@@ -25,15 +32,16 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 	 * 		   If errors are encountered, a RosettaInterpreterErrorValue representing
      *         the error.
 	 */
-	public RosettaInterpreterValue interp(ArithmeticOperation expr) {
+	public RosettaInterpreterValue interp(ArithmeticOperation expr,
+			RosettaInterpreterBaseEnvironment env) {
 		
 		String leftString = null;
 		String rightString = null;
 		
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
-		RosettaInterpreterValue leftInterpreted = left.accept(visitor);
-		RosettaInterpreterValue rightInterpreted = right.accept(visitor); 
+		RosettaInterpreterValue leftInterpreted = left.accept(visitor, env);
+		RosettaInterpreterValue rightInterpreted = right.accept(visitor, env); 
 		
 		if (!(leftInterpreted instanceof RosettaInterpreterNumberValue 
 				|| leftInterpreted instanceof RosettaInterpreterStringValue 

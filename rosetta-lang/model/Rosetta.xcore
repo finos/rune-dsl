@@ -90,6 +90,9 @@ class TypeCallArgument {
 	contains RosettaExpression value
 }
 
+abstract class RosettaInterpreterBaseEnvironment {
+}
+
 
 /**********************************************************************
  * Built-in
