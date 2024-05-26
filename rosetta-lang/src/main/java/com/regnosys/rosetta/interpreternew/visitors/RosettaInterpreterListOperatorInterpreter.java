@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.expression.ReverseOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.rosetta.model.lib.RosettaNumber;
 
 public class RosettaInterpreterListOperatorInterpreter 
 	extends RosettaInterpreterConcreteInterpreter {
@@ -111,9 +112,9 @@ public class RosettaInterpreterListOperatorInterpreter
 			}
 		}
 		
-		BigDecimal result = values.stream()
+		RosettaNumber result = values.stream()
 				.map(x -> ((RosettaInterpreterNumberValue)x).getValue())
-				.reduce(BigDecimal.valueOf(0), (x, y) -> x.add(y));
+				.reduce(RosettaNumber.valueOf(BigDecimal.valueOf(0)), (x, y) -> x.add(y));
 		
 		return new RosettaInterpreterNumberValue(result);
 	}
