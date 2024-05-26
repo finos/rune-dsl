@@ -36,6 +36,11 @@ public class RosettaInterpreterIntegerValue extends RosettaInterpreterBaseValue
 		this.value = value;
 	}
 	
+	public RosettaInterpreterIntegerValue(int value) {
+		super();
+		this.value = BigInteger.valueOf(value);
+	}
+	
 	public BigInteger getValue() { return value; }
 
 	@Override

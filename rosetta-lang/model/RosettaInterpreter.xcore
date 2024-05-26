@@ -24,6 +24,9 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.expression.FirstOperation
 import com.regnosys.rosetta.rosetta.expression.LastOperation
+import com.regnosys.rosetta.rosetta.expression.DistinctOperation
+import com.regnosys.rosetta.rosetta.expression.ReverseOperation
+import com.regnosys.rosetta.rosetta.expression.SumOperation
 
 class RosettaInterpreterBaseError{
 	String message
@@ -51,5 +54,8 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (RosettaAbsentExpression exp)	
 	op RosettaInterpreterValue interp (RosettaCountOperation exp)	
 	op RosettaInterpreterValue interp (FirstOperation exp)	
-	op RosettaInterpreterValue interp (LastOperation exp)	
+	op RosettaInterpreterValue interp (LastOperation exp)
+	op RosettaInterpreterValue interp (DistinctOperation exp)
+	op RosettaInterpreterValue interp (ReverseOperation exp)
+	op RosettaInterpreterValue interp (SumOperation exp)	
 }
