@@ -71,13 +71,14 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue {
 	}
 	
 	/**
-	 * Checks if the supplied value is an error.
+	 * Checks if the supplied value is an error
+	 * or if the contained list contains an error.
 	 *
 	 * @param val1 - value to check
 	 * @return true iff value is an error value
 	 */
 	public static boolean errorsExist(RosettaInterpreterValue val1) {
-		return errorsExist(List.of(val1));
+		return errorsExist(RosettaInterpreterBaseValue.toValueList(val1));
 	}
 	
 	/**
@@ -115,7 +116,7 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue {
 	}
 	
 	public static RosettaInterpreterErrorValue merge(RosettaInterpreterValue val) {
-		return merge(List.of(val));
+		return merge(RosettaInterpreterBaseValue.toValueList(val));
 	}
 	
 	public static RosettaInterpreterErrorValue merge(RosettaInterpreterValue val1,
@@ -150,14 +151,12 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue {
 
 	@Override
 	public Stream<Object> toElementStream() {
-		throw new RosettaInterpreterNewException("You should not be trying to take"
-				+ " a stream of element of an error value");
+		return Stream.of(errors);
 	}
 
 	@Override
 	public Stream<RosettaInterpreterValue> toValueStream() {
-		throw new RosettaInterpreterNewException("You should not be trying to take"
-				+ " a stream of an error value");
+		return Stream.of(this);
 	}
 	
 }

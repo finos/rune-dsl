@@ -6,17 +6,24 @@ import java.util.stream.Stream;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
+import com.rosetta.model.lib.RosettaNumber;
+
 public class RosettaInterpreterNumberValue extends RosettaInterpreterBaseValue 
-	implements Comparable<RosettaInterpreterNumberValue> {
-	
-	private BigDecimal value;
+	implements Comparable<RosettaInterpreterNumberValue> { 
+	private RosettaNumber value;
+
 	
 	public RosettaInterpreterNumberValue(BigDecimal value) {
+		super();
+		this.value = RosettaNumber.valueOf(value);
+	}
+	
+	public RosettaInterpreterNumberValue(RosettaNumber value) {
 		super();
 		this.value = value;
 	}
 	
-	public BigDecimal getValue() { return value; }
+	public RosettaNumber getValue() { return value; }
 
 	@Override
 	public int hashCode() {
