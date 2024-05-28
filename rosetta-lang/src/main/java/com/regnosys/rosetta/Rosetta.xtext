@@ -901,10 +901,10 @@ TranslationRule:
 ;
 
 TranslateInstruction:
-	'[' 'from' expression=RosettaCalcExpression ']'
+	'[' 'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
 ;
 
 TranslateMetaInstruction:
-	'[' 'meta' metaFeature=[RosettaMetaType] 'from' expression=RosettaCalcExpression ']'
+	'[' 'meta' metaFeature=[RosettaMetaType] 'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
 ;
 

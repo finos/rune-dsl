@@ -25,7 +25,6 @@ import org.eclipse.xtext.EcoreUtil2;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
-import com.regnosys.rosetta.rosetta.translate.TranslationRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
@@ -62,9 +61,8 @@ public class ImplicitVariableUtil {
 				}
 			} else if (container instanceof RosettaRule) {
 				return Optional.of(container);
-			} else if (container instanceof TranslationRule) {
-				TranslationRule rule = (TranslationRule)container;
-				Translation trans = rule.getTranslation();
+			} else if (container instanceof Translation) {
+				Translation trans = (Translation)container;
 				return findFirstUnnamedParameter(trans.getParameters());
 			}
 			prev = container;

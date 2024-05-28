@@ -71,7 +71,6 @@ import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil.CollectRuleVisitor
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.RosettaConfigExtension
-import java.lang.reflect.Method
 import java.time.format.DateTimeFormatter
 import java.util.List
 import java.util.Map
@@ -79,23 +78,15 @@ import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.Keyword
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
-import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
-import org.eclipse.xtext.validation.EValidatorRegistrar
-import org.eclipse.xtext.validation.FeatureBasedDiagnostic
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
@@ -113,13 +104,9 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import org.eclipse.xtext.RuleCall
 import org.eclipse.xtext.nodemodel.INode
-import org.eclipse.xtext.nodemodel.ICompositeNode
-import org.eclipse.xtext.Assignment
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.types.CardinalityProvider
-import org.eclipse.xtext.Action
 import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.types.builtin.RBasicType
@@ -134,7 +121,7 @@ import com.regnosys.rosetta.rosetta.RosettaReport
 
 // TODO: split expression validator
 // TODO: type check type call arguments
-class RosettaSimpleValidator extends AbstractDeclarativeValidator {
+class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaExpectedTypeProvider
@@ -152,85 +139,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 
-	static final Logger log = LoggerFactory.getLogger(RosettaSimpleValidator);
-
-	protected override List<EPackage> getEPackages() {
-		val result = newArrayList
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaExpression"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaTranslate"));
-		return result;
-	}
-
-	override void register(EValidatorRegistrar registrar) {
-	}
-	
-	protected override void handleExceptionDuringValidation(Throwable targetException) throws RuntimeException {
-		super.handleExceptionDuringValidation(targetException);
-		log.error(targetException.getMessage(), targetException);
-	}
-	
-	protected override MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
-		return new RosettaMethodWrapper(instanceToUse, method);
-	}
-
-	protected static class RosettaMethodWrapper extends MethodWrapper {
-		protected new(AbstractDeclarativeValidator instance, Method m) {
-			super(instance, m)
-		}
-
-		override void invoke(State state) {
-			try {
-				super.invoke(state);
-			} catch (Exception e) {
-				val String message = "Unexpected validation failure running " + method.name
-				log.error(message, e);
-				state.hasErrors = true;
-				state.chain.add(createDiagnostic(message, state))
-			}
-		}
-
-		def Diagnostic createDiagnostic(String message, State state) {
-			new FeatureBasedDiagnostic(Diagnostic.ERROR, message, state.currentObject, null, -1, state.currentCheckType,
-				null, null)
-		}
-	}
-
-	private def errorKeyword(String message, EObject o, Keyword keyword) {
-		val k = findDirectKeyword(o, keyword)
-		if (k !== null) {
-			messageAcceptor.acceptError(
-				message,
-				o,
-				k.offset,
-				k.length,
-				null
-			)
-		}
-	}
-	private def INode findDirectKeyword(EObject o, Keyword keyword) {
-		findDirectKeyword(o, keyword.value)
-	}
-	private def INode findDirectKeyword(EObject o, String keyword) {
-		val node = NodeModelUtils.findActualNodeFor(o)
-		findDirectKeyword(node, keyword)
-	}
-	private def INode findDirectKeyword(ICompositeNode node, String keyword) {
-		for (n : node.children) {
-			val ge = n.grammarElement
-			if (ge instanceof Keyword && (ge as Keyword).value == keyword) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
-				return n
-			}
-			if ((ge instanceof RuleCall || ge instanceof Action) && n instanceof ICompositeNode && !(ge.eContainer instanceof Assignment)) {
-				val keywordInFragment = findDirectKeyword(n as ICompositeNode, keyword)
-				if (keywordInFragment !== null) {
-					return keywordInFragment
-				}
-			}
-		}
-	}
-	
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
 		if (rule.input === null) {

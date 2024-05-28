@@ -60,6 +60,8 @@ import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.translate.Translation
 import com.regnosys.rosetta.rosetta.translate.TranslationRule
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction
+import com.regnosys.rosetta.rosetta.simple.Annotated
 
 /**
  * This class contains custom scoping description.
@@ -234,6 +236,20 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 					return IScope.NULLSCOPE
 				}
+				case TRANSLATE_META_INSTRUCTION__META_FEATURE: {
+					if (context instanceof TranslateMetaInstruction) {
+						val container = context.eContainer
+						val annotated = if (container instanceof TranslationRule) {
+								container.feature
+							} else if (container instanceof Translation) {
+								container.resultType.type
+							}
+						if (annotated instanceof Annotated) {
+							return new SimpleScope(getMetaDescriptions(annotated))
+						}
+					}
+					return IScope.NULLSCOPE
+				}
 			}
 			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')
 			return defaultScope(context, reference)
@@ -333,14 +349,20 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			receiver.symbol
 		}
 		if (feature instanceof Attribute) {
-			val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
-			if (metas !== null && !metas.isEmpty) {
-				allPosibilities.addAll(configs.findMetaTypes(feature).filter[
-					metas.contains(it.name.lastSegment.toString)
-				].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
-			}
+			allPosibilities.addAll(getMetaDescriptions(feature))
 		}
 		
 		return new SimpleScope(allPosibilities)
+	}
+	
+	private def Iterable<IEObjectDescription> getMetaDescriptions(Annotated obj) {
+		val metas = obj.metaAnnotations.map[it.attribute?.name].filterNull.toList
+		if (!metas.isEmpty) {
+			configs.findMetaTypes(obj).filter[
+				metas.contains(it.name.lastSegment.toString)
+			].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)]
+		} else {
+			emptyList
+		}
 	}
 }

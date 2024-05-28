@@ -40,10 +40,10 @@ class TranslationRule {
 }
 
 class TranslateInstruction {
-	contains RosettaExpression expression
+	contains RosettaExpression[] expressions
 }
 
 class TranslateMetaInstruction {
+	contains RosettaExpression[] expressions
 	refers RosettaMetaType metaFeature
-	contains RosettaExpression expression
 }
