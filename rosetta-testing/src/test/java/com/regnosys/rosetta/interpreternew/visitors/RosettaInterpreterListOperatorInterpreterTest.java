@@ -48,6 +48,16 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	}
 	
 	@Test
+	void testOnlyElementErrorPropagation() {
+		String expected = "Logical Operation: Rightside is not of type Boolean\"";
+		RosettaExpression expr = parser.parseExpression("[(True or 2)] only-element");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		String errorMessage = ((RosettaInterpreterErrorValue)val).getErrors().get(0).getMessage();
+		assertEquals(expected, errorMessage);
+	}
+	
+	@Test
 	void testOnlyElementEmptyList() {
 		String expected = "List is empty";
 		RosettaExpression expr = parser.parseExpression("[] only-element");
