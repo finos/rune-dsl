@@ -48,6 +48,36 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	}
 	
 	@Test
+	void testOnlyElementEmptyList() {
+		String expected = "List is empty";
+		RosettaExpression expr = parser.parseExpression("[] only-element");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		String errorMessage = ((RosettaInterpreterErrorValue)val).getErrors().get(0).getMessage();
+		assertEquals(expected, errorMessage);
+	}
+	
+	@Test
+	void testOnlyElementMoreThanOne() {
+		String expected = "List contains more than one element";
+		RosettaExpression expr = parser.parseExpression("[1, 2, 3] only-element");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		String errorMessage = ((RosettaInterpreterErrorValue)val).getErrors().get(0).getMessage();
+		assertEquals(expected, errorMessage);
+	}
+	
+	@Test
+	void testOnlyElementTrue() {
+		RosettaInterpreterNumberValue expected = new RosettaInterpreterNumberValue(BigDecimal.valueOf(1));
+		RosettaExpression expr = parser.parseExpression("[1.0] only-element");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertTrue(val instanceof RosettaInterpreterNumberValue);
+		RosettaInterpreterNumberValue castedVal = (RosettaInterpreterNumberValue)val;
+		assertEquals(expected, castedVal);
+	}
+	
+	@Test
 	void testExistsTrue() {
 		RosettaInterpreterBooleanValue expected = new RosettaInterpreterBooleanValue(true);
 		RosettaExpression expr = parser.parseExpression("(True and False) exists");
