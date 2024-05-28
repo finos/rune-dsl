@@ -74,7 +74,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	def dispatch void format(RosettaModel rosettaModel, extension IFormattableDocument document) {
 		val extension modelGrammarAccess = rosettaModelAccess
 				
-		rosettaModel.regionFor.keyword(namespaceKeyword_0)
+		rosettaModel.regionFor.keyword(namespaceKeyword_1)
 			.prepend[noSpace]
 			.append[oneSpace]
 		rosettaModel.regionFor.keyword(versionKeyword_4_0)
