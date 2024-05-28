@@ -92,7 +92,7 @@ class MetaFieldGenerator {
 			
 			for (ref:refs) {
 				val targetModel = ref.type.model
-				if (config.namespaceFilter.test(targetModel.name)) {
+				if (targetModel.shouldGenerate) {
 					val targetPackage = new RootPackage(targetModel)
 					val metaJt = ref.toMetaJavaType
 					
@@ -106,7 +106,7 @@ class MetaFieldGenerator {
 			val metas =  nsc.value.filter(Data).flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].toSet
 			for (meta:metas) {
 				val targetModel = meta.type.model
-				if (config.namespaceFilter.test(targetModel.name)) {
+				if (targetModel.shouldGenerate) {
 					val targetPackage = new RootPackage(targetModel)
 					val metaJt = meta.toMetaJavaType
 					
@@ -306,6 +306,10 @@ class MetaFieldGenerator {
 		return rc.model.name
 	}
 
+	private def boolean shouldGenerate(RosettaModel model) {
+		config.namespaceFilter.test(model.name) || model.overridden
+	}
+	
 	/** generate once per resource marker */
 	static class MarkerAdapterFactory extends AdapterFactoryImpl {
 
