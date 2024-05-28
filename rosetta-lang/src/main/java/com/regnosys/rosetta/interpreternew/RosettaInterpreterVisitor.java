@@ -3,6 +3,7 @@ package com.regnosys.rosetta.interpreternew;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
@@ -38,6 +39,7 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaBoo
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConditionalExpressionInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNumberLiteralInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaRecordTypeInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterVariableInterpreter;
 
@@ -296,5 +298,15 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	public RosettaInterpreterValue interp(SumOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(RosettaRecordType exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(RosettaRecordType exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterRosettaRecordTypeInterpreter().interp(exp, env);
 	}
 }

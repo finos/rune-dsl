@@ -11,6 +11,10 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue
+import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
+
+import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -111,6 +115,13 @@ class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 
 class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v) {
+		v.interp(this)
+	}
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class RosettaRecordFeature extends RosettaTypedFeature {}

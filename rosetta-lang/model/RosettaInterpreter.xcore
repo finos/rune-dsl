@@ -5,6 +5,8 @@
 
 package com.regnosys.rosetta.rosetta.interpreter
 
+import com.regnosys.rosetta.rosetta.RosettaRecordType
+
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
@@ -66,6 +68,9 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (SumOperation exp)	
 	
 	
+	op RosettaInterpreterValue interp (RosettaRecordType exp)
+	
+	
 	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaStringLiteral exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaNumberLiteral exp, RosettaInterpreterBaseEnvironment env)
@@ -90,6 +95,8 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (DistinctOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (ReverseOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
+	
+	op RosettaInterpreterValue interp (RosettaRecordType exp, RosettaInterpreterBaseEnvironment env)
 	
 	
 }
