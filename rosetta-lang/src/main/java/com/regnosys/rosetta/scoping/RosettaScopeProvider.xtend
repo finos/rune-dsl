@@ -252,12 +252,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def IScope defaultScope(EObject object, EReference reference) {
-		filteredScope(super.getScope(object,reference), [it.EClass !== FUNCTION_DISPATCH])
+		filteredScope(super.getScope(object, reference), [it.EClass !== FUNCTION_DISPATCH])
 	}
 	
 	private def IScope getSymbolParentScope(EObject object, EReference reference, IScope outer) {
-		if (object === null) {
-			return IScope.NULLSCOPE
+		if (object.eContainer === null) {
+			return defaultScope(object, reference)
 		}
 		val parentScope = getSymbolParentScope(object.eContainer, reference, outer)
 		switch (object) {
