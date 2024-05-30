@@ -66,7 +66,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
-	
+
 	@Inject
 	RosettaGeneratorsConfiguration config;
 
@@ -74,19 +74,16 @@ class RosettaGenerator implements IGenerator2 {
 	val ignoredFiles = #{'model-no-code-gen.rosetta', 'basictypes.rosetta', 'annotations.rosetta'}
 
 	val Map<ResourceSet, DemandableLock> locks = newHashMap
-	
+
 	def void beforeAllGenerate(ResourceSet resourceSet, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		LOGGER.trace("Starting the before all generate method")
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true);
-			val models = resourceSet.resources
-							.filter[!ignoredFiles.contains(URI.segments.last)]
-							.map[contents.head as RosettaModel]
-							.filter[config.namespaceFilter.test(it.name)]
-							.toList
+			val models = resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.last)].map [
+				contents.head as RosettaModel
+			].filter[it.shouldGenerate].toList
 			val version = models.head?.version // TODO: find a way to access the version of a project directly
-			
 			externalGenerators.forEach [ generator |
 				generator.beforeAllGenerate(resourceSet, models, version, [ map |
 					map.entrySet.forEach[fsa2.generateFile(key, generator.outputConfiguration.getName, value)]
@@ -95,13 +92,14 @@ class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling before all generate for rosetta -" + e.message + " - see debug logging for more")
+			LOGGER.warn("Unexpected calling before all generate for rosetta -" + e.message +
+				" - see debug logging for more")
 			LOGGER.debug("Unexpected calling before all generate for rosetta", e);
 		} finally {
 			lock.releaseWriteLock
 		}
 	}
-	
+
 	override void beforeGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		if (!ignoredFiles.contains(resource.URI.segments.last)) {
 			LOGGER.trace("Starting the before generate method for " + resource.URI.toString)
@@ -109,24 +107,25 @@ class RosettaGenerator implements IGenerator2 {
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			try {
 				lock.getWriteLock(true);
-				
+
 				fsaFactory.beforeGenerate(resource)
-				
+
 				val model = resource.contents.head as RosettaModel
-				if (!config.namespaceFilter.test(model.name)) {
+				if (!model.shouldGenerate) {
 					return
 				}
 				val version = model.version
-				
+
 				externalGenerators.forEach [ generator |
-						generator.beforeGenerate(resource, model, version, [ map |
-							map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
-						], lock)
-					]
+					generator.beforeGenerate(resource, model, version, [ map |
+						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
+					], lock)
+				]
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling before generate for rosetta -" + e.message + " - see debug logging for more")
+				LOGGER.warn("Unexpected calling before generate for rosetta -" + e.message +
+					" - see debug logging for more")
 				LOGGER.debug("Unexpected calling before generate for rosetta", e);
 			} finally {
 				lock.releaseWriteLock
@@ -141,13 +140,13 @@ class RosettaGenerator implements IGenerator2 {
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			try {
 				lock.getWriteLock(true);
-				
+
 				val model = resource.contents.head as RosettaModel
-				if (!config.namespaceFilter.test(model.name)) {
+				if (!model.shouldGenerate) {
 					return
 				}
 				val version = model.version
-				
+
 				// generate
 				val packages = new RootPackage(model)
 
@@ -159,13 +158,13 @@ class RosettaGenerator implements IGenerator2 {
 						Data: {
 							dataGenerator.generate(packages, fsa, it, version)
 							metaGenerator.generate(packages, fsa, it, version)
-							//Legacy
+							// Legacy
 							validatorsGenerator.generate(packages, fsa, it, version)
 							it.conditions.forEach [ cond |
 								conditionGenerator.generate(packages, fsa, it, cond, version)
 							]
-							//new
-							//validatorGenerator.generate(packages, fsa, it, version)
+							// new
+							// validatorGenerator.generate(packages, fsa, it, version)
 							tabulatorGenerator.generate(fsa, it, Optional.empty)
 						}
 						Function: {
@@ -218,51 +217,47 @@ class RosettaGenerator implements IGenerator2 {
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
 			try {
 				lock.getWriteLock(true)
-				
+
 				val model = resource.contents.head as RosettaModel
-				if (!config.namespaceFilter.test(model.name)) {
+				if (!model.shouldGenerate) {
 					return
 				}
 				val version = model.version
-				
+
 				externalGenerators.forEach [ generator |
 					generator.afterGenerate(resource, model, version, [ map |
 						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
 					], lock)
 				]
 				fsaFactory.afterGenerate(resource)
-				
+
 				// TODO: move this over to `afterAllGenerate` once the language supports that method as well.
-				val models = resource.resourceSet.resources
-                                .filter[!ignoredFiles.contains(URI.segments.last)]
-                                .map[contents.head as RosettaModel]
-                                .filter[config.namespaceFilter.test(it.name)]
-                                .toList
-                javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
+				val models = resource.resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.last)].map [
+					contents.head as RosettaModel
+				].filter[shouldGenerate].toList
+				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message + " - see debug logging for more")
+				LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message +
+					" - see debug logging for more")
 				LOGGER.debug("Unexpected calling after generate for rosetta", e);
 			} finally {
 				lock.releaseWriteLock
 			}
 		}
 	}
-	
-	def void afterAllGenerate(ResourceSet resourceSet, IFileSystemAccess2 fsa2, IGeneratorContext context) {		
+
+	def void afterAllGenerate(ResourceSet resourceSet, IFileSystemAccess2 fsa2, IGeneratorContext context) {
 		LOGGER.trace("Starting the after all generate method")
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true)
-			
-			val models = resourceSet.resources
-							.filter[!ignoredFiles.contains(URI.segments.last)]
-							.map[contents.head as RosettaModel]
-							.filter[config.namespaceFilter.test(it.name)]
-							.toList
+
+			val models = resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.last)].map [
+				contents.head as RosettaModel
+			].filter[shouldGenerate].toList
 			val version = models.head?.version // TODO: find a way to access the version of a project directly
-			
 			externalGenerators.forEach [ generator |
 				generator.afterAllGenerate(resourceSet, models, version, [ map |
 					map.entrySet.forEach[fsa2.generateFile(key, generator.outputConfiguration.getName, value)]
@@ -271,10 +266,16 @@ class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling after all generate for rosetta -" + e.message + " - see debug logging for more")
+			LOGGER.warn("Unexpected calling after all generate for rosetta -" + e.message +
+				" - see debug logging for more")
 			LOGGER.debug("Unexpected calling after all generate for rosetta", e);
 		} finally {
 			lock.releaseWriteLock
 		}
 	}
+	
+	private def boolean shouldGenerate(RosettaModel model) {
+		config.namespaceFilter.test(model.name) || model.overridden
+	}
+	
 }
