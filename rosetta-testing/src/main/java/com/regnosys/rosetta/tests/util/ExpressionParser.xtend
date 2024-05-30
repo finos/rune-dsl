@@ -33,13 +33,15 @@ import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.emf.ecore.util.InternalEList
+import org.eclipse.xtext.linking.lazy.LazyLinkingResource
+import org.eclipse.xtext.linking.impl.DefaultLinkingService
 
 class ExpressionParser {
 	@Inject IParser parser
 	@Inject RosettaGrammarAccess grammar
-	@Inject RosettaStaticLinker linker
 	@Inject ModelHelper modelHelper
 	@Inject Provider<XtextResource> resourceProvider
+	@Inject RosettaStaticLinker linker
 	
 	def RosettaExpression parseExpression(CharSequence expr) {
 		return parseExpression(expr, emptyList)
@@ -69,7 +71,7 @@ class ExpressionParser {
 	}
 	
 	def Attribute createAttribute(CharSequence attr) {
-		return createAttribute(attr, emptyList)
+		return createAttribute(attr, defaultContext)
 	}
 	
 	def Attribute createAttribute(CharSequence attr, List<RosettaModel> context) {
@@ -101,9 +103,7 @@ class ExpressionParser {
 		linker.setStateForNextLink(context, globals)
 		val consumer = new ListBasedDiagnosticConsumer
 		linker.linkModel(obj, consumer)
-		
-		EcoreUtil2.resolveAll(obj)
-		
+				
 		val errors = consumer.getResult(Severity.ERROR) + obj.eResource.errors
 		val warnings = consumer.getResult(Severity.WARNING)
 		if (!errors.empty) {
@@ -116,11 +116,9 @@ class ExpressionParser {
 	
 	private static class RosettaContextBasedScopeProvider extends RosettaScopeProvider {
 		List<RosettaModel> context = emptyList
-		Collection<? extends EObject> globals = emptyList
 		
-		def void setState(List<RosettaModel> context, Collection<? extends EObject> globals) {
+		def void setContext(List<RosettaModel> context) {
 			this.context = context
-			this.globals = globals
 		}
 		
 		override protected getImplicitImports(boolean ignoreCase) {
@@ -152,32 +150,38 @@ class ExpressionParser {
 		}
 		
 		override protected getGlobalScope(Resource context, EReference reference, Predicate<IEObjectDescription> filter) {
-			Scopes.scopeFor(globals, super.getGlobalScope(this.context.head.eResource, reference, filter))
-			// TODO: filter globals based on reference type
+			super.getGlobalScope(this.context.head.eResource, reference, filter)
 		}
 	}
 	private static class RosettaStaticLinker extends LazyLinker {
 		@Inject
 		RosettaContextBasedScopeProvider scopeProvider
 		
+		IScope staticScope = IScope.NULLSCOPE
+		
 		def void setStateForNextLink(List<RosettaModel> context, Collection<? extends EObject> globals) {
-			scopeProvider.setState(context, globals)
+			scopeProvider.setContext(context)
+			staticScope = Scopes.scopeFor(globals)
 		}
 		private def void clearState() {
-			scopeProvider.setState(emptyList, emptyList)
+			scopeProvider.setContext(emptyList)
+			staticScope = IScope.NULLSCOPE
 		}
 		
 		override protected doLinkModel(EObject root, IDiagnosticConsumer consumer) {
+			// TODO: this is hacky
+			((root.eResource as LazyLinkingResource).linkingService as DefaultLinkingService).setScopeProvider(scopeProvider)
+			
 			super.doLinkModel(root, consumer)
+			EcoreUtil2.resolveAll(root)
 			clearState
 		}
 
 		protected override void createAndSetProxy(EObject obj, INode node, EReference eRef) {
 			val varName = NodeModelUtils.getTokenText(node)
-			val scope = scopeProvider.getScope(obj, eRef)
-			val elementInScope = scope.getSingleElement(QualifiedName.create(varName))
-			if (elementInScope !== null) {
-				val resolved = elementInScope.getEObjectOrProxy()
+			val staticElement = staticScope.getSingleElement(QualifiedName.create(varName))
+			if (staticElement !== null) {
+				val resolved = staticElement.getEObjectOrProxy()
 				if (eRef.isMany()) {
 					(obj.eGet(eRef, false) as InternalEList<EObject>).addUnique(resolved)
 				} else {
