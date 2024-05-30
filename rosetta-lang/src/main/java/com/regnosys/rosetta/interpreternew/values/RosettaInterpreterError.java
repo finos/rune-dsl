@@ -13,10 +13,16 @@ import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 
 public class RosettaInterpreterError implements RosettaInterpreterBaseError {
+	
+	private String errorMessage;
+	private EObject associatedExpression;
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(errorMessage);
@@ -37,18 +43,46 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 		return Objects.equals(errorMessage, other.errorMessage);
 	}
 
-	private String errorMessage;
 	
+	@Deprecated
 	public RosettaInterpreterError(String errorMessage) {
-		super();
+		this.errorMessage = errorMessage;
+	}
+	
+	public RosettaInterpreterError(EObject obj) {
+		this.associatedExpression = obj;
+		this.errorMessage = "";
+	}
+	
+	public RosettaInterpreterError(String errorMessage, EObject obj) {
+		this.associatedExpression = obj;
 		this.errorMessage = errorMessage;
 	}
 	
 	public String getError() { return errorMessage; }
 	
+	public EObject getEobject() { return associatedExpression; }
+	
+	/**
+	 * Gives a parsed error message associated with this error.
+	 * Gets the INode associated in order to provide details of where the erorr ocurred.
+	 *
+	 * @return Error message with code information
+	 */
+	public String properErrorMessage() {
+		INode node = NodeModelUtils.findActualNodeFor(associatedExpression);
+		int startLine = node.getStartLine();
+	    int offset = node.getOffset();
+	    String text = node.getText().trim();
+		String message = "Error at line " + startLine + ", position " + offset + ": "
+	    + "\"" + text + "\". " + errorMessage;
+		return message;
+	}
+	
 	@Override
 	public String toString() {
-		return "RosettaInterpreterError [errorMessage=" + errorMessage + "]";
+		return properErrorMessage();
+		//return "RosettaInterpreterError [errorMessage=" + errorMessage + "]";
 	}
 
 	@Override

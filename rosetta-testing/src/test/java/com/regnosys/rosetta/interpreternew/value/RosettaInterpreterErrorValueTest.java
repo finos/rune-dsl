@@ -7,17 +7,40 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.testing.InjectWith;
+import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.regnosys.rosetta.tests.util.ExpressionParser;
+import com.regnosys.rosetta.interpreternew.RosettaInterpreterNew;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 
-
-
+@ExtendWith(InjectionExtension.class)
+@InjectWith(RosettaInjectorProvider.class)
 class RosettaInterpreterErrorValueTest {
+	
+	@Inject
+	private ExpressionParser parser;
+	@Inject
+	RosettaInterpreterNew interpreter;
+	
+	@SuppressWarnings("unused")
+	private ExpressionFactory exFactory;		
 	
 	RosettaInterpreterError e1;
 	RosettaInterpreterError e2;
@@ -42,6 +65,7 @@ class RosettaInterpreterErrorValueTest {
 		vb1 = new RosettaInterpreterBooleanValue(true);
 		vb2 = new RosettaInterpreterBooleanValue(false);
 		vals = new ArrayList<>(List.of(v1,v2,v3,vb1,vb2));
+		exFactory = ExpressionFactoryImpl.init();
 	}
 
 	@Test
@@ -117,5 +141,14 @@ class RosettaInterpreterErrorValueTest {
 		
 		assertEquals(val, RosettaInterpreterErrorValue.merge(v2, v3));
 	}
+	
+	@Test
+	void sumErrorNewTest() {
+		RosettaExpression ex = parser.parseExpression("5 + 5 + 3 + ([] sum)");
+		RosettaInterpreterValue val = interpreter.interp(ex);
 
+		assertTrue(val instanceof RosettaInterpreterErrorValue);
+		assertEquals("Error at line 1, position 12: \"([] sum)\". Cannot take sum of empty list",
+				((RosettaInterpreterErrorValue)val).getErrors().get(0).toString());
+	}
 }

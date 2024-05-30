@@ -278,7 +278,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		if (RosettaInterpreterBaseValue.toValueList(val).size() < 1) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError("Cannot take sum"
-							+ " of empty list"));
+							+ " of empty list", exp));
 		}
 		
 		List<RosettaInterpreterValue> values =
