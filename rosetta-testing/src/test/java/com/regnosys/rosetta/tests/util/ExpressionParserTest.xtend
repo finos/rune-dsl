@@ -9,9 +9,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 
-/**
- * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression
- */
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ExpressionParserTest {
