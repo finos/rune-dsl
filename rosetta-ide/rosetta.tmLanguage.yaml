@@ -55,6 +55,7 @@ patterns:
 repository:
   model:
     patterns:
+    - include: '#override'
     - include: '#namespace'
     - include: '#version'
     - include: '#import'
@@ -62,6 +63,16 @@ repository:
     - include: '#rootElement'
 
     repository:
+      override:
+        name: meta.override.rosetta
+        begin: '{{wordStart}}override{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.override.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - include: '#string'
+
       namespace:
         name: meta.namespace.rosetta
         begin: '{{wordStart}}namespace{{wordEnd}}'
