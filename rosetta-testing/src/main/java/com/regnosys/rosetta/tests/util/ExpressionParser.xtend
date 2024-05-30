@@ -23,10 +23,7 @@ import org.eclipse.xtext.scoping.IScope
 import com.regnosys.rosetta.rosetta.RosettaModel
 import javax.inject.Inject
 import java.util.List
-import com.google.common.base.Predicate
-import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.Scopes
-import static java.util.Collections.singletonList
 import org.eclipse.xtext.linking.lazy.LazyLinker
 import javax.inject.Provider
 import org.eclipse.xtext.resource.XtextResource
