@@ -5,7 +5,7 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: Checkstyle-SP
+    Checkstyle-Configuration: Maria's Checkstyle
     Description: none
 -->
 <module name="Checker">
@@ -24,10 +24,6 @@
       <property name="allowEscapesForControlCharacters" value="true"/>
       <property name="allowNonPrintableEscapes" value="true"/>
     </module>
-    <module name="AvoidStarImport">
-      <property name="severity" value="ignore"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
     <module name="OneTopLevelClass"/>
     <module name="NoLineWrap">
       <property name="tokens" value="PACKAGE_DEF, IMPORT, STATIC_IMPORT"/>
@@ -38,29 +34,6 @@
     </module>
     <module name="NeedBraces">
       <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
-    </module>
-    <module name="LeftCurly">
-      <property name="severity" value="ignore"/>
-      <property name="tokens" value="ANNOTATION_DEF, CLASS_DEF, CTOR_DEF, ENUM_CONSTANT_DEF, ENUM_DEF,                     INTERFACE_DEF, LAMBDA, LITERAL_CASE, LITERAL_CATCH, LITERAL_DEFAULT,                     LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF,                     LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, METHOD_DEF,                     OBJBLOCK, STATIC_INIT, RECORD_DEF, COMPACT_CTOR_DEF"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
-    <module name="RightCurly">
-      <property name="severity" value="ignore"/>
-      <property name="id" value="RightCurlySame"/>
-      <property name="tokens" value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE,                     LITERAL_DO"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
-    <module name="RightCurly">
-      <property name="severity" value="ignore"/>
-      <property name="id" value="RightCurlyAlone"/>
-      <property name="option" value="alone"/>
-      <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT,                     INSTANCE_INIT, ANNOTATION_DEF, ENUM_DEF, INTERFACE_DEF, RECORD_DEF,                     COMPACT_CTOR_DEF, LITERAL_SWITCH"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
-    <module name="WhitespaceAfter">
-      <property name="severity" value="ignore"/>
-      <property name="tokens" value="COMMA, SEMI, TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_RETURN,                     LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, LITERAL_FINALLY, DO_WHILE, ELLIPSIS,                     LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_CATCH, LAMBDA,                     LITERAL_YIELD, LITERAL_CASE"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     </module>
     <module name="WhitespaceAround">
       <property name="allowEmptyConstructors" value="true"/>
@@ -168,39 +141,15 @@
       <message key="ws.preceded" value="GenericWhitespace ''{0}'' is preceded with whitespace."/>
       <message key="ws.illegalFollow" value="GenericWhitespace ''{0}'' should followed by whitespace."/>
     </module>
-    <module name="Indentation">
-      <property name="severity" value="ignore"/>
-      <property name="arrayInitIndent" value="2"/>
-      <property name="basicOffset" value="2"/>
-      <property name="braceAdjustment" value="2"/>
-      <property name="caseIndent" value="2"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
     <module name="AbbreviationAsWordInName">
       <property name="allowedAbbreviationLength" value="0"/>
       <property name="ignoreFinal" value="false"/>
       <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION_FIELD_DEF,                     PARAMETER_DEF, VARIABLE_DEF, METHOD_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF,                     RECORD_COMPONENT_DEF"/>
     </module>
-    <module name="NoWhitespaceBeforeCaseDefaultColon">
-      <property name="severity" value="ignore"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
     <module name="OverloadMethodsDeclarationOrder"/>
     <module name="VariableDeclarationUsageDistance"/>
-    <module name="CustomImportOrder">
-      <property name="severity" value="ignore"/>
-      <property name="customImportOrderRules" value="STATIC###THIRD_PARTY_PACKAGE"/>
-      <property name="sortImportsInGroupAlphabetically" value="true"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
     <module name="MethodParamPad">
       <property name="tokens" value="CTOR_DEF, LITERAL_NEW, METHOD_CALL, METHOD_DEF,                     SUPER_CTOR_CALL, ENUM_CONSTANT_DEF, RECORD_DEF"/>
-    </module>
-    <module name="NoWhitespaceBefore">
-      <property name="severity" value="ignore"/>
-      <property name="allowLineBreaks" value="true"/>
-      <property name="tokens" value="COMMA, SEMI, POST_INC, POST_DEC, DOT,                     LABELED_STAT, METHOD_REF"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     </module>
     <module name="ParenPad">
       <property name="tokens" value="ANNOTATION, ANNOTATION_FIELD_DEF, CTOR_CALL, CTOR_DEF, DOT, ENUM_CONSTANT_DEF,                     EXPR, LITERAL_CATCH, LITERAL_DO, LITERAL_FOR, LITERAL_IF, LITERAL_NEW,                     LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_WHILE, METHOD_CALL,                     METHOD_DEF, QUESTION, RESOURCE_SPECIFICATION, SUPER_CTOR_CALL, LAMBDA,                     RECORD_DEF"/>
@@ -242,13 +191,6 @@
       <property name="minLineCount" value="2"/>
       <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,                                    COMPACT_CTOR_DEF"/>
     </module>
-    <module name="MissingJavadocType">
-      <property name="severity" value="ignore"/>
-      <property name="excludeScope" value="nothing"/>
-      <property name="scope" value="protected"/>
-      <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF,                       RECORD_DEF, ANNOTATION_DEF"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
     <module name="MethodName">
       <property name="format" value="^[a-z][a-z0-9]\w*$"/>
       <message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>
@@ -257,19 +199,9 @@
     <module name="EmptyCatchBlock">
       <property name="exceptionVariableName" value="expected"/>
     </module>
-    <module name="CommentsIndentation">
-      <property name="severity" value="ignore"/>
-      <property name="tokens" value="SINGLE_LINE_COMMENT, BLOCK_COMMENT_BEGIN"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
   </module>
   <module name="BeforeExecutionExclusionFileFilter">
     <property name="fileNamePattern" value="module\-info\.java$"/>
-  </module>
-  <module name="FileTabCharacter">
-    <property name="severity" value="ignore"/>
-    <property name="eachLine" value="true"/>
-    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
   </module>
   <module name="LineLength">
     <property name="fileExtensions" value="java"/>

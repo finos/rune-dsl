@@ -35,6 +35,11 @@
 			<artifactId>com.regnosys.rosetta</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.regnosys.rosetta</groupId>
+			<artifactId>com.regnosys.rosetta.interpreternew</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- External dependencies -->
 		<dependency>

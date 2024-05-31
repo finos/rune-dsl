@@ -22,9 +22,22 @@
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <scope>test</scope>
+    </dependency>
+    
+    <!-- Inter-project dependencies -->
+    <dependency>
+        <groupId>com.regnosys.rosetta</groupId>
+        <artifactId>com.regnosys.rosetta.lib</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+    	<groupId>com.regnosys.rosetta</groupId>
+    	<artifactId>com.regnosys.rosetta</artifactId>
+    	<version>0.0.0.main-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
