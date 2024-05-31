@@ -20,8 +20,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
-import static org.junit.Assert.assertEquals
 import javax.inject.Inject
+import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -29,6 +29,55 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+	@Inject extension ExpressionParser
+	
+	@Test
+	def void testDeepFeatureCall() {
+		val context = '''
+		type A:
+			b B (0..1)
+			c C (0..1)
+			
+			condition Choice: one-of
+		
+		type B:
+			opt1 Option1 (0..1)
+			opt2 Option2 (0..1)
+			attr Foo (0..1)
+			
+			condition Choice: one-of
+		
+		type C:
+			opt1 Option1 (0..1)
+			
+			condition Choice: one-of
+		
+		type Option1:
+			attr Foo (1..1)
+		
+		type Option2:
+			attr Foo (1..1)
+			otherAttr string (1..1)
+		
+		type Option3:
+			attr Foo (1..1)
+		
+		type Foo:
+		'''.parseRosetta
+		
+		"a ->> b"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		"a ->> attr"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		"a ->> opt1"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		"a ->> otherAttr"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_EXPRESSION, null, "")
+	}
 	
 	@Test
 	def void testCannotCallFuncWithoutInput() {

@@ -125,6 +125,7 @@ import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.rosetta.model.lib.records.Date
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -651,6 +652,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 		return featureCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, context.scope, autoValue)
 	}
+	
+	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+	}
 
 	override protected caseFilterOperation(FilterOperation expr, Context context) {
 		val StringConcatenationClient inlineFunctionCode = expr.function.inlineFunction(JavaPrimitiveType.BOOLEAN.toReferenceType, context.scope).key
@@ -1126,5 +1131,4 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 		conversionOperation(expr, context, '''«ZonedDateTime»::parse''', DateTimeParseException)
 	}
-	
 }

@@ -115,6 +115,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			}
 		}
 	}
+	
+	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
+		return extensions.allFeatures(typeOfImplicitVariable(context), context)
+	}
 
 	private def RType safeRType(RosettaSymbol symbol, Map<EObject, RType> cycleTracker) {
 		switch symbol {
