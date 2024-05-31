@@ -64,9 +64,8 @@ class ExpressionParser {
 		val IParseResult result = parser.parse(grammar.rosettaCalcExpressionRule, new StringReader(expr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val expression = result.rootASTElement as RosettaExpression
-		val exprRes = createResource("expr", expression, context)
+		createResource("expr", expression, context)
 		link(expression, context, attributes)
-		deleteResource(exprRes, context)
 		return expression
 	}
 	
@@ -78,21 +77,23 @@ class ExpressionParser {
 		val IParseResult result = parser.parse(grammar.attributeRule, new StringReader(attr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val attribute = result.rootASTElement as Attribute
-		val attrRes = createResource("attribute " + attr, attribute, context)
+		createResource("attribute", attribute, context)
 		link(attribute, context, emptyList)
-		deleteResource(attrRes, context)
 		return attribute
 	}
 	
 	private def Resource createResource(String name, EObject content, List<RosettaModel> context) {
+		val resourceSet = context.head.eResource.resourceSet
+		var nr = 0
+		var uniqueURI = URI.createURI("synthetic://" + name + nr++)
+		while (resourceSet.getResource(uniqueURI, false) !== null) {
+			uniqueURI = URI.createURI("synthetic://" + name + nr++)
+		}
 		val resource = resourceProvider.get()
-		resource.URI = URI.createURI("synthetic://" + name)
+		resource.URI = uniqueURI
 		resource.contents.add(content)
-		context.head.eResource.resourceSet.resources.add(resource)
+		resourceSet.resources.add(resource)
 		resource
-	}
-	private def void deleteResource(Resource resource, List<RosettaModel> context) {
-		context.head.eResource.resourceSet.resources.remove(resource)
 	}
 	
 	private def List<RosettaModel> defaultContext() {
@@ -103,15 +104,8 @@ class ExpressionParser {
 		linker.setStateForNextLink(context, globals)
 		val consumer = new ListBasedDiagnosticConsumer
 		linker.linkModel(obj, consumer)
-				
-		val errors = consumer.getResult(Severity.ERROR) + obj.eResource.errors
-		val warnings = consumer.getResult(Severity.WARNING)
-		if (!errors.empty) {
-			throw new RuntimeException(errors.toString)
-		}
-		if (!warnings.empty) {
-			throw new RuntimeException(warnings.toString)
-		}
+		
+		obj.eResource.errors.addAll(consumer.getResult(Severity.ERROR))
 	}
 	
 	private static class RosettaContextBasedScopeProvider extends RosettaScopeProvider {
