@@ -28,3 +28,11 @@ com.regnosys.rosetta.web/
 
 # CVE scan reports
 reports/
+
+# website
+website/node_modules
+website/build
+website/.docusaurus
+website/npm-debug.log*
+website/yarn-debug.log*
+website/yarn-error.log*
