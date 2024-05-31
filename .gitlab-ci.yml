@@ -7,7 +7,8 @@ build:
   image: maven:3.8-openjdk-17
   stage: build
   script:
-    - mvn clean package -pl com.regnosys.rosetta.interpreternew, rosetta-testing
+    - mvn clean package -pl com.regnosys.rosetta.interpreternew,rosetta-testing
+
 
 
 # test:
