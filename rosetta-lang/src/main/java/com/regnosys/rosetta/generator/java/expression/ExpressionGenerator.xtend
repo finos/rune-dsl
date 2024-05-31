@@ -125,6 +125,7 @@ import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.rosetta.model.lib.records.Date
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -604,6 +605,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseContainsOperation(RosettaContainsExpression expr, Context context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseDefaultOperation(DefaultOperation expr, Context context) {
 		binaryExpr(expr, context)
 	}
 

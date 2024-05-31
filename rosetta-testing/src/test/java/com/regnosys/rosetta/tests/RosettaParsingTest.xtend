@@ -25,6 +25,7 @@ import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 import javax.inject.Inject
+import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -32,6 +33,14 @@ class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper
+	@Inject extension ExpressionParser
+	
+	@Test
+	def void testDefault() {
+		"a default 2"
+			.parseExpression(#["a int (1..1)"])
+			.assertNoIssues
+	}
 	
 	@Test
 	def void testOnlyExistsInsideFunctionalOperation() {
