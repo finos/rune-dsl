@@ -357,9 +357,8 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	
 	@Override
 	protected RosettaValue caseDefaultOperation(DefaultOperation expr, RosettaInterpreterContext context) {
-		RosettaValue left = interpret(expr.getLeft(), context);
-		RosettaValue right = interpret(expr.getRight(), context);
-		return left.equals(RosettaValue.empty()) ? right : left;
+		// TODO
+		throw new RosettaInterpreterException("Defult operations are not supported yet.");
 	}
 
 	@Override
