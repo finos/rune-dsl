@@ -7,7 +7,7 @@ build:
   image: maven:3.8-openjdk-17
   stage: build
   script:
-    - mvn clean package -pl rosetta-xcore-plugin-dependencies,rosetta-lang,rosetta-testing
+    - mvn clean package -pl com.regnosys.rosetta.interpreternew, rosetta-testing
 
 
 # test:
@@ -20,5 +20,5 @@ checkstyle:
   image: maven:3.8-openjdk-17
   stage: checkstyle
   script:
-    - mvn checkstyle:check -pl rosetta-lang,rosetta-testing -D"checkstyle.config.location"="checkstyle-SP.xml"
+    - mvn checkstyle:check -pl com.regnosys.rosetta.interpreternew
 
