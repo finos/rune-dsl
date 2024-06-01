@@ -3,6 +3,7 @@ package com.regnosys.rosetta.interpreternew;
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
+import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -26,5 +27,10 @@ public class RosettaInterpreterNew {
 	public RosettaInterpreterValue interp(RosettaExpression expression, 
 			RosettaInterpreterBaseEnvironment env) {
 		return expression.accept(visitor, env);	
+	}
+	
+	public RosettaInterpreterEnvironment interp(RosettaEnumeration expression, 
+			RosettaInterpreterBaseEnvironment env) {
+		return (RosettaInterpreterEnvironment) expression.accept(visitor, env);	
 	}
 }
