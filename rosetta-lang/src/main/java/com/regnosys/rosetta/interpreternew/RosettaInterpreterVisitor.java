@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -229,6 +230,17 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaAbsentExpression exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(RosettaOnlyElement exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(RosettaOnlyElement exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
 	}

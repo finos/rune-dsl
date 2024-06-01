@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.rosetta.model.lib.RosettaNumber;
@@ -132,6 +133,37 @@ public class RosettaInterpreterListOperatorInterpreter
 					.collect(Collectors.toList()).get(0);
 		}
 	}
+	
+	/**
+	 * Interprets a only-element operation.
+	 * If a list has exactly one element, it returns it.
+	 * Otherwise, it returns an error.
+	 *
+	 * @param exp Expression on which to perform 'only-element' operation
+	 * @return The single element of the list
+	 */
+	public RosettaInterpreterValue interp(RosettaOnlyElement exp, RosettaInterpreterBaseEnvironment env) {
+		RosettaExpression argument = exp.getArgument();
+		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
+		
+		if (RosettaInterpreterErrorValue.errorsExist(interpretedArgument)) {
+			return interpretedArgument;
+		}
+		
+		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
+		if (count == 0L) {
+			// List is empty
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError("List is empty"));
+		} else if (count == 1L) { 
+			// List has one element
+			return RosettaInterpreterBaseValue.valueStream(interpretedArgument)
+					.collect(Collectors.toList()).get(0);
+		} else {
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError("List contains more than one element"));
+		}
+	}
 
 	
 	/**
@@ -163,6 +195,10 @@ public class RosettaInterpreterListOperatorInterpreter
 	}
 
 	public RosettaInterpreterValue interp(DistinctOperation exp) {
+		return interp(exp, new RosettaInterpreterEnvironment());
+	}
+	
+	public RosettaInterpreterValue interp(RosettaOnlyElement exp) {
 		return interp(exp, new RosettaInterpreterEnvironment());
 	}
 	
