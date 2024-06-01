@@ -44,53 +44,33 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterVariableIn
 
 public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 
-	@Override
-	public RosettaInterpreterValue interp(RosettaBooleanLiteral exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaBooleanLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaBooleanLiteralInterpreter().interp(exp);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaStringLiteral exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterRosettaBooleanLiteralInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaStringLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaStringLiteralInterpreter().interp(exp);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaNumberLiteral exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterRosettaStringLiteralInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaNumberLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaNumberLiteralInterpreter().interp(exp);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaIntLiteral exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterRosettaNumberLiteralInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaIntLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaIntLiteralInterpreter().interp(exp);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaPatternLiteral exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterRosettaIntLiteralInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
@@ -99,214 +79,138 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 		return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Pattern literals are not supported"));
 	}
-
-	@Override
-	public RosettaInterpreterValue interp(ListLiteral exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
 	
 	@Override
 	public RosettaInterpreterValue interp(ListLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListLiteralInterpreter().interp(exp);
-	}
-	
-	@Override
-	public RosettaInterpreterValue interp(RosettaConditionalExpression exp) {
-		return new RosettaInterpreterRosettaConditionalExpressionInterpreter().interp(exp);
+		return new RosettaInterpreterListLiteralInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaConditionalExpression exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaConditionalExpressionInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(LogicalOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterRosettaConditionalExpressionInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(LogicalOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterLogicalOperationInterpreter().interp(exp);
-	}
-	
-	@Override
-	public RosettaInterpreterValue interp(EqualityOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterLogicalOperationInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(EqualityOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(ComparisonOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(ComparisonOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp, env);
-	}
-	
-	@Override
-	public RosettaInterpreterValue interp(ArithmeticOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterComparisonOperationInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(ArithmeticOperation exp, RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaArithmeticOperationsInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaSymbolReference exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterRosettaArithmeticOperationsInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaSymbolReference exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterVariableInterpreter().interp(exp, env);
+		return new RosettaInterpreterVariableInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}	
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaContainsExpression exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaContainsExpression exp,
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaDisjointExpression exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperationsInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(RosettaDisjointExpression exp,
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(JoinOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperationsInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(JoinOperation exp,
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperationsInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaExistsExpression exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperationsInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaExistsExpression exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaAbsentExpression exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-	
 	@Override
 	public RosettaInterpreterValue interp(RosettaAbsentExpression exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-	
-	@Override
-	public RosettaInterpreterValue interp(RosettaOnlyElement exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaOnlyElement exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
-
-	@Override
-	public RosettaInterpreterValue interp(LastOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
 	
 	@Override
 	public RosettaInterpreterValue interp(LastOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-	
-	@Override
-	public RosettaInterpreterValue interp(FirstOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(FirstOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-	
-	@Override
-	public RosettaInterpreterValue interp(RosettaCountOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaCountOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(DistinctOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(DistinctOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(ReverseOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(ReverseOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(SumOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 
 	@Override
 	public RosettaInterpreterValue interp(SumOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
+		return new RosettaInterpreterListOperatorInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 }
+
