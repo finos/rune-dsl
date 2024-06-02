@@ -56,9 +56,9 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				RosettaInterpreterValue time = values.get(1).getValue().accept(visitor, env);
 				RosettaInterpreterValue timeZone = values.get(2).getValue().accept(visitor, env);
 				
-				if (date instanceof RosettaInterpreterIntegerValue 
-						&& time instanceof RosettaInterpreterIntegerValue 
-						&& timeZone instanceof RosettaInterpreterIntegerValue) {
+				if (date instanceof RosettaInterpreterDateValue 
+						&& time instanceof RosettaInterpreterTimeValue 
+						&& timeZone instanceof RosettaInterpreterStringValue) {
 					return new RosettaInterpreterZonedDateTimeValue(
 							((RosettaInterpreterDateValue) date), 
 							((RosettaInterpreterTimeValue) time),

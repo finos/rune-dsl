@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
@@ -26,10 +24,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
-import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.rosetta.model.lib.RosettaNumber;
-
-import com.regnosys.rosetta.rosetta.RosettaModel;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -40,10 +35,6 @@ public class RosettaInterpreterConditionalExpressionTest {
 	
 	@Inject
 	RosettaInterpreterNew interpreter;
-	
-	@Inject 
-	ModelHelper mh;
-
 	
 	@Test
 	public void integerTest() {
@@ -228,24 +219,6 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
 		assertEquals(null, result);
-	}
-	
-	@Test
-	public void test() {
-		RosettaModel expr = mh.parseRosettaWithNoErrors("recordType date\r\n"
-				+ "{\r\n"
-				+ "	day   int\r\n"
-				+ "	month int\r\n"
-				+ "	year  int }");
-		System.out.println(expr.getElements().get(0).getModel());
-	}
-	
-	@Test
-	public void test1() {
-		RosettaExpression expr = parser.parseExpression("dateTime { date: date { day: 5, month: 5, year: 2000 }, time: \"05:00:00\" }");
-		RosettaInterpreterValue result = interpreter.interp(expr);
-		
-		System.out.println(((RosettaInterpreterDateTimeValue) result));
 	}
 
 }
