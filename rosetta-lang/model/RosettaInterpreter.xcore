@@ -26,6 +26,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.JoinOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.rosetta.expression.FirstOperation
@@ -100,6 +101,7 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
 	
 	op RosettaInterpreterValue interp (RosettaRecordType exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
 	
 	
 }

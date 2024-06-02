@@ -10,6 +10,24 @@ public class RosettaInterpreterZonedDateTimeValue extends RosettaInterpreterBase
 	private RosettaInterpreterTimeValue time;
 	private String timeZone;
 	
+	public RosettaInterpreterZonedDateTimeValue(RosettaInterpreterDateValue date, RosettaInterpreterTimeValue time, String timeZone) {
+		this.date = date;
+		this.time = time;
+		this.timeZone = timeZone;
+	}
+	
+	public RosettaInterpreterDateValue getDate() {
+		return date;
+	}
+
+	public RosettaInterpreterTimeValue getTime() {
+		return time;
+	}
+
+	public String getTimeZone() {
+		return timeZone;
+	}
+
 	@Override
 	public Stream<Object> toElementStream() {
 		return Stream.of(date, time, timeZone);

@@ -208,6 +208,10 @@ class RosettaConditionalExpression extends RosettaExpression {
 class RosettaConstructorExpression extends RosettaExpression, RosettaTyped {
 	contains ConstructorKeyValuePair[] values
 	boolean implicitEmpty
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ConstructorKeyValuePair {

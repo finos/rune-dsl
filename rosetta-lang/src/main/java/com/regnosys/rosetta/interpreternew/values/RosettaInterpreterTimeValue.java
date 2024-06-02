@@ -9,6 +9,14 @@ public class RosettaInterpreterTimeValue extends RosettaInterpreterBaseValue {
 
 	private LocalTime time;
 	
+	public RosettaInterpreterTimeValue(LocalTime time) {
+		this.time = time;
+	}
+	
+	public LocalTime getTime() {
+		return time;
+	}
+
 	@Override
 	public Stream<Object> toElementStream() {
 		return Stream.of(time);

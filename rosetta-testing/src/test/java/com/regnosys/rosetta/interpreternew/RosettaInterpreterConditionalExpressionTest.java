@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
@@ -235,7 +237,15 @@ public class RosettaInterpreterConditionalExpressionTest {
 				+ "	day   int\r\n"
 				+ "	month int\r\n"
 				+ "	year  int }");
-		System.out.println(expr.getElements().get(0).getClass());
+		System.out.println(expr.getElements().get(0).getModel());
+	}
+	
+	@Test
+	public void test1() {
+		RosettaExpression expr = parser.parseExpression("dateTime { date: date { day: 5, month: 5, year: 2000 }, time: \"05:00:00\" }");
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		
+		System.out.println(((RosettaInterpreterDateTimeValue) result));
 	}
 
 }

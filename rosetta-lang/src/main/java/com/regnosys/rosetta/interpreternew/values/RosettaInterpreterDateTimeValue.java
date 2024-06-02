@@ -9,6 +9,19 @@ public class RosettaInterpreterDateTimeValue extends RosettaInterpreterBaseValue
 	private RosettaInterpreterDateValue date;
 	private RosettaInterpreterTimeValue time;
 	
+	public RosettaInterpreterDateTimeValue(RosettaInterpreterDateValue date, RosettaInterpreterTimeValue time) {
+		this.date = date;
+		this.time = time;
+	}
+	
+	public RosettaInterpreterDateValue getDate() {
+		return date;
+	}
+
+	public RosettaInterpreterTimeValue getTime() {
+		return time;
+	}
+
 	@Override
 	public Stream<Object> toElementStream() {
 		return Stream.of(date, time);
