@@ -126,6 +126,7 @@ import com.rosetta.model.lib.records.Date
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
+import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -353,7 +354,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				
 				if (left.isMulti) {
 					leftCode
-					.then(rightCode, [l, r|JavaExpression.from('''«l».getMulti().isEmpty() ? «r».getMulti() : «l».getMulti()''', LIST.wrap(resultType))], context.scope)
+					.then(rightCode, [l, r| new JavaConditionalExpression(JavaExpression.from('''«l».getMulti().isEmpty()''', JavaPrimitiveType.BOOLEAN),r ,l , typeUtil)], context.scope)
 				} else {
 					leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«l».getOrDefault(«r».get())''', resultType)], context.scope)

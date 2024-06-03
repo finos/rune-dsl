@@ -139,7 +139,7 @@ public abstract class JavaStatementBuilder {
 	/**
 	 * Append another statement builder to this one, and combine this expression with the other using the given operation.
 	 */
-	public abstract JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope);
+	public abstract JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope);
 	
 	/**
 	 * Convert this statement builder into a valid lambda body.
