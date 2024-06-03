@@ -347,6 +347,18 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(expr.operator)»(«l», «r»)''', COMPARISON_RESULT)], context.scope)
 			}
+			case "default": {
+				val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
+				val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
+				
+				if (left.isMulti) {
+					leftCode
+					.then(rightCode, [l, r|JavaExpression.from('''«l».getMulti().isEmpty() ? «r».getMulti() : «l».getMulti()''', LIST.wrap(resultType))], context.scope)
+				} else {
+					leftCode
+					.then(rightCode, [l, r|JavaExpression.from('''«l».getOrDefault(«r».get())''', resultType)], context.scope)
+				}
+			}
 			case "join": {
 				val leftCode = javaCode(left, MAPPER_C.wrapExtends(STRING), context.scope)
 				val rightCode = expr.right === null ? JavaExpression.from('''«MapperS».of("")''', resultType) : javaCode(right, MAPPER_S.wrap(STRING), context.scope)
