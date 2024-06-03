@@ -3,28 +3,28 @@
  */
 package com.regnosys.rosetta.tests
 
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.MapOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.tests.util.ModelHelper
+import javax.inject.Inject
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import com.regnosys.rosetta.rosetta.simple.Function
-
-import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.rosetta.expression.MapOperation
-import com.regnosys.rosetta.rosetta.expression.ListLiteral
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
-import org.eclipse.xtext.diagnostics.Diagnostic
-import org.eclipse.xtext.EcoreUtil2
-import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
-import javax.inject.Inject
+import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -32,6 +32,35 @@ class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper
+	@Inject extension ExpressionParser
+	
+	@Test
+	def void testValidDefaultSyntax() {
+		"a default 2"
+			.parseExpression(#["a int (1..1)"])
+			.assertNoIssues
+	}
+	
+	@Test
+	def void testDefaultIncompatibleTypesReturnsError() {
+		"a default 2"
+			.parseExpression(#["a string (1..1)"])
+			.assertError(DEFAULT_OPERATION, null, "Incompatible types: cannot use operator 'default' with string and int.")
+	}
+	
+	@Test
+	def void testDefaultMatchingCardinality() {
+		"a default b"
+			.parseExpression(#["a string (1..*)", "b string (1..*)"])
+			.assertNoIssues
+	}
+	
+	@Test
+	def void testDefaultIncompatibleCardinalityReturnsError() {
+		"a default b"
+			.parseExpression(#["a string (1..1)", "b string (1..*)"])
+			.assertError(DEFAULT_OPERATION, null, "Cardinality mismatch - default operator requires both sides to have matching cardinality")	
+	}
 	
 	@Test
 	def void testOnlyExistsInsideFunctionalOperation() {

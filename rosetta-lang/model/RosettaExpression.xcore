@@ -199,6 +199,9 @@ interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
 class ArithmeticOperation extends RosettaBinaryOperation {
 }
 
+class DefaultOperation extends RosettaBinaryOperation {
+}
+
 class LogicalOperation extends RosettaBinaryOperation {
 }
 

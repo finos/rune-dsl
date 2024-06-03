@@ -76,13 +76,13 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	}
 	
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		if (after instanceof JavaExpression) {
 			return this.then((JavaExpression)after, combineExpressions, scope);
 		}
 		return after.then(this, (otherExpr, thisExpr) -> combineExpressions.apply(thisExpr, otherExpr), scope);
 	}
-	public JavaExpression then(JavaExpression after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaExpression after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		return combineExpressions.apply(this, after);
 	}
 

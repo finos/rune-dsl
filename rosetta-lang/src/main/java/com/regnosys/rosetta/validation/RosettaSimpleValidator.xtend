@@ -131,6 +131,7 @@ import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -995,6 +996,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		val resultType = binOp.RType
 		if (resultType instanceof RErrorType) {
 			error(resultType.message, binOp, ROSETTA_OPERATION__OPERATOR)
+		}
+	}
+	
+	@Check
+	def checkDefaultOperationMatchingCardinality(DefaultOperation defOp) {
+		val leftCard = cardinality.isMulti(defOp.left)
+		val rightCard = cardinality.isMulti(defOp.right)
+		if (leftCard != rightCard) {
+			val typeError = "Cardinality mismatch - default operator requires both sides to have matching cardinality"
+			error(typeError, defOp, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 

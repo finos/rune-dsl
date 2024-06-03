@@ -35,6 +35,7 @@ import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FilterOperation;
@@ -352,6 +353,12 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 		RosettaValue right = interpret(expr.getRight(), context);
 		boolean result = right.stream().allMatch(r -> left.contains(r));
 		return RosettaBooleanValue.of(result);
+	}
+	
+	@Override
+	protected RosettaValue caseDefaultOperation(DefaultOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("Defult operations are not supported yet.");
 	}
 
 	@Override

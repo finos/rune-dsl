@@ -79,7 +79,7 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	}
 
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		return this.collapseToSingleExpression(scope)
 				.then(after, combineExpressions, scope);
 	}
