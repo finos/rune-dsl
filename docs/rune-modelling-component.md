@@ -874,7 +874,7 @@ Rune supports basic arithmetic operators
 
 #### Default Operator
 
-The `default` operator takes two values of matching type if the value to the left of the default is empty then the value of to the right of the default will be returned. Note that the type and cardinality of both sides of the operator must match for the syntax to be valid.
+The `default` operator takes two values of matching type. If the value to the left of the default is empty then the value of to the right of the default will be returned. Note that the type and cardinality of both sides of the operator must match for the syntax to be valid.
 
 #### Operator Precedence
 
