@@ -1,13 +1,14 @@
 stages:
   - build
-  # - test
+  - test
+  - visualize
   - checkstyle
 
 build:
   image: maven:3.8-openjdk-17
   stage: build
   script:
-    - mvn clean package -pl rosetta-xcore-plugin-dependencies,rosetta-lang,com.regnosys.rosetta.interpreternew,rosetta-testing
+    - mvn -D"maven.test.skip=true" clean package -pl rosetta-xcore-plugin-dependencies,rosetta-lang,rosetta-testing,com.regnosys.rosetta.interpreternew
 
 
 
@@ -15,7 +16,32 @@ build:
 #   image: maven:3.8-openjdk-17
 #   stage: test
 #   script:
-#     - mvn test -Dtest="/com.regnosys.rosetta.tests/src/test/java/com/regnosys/rosetta/interpreternew/*.java" -Dsurefire.failIfNoSpecifiedTests=false
+#     - mvn test -pl rosetta-testing
+
+test-jdk17:
+  stage: test
+  image: maven:3.8-openjdk-17
+  script:
+    - mvn $MAVEN_CLI_OPTS clean org.jacoco:jacoco-maven-plugin:prepare-agent test jacoco:report -pl rosetta-xcore-plugin-dependencies,rosetta-lang,rosetta-testing,com.regnosys.rosetta.interpreternew
+  artifacts:
+    paths:
+      - target/site/jacoco/jacoco.xml
+
+coverage-jdk17:
+  # Must be in a stage later than test-jdk17's stage.
+  # The `visualize` stage does not exist by default.
+  # Please define it first, or choose an existing stage like `deploy`.
+  stage: visualize
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.9
+  script:
+    # convert report from jacoco to cobertura, using relative project path
+    - python /opt/cover2cover.py com.regnosys.rosetta.interpreternew/target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/com.regnosys.rosetta.interpreternew/src/main/java/ > com.regnosys.rosetta.interpreternew/target/site/cobertura.xml
+  needs: ["test-jdk17"]
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: com.regnosys.rosetta.interpreternew/target/site/cobertura.xml
 
 checkstyle:
   image: maven:3.8-openjdk-17
