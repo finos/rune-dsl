@@ -601,6 +601,7 @@ RosettaCalcBinary returns RosettaExpression:
 	ListOperation (=>(
 		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+		| {DefaultOperation.left=current} operator='default' right=ListOperation
 		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 	))?
 	| // Without left parameter:
@@ -608,15 +609,18 @@ RosettaCalcBinary returns RosettaExpression:
 		->(
 			{RosettaContainsExpression} operator='contains' right=ListOperation
 			| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
+			| {DefaultOperation} operator='default' right=ListOperation
 			| {JoinOperation} operator='join' (=>right=ListOperation)?
 		)
 		(=>(
 			{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 			| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+			| {DefaultOperation.left=current} operator='default' right=ListOperation
 			| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 		))?
 	)
 ;
+
 
 /**
  * List operations

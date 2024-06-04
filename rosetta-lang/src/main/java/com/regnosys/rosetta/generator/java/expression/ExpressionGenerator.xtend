@@ -126,6 +126,8 @@ import com.rosetta.model.lib.records.Date
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
+import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -347,6 +349,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(expr.operator)»(«l», «r»)''', COMPARISON_RESULT)], context.scope)
+			}
+			case "default": {
+				val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
+				if (left.isMulti) {
+					val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
+					
+					leftCode
+					.then(rightCode, [l, r| new JavaConditionalExpression(JavaExpression.from('''«l».getMulti().isEmpty()''', JavaPrimitiveType.BOOLEAN),r ,l , typeUtil)], context.scope)
+				} else {
+					val rightCode = javaCode(right, joined, context.scope)
+					
+					leftCode
+					.then(rightCode, [l, r|JavaExpression.from('''«l».getOrDefault(«r»)''', resultType)], context.scope)
+				}
 			}
 			case "join": {
 				val leftCode = javaCode(left, MAPPER_C.wrapExtends(STRING), context.scope)
@@ -600,6 +616,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseContainsOperation(RosettaContainsExpression expr, Context context) {
+		binaryExpr(expr, context)
+	}
+	
+	override protected caseDefaultOperation(DefaultOperation expr, Context context) {
 		binaryExpr(expr, context)
 	}
 

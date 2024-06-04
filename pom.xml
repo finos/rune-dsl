@@ -420,8 +420,8 @@
 					<sourceDirectories>
 						<sourceDirectory>src/main/java</sourceDirectory>
 						<sourceDirectory>src/test/java</sourceDirectory>
-						<sourceDirectory>target/xtend-gen/main/java</sourceDirectory>
-						<sourceDirectory>target/xtend-gen/test/java</sourceDirectory>
+						<sourceDirectory>${project.basedir}/xtend-gen/main/java</sourceDirectory>
+						<sourceDirectory>${project.basedir}/xtend-gen/test/java</sourceDirectory>
 					</sourceDirectories>
 				</configuration>
 				<executions>
@@ -450,8 +450,8 @@
 							<sources>
 								<source>${project.basedir}/src-gen/main/java</source>
 								<source>${project.basedir}/emf-gen/main/java</source>
-								<source>
-									${project.build.directory}/xtend-gen/main/java</source>
+								<source>${project.basedir}/xtend-gen/main/java</source>
+								<source>${project.basedir}/xsemantics-gen/main/java</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -465,8 +465,7 @@
 							<sources>
 								<source>${project.basedir}/src-gen/test/java</source>
 								<source>${project.basedir}/emf-gen/test/java</source>
-								<source>
-									${project.build.directory}/xtend-gen/test/java</source>
+								<source>${project.basedir}/xtend-gen/test/java</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -529,9 +528,9 @@
 					</executions>
 					<configuration>
 						<outputDirectory>
-							${project.build.directory}/xtend-gen/main/java</outputDirectory>
+							${project.basedir}/xtend-gen/main/java</outputDirectory>
 						<testOutputDirectory>
-							${project.build.directory}/xtend-gen/test/java</testOutputDirectory>
+							${project.basedir}/xtend-gen/test/java</testOutputDirectory>
 						<showEmptyDirWarning>false</showEmptyDirWarning>
 					</configuration>
 				</plugin>

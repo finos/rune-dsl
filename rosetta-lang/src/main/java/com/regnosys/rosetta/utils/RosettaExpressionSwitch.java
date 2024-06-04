@@ -20,6 +20,7 @@ import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FilterOperation;
@@ -137,6 +138,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseContainsOperation((RosettaContainsExpression)expr, context);
 		} else if (expr instanceof RosettaDisjointExpression) {
 			return caseDisjointOperation((RosettaDisjointExpression)expr, context);
+		} else if (expr instanceof DefaultOperation) {
+			return caseDefaultOperation((DefaultOperation)expr, context);
 		}
 		throw errorMissedCase(expr);
 	}
@@ -293,6 +296,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseNotEqualsOperation(EqualityOperation expr, Context context);
 	protected abstract Return caseContainsOperation(RosettaContainsExpression expr, Context context);
 	protected abstract Return caseDisjointOperation(RosettaDisjointExpression expr, Context context);
+	protected abstract Return caseDefaultOperation(DefaultOperation expr, Context context);
 
 	protected abstract Return caseAsKeyOperation(AsKeyOperation expr, Context context);
 	protected abstract Return caseChoiceOperation(ChoiceOperation expr, Context context);

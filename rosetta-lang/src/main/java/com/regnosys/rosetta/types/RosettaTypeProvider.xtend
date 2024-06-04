@@ -77,6 +77,7 @@ import com.regnosys.rosetta.rosetta.expression.ToDateOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -286,6 +287,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseContainsOperation(RosettaContainsExpression expr, Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
+	override protected caseDefaultOperation(DefaultOperation expr,  Map<EObject, RType> context) {
 		caseBinaryOperation(expr, context)
 	}
 	
