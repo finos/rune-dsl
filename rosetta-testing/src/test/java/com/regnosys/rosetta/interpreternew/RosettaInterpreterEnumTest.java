@@ -87,4 +87,24 @@ public class RosettaInterpreterEnumTest {
     		new RosettaInterpreterEnumElementValue("Foo", "VALUE1"));
     }
     
+    @Test
+    public void combinedTest() {
+	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
+			+ "  VALUE1 displayName \"VALUE1\"\r\n"
+			+ "  VALUE2\r\n"
+			+ "\r\n"
+			+ "func MyTest:\r\n"
+			+ "  output: result Foo (1..1)\r\n"
+			+ "  set result:\r\n"
+			+ "    Foo -> VALUE1");
+	RosettaEnumeration enumeration = (RosettaEnumeration) model.getElements().get(0);
+	interpreter.interp(enumeration);
+	RosettaExpression refCall = ((FunctionImpl) model.getElements().get(1)).getOperations()
+			.get(0).getExpression();
+	RosettaInterpreterEnumElementValue val = (RosettaInterpreterEnumElementValue)
+			interpreter.interp(refCall);
+    assertEquals(val,
+    		new RosettaInterpreterEnumElementValue("Foo", "VALUE1"));
+    }
+    
 }

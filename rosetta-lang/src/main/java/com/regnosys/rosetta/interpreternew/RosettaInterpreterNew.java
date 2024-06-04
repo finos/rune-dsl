@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew;
 
+
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
@@ -13,6 +14,9 @@ public class RosettaInterpreterNew {
 	@Inject
 	private RosettaInterpreterVisitor visitor;
 	
+	@Inject
+	private RosettaInterpreterEnvironment environment;
+	
 	/**
 	 * Simple example interpret function to allow for better understanding 
 	 * of the development workflow.
@@ -21,7 +25,7 @@ public class RosettaInterpreterNew {
 	 * @return value of RosettaIntLiteral otherwise exception
 	 */
 	public RosettaInterpreterValue interp(RosettaExpression expression) {
-		return expression.accept(visitor, new RosettaInterpreterEnvironment());	
+		return expression.accept(visitor, environment);	
 	}
 	
 	public RosettaInterpreterValue interp(RosettaExpression expression, 
@@ -29,8 +33,32 @@ public class RosettaInterpreterNew {
 		return expression.accept(visitor, env);	
 	}
 	
+	/**
+	 * Simple example interpret function to allow for better understanding 
+	 * of the development workflow.
+	 *
+	 * @param expression the expression to be interpreted
+	 * @return value of RosettaIntLiteral otherwise exception
+	 */
 	public RosettaInterpreterEnvironment interp(RosettaEnumeration expression, 
 			RosettaInterpreterBaseEnvironment env) {
-		return (RosettaInterpreterEnvironment) expression.accept(visitor, env);	
+		
+		environment = (RosettaInterpreterEnvironment) expression.accept(visitor, env);
+		
+		return environment;	
+	}
+	
+	/**
+	 * Simple example interpret function to allow for better understanding 
+	 * of the development workflow.
+	 *
+	 * @param expression the expression to be interpreted
+	 * @return value of RosettaIntLiteral otherwise exception
+	 */
+	public RosettaInterpreterEnvironment interp(RosettaEnumeration expression) {
+		
+		environment = (RosettaInterpreterEnvironment) expression.accept(visitor, environment);
+		
+		return environment;	
 	}
 }
