@@ -7,9 +7,9 @@ For most practical information, refer to the [original readme file](README_proje
 ## Authors
 - Jacek Kulik
 - Antonio Lupu
-- Maria Cristucsecu
+- Maria Cristescu
 - Bogdan Damian
-- Diana Śutać
+- Diana Şutac
 
 ## Project Structure
 
