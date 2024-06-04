@@ -3,6 +3,8 @@ image: maven:3.8-openjdk-17
 cache:
   paths:
     - .m2/repository
+  key: one-key-to-rule-them-all
+
 
 stages:
   - build
