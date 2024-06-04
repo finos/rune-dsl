@@ -14,9 +14,9 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumElementValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
-//import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-//import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 
@@ -41,18 +41,18 @@ public class RosettaInterpreterEnumTest {
     @Test
     public void enumAddsToEnvironmentTest() {
     	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
-    			+ "  VALU_E1 displayName \"VALU.E1\"\r\n"
+    			+ "  VALUE1 displayName \"VALUE1\"\r\n"
     			+ "  VALUE2\r\n"
     			+ "\r\n"
     			+ "func MyTest:\r\n"
     			+ "  output: result Foo (1..1)\r\n"
     			+ "  set result:\r\n"
-    			+ "    Foo -> VALU_E1");
+    			+ "    Foo -> VALUE1");
     	RosettaInterpreterEnvironment expectedEnv = 
     			new RosettaInterpreterEnvironment();
     	expectedEnv.addValue("Foo", 
     			new RosettaInterpreterEnumValue("Foo", 
-    					List.of(new RosettaInterpreterEnumElementValue("Foo", "VALU_E1"),
+    					List.of(new RosettaInterpreterEnumElementValue("Foo", "VALUE1"),
     							new RosettaInterpreterEnumElementValue("Foo", "VALUE2"))));
     	RosettaInterpreterEnvironment actualEnv = 
     			new RosettaInterpreterEnvironment();
@@ -63,31 +63,28 @@ public class RosettaInterpreterEnumTest {
         		(RosettaInterpreterEnvironment) expectedEnv);
     }
     
-//    @Test
-//    public void enumRefTest() {
-//	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
-//			+ "  VALU_E1 displayName \"VALU.E1\"\r\n"
-//			+ "  VALUE2\r\n"
-//			+ "\r\n"
-//			+ "func MyTest:\r\n"
-//			+ "  output: result Foo (1..1)\r\n"
-//			+ "  set result:\r\n"
-//			+ "    Foo -> VALU_E1");
-//	RosettaInterpreterEnvironment expectedEnv = 
-//			new RosettaInterpreterEnvironment();
-//	expectedEnv.addValue("Foo", 
-//			new RosettaInterpreterEnumValue("Foo", 
-//					List.of(new RosettaInterpreterEnumElementValue("Foo", "VALU_E1"),
-//							new RosettaInterpreterEnumElementValue("Foo", "VALUE2"))));
-//	RosettaInterpreterEnvironment actualEnv = 
-//			new RosettaInterpreterEnvironment();
-//	RosettaEnumeration enumeration = (RosettaEnumeration) model.getElements().get(0);
-//	RosettaExpression refCall = ((FunctionImpl) model.getElements().get(1)).getOperations()
-//			.get(0).getExpression();
-//	RosettaInterpreterValue env = (RosettaInterpreterEnvironment)
-//			interpreter.interp(refCall, actualEnv);
-//    assertEquals((RosettaInterpreterEnvironment) env,
-//    		(RosettaInterpreterEnvironment) expectedEnv);
-//    }
+    @Test
+    public void enumRefTest() {
+	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
+			+ "  VALUE1 displayName \"VALUE1\"\r\n"
+			+ "  VALUE2\r\n"
+			+ "\r\n"
+			+ "func MyTest:\r\n"
+			+ "  output: result Foo (1..1)\r\n"
+			+ "  set result:\r\n"
+			+ "    Foo -> VALUE1");
+	RosettaInterpreterEnvironment expectedEnv = 
+			new RosettaInterpreterEnvironment();
+	expectedEnv.addValue("Foo", 
+			new RosettaInterpreterEnumValue("Foo", 
+					List.of(new RosettaInterpreterEnumElementValue("Foo", "VALUE1"),
+							new RosettaInterpreterEnumElementValue("Foo", "VALUE2"))));
+	RosettaExpression refCall = ((FunctionImpl) model.getElements().get(1)).getOperations()
+			.get(0).getExpression();
+	RosettaInterpreterEnumElementValue val = (RosettaInterpreterEnumElementValue)
+			interpreter.interp(refCall, expectedEnv);
+    assertEquals(val,
+    		new RosettaInterpreterEnumElementValue("Foo", "VALUE1"));
+    }
     
 }

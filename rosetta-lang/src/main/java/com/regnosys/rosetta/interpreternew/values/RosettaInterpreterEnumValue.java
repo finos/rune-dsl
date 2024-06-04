@@ -32,6 +32,21 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 	public String toString() {
 		return "RosettaInterpreterListValue [name = " + name + ", values=" + values.toString() + "]";
 	}
+	
+	/**
+	 * Method that checks that the enum contains a certain value.
+	 *
+	 * @param name Name of the value that the enum should contain
+	 */
+	public boolean containsValueName(String name) {
+		boolean ok = false;
+		for (RosettaInterpreterValue v : values) {
+			if (((RosettaInterpreterEnumElementValue) v).getValue().equals(name)) {
+				ok = true;
+			}
+		}
+		return ok;
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -50,7 +65,6 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 
 	public List<RosettaInterpreterValue> getValues() { return values; }
 	
-
 	public String getName() { return name; }
 
 	@Override
