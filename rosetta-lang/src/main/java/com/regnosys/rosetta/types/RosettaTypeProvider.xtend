@@ -330,7 +330,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		if (!extensions.isResolved(feature)) {
 			return null
 		}
-		feature.safeRType(context)
+		(feature as RosettaFeature).safeRType(context)
 	}
 	
 	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> context) {

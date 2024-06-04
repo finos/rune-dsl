@@ -42,6 +42,59 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testDeepPathOperator() {
+		val code = '''
+		choice A:
+			B
+			C
+		
+		type B:
+			opt1 Option1 (0..1)
+			opt2 Option2 (0..1)
+			attr Foo (0..1)
+			
+			condition Choice: one-of
+		
+		type C:
+			opt1 Option1 (0..1)
+			
+			condition Choice: one-of
+		
+		type Option1:
+			attr Foo (1..1)
+		
+		type Option2:
+			attr Foo (1..1)
+			otherAttr string (1..1)
+		
+		type Option3:
+			attr Foo (1..1)
+		
+		type Foo:
+		
+		func Test:
+			inputs:
+				a A (1..1)
+				b B (1..1)
+				aList A (0..*)
+			output:
+				result Foo (0..*)
+			
+			add result:
+				a ->> attr
+			add result:
+				a ->> opt1 -> attr
+			add result:
+				b ->> attr
+			add result:
+				aList ->> attr
+			add result:
+				aList ->> opt1 -> attr
+		'''.generateCode
+        code.compileToClasses
+	}
+	
+	@Test
 	def void testChoiceAttributeAccess() {
 		val code = '''
 		type A:

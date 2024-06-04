@@ -33,14 +33,32 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration
+import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.generator.java.statement.JavaStatement
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaThis
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.rosetta.expression.ExistsModifier
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.util.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 
 class ModelObjectGenerator {
 	
+	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
+	@Inject extension DeepFeatureCallUtil
+	@Inject extension ExpressionGenerator
+	@Inject JavaTypeUtil typeUtil
+	@Inject extension TypeCoercionService
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(root.child(data.name + '.java').withForwardSlashes,
@@ -71,6 +89,9 @@ class ModelObjectGenerator {
 
 				«startComment('Getter Methods')»
 				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
+			
+				«startComment('Choice Methods')»
+				«pojoInterfaceChoiceMethods(javaType, metaType, metaDataIdentifier, d)»
 
 				«startComment('Build Methods')»
 				«pojoInterfaceBuilderMethods(javaType, d)»
@@ -161,6 +182,12 @@ class ModelObjectGenerator {
 			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
 		«ENDFOR»
 		'''
+	
+	protected def StringConcatenationClient pojoInterfaceChoiceMethods(JavaClass<?> javaType, JavaClass<?> metaType, GeneratedIdentifier metaDataIdentifier, Data d) '''
+		«FOR deepFeature : new RDataType(d).findDeepFeatures»
+			«deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType» choose«deepFeature.name.toFirstUpper»();
+		«ENDFOR»
+		'''
 
 	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass<?> javaType, Data d) '''
 			«d.name» build();
@@ -215,6 +242,7 @@ class ModelObjectGenerator {
 			}
 			
 		«ENDFOR»
+		«c.deepGetters(scope)»
 		@Override
 		public «c.name» build() {
 			return this;

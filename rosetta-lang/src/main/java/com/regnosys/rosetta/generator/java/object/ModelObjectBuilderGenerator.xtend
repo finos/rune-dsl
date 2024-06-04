@@ -45,6 +45,8 @@ class ModelObjectBuilderGenerator {
 			}
 		
 			«c.expandedAttributes.builderGetters(builderScope)»
+			
+			«c.deepGetters(scope)»
 		
 			«c.setters(builderScope)»
 			

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -44,34 +43,38 @@ public class DeepFeatureCallUtil {
 		return findDeepFeatureMap(type).values();
 	}
 	
-	private Map<String, Attribute> findDeepFeatureMap(RDataType type) {
-		Map<String, Attribute> result = new HashMap<String, Attribute>();
-		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
-			result.put(attr.getName(), attr);
-		}
-		
+	public Map<String, Attribute> findDeepFeatureMap(RDataType type) {		
 		if (isEligibleForDeepFeatureCall(type)) {
 			Map<String, Attribute> intersection = null;
+			Map<String, Attribute> ownFeatureAsDeepFeatureCandidates = new HashMap<>();
+			for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
+				ownFeatureAsDeepFeatureCandidates.put(attr.getName(), attr);
+			}
 			for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
 				RType attrType = typeProvider.getRTypeOfSymbol(attr);
 				Map<String, Attribute> attrDeepFeatureMap;
 				if (attrType instanceof RDataType) {
-					attrDeepFeatureMap = findDeepFeatureMap((RDataType)attrType);
+					RDataType attrDataType = (RDataType)attrType;
+					attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
+					for (Attribute attrFeature : ext.allNonOverridesAttributes(attrDataType.getData())) {
+						attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
+					}
 				} else {
 					attrDeepFeatureMap = new HashMap<>();
 				}
-				attrDeepFeatureMap.put(attr.getName(), attr);
 				if (intersection == null) {
 					intersection = attrDeepFeatureMap;
 				} else {
 					intersect(intersection, attrDeepFeatureMap);
 				}
+				intersectButRetainAttribute(ownFeatureAsDeepFeatureCandidates, attrDeepFeatureMap, attr);
 			}
 			if (intersection != null) {
-				merge(result, intersection);
+				merge(ownFeatureAsDeepFeatureCandidates, intersection);
 			}
+			return ownFeatureAsDeepFeatureCandidates;
 		}
-		return result;
+		return new HashMap<>();
 	}
 	private void intersect(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap) {
 		featuresMapToModify.entrySet().removeIf(entry -> {
@@ -79,6 +82,22 @@ public class DeepFeatureCallUtil {
 			Attribute otherAttr = otherFeatureMap.get(attrName);
 			if (otherAttr != null) {
 				Attribute attr = entry.getValue();
+				if (match(attr, otherAttr)) {
+					return false;
+				}
+			}
+			return true;
+		});
+	}
+	private void intersectButRetainAttribute(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap, Attribute attributeToRetain) {
+		featuresMapToModify.entrySet().removeIf(entry -> {
+			String attrName = entry.getKey();
+			Attribute attr = entry.getValue();
+			if (attributeToRetain.equals(attr)) {
+				return false;
+			}
+			Attribute otherAttr = otherFeatureMap.get(attrName);
+			if (otherAttr != null) {
 				if (match(attr, otherAttr)) {
 					return false;
 				}
@@ -98,7 +117,7 @@ public class DeepFeatureCallUtil {
 			}
 		});
 	}
-	private boolean match(Attribute a, Attribute b) {
+	public boolean match(Attribute a, Attribute b) {
 		if (!typeProvider.getRTypeOfFeature(a).equals(typeProvider.getRTypeOfFeature(b))) {
 			return false;
 		}
@@ -121,16 +140,16 @@ public class DeepFeatureCallUtil {
 		if (isEligibleForDeepFeatureCall(receiverType)) {
 			return allAttributes
 					.flatMap(attr -> {
-						RType attrType = typeProvider.getRTypeOfSymbol(attr);
-						if (attrType instanceof RDataType && isEligibleForDeepFeatureCall((RDataType) attrType)) {
-							List<List<Attribute>> subPaths = getFullPaths((RDataType) attrType, featureName).collect(Collectors.toList());
-							subPaths.forEach(p -> p.add(0, attr));
-							return subPaths.stream();
-						}
 						if (attr.getName().equals(featureName)) {
 							List<Attribute> path = new LinkedList<>();
 							path.add(attr);
 							return Stream.of(path);
+						}
+						RType attrType = typeProvider.getRTypeOfSymbol(attr);
+						if (attrType instanceof RDataType) {
+							List<List<Attribute>> subPaths = getFullPaths((RDataType) attrType, featureName).collect(Collectors.toList());
+							subPaths.forEach(p -> p.add(0, attr));
+							return subPaths.stream();
 						}
 						return Stream.empty();
 					});

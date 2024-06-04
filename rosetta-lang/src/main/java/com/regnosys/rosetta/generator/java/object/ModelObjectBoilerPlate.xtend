@@ -23,12 +23,31 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.rosetta.util.types.JavaType
 import javax.inject.Inject
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.generator.java.statement.JavaStatement
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.generator.java.statement.builder.JavaThis
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.rosetta.expression.ExistsModifier
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import com.rosetta.util.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.types.RosettaTypeProvider
 
 class ModelObjectBoilerPlate {
 
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension JavaTypeTranslator
+	@Inject extension DeepFeatureCallUtil
+	@Inject extension ExpressionGenerator
+	@Inject extension TypeCoercionService
+	@Inject extension RosettaTypeProvider
+	@Inject JavaTypeUtil typeUtil
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
@@ -72,7 +91,50 @@ class ModelObjectBoilerPlate {
 			«c.contributeHashCode(attributes, scope)»
 			«c.contributeToString(identity, scope)»
 		'''
-	} 
+	}
+	
+	def StringConcatenationClient deepGetters(Data d, JavaScope scope) {
+		'''
+		«FOR deepFeature : new RDataType(d).findDeepFeatures»
+			«val name = '''choose«deepFeature.name.toFirstUpper»'''»
+			«val deepFeatureScope = scope.methodScope(name)»
+			@Override
+			public «deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType» «name»() «d.deepFeatureToStatement(deepFeature, deepFeatureScope)»
+			
+		«ENDFOR»
+		'''
+	}
+	
+	private def JavaStatement deepFeatureToStatement(Data d, Attribute deepFeature, JavaScope scope) {
+		val attrs = d.allNonOverridesAttributes
+		val receiverType = new RDataType(d)
+		val resultType = deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType
+		val thisExpr = new JavaThis(new RDataType(d).toJavaReferenceType)
+		var JavaStatementBuilder acc = JavaExpression.NULL
+		for (a : attrs.reverseView) {
+			val attributeExpr = thisExpr.featureCall(receiverType, a, false, scope, true)
+			val deepFeatureExpr = if (deepFeature.match(a)) {
+					attributeExpr
+				} else {
+					val attrType = a.RTypeOfFeature
+					val needsToGoDownDeeper = if (attrType instanceof RDataType) {
+							attrType.findDeepFeatureMap.containsKey(deepFeature.name)
+						} else false
+					attributeExpr.featureCall(attrType, deepFeature, needsToGoDownDeeper, scope, true)
+				}
+			val currAcc = acc
+			acc =
+				deepFeatureExpr
+					.declareAsVariable(true, a.name, scope)
+					.mapExpression[feature|
+						feature.exists(ExistsModifier.NONE, scope)
+							.collapseToSingleExpression(scope)
+							.addCoercions(JavaPrimitiveType.BOOLEAN, scope)
+							.mapExpression[new JavaIfThenElseBuilder(it, feature, currAcc, typeUtil)]
+					]
+		}
+		acc.addCoercions(resultType, scope).completeAsReturn
+	}
 
 	private def StringConcatenationClient contributeHashCode(ExpandedAttribute attr, JavaScope scope) {
 		val id = scope.getIdentifierOrThrow(attr)

@@ -34,11 +34,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testDeepFeatureCall() {
 		val context = '''
-		type A:
-			b B (0..1)
-			c C (0..1)
-			
-			condition Choice: one-of
+		choice A:
+			B
+			C
 		
 		type B:
 			opt1 Option1 (0..1)
@@ -65,18 +63,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		type Foo:
 		'''.parseRosetta
 		
-		"a ->> b"
-			.parseExpression(#[context], #["a A (1..1)"])
-			.assertNoIssues
 		"a ->> attr"
 			.parseExpression(#[context], #["a A (1..1)"])
 			.assertNoIssues
 		"a ->> opt1"
 			.parseExpression(#[context], #["a A (1..1)"])
 			.assertNoIssues
+		
+		"a ->> B"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'B'.")
+		"a ->> opt2"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'opt2'.")
 		"a ->> otherAttr"
 			.parseExpression(#[context], #["a A (1..1)"])
-			.assertError(ROSETTA_EXPRESSION, null, "")
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'otherAttr'.")
 	}
 	
 	@Test
