@@ -21,7 +21,6 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;

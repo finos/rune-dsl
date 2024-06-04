@@ -43,38 +43,39 @@ public class DeepFeatureCallUtil {
 		return findDeepFeatureMap(type).values();
 	}
 	
-	public Map<String, Attribute> findDeepFeatureMap(RDataType type) {		
-		if (isEligibleForDeepFeatureCall(type)) {
-			Map<String, Attribute> intersection = null;
-			Map<String, Attribute> ownFeatureAsDeepFeatureCandidates = new HashMap<>();
-			for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
-				ownFeatureAsDeepFeatureCandidates.put(attr.getName(), attr);
-			}
-			for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
-				RType attrType = typeProvider.getRTypeOfSymbol(attr);
-				Map<String, Attribute> attrDeepFeatureMap;
-				if (attrType instanceof RDataType) {
-					RDataType attrDataType = (RDataType)attrType;
-					attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
-					for (Attribute attrFeature : ext.allNonOverridesAttributes(attrDataType.getData())) {
-						attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
-					}
-				} else {
-					attrDeepFeatureMap = new HashMap<>();
-				}
-				if (intersection == null) {
-					intersection = attrDeepFeatureMap;
-				} else {
-					intersect(intersection, attrDeepFeatureMap);
-				}
-				intersectButRetainAttribute(ownFeatureAsDeepFeatureCandidates, attrDeepFeatureMap, attr);
-			}
-			if (intersection != null) {
-				merge(ownFeatureAsDeepFeatureCandidates, intersection);
-			}
-			return ownFeatureAsDeepFeatureCandidates;
+	public Map<String, Attribute> findDeepFeatureMap(RDataType type) {
+		if (!isEligibleForDeepFeatureCall(type)) {
+			return new HashMap<>();
 		}
-		return new HashMap<>();
+		
+		Map<String, Attribute> deepIntersection = null;
+		Map<String, Attribute> result = new HashMap<>();
+		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
+			result.put(attr.getName(), attr);
+		}
+		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
+			RType attrType = typeProvider.getRTypeOfSymbol(attr);
+			Map<String, Attribute> attrDeepFeatureMap;
+			if (attrType instanceof RDataType) {
+				RDataType attrDataType = (RDataType)attrType;
+				attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
+				for (Attribute attrFeature : ext.allNonOverridesAttributes(attrDataType.getData())) {
+					attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
+				}
+			} else {
+				attrDeepFeatureMap = new HashMap<>();
+			}
+			if (deepIntersection == null) {
+				deepIntersection = attrDeepFeatureMap;
+			} else {
+				intersect(deepIntersection, attrDeepFeatureMap);
+			}
+			intersectButRetainAttribute(result, attrDeepFeatureMap, attr);
+		}
+		if (deepIntersection != null) {
+			merge(result, deepIntersection);
+		}
+		return result;
 	}
 	private void intersect(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap) {
 		featuresMapToModify.entrySet().removeIf(entry -> {
@@ -125,43 +126,6 @@ public class DeepFeatureCallUtil {
 			return false;
 		}
 		return true;
-	}
-	
-	public List<List<Attribute>> getFullPaths(RosettaDeepFeatureCall deepFeatureCall) {
-		RType receiverType = typeProvider.getRType(deepFeatureCall.getReceiver());
-		if (receiverType instanceof RDataType) {
-			return getFullPaths((RDataType)receiverType, deepFeatureCall.getFeature().getName()).collect(Collectors.toList());
-		}
-		return Collections.emptyList();
-	}
-	
-	private Stream<List<Attribute>> getFullPaths(RDataType receiverType, String featureName) {
-		Stream<Attribute> allAttributes = StreamSupport.stream(ext.allNonOverridesAttributes(receiverType.getData()).spliterator(), false);
-		if (isEligibleForDeepFeatureCall(receiverType)) {
-			return allAttributes
-					.flatMap(attr -> {
-						if (attr.getName().equals(featureName)) {
-							List<Attribute> path = new LinkedList<>();
-							path.add(attr);
-							return Stream.of(path);
-						}
-						RType attrType = typeProvider.getRTypeOfSymbol(attr);
-						if (attrType instanceof RDataType) {
-							List<List<Attribute>> subPaths = getFullPaths((RDataType) attrType, featureName).collect(Collectors.toList());
-							subPaths.forEach(p -> p.add(0, attr));
-							return subPaths.stream();
-						}
-						return Stream.empty();
-					});
-		} else {
-			return allAttributes
-					.filter(attr -> attr.getName().equals(featureName))
-					.map(attr -> {
-						List<Attribute> path = new LinkedList<>();
-						path.add(attr);
-						return path;
-					});
-		}
 	}
 	
 	public boolean isEligibleForDeepFeatureCall(RDataType type) {

@@ -22,7 +22,7 @@ import com.regnosys.rosetta.generator.java.JavaScope;
 import com.rosetta.util.types.JavaType;
 
 /**
- * A Java variable.
+ * A reference to the Java `this` keyword.
  * 
  * See `JavaStatementBuilder` for more documentation.
  */

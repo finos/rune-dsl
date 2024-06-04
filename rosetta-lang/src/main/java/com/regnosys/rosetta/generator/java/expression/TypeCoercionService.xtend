@@ -157,7 +157,7 @@ class TypeCoercionService {
 		// Special case: mapper to primitive
 		if (actual.extendsMapper && expected instanceof JavaPrimitiveType) {
 			return expr.mapExpression[
-				JavaExpression.from('''«expr».getOrDefault(«expected.empty»)''', expected)
+				JavaExpression.from('''«it».getOrDefault(«expected.empty»)''', expected)
 			]
 		}
 		

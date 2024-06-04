@@ -45,9 +45,7 @@ class ModelObjectBuilderGenerator {
 			}
 		
 			«c.expandedAttributes.builderGetters(builderScope)»
-			
 			«c.deepGetters(builderScope)»
-		
 			«c.setters(builderScope)»
 			
 			@Override
@@ -142,6 +140,7 @@ class ModelObjectBuilderGenerator {
 						
 						return result;
 					}
+					
 				«ELSE»
 					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int _index) {
 

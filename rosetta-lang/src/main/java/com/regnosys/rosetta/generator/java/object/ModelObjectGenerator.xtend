@@ -73,10 +73,8 @@ class ModelObjectGenerator {
 
 				«startComment('Getter Methods')»
 				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
-			
-				«startComment('Choice Methods')»
+				
 				«pojoInterfaceChoiceMethods(javaType, metaType, metaDataIdentifier, d)»
-
 				«startComment('Build Methods')»
 				«pojoInterfaceBuilderMethods(javaType, d)»
 
@@ -167,11 +165,18 @@ class ModelObjectGenerator {
 		«ENDFOR»
 		'''
 	
-	protected def StringConcatenationClient pojoInterfaceChoiceMethods(JavaClass<?> javaType, JavaClass<?> metaType, GeneratedIdentifier metaDataIdentifier, Data d) '''
-		«FOR deepFeature : new RDataType(d).findDeepFeatures»
+	protected def StringConcatenationClient pojoInterfaceChoiceMethods(JavaClass<?> javaType, JavaClass<?> metaType, GeneratedIdentifier metaDataIdentifier, Data d) {
+		val deepFeatures = new RDataType(d).findDeepFeatures
+		'''
+		«IF !deepFeatures.empty»
+		«startComment('Choice Methods')»
+		«FOR deepFeature : deepFeatures»
 			«deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType» choose«deepFeature.name.toFirstUpper»();
 		«ENDFOR»
+		
+		«ENDIF»
 		'''
+	}
 
 	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass<?> javaType, Data d) '''
 			«d.name» build();
