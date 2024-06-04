@@ -343,7 +343,7 @@
     <!-- <module>rosetta-interpreternew</module>-->
           
     
-    <module>com.regnosys.rosetta.interpreternew</module>
+    <module>rosetta-interpreter</module>
       
   </modules>
     	
