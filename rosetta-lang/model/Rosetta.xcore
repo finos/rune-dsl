@@ -116,12 +116,6 @@ class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
 	
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
-	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
-		v.interp(this,nv)
-	}
 }
 
 class RosettaRecordFeature extends RosettaTypedFeature {}

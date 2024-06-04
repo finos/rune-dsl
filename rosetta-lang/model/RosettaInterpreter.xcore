@@ -71,9 +71,6 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (SumOperation exp)	
 	
 	
-	op RosettaInterpreterValue interp (RosettaRecordType exp)
-	
-	
 	op RosettaInterpreterValue interp (RosettaBooleanLiteral exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaStringLiteral exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaNumberLiteral exp, RosettaInterpreterBaseEnvironment env)
@@ -100,7 +97,6 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (ReverseOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
 	
-	op RosettaInterpreterValue interp (RosettaRecordType exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
 	
 	

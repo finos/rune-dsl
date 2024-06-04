@@ -42,7 +42,6 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaCon
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConstructorExpressionInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNumberLiteralInterpreter;
-import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaRecordTypeInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterVariableInterpreter;
 
@@ -312,16 +311,6 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	public RosettaInterpreterValue interp(SumOperation exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterListOperatorInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaRecordType exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-
-	@Override
-	public RosettaInterpreterValue interp(RosettaRecordType exp, RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaRecordTypeInterpreter().interp(exp, env);
 	}
 
 	@Override
