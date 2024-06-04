@@ -72,7 +72,7 @@ public abstract class RosettaInterpreterBaseValue implements RosettaInterpreterV
 	 * @param val - value to convert
 	 * @return - list of value or its contained values
 	 */
-	public static List<RosettaInterpreterValue> toValueList(RosettaInterpreterValue val){
+	public static List<RosettaInterpreterValue> toValueList(RosettaInterpreterValue val) {
 		if (!(val instanceof RosettaInterpreterBaseValue)) {
 			throw new RosettaInterpreterNewException("Cannot take value stream"
 					+ "of RosettaInterpreterValue");

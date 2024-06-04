@@ -1,8 +1,6 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
@@ -21,10 +19,9 @@ public class RosettaInterpreterVariableInterpreter {
 	 */
 	public RosettaInterpreterValue interp(RosettaSymbolReference exp, 
 			RosettaInterpreterBaseEnvironment environment) {
-		RosettaInterpreterEnvironment env = (RosettaInterpreterEnvironment) environment;
 		
 		//Search for variable in environment
-		RosettaInterpreterBaseValue varValue = env.findValue(exp.getSymbol().getName());
+		RosettaInterpreterValue varValue = environment.findValue(exp.getSymbol().getName());
 		
 		return varValue;
 	}
