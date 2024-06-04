@@ -35,7 +35,7 @@ coverage-jdk17:
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.9
   script:
     # convert report from jacoco to cobertura, using relative project path
-    - python /opt/cover2cover.py com.regnosys.rosetta.interpreternew/target/site/jacoco/jacoco.xml com.regnosys.rosetta.interpreternew/src/main/java/ > com.regnosys.rosetta.interpreternew/target/site/cobertura.xml
+    - python /opt/cover2cover.py com.regnosys.rosetta.interpreternew/target/site/jacoco/jacoco.xml $CI_PROJECT_DIR/com.regnosys.rosetta.interpreternew/src/main/java/ > com.regnosys.rosetta.interpreternew/target/site/cobertura.xml
   needs: ["test-jdk17"]
   artifacts:
     reports:
