@@ -32,7 +32,7 @@ class ModelObjectBuilderGenerator {
 		val javaType = new RDataType(c).toJavaType
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
 		c.expandedAttributesPlus.forEach[
-			builderScope.createIdentifier(it, it.name)
+			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
 		'''
 		class «javaType»BuilderImpl«IF c.hasSuperType» extends «new RDataType(c.superType).toJavaType.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(c)» {
@@ -46,7 +46,7 @@ class ModelObjectBuilderGenerator {
 		
 			«c.expandedAttributes.builderGetters(builderScope)»
 			
-			«c.deepGetters(scope)»
+			«c.deepGetters(builderScope)»
 		
 			«c.setters(builderScope)»
 			

@@ -112,25 +112,24 @@ class ModelObjectBoilerPlate {
 		val thisExpr = new JavaThis(new RDataType(d).toJavaReferenceType)
 		var JavaStatementBuilder acc = JavaExpression.NULL
 		for (a : attrs.reverseView) {
-			val attributeExpr = thisExpr.featureCall(receiverType, a, false, scope, true)
-			val deepFeatureExpr = if (deepFeature.match(a)) {
-					attributeExpr
-				} else {
-					val attrType = a.RTypeOfFeature
-					val needsToGoDownDeeper = if (attrType instanceof RDataType) {
-							attrType.findDeepFeatureMap.containsKey(deepFeature.name)
-						} else false
-					attributeExpr.featureCall(attrType, deepFeature, needsToGoDownDeeper, scope, true)
-				}
 			val currAcc = acc
-			acc =
-				deepFeatureExpr
-					.declareAsVariable(true, a.name, scope)
-					.mapExpression[feature|
-						feature.exists(ExistsModifier.NONE, scope)
+			acc = thisExpr
+					.featureCall(receiverType, a, false, scope, true)
+					.declareAsVariable(true, a.name.toFirstLower, scope)
+					.mapExpression[attrVar|
+						val deepFeatureExpr = if (deepFeature.match(a)) {
+								attrVar
+							} else {
+								val attrType = a.RTypeOfFeature
+								val needsToGoDownDeeper = if (attrType instanceof RDataType) {
+										attrType.findDeepFeatureMap.containsKey(deepFeature.name)
+									} else false
+								attrVar.featureCall(attrType, deepFeature, needsToGoDownDeeper, scope, true)
+							}
+						attrVar.exists(ExistsModifier.NONE, scope)
 							.collapseToSingleExpression(scope)
 							.addCoercions(JavaPrimitiveType.BOOLEAN, scope)
-							.mapExpression[new JavaIfThenElseBuilder(it, feature, currAcc, typeUtil)]
+							.mapExpression[new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)]
 					]
 		}
 		acc.addCoercions(resultType, scope).completeAsReturn
