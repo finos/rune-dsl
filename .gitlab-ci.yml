@@ -1,5 +1,8 @@
 image: maven:3.8-openjdk-17
 
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
 cache:
   paths:
     - .m2/repository
