@@ -47,7 +47,7 @@ extends RosettaInterpreterConcreteInterpreter {
 		} else {
 			return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
 					"Conditional expression: condition "
-					+ "is not a boolean value."));
+					+ "is not a boolean value.", expr));
 		}
 		
 		if (expr.isFull()) {
@@ -69,7 +69,7 @@ extends RosettaInterpreterConcreteInterpreter {
 						new RosettaInterpreterError(
 							"Conditional expression: "
 							+ "then and else "
-							+ "need to have the same type."));
+							+ "need to have the same type.", expr));
 			}
 		}
 		
@@ -98,7 +98,7 @@ extends RosettaInterpreterConcreteInterpreter {
 		RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) exp;
 		RosettaInterpreterErrorValue newExpError = 
 				new RosettaInterpreterErrorValue(
-						new RosettaInterpreterError(message));
+						new RosettaInterpreterError(message, exp));
 		
 		return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
 	}

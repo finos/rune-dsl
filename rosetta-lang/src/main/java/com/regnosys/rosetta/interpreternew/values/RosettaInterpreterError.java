@@ -42,12 +42,6 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 		RosettaInterpreterError other = (RosettaInterpreterError) obj;
 		return Objects.equals(errorMessage, other.errorMessage);
 	}
-
-	
-	@Deprecated
-	public RosettaInterpreterError(String errorMessage) {
-		this.errorMessage = errorMessage;
-	}
 	
 	public RosettaInterpreterError(EObject obj) {
 		this.associatedExpression = obj;
@@ -70,6 +64,10 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 	 * @return Error message with code information
 	 */
 	public String properErrorMessage() {
+		if (associatedExpression == null) {
+			return errorMessage;
+		}
+		
 		INode node = NodeModelUtils.findActualNodeFor(associatedExpression);
 		int startLine = node.getStartLine();
 	    int offset = node.getOffset();

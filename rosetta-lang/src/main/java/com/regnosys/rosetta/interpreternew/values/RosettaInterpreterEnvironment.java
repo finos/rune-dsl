@@ -37,7 +37,7 @@ public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnviron
 		}
 		else {
 			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError(
+					new RosettaInterpreterEmptyError(
 							name 
 							+ " does not exist in the environment"));
 		}

@@ -126,7 +126,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		if (count == 0L) {
 			// List is empty
 			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError("List is empty"));
+					new RosettaInterpreterError("List is empty", exp));
 		} else {
 			// List has at least one element
 			return RosettaInterpreterBaseValue.valueStream(interpretedArgument)
@@ -154,14 +154,14 @@ public class RosettaInterpreterListOperatorInterpreter
 		if (count == 0L) {
 			// List is empty
 			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError("List is empty"));
+					new RosettaInterpreterError("List is empty", exp));
 		} else if (count == 1L) { 
 			// List has one element
 			return RosettaInterpreterBaseValue.valueStream(interpretedArgument)
 					.collect(Collectors.toList()).get(0);
 		} else {
 			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError("List contains more than one element"));
+					new RosettaInterpreterError("List contains more than one element", exp));
 		}
 	}
 
@@ -186,7 +186,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		if (count == 0L) {
 			// List is empty
 			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError("List is empty"));
+					new RosettaInterpreterError("List is empty", exp));
 		} else {
 			// List has at least one element
 			return RosettaInterpreterBaseValue.valueStream(interpretedArgument)
@@ -297,7 +297,7 @@ public class RosettaInterpreterListOperatorInterpreter
 			else if (!(v instanceof RosettaInterpreterNumberValue)) {
 				return new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError("Cannot take sum"
-								+ "of non-number value"));
+								+ "of non-number value", exp));
 			}
 		}
 		

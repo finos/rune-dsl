@@ -2,6 +2,8 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
@@ -41,9 +43,9 @@ public class RosettaInterpreterLogicalOperationInterpreter
 		} else {
 			// Check for errors in the left or right side of the binary operation
 			RosettaInterpreterErrorValue leftErrors = 
-					checkForErrors(leftInterpreted, "Leftside");
+					checkForErrors(leftInterpreted, "Leftside", expr);
 			RosettaInterpreterErrorValue rightErrors = 
-					checkForErrors(rightInterpreted, "Rightside");
+					checkForErrors(rightInterpreted, "Rightside", expr);
 			
 			return RosettaInterpreterErrorValue.merge(List.of(leftErrors, rightErrors));
 		}
@@ -57,7 +59,7 @@ public class RosettaInterpreterLogicalOperationInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 					"Logical Operation: Wrong operator "
-					+ "- only 'and' / 'or' supported"));
+					+ "- only 'and' / 'or' supported", null));
 		}
 	}
 	
@@ -73,7 +75,8 @@ public class RosettaInterpreterLogicalOperationInterpreter
 	 *         if the interpretedValue does not cause an error
 	 */
 	private RosettaInterpreterErrorValue checkForErrors(
-			RosettaInterpreterValue interpretedValue, String side) {
+			RosettaInterpreterValue interpretedValue, String side,
+			EObject ass) {
 		if (interpretedValue instanceof RosettaInterpreterBooleanValue) {
 			// No errors found.
 			// I return an error value without any errors in its list,
@@ -88,7 +91,7 @@ public class RosettaInterpreterLogicalOperationInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 							"Logical Operation: " + side 
-							+ " is not of type Boolean"));
+							+ " is not of type Boolean",ass));
 		}
 	}
 }

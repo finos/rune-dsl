@@ -128,12 +128,12 @@ public class RosettaInterpreterListOperationsInterpreter
 		if (!allStrings) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError("The list of values for a join "
-							+ "operation must be a list of strings"));
+							+ "operation must be a list of strings", exp));
 		}
 		if (!(delimVal instanceof RosettaInterpreterStringValue)) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError("The delimiter for a join"
-							+ " operation must be a string"));
+							+ " operation must be a string", exp));
 		}
 		
 		if (RosettaInterpreterBaseValue.valueStream(stringsVal)

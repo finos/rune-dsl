@@ -55,10 +55,10 @@ class RosettaInterpreterErrorValueTest {
 	
 	@BeforeEach
 	void setup() {
-		e1 = new RosettaInterpreterError("e1");
-		e2 = new RosettaInterpreterError("e2");
-		e3 = new RosettaInterpreterError("e3");
-		e4 = new RosettaInterpreterError("e4");
+		e1 = new RosettaInterpreterError("e1",null);
+		e2 = new RosettaInterpreterError("e2",null);
+		e3 = new RosettaInterpreterError("e3",null);
+		e4 = new RosettaInterpreterError("e4",null);
 		v1 = new RosettaInterpreterErrorValue(e1);
 		v2 = new RosettaInterpreterErrorValue(e2);
 		v3 = new RosettaInterpreterErrorValue(e3);
