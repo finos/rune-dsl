@@ -39,7 +39,7 @@ variables:
   sectionEnd: (?={{sectionStart}}|{{rootStart}})(?!\bcondition\b)|(?=\bcondition\b\s*({{identifier}})?:)
   functionalOperation: '{{wordStart}}(reduce|filter|map|extract|sort|min|max){{wordEnd}}'
   listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}'
-  listOperation: ->|{{listOperationWord}}
+  listOperation: ->>|->|{{listOperationWord}}
   synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
@@ -1108,6 +1108,15 @@ repository:
             - include: '#comment'
             - include: '#expression'
           - include: '#expression'
+        - name: meta.deep-projection.rosetta
+          begin: ->>
+          beginCaptures:
+            0: { name: keyword.operator.rosetta }
+          end: '{{identifier}}'
+          endCaptures:
+            0: { name: variable.other.rosetta } # Need semantic tokens for meta and to see whether it is an enummember or a regular member
+          patterns:
+          - include: '#comment'
         - name: meta.projection.rosetta
           begin: ->
           beginCaptures:
