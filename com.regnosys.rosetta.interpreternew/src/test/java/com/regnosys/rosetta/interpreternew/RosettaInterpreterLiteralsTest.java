@@ -118,7 +118,8 @@ public class RosettaInterpreterLiteralsTest {
 	public void numberTest() {
 		RosettaExpression expr = parser.parseExpression("5.5");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(5.5)), ((RosettaInterpreterNumberValue)val).getValue());
+		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(5.5)),
+				((RosettaInterpreterNumberValue)val).getValue());
 	}
 	
 	@Test
