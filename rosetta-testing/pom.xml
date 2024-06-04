@@ -35,11 +35,6 @@
 			<artifactId>com.regnosys.rosetta</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta.interpreternew</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 
 		<!-- External dependencies -->
 		<dependency>
@@ -79,6 +74,11 @@
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+			  <groupId>org.jacoco</groupId>
+			  <artifactId>jacoco-maven-plugin</artifactId>
+			</plugin>
 		</plugins>
+		
 	</build>
 </project>
