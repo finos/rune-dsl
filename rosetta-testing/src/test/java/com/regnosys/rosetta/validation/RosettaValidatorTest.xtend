@@ -69,16 +69,22 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		"a ->> opt1"
 			.parseExpression(#[context], #["a A (1..1)"])
 			.assertNoIssues
+		"b ->> attr"
+			.parseExpression(#[context], #["b B (1..1)"])
+			.assertNoIssues
 		
 		"a ->> B"
 			.parseExpression(#[context], #["a A (1..1)"])
-			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'B'.")
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'B'.")
 		"a ->> opt2"
 			.parseExpression(#[context], #["a A (1..1)"])
-			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'opt2'.")
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'opt2'.")
 		"a ->> otherAttr"
 			.parseExpression(#[context], #["a A (1..1)"])
-			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'otherAttr'.")
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'otherAttr'.")
+		"b ->> opt1"
+			.parseExpression(#[context], #["b B (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'opt1'.")
 	}
 	
 	@Test

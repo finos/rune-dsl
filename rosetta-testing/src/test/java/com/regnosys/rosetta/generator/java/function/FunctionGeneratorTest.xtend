@@ -71,6 +71,7 @@ class FunctionGeneratorTest {
 			attr Foo (1..1)
 		
 		type Foo:
+			id string (1..1)
 		
 		func Test:
 			inputs:
@@ -91,7 +92,57 @@ class FunctionGeneratorTest {
 			add result:
 				aList ->> opt1 -> attr
 		'''.generateCode
-        code.compileToClasses
+        val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+        
+        val foo1 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aBOpt1"
+			})
+        val bOpt1 = classes.createInstanceUsingBuilder("B", #{
+    			"opt1" -> classes.createInstanceUsingBuilder("Option1", #{
+    				"attr" -> foo1
+    			})
+    		})
+        val aBOpt1 = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> bOpt1
+	        })
+	    val foo2 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aBOpt2"
+			})
+	    val bOpt2 = classes.createInstanceUsingBuilder("B", #{
+    			"opt2" -> classes.createInstanceUsingBuilder("Option2", #{
+    				"attr" -> foo2,
+    				"otherAttr" -> "some value"
+    			})
+    		})
+        val aBOpt2 = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> bOpt2
+	        })
+	    val foo3 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aBAttr"
+			})
+	    val bAttr = classes.createInstanceUsingBuilder("B", #{
+    			"attr" -> foo3
+    		})
+        val aBAttr = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> bAttr
+	        })
+	    val foo4 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aCOpt1"
+			})
+        val aCOpt1 = classes.createInstanceUsingBuilder("A", #{
+    		"C" -> classes.createInstanceUsingBuilder("C", #{
+    			"opt1" -> classes.createInstanceUsingBuilder("Option1", #{
+    				"attr" -> foo4
+    			})
+    		})
+        })
+        
+        assertEquals(
+        	#[foo1, foo1, foo2, foo4, foo3, foo2, foo4],
+        	test.invokeFunc(List, #[aBOpt1, bOpt2, #[aCOpt1, aBAttr, aBOpt2]])
+        )
 	}
 	
 	@Test

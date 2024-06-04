@@ -278,7 +278,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val resultItemType = typeProvider.getRTypeOfFeature(feature).toJavaReferenceType
 		val StringConcatenationClient right = switch (feature) {
 			Attribute: {
-				feature.buildMapFunc(isDeepFeature, autoValue, scope)
+				receiverType.buildMapFunc(feature, isDeepFeature, autoValue, scope)
 			}
 			RosettaMetaType: 
 				feature.buildMapFunc(scope)
@@ -392,8 +392,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	private def StringConcatenationClient buildMapFunc(Attribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
-		val mapFunc = attribute.buildMapFuncAttribute(isDeepFeature, scope)
+	private def StringConcatenationClient buildMapFunc(RType itemType, Attribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
+		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
 		val resultType = if (attribute.metaAnnotations.nullOrEmpty) {
 				typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType
 			} else {
@@ -489,9 +489,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			)]
 	}
 
-	private def StringConcatenationClient buildMapFuncAttribute(Attribute attribute, boolean isDeepFeature, JavaScope scope) {
+	private def StringConcatenationClient buildMapFuncAttribute(RType itemType, Attribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
-		val lambdaParam = lambdaScope.createUniqueIdentifier("x")
+		val lambdaParam = lambdaScope.createUniqueIdentifier(itemType.name.toFirstLower)
 		'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «IF attribute.override»(«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType») «ENDIF»«lambdaParam».«IF isDeepFeature»choose«ELSE»get«ENDIF»«attribute.name.toFirstUpper»()'''
 	}
 
