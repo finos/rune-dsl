@@ -826,7 +826,7 @@ A null value for an expression with multiple cardinality is treated as an empty 
 
 #### Deep Paths for Choice Types
 
-For choice types, common attributes can be accessed using a *deep path operator* `->>`. Given a choice type called  
+For choice types, common attributes can be accessed using a *deep path operator* `->>`. Given a choice type called `Vehicle`, each of its options exposing an attribute `vehicleId`, this identifier can be accessed directly using `vehicle ->> vehicleId`.
 
 ### Operators
 
