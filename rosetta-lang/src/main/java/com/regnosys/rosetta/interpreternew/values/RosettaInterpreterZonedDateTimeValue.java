@@ -8,9 +8,10 @@ public class RosettaInterpreterZonedDateTimeValue extends RosettaInterpreterBase
 
 	private RosettaInterpreterDateValue date;
 	private RosettaInterpreterTimeValue time;
-	private String timeZone;
+	private RosettaInterpreterStringValue timeZone;
 	
-	public RosettaInterpreterZonedDateTimeValue(RosettaInterpreterDateValue date, RosettaInterpreterTimeValue time, String timeZone) {
+	public RosettaInterpreterZonedDateTimeValue(RosettaInterpreterDateValue date, 
+			RosettaInterpreterTimeValue time, RosettaInterpreterStringValue timeZone) {
 		this.date = date;
 		this.time = time;
 		this.timeZone = timeZone;
@@ -24,7 +25,7 @@ public class RosettaInterpreterZonedDateTimeValue extends RosettaInterpreterBase
 		return time;
 	}
 
-	public String getTimeZone() {
+	public RosettaInterpreterStringValue getTimeZone() {
 		return timeZone;
 	}
 

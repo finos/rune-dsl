@@ -2,7 +2,9 @@ package com.regnosys.rosetta.interpreternew;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalTime;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -13,10 +15,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.impl.RosettaConstructorExpressionImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
@@ -35,51 +42,67 @@ public class RosettaInterpreterConstructorExpressionTest {
 	@Inject 
 	ModelHelper mh;
 	
-	@Test
-	public void test() {
-		RosettaModel expr = mh.parseRosettaWithNoErrors("recordType date\r\n"
-				+ "{\r\n"
-				+ "	day   int\r\n"
-				+ "	month int\r\n"
-				+ "	year  int }");
-		System.out.println(expr.getElements().get(0).getModel());
-	}
+	RosettaInterpreterIntegerValue day = new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
+	RosettaInterpreterIntegerValue month = new RosettaInterpreterIntegerValue(BigInteger.valueOf(7));
+	RosettaInterpreterIntegerValue year = new RosettaInterpreterIntegerValue(BigInteger.valueOf(2024));
+	RosettaInterpreterDateValue date = new RosettaInterpreterDateValue(day, month, year);
+	
+	RosettaInterpreterNumberValue hours = new RosettaInterpreterNumberValue(BigDecimal.valueOf(5));
+	RosettaInterpreterNumberValue minutes = new RosettaInterpreterNumberValue(BigDecimal.valueOf(30));
+	RosettaInterpreterNumberValue seconds = new RosettaInterpreterNumberValue(BigDecimal.valueOf(28));
+	RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(hours, minutes, seconds);
+	
+	
+//	@Test
+//	public void test() {
+//		RosettaModel expr = mh.parseRosettaWithNoErrors("recordType date\r\n"
+//				+ "{\r\n"
+//				+ "	day   int\r\n"
+//				+ "	month int\r\n"
+//				+ "	year  int }");
+//		System.out.println(expr.getElements().get(0).getModel());
+//	}
 	
 	@Test
 	public void testDate() {
-		RosettaExpression expr = parser.parseExpression("date { day: 5, month: 7, year: 2000 }");
+		RosettaExpression expr = parser.parseExpression("date { day: 5, month: 7, year: 2024 }");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		assertEquals(5, ((RosettaInterpreterDateValue) result).getDay());
-		assertEquals(7, ((RosettaInterpreterDateValue) result).getMonth());
-		assertEquals(2000, ((RosettaInterpreterDateValue) result).getYear());
+		assertEquals(day, ((RosettaInterpreterDateValue) result).getDay());
+		assertEquals(month, ((RosettaInterpreterDateValue) result).getMonth());
+		assertEquals(year, ((RosettaInterpreterDateValue) result).getYear());
 	}
 	
 	@Test
 	public void testDateTime() {
+		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
+		env.addValue("t", time);
+		
 		RosettaExpression expr = parser.parseExpression(
-				"dateTime { date: date { day: 5, month: 7, year: 2022 }, time: \"05:00:00\" }");
-		RosettaInterpreterValue result = interpreter.interp(expr);
+				"dateTime { date: date { day: 5, month: 7, year: 2024 }, time: t }", 
+				List.of("t time (1..1)"));
+		RosettaInterpreterValue result = interpreter.interp(expr, env);
 		
-		RosettaInterpreterDateValue date = new RosettaInterpreterDateValue(5, 7, 2022);
-		RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(LocalTime.now());
-		
-		assertEquals(date, ((RosettaInterpreterDateTimeValue) result).getDate());
+		assertEquals(day, ((RosettaInterpreterDateTimeValue) result).getDate().getDay());
+		assertEquals(month, ((RosettaInterpreterDateTimeValue) result).getDate().getMonth());
+		assertEquals(year, ((RosettaInterpreterDateTimeValue) result).getDate().getYear());
 		assertEquals(time, ((RosettaInterpreterDateTimeValue) result).getTime());
 	}
 	
 	@Test
 	public void testZonedDateTime() {
+		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
+		env.addValue("t", time);
+		
 		RosettaExpression expr = parser.parseExpression(
-				"zonedDateTime { date: date { day: 5, month: 7, year: 2022 }"
-				+ ", time: \"05:00:00\", timezone: \"CET\" }");
-		RosettaInterpreterValue result = interpreter.interp(expr);
+				"zonedDateTime { date: date { day: 5, month: 7, year: 2024 }"
+				+ ", time: t, timezone: \"CET\" }", List.of("t time (1..1)"));
+		RosettaInterpreterValue result = interpreter.interp(expr, env);
 		
-		RosettaInterpreterDateValue date = new RosettaInterpreterDateValue(5, 7, 2022);
-		RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(LocalTime.now());
-		
-		assertEquals(date, ((RosettaInterpreterDateTimeValue) result).getDate());
-		assertEquals(time, ((RosettaInterpreterDateTimeValue) result).getTime());
-		assertEquals("CET", ((RosettaInterpreterStringValue) result).getValue());
+		assertEquals(day, ((RosettaInterpreterZonedDateTimeValue) result).getDate().getDay());
+		assertEquals(month, ((RosettaInterpreterZonedDateTimeValue) result).getDate().getMonth());
+		assertEquals(year, ((RosettaInterpreterZonedDateTimeValue) result).getDate().getYear());
+		assertEquals(time, ((RosettaInterpreterZonedDateTimeValue) result).getTime());
+		assertEquals("CET", ((RosettaInterpreterZonedDateTimeValue) result).getTimeZone().getValue());
 	}
 }

@@ -6,6 +6,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
@@ -33,9 +34,9 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 						&& month instanceof RosettaInterpreterIntegerValue 
 						&& year instanceof RosettaInterpreterIntegerValue) {
 					return new RosettaInterpreterDateValue(
-							((RosettaInterpreterIntegerValue) day).getValue().intValue(), 
-							((RosettaInterpreterIntegerValue) month).getValue().intValue(),
-							((RosettaInterpreterIntegerValue) year).getValue().intValue());
+							((RosettaInterpreterIntegerValue) day), 
+							((RosettaInterpreterIntegerValue) month),
+							((RosettaInterpreterIntegerValue) year));
 				}
 				break;
 			}
@@ -62,7 +63,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					return new RosettaInterpreterZonedDateTimeValue(
 							((RosettaInterpreterDateValue) date), 
 							((RosettaInterpreterTimeValue) time),
-							((RosettaInterpreterStringValue) timeZone).getValue());
+							((RosettaInterpreterStringValue) timeZone));
 				}
 				break;
 			}

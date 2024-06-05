@@ -18,6 +18,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
@@ -40,6 +41,7 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperat
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaBooleanLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConditionalExpressionInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaConstructorExpressionInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaFeatureCallInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaIntLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNumberLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
@@ -316,5 +318,10 @@ public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
 	@Override
 	public RosettaInterpreterValue interp(RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterRosettaConstructorExpressionInterpreter().interp(exp, env);
+	}
+	
+	@Override
+	public RosettaInterpreterValue interp(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterRosettaFeatureCallInterpreter().interp(exp, env);
 	}
 }

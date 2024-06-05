@@ -6,25 +6,26 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterDateValue extends RosettaInterpreterBaseValue {
 	
-	private Integer day;
-	private Integer month;
-	private Integer year;
+	private RosettaInterpreterIntegerValue day;
+	private RosettaInterpreterIntegerValue month;
+	private RosettaInterpreterIntegerValue year;
 	
-	public RosettaInterpreterDateValue(Integer day, Integer month, Integer year) {
+	public RosettaInterpreterDateValue(RosettaInterpreterIntegerValue day, 
+			RosettaInterpreterIntegerValue month, RosettaInterpreterIntegerValue year) {
 		this.day = day;
 		this.month = month;
 		this.year = year;
 	}
 
-	public Integer getDay() {
+	public RosettaInterpreterIntegerValue getDay() {
 		return day;
 	}
 
-	public Integer getMonth() {
+	public RosettaInterpreterIntegerValue getMonth() {
 		return month;
 	}
 
-	public Integer getYear() {
+	public RosettaInterpreterIntegerValue getYear() {
 		return year;
 	}
 

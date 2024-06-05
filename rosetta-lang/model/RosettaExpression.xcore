@@ -188,6 +188,10 @@ class RosettaImplicitVariable extends RosettaReference, RosettaNamed {
 class RosettaFeatureCall extends RosettaExpression {
 	contains RosettaExpression receiver
 	refers RosettaFeature feature
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class RosettaConditionalExpression extends RosettaExpression {
