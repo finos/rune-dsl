@@ -71,7 +71,7 @@ class ModelObjectGenerator {
 
 				«startComment('Getter Methods')»
 				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
-			
+
 				«startComment('Build Methods')»
 				«pojoInterfaceBuilderMethods(javaType, d)»
 
