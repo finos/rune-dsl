@@ -1,8 +1,10 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.math.BigDecimal;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 
 public class RosettaInterpreterRosettaIntLiteralInterpreter 
@@ -12,8 +14,8 @@ public class RosettaInterpreterRosettaIntLiteralInterpreter
 		return interp(expr, new RosettaInterpreterEnvironment());
 	}
 	
-	public RosettaInterpreterIntegerValue interp(RosettaIntLiteral expr, 
+	public RosettaInterpreterNumberValue interp(RosettaIntLiteral expr, 
 			RosettaInterpreterEnvironment env) {
-		return new RosettaInterpreterIntegerValue(expr.getValue());
+		return new RosettaInterpreterNumberValue(new BigDecimal(expr.getValue()));
 	}
 }

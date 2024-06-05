@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +10,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
@@ -92,7 +90,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * Return the number of elements in a list
 	 *
 	 * @param exp Expression to perform 'count' on
-	 * @return Integer indicating how many elements there are in the list
+	 * @return Number indicating how many elements there are in the list
 	 */
 	public RosettaInterpreterValue interp(RosettaCountOperation exp, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
@@ -103,7 +101,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		}
 		
 		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
-		return new RosettaInterpreterIntegerValue(BigInteger.valueOf(count));
+		return new RosettaInterpreterNumberValue(BigDecimal.valueOf(count));
 	}
 
 	/**
@@ -288,13 +286,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		// to numbers for further simplicity
 		for (int i = 0; i < values.size(); i++) {
 			RosettaInterpreterValue v = values.get(i);
-			if (v instanceof RosettaInterpreterIntegerValue) {
-				RosettaInterpreterIntegerValue valInt =
-						(RosettaInterpreterIntegerValue)v;
-				values.set(i, new RosettaInterpreterNumberValue(
-						BigDecimal.valueOf(valInt.getValue().longValue())));
-			}
-			else if (!(v instanceof RosettaInterpreterNumberValue)) {
+			if (!(v instanceof RosettaInterpreterNumberValue)) {
 				return new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError("Cannot take sum"
 								+ "of non-number value"));

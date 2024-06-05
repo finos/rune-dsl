@@ -60,10 +60,10 @@ public class RosettaInterpreterLiteralsTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue expected = 
 				new RosettaInterpreterListValue(List.of(
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(1)), 
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(2))));
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(1)), 
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(2))));
 		assertEquals(expected, val);
 		
 	}
@@ -75,12 +75,12 @@ public class RosettaInterpreterLiteralsTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue expected = 
 				new RosettaInterpreterListValue(List.of(
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(1)), 
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(2)),
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(3))));
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(1)), 
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(2)),
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(3))));
 		assertEquals(expected, val);
 		
 	}
@@ -92,16 +92,16 @@ public class RosettaInterpreterLiteralsTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue expected = 
 				new RosettaInterpreterListValue(List.of(
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(1)), 
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(2)),
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(3)),
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(4)),
-						new RosettaInterpreterIntegerValue(
-								BigInteger.valueOf(5))));
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(1)), 
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(2)),
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(3)),
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(4)),
+						new RosettaInterpreterNumberValue(
+								BigDecimal.valueOf(5))));
 		assertEquals(expected, val);
 		
 	}
@@ -110,15 +110,16 @@ public class RosettaInterpreterLiteralsTest {
 	public void intTest() {
 		RosettaExpression expr = parser.parseExpression("5");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals(BigInteger.valueOf(5),
-				((RosettaInterpreterIntegerValue)val).getValue());
+		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(5)),
+				((RosettaInterpreterNumberValue)val).getValue());
 	}
 	
 	@Test
 	public void numberTest() {
 		RosettaExpression expr = parser.parseExpression("5.5");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(5.5)), ((RosettaInterpreterNumberValue)val).getValue());
+		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(5.5)), 
+				((RosettaInterpreterNumberValue)val).getValue());
 	}
 	
 	@Test

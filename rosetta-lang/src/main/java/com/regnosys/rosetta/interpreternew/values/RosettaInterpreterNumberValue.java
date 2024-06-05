@@ -23,6 +23,11 @@ public class RosettaInterpreterNumberValue extends RosettaInterpreterBaseValue
 		this.value = value;
 	}
 	
+	public RosettaInterpreterNumberValue(double value) {
+		super();
+		this.value = RosettaNumber.valueOf(value);
+	}
+
 	public RosettaNumber getValue() { return value; }
 
 	@Override
