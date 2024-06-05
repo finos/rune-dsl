@@ -81,6 +81,10 @@ public class RosettaJavaPackages {
 		public DottedPath functions() {
 			return child("functions");
 		}
+		
+		public DottedPath util() {
+			return child("util");
+		}
 
 		public DottedPath typeValidation() {
 			return child("validation");

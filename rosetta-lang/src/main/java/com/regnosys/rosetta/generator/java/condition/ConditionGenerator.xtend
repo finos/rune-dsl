@@ -5,7 +5,6 @@ import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
-import com.regnosys.rosetta.generator.java.function.FunctionDependencyProvider
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
@@ -26,12 +25,13 @@ import javax.inject.Inject
 import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
 	@Inject extension RosettaExtensions
 	@Inject extension ImportManagerExtension
-	@Inject FunctionDependencyProvider funcDependencies
+	@Inject JavaDependencyProvider dependencies
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
@@ -49,7 +49,7 @@ class ConditionGenerator {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
 		val ruleName = rule.conditionName(data)
 		val className = toConditionJavaType(ruleName);
-		val funcDeps = funcDependencies.rFunctionDependencies(rule.expression)
+		val deps = dependencies.javaDependencies(rule.expression)
 		val implicitVarRepr = rule.implicitVarInContext
 		
 		val classScope = scope.classScope(toConditionJavaType(ruleName))
@@ -60,7 +60,7 @@ class ConditionGenerator {
 		val defaultClassScope = classScope.classScope("Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier("Default")
 		
-		funcDeps.forEach[defaultClassScope.createIdentifier(it.toFunctionInstance, it.alphanumericName.toFirstLower)]
+		deps.forEach[defaultClassScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
 		
 		val defaultClassValidateScope = defaultClassScope.methodScope("validate")
 		val defaultClassPathId = defaultClassValidateScope.createUniqueIdentifier("path")
@@ -89,8 +89,8 @@ class ConditionGenerator {
 				
 				class «defaultClassName» implements «className» {
 				
-					«FOR dep : funcDeps»
-						@«Inject» protected «dep.toFunctionJavaClass» «defaultClassScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+					«FOR dep : deps»
+						@«Inject» protected «dep» «defaultClassScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
 						
 					«ENDFOR»
 					@Override

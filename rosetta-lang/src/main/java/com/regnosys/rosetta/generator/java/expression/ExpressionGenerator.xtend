@@ -181,7 +181,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						rObjectFactory.buildRFunction(callable as RosettaRule)
 				val outputType = rCallable.output.attributeToJavaType
 				if (arguments.empty) {
-					JavaExpression.from('''«scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate()''', outputType)
+					JavaExpression.from('''«scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate()''', outputType)
 				} else {
 					// First evaluate all arguments
 					var argCode = arguments.head.javaCode(rCallable.inputs.head.attributeToJavaType, scope)
@@ -194,7 +194,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					}
 					argCode
 						.collapseToSingleExpression(scope)
-						.mapExpression[JavaExpression.from('''«scope.getIdentifierOrThrow(rCallable.toFunctionInstance)».evaluate(«it»)''', outputType)]
+						.mapExpression[JavaExpression.from('''«scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', outputType)]
 				}
 			}
 			RosettaExternalFunction: {
@@ -508,7 +508,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def StringConcatenationClient buildMapFuncAttribute(RType itemType, Attribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(itemType.name.toFirstLower)
-		'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «IF attribute.override»(«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType») «ENDIF»«lambdaParam».«IF isDeepFeature»choose«ELSE»get«ENDIF»«attribute.name.toFirstUpper»()'''
+		if (isDeepFeature) {
+			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((itemType as RDataType).data.toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
+		} else {
+			'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «IF attribute.override»(«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType») «ENDIF»«lambdaParam».get«attribute.name.toFirstUpper»()'''
+		}
 	}
 
 	/**

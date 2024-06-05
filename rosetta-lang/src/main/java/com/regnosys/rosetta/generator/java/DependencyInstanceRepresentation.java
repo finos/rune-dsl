@@ -18,28 +18,28 @@ package com.regnosys.rosetta.generator.java;
 
 import java.util.Objects;
 
-import com.regnosys.rosetta.types.RFunction;
+import com.rosetta.util.types.JavaClass;
 
-public class FunctionInstanceRepresentation {
-	private final RFunction func;
-	public FunctionInstanceRepresentation(RFunction func) {
-		this.func = func;
+public class DependencyInstanceRepresentation {
+	private final JavaClass<?> dependency;
+	public DependencyInstanceRepresentation(JavaClass<?> dependency) {
+		this.dependency = dependency;
 	}
 	
 	@Override
 	public String toString() {
-		return "FunctionInstance[" + func.getId() + "]";
+		return "DependencyInstance[" + dependency.getCanonicalName() + "]";
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.getClass(), func);
+		return Objects.hash(this.getClass(), dependency);
 	}
 	@Override
 	public boolean equals(Object object) {
 		if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
-        FunctionInstanceRepresentation other = (FunctionInstanceRepresentation) object;
-        return Objects.equals(func, other.func);
+        DependencyInstanceRepresentation other = (DependencyInstanceRepresentation) object;
+        return Objects.equals(dependency, other.dependency);
 	}
 }

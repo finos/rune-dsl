@@ -33,7 +33,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration
-import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 
 class ModelObjectGenerator {
 	
@@ -42,7 +41,6 @@ class ModelObjectGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
-	@Inject extension DeepFeatureCallUtil
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
 		fsa.generateFile(root.child(data.name + '.java').withForwardSlashes,
@@ -73,8 +71,7 @@ class ModelObjectGenerator {
 
 				«startComment('Getter Methods')»
 				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
-				
-				«pojoInterfaceChoiceMethods(javaType, metaType, metaDataIdentifier, d)»
+			
 				«startComment('Build Methods')»
 				«pojoInterfaceBuilderMethods(javaType, d)»
 
@@ -164,19 +161,6 @@ class ModelObjectGenerator {
 			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
 		«ENDFOR»
 		'''
-	
-	protected def StringConcatenationClient pojoInterfaceChoiceMethods(JavaClass<?> javaType, JavaClass<?> metaType, GeneratedIdentifier metaDataIdentifier, Data d) {
-		val deepFeatures = new RDataType(d).findDeepFeatures
-		'''
-		«IF !deepFeatures.empty»
-		«startComment('Choice Methods')»
-		«FOR deepFeature : deepFeatures»
-			«deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType» choose«deepFeature.name.toFirstUpper»();
-		«ENDFOR»
-		
-		«ENDIF»
-		'''
-	}
 
 	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass<?> javaType, Data d) '''
 			«d.name» build();
@@ -231,7 +215,6 @@ class ModelObjectGenerator {
 			}
 			
 		«ENDFOR»
-		«c.deepGetters(scope)»
 		@Override
 		public «c.name» build() {
 			return this;
