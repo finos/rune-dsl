@@ -122,6 +122,30 @@ public class RosettaInterpreterLiteralsTest {
 	}
 	
 	@Test
+	public void intEqualsFloatTest() {
+		RosettaExpression expr = parser.parseExpression("5 = 5.0");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals(true, 
+				((RosettaInterpreterBooleanValue)val).getValue());
+	}
+	
+	@Test
+	public void intEqualsDoubleTest() {
+		RosettaExpression expr = parser.parseExpression("5 = 5.00");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals(true, 
+				((RosettaInterpreterBooleanValue)val).getValue());
+	}
+	
+	@Test
+	public void floatEqualsDoubleTest() {
+		RosettaExpression expr = parser.parseExpression("5.0 = 5.00");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals(true, 
+				((RosettaInterpreterBooleanValue)val).getValue());
+	}
+	
+	@Test
 	public void stringTest() {
 		RosettaExpression expr = parser.parseExpression("\"hello\"");
 		RosettaInterpreterValue val = interpreter.interp(expr);
