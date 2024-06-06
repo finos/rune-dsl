@@ -3,7 +3,6 @@ package com.regnosys.rosetta.interpreternew;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,9 +51,9 @@ public class RosettaInterpreterVariableTest {
 	public void variableGoodComparisonTest() {
 		//create the environment and add variable 'a' to it
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
-		RosettaInterpreterNumberValue value = 
+		RosettaInterpreterNumberValue intValue = 
 				new RosettaInterpreterNumberValue(5);
-		env.addValue("a", value);
+		env.addValue("a", intValue);
 
 		//give the same environment to the parser
 		RosettaExpression expr = parser.parseExpression("a >= 2", 
@@ -69,9 +68,9 @@ public class RosettaInterpreterVariableTest {
 	public void variableLeftErrorComparisonTest() {
 		//create the environment and add variable 'a' to it
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
-		RosettaInterpreterNumberValue value = 
+		RosettaInterpreterNumberValue intValue = 
 				new RosettaInterpreterNumberValue(5);
-		env.addValue("a", value);
+		env.addValue("a", intValue);
 		
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
