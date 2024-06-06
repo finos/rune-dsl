@@ -20,10 +20,6 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 public class RosettaInterpreterListOperationsInterpreter
 	extends RosettaInterpreterConcreteInterpreter {
 
-	public RosettaInterpreterValue interp(RosettaContainsExpression exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-
 	/**
 	 * Interprets a rosetta contains expression.
 	 * Checks if the right element, which may be a single element or a list,
@@ -33,7 +29,7 @@ public class RosettaInterpreterListOperationsInterpreter
 	 * @return value of contains expression
 	 */
 	public RosettaInterpreterValue interp(RosettaContainsExpression exp,
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
 		RosettaExpression leftExp = exp.getLeft();
 		RosettaExpression rightExp = exp.getRight();
 		
@@ -59,10 +55,6 @@ public class RosettaInterpreterListOperationsInterpreter
 		return new RosettaInterpreterBooleanValue(contains);
 	}
 	
-	public RosettaInterpreterValue interp(RosettaDisjointExpression exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-	
 	/**
 	 * Interprets a rosetta disjoint expression.
 	 * Checks if the right element, which may be a single element or a list,
@@ -72,7 +64,7 @@ public class RosettaInterpreterListOperationsInterpreter
 	 * @return value of contains expression
 	 */
 	public RosettaInterpreterValue interp(RosettaDisjointExpression exp,
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
 		RosettaExpression leftExp = exp.getLeft();
 		RosettaExpression rightExp = exp.getRight();
 		
@@ -97,10 +89,6 @@ public class RosettaInterpreterListOperationsInterpreter
 		
 		return new RosettaInterpreterBooleanValue(notContains);
 	}
-	
-	public RosettaInterpreterValue interp(JoinOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
 
 	/**
 	 * Interprets a join operation.
@@ -111,7 +99,7 @@ public class RosettaInterpreterListOperationsInterpreter
 	 * @return concatenated string
 	 */
 	public RosettaInterpreterValue interp(JoinOperation exp,
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
 		RosettaExpression stringsExp = exp.getLeft();
 		RosettaExpression delimExp = exp.getRight();
 		

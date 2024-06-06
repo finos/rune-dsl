@@ -18,10 +18,6 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 					extends RosettaInterpreterConcreteInterpreter {
 	
 	
-	public RosettaInterpreterValue interp(ArithmeticOperation expr) {
-		return interp(expr, new RosettaInterpreterEnvironment());
-	}
-	
 	/**
 	 * Interprets an arithmetic operation, evaluating the operation between the two terms.
 	 *
@@ -33,7 +29,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
      *         the error.
 	 */
 	public RosettaInterpreterValue interp(ArithmeticOperation expr,
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
 		
 		String leftString = null;
 		String rightString = null;

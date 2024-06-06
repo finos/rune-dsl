@@ -10,7 +10,7 @@ public class RosettaInterpreterVariableInterpreter {
 	 * Interprets a variable, returns the value of it.
 	 *
 	 * @param exp The RosettaSymbolReference expression to interpret
-	 * @param environment RosettaInterpreterBaseEnvironment that keeps track
+	 * @param env RosettaInterpreterBaseEnvironment that keeps track
 	 *		   of the current state of the program
 	 * @return If no errors are encountered, a RosettaInterpreterValue representing
 	 * 		   the value of the variable.
@@ -18,10 +18,10 @@ public class RosettaInterpreterVariableInterpreter {
      *         the error.
 	 */
 	public RosettaInterpreterValue interp(RosettaSymbolReference exp, 
-			RosettaInterpreterBaseEnvironment environment) {
+			RosettaInterpreterBaseEnvironment env) {
 		
 		//Search for variable in environment
-		RosettaInterpreterValue varValue = environment.findValue(exp.getSymbol().getName());
+		RosettaInterpreterValue varValue = env.findValue(exp.getSymbol().getName());
 		
 		return varValue;
 	}
