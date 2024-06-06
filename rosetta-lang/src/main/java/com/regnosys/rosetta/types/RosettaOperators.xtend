@@ -16,6 +16,7 @@ class RosettaOperators {
 	public static val EQUALITY_OPS = #['=', '<>', 'contains', 'disjoint']
 	public static val LOGICAL_OPS = #['and', 'or']
 	public static val JOIN_OP = 'join'
+	public static val DEFAULT_OP = 'default'
 
 	@Inject extension RBuiltinTypeService service
 	@Inject extension TypeSystem
@@ -74,6 +75,11 @@ class RosettaOperators {
 			return bothString(left, right, op)
 		} else if (LOGICAL_OPS.contains(op)) {
 			return bothBoolean(left, right, op)
+		} else if (op == DEFAULT_OP) {
+			val result = left.join(right)
+			if (result != ANY) {
+				result
+			}
 		}
 		
 		if (resultType === null) {

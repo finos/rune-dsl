@@ -121,6 +121,12 @@
                                 <include>**/*</include>
                             </includes>
                         </fileset>
+                        <fileset>
+                            <directory>${basedir}/../rosetta-lang/xsemantics-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
                         <!-- rosetta-ide -->
                         <fileset>
                             <directory>${basedir}/../rosetta-ide/src-gen/</directory>
@@ -189,7 +195,7 @@
                         <sourceRoot>${project.basedir}/src-gen/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/emf-gen/main/java</sourceRoot>
                         <sourceRoot>
-                            ${project.build.directory}/xtend-gen/main/java</sourceRoot>
+                            ${project.basedir}/xtend-gen/main/java</sourceRoot>
                     </sourceRoots>
                     <languages>
                         <language>
@@ -215,7 +221,7 @@
                             <outputConfigurations>
                                 <outputConfiguration>
                                     <outputDirectory>
-                                        ${project.build.directory}/xsemantics-gen/main/java</outputDirectory>
+                                        ${project.basedir}/xsemantics-gen/main/java</outputDirectory>
                                 </outputConfiguration>
                             </outputConfigurations>
                         </language>

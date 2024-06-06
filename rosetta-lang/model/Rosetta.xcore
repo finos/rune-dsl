@@ -15,6 +15,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 class RosettaModel extends RosettaDefinable {
 	String name
 	String version = "0.0.0"
+	boolean overridden
 	contains Import[] imports
 	contains RosettaQualifiableConfiguration[] configurations opposite model 
 	contains RosettaRootElement[] elements opposite model

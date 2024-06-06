@@ -87,9 +87,8 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 			return extractRawClass(((GenericArrayType) t).getGenericComponentType());
 		} else if (t instanceof ParameterizedType) {
 			return extractRawClass(((ParameterizedType) t).getRawType());
-		} else {
-			throw new IllegalArgumentException("Cannot use a type reference to " + t + ". No raw class found.");
 		}
+		throw new IllegalArgumentException("Cannot use a type reference to " + t + ". No raw class found.");
 	}
 	
 	public abstract JavaGenericTypeDeclaration<? super T> getGenericTypeDeclaration();

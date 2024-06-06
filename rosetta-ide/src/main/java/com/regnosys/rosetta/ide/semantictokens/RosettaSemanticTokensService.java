@@ -46,6 +46,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
@@ -159,6 +160,10 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	private SemanticToken markAttribute(EObject objectToMark, EStructuralFeature featureToMark, Attribute attribute) {
+		if (attribute instanceof ChoiceOption) {
+			return null;
+		}
+		
 		RosettaSemanticTokenTypesEnum tokenType = null;
 		EReference containmentFeature = attribute.eContainmentFeature();
 		if (containmentFeature.equals(FUNCTION__INPUTS)) {

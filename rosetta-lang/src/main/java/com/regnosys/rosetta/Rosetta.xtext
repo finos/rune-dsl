@@ -11,7 +11,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 // - [RosettaSynonymSource|QualifiedName]
 
 RosettaModel:
-	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
+	 (overridden?='override')? 'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
 	
 	('version' version=STRING)? // TODO: could do better than STRING
@@ -35,6 +35,7 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation
 	| Data
+	| Choice
 	| Function
 ;
 
@@ -78,6 +79,17 @@ Data:
 	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
+;
+
+Choice:
+	'choice' RosettaNamed ':' RosettaDefinable?
+	(Annotations|ClassSynonyms)*
+	
+	attributes += ChoiceOption*
+;
+
+ChoiceOption:
+	RosettaTyped
 ;
 
 Attribute:
@@ -590,6 +602,7 @@ RosettaCalcBinary returns RosettaExpression:
 	ListOperation (=>(
 		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+		| {DefaultOperation.left=current} operator='default' right=ListOperation
 		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 	))?
 	| // Without left parameter:
@@ -597,15 +610,18 @@ RosettaCalcBinary returns RosettaExpression:
 		->(
 			{RosettaContainsExpression} operator='contains' right=ListOperation
 			| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
+			| {DefaultOperation} operator='default' right=ListOperation
 			| {JoinOperation} operator='join' (=>right=ListOperation)?
 		)
 		(=>(
 			{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 			| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+			| {DefaultOperation.left=current} operator='default' right=ListOperation
 			| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 		))?
 	)
 ;
+
 
 /**
  * List operations
@@ -620,6 +636,7 @@ ListOperation returns RosettaExpression:
 	(
 		=>(
 			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaDeepFeatureCall.receiver=current} '->>' (=>feature=[Attribute|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')
@@ -692,6 +709,7 @@ ListOperation returns RosettaExpression:
 	(
 		=>(
 			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaDeepFeatureCall.receiver=current} '->>' (=>feature=[Attribute|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')

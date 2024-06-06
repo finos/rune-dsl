@@ -203,6 +203,38 @@ type Vehicle extends VehicleFeature:
 For clarity purposes, the documentation snippets omit the annotations and definitions that are associated with the data types and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
 
+### Choice Type
+
+#### Purpose
+
+A *choice type* let you describe a group of different types which are somehow related. It consists of a list of types, each of which is an option to choose from.
+
+In other languages, a choice type is often called a *union type*.
+
+#### Syntax
+
+A choice type is defined using the keyword `choice`, followed by a name and a list of option types. Similar to data types, it can also comprise a description and annotations.
+
+``` Haskell
+choice <TypeName>: <"Description">
+  [<annotation1>]
+  [<annotation2>]
+  [...]
+  <Type1>
+  <Type2>
+  <...>
+```
+
+For example:
+
+``` Haskell
+choice Vehicle:
+  [metadata key]
+  Car
+  Bicycle
+  Motorcycle
+```
+
 ### Enumeration
 
 #### Purpose
@@ -792,6 +824,10 @@ In the above example, if `drivingLicense` is null, the final `penaltyPoints` att
 
 A null value for an expression with multiple cardinality is treated as an empty [list](#list).
 
+#### Deep Paths for Choice Types
+
+For choice types, common attributes can be accessed using a *deep path operator* `->>`. Given a choice type called `Vehicle`, each of its options exposing an attribute `vehicleId`, this identifier can be accessed directly using `vehicle ->> vehicleId`.
+
 ### Operators
 
 #### Purpose
@@ -872,6 +908,10 @@ Rune supports basic arithmetic operators
 - `+` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatenation of two string types
 - `-`, `*`, `/` take two numerical types and respectively subtract, multiply and divide them to give a number result.
 
+#### Default Operator
+
+The `default` operator takes two values of matching type. If the value to the left of the default is empty then the value of to the right of the default will be returned. Note that the type and cardinality of both sides of the operator must match for the syntax to be valid.
+
 #### Operator Precedence
 
 Expressions are evaluated in Rune in the following order, from first to last - see [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)).
@@ -885,6 +925,7 @@ Expressions are evaluated in Rune in the following order, from first to last - s
 1. Additive operators `+`, `-` - e.g. `3-4`
 1. Comparison operators `>=`, `<=`, `>`, `<` - e.g. `3>4`
 1. Existence operators `exists`,`is absent`, `contains`, `disjoint` - e.g. `Lineage -> executionReference exists`
+1. Default operator `a default b`
 1. and - e.g. `5>6 and true`
 1. or - e.g. `5>6 or true`
 

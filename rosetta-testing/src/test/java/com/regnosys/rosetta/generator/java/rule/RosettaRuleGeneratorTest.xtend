@@ -158,11 +158,11 @@ class RosettaRuleGeneratorTest {
 					
 					// RosettaFunction dependencies
 					//
-					@Inject protected BarBarOneRule barBarOne;
-					@Inject protected BarBarTwoRule barBarTwo;
-					@Inject protected BarBazRule barBaz;
-					@Inject protected BarQuuxRule barQuux;
-					@Inject protected BarQuxListRule barQuxList;
+					@Inject protected BarBarOneRule barBarOneRule;
+					@Inject protected BarBarTwoRule barBarTwoRule;
+					@Inject protected BarBazRule barBazRule;
+					@Inject protected BarQuuxRule barQuuxRule;
+					@Inject protected BarQuxListRule barQuxListRule;
 				
 					/**
 					* @param input 
@@ -194,20 +194,20 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarOne(barBarOne.evaluate(input));
+								.setBarBarOne(barBarOneRule.evaluate(input));
 							
 							output
-								.setBarBarTwo(barBarTwo.evaluate(input));
+								.setBarBarTwo(barBarTwoRule.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(barBaz.evaluate(input));
+								.setBarBaz1(barBazRule.evaluate(input));
 							
 							output
-								.setBarQuxList(barQuxList.evaluate(input));
+								.setBarQuxList(barQuxListRule.evaluate(input));
 							
 							output
-								.setBarQuux(barQuux.evaluate(input));
+								.setBarQuux(barQuuxRule.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -305,11 +305,11 @@ class RosettaRuleGeneratorTest {
 					
 					// RosettaFunction dependencies
 					//
-					@Inject protected BarBarOneRule barBarOne;
-					@Inject protected BarBarTwoRule barBarTwo;
-					@Inject protected BarBazRule barBaz;
-					@Inject protected BarQuuxRule barQuux;
-					@Inject protected BarQuxListRule barQuxList;
+					@Inject protected BarBarOneRule barBarOneRule;
+					@Inject protected BarBarTwoRule barBarTwoRule;
+					@Inject protected BarBazRule barBazRule;
+					@Inject protected BarQuuxRule barQuuxRule;
+					@Inject protected BarQuxListRule barQuxListRule;
 				
 					/**
 					* @param input 
@@ -341,20 +341,20 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarOne(barBarOne.evaluate(input));
+								.setBarBarOne(barBarOneRule.evaluate(input));
 							
 							output
-								.setBarBarTwo(MapperC.of(barBarTwo.evaluate(input)).get());
+								.setBarBarTwo(MapperC.of(barBarTwoRule.evaluate(input)).get());
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(barBaz.evaluate(input));
+								.setBarBaz1(barBazRule.evaluate(input));
 							
 							output
-								.setBarQuxList(barQuxList.evaluate(input));
+								.setBarQuxList(barQuxListRule.evaluate(input));
 							
 							output
-								.setBarQuux(barQuux.evaluate(input));
+								.setBarQuux(barQuuxRule.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -444,10 +444,10 @@ class RosettaRuleGeneratorTest {
 					
 					// RosettaFunction dependencies
 					//
-					@Inject protected BarBarTwoRule barBarTwo;
-					@Inject protected BarBazRule barBaz;
-					@Inject protected BarQuxListRule barQuxList;
-					@Inject protected New_BarBarOneRule new_BarBarOne;
+					@Inject protected BarBarTwoRule barBarTwoRule;
+					@Inject protected BarBazRule barBazRule;
+					@Inject protected BarQuxListRule barQuxListRule;
+					@Inject protected New_BarBarOneRule new_BarBarOneRule;
 				
 					/**
 					* @param input 
@@ -479,17 +479,17 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarOne(new_BarBarOne.evaluate(input));
+								.setBarBarOne(new_BarBarOneRule.evaluate(input));
 							
 							output
-								.setBarBarTwo(barBarTwo.evaluate(input));
+								.setBarBarTwo(barBarTwoRule.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(barBaz.evaluate(input));
+								.setBarBaz1(barBazRule.evaluate(input));
 							
 							output
-								.setBarQuxList(barQuxList.evaluate(input));
+								.setBarQuxList(barQuxListRule.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -574,9 +574,9 @@ class RosettaRuleGeneratorTest {
 					
 					// RosettaFunction dependencies
 					//
-					@Inject protected BarBarTwoRule barBarTwo;
-					@Inject protected BarBazRule barBaz;
-					@Inject protected BarQuxListRule barQuxList;
+					@Inject protected BarBarTwoRule barBarTwoRule;
+					@Inject protected BarBazRule barBazRule;
+					@Inject protected BarQuxListRule barQuxListRule;
 				
 					/**
 					* @param input 
@@ -608,14 +608,14 @@ class RosettaRuleGeneratorTest {
 						
 						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
 							output
-								.setBarBarTwo(barBarTwo.evaluate(input));
+								.setBarBarTwo(barBarTwoRule.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()
-								.setBarBaz1(barBaz.evaluate(input));
+								.setBarBaz1(barBazRule.evaluate(input));
 							
 							output
-								.setBarQuxList(barQuxList.evaluate(input));
+								.setBarQuxList(barQuxListRule.evaluate(input));
 							
 							return Optional.ofNullable(output)
 								.map(o -> o.prune())
@@ -832,7 +832,7 @@ class RosettaRuleGeneratorTest {
 			
 			// RosettaFunction dependencies
 			//
-			@Inject protected Rule2Rule rule2;
+			@Inject protected Rule2Rule rule2Rule;
 		
 			/**
 			* @param input 
@@ -855,7 +855,7 @@ class RosettaRuleGeneratorTest {
 				}
 				
 				protected String assignOutput(String output, Foo input) {
-					final MapperS<Bar> thenResult = MapperS.of(rule2.evaluate(input));
+					final MapperS<Bar> thenResult = MapperS.of(rule2Rule.evaluate(input));
 					output = thenResult
 						.mapSingleToItem(item -> item.<String>map("getVal", bar -> bar.getVal())).get();
 					

@@ -35,6 +35,7 @@ import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FilterOperation;
@@ -57,6 +58,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -129,6 +131,12 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	protected RosettaValue caseFeatureCall(RosettaFeatureCall expr, RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("Feature calls are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseDeepFeatureCall(RosettaDeepFeatureCall expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("Deep feature calls are not supported yet.");
 	}
 
 	@Override
@@ -352,6 +360,12 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 		RosettaValue right = interpret(expr.getRight(), context);
 		boolean result = right.stream().allMatch(r -> left.contains(r));
 		return RosettaBooleanValue.of(result);
+	}
+	
+	@Override
+	protected RosettaValue caseDefaultOperation(DefaultOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("Defult operations are not supported yet.");
 	}
 
 	@Override

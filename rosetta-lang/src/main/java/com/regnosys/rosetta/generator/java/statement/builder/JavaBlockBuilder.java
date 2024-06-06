@@ -64,7 +64,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	}
 	
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		if (after instanceof JavaBlockBuilder) {
 			return this.then((JavaBlockBuilder)after, combineExpressions, scope);
 		}
@@ -80,7 +80,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		}
 		return new JavaBlockBuilder(result, combined);
 	}
-	public JavaBlockBuilder then(JavaBlockBuilder after, BiFunction<JavaExpression, JavaExpression, JavaExpression> combineExpressions, JavaScope scope) {
+	public JavaBlockBuilder then(JavaBlockBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		JavaStatementList result = new JavaStatementList();
 		result.addAll(this.statements);
 		result.addAll(after.statements);
