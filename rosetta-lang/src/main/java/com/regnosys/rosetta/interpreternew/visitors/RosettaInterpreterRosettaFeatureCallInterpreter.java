@@ -25,26 +25,28 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 		String feature = exp.getFeature().getGetNameOrDefault();
 		
 		if (receiverValue instanceof RosettaInterpreterDateValue) {
-			switch (feature) {
-			case "day": return ((RosettaInterpreterDateValue) receiverValue).getDay();
-			case "month": return ((RosettaInterpreterDateValue) receiverValue).getMonth();
-			case "year": return ((RosettaInterpreterDateValue) receiverValue).getYear();
-			default: //error
+			if (feature.equals("day")) {
+				return ((RosettaInterpreterDateValue) receiverValue).getDay();
+			} else if (feature.equals("month")) {
+				return ((RosettaInterpreterDateValue) receiverValue).getMonth();
+			} else {
+				return ((RosettaInterpreterDateValue) receiverValue).getYear();
 			}
 			
 		} else if (receiverValue instanceof RosettaInterpreterDateTimeValue) {
-			switch (feature) {
-			case "date": return ((RosettaInterpreterDateTimeValue) receiverValue).getDate();
-			case "time": return ((RosettaInterpreterDateTimeValue) receiverValue).getTime();
-			default: //error
+			if (feature.equals("date")) {
+				return ((RosettaInterpreterDateTimeValue) receiverValue).getDate();
+			} else {
+				return ((RosettaInterpreterDateTimeValue) receiverValue).getTime();
 			}
 			
 		} else if (receiverValue instanceof RosettaInterpreterZonedDateTimeValue) {
-			switch (feature) {
-			case "date": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getDate();
-			case "time": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTime();
-			case "timezone": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
-			default: //error
+			if (feature.equals("date")) {
+				return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getDate();
+			} else if (feature.equals("time")) {
+				return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTime();
+			} else {
+				return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
 			}
 			
 		} else {

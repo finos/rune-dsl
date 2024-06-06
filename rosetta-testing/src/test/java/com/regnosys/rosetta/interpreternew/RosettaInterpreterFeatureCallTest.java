@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
@@ -43,6 +45,9 @@ public class RosettaInterpreterFeatureCallTest {
 	RosettaInterpreterNumberValue minutes = new RosettaInterpreterNumberValue(BigDecimal.valueOf(30));
 	RosettaInterpreterNumberValue seconds = new RosettaInterpreterNumberValue(BigDecimal.valueOf(28));
 	RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(hours, minutes, seconds);
+	
+	RosettaInterpreterErrorValue error = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+			"Feature call: feature not found."));
 	
 	@Test
 	public void testDateDay() {
@@ -109,6 +114,19 @@ public class RosettaInterpreterFeatureCallTest {
 	
 	@Test
 	public void testZonedDateTimeDate() {
+		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
+		env.addValue("t", time);
+		
+		RosettaExpression expr = parser.parseExpression(
+				"zonedDateTime { date: date { day: 5, month: 7, year: 2024 }"
+				+ ", time: t, timezone: \"CET\" } -> date", List.of("t time (1..1)"));
+		RosettaInterpreterValue result = interpreter.interp(expr, env);
+		
+		assertEquals(date, result);
+	}
+	
+	@Test
+	public void testZonedDateTimeDateYear() {
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
 		env.addValue("t", time);
 		
