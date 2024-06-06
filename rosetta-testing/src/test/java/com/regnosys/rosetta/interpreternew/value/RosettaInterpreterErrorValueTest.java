@@ -128,6 +128,17 @@ class RosettaInterpreterErrorValueTest {
 		
 		assertEquals(val, RosettaInterpreterErrorValue.merge(v2, v3));
 	}
+	
+	@Test
+	void mergeBadWeatherTest() {
+		List<RosettaInterpreterValue> list = new ArrayList<>();
+		list.add(vb1);
+		list.add(vb2);
+		
+		assertThrows(IllegalArgumentException.class, () -> {
+			RosettaInterpreterErrorValue.merge(list);
+		});
+	}
 
 	@Test
 	void hashTest() {
