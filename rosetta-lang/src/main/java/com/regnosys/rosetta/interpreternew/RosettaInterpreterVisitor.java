@@ -19,6 +19,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
+import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
@@ -26,6 +27,9 @@ import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
+
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
@@ -42,7 +46,7 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaNum
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaStringLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterVariableInterpreter;
 
-public class RosettaInterpreterVisitor extends RosettaInterpreterVisitorBase {
+public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements InterpreterVisitor {
 
 	
 	@Override
