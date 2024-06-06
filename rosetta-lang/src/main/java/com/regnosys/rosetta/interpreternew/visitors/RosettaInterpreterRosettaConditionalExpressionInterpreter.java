@@ -7,7 +7,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -16,10 +15,6 @@ public class RosettaInterpreterRosettaConditionalExpressionInterpreter
 extends RosettaInterpreterConcreteInterpreter {
 	
 	
-	public RosettaInterpreterBaseValue interp(RosettaConditionalExpression expr) {
-		return interp(expr, new RosettaInterpreterEnvironment());
-	}
-	
 	/**
 	 * Interpreter method for Conditional Expressions.
 	 *
@@ -27,7 +22,7 @@ extends RosettaInterpreterConcreteInterpreter {
 	 * @return The interpreted value
 	 */
 	public RosettaInterpreterBaseValue interp(RosettaConditionalExpression expr,
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
 		boolean ifResult = false;
 		
 		RosettaExpression ifExpression = expr.getIf();
@@ -52,7 +47,7 @@ extends RosettaInterpreterConcreteInterpreter {
 		
 		if (expr.isFull()) {
 			elseThen = expr.getElsethen();
-			elseThenValue = elseThen.accept(visitor);
+			elseThenValue = elseThen.accept(visitor, env);
 			
 			RosettaInterpreterBaseValue ifInstance = 
 					((RosettaInterpreterBaseValue) ifThenValue);
