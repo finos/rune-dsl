@@ -13,7 +13,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterFunctionValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
@@ -22,6 +21,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.impl.AttributeImpl;
 import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl;
 
@@ -87,8 +87,7 @@ public class RosettaInterpreterVariableInterpreter {
 	public RosettaInterpreterValue interp(FunctionImpl func, List<RosettaExpression> args,
 			RosettaInterpreterEnvironment env) {
 		
-		String varName = func.getName();
-		FunctionImpl f = ((RosettaInterpreterFunctionValue) env.findValue(varName))
+		final FunctionImpl f = ((RosettaInterpreterFunctionValue) env.findValue(func.getName()))
 				.getFunction();
 	
 		//interpret the raw arguments
@@ -99,27 +98,19 @@ public class RosettaInterpreterVariableInterpreter {
 		
 		//check if there are any errors in interpreting the arguments. If so, return them
 		RosettaInterpreterErrorValue acc = new RosettaInterpreterErrorValue();
-		if (RosettaInterpreterErrorValue.errorsExist(interpretedArgs)) {
-			for (RosettaInterpreterValue value : interpretedArgs) {
-				if (value instanceof RosettaInterpreterErrorValue) {
-					acc.addAllErrors(value);
-				}
-			}
-			if (acc.getErrors().size() > 0) {
-				return acc;
-			}
+		for (RosettaInterpreterValue value : interpretedArgs) {
+				acc.addAllErrors(value);
 		}
-		
+		if (acc.getErrors().size() > 0) {
+			return acc;
+		}
+	
 		//check that all argument/passed value correspond in type and cardinality
 		//if not, return errors pointing to each attribute reference where this is the case
 		int inputSize = f.getInputs().size();
 		for (int i = 0 ; i < inputSize ; i++) {
-			if (!checkPair((AttributeImpl) f.getInputs().get(i), 
-					(RosettaInterpreterBaseValue) interpretedArgs.get(i))) {
-				acc.addError(new RosettaInterpreterError("Argument "
-						+ f.getInputs().get(i).getName() 
-						+ " does not correspond with its passed value"));
-			}
+			acc.addAllErrors(checkPair((AttributeImpl) f.getInputs().get(i), 
+					(RosettaInterpreterBaseValue) interpretedArgs.get(i)));
 		}
 		if (acc.getErrors().size() > 0) {
 			return acc;
@@ -139,8 +130,8 @@ public class RosettaInterpreterVariableInterpreter {
 			RosettaInterpreterValue v = c.getExpression().accept(visitor, nv);
 			if (v instanceof RosettaInterpreterBooleanValue) {
 				if (((RosettaInterpreterBooleanValue) v).getValue() == false) {
-					acc.addError(new RosettaInterpreterError("Condition " 
-							+ c.getName() + " does not hold for this function call"));
+					acc.addError(new RosettaInterpreterError("Condition \"" 
+							+ c.getName() + "\" does not hold for this function call"));
 				}
 			} else { //must be an error if not a boolean value
 				acc.addAllErrors(v);
@@ -149,7 +140,18 @@ public class RosettaInterpreterVariableInterpreter {
 		if (acc.getErrors().size() > 0) {
 			return acc;
 		}
-			
+		
+		//Add all aliases to the environment, throw errors if any are found
+		List<ShortcutDeclaration> aliases = f.getShortcuts();
+		for (ShortcutDeclaration alias : aliases) {
+			RosettaInterpreterBaseValue val = (RosettaInterpreterBaseValue) 
+					alias.getExpression().accept(visitor, nv);
+			acc.addAllErrors(val);
+			nv.addValue(alias.getName(), val);
+		} if (acc.getErrors().size() > 0) {
+			return acc;
+		}
+		
 		
 		//compute the results of all operations in the function
 		List<RosettaInterpreterValue> resultList = new ArrayList<>();
@@ -162,7 +164,28 @@ public class RosettaInterpreterVariableInterpreter {
 			}
 		}
 		
-		RosettaInterpreterListValue result = new RosettaInterpreterListValue(resultList);
+		//check that the function operations yield no errors
+		for (RosettaInterpreterValue value : resultList) {
+			acc.addAllErrors(value);
+		} if (acc.getErrors().size() > 0) {
+			return acc;
+		}
+		
+		//check cardinality and type of output matches computed value
+		RosettaInterpreterBaseValue result;
+		int upperLimit = f.getOutput().getCard().isUnbounded() ? Integer.MAX_VALUE : 
+			f.getOutput().getCard().getSup();
+		int lowerLimit = f.getOutput().getCard().getInf();
+		if (upperLimit == 1 && lowerLimit == 1) {
+			result = (RosettaInterpreterBaseValue) resultList.get(0);
+		} else {
+			result = new RosettaInterpreterListValue(resultList);
+		}
+		acc.addAllErrors(checkPair((AttributeImpl) f.getOutput(), result));
+		if (acc.getErrors().size() > 0) {
+			return acc;
+		}
+		
 		//check the post-conditions of the function
 		nv.addValue(f.getOutput().getName(), result);
 		conditions = func.getPostConditions();
@@ -170,8 +193,8 @@ public class RosettaInterpreterVariableInterpreter {
 			RosettaInterpreterValue v = c.getExpression().accept(visitor, nv);
 			if (v instanceof RosettaInterpreterBooleanValue) {
 				if (((RosettaInterpreterBooleanValue) v).getValue() == false) {
-					acc.addError(new RosettaInterpreterError("Condition " 
-							+ c.getName() + " does not hold for this function call"));
+					acc.addError(new RosettaInterpreterError("Condition \"" 
+							+ c.getName() + "\" does not hold for this function call"));
 				}
 			} else { //must be an error if not a boolean value
 				acc.addAllErrors(v);
@@ -180,6 +203,7 @@ public class RosettaInterpreterVariableInterpreter {
 		if (acc.getErrors().size() > 0) {
 			return acc;
 		}
+		
 		
 		//if post-conditions pass, return the result
 		return result;
@@ -192,7 +216,7 @@ public class RosettaInterpreterVariableInterpreter {
 	 * @param value The interpreted value that is passed to the function
 	 * @return True if the type and cardinality of the attribute and value match, false otherwise
 	 */
-	public boolean checkPair(AttributeImpl attr, RosettaInterpreterBaseValue value) {
+	public RosettaInterpreterErrorValue checkPair(AttributeImpl attr, RosettaInterpreterBaseValue value) {
 		//This will consider only basic types, this will be changed after datatypes are done
 		String typeName = attr.getTypeCall().getType().getName();
 		List<RosettaInterpreterValue> vals = value.toValueStream()
@@ -202,42 +226,58 @@ public class RosettaInterpreterVariableInterpreter {
 		int paramSize = vals.size();
 		int lowerLimit = attr.getCard().getInf();
 		if (paramSize < lowerLimit) {
-			return false;
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError("The attribute \"" 
+							+ attr.getName() + "\" has cardinality lower than the limit "
+							+ lowerLimit));
 		}
 		int upperLimit = attr.getCard().isUnbounded() ? Integer.MAX_VALUE : attr.getCard().getSup();
 		if (paramSize > upperLimit) {
-			return false;
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError("The attribute \"" 
+							+ attr.getName() + "\" has cardinality higher than the limit "
+							+ upperLimit));
 		}
 		
 		//checking that the potential list of elements in arg and value are of the same type
 		switch (typeName) {
 			case "number": 
 				for (RosettaInterpreterValue val : vals) {
-					if (!(val instanceof RosettaInterpreterNumberValue
-							|| val instanceof RosettaInterpreterIntegerValue)) {
-						return false;
+					if (!(val instanceof RosettaInterpreterNumberValue)) {
+						return new RosettaInterpreterErrorValue(
+								new RosettaInterpreterError("The attribute \"" 
+							+ attr.getName() + "\" requires a number, but received a "
+								+ val.getClass()));
 					}
 				}
 				break;
 			case "int": 
 				for (RosettaInterpreterValue val : vals) {
-					if (!(val instanceof RosettaInterpreterNumberValue
-							|| val instanceof RosettaInterpreterIntegerValue)) {
-						return false;
+					if (!(val instanceof RosettaInterpreterNumberValue)) {
+						return new RosettaInterpreterErrorValue(
+								new RosettaInterpreterError("The attribute \"" 
+							+ attr.getName() + "\" requires a number, but received a "
+								+ val.getClass()));
 					}
 				}
 				break;
 			case "boolean": 
 				for (RosettaInterpreterValue val : vals) {
 					if (!(val instanceof RosettaInterpreterBooleanValue)) {
-						return false;
+						return new RosettaInterpreterErrorValue(
+								new RosettaInterpreterError("The attribute \"" 
+							+ attr.getName() + "\" requires a boolean, but received a "
+								+ val.getClass()));
 					}
 				}
 				break;
 			case "string": 
 				for (RosettaInterpreterValue val : vals) {
 					if (!(val instanceof RosettaInterpreterStringValue)) {
-						return false;
+						return new RosettaInterpreterErrorValue(
+								new RosettaInterpreterError("The attribute \"" 
+							+ attr.getName() + "\" requires a string, but received a "
+								+ val.getClass()));
 					}
 				}
 				break;
@@ -250,7 +290,7 @@ public class RosettaInterpreterVariableInterpreter {
 			default:
 		}
 		//if all checks pass, return true
-		return true;
+		return new RosettaInterpreterErrorValue();
 
 	}
 
