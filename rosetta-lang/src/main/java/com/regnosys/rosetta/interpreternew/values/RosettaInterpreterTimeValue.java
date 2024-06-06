@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew.values;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -39,21 +40,26 @@ public class RosettaInterpreterTimeValue extends RosettaInterpreterBaseValue {
 		return seconds;
 	}
 
-
-	public void setHours(RosettaInterpreterNumberValue hours) {
-		this.hours = hours;
+	@Override
+	public int hashCode() {
+		return Objects.hash(hours, minutes, seconds);
 	}
 
-
-	public void setMinutes(RosettaInterpreterNumberValue minutes) {
-		this.minutes = minutes;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		RosettaInterpreterTimeValue other = (RosettaInterpreterTimeValue) obj;
+		return Objects.equals(hours, other.hours) && Objects.equals(minutes, other.minutes)
+				&& Objects.equals(seconds, other.seconds);
 	}
-
-
-	public void setSeconds(RosettaInterpreterNumberValue seconds) {
-		this.seconds = seconds;
-	}
-
 
 	@Override
 	public Stream<Object> toElementStream() {
@@ -63,5 +69,11 @@ public class RosettaInterpreterTimeValue extends RosettaInterpreterBaseValue {
 	@Override
 	public Stream<RosettaInterpreterValue> toValueStream() {
 		return Stream.of(this);
+	}
+
+	@Override
+	public String toString() {
+		return "RosettaInterpreterTimeValue [hours=" + hours 
+				+ ", minutes=" + minutes + ", seconds=" + seconds + "]";
 	}
 }
