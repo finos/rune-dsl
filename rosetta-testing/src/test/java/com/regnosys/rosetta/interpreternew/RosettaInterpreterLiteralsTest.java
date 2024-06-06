@@ -105,6 +105,22 @@ public class RosettaInterpreterLiteralsTest {
 	}
 	
 	@Test
+    public void emptyElementInListTest() {
+        RosettaExpression expr = parser.parseExpression("[1, [2, 3], empty]");
+        validation.assertNoIssues(expr);
+        RosettaInterpreterValue val = interpreter.interp(expr);
+        RosettaInterpreterListValue expected = 
+                new RosettaInterpreterListValue(List.of(
+                        new RosettaInterpreterNumberValue(
+                                BigDecimal.valueOf(1)), 
+                        new RosettaInterpreterNumberValue(
+                                BigDecimal.valueOf(2)),
+                        new RosettaInterpreterNumberValue(
+                                BigDecimal.valueOf(3))));
+        assertEquals(expected, val);
+    }
+	
+	@Test
 	public void intTest() {
 		RosettaExpression expr = parser.parseExpression("5");
 		RosettaInterpreterValue val = interpreter.interp(expr);
