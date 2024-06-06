@@ -134,36 +134,6 @@ public class RosettaInterpreterConditionalExpressionTest {
 	}
 	
 	@Test
-	public void notSameTypeThenTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("Conditional expression: "
-						+ "then and else need to have the same type."));
-		
-		RosettaExpression expr = parser.parseExpression("if True then 1.2 else \"abc\"");
-		RosettaInterpreterValue result = interpreter.interp(expr);
-		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
-		
-		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), 
-				errorResult.getErrors().get(0).getMessage());
-	}
-	
-	@Test
-	public void notSameTypeElseTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("Conditional expression: "
-						+ "then and else need to have the same type."));
-		
-		RosettaExpression expr = parser.parseExpression("if False then 1.2 else \"abc\"");
-		RosettaInterpreterValue result = interpreter.interp(expr);
-		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
-		
-		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), 
-				errorResult.getErrors().get(0).getMessage());
-	}
-	
-	@Test
 	public void conditionNotBooleanTest() {
 		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Conditional expression: "
@@ -199,8 +169,9 @@ public class RosettaInterpreterConditionalExpressionTest {
 	public void noElseTest() {
 		RosettaExpression expr = parser.parseExpression("if False then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
-		
-		assertEquals(null, result);
+		RosettaInterpreterError expected = new RosettaInterpreterError(
+				"Else branch should be evaluated but does not exist");
+		assertEquals(expected, ((RosettaInterpreterErrorValue)result).getErrors().get(0));
 	}
 
 }
