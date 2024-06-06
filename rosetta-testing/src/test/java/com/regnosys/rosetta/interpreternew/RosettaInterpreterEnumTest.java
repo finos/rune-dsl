@@ -30,14 +30,6 @@ public class RosettaInterpreterEnumTest {
 	@Inject 
 	ModelHelper mh;
 	
-//	private ExpressionFactory exFactory;
-//	
-//	@BeforeEach
-//	public void setup() {
-//		exFactory = ExpressionFactoryImpl.init();
-//		
-//	}
-	
     @Test
     public void enumAddsToEnvironmentTest() {
     	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"

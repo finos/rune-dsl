@@ -54,46 +54,10 @@ public class RosettaInterpreterFeatureCallInterpreter
 	public RosettaInterpreterValue interpEnum(RosettaEnumeration enumeration, RosettaEnumValue val,
 			RosettaInterpreterEnvironment env) {
 		
-			//The comments check some possible errors, 
-		    //but the model parser already does not allow it, 
-		    //so it's not really useful but I also don't wanna delete it
-		
-//			if (env.findValue(enumeration.getName()) instanceof RosettaInterpreterEnumValue) {
-//				if (((RosettaInterpreterEnumValue) env.findValue(enumeration.getName()))
-//						.containsValueName(val.getName())) {
 			return new RosettaInterpreterEnumElementValue(val.getEnumeration().getName(),
 							val.getName());
-//				} else { 
-//					return new RosettaInterpreterErrorValue(
-//							new RosettaInterpreterError(
-//									"The " + val.getEnumeration().getName() 
-//									+ " enum does not contain value "
-//									+ val.getName()));
-//				}
-//			} else {
-//				return (RosettaInterpreterErrorValue) env.findValue(enumeration.getName());
-//			}
+			
+	
 	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 }
