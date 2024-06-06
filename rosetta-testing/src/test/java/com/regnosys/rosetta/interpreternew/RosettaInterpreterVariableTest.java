@@ -20,7 +20,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
@@ -52,9 +52,9 @@ public class RosettaInterpreterVariableTest {
 	public void variableGoodComparisonTest() {
 		//create the environment and add variable 'a' to it
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
-		RosettaInterpreterIntegerValue intValue = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
-		env.addValue("a", intValue);
+		RosettaInterpreterNumberValue value = 
+				new RosettaInterpreterNumberValue(5);
+		env.addValue("a", value);
 
 		//give the same environment to the parser
 		RosettaExpression expr = parser.parseExpression("a >= 2", 
@@ -69,9 +69,9 @@ public class RosettaInterpreterVariableTest {
 	public void variableLeftErrorComparisonTest() {
 		//create the environment and add variable 'a' to it
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
-		RosettaInterpreterIntegerValue intValue = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
-		env.addValue("a", intValue);
+		RosettaInterpreterNumberValue value = 
+				new RosettaInterpreterNumberValue(5);
+		env.addValue("a", value);
 		
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(

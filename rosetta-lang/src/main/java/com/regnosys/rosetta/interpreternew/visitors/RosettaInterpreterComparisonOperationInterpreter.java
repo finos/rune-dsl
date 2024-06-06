@@ -26,8 +26,6 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterBooleanValue",
 					"com.regnosys.rosetta.interpreternew.values."
-					+ "RosettaInterpreterIntegerValue",
-					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterNumberValue",
 					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterStringValue");
