@@ -61,4 +61,9 @@ public class RosettaInterpreterStringValue extends RosettaInterpreterBaseValue
 		return Stream.of(this);
 	}
 	
+	@Override 
+	public String toString() {
+		return "RosettaInterpreterStringValue [" + value + "]";
+	}
+	
 }

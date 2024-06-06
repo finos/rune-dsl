@@ -21,7 +21,7 @@ public class RosettaInterpreterListValue extends RosettaInterpreterBaseValue {
 
 	@Override
 	public String toString() {
-		return "RosettaInterpreterListValue [expressions=" + expressions + "]";
+		return "RosettaInterpreterListValue [expressions=" + expressions.toString() + "]";
 	}
 
 	@Override

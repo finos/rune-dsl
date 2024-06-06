@@ -17,6 +17,20 @@ import org.eclipse.emf.ecore.resource.Resource;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 
 public class RosettaInterpreterError implements RosettaInterpreterBaseError {
+	private String errorMessage;	
+	
+	public RosettaInterpreterError(String errorMessage) {
+		super();
+		this.errorMessage = errorMessage;
+	}
+	
+	public String getError() { return errorMessage; }
+	
+	@Override
+	public String toString() {
+		return "RosettaInterpreterError [errorMessage=" + errorMessage + "]";
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(errorMessage);
@@ -35,20 +49,6 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 		}
 		RosettaInterpreterError other = (RosettaInterpreterError) obj;
 		return Objects.equals(errorMessage, other.errorMessage);
-	}
-
-	private String errorMessage;
-	
-	public RosettaInterpreterError(String errorMessage) {
-		super();
-		this.errorMessage = errorMessage;
-	}
-	
-	public String getError() { return errorMessage; }
-	
-	@Override
-	public String toString() {
-		return "RosettaInterpreterError [errorMessage=" + errorMessage + "]";
 	}
 
 	@Override
