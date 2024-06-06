@@ -34,6 +34,7 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation
 	| Data
+	| Choice
 	| Function
 ;
 
@@ -77,6 +78,17 @@ Data:
 	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
+;
+
+Choice:
+	'choice' RosettaNamed ':' RosettaDefinable?
+	(Annotations|ClassSynonyms)*
+	
+	attributes += ChoiceOption*
+;
+
+ChoiceOption:
+	RosettaTyped
 ;
 
 Attribute:
@@ -623,6 +635,7 @@ ListOperation returns RosettaExpression:
 	(
 		=>(
 			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaDeepFeatureCall.receiver=current} '->>' (=>feature=[Attribute|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')
@@ -695,6 +708,7 @@ ListOperation returns RosettaExpression:
 	(
 		=>(
 			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaDeepFeatureCall.receiver=current} '->>' (=>feature=[Attribute|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')

@@ -29,7 +29,7 @@ variables:
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
   identifiersConflictingWithRootStart: '{{wordStart}}(version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
-  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|func){{wordEnd}}'
+  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
   rootStart: '{{identifiersConflictingWithRootStart}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   strictRootEnd: (?={{rootStart}})
   rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
@@ -39,7 +39,7 @@ variables:
   sectionEnd: (?={{sectionStart}}|{{rootStart}})(?!\bcondition\b)|(?=\bcondition\b\s*({{identifier}})?:)
   functionalOperation: '{{wordStart}}(reduce|filter|map|extract|sort|min|max){{wordEnd}}'
   listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}'
-  listOperation: ->|{{listOperationWord}}
+  listOperation: ->>|->|{{listOperationWord}}
   synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
@@ -152,6 +152,7 @@ repository:
           - include: '#enumerationDeclaration'
           - include: '#annotationDeclaration'
           - include: '#typeDeclaration'
+          - include: '#choiceDeclaration'
           - include: '#functionDeclaration'
 
       rosettaBody:
@@ -881,6 +882,32 @@ repository:
             match: '{{identifier}}'
         - include: '#comment'
         - include: '#documentationAndAnnotationsFollowedByExpression'
+      
+      choiceDeclaration:
+        name: meta.choice.rosetta
+        begin: '{{wordStart}}choice{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.choice.rosetta keyword.declaration.type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - begin: (?<={{wordStart}}choice{{wordEnd}})
+          end: (:)|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: entity.name.type.choice.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.dot.rosetta
+            match: \.
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#annotation'
+        - include: '#choiceOption'
+      
+      choiceOption:
+        patterns:
+        - include: '#typeCall'
 
       functionDeclaration:
         name: meta.function.rosetta
@@ -1081,6 +1108,15 @@ repository:
             - include: '#comment'
             - include: '#expression'
           - include: '#expression'
+        - name: meta.deep-projection.rosetta
+          begin: ->>
+          beginCaptures:
+            0: { name: keyword.operator.rosetta }
+          end: '{{identifier}}'
+          endCaptures:
+            0: { name: variable.other.rosetta } # Need semantic tokens for meta members
+          patterns:
+          - include: '#comment'
         - name: meta.projection.rosetta
           begin: ->
           beginCaptures:

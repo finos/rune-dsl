@@ -89,7 +89,7 @@ public abstract class JavaClass<T> implements JavaReferenceType, JavaTypeDeclara
 		public JavaTypeDeclaration<? super T> getSuperclassDeclaration() {
 			Class<? super T> superclass = backingClass.getSuperclass();
 			if (superclass == null) {
-				return null;
+				return JavaClass.OBJECT;
 			}
 			return JavaTypeDeclaration.from(superclass);
 		}

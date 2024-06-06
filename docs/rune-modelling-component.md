@@ -203,6 +203,38 @@ type Vehicle extends VehicleFeature:
 For clarity purposes, the documentation snippets omit the annotations and definitions that are associated with the data types and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
 
+### Choice Type
+
+#### Purpose
+
+A *choice type* let you describe a group of different types which are somehow related. It consists of a list of types, each of which is an option to choose from.
+
+In other languages, a choice type is often called a *union type*.
+
+#### Syntax
+
+A choice type is defined using the keyword `choice`, followed by a name and a list of option types. Similar to data types, it can also comprise a description and annotations.
+
+``` Haskell
+choice <TypeName>: <"Description">
+  [<annotation1>]
+  [<annotation2>]
+  [...]
+  <Type1>
+  <Type2>
+  <...>
+```
+
+For example:
+
+``` Haskell
+choice Vehicle:
+  [metadata key]
+  Car
+  Bicycle
+  Motorcycle
+```
+
 ### Enumeration
 
 #### Purpose
@@ -791,6 +823,10 @@ If a path expression is applied to an attribute that does not have a value in th
 In the above example, if `drivingLicense` is null, the final `penaltyPoints` attribute also evaluates to null.
 
 A null value for an expression with multiple cardinality is treated as an empty [list](#list).
+
+#### Deep Paths for Choice Types
+
+For choice types, common attributes can be accessed using a *deep path operator* `->>`. Given a choice type called `Vehicle`, each of its options exposing an attribute `vehicleId`, this identifier can be accessed directly using `vehicle ->> vehicleId`.
 
 ### Operators
 

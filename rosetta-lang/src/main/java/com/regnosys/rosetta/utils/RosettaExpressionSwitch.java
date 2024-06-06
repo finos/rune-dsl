@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -83,6 +84,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseConditionalExpression((RosettaConditionalExpression)expr, context);
 		} else if (expr instanceof RosettaFeatureCall) {
 			return caseFeatureCall((RosettaFeatureCall)expr, context);
+		} else if (expr instanceof RosettaDeepFeatureCall) {
+			return caseDeepFeatureCall((RosettaDeepFeatureCall)expr, context);
 		} else if (expr instanceof RosettaLiteral) {
 			return doSwitch((RosettaLiteral)expr, context);
 		} else if (expr instanceof RosettaOnlyExistsExpression) {
@@ -266,6 +269,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseConditionalExpression(RosettaConditionalExpression expr, Context context);
 	
 	protected abstract Return caseFeatureCall(RosettaFeatureCall expr, Context context);
+	protected abstract Return caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context);
 	
 	protected abstract Return caseBooleanLiteral(RosettaBooleanLiteral expr, Context context);
 	protected abstract Return caseIntLiteral(RosettaIntLiteral expr, Context context);

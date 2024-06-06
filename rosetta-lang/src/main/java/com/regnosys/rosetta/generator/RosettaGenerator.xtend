@@ -39,6 +39,9 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
+import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
+import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.types.RDataType
 
 /**
  * Generates code from your model files on save.
@@ -63,6 +66,9 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
 	@Inject ReportGenerator reportGenerator
+	@Inject DeepPathUtilGenerator deepPathUtilGenerator
+	
+	@Inject DeepFeatureCallUtil deepFeatureCallUtil
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -166,6 +172,9 @@ class RosettaGenerator implements IGenerator2 {
 							// new
 							// validatorGenerator.generate(packages, fsa, it, version)
 							tabulatorGenerator.generate(fsa, it, Optional.empty)
+							if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(new RDataType(it))) {
+								deepPathUtilGenerator.generate(fsa, it, version)
+							}
 						}
 						Function: {
 							if (!isDispatchingFunction) {

@@ -61,4 +61,7 @@ public class GeneratedJavaClassService {
 		String simpleName = id.getName();
 		return new GeneratedJavaClass<>(packageName, simpleName, RosettaModelObject.class);
 	}
+	public JavaClass<RosettaModelObject> toJavaChoiceType(ModelSymbolId id) {
+		return toJavaType(id);
+	}
 }

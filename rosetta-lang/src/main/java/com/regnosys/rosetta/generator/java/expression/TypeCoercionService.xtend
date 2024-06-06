@@ -66,6 +66,21 @@ class TypeCoercionService {
 			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
 		}
 		
+		expr.mapExpression[addCoercions(expected, scope)]
+	}
+	
+	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaScope scope) {
+		val actual = expr.expressionType
+		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
+			return expected.empty
+		}
+		if (actual == expected) {
+			return expr
+		}
+		if (actual == JavaPrimitiveType.VOID) {
+			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
+		}
+		
 		if (actual.isWrapper && expected.isWrapper) {
 			wrapperToWrapper(expr, expected, scope)
 		} else if (actual.isWrapper) {
@@ -77,7 +92,7 @@ class TypeCoercionService {
 		}
 	}
 	
-	private def JavaStatementBuilder itemToItem(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
+	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		// Strategy:
 		// - if no item conversion is needed, return the given expression.
@@ -96,7 +111,7 @@ class TypeCoercionService {
 				)
 			].orElse(expr)
 	}
-	private def JavaStatementBuilder itemToWrapper(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
+	private def JavaStatementBuilder itemToWrapper(JavaExpression expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		val expectedItemType = expected.itemType
 		
@@ -133,7 +148,7 @@ class TypeCoercionService {
 			)
 		}
 	}
-	private def JavaStatementBuilder wrapperToItem(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
+	private def JavaStatementBuilder wrapperToItem(JavaExpression expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType		
 		// Strategy:
 		// - unwrap the given expression.
@@ -146,11 +161,11 @@ class TypeCoercionService {
 			]
 		}
 		
-		val unwrappedExpr = expr.mapExpression(getUnwrapConversion(actual))
+		val unwrappedExpr = getUnwrapConversion(actual).apply(expr)
 		
 		itemToItem(unwrappedExpr, expected, scope)
 	}
-	private def JavaStatementBuilder wrapperToWrapper(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
+	private def JavaExpression wrapperToWrapper(JavaExpression expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		val expectedItemType = expected.itemType
 		
@@ -177,7 +192,7 @@ class TypeCoercionService {
 				optionalWrapperConversion.orElseThrow.compose(optionalWrappedItemConversion.orElseThrow)
 			}
 		
-		return expr.mapExpression(totalConversion)
+		return totalConversion.apply(expr)
 	}
 	
 	private def Optional<Function<JavaExpression, JavaExpression>> getItemConversion(JavaType actual, JavaType expected) {
@@ -302,7 +317,7 @@ class TypeCoercionService {
 			}
 		)
 	}
-	private def JavaStatementBuilder convertNullSafe(JavaStatementBuilder expr, Function<JavaExpression, JavaExpression> conversion, JavaType expected, JavaScope scope) {
+	private def JavaStatementBuilder convertNullSafe(JavaExpression expr, Function<JavaExpression, JavaExpression> conversion, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		if (actual instanceof JavaPrimitiveType) {
 			return expr.mapExpression(conversion)

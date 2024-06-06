@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThrows
 import javax.inject.Inject
 import java.time.LocalDateTime
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.rosetta.model.lib.meta.Key
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -40,6 +41,194 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testDeepPathOperatorWithMeta() {
+		val code = '''
+		type A:
+			b B (0..1)
+				[metadata reference]
+			c C (0..1)
+				[metadata reference]
+			
+			condition Choice:
+				one-of
+		
+		type B:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		
+		type C:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		
+		func Test:
+			inputs:
+				a A (1..1)
+			output:
+				result string (1..1)
+			
+			set result:
+				a ->> id
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+        val aB = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaB", #{
+	    			"value" -> classes.createInstanceUsingBuilder("B", #{
+	    				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+	    					"key" -> #[Key.builder.setKeyValue("myKey")]
+	    				}),
+	    				"id" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+	    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+		    					"scheme" -> "myScheme"
+		    				}),
+	    					"value" -> "abc123"
+	    				})
+	    			}),
+	    			"globalReference" -> "globalRef",
+	    			"externalReference" -> "externalRef"
+	    		})
+	        })
+        
+        assertEquals("abc123", test.invokeFunc(String, #[aB]))
+	}
+	
+	@Test
+	def void testDeepPathOperator() {
+		val code = '''
+		choice A:
+			B
+			C
+		
+		type B:
+			opt1 Option1 (0..1)
+			opt2 Option2 (0..1)
+			attr Foo (0..1)
+			
+			condition Choice: one-of
+		
+		type C:
+			opt1 Option1 (0..1)
+			
+			condition Choice: one-of
+		
+		type Option1:
+			attr Foo (1..1)
+		
+		type Option2:
+			attr Foo (1..1)
+			otherAttr string (1..1)
+		
+		type Option3:
+			attr Foo (1..1)
+		
+		type Foo:
+			id string (1..1)
+		
+		func Test:
+			inputs:
+				a A (1..1)
+				b B (1..1)
+				aList A (0..*)
+			output:
+				result Foo (0..*)
+			
+			add result:
+				a ->> attr
+			add result:
+				a ->> opt1 -> attr
+			add result:
+				b ->> attr
+			add result:
+				aList ->> attr
+			add result:
+				aList ->> opt1 -> attr
+		'''.generateCode
+        val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+        
+        val foo1 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aBOpt1"
+			})
+        val bOpt1 = classes.createInstanceUsingBuilder("B", #{
+    			"opt1" -> classes.createInstanceUsingBuilder("Option1", #{
+    				"attr" -> foo1
+    			})
+    		})
+        val aBOpt1 = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> bOpt1
+	        })
+	    val foo2 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aBOpt2"
+			})
+	    val bOpt2 = classes.createInstanceUsingBuilder("B", #{
+    			"opt2" -> classes.createInstanceUsingBuilder("Option2", #{
+    				"attr" -> foo2,
+    				"otherAttr" -> "some value"
+    			})
+    		})
+        val aBOpt2 = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> bOpt2
+	        })
+	    val foo3 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aBAttr"
+			})
+	    val bAttr = classes.createInstanceUsingBuilder("B", #{
+    			"attr" -> foo3
+    		})
+        val aBAttr = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> bAttr
+	        })
+	    val foo4 = classes.createInstanceUsingBuilder("Foo", #{
+				"id" -> "aCOpt1"
+			})
+        val aCOpt1 = classes.createInstanceUsingBuilder("A", #{
+    		"C" -> classes.createInstanceUsingBuilder("C", #{
+    			"opt1" -> classes.createInstanceUsingBuilder("Option1", #{
+    				"attr" -> foo4
+    			})
+    		})
+        })
+        
+        assertEquals(
+        	#[foo1, foo1, foo2, foo4, foo3, foo2, foo4],
+        	test.invokeFunc(List, #[aBOpt1, bOpt2, #[aCOpt1, aBAttr, aBOpt2]])
+        )
+	}
+	
+	@Test
+	def void testChoiceAttributeAccess() {
+		val code = '''
+		type A:
+			b B (1..1)
+		
+		type B:
+			val boolean (0..1)
+		
+		choice AB:
+			A
+			B
+		
+		func Foo:
+			inputs:
+				ab AB (1..1)
+			output:
+				result boolean (1..1)
+		
+			set result:
+				if ab -> A exists
+				then ab -> A -> b -> val
+				else if ab -> B exists
+				then ab -> B -> val
+		'''.generateCode
+        code.compileToClasses
+	}
 	
 	@Test
 	def void defaultOperatorEvaluatesToLeftWhenBothSidesPresent() {
@@ -116,7 +305,6 @@ class FunctionGeneratorTest {
 		
 		assertEquals(#["b1", "b2"], foo.invokeFunc(String, #[#[], #["b1", "b2"]]))
 	}
-
 	
 	@Test
     def void handlesNullWhenConstructingRecords() {

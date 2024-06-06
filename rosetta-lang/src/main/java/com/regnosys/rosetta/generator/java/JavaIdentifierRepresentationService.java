@@ -19,11 +19,11 @@ package com.regnosys.rosetta.generator.java;
 import com.regnosys.rosetta.generator.IdentifierRepresentationService;
 import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.types.RFunction;
+import com.rosetta.util.types.JavaClass;
 
 public class JavaIdentifierRepresentationService extends IdentifierRepresentationService {	
-	public FunctionInstanceRepresentation toFunctionInstance(RFunction func) {
-		return new FunctionInstanceRepresentation(func);
+	public DependencyInstanceRepresentation toDependencyInstance(JavaClass<?> dependency) {
+		return new DependencyInstanceRepresentation(dependency);
 	}
 
 	public ImplicitVariableRepresentation toRuleInputParameter(RosettaRule rule) {

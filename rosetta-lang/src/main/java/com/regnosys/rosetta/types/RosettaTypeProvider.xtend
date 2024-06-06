@@ -76,6 +76,7 @@ import javax.inject.Provider
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
@@ -114,6 +115,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				}
 			}
 		}
+	}
+	
+	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
+		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
 
 	private def RType safeRType(RosettaSymbol symbol, Map<EObject, RType> cycleTracker) {
@@ -323,6 +328,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		} else {
 			feature.safeRType(context)
 		}
+	}
+	
+	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Map<EObject, RType> context) {
+		val feature = expr.feature
+		if (!extensions.isResolved(feature)) {
+			return null
+		}
+		(feature as RosettaFeature).safeRType(context)
 	}
 	
 	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> context) {

@@ -144,8 +144,8 @@ class DocumentationSamples {
 				
 				// RosettaFunction dependencies
 				//
-				@Inject protected VehicleClassificationTypeRule vehicleClassificationType;
-				@Inject protected VehicleRegistrationIDRule vehicleRegistrationID;
+				@Inject protected VehicleClassificationTypeRule vehicleClassificationTypeRule;
+				@Inject protected VehicleRegistrationIDRule vehicleRegistrationIDRule;
 			
 				/**
 				* @param input 
@@ -177,10 +177,10 @@ class DocumentationSamples {
 					
 					protected EuropeanParliamentReport.EuropeanParliamentReportBuilder assignOutput(EuropeanParliamentReport.EuropeanParliamentReportBuilder output, VehicleOwnership input) {
 						output
-							.setVehicleRegistrationID(vehicleRegistrationID.evaluate(input));
+							.setVehicleRegistrationID(vehicleRegistrationIDRule.evaluate(input));
 						
 						output
-							.setVehicleClassificationType(vehicleClassificationType.evaluate(input));
+							.setVehicleClassificationType(vehicleClassificationTypeRule.evaluate(input));
 						
 						return Optional.ofNullable(output)
 							.map(o -> o.prune())

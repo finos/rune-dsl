@@ -21,6 +21,11 @@ import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import com.regnosys.rosetta.rosetta.RosettaPackage.Literals
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
@@ -67,6 +72,47 @@ class Data extends RosettaType, RootElement, References {
 	
 	op boolean hasSuperType() {
 		return superType !== null
+	}
+}
+
+
+class Choice extends Data {
+	contains Condition[] _hardcodedConditions
+	
+	op Condition[] getConditions() {
+		if (_hardcodedConditions.empty) {			
+			val cond = SimpleFactory.eINSTANCE.createCondition
+			cond.name = "Choice"
+			
+			val oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation
+			oneOf.generated = true
+			cond.expression = oneOf
+			
+			val item = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable
+			item.name = "item"
+			item.generated = true
+			oneOf.argument = item
+			
+			_hardcodedConditions.add(cond)
+		}
+		return _hardcodedConditions
+	}
+}
+
+class ChoiceOption extends Attribute {
+	contains RosettaCardinality _hardcodedCardinality
+	
+	op String getName() {
+		NodeModelUtils.findNodesForFeature(typeCall, Literals.TYPE_CALL__TYPE).head.text.strip
+	}
+	
+	op RosettaCardinality getCard() {
+		if (_hardcodedCardinality === null) {
+			_hardcodedCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality
+			_hardcodedCardinality.inf = 0
+			_hardcodedCardinality.sup = 1
+		}
+		return _hardcodedCardinality
 	}
 }
 

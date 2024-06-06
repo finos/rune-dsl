@@ -11,7 +11,6 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.generator.util.Util
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
@@ -50,7 +49,6 @@ import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
@@ -58,7 +56,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaRule
 import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.util.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
@@ -70,11 +67,12 @@ import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import java.util.Collections
 import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
+import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 
 class FunctionGenerator {
 
 	@Inject ExpressionGenerator expressionGenerator
-	@Inject FunctionDependencyProvider functionDependencyProvider
+	@Inject JavaDependencyProvider dependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension RosettaExtensions
@@ -123,12 +121,11 @@ class FunctionGenerator {
 	}
 
 	private def collectFunctionDependencies(Function func) {
-		val deps = func.shortcuts.flatMap[functionDependencyProvider.functionDependencies(it.expression)] +
-			func.operations.flatMap[functionDependencyProvider.functionDependencies(it.expression)]
-		val condDeps = (func.conditions + func.postConditions).map[expression].flatMap [
-			functionDependencyProvider.functionDependencies(it)
-		]
-		return Util.distinctBy(deps + condDeps, [name]).sortBy[it.name]
+		val expressions = 
+			func.shortcuts.map[expression] +
+			func.operations.map[expression] +
+			(func.conditions + func.postConditions).map[expression]
+		return dependencyProvider.javaDependencies(expressions)
 	}
 
 	private def collectFunctionDependencies(RFunction func) {
@@ -136,19 +133,14 @@ class FunctionGenerator {
 				func.postConditions.map[it.expression] + 
 				func.operations.map[it.expression] +
 				func.shortcuts.map[it.expression]
-				
-		expressions.flatMap[
-			val rosettaSymbols = EcoreUtil2.eAllOfType(it, RosettaSymbolReference).map[it.symbol]
-			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it)] +
-			rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it)]
-		].toSet.sortBy[it.alphanumericName]
+		return dependencyProvider.javaDependencies(expressions)
 	}
 
 	private def StringConcatenationClient classBody(
 		RFunction function,
 		boolean isStatic,
 		boolean overridesEvaluate,
-		List<RFunction> dependencies,
+		List<JavaClass<?>> dependencies,
 		List<JavaType> functionInterfaces,
 		Map<Class<?>, String> annotations,
 		JavaScope scope
@@ -162,7 +154,7 @@ class FunctionGenerator {
 		val postConditions = function.postConditions
 		
 		val classScope = scope.classScope(className.desiredName)
-		dependencies.forEach[classScope.createIdentifier(it.toFunctionInstance, it.alphanumericName.toFirstLower)]
+		dependencies.forEach[classScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
 		
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
@@ -225,7 +217,7 @@ class FunctionGenerator {
 					//
 				«ENDIF»
 				«FOR dep : dependencies»
-					@«Inject» protected «dep.toFunctionJavaClass» «classScope.getIdentifierOrThrow(dep.toFunctionInstance)»;
+					@«Inject» protected «dep» «classScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
 				«ENDFOR»
 			
 				/**
@@ -337,7 +329,7 @@ class FunctionGenerator {
 	}
 
 	private def StringConcatenationClient dispatchClassBody(Function function, JavaScope topScope,
-		Iterable<? extends Function> dependencies, String version, RootPackage root) {
+		List<JavaClass<?>> dependencies, String version, RootPackage root) {
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
 		val enumParam = function.inputs.filter[typeCall.type instanceof RosettaEnumeration].head.name
 		val outputType = function.outputTypeOrVoid
@@ -352,7 +344,7 @@ class FunctionGenerator {
 		«javadoc(function, version)»
 		public class «className» implements «RosettaFunction» {
 			«FOR dep : dependencies»
-				@«Inject» protected «dep.toFunctionJavaClass» «dep.name.toFirstLower»;
+				@«Inject» protected «dep» «dep.simpleName.toFirstLower»;
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»

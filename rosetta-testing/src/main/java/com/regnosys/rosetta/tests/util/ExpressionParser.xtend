@@ -23,10 +23,7 @@ import org.eclipse.xtext.scoping.IScope
 import com.regnosys.rosetta.rosetta.RosettaModel
 import javax.inject.Inject
 import java.util.List
-import com.google.common.base.Predicate
-import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.Scopes
-import static java.util.Collections.singletonList
 import org.eclipse.xtext.linking.lazy.LazyLinker
 import javax.inject.Provider
 import org.eclipse.xtext.resource.XtextResource
@@ -117,34 +114,6 @@ class ExpressionParser {
 		
 		override protected getImplicitImports(boolean ignoreCase) {
 			(super.getImplicitImports(ignoreCase) + context.map[name].toSet.map[createImportedNamespaceResolver(it + ".*", ignoreCase)]).toList
-		}
-		
-		override protected IScope getResourceScope(Resource res, EReference reference) {
-			return createImportScope(getGlobalScope(this.context.head.eResource, reference), getImplicitImports(isIgnoreCase(reference)), null, reference.getEReferenceType(), isIgnoreCase(reference))
-		}
-		
-		override protected IScope getLocalElementsScope(IScope parent, EObject context, EReference reference) {
-			var result = parent;
-			val allDescriptions = getAllDescriptions(this.context.head.eResource);
-			val name = getQualifiedNameOfLocalElement(context);
-			val ignoreCase = isIgnoreCase(reference);
-			val namespaceResolvers = getImportedNamespaceResolvers(context, ignoreCase);
-			if (!namespaceResolvers.isEmpty()) {
-				if (isRelativeImport() && name!==null && !name.isEmpty()) {
-					val localNormalizer = doCreateImportNormalizer(name, true, ignoreCase); 
-					result = createImportScope(result, singletonList(localNormalizer), allDescriptions, reference.getEReferenceType(), isIgnoreCase(reference));
-				}
-				result = createImportScope(result, namespaceResolvers, null, reference.getEReferenceType(), isIgnoreCase(reference));
-			}
-			if (name!==null) {
-				val localNormalizer = doCreateImportNormalizer(name, true, ignoreCase); 
-				result = createImportScope(result, singletonList(localNormalizer), allDescriptions, reference.getEReferenceType(), isIgnoreCase(reference));
-			}
-			return result;
-		}
-		
-		override protected getGlobalScope(Resource context, EReference reference, Predicate<IEObjectDescription> filter) {
-			super.getGlobalScope(this.context.head.eResource, reference, filter)
 		}
 	}
 	private static class RosettaStaticLinker extends LazyLinker {

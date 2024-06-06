@@ -72,7 +72,7 @@ class ModelObjectBoilerPlate {
 			«c.contributeHashCode(attributes, scope)»
 			«c.contributeToString(identity, scope)»
 		'''
-	} 
+	}
 
 	private def StringConcatenationClient contributeHashCode(ExpandedAttribute attr, JavaScope scope) {
 		val id = scope.getIdentifierOrThrow(attr)
