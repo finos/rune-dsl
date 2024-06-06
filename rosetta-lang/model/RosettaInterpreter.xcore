@@ -18,6 +18,7 @@ import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
@@ -65,6 +66,8 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (DistinctOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (ReverseOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
+	
+	op RosettaInterpreterBaseEnvironment interp (Function exp, RosettaInterpreterBaseEnvironment env)
 	
 	
 }
