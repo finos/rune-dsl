@@ -13,7 +13,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 
 	public RosettaInterpreterBaseValue interp(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression receiver = exp.getReceiver();
-		RosettaInterpreterValue receiverValue = receiver.accept(visitor);
+		RosettaInterpreterValue receiverValue = receiver.accept(visitor, env);
 		
 		String feature = exp.getFeature().getGetNameOrDefault();
 		
@@ -36,7 +36,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 			switch (feature) {
 			case "date": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getDate();
 			case "time": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTime();
-			case "timeZone": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
+			case "timezone": return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
 			default: //error
 			}
 			

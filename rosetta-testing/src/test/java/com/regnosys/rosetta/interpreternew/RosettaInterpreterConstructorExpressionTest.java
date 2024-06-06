@@ -18,16 +18,12 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
-import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.expression.impl.RosettaConstructorExpressionImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
-import com.regnosys.rosetta.tests.util.ModelHelper;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -39,9 +35,6 @@ public class RosettaInterpreterConstructorExpressionTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	@Inject 
-	ModelHelper mh;
-	
 	RosettaInterpreterIntegerValue day = new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
 	RosettaInterpreterIntegerValue month = new RosettaInterpreterIntegerValue(BigInteger.valueOf(7));
 	RosettaInterpreterIntegerValue year = new RosettaInterpreterIntegerValue(BigInteger.valueOf(2024));
@@ -51,17 +44,6 @@ public class RosettaInterpreterConstructorExpressionTest {
 	RosettaInterpreterNumberValue minutes = new RosettaInterpreterNumberValue(BigDecimal.valueOf(30));
 	RosettaInterpreterNumberValue seconds = new RosettaInterpreterNumberValue(BigDecimal.valueOf(28));
 	RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(hours, minutes, seconds);
-	
-	
-//	@Test
-//	public void test() {
-//		RosettaModel expr = mh.parseRosettaWithNoErrors("recordType date\r\n"
-//				+ "{\r\n"
-//				+ "	day   int\r\n"
-//				+ "	month int\r\n"
-//				+ "	year  int }");
-//		System.out.println(expr.getElements().get(0).getModel());
-//	}
 	
 	@Test
 	public void testDate() {

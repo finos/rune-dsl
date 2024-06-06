@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.interpreternew.values;
 
-import java.time.LocalTime;
 import java.util.stream.Stream;
 
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -11,14 +10,20 @@ public class RosettaInterpreterTimeValue extends RosettaInterpreterBaseValue {
 	private RosettaInterpreterNumberValue minutes;
 	private RosettaInterpreterNumberValue seconds;
 	
-	
-	public RosettaInterpreterTimeValue(RosettaInterpreterNumberValue hours, 
-			RosettaInterpreterNumberValue minutes, RosettaInterpreterNumberValue seconds) {
+	/**
+	 * Constructor for time value.
+	 *
+	 * @param hours		hour value
+	 * @param minutes	minute value
+	 * @param seconds	second value
+	 */
+	public RosettaInterpreterTimeValue(RosettaInterpreterNumberValue hours, RosettaInterpreterNumberValue minutes,
+			RosettaInterpreterNumberValue seconds) {
+		super();
 		this.hours = hours;
 		this.minutes = minutes;
 		this.seconds = seconds;
 	}
-	
 
 	public RosettaInterpreterNumberValue getHours() {
 		return hours;
