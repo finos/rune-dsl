@@ -81,6 +81,12 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				return new RosettaInterpreterNumberValue((leftNumber
 						.multiply(rightNumber)).bigDecimalValue());
 			} else {
+				// Division by 0 is not allowed
+				if(rightNumber.floatValue() == 0.0) {
+					return new RosettaInterpreterErrorValue(
+							new RosettaInterpreterError(
+							"Division by 0 is not allowed"));
+				}
 				return new RosettaInterpreterNumberValue((leftNumber
 						.divide(rightNumber)).bigDecimalValue());
 			}

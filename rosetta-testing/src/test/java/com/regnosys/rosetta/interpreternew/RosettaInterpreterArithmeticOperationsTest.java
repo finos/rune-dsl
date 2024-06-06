@@ -87,6 +87,18 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(3)),
 				((RosettaInterpreterNumberValue)val).getValue());
 	}
+	
+	@Test
+	public void divisionByZeroTest() {
+		RosettaExpression expr = parser.parseExpression("6/0");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		List<RosettaInterpreterError> expected = List.of(
+				new RosettaInterpreterError(
+						"Division by 0 is not allowed"));
+		
+		assertEquals(expected,
+				((RosettaInterpreterErrorValue)val).getErrors());
+	}
 
 	@Test
 	public void stringConcatenationTest() {
