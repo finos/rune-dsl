@@ -6,21 +6,25 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
-import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends RosettaInterpreterConcreteInterpreter {
 
-	public RosettaInterpreterBaseValue interp
-	(RosettaConstructorExpression expr, RosettaInterpreterBaseEnvironment env) {
+	/**
+	 * Interpreter method for Constructor Expressions.
+	 *
+	 * @param expr 		RosettaConstructorExpression to be interpreted
+	 * @param env		the environment used
+	 * @return 			the interpreted value
+	 */
+	public RosettaInterpreterBaseValue interp(
+			RosettaConstructorExpression expr, RosettaInterpreterBaseEnvironment env) {
 		String typeCall = expr.getTypeCall().getType().getName();
 		EList<ConstructorKeyValuePair> values = expr.getValues();
 		

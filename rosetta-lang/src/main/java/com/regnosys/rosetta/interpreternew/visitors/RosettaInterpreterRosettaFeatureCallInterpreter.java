@@ -11,6 +11,13 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInterpreterConcreteInterpreter {
 
+	/**
+	 * Interpreter method for Feature Calls.
+	 *
+	 * @param exp 		RosettaFeatureCall to be interpreted
+	 * @param env		the environment used
+	 * @return 			the interpreted value
+	 */
 	public RosettaInterpreterBaseValue interp(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression receiver = exp.getReceiver();
 		RosettaInterpreterValue receiverValue = receiver.accept(visitor, env);
