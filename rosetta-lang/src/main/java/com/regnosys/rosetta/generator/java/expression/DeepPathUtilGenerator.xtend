@@ -117,7 +117,12 @@ class DeepPathUtilGenerator {
 								} else {
 									val attrType = a.RTypeOfFeature
 									val needsToGoDownDeeper = recursiveDeepFeaturesMap.get(a).get(deepFeature)
-									attrVar.featureCall(attrType, deepFeature, needsToGoDownDeeper, scope, true)
+									val actualFeature = if (needsToGoDownDeeper || !(attrType instanceof RDataType)) {
+										deepFeature
+									} else {
+										(attrType as RDataType).data.allNonOverridesAttributes.findFirst[name.equals(deepFeature.name)]
+									}
+									attrVar.featureCall(attrType, actualFeature, needsToGoDownDeeper, scope, true)
 								}
 								new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)
 							]
