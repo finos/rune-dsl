@@ -2,6 +2,7 @@ package com.regnosys.rosetta.interpreternew.values;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.impl.RosettaInterpreterBaseEnvironmentImpl;
 
@@ -62,6 +63,33 @@ public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnviron
 		}
 		
 	}
+	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(environment);
+	}
+
+	@Override
+	public String toString() {
+		return "RosettaInterpreterListValue [environment = " + environment.toString() + "]";
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		RosettaInterpreterEnvironment other = (RosettaInterpreterEnvironment) obj;
+		return Objects.equals(environment, other.environment);
+	}
+	
 	
 	
 }
