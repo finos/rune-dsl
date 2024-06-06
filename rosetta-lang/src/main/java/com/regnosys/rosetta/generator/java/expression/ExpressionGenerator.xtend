@@ -410,7 +410,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 */
 	private def StringConcatenationClient buildMapFunc(RType itemType, Attribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
 		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
-		val resultType = if (attribute.metaAnnotations.nullOrEmpty) {
+		val resultType = if (attribute.metaAnnotations.nullOrEmpty || isDeepFeature) {
 				typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType
 			} else {
 				attribute.toMetaJavaType

@@ -32,6 +32,38 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCannotAccessMetaFeatureAfterDeepFeatureCall() {
+		val context = '''
+		type A:
+			b B (0..1)
+				[metadata reference]
+			c C (0..1)
+				[metadata reference]
+			
+			condition Choice:
+				one-of
+		
+		type B:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		
+		type C:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		'''.parseRosettaWithNoIssues
+		
+		"a ->> id"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		
+		"a ->> id -> scheme"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'scheme'.")
+	}
+	
+	@Test
 	def void testDeepFeatureCall() {
 		val context = '''
 		choice A:
@@ -61,7 +93,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			attr Foo (1..1)
 		
 		type Foo:
-		'''.parseRosetta
+		'''.parseRosettaWithNoIssues
 		
 		"a ->> attr"
 			.parseExpression(#[context], #["a A (1..1)"])

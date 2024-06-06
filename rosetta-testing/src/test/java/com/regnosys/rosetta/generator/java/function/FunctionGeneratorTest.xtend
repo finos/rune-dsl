@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThrows
 import javax.inject.Inject
 import java.time.LocalDateTime
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.rosetta.model.lib.meta.Key
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -40,6 +41,62 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testDeepPathOperatorWithMeta() {
+		val code = '''
+		type A:
+			b B (0..1)
+				[metadata reference]
+			c C (0..1)
+				[metadata reference]
+			
+			condition Choice:
+				one-of
+		
+		type B:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		
+		type C:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		
+		func Test:
+			inputs:
+				a A (1..1)
+			output:
+				result string (1..1)
+			
+			set result:
+				a ->> id
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+        val aB = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaB", #{
+	    			"value" -> classes.createInstanceUsingBuilder("B", #{
+	    				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+	    					"key" -> #[Key.builder.setKeyValue("myKey")]
+	    				}),
+	    				"id" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+	    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+		    					"scheme" -> "myScheme"
+		    				}),
+	    					"value" -> "abc123"
+	    				})
+	    			}),
+	    			"globalReference" -> "globalRef",
+	    			"externalReference" -> "externalRef"
+	    		})
+	        })
+        
+        assertEquals("abc123", test.invokeFunc(String, #[aB]))
+	}
 	
 	@Test
 	def void testDeepPathOperator() {
