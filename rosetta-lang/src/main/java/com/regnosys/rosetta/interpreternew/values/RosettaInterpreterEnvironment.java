@@ -4,24 +4,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.regnosys.rosetta.rosetta.impl.RosettaInterpreterBaseEnvironmentImpl;
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
-public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnvironmentImpl {
-	private Map<String, RosettaInterpreterBaseValue> environment;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+
+public class RosettaInterpreterEnvironment extends MinimalEObjectImpl implements RosettaInterpreterBaseEnvironment {
+	private Map<String, RosettaInterpreterValue> environment;
 	
 	public RosettaInterpreterEnvironment() {
 		this.setEnvironment(new HashMap<>());
 	}
 	
-	public RosettaInterpreterEnvironment(Map<String, RosettaInterpreterBaseValue> el) {
+	public RosettaInterpreterEnvironment(Map<String, RosettaInterpreterValue> el) {
 		this.setEnvironment(el);
 	}
 
-	public Map<String, RosettaInterpreterBaseValue> getEnvironment() {
+	public Map<String, RosettaInterpreterValue> getEnvironment() {
 		return environment;
 	}
 
-	public void setEnvironment(Map<String, RosettaInterpreterBaseValue> env) {
+	public void setEnvironment(Map<String, RosettaInterpreterValue> env) {
 		this.environment = env;
 	}
 	
@@ -32,7 +35,7 @@ public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnviron
 	 * @return - the value iff variable exists in environment
 	 * 		   error otherwise
 	 */
-	public RosettaInterpreterBaseValue findValue(String name) {
+	public RosettaInterpreterValue findValue(String name) {
 		if (environment.containsKey(name)) { 
 			return environment.get(name);
 		}
@@ -51,28 +54,24 @@ public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnviron
 	 * @param name - name of the variable
 	 * @param val - value of the variable
 	 */
-	public void addValue(String name, 
-			RosettaInterpreterBaseValue val) {
+	public RosettaInterpreterValue addValue(String name, 
+			RosettaInterpreterValue val) {
 		
 		if (environment.containsKey(name)) { 
 			//update env
-			environment.replace(name, val);
+			return environment.replace(name, val);
 		}
 		else {
-			environment.put(name, val);
+			return environment.put(name, val);
 		}
 		
 	}
-	
 
+	
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(environment);
-	}
-
-	@Override
-	public String toString() {
-		return "RosettaInterpreterListValue [environment = " + environment.toString() + "]";
 	}
 
 	@Override
@@ -90,6 +89,9 @@ public class RosettaInterpreterEnvironment extends RosettaInterpreterBaseEnviron
 		return Objects.equals(environment, other.environment);
 	}
 	
-	
-	
+
+	@Override
+	public String toString() {
+		return "RosettaInterpreterEnvironment [environment=" + environment + "]";
+	}
 }

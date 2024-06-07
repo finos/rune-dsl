@@ -19,7 +19,7 @@ import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
 
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment
 
 
 interface RosettaExpression {
