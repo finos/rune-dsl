@@ -176,6 +176,7 @@ public class RosettaInterpreterVariableInterpreter {
 		int upperLimit = f.getOutput().getCard().isUnbounded() ? Integer.MAX_VALUE : 
 			f.getOutput().getCard().getSup();
 		int lowerLimit = f.getOutput().getCard().getInf();
+		//make the result a single element or a list depending on its stated cardinality
 		if (upperLimit == 1 && lowerLimit == 1) {
 			result = (RosettaInterpreterBaseValue) resultList.get(0);
 		} else {
@@ -205,7 +206,7 @@ public class RosettaInterpreterVariableInterpreter {
 		}
 		
 		
-		//if post-conditions pass, return the result
+		//if everything went well, return the result
 		return result;
 	}
 	
