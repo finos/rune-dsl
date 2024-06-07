@@ -5,6 +5,8 @@ import org.eclipse.emf.common.util.EList;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -77,6 +79,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 			}
 		}
 		
-		return null;
+		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+				"Constructor Expressions: constructor doesn't exist."));
 	}
 }

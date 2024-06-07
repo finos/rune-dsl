@@ -46,8 +46,10 @@ public class RosettaInterpreterFeatureCallTest {
 	RosettaInterpreterNumberValue seconds = new RosettaInterpreterNumberValue(BigDecimal.valueOf(28));
 	RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(hours, minutes, seconds);
 	
-	RosettaInterpreterErrorValue error = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-			"Feature call: feature not found."));
+	RosettaInterpreterErrorValue error1 = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+			"Feature calls: the receiver is an error value."));
+	RosettaInterpreterErrorValue error2 = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+			"dates does not exist in the environment"));
 	
 	@Test
 	public void testDateDay() {
@@ -149,5 +151,15 @@ public class RosettaInterpreterFeatureCallTest {
 		RosettaInterpreterValue result = interpreter.interp(expr, env);
 		
 		assertEquals(time, result);
+	}
+	
+	@Test
+	public void testError() {
+		RosettaExpression expr = parser.parseExpression(
+				"dates -> day", List.of("dates date (1..1)"));
+		RosettaInterpreterValue result = interpreter.interp(expr);
+		
+		RosettaInterpreterErrorValue errors = RosettaInterpreterErrorValue.merge(error1, error2);
+		assertEquals(errors, result);
 	}
 }

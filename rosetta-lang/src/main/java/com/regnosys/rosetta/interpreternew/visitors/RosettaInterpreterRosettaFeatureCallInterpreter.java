@@ -1,8 +1,12 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.util.List;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -49,9 +53,16 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 				return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
 			}
 			
-		} else {
-			// add implementation for data types and error handling
+		} else if (RosettaInterpreterErrorValue.errorsExist(receiverValue)) {
+			RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) receiverValue;
+			RosettaInterpreterErrorValue newExpError = 
+					new RosettaInterpreterErrorValue(
+							new RosettaInterpreterError("Feature calls: the "
+									+ "receiver is an error value."));
+			
+			return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
 		}
-		return null;
+		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+				"Feature calls: receiver doesn't exist."));
 	}
 }
