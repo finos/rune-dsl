@@ -18,10 +18,11 @@ public class RosettaInterpreterEnumerationInterpreter
 	}
 	
 	/**
-	 * Interprets a list literal, evaluating it to a list value.
+	 * Interprets the definition of an enumeration expression, 
+	 * then adds the enum value to the environment.
 	 *
 	 * @param exp the expression to be interpreted
-	 * @return the list value it represents
+	 * @return the new environment after adding the enum to it
 	 */
 	public RosettaInterpreterEnvironment interp(RosettaEnumeration exp, 
 			RosettaInterpreterEnvironment env) {
