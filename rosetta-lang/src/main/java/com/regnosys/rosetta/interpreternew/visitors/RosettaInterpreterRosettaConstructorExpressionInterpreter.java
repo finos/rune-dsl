@@ -11,7 +11,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
