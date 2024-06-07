@@ -15,10 +15,12 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 class TranslateSource extends RosettaRootElement, RosettaNamed {
 	refers TranslateSource[] superSources
-	contains Translation[] translations
+	contains Translation[] translations opposite source
 }
 
 class Translation {
+	refers TranslateSource source opposite translations
+	
 	contains TypeCall resultType
 	contains TranslationParameter[] parameters
 	contains TranslateInstruction[] typeInstructions

@@ -253,4 +253,18 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    }
 	    '''.parseRosettaWithNoIssues
 	}
+	
+	@Test
+	def void testTranslationDoesNotCallItself() {
+	    '''
+	    type Foo:
+	    
+	    type Bar:
+	    
+	    translate source FooBar {
+	        Foo from Bar:
+	        	[from item]
+	    }
+	    '''.parseRosettaWithNoIssues
+	}
 }

@@ -10,14 +10,17 @@ import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.translate.TranslateSource;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 
 public class TranslateUtil {
 	private final TypeSystem typeSystem;
+	private final RosettaTypeProvider typeProvider;
 	
 	@Inject
-	public TranslateUtil(TypeSystem typeSystem) {
+	public TranslateUtil(TypeSystem typeSystem, RosettaTypeProvider typeProvider) {
 		this.typeSystem = typeSystem;
+		this.typeProvider = typeProvider;
 	}
 	
 	private Stream<Translation> getAllTranslations(TranslateSource source) {
@@ -45,7 +48,7 @@ public class TranslateUtil {
 		}
 		for (int i=0;i<inputTypes.size();i++) {
 			RType inputType = inputTypes.get(i);
-			RType actualInputType = typeSystem.typeCallToRType(translation.getParameters().get(i).getTypeCall());
+			RType actualInputType = typeProvider.getRTypeOfSymbol(translation.getParameters().get(i));
 			if (!typeSystem.isSubtypeOf(inputType, actualInputType)) {
 				return false;
 			}
