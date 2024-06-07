@@ -52,9 +52,16 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				
 				if (date instanceof RosettaInterpreterDateValue 
 						&& time instanceof RosettaInterpreterTimeValue) {
-					return new RosettaInterpreterDateTimeValue(
+					boolean check = ((RosettaInterpreterTimeValue) time).valid();
+					
+					if (!check) {
+						return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+								"Constructor Expressions: time isn't valid."));
+					} else {
+						return new RosettaInterpreterDateTimeValue(
 							((RosettaInterpreterDateValue) date), 
 							((RosettaInterpreterTimeValue) time));
+					}
 				}
 				break;
 			}
@@ -66,10 +73,17 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				if (date instanceof RosettaInterpreterDateValue 
 						&& time instanceof RosettaInterpreterTimeValue 
 						&& timeZone instanceof RosettaInterpreterStringValue) {
-					return new RosettaInterpreterZonedDateTimeValue(
+					boolean check = ((RosettaInterpreterTimeValue) time).valid();
+					
+					if (!check) {
+						return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+								"Constructor Expressions: time isn't valid."));
+					} else {
+						return new RosettaInterpreterZonedDateTimeValue(
 							((RosettaInterpreterDateValue) date), 
 							((RosettaInterpreterTimeValue) time),
 							((RosettaInterpreterStringValue) timeZone));
+					}
 				}
 				break;
 			}

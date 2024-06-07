@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -45,6 +47,12 @@ public class RosettaInterpreterConstructorExpressionTest {
 	RosettaInterpreterNumberValue seconds = new RosettaInterpreterNumberValue(BigDecimal.valueOf(28));
 	RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(hours, minutes, seconds);
 	
+	RosettaInterpreterNumberValue hoursError = new RosettaInterpreterNumberValue(BigDecimal.valueOf(28));
+	RosettaInterpreterTimeValue timeError = new RosettaInterpreterTimeValue(hoursError, minutes, seconds);
+	
+	RosettaInterpreterErrorValue error = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+			"Constructor Expressions: time isn't valid."));
+	
 	@Test
 	public void testDate() {
 		RosettaExpression expr = parser.parseExpression("date { day: 5, month: 7, year: 2024 }");
@@ -72,6 +80,19 @@ public class RosettaInterpreterConstructorExpressionTest {
 	}
 	
 	@Test
+	public void testDateTimeNotValid() {
+		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
+		env.addValue("t", timeError);
+		
+		RosettaExpression expr = parser.parseExpression(
+				"dateTime { date: date { day: 5, month: 7, year: 2024 }, time: t }", 
+				List.of("t time (1..1)"));
+		RosettaInterpreterValue result = interpreter.interp(expr, env);
+		
+		assertEquals(error, result);
+	}
+	
+	@Test
 	public void testZonedDateTime() {
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
 		env.addValue("t", time);
@@ -86,5 +107,18 @@ public class RosettaInterpreterConstructorExpressionTest {
 		assertEquals(year, ((RosettaInterpreterZonedDateTimeValue) result).getDate().getYear());
 		assertEquals(time, ((RosettaInterpreterZonedDateTimeValue) result).getTime());
 		assertEquals("CET", ((RosettaInterpreterZonedDateTimeValue) result).getTimeZone().getValue());
+	}
+	
+	@Test
+	public void testZonedDateTimeNotValid() {
+		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
+		env.addValue("t", timeError);
+		
+		RosettaExpression expr = parser.parseExpression(
+				"zonedDateTime { date: date { day: 5, month: 7, year: 2024 }"
+				+ ", time: t, timezone: \"CET\" }", List.of("t time (1..1)"));
+		RosettaInterpreterValue result = interpreter.interp(expr, env);
+		
+		assertEquals(error, result);
 	}
 }

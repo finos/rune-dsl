@@ -39,6 +39,22 @@ public class RosettaInterpreterTimeValue extends RosettaInterpreterBaseValue {
 	public RosettaInterpreterNumberValue getSeconds() {
 		return seconds;
 	}
+	
+	/**
+	 * Method to check if the time value is a valid time.
+	 *
+	 * @return	true if it's valid, false otherwise
+	 */
+	public boolean valid() {
+		if (hours.getValue().intValue() > 24 || hours.getValue().intValue() < 0) {
+			return false;
+		} else if (minutes.getValue().intValue() > 59 || minutes.getValue().intValue() < 0) {
+			return false;
+		} else if (seconds.getValue().intValue() > 59 || seconds.getValue().intValue() < 0) {
+			return false;
+		}
+		return true;
+	}
 
 	@Override
 	public int hashCode() {
