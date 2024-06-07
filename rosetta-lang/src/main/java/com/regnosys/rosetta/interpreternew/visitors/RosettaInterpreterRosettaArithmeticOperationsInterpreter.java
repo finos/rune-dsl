@@ -7,7 +7,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -16,10 +16,6 @@ import com.rosetta.model.lib.RosettaNumber;
 public class RosettaInterpreterRosettaArithmeticOperationsInterpreter 
 					extends RosettaInterpreterConcreteInterpreter {
 	
-	
-	public RosettaInterpreterValue interp(ArithmeticOperation expr) {
-		return interp(expr, new RosettaInterpreterEnvironment());
-	}
 	
 	/**
 	 * Interprets an arithmetic operation, evaluating the operation between the two terms.
@@ -32,7 +28,8 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
      *         the error.
 	 */
 	public RosettaInterpreterValue interp(ArithmeticOperation expr,
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
+
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
 		RosettaInterpreterValue leftInterpreted = left.accept(visitor, env);
