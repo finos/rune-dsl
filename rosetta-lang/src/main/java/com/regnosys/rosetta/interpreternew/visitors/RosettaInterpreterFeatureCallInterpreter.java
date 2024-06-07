@@ -1,10 +1,7 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
-//import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumElementValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
-//import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
-//import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;

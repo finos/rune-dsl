@@ -23,6 +23,24 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 		this.values = values;
 	}
 	
+	/**
+	 * Method that checks that the enum contains a certain value.
+	 *
+	 * @param name Name of the value that the enum should contain
+	 */
+	public boolean containsValueName(String name) {
+		for (RosettaInterpreterValue v : values) {
+			if (((RosettaInterpreterEnumElementValue) v).getValue().equals(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public List<RosettaInterpreterValue> getValues() { return values; }
+	
+	public String getName() { return name; }
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(values);
@@ -31,21 +49,6 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 	@Override
 	public String toString() {
 		return "RosettaInterpreterListValue [name = " + name + ", values=" + values.toString() + "]";
-	}
-	
-	/**
-	 * Method that checks that the enum contains a certain value.
-	 *
-	 * @param name Name of the value that the enum should contain
-	 */
-	public boolean containsValueName(String name) {
-		boolean ok = false;
-		for (RosettaInterpreterValue v : values) {
-			if (((RosettaInterpreterEnumElementValue) v).getValue().equals(name)) {
-				ok = true;
-			}
-		}
-		return ok;
 	}
 
 	@Override
@@ -62,10 +65,6 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 		RosettaInterpreterEnumValue other = (RosettaInterpreterEnumValue) obj;
 		return Objects.equals(values, other.values) && Objects.equals(name, other.name);
 	}
-
-	public List<RosettaInterpreterValue> getValues() { return values; }
-	
-	public String getName() { return name; }
 
 	@Override
 	public Stream<Object> toElementStream() {
