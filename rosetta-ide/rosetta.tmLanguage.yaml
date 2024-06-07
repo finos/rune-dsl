@@ -45,8 +45,8 @@ variables:
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
-  expressionEnd: '(?=,|\))|{{sectionEnd}}'
-  functionalOperationEnd: (?=\])|(?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
+  expressionEnd: '(?=,|\)|\])|{{sectionEnd}}'
+  functionalOperationEnd: (?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
 
 patterns:
 - include: '#model'
