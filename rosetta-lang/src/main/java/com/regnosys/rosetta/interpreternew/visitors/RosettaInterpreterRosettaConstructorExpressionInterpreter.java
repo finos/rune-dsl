@@ -1,5 +1,8 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.emf.common.util.EList;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
@@ -10,6 +13,8 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedFeatureValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
@@ -88,12 +93,36 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				break;
 			}
 			default: {
-				// needed for data types
-				break;
+				// check that the data type is defined before, if not return error
+				List<RosettaInterpreterTypedFeatureValue> attributes = new ArrayList<>();
+				
+				for (ConstructorKeyValuePair pair : values) {
+					String name = pair.getKey().getName();
+					RosettaInterpreterValue value = pair.getValue().accept(visitor, env);
+					
+					if (RosettaInterpreterErrorValue.errorsExist(value)) {
+						RosettaInterpreterErrorValue expError = 
+								(RosettaInterpreterErrorValue) value;
+						RosettaInterpreterErrorValue newExpError = 
+								new RosettaInterpreterErrorValue(
+										new RosettaInterpreterError(
+												"Constructor Expression"
+												+ ": the attribute \""
+												+ name + "\" is an "
+												+ "error value."));
+						
+						return RosettaInterpreterErrorValue.merge(
+								List.of(newExpError, expError));
+					}
+					
+					attributes.add(new RosettaInterpreterTypedFeatureValue(name, value));
+				}
+				
+				return new RosettaInterpreterTypedValue(typeCall, attributes);
 			}
 		}
 		
 		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-				"Constructor Expressions: constructor doesn't exist."));
+				"Constructor Expressions: attribute type is not valid."));
 	}
 }

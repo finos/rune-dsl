@@ -9,32 +9,26 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseValue {
 	
 	public String name;
-	public RosettaInterpreterBaseValue value;
-	public RosettaCardinality card;
+	public RosettaInterpreterValue value;
+	//public RosettaCardinality card;
 
-	public RosettaInterpreterTypedFeatureValue(String name, RosettaInterpreterBaseValue value,
-			RosettaCardinality card) {
+	public RosettaInterpreterTypedFeatureValue(String name, RosettaInterpreterValue value) {
 		super();
 		this.name = name;
 		this.value = value;
-		this.card = card;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public RosettaInterpreterBaseValue getValue() {
+	public RosettaInterpreterValue getValue() {
 		return value;
-	}
-
-	public RosettaCardinality getCard() {
-		return card;
 	}
 
 	@Override
 	public Stream<Object> toElementStream() {
-		return Stream.of(name, value, card);
+		return Stream.of(name, value);
 	}
 
 	@Override
@@ -44,7 +38,7 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(card, name, value);
+		return Objects.hash(name, value);
 	}
 
 	@Override
@@ -59,13 +53,12 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 			return false;
 		}
 		RosettaInterpreterTypedFeatureValue other = (RosettaInterpreterTypedFeatureValue) obj;
-		return Objects.equals(card, other.card) && Objects.equals(name, other.name)
-				&& Objects.equals(value, other.value);
+		return Objects.equals(name, other.name) && Objects.equals(value, other.value);
 	}
 
 	@Override
 	public String toString() {
-		return "RosettaInterpreterTypedFeatureValue [name=" + name + ", value=" + value + ", card=" + card + "]";
+		return "RosettaInterpreterTypedFeatureValue [name=" + name + ", value=" + value + "]";
 	}
 
 }

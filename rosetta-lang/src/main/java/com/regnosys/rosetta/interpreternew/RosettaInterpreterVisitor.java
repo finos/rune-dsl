@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.interpreternew;
 
-import com.regnosys.rosetta.rosetta.RosettaTyped;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
@@ -230,12 +229,6 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	@Override
 	public RosettaInterpreterValue interp(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterRosettaFeatureCallInterpreter().interp(exp, env);
-	}
-
-	@Override
-	public RosettaInterpreterBaseEnvironment interp(RosettaTyped exp, RosettaInterpreterBaseEnvironment env) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
 

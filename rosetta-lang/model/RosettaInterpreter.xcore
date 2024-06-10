@@ -32,7 +32,6 @@ import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.RosettaTyped
 
 class RosettaInterpreterBaseError{
 	String message
@@ -74,8 +73,6 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
 	
 	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
-	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)
-	op RosettaInterpreterBaseEnvironment interp (RosettaTyped exp, RosettaInterpreterBaseEnvironment env)
-	
+	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)	
 	
 }
