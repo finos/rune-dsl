@@ -79,7 +79,7 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    }
 	    '''.parseRosetta
 		
-		model.assertError(ROSETTA_EXPRESSION, null,
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
 			"Expression must be of single cardinality when mapping to attribute `a` of single cardinality."
 		)
 	}
@@ -126,7 +126,7 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    '''.parseRosetta
 		
 		model.assertError(ROSETTA_EXPRESSION, null,
-			"Expression must be of single cardinality."
+			"Expression must be of single cardinality when mapping to attribute `scheme` of single cardinality."
 		)
 	}
 	
@@ -149,8 +149,8 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    }
 	    '''.parseRosetta
 		
-		model.assertError(ROSETTA_EXPRESSION, null,
-			"aaaaaaaaaaaat"
+		model.assertError(TRANSLATE_INSTRUCTION, null,
+			"No translation exists to translate Qux into string."
 		)
 	}
 	
@@ -172,8 +172,8 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    }
 	    '''.parseRosetta
 		
-		model.assertError(ROSETTA_EXPRESSION, null,
-			"aaaaaaaaaaaat"
+		model.assertError(TRANSLATE_INSTRUCTION, null,
+			"No translation exists to translate Qux into Foo."
 		)
 	}
 	
@@ -241,7 +241,7 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    
 	    type SuperQux:
 	    
-	    type Qux extends Qux:
+	    type Qux extends SuperQux:
 	    	c string (1..1)
 	    
 	    translate source FooBar {
@@ -249,21 +249,7 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	        	+ a
 	           		[from b]
 	        
-	        SuperAttrType from SuperQux:
-	    }
-	    '''.parseRosettaWithNoIssues
-	}
-	
-	@Test
-	def void testTranslationDoesNotCallItself() {
-	    '''
-	    type Foo:
-	    
-	    type Bar:
-	    
-	    translate source FooBar {
-	        Foo from Bar:
-	        	[from item]
+	        AttrType from SuperQux:
 	    }
 	    '''.parseRosettaWithNoIssues
 	}

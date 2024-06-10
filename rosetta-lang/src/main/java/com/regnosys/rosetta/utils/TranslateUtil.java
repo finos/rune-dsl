@@ -56,7 +56,7 @@ public class TranslateUtil {
 		
 		// Check output matches
 		RType actualResultType = typeSystem.typeCallToRType(translation.getResultType());
-		if (!typeSystem.isSubtypeOf(resultType, actualResultType)) {
+		if (!typeSystem.stripFromTypeAliases(resultType).equals(typeSystem.stripFromTypeAliases(actualResultType))) {
 			return false;
 		}
 		

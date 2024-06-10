@@ -918,11 +918,15 @@ TranslationRule:
     	(instructions+=TranslateInstruction | metaInstructions+=TranslateMetaInstruction)*
 ;
 
+fragment BaseTranslateInstruction:
+	'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
+;
+
 TranslateInstruction:
-	'[' 'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
+	'[' BaseTranslateInstruction
 ;
 
 TranslateMetaInstruction:
-	'[' 'meta' metaFeature=[RosettaMetaType] 'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
+	'[' 'meta' metaFeature=[RosettaMetaType] BaseTranslateInstruction
 ;
 

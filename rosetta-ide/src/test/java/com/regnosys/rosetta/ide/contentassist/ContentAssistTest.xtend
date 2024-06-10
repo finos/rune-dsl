@@ -164,6 +164,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			to-string -> to-string [[7, 27] .. [7, 27]]
 			to-time -> to-time [[7, 27] .. [7, 27]]
 			to-zoned-date-time -> to-zoned-date-time [[7, 27] .. [7, 27]]
+			translate -> translate [[7, 27] .. [7, 27]]
 			type -> type [[7, 27] .. [7, 27]]
 			typeAlias -> typeAlias [[7, 27] .. [7, 27]]
 			* -> * [[7, 27] .. [7, 27]]

@@ -41,11 +41,13 @@ class TranslationRule {
     contains TranslateMetaInstruction[] metaInstructions
 }
 
-class TranslateInstruction {
+abstract class BaseTranslateInstruction {
 	contains RosettaExpression[] expressions
 }
 
-class TranslateMetaInstruction {
-	contains RosettaExpression[] expressions
+class TranslateInstruction extends BaseTranslateInstruction {
+}
+
+class TranslateMetaInstruction extends BaseTranslateInstruction {
 	refers RosettaMetaType metaFeature
 }
