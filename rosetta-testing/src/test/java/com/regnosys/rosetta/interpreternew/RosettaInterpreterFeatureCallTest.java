@@ -17,7 +17,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -36,9 +35,9 @@ public class RosettaInterpreterFeatureCallTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	RosettaInterpreterIntegerValue day = new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
-	RosettaInterpreterIntegerValue month = new RosettaInterpreterIntegerValue(BigInteger.valueOf(7));
-	RosettaInterpreterIntegerValue year = new RosettaInterpreterIntegerValue(BigInteger.valueOf(2024));
+	RosettaInterpreterNumberValue day = new RosettaInterpreterNumberValue(5);
+	RosettaInterpreterNumberValue month = new RosettaInterpreterNumberValue(7);
+	RosettaInterpreterNumberValue year = new RosettaInterpreterNumberValue(2024);
 	RosettaInterpreterDateValue date = new RosettaInterpreterDateValue(day, month, year);
 	
 	RosettaInterpreterNumberValue hours = new RosettaInterpreterNumberValue(BigDecimal.valueOf(5));

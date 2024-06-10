@@ -7,7 +7,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValu
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
@@ -36,13 +36,13 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				RosettaInterpreterValue month = values.get(1).getValue().accept(visitor, env);
 				RosettaInterpreterValue year = values.get(2).getValue().accept(visitor, env);
 				
-				if (day instanceof RosettaInterpreterIntegerValue 
-						&& month instanceof RosettaInterpreterIntegerValue 
-						&& year instanceof RosettaInterpreterIntegerValue) {
+				if (day instanceof RosettaInterpreterNumberValue 
+						&& month instanceof RosettaInterpreterNumberValue 
+						&& year instanceof RosettaInterpreterNumberValue) {
 					return new RosettaInterpreterDateValue(
-							((RosettaInterpreterIntegerValue) day), 
-							((RosettaInterpreterIntegerValue) month),
-							((RosettaInterpreterIntegerValue) year));
+							((RosettaInterpreterNumberValue) day), 
+							((RosettaInterpreterNumberValue) month),
+							((RosettaInterpreterNumberValue) year));
 				}
 				break;
 			}

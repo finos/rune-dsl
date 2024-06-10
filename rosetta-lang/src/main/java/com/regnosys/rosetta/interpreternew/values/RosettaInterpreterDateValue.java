@@ -7,9 +7,9 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 
 public class RosettaInterpreterDateValue extends RosettaInterpreterBaseValue {
 	
-	private RosettaInterpreterIntegerValue day;
-	private RosettaInterpreterIntegerValue month;
-	private RosettaInterpreterIntegerValue year;
+	private RosettaInterpreterNumberValue day;
+	private RosettaInterpreterNumberValue month;
+	private RosettaInterpreterNumberValue year;
 
 	/**
 	 * Constructor for date value.
@@ -18,23 +18,23 @@ public class RosettaInterpreterDateValue extends RosettaInterpreterBaseValue {
 	 * @param month		month value
 	 * @param year		year value
 	 */
-	public RosettaInterpreterDateValue(RosettaInterpreterIntegerValue day, RosettaInterpreterIntegerValue month,
-			RosettaInterpreterIntegerValue year) {
+	public RosettaInterpreterDateValue(RosettaInterpreterNumberValue day, RosettaInterpreterNumberValue month,
+			RosettaInterpreterNumberValue year) {
 		super();
 		this.day = day;
 		this.month = month;
 		this.year = year;
 	}
 
-	public RosettaInterpreterIntegerValue getDay() {
+	public RosettaInterpreterNumberValue getDay() {
 		return day;
 	}
 
-	public RosettaInterpreterIntegerValue getMonth() {
+	public RosettaInterpreterNumberValue getMonth() {
 		return month;
 	}
 
-	public RosettaInterpreterIntegerValue getYear() {
+	public RosettaInterpreterNumberValue getYear() {
 		return year;
 	}
 

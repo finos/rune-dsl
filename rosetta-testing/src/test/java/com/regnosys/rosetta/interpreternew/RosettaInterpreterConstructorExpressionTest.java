@@ -3,7 +3,6 @@ package com.regnosys.rosetta.interpreternew;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -18,7 +17,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
@@ -37,9 +35,9 @@ public class RosettaInterpreterConstructorExpressionTest {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
-	RosettaInterpreterIntegerValue day = new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
-	RosettaInterpreterIntegerValue month = new RosettaInterpreterIntegerValue(BigInteger.valueOf(7));
-	RosettaInterpreterIntegerValue year = new RosettaInterpreterIntegerValue(BigInteger.valueOf(2024));
+	RosettaInterpreterNumberValue day = new RosettaInterpreterNumberValue(5);
+	RosettaInterpreterNumberValue month = new RosettaInterpreterNumberValue(7);
+	RosettaInterpreterNumberValue year = new RosettaInterpreterNumberValue(2024);
 	RosettaInterpreterDateValue date = new RosettaInterpreterDateValue(day, month, year);
 	
 	RosettaInterpreterNumberValue hours = new RosettaInterpreterNumberValue(BigDecimal.valueOf(5));
