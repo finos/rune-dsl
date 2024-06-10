@@ -6,12 +6,15 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 
@@ -30,6 +33,10 @@ class RosettaInterpreterErrorValueTest {
 	RosettaInterpreterBooleanValue vb1;
 	List<RosettaInterpreterValue> vals;
 	
+	RosettaInterpreterBaseError b1;
+	RosettaInterpreterBaseError b2;
+	List<RosettaInterpreterBaseError> baseErr;
+	
 	@BeforeEach
 	void setup() {
 		e1 = new RosettaInterpreterError("e1");
@@ -42,6 +49,10 @@ class RosettaInterpreterErrorValueTest {
 		vb1 = new RosettaInterpreterBooleanValue(true);
 		vb2 = new RosettaInterpreterBooleanValue(false);
 		vals = new ArrayList<>(List.of(v1,v2,v3,vb1,vb2));
+		
+		b1 = new RosettaInterpreterError("b1");
+		b2 = new RosettaInterpreterError("b2");
+		baseErr = new ArrayList<>(List.of(b1,b2));
 	}
 
 	@Test
@@ -116,6 +127,46 @@ class RosettaInterpreterErrorValueTest {
 		val.addAllErrors(List.of(e2, e3));
 		
 		assertEquals(val, RosettaInterpreterErrorValue.merge(v2, v3));
+	}
+	
+	@Test
+	void mergeBadWeatherTest() {
+		List<RosettaInterpreterValue> list = new ArrayList<>();
+		list.add(vb1);
+		list.add(vb2);
+		
+		assertThrows(IllegalArgumentException.class, () -> {
+			RosettaInterpreterErrorValue.merge(list);
+		});
+	}
+
+	@Test
+	void hashTest() {
+		RosettaInterpreterErrorValue err1 = new RosettaInterpreterErrorValue(baseErr);
+		RosettaInterpreterErrorValue err2 = new RosettaInterpreterErrorValue(baseErr);
+		
+		assertEquals(err1.hashCode(), err2.hashCode());
+	}
+	
+	@Test
+	void toStringTest() {
+		assertEquals(
+				"RosettaInterpreterErrorValue [errors=[RosettaInterpreterError [errorMessage=e1]]]", 
+				v1.toString());
+	}
+	
+	@Test
+	void streamElementTest() {
+		List<Object> result = new ArrayList<Object>();
+		result.add(e1);
+		
+		assertEquals(result, v1.toElementStream().collect(Collectors.toList()).get(0));
+	}
+	
+	@Test
+	void equalsBadWeatherTest() {
+		assertFalse(v1.equals(null));
+		assertFalse(v1.equals("error"));
 	}
 
 }

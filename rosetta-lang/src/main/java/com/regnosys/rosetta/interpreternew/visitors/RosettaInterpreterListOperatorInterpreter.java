@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,10 +10,9 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.FirstOperation;
 import com.regnosys.rosetta.rosetta.expression.LastOperation;
@@ -40,7 +38,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp Exists operation to interpret
 	 * @return Boolean indicating if the argument exists or not
 	 */
-	public RosettaInterpreterValue interp(RosettaExistsExpression exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(RosettaExistsExpression exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
 		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
 		
@@ -74,7 +72,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp "Is absent" expression to intepret
 	 * @return Boolean indicating if the interpreted argument is absent
 	 */
-	public RosettaInterpreterValue interp(RosettaAbsentExpression exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(RosettaAbsentExpression exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
 		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
 		
@@ -92,9 +90,9 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * Return the number of elements in a list
 	 *
 	 * @param exp Expression to perform 'count' on
-	 * @return Integer indicating how many elements there are in the list
+	 * @return Number indicating how many elements there are in the list
 	 */
-	public RosettaInterpreterValue interp(RosettaCountOperation exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(RosettaCountOperation exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
 		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
 		
@@ -103,7 +101,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		}
 		
 		long count = RosettaInterpreterBaseValue.valueStream(interpretedArgument).count();
-		return new RosettaInterpreterIntegerValue(BigInteger.valueOf(count));
+		return new RosettaInterpreterNumberValue(BigDecimal.valueOf(count));
 	}
 
 	/**
@@ -114,7 +112,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp Expression on which to perform 'first' operation
 	 * @return First element of the list
 	 */
-	public RosettaInterpreterValue interp(FirstOperation exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(FirstOperation exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
 		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
 		
@@ -142,7 +140,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp Expression on which to perform 'only-element' operation
 	 * @return The single element of the list
 	 */
-	public RosettaInterpreterValue interp(RosettaOnlyElement exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(RosettaOnlyElement exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
 		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
 		
@@ -174,7 +172,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp Expression on which to perform 'last' operation
 	 * @return Last element of the list
 	 */
-	public RosettaInterpreterValue interp(LastOperation exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(LastOperation exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression argument = exp.getArgument();
 		RosettaInterpreterValue interpretedArgument = argument.accept(visitor, env);
 		
@@ -194,22 +192,6 @@ public class RosettaInterpreterListOperatorInterpreter
 		}
 	}
 
-	public RosettaInterpreterValue interp(DistinctOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-	
-	public RosettaInterpreterValue interp(RosettaOnlyElement exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-	
-	public RosettaInterpreterValue interp(ReverseOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-	
-	public RosettaInterpreterValue interp(SumOperation exp) {
-		return interp(exp, new RosettaInterpreterEnvironment());
-	}
-
 	/**
 	 * Interprets a Distinct Operation.
 	 * Returns a list where duplicate elements are removed
@@ -219,7 +201,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp - distinct operation to interpret
 	 * @return - list Value of distinct values
 	 */
-	public RosettaInterpreterValue interp(DistinctOperation exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(DistinctOperation exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression expression = exp.getArgument();
 		RosettaInterpreterValue val = expression.accept(visitor, env);
 		
@@ -242,7 +224,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp - Reverse operation to interpret
 	 * @return - Reversed list
 	 */
-	public RosettaInterpreterValue interp(ReverseOperation exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ReverseOperation exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression expression = exp.getArgument();
 		RosettaInterpreterValue val = expression.accept(visitor, env);
 		
@@ -265,7 +247,7 @@ public class RosettaInterpreterListOperatorInterpreter
 	 * @param exp - Sum operation to interpret
 	 * @return sum of elements or error if elements are not summable
 	 */
-	public RosettaInterpreterValue interp(SumOperation exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(SumOperation exp, RosettaInterpreterEnvironment env) {
 		RosettaExpression expression = exp.getArgument();
 		RosettaInterpreterValue val = expression.accept(visitor, env);
 		
@@ -288,13 +270,7 @@ public class RosettaInterpreterListOperatorInterpreter
 		// to numbers for further simplicity
 		for (int i = 0; i < values.size(); i++) {
 			RosettaInterpreterValue v = values.get(i);
-			if (v instanceof RosettaInterpreterIntegerValue) {
-				RosettaInterpreterIntegerValue valInt =
-						(RosettaInterpreterIntegerValue)v;
-				values.set(i, new RosettaInterpreterNumberValue(
-						BigDecimal.valueOf(valInt.getValue().longValue())));
-			}
-			else if (!(v instanceof RosettaInterpreterNumberValue)) {
+			if (!(v instanceof RosettaInterpreterNumberValue)) {
 				return new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError("Cannot take sum"
 								+ "of non-number value"));

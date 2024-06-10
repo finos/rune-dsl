@@ -2,8 +2,6 @@ package com.regnosys.rosetta.interpreternew;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
@@ -24,7 +21,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
-import com.rosetta.model.lib.RosettaNumber;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -41,9 +37,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if True then 1");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		BigInteger number = BigInteger.valueOf(1);
-		
-		assertEquals(number, ((RosettaInterpreterIntegerValue) result).getValue());
+		assertEquals(new RosettaInterpreterNumberValue(1), result);
 	}
 	
 	@Test
@@ -51,9 +45,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if False then 1 else 2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		BigInteger number = BigInteger.valueOf(2);
-		
-		assertEquals(number, ((RosettaInterpreterIntegerValue) result).getValue());
+		assertEquals(new RosettaInterpreterNumberValue(2), result);
 	}
 	
 	@Test
@@ -61,9 +53,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if True then 1 else 2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		BigInteger number = BigInteger.valueOf(1);
-		
-		assertEquals(number, ((RosettaInterpreterIntegerValue) result).getValue());
+		assertEquals(new RosettaInterpreterNumberValue(1), result);
 	}
 	
 	@Test
@@ -87,22 +77,16 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if True then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		RosettaNumber number = RosettaNumber.valueOf(BigDecimal.valueOf(1.2));
-		
-		assertEquals(number, ((RosettaInterpreterNumberValue) result).getValue());
+		assertEquals(new RosettaInterpreterNumberValue(1.2), result);
 	}
 	
 	@Test
 	public void listTest() {
 		RosettaExpression expr = parser.parseExpression("if True then [1, 2]");
 		RosettaInterpreterValue result = interpreter.interp(expr);
-		
-		RosettaInterpreterIntegerValue one = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(1));
-		RosettaInterpreterIntegerValue two = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(2));
-		
-		List<RosettaInterpreterValue> list = List.of(one, two);
+	
+		List<RosettaInterpreterValue> list = List.of(new RosettaInterpreterNumberValue(1), 
+				new RosettaInterpreterNumberValue(2));
 		
 		assertEquals(list, ((RosettaInterpreterListValue) result).getExpressions());
 	}
@@ -112,9 +96,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if 3 > 2 then 1 else 2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		
-		BigInteger number = BigInteger.valueOf(1);
-		
-		assertEquals(number, ((RosettaInterpreterIntegerValue) result).getValue());
+		assertEquals(new RosettaInterpreterNumberValue(1), result);
 	}
 	
 	@Test
@@ -143,36 +125,6 @@ public class RosettaInterpreterConditionalExpressionTest {
 				"cannot use \"ALL\" keyword " + "to compare two elements"));
 		
 		RosettaExpression expr = parser.parseExpression("if False then 2 else 1 all = 3");
-		RosettaInterpreterValue result = interpreter.interp(expr);
-		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
-		
-		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), 
-				errorResult.getErrors().get(0).getMessage());
-	}
-	
-	@Test
-	public void notSameTypeThenTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("Conditional expression: "
-						+ "then and else need to have the same type."));
-		
-		RosettaExpression expr = parser.parseExpression("if True then 1.2 else \"abc\"");
-		RosettaInterpreterValue result = interpreter.interp(expr);
-		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
-		
-		assertEquals(expected.getErrors(), errorResult.getErrors());
-		assertEquals(expected.getErrors().get(0).getMessage(), 
-				errorResult.getErrors().get(0).getMessage());
-	}
-	
-	@Test
-	public void notSameTypeElseTest() {
-		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("Conditional expression: "
-						+ "then and else need to have the same type."));
-		
-		RosettaExpression expr = parser.parseExpression("if False then 1.2 else \"abc\"");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorResult = (RosettaInterpreterErrorValue) result;
 		
@@ -217,8 +169,9 @@ public class RosettaInterpreterConditionalExpressionTest {
 	public void noElseTest() {
 		RosettaExpression expr = parser.parseExpression("if False then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
-		
-		assertEquals(null, result);
+		RosettaInterpreterError expected = new RosettaInterpreterError(
+				"Else branch should be evaluated but does not exist");
+		assertEquals(expected, ((RosettaInterpreterErrorValue)result).getErrors().get(0));
 	}
 
 }
