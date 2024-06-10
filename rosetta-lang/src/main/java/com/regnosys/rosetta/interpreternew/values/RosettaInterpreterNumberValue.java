@@ -23,6 +23,11 @@ public class RosettaInterpreterNumberValue extends RosettaInterpreterBaseValue
 		this.value = value;
 	}
 	
+	public RosettaInterpreterNumberValue(double value) {
+		super();
+		this.value = RosettaNumber.valueOf(value);
+	}
+
 	public RosettaNumber getValue() { return value; }
 
 	@Override
@@ -58,6 +63,11 @@ public class RosettaInterpreterNumberValue extends RosettaInterpreterBaseValue
 	@Override
 	public Stream<RosettaInterpreterValue> toValueStream() {
 		return Stream.of(this);
+	}
+	
+	@Override 
+	public String toString() {
+		return "RosettaInterpreterNumberValue [" + value.toString() + "]";
 	}
 	
 }

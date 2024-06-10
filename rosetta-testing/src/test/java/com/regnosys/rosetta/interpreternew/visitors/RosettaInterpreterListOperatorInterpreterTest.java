@@ -2,7 +2,6 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigInteger;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -18,7 +17,6 @@ import com.regnosys.rosetta.interpreternew.RosettaInterpreterNew;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -198,23 +196,23 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testCountEmptyList() {
-		RosettaInterpreterIntegerValue expected = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(0));
+		RosettaInterpreterNumberValue expected = 
+				new RosettaInterpreterNumberValue(0);
 		RosettaExpression expr = parser.parseExpression("[] count");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterIntegerValue);
-		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertTrue(val instanceof RosettaInterpreterNumberValue);
+		RosettaInterpreterNumberValue castedVal = (RosettaInterpreterNumberValue)val;
 		assertEquals(expected, castedVal);
 	}
 	
 	@Test
 	void testCount() {
-		RosettaInterpreterIntegerValue expected = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(3));
+		RosettaInterpreterNumberValue expected = 
+				new RosettaInterpreterNumberValue(3);
 		RosettaExpression expr = parser.parseExpression("[1, 2, 3] count");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterIntegerValue);
-		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertTrue(val instanceof RosettaInterpreterNumberValue);
+		RosettaInterpreterNumberValue castedVal = (RosettaInterpreterNumberValue)val;
 		assertEquals(expected, castedVal);
 	}
 	
@@ -245,12 +243,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testFirst() {
-		RosettaInterpreterIntegerValue expected = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(3));
+		RosettaInterpreterNumberValue expected = 
+				new RosettaInterpreterNumberValue(3);
 		RosettaExpression expr = parser.parseExpression("[3, 4, 5] first");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterIntegerValue);
-		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertTrue(val instanceof RosettaInterpreterNumberValue);
+		RosettaInterpreterNumberValue castedVal = (RosettaInterpreterNumberValue)val;
 		assertEquals(expected, castedVal);
 	}
 	
@@ -281,12 +279,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testLast() {
-		RosettaInterpreterIntegerValue expected = 
-				new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
+		RosettaInterpreterNumberValue expected = 
+				new RosettaInterpreterNumberValue(5);
 		RosettaExpression expr = parser.parseExpression("[3, 4, 5] last");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertTrue(val instanceof RosettaInterpreterIntegerValue);
-		RosettaInterpreterIntegerValue castedVal = (RosettaInterpreterIntegerValue)val;
+		assertTrue(val instanceof RosettaInterpreterNumberValue);
+		RosettaInterpreterNumberValue castedVal = (RosettaInterpreterNumberValue)val;
 		assertEquals(expected, castedVal);
 	}
 	
@@ -310,8 +308,8 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(1), 
-						new RosettaInterpreterIntegerValue(2)));
+				List.of(new RosettaInterpreterNumberValue(1), 
+						new RosettaInterpreterNumberValue(2)));
 		
 		assertEquals(exp, val);
 	}
@@ -323,8 +321,8 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(1), 
-						new RosettaInterpreterIntegerValue(2)));
+				List.of(new RosettaInterpreterNumberValue(1), 
+						new RosettaInterpreterNumberValue(2)));
 		
 		assertEquals(exp, val);
 	}
@@ -336,7 +334,7 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(2)));
+				List.of(new RosettaInterpreterNumberValue(2)));
 		
 		assertEquals(exp, val);
 	}
@@ -360,7 +358,7 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(1)));
+				List.of(new RosettaInterpreterNumberValue(1)));
 		
 		assertEquals(exp, val);
 	}
@@ -382,8 +380,8 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(2), 
-						new RosettaInterpreterIntegerValue(1)));
+				List.of(new RosettaInterpreterNumberValue(2), 
+						new RosettaInterpreterNumberValue(1)));
 		
 		assertEquals(exp, val);
 	}
@@ -395,7 +393,7 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(1)));
+				List.of(new RosettaInterpreterNumberValue(1)));
 		
 		assertEquals(exp, val);
 	}
@@ -419,12 +417,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 		validation.assertNoIssues(expr);
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterListValue exp = new RosettaInterpreterListValue(
-				List.of(new RosettaInterpreterIntegerValue(6),
-						new RosettaInterpreterIntegerValue(5),
-						new RosettaInterpreterIntegerValue(4),
-						new RosettaInterpreterIntegerValue(3),
-						new RosettaInterpreterIntegerValue(2), 
-						new RosettaInterpreterIntegerValue(1)));
+				List.of(new RosettaInterpreterNumberValue(6),
+						new RosettaInterpreterNumberValue(5),
+						new RosettaInterpreterNumberValue(4),
+						new RosettaInterpreterNumberValue(3),
+						new RosettaInterpreterNumberValue(2), 
+						new RosettaInterpreterNumberValue(1)));
 		
 		assertEquals(exp, val);
 	}

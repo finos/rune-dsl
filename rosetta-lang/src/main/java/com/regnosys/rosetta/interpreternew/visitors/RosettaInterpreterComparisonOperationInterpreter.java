@@ -25,8 +25,6 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterBooleanValue",
 					"com.regnosys.rosetta.interpreternew.values."
-					+ "RosettaInterpreterIntegerValue",
-					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterNumberValue",
 					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterStringValue");
@@ -70,25 +68,19 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		}
 		
 		//check cardinality operation
-		switch (expr.getCardMod()) {
-		case NONE:
-			//normally compare left and right side.
-			boolean result = checkComparableTypes(leftValue, 
-					rightValue, 
-					expr.getOperator());
-			return new RosettaInterpreterBooleanValue(result);
-		
+		switch (expr.getCardMod()) {		
 		case ANY:
 			return compareAny(leftValue, rightValue, expr.getOperator());
 			
 		case ALL:
 			return compareAll(leftValue, rightValue, expr.getOperator());
 
-		default:
-			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError(
-							"cardinality modifier " + expr.getCardMod()
-							+ " not supported"));
+		default: //case NONE
+			//normally compare left and right side.
+			boolean result = checkComparableTypes(leftValue, 
+					rightValue, 
+					expr.getOperator());
+			return new RosettaInterpreterBooleanValue(result);
 			
 		}
 	}
@@ -223,20 +215,18 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 			return false;
 		}
 		switch (operator) {
-		case "=":
-			return comparisonResult == 0;
 		case "<>":
 			return comparisonResult != 0;
 		case "<":
 			return comparisonResult == -1;
 		case "<=":
-			return comparisonResult == -1 || comparisonResult == 0;
+			return comparisonResult <= 0;
 		case ">":
 			return comparisonResult == 1;
 		case ">=":
-			return comparisonResult == 1 || comparisonResult == 0;
+			return comparisonResult >= 0;
 		default:
-			return false; //should never happen
+			return comparisonResult == 0; //case "="
 		}
 	}
 

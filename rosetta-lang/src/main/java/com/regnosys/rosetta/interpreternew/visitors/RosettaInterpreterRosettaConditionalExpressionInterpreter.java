@@ -28,13 +28,10 @@ extends RosettaInterpreterConcreteInterpreter {
 		
 		RosettaExpression ifExpression = expr.getIf();
 		RosettaExpression ifThen = expr.getIfthen();
+		RosettaExpression elseThen = expr.getElsethen();
 		
 		RosettaInterpreterValue ifValue = ifExpression.accept(visitor, env); 
-		RosettaInterpreterValue ifThenValue = ifThen.accept(visitor, env);
-		
-		RosettaExpression elseThen = null;
-		RosettaInterpreterValue elseThenValue = null;
-		
+
 		if (ifValue instanceof RosettaInterpreterBooleanValue) {
 			ifResult = ((RosettaInterpreterBooleanValue) ifValue).getValue();
 		} else if (RosettaInterpreterErrorValue.errorsExist(ifValue)) {
@@ -46,30 +43,8 @@ extends RosettaInterpreterConcreteInterpreter {
 					+ "is not a boolean value."));
 		}
 		
-		if (expr.isFull()) {
-			elseThen = expr.getElsethen();
-			elseThenValue = elseThen.accept(visitor, env);
-			
-			RosettaInterpreterBaseValue ifInstance = 
-					((RosettaInterpreterBaseValue) ifThenValue);
-			
-			RosettaInterpreterBaseValue elseInstance = 
-			((RosettaInterpreterBaseValue) elseThenValue);
-			
-			if (!ifInstance.getClass().equals(elseInstance.getClass()) 
-					&& !(ifInstance 
-						instanceof RosettaInterpreterErrorValue) 
-					&& !(elseInstance 
-						instanceof RosettaInterpreterErrorValue)) {
-				return new RosettaInterpreterErrorValue(
-						new RosettaInterpreterError(
-							"Conditional expression: "
-							+ "then and else "
-							+ "need to have the same type."));
-			}
-		}
-		
-		if (ifResult) {
+		if (ifResult) { 
+			RosettaInterpreterValue ifThenValue = ifThen.accept(visitor, env);
 			if (RosettaInterpreterErrorValue.errorsExist(ifThenValue)) {
 				return createErrors(ifThenValue, 
 						"Conditional expression: then is an error value.");
@@ -78,15 +53,19 @@ extends RosettaInterpreterConcreteInterpreter {
 			return ((RosettaInterpreterBaseValue) ifThenValue);
 			
 		} else if (expr.isFull()) {
+			RosettaInterpreterValue elseThenValue = elseThen.accept(visitor, env);
 			if (RosettaInterpreterErrorValue.errorsExist(elseThenValue)) {
 				return createErrors(elseThenValue, 
 						"Conditional expression: else is an error value.");
 			}
 			
 			return ((RosettaInterpreterBaseValue) elseThenValue);
+		} else {
+			// Else branch should be evaluated but it does not exist
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+					"Else branch should be evaluated but does not exist"));
 		}
-		
-		return null;
 	}
 	
 	private RosettaInterpreterBaseValue 
