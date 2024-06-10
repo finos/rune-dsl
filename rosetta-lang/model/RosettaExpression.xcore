@@ -59,9 +59,6 @@ class RosettaBooleanLiteral extends RosettaLiteral {
 	op String stringValue() {
 		return Boolean.toString(value)
 	}
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -75,9 +72,6 @@ class RosettaStringLiteral extends RosettaLiteral {
 	}
 	op String stringValue() {
 		return '"' + value + '"'
-	}
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
 	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
@@ -93,9 +87,6 @@ class RosettaNumberLiteral extends RosettaLiteral {
 	op String stringValue() {
 		return value.toPlainString
 	}
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -109,9 +100,6 @@ class RosettaIntLiteral extends RosettaLiteral {
 	}
 	op String stringValue() {
 		return value.toString
-	}
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
 	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
@@ -129,8 +117,8 @@ class RosettaPatternLiteral extends RosettaLiteral {
 	op String stringValue() {
 		return '/' + value.toString() + '/'
 	}
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
 	}
 }
 
@@ -140,9 +128,6 @@ class RosettaPatternLiteral extends RosettaLiteral {
 
 class ListLiteral extends RosettaExpression {
 	contains RosettaExpression[] elements
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -197,9 +182,6 @@ class RosettaConditionalExpression extends RosettaExpression {
 	
 	boolean full // whether the conditional expression has an explicit `else` branch.
 	
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -248,18 +230,12 @@ interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
 
 class ArithmeticOperation extends RosettaBinaryOperation {
 	
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class LogicalOperation extends RosettaBinaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -276,9 +252,6 @@ interface ModifiableBinaryOperation extends RosettaBinaryOperation {
 }
 
 class EqualityOperation extends ModifiableBinaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -292,18 +265,12 @@ class ComparisonOperation extends ModifiableBinaryOperation {
 }
 
 class RosettaContainsExpression extends RosettaBinaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class RosettaDisjointExpression extends RosettaBinaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -311,9 +278,6 @@ class RosettaDisjointExpression extends RosettaBinaryOperation {
 
 class JoinOperation extends RosettaBinaryOperation {
 	boolean explicitSeparator
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -370,36 +334,24 @@ enum ExistsModifier {
 
 class RosettaExistsExpression extends RosettaUnaryOperation {
     ExistsModifier modifier
-    op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class RosettaAbsentExpression extends RosettaUnaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class RosettaOnlyElement extends ListOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class RosettaCountOperation extends RosettaUnaryOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
@@ -409,45 +361,30 @@ class FlattenOperation extends ListOperation, CanHandleListOfLists {
 }
 
 class DistinctOperation extends ListOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this, nv)
 	}
 }
 
 class ReverseOperation extends ListOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this, nv)
 	}
 }
 
 class FirstOperation extends ListOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class LastOperation extends ListOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this,nv)
 	}
 }
 
 class SumOperation extends ListOperation {
-	op RosettaInterpreterValue accept(InterpreterVisitor v) {
-		v.interp(this)
-	}
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
 		v.interp(this, nv)
 	}
