@@ -2,12 +2,14 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.ArrayList;
 import java.util.List;
+//import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.interpreternew.RosettaInterpreterVisitor;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
+//import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
@@ -116,8 +118,12 @@ public class RosettaInterpreterVariableInterpreter {
 			return acc;
 		}
 		
-		//add all the argument/value pairs to the NEW environment
+		//create a copy of the enums and data types in the passed environment
+		//since those are the only "global" variables
+//		RosettaInterpreterEnvironment nv = copyDataTypesOnly(env);
+		//Create a new environment to use for evaluating the operations
 		RosettaInterpreterEnvironment nv = new RosettaInterpreterEnvironment();
+		//add all the argument/value pairs to the NEW environment
 		for (int i = 0 ; i < inputSize ; i++) {
 			AttributeImpl attr = (AttributeImpl) f.getInputs().get(i);
 			RosettaInterpreterBaseValue value = (RosettaInterpreterBaseValue) interpretedArgs.get(i);
@@ -294,5 +300,18 @@ public class RosettaInterpreterVariableInterpreter {
 		return new RosettaInterpreterErrorValue();
 
 	}
+	
+	//This will be used once enum values and data types are implemented and merged
+	//For now, this branch knows nothing of such "global"ly available variables
+//	public RosettaInterpreterEnvironment copyDataTypesOnly(RosettaInterpreterEnvironment env) {
+//		RosettaInterpreterEnvironment result = new RosettaInterpreterEnvironment();
+//		Map<String, RosettaInterpreterBaseValue> environment = env.getEnvironment();
+//		for (Map.Entry<String, RosettaInterpreterBaseValue> entry : environment.entrySet()) {
+//			if (entry.getValue() instanceof RosettaInterpreterEnumValue) {
+//				result.addValue(entry.getKey(), entry.getValue());
+//			}
+//		}
+//		return result;
+//	}
 
 }
