@@ -9,6 +9,12 @@ public class RosettaInterpreterFunctionValue extends RosettaInterpreterBaseValue
 	
 	private FunctionImpl function;
 	
+	
+	/**
+	 * Constructor for the function Value wrapper.
+	 *
+	 * @param f the function implementation to be interpreted
+	 */
 	public RosettaInterpreterFunctionValue(FunctionImpl f) {
 		super();
 		function = f;
@@ -29,9 +35,21 @@ public class RosettaInterpreterFunctionValue extends RosettaInterpreterBaseValue
 		return Objects.equals(function, other.function);
 	}
 	
+	@Override
+	public String toString() {
+		return "RosettaInterpreterFunctionValue [function=" + function + "]";
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(function);
+	}
+	
 	public FunctionImpl getFunction() {
 		return function;
 	}
+	
+	
 
 	@Override
 	public Stream<Object> toElementStream() {
