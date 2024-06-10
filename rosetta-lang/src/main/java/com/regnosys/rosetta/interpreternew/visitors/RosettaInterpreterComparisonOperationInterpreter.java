@@ -111,13 +111,13 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 
 	private RosettaInterpreterBaseValue compareAny(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
-			String operator, EObject ass) {
+			String operator, EObject associatedObject) {
 		//list vs list case:
 		if (leftValue instanceof RosettaInterpreterListValue 
 				&& rightValue instanceof RosettaInterpreterListValue) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"cannot compare two lists", ass));
+							"cannot compare two lists", associatedObject));
 		}
 		
 		//list vs element case:
@@ -145,18 +145,18 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ANY\" keyword "
-						+ "to compare two elements", ass));
+						+ "to compare two elements", associatedObject));
 	}
 
 	private RosettaInterpreterBaseValue compareAll(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
-			String operator, EObject ass) {
+			String operator, EObject associatedObject) {
 		//list vs list case:
 		if (leftValue instanceof RosettaInterpreterListValue 
 				&& rightValue instanceof RosettaInterpreterListValue) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"cannot compare two lists", ass));
+							"cannot compare two lists", associatedObject));
 		}
 		
 		//list vs element case:
@@ -184,7 +184,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ALL\" keyword "
-						+ "to compare two elements", ass));
+						+ "to compare two elements", associatedObject));
 	}
 
 	private boolean checkComparableTypes(RosettaInterpreterValue leftValue, 

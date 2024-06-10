@@ -76,7 +76,7 @@ public class RosettaInterpreterLogicalOperationInterpreter
 	 */
 	private RosettaInterpreterErrorValue checkForErrors(
 			RosettaInterpreterValue interpretedValue, String side,
-			EObject ass) {
+			EObject associatedObject) {
 		if (interpretedValue instanceof RosettaInterpreterBooleanValue) {
 			// No errors found.
 			// I return an error value without any errors in its list,
@@ -91,7 +91,7 @@ public class RosettaInterpreterLogicalOperationInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 							"Logical Operation: " + side 
-							+ " is not of type Boolean",ass));
+							+ " is not of type Boolean", associatedObject));
 		}
 	}
 }

@@ -135,7 +135,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 	 */
 	private RosettaInterpreterErrorValue checkForErrors(
 			RosettaInterpreterValue interpretedValue, String side, 
-			EObject ass) {
+			EObject associatedObject) {
 		if  (interpretedValue instanceof RosettaInterpreterNumberValue 
 				|| interpretedValue instanceof RosettaInterpreterStringValue 
 				|| interpretedValue instanceof RosettaInterpreterIntegerValue) {
@@ -153,7 +153,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 							"Arithmetic Operation: " + side 
-							+ " is not of type Number/String", ass));
+							+ " is not of type Number/String", associatedObject));
 		}
 	}
 }

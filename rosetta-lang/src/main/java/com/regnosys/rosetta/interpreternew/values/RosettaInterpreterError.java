@@ -21,7 +21,7 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 	
 	private String errorMessage;
-	private EObject associatedExpression;
+	private EObject associatedObject;
 	
 	@Override
 	public int hashCode() {
@@ -43,19 +43,14 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 		return Objects.equals(errorMessage, other.errorMessage);
 	}
 	
-	public RosettaInterpreterError(EObject obj) {
-		this.associatedExpression = obj;
-		this.errorMessage = "";
-	}
-	
 	public RosettaInterpreterError(String errorMessage, EObject obj) {
-		this.associatedExpression = obj;
+		this.associatedObject = obj;
 		this.errorMessage = errorMessage;
 	}
 	
 	public String getError() { return errorMessage; }
 	
-	public EObject getEobject() { return associatedExpression; }
+	public EObject getEobject() { return associatedObject; }
 	
 	/**
 	 * Gives a parsed error message associated with this error.
@@ -64,11 +59,11 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 	 * @return Error message with code information
 	 */
 	public String properErrorMessage() {
-		if (associatedExpression == null) {
+		if (associatedObject == null) {
 			return errorMessage;
 		}
 		
-		INode node = NodeModelUtils.findActualNodeFor(associatedExpression);
+		INode node = NodeModelUtils.findActualNodeFor(associatedObject);
 		int startLine = node.getStartLine();
 	    int offset = node.getOffset();
 	    String text = node.getText().trim();
@@ -80,7 +75,6 @@ public class RosettaInterpreterError implements RosettaInterpreterBaseError {
 	@Override
 	public String toString() {
 		return properErrorMessage();
-		//return "RosettaInterpreterError [errorMessage=" + errorMessage + "]";
 	}
 
 	@Override
