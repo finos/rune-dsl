@@ -503,17 +503,16 @@ repository:
                 - include: '#comment'
                 - include: '#typeCall'
               - include: '#typeCall'
-            - name: meta.translation.result-type.rosetta
-              begin: '(?={{identifier}})'
-              end: (?={{wordStart}}from{{wordEnd}})|(?=\:|\})|{{rootEnd}}
-              patterns:
-              - include: '#comment'
-              - name: keyword.other.from.rosetta
-                match: '{{wordStart}}from{{wordEnd}}'
-              - include: '#typeCall'
-          - include: '#comment'
+          - name: meta.translation.result-type.rosetta
+            begin: '(?={{identifier}})'
+            end: (?={{wordStart}}from{{wordEnd}})|(?=\:|\})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - name: keyword.other.from.rosetta
+              match: '{{wordStart}}from{{wordEnd}}'
+            - include: '#typeCall'
           - include: '#colon'
-          - include: '#annotation'
+          - include: '#translateAnnotation'
           - name: meta.translation-attribute-mapping.rosetta
             begin: '(\+|-)\s*({{identifier}})'
             beginCaptures:
@@ -522,25 +521,7 @@ repository:
             end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
             patterns:
             - include: '#comment'
-            - include: '#annotation'
-          
-          
-          - name: meta.translation.rosetta
-            begin: '{{wordStart}}translate{{wordEnd}}'
-            beginCaptures:
-              0: { name: keyword.other.rosetta }
-            end: (?={{wordStart}}translate{{wordEnd}}|\})|{{rootEnd}}
-            patterns:
-            - include: '#comment'
-            - begin: (?<={{wordStart}}translate{{wordEnd}})
-              end: ':'
-              patterns:
-              - include: '#comment'
-            - begin: '#'
-              end: (?=#|{{wordStart}}translate{{wordEnd}}|\})|{{rootEnd}}
-              patterns:
-              - include: '#comment'
-              - include: '#expression'
+            - include: '#translateAnnotation'
 
       rosettaRule:
         patterns:
@@ -691,8 +672,6 @@ repository:
         - include: '#synonymAnnotationBody'
         - include: '#referenceAnnotationBody'
         - include: '#ruleReferenceAnnotationBody'
-        - include: '#translateInstructionAnnotationBody'
-        - include: '#translateMetaInstructionAnnotationBody'
         - include: '#customAnnotationBody'
 
       prefixAnnotationBody:
@@ -814,21 +793,32 @@ repository:
         - name: entity.name.rule.rosetta
           match: '{{identifier}}'
       
-      translateInstructionAnnotationBody:
+      translateAnnotation:
         name: meta.annotated.translate.rosetta
+        begin: (\[)
+        beginCaptures:
+          1: { name: punctuation.annotation.begin.rosetta }
+        end: (\])|{{unambiguousRootEnd}}
+        endCaptures:
+          1: { name: punctuation.annotation.end.rosetta }
+        patterns:
+        - include: '#comment'
+        - include: '#translateInstructionAnnotationBody'
+        - include: '#translateMetaInstructionAnnotationBody'
+      
+      translateInstructionAnnotationBody:
         begin: '{{wordStart}}from{{wordEnd}}'
         beginCaptures:
-          0: { name: variable.annotation.translate-instruction.rosetta }
+          0: { name: keyword.other.from.rosetta }
         end: (?=\]|\})|{{rootEnd}}
         patterns:
         - include: '#comment'
         - include: '#expression'
       
       translateMetaInstructionAnnotationBody:
-        name: meta.annotated.translate.rosetta
         begin: '{{wordStart}}meta{{wordEnd}}'
         beginCaptures:
-          0: { name: variable.annotation.translate-meta-instruction.rosetta }
+          0: { name: keyword.other.meta.rosetta }
         end: (?=\]|\})|{{rootEnd}}
         patterns:
         - include: '#comment'

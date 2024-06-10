@@ -52,7 +52,8 @@ class RosettaTranslateValidator extends AbstractDeclarativeRosettaValidator {
 			// No direct assignment - check if an appropriate translation exists
 			val source = EcoreUtil2.getContainerOfType(instruction, TranslateSource)
 			if (!source.hasAnyMatch(resultType, inputTypes)) {
-				error('''No translation exists to translate «FOR input : inputTypes SEPARATOR ', '»«input.name»«ENDFOR» into «resultType.name».''', instruction, null);
+				val multipleInputs = inputTypes.size >= 2
+				error('''No translation exists to translate «IF multipleInputs»(«ENDIF»«FOR input : inputTypes SEPARATOR ', '»«input.name»«ENDFOR»«IF multipleInputs»)«ENDIF» into «resultType.name».''', instruction, null);
 			}
 		}
 	}
