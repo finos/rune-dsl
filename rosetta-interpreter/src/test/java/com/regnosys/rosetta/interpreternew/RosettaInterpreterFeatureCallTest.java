@@ -3,7 +3,6 @@ package com.regnosys.rosetta.interpreternew;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 import javax.inject.Inject;

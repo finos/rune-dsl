@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,7 +11,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 
 public class RosettaInterpreterBooleanValueTest {
 	

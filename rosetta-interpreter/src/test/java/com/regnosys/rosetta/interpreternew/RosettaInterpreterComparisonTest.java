@@ -18,7 +18,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
-import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;

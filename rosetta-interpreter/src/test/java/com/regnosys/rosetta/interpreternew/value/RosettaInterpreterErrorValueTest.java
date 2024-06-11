@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 
