@@ -1,0 +1,9 @@
+{
+  "test.ns.Foo" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  }
+}
