@@ -5,6 +5,7 @@ type Foo:
 
 	value number (1..1)
 	fooSequence FooSequence (1..2)
+	currency string (0..1)
 
 type FooSequence:
 
@@ -15,7 +16,7 @@ type FooSequence:
 	fooSequenceChoice FooSequenceChoice (0..*)
 	otherGroup OtherGroup (0..1)
 
-	condition Choice0:
+	condition Choice:
 		optional choice choice1, myGroup , fooSequenceSequence , fooSequenceChoice
 
 type FooSequenceSequence:

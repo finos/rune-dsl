@@ -3,8 +3,10 @@ version "${project.version}"
 
 typeAlias Decimal19: number(digits: 25, fractionalDigits: 19, min: 0)
 
-type Document:
+type TopLevel extends Document:
 	[rootType]
+
+type Document:
 
 	attr Foo (1..1)
 	value Measure (1..1)

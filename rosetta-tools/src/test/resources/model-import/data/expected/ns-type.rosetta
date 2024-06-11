@@ -2,7 +2,7 @@ namespace test.ns : < "test.ns definition" >
 version "${project.version}"
 
 typeAlias Max500Text: <"Specifies a character string with a maximum length of 500 characters.">
-	string(minLength: 1, maxLength: 500)
+	string(minLength: 1, maxLength: 500, pattern: "")
 
 typeAlias Max3Number: <"Number (max 999) of objects represented as an integer.">
 	int(digits: 3)

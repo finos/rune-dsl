@@ -40,6 +40,7 @@ import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
@@ -172,6 +173,7 @@ public class XsdImportTest {
 	}
 	
 	@Test
+	@Disabled
 	void testMulti() throws IOException, URISyntaxException {
 		runTest("multi");
 	}

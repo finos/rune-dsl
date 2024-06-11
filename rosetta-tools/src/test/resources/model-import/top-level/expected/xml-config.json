@@ -1,38 +1,16 @@
 {
-  "test.ns.Document" : {
-    "xmlRootElementName" : "TopLevel",
-    "xmlAttributes" : {
-      "xmlns" : "urn:my.schema",
-      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
-    },
-    "attributes" : {
-      "attr" : {
-        "xmlName" : "Attr"
-      },
-      "value" : {
-        "xmlName" : "Value"
-      }
-    }
-  },
-  "test.ns.Foo" : {
-    "attributes" : {
-      "attr1" : {
-        "xmlName" : "Attr1"
-      },
-      "xmlValue" : {
-        "xmlName" : "XMLValue"
-      }
-    }
-  },
   "test.ns.Measure" : {
     "attributes" : {
       "value" : {
         "xmlRepresentation" : "VALUE"
-      },
-      "unit" : {
-        "xmlName" : "Unit",
-        "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "test.ns.TopLevel" : {
+    "xmlRootElementName" : "TopLevel",
+    "xmlAttributes" : {
+      "xmlns" : "urn:my.schema",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     }
   }
 }

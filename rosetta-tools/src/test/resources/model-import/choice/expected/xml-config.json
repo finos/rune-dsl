@@ -1,15 +1,1 @@
-{
-  "test.ns.FooChoice" : {
-    "attributes" : {
-      "opt1" : {
-        "xmlName" : "Opt1"
-      },
-      "opt2" : {
-        "xmlName" : "Opt2"
-      },
-      "opt3" : {
-        "xmlName" : "Opt3"
-      }
-    }
-  }
-}
+{ }

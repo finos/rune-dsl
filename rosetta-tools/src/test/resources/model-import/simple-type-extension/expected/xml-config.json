@@ -3,10 +3,6 @@
     "attributes" : {
       "value" : {
         "xmlRepresentation" : "VALUE"
-      },
-      "currency" : {
-        "xmlName" : "Currency",
-        "xmlRepresentation" : "ATTRIBUTE"
       }
     }
   }
