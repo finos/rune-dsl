@@ -11,88 +11,100 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer
 import org.eclipse.xtext.resource.impl.ListBasedDiagnosticConsumer
-import java.util.Map
-import org.eclipse.xtext.diagnostics.IDiagnosticProducer
 import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.CrossReference
-import org.eclipse.xtext.nodemodel.ICompositeNode
-import org.eclipse.xtext.RuleCall
-import org.eclipse.xtext.ParserRule
-import org.eclipse.xtext.GrammarUtil
-import com.google.common.collect.Iterables
-import org.eclipse.xtext.linking.impl.LinkingDiagnosticProducer
 import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.naming.QualifiedName
-import org.eclipse.xtext.linking.ILinkingDiagnosticMessageProvider
-import org.eclipse.xtext.linking.impl.Linker
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.builtin.RosettaBuiltinsService
-import org.eclipse.emf.ecore.resource.ResourceSet
-import com.regnosys.rosetta.rosetta.RosettaType
 import java.util.Collection
-import java.util.Collections
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.scoping.IScope
 import com.regnosys.rosetta.rosetta.RosettaModel
 import javax.inject.Inject
+import java.util.List
+import com.google.common.base.Predicate
+import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.scoping.Scopes
+import static java.util.Collections.singletonList
+import org.eclipse.xtext.linking.lazy.LazyLinker
+import javax.inject.Provider
+import org.eclipse.xtext.resource.XtextResource
+import org.eclipse.emf.common.util.URI
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.emf.ecore.util.InternalEList
+import org.eclipse.xtext.linking.lazy.LazyLinkingResource
+import org.eclipse.xtext.linking.impl.DefaultLinkingService
 
 class ExpressionParser {
 	@Inject IParser parser
 	@Inject RosettaGrammarAccess grammar
+	@Inject ModelHelper modelHelper
+	@Inject Provider<XtextResource> resourceProvider
 	@Inject RosettaStaticLinker linker
 	
-	Map<String, ? extends EObject> basicTypes
-	
-	@Inject
-	new(RosettaBuiltinsService builtins, ResourceSet resourceSet) {
-		resourceSet.getResource(builtins.basicTypesURI, true).getContents().get(0) as RosettaModel => [
-			basicTypes = elements
-				.filter[it instanceof RosettaType]
-				.map[it as RosettaType]
-				.toMap[name]
-		]
-	}
-	
 	def RosettaExpression parseExpression(CharSequence expr) {
-		return parseExpression(expr, Collections.emptyList)
+		return parseExpression(expr, emptyList)
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, Collection<? extends CharSequence> attrs) {
-		val attributes = attrs.map[createAttribute].toList
-		return parseExpression(expr, attributes)
+		return parseExpression(expr, defaultContext, attrs)
+	}
+
+	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Collection<? extends CharSequence> attrs) {
+		val attributes = attrs.map[createAttribute(context)].toList
+		return parseExpression(expr, context, attributes)
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, Attribute... attributes) {
+		return parseExpression(expr, defaultContext, attributes)
+	}
+
+	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Attribute... attributes) {
 		val IParseResult result = parser.parse(grammar.rosettaCalcExpressionRule, new StringReader(expr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val expression = result.rootASTElement as RosettaExpression
-		linkVariables(expression, attributes)
+		val exprRes = createResource("expr", expression, context)
+		link(expression, context, attributes)
+		deleteResource(exprRes, context)
 		return expression
 	}
 	
-	private def void linkVariables(EObject obj, Collection<Attribute> attrs) {
-		val attributeMap = attrs
-			.toMap[name]
-		link(obj, attributeMap)
+	def Attribute createAttribute(CharSequence attr) {
+		return createAttribute(attr, defaultContext)
 	}
 	
-	def Attribute createAttribute(CharSequence attr) {
+	def Attribute createAttribute(CharSequence attr, List<RosettaModel> context) {
 		val IParseResult result = parser.parse(grammar.attributeRule, new StringReader(attr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val attribute = result.rootASTElement as Attribute
-		
-		link(attribute, basicTypes)
-		attribute
+		val attrRes = createResource("attribute " + attr, attribute, context)
+		link(attribute, context, emptyList)
+		deleteResource(attrRes, context)
+		return attribute
+	}
+
+	private def Resource createResource(String name, EObject content, List<RosettaModel> context) {
+		val resource = resourceProvider.get()
+		resource.URI = URI.createURI("synthetic://" + name)
+		resource.contents.add(content)
+		context.head.eResource.resourceSet.resources.add(resource)
+		resource
+	}
+	private def void deleteResource(Resource resource, List<RosettaModel> context) {
+		context.head.eResource.resourceSet.resources.remove(resource)
+	}
+
+	private def List<RosettaModel> defaultContext() {
+		return newArrayList(modelHelper.testResourceSet.resources.map[contents.head as RosettaModel])
 	}
 	
-	private def void link(EObject obj, Map<String, ? extends EObject> globals) {
-		linker.setGlobalsForNextLink(globals)
+	private def void link(EObject obj, List<RosettaModel> context, Collection<? extends EObject> globals) {
+		linker.setStateForNextLink(context, globals)
 		val consumer = new ListBasedDiagnosticConsumer
 		linker.linkModel(obj, consumer)
 		
-		val errors = consumer.getResult(Severity.ERROR)
+		val errors = consumer.getResult(Severity.ERROR) + obj.eResource.errors
 		val warnings = consumer.getResult(Severity.WARNING)
 		if (!errors.empty) {
 			throw new RuntimeException(errors.toString)
@@ -102,98 +114,82 @@ class ExpressionParser {
 		}
 	}
 	
-	private static class RosettaNullResourceScopeProvider extends RosettaScopeProvider {
-		override protected IScope getResourceScope(Resource res, EReference reference) {
-			return IScope.NULLSCOPE
+	private static class RosettaContextBasedScopeProvider extends RosettaScopeProvider {
+		List<RosettaModel> context = emptyList
+		
+		def void setContext(List<RosettaModel> context) {
+			this.context = context
+		}
+
+		override protected getImplicitImports(boolean ignoreCase) {
+			(super.getImplicitImports(ignoreCase) + context.map[name].toSet.map[createImportedNamespaceResolver(it + ".*", ignoreCase)]).toList
 		}
 		
-		override protected IScope getLocalElementsScope(IScope parent, EObject context,
-			EReference reference) {
-			return parent
+		override protected IScope getResourceScope(Resource res, EReference reference) {
+			return createImportScope(getGlobalScope(this.context.head.eResource, reference), getImplicitImports(isIgnoreCase(reference)), null, reference.getEReferenceType(), isIgnoreCase(reference))
+		}
+		
+		override protected IScope getLocalElementsScope(IScope parent, EObject context, EReference reference) {
+			var result = parent;
+			val allDescriptions = getAllDescriptions(this.context.head.eResource);
+			val name = getQualifiedNameOfLocalElement(context);
+			val ignoreCase = isIgnoreCase(reference);
+			val namespaceResolvers = getImportedNamespaceResolvers(context, ignoreCase);
+			if (!namespaceResolvers.isEmpty()) {
+				if (isRelativeImport() && name!==null && !name.isEmpty()) {
+					val localNormalizer = doCreateImportNormalizer(name, true, ignoreCase); 
+					result = createImportScope(result, singletonList(localNormalizer), allDescriptions, reference.getEReferenceType(), isIgnoreCase(reference));
+				}
+				result = createImportScope(result, namespaceResolvers, null, reference.getEReferenceType(), isIgnoreCase(reference));
+			}
+			if (name!==null) {
+				val localNormalizer = doCreateImportNormalizer(name, true, ignoreCase); 
+				result = createImportScope(result, singletonList(localNormalizer), allDescriptions, reference.getEReferenceType(), isIgnoreCase(reference));
+			}
+			return result;
+		}
+		
+		override protected getGlobalScope(Resource context, EReference reference, Predicate<IEObjectDescription> filter) {
+			super.getGlobalScope(this.context.head.eResource, reference, filter)
 		}
 	}
-	private static class RosettaStaticLinker extends Linker {
+	private static class RosettaStaticLinker extends LazyLinker {
 		@Inject
-		RosettaNullResourceScopeProvider scopeProvider
-		@Inject
-		ILinkingDiagnosticMessageProvider linkingDiagnosticMessageProvider
-		Map<String, ? extends EObject> globals = newHashMap
+		RosettaContextBasedScopeProvider scopeProvider
+
+		IScope staticScope = IScope.NULLSCOPE
 		
-		def void setGlobalsForNextLink(Map<String, ? extends EObject> globals) {
-			this.globals = globals
+		def void setStateForNextLink(List<RosettaModel> context, Collection<? extends EObject> globals) {
+			scopeProvider.setContext(context)
+			staticScope = Scopes.scopeFor(globals)
 		}
-		private def void clearGlobals() {
-			globals = newHashMap
+		private def void clearState() {
+			scopeProvider.setContext(emptyList)
+			staticScope = IScope.NULLSCOPE
 		}
 		
 		override protected doLinkModel(EObject root, IDiagnosticConsumer consumer) {
-			val producer = new LinkingDiagnosticProducer(consumer);
-			val iterator = getAllLinkableContents(root)
-			while (iterator.hasNext()) {
-				val eObject = iterator.next();
-				installLinks(eObject, producer);
-			}
-			clearGlobals
+			// TODO: this is hacky
+			((root.eResource as LazyLinkingResource).linkingService as DefaultLinkingService).setScopeProvider(scopeProvider)
+
+			super.doLinkModel(root, consumer)
+			EcoreUtil2.resolveAll(root)
+			clearState
 		}
-		override void beforeModelLinked(EObject model, IDiagnosticConsumer diagnosticsConsumer) {
-			
-		}
-		
-		protected def void installLinks(EObject obj, IDiagnosticProducer producer) {
-			val node = NodeModelUtils.getNode(obj);
-			if (node === null)
-				return;
-			installLinks(obj, producer, node, false);
-		}
-	
-		private def void installLinks(EObject obj, IDiagnosticProducer producer, ICompositeNode parentNode, boolean dontCheckParent) {
-			val eClass = obj.eClass();
-			if (eClass.EAllReferences.size - eClass.EAllContainments.size === 0)
-				return;
-	
-			for (var node = parentNode.firstChild; node !== null; node = node.nextSibling) {
-				val grammarElement = node.grammarElement
-				if (grammarElement instanceof CrossReference && hasLeafNodes(node)) {
-					producer.setNode(node);
-					val crossReference = grammarElement as CrossReference;
-					val eRef = GrammarUtil.getReference(crossReference, eClass);
-					if (eRef === null) {
-						val parserRule = GrammarUtil.containingParserRule(crossReference);
-						val feature = GrammarUtil.containingAssignment(crossReference).getFeature();
-						throw new IllegalStateException("Couldn't find EReference for crossreference '"+eClass.getName()+"::"+feature+"' in parser rule '"+parserRule.getName()+"'.");
-					}
-					setLink(obj, node, eRef, producer);
-				} else if (grammarElement instanceof RuleCall && node instanceof ICompositeNode) {
-					val ruleCall = grammarElement as RuleCall;
-					val calledRule = ruleCall.getRule();
-					if (calledRule instanceof ParserRule && (calledRule as ParserRule).isFragment()) {
-						installLinks(obj, producer, node as ICompositeNode, true);
-					}
-				}
-			}
-			if (!dontCheckParent && shouldCheckParentNode(parentNode)) {
-				installLinks(obj, producer, parentNode.getParent(), dontCheckParent);
-			}
-		}
-		
-		private def void setLink(EObject obj, INode node, EReference eRef, IDiagnosticProducer producer) {
+
+		protected override void createAndSetProxy(EObject obj, INode node, EReference eRef) {
 			val varName = NodeModelUtils.getTokenText(node)
-			val scope = scopeProvider.getScope(obj, eRef)
-			val elementInScope = scope.getSingleElement(QualifiedName.create(varName))
-			if (elementInScope !== null) {
-				obj.eSet(eRef, elementInScope)
-			} else {
-				val elementInGlobals = globals.get(varName)
-				if (elementInGlobals !== null) {
-					obj.eSet(eRef, elementInGlobals)
+			val staticElement = staticScope.getSingleElement(QualifiedName.create(varName))
+			if (staticElement !== null) {
+				val resolved = staticElement.getEObjectOrProxy()
+				if (eRef.isMany()) {
+					(obj.eGet(eRef, false) as InternalEList<EObject>).addUnique(resolved)
 				} else {
-					producer.addDiagnostic(linkingDiagnosticMessageProvider.getUnresolvedProxyMessage(createDiagnosticContext(obj, eRef, node)))
+					obj.eSet(eRef, resolved);
 				}
+			} else {
+				super.createAndSetProxy(obj, node, eRef)
 			}
-		}
-		
-		protected def boolean hasLeafNodes(INode node) {
-			return !Iterables.isEmpty(node.getLeafNodes());
 		}
 	}
 }

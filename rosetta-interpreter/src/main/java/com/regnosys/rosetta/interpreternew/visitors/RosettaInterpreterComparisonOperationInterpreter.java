@@ -10,7 +10,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -26,24 +25,9 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterBooleanValue",
 					"com.regnosys.rosetta.interpreternew.values."
-					+ "RosettaInterpreterIntegerValue",
-					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterNumberValue",
 					"com.regnosys.rosetta.interpreternew.values."
 					+ "RosettaInterpreterStringValue");
-	
-	/**
-	 * Interprets a comparison operation, evaluating the comparison between two operands.
-	 *
-	 * @param expr The ComparisonOperation expression to interpret
-	 * @return If no errors are encountered, a RosettaInterpreterBooleanValue representing
-	 * 		   the result of the comparison operation.
-	 * 		   If errors are encountered, a RosettaInterpreterErrorValue representing
-     *         the error.
-	 */
-	public RosettaInterpreterBaseValue interp(ModifiableBinaryOperation expr) {
-		return interp(expr, new RosettaInterpreterEnvironment());
-	}
 	
 	
 	/**
@@ -58,7 +42,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
      *         the error.
 	 */
 	public RosettaInterpreterBaseValue interp(ModifiableBinaryOperation expr,
-			RosettaInterpreterBaseEnvironment env) {		
+			RosettaInterpreterEnvironment env) {		
 		if (!comparisonOperators.contains(expr.getOperator())) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
@@ -84,25 +68,19 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		}
 		
 		//check cardinality operation
-		switch (expr.getCardMod()) {
-		case NONE:
-			//normally compare left and right side.
-			boolean result = checkComparableTypes(leftValue, 
-					rightValue, 
-					expr.getOperator());
-			return new RosettaInterpreterBooleanValue(result);
-		
+		switch (expr.getCardMod()) {		
 		case ANY:
 			return compareAny(leftValue, rightValue, expr.getOperator());
 			
 		case ALL:
 			return compareAll(leftValue, rightValue, expr.getOperator());
 
-		default:
-			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError(
-							"cardinality modifier " + expr.getCardMod()
-							+ " not supported"));
+		default: //case NONE
+			//normally compare left and right side.
+			boolean result = checkComparableTypes(leftValue, 
+					rightValue, 
+					expr.getOperator());
+			return new RosettaInterpreterBooleanValue(result);
 			
 		}
 	}
@@ -237,20 +215,18 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 			return false;
 		}
 		switch (operator) {
-		case "=":
-			return comparisonResult == 0;
 		case "<>":
 			return comparisonResult != 0;
 		case "<":
 			return comparisonResult == -1;
 		case "<=":
-			return comparisonResult == -1 || comparisonResult == 0;
+			return comparisonResult <= 0;
 		case ">":
 			return comparisonResult == 1;
 		case ">=":
-			return comparisonResult == 1 || comparisonResult == 0;
+			return comparisonResult >= 0;
 		default:
-			return false; //should never happen
+			return comparisonResult == 0; //case "="
 		}
 	}
 
