@@ -30,6 +30,7 @@ import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -211,6 +212,11 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(RosettaFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keyword('->').surround[oneSpace]
+		expr.receiver.formatExpression(document, mode.stopChain)
+	}
+	
+	private def dispatch void unsafeFormatExpression(RosettaDeepFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
+		expr.regionFor.keyword('->>').surround[oneSpace]
 		expr.receiver.formatExpression(document, mode.stopChain)
 	}
 	

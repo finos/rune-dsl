@@ -16,7 +16,7 @@ Do you want to edit rosetta files? You are in the right place and will be up and
 ### Clone the DSL Repo
 
 ```
-git clone git@github.com:REGnosys/rosetta-dsl.git
+git clone https://github.com/finos/rune-dsl.git
 ```
 
 ### Build and run

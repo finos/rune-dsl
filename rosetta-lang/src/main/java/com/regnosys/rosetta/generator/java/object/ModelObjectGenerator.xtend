@@ -195,7 +195,7 @@ class ModelObjectGenerator {
 		val javaType = new RDataType(c).toJavaType
 		'''
 		«FOR attribute : expandedAttributes»
-			private final «attribute.toMultiMetaOrRegularJavaType» «scope.createIdentifier(attribute, attribute.name)»;
+			private final «attribute.toMultiMetaOrRegularJavaType» «scope.createIdentifier(attribute, attribute.name.toFirstLower)»;
 		«ENDFOR»
 
 		protected «javaType»Impl(«javaType.toBuilderType» builder) {

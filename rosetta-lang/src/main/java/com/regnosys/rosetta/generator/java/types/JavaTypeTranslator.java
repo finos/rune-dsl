@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.generator.java.types;
 
 import java.math.BigDecimal;
@@ -146,6 +162,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		DottedPath packageName = projectionId.getNamespace().child("projections");
 		String simpleName = typeId.getName() + projection.getName() + "TypeTabulator";
 		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
+	}
+	public JavaClass<?> toDeepPathUtilJavaClass(Data choiceType) {
+		ModelSymbolId typeId = getSymbolId(choiceType);
+		DottedPath packageName = typeId.getNamespace().child("util");
+		String simpleName = typeId.getName() + "DeepPathUtil";
+		return new GeneratedJavaClass<>(packageName, simpleName, Object.class);
 	}
 	public JavaReferenceType toMetaJavaType(Attribute attribute) {
 		JavaReferenceType attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));

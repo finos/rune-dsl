@@ -1,12 +1,12 @@
 ---
-title: "Rosetta Java Documentation"
+title: "Rune Java Documentation"
 date: 2023-09-01T12:57:00+02:00
-description: "This document describes the interface and usage of classes that are generated from a Rosetta model using the Java code generator."
+description: "This document describes the interface and usage of classes that are generated from a Rune model using the Java code generator."
 draft: false
 weight: 2
 ---
 
-# Rosetta Java Documentation
+# Rune Java Documentation
 
 ## Types and enums
 
@@ -115,7 +115,7 @@ public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunc
     }
 }
 ```
-Note that we rely on the Guice dependency injection framework to separate specification (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunction`) from implementation (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault`). The default implementation will delegate to the `VehicleRegistrationID` and `VehicleClassificationType` reporting rules, as specified in the Rosetta model. 
+Note that we rely on the Guice dependency injection framework to separate specification (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunction`) from implementation (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault`). The default implementation will delegate to the `VehicleRegistrationID` and `VehicleClassificationType` reporting rules, as specified in the Rune model. 
 
 {{< notice info "Note" >}}
 The implementation of a report or a specific reporting rule can be customized by binding their Java class to a custom implementation in your Guice module.

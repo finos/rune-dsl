@@ -10,7 +10,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 // - [RosettaSynonymSource|QualifiedName]
 
 RosettaModel:
-	'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
+	 (overridden?='override')? 'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
 	
 	('version' version=STRING)? // TODO: could do better than STRING
@@ -34,6 +34,7 @@ QualifiedNameWithWildcard:
 RootElement:
 	Annotation
 	| Data
+	| Choice
 	| Function
 ;
 
@@ -77,6 +78,17 @@ Data:
 	(References|Annotations|ClassSynonyms)*
 	attributes += Attribute*
 	conditions += Condition*
+;
+
+Choice:
+	'choice' RosettaNamed ':' RosettaDefinable?
+	(Annotations|ClassSynonyms)*
+	
+	attributes += ChoiceOption*
+;
+
+ChoiceOption:
+	RosettaTyped
 ;
 
 Attribute:
@@ -462,7 +474,7 @@ RosettaLiteral:
 	| RosettaStringLiteral
 	| RosettaNumberLiteral
 	| RosettaIntLiteral
-//	| RosettaPatternLiteral // See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+//	| RosettaPatternLiteral // See issue https://github.com/finos/rune-dsl/issues/524
 ;
 
 RosettaBooleanLiteral:
@@ -481,7 +493,7 @@ RosettaIntLiteral:
 	value = Integer
 ;
 
-// See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+// See issue https://github.com/finos/rune-dsl/issues/524
 //RosettaPatternLiteral:
 //	value = PATTERN
 //;
@@ -494,7 +506,7 @@ Integer returns ecore::EBigInteger hidden():
 	('+' | '-')? INT
 ;
 
-// See issue https://github.com/REGnosys/rosetta-dsl/issues/524
+// See issue https://github.com/finos/rune-dsl/issues/524
 //terminal PATTERN returns Pattern:
 //	'/' ( '\\' . | !('\\'|'/') )* '/'
 //;
@@ -589,6 +601,7 @@ RosettaCalcBinary returns RosettaExpression:
 	ListOperation (=>(
 		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+		| {DefaultOperation.left=current} operator='default' right=ListOperation
 		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 	))?
 	| // Without left parameter:
@@ -596,15 +609,18 @@ RosettaCalcBinary returns RosettaExpression:
 		->(
 			{RosettaContainsExpression} operator='contains' right=ListOperation
 			| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
+			| {DefaultOperation} operator='default' right=ListOperation
 			| {JoinOperation} operator='join' (=>right=ListOperation)?
 		)
 		(=>(
 			{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
 			| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
+			| {DefaultOperation.left=current} operator='default' right=ListOperation
 			| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
 		))?
 	)
 ;
+
 
 /**
  * List operations
@@ -619,6 +635,7 @@ ListOperation returns RosettaExpression:
 	(
 		=>(
 			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaDeepFeatureCall.receiver=current} '->>' (=>feature=[Attribute|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')
@@ -636,6 +653,9 @@ ListOperation returns RosettaExpression:
 			|({ToIntOperation.argument=current} operator='to-int')
 			|({ToTimeOperation.argument=current} operator='to-time')
 			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
+			|({ToDateOperation.argument=current} operator='to-date')
+			|({ToDateTimeOperation.argument=current} operator='to-date-time')
+			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -669,6 +689,9 @@ ListOperation returns RosettaExpression:
 			|({ToIntOperation} operator='to-int')
 			|({ToTimeOperation} operator='to-time')
 			|({ToEnumOperation} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
+			|({ToDateOperation} operator='to-date')
+			|({ToDateTimeOperation} operator='to-date-time')
+			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -685,6 +708,7 @@ ListOperation returns RosettaExpression:
 	(
 		=>(
 			 ({RosettaFeatureCall.receiver=current} '->' (=>feature=[RosettaFeature|ValidID])?)
+			|({RosettaDeepFeatureCall.receiver=current} '->>' (=>feature=[Attribute|ValidID])?)
 			|({RosettaExistsExpression.argument=current} (modifier=ExistsModifier)? operator='exists')
 			|({RosettaAbsentExpression.argument=current} 'is' operator='absent')
 			|({RosettaOnlyElement.argument=current} operator='only-element')
@@ -702,6 +726,9 @@ ListOperation returns RosettaExpression:
 			|({ToIntOperation.argument=current} operator='to-int')
 			|({ToTimeOperation.argument=current} operator='to-time')
 			|({ToEnumOperation.argument=current} operator='to-enum' enumeration=[RosettaEnumeration|QualifiedName])
+			|({ToDateOperation.argument=current} operator='to-date')
+			|({ToDateTimeOperation.argument=current} operator='to-date-time')
+			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

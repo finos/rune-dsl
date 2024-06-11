@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.ide.semantictokens;
 
 import javax.inject.Inject;
@@ -29,6 +45,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
@@ -142,6 +159,10 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	private SemanticToken markAttribute(EObject objectToMark, EStructuralFeature featureToMark, Attribute attribute) {
+		if (attribute instanceof ChoiceOption) {
+			return null;
+		}
+		
 		RosettaSemanticTokenTypesEnum tokenType = null;
 		EReference containmentFeature = attribute.eContainmentFeature();
 		if (containmentFeature.equals(FUNCTION__INPUTS)) {

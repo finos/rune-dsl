@@ -73,9 +73,19 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
 import org.eclipse.xtext.resource.XtextResource
 import javax.inject.Provider
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
+
+	// MP - Disabling the Expression Cache due to "ISSUE-919: Errors appear in model after adding a type".
+	// The cache can be re-enabled for testing using `-DEXPRESSION_RTYPE_CACHE_KEY_ENABLED=true` in the BSP.
+	public static boolean EXPRESSION_RTYPE_CACHE_KEY_ENABLED = Boolean.getBoolean("EXPRESSION_RTYPE_CACHE_KEY_ENABLED");
+
 
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
@@ -105,6 +115,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				}
 			}
 		}
+	}
+	
+	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
+		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
 
 	private def RType safeRType(RosettaSymbol symbol, Map<EObject, RType> cycleTracker) {
@@ -186,6 +200,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		])
 	}
 	private def RType getRTypeFromCache(String cacheKey, EObject object, Provider<RType> typeProvider) {
+		if (!EXPRESSION_RTYPE_CACHE_KEY_ENABLED) {
+			return typeProvider.get()
+		}
 		if (object === null) {
 			return typeProvider.get()
 		}
@@ -273,6 +290,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		caseBinaryOperation(expr, context)
 	}
 	
+	override protected caseDefaultOperation(DefaultOperation expr,  Map<EObject, RType> context) {
+		caseBinaryOperation(expr, context)
+	}
+	
 	override protected caseCountOperation(RosettaCountOperation expr, Map<EObject, RType> context) {
 		constrainedInt(Optional.empty(), Optional.of(BigInteger.ZERO), Optional.empty())
 	}
@@ -307,6 +328,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		} else {
 			feature.safeRType(context)
 		}
+	}
+	
+	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Map<EObject, RType> context) {
+		val feature = expr.feature
+		if (!extensions.isResolved(feature)) {
+			return null
+		}
+		(feature as RosettaFeature).safeRType(context)
 	}
 	
 	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> context) {
@@ -470,6 +499,18 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseConstructorExpression(RosettaConstructorExpression expr, Map<EObject, RType> context) {
 		expr.typeCall.typeCallToRType
+	}
+	
+	override protected caseToDateOperation(ToDateOperation expr, Map<EObject, RType> context) {
+		DATE
+	}
+	
+	override protected caseToDateTimeOperation(ToDateTimeOperation expr, Map<EObject, RType> context) {
+		DATE_TIME
+	}
+	
+	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RType> context) {
+		ZONED_DATE_TIME
 	}
 	
 }

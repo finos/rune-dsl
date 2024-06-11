@@ -43,7 +43,6 @@ import java.util.List
 import org.eclipse.xtext.scoping.impl.SimpleScope
 import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -56,6 +55,9 @@ import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 
 /**
  * This class contains custom scoping description.
@@ -73,6 +75,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
+	@Inject extension DeepFeatureCallUtil
 
 	override getScope(EObject context, EReference reference) {
 		try {
@@ -89,6 +92,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
 						return createExtendedFeatureScope(context.receiver, typeProvider.getRType(context.receiver))
+					}
+					return IScope.NULLSCOPE
+				}
+				case ROSETTA_DEEP_FEATURE_CALL__FEATURE: {
+					if (context instanceof RosettaDeepFeatureCall) {
+						return createDeepFeatureScope(typeProvider.getRType(context.receiver))
 					}
 					return IScope.NULLSCOPE
 				}
@@ -156,7 +165,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
 					} else {
-						val implicitFeatures = findFeaturesOfImplicitVariable(context)
+						val implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(context)
 						
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
 						if(inline !== null) {
@@ -252,12 +261,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def IScope defaultScope(EObject object, EReference reference) {
-		filteredScope(super.getScope(object,reference), [it.EClass !== FUNCTION_DISPATCH])
+		filteredScope(super.getScope(object, reference), [it.EClass !== FUNCTION_DISPATCH])
 	}
-	
+
 	private def IScope getSymbolParentScope(EObject object, EReference reference, IScope outer) {
-		if (object === null) {
-			return IScope.NULLSCOPE
+		if (object.eContainer === null) {
+			return defaultScope(object, reference)
 		}
 		val parentScope = getSymbolParentScope(object.eContainer, reference, outer)
 		switch (object) {
@@ -299,10 +308,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		new FilteringScope(scope,filter)
 	}
 	
-	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-		return typeProvider.typeOfImplicitVariable(context).allFeatures(context)
-	}
-	
 	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
@@ -327,5 +332,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		}
 		
 		return new SimpleScope(allPosibilities)
+	}
+	
+	private def IScope createDeepFeatureScope(RType receiverType) {
+		if (receiverType instanceof RDataType) {
+			return Scopes.scopeFor(receiverType.findDeepFeatures)
+		}
+		return IScope.NULLSCOPE
 	}
 }

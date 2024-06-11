@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.interpreter;
 
 import java.time.LocalDate;
@@ -19,6 +35,7 @@ import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FilterOperation;
@@ -41,6 +58,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -55,11 +73,14 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
 import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
 import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.RType;
@@ -110,6 +131,12 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	protected RosettaValue caseFeatureCall(RosettaFeatureCall expr, RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("Feature calls are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseDeepFeatureCall(RosettaDeepFeatureCall expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("Deep feature calls are not supported yet.");
 	}
 
 	@Override
@@ -334,6 +361,12 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 		boolean result = right.stream().allMatch(r -> left.contains(r));
 		return RosettaBooleanValue.of(result);
 	}
+	
+	@Override
+	protected RosettaValue caseDefaultOperation(DefaultOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("Defult operations are not supported yet.");
+	}
 
 	@Override
 	protected RosettaValue caseDisjointOperation(RosettaDisjointExpression expr, RosettaInterpreterContext context) {
@@ -525,6 +558,25 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 		// TODO
 		throw new RosettaInterpreterException("ToEnum operations are not supported yet.");
 	}
+	
+	@Override
+	protected RosettaValue caseToDateOperation(ToDateOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("ToTime operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToDateTimeOperation(ToDateTimeOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("ToTime operations are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("ToTime operations are not supported yet.");
+	}
+	
 	@Override
 	protected RosettaValue caseConstructorExpression(RosettaConstructorExpression expr,
 			RosettaInterpreterContext context) {

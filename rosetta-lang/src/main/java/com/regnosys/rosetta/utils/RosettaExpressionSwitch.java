@@ -1,9 +1,26 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.utils;
 
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation;
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
 import com.regnosys.rosetta.rosetta.expression.FilterOperation;
@@ -27,6 +44,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation;
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -46,11 +64,14 @@ import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
 import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
 import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
 
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
@@ -63,6 +84,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseConditionalExpression((RosettaConditionalExpression)expr, context);
 		} else if (expr instanceof RosettaFeatureCall) {
 			return caseFeatureCall((RosettaFeatureCall)expr, context);
+		} else if (expr instanceof RosettaDeepFeatureCall) {
+			return caseDeepFeatureCall((RosettaDeepFeatureCall)expr, context);
 		} else if (expr instanceof RosettaLiteral) {
 			return doSwitch((RosettaLiteral)expr, context);
 		} else if (expr instanceof RosettaOnlyExistsExpression) {
@@ -115,6 +138,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseContainsOperation((RosettaContainsExpression)expr, context);
 		} else if (expr instanceof RosettaDisjointExpression) {
 			return caseDisjointOperation((RosettaDisjointExpression)expr, context);
+		} else if (expr instanceof DefaultOperation) {
+			return caseDefaultOperation((DefaultOperation)expr, context);
 		}
 		throw errorMissedCase(expr);
 	}
@@ -203,6 +228,12 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseToTimeOperation((ToTimeOperation)expr, context);
 		} else if (expr instanceof ToEnumOperation) {
 			return caseToEnumOperation((ToEnumOperation)expr, context);
+		} else if (expr instanceof ToDateOperation) {
+			return caseToDateOperation((ToDateOperation)expr, context);
+		} else if (expr instanceof ToDateTimeOperation) {
+			return caseToDateTimeOperation((ToDateTimeOperation)expr, context);
+		} else if (expr instanceof ToZonedDateTimeOperation) {
+			return caseToZonedDateTimeOperation((ToZonedDateTimeOperation)expr, context);
 		} else if (expr instanceof RosettaFunctionalOperation) {
 			return doSwitch((RosettaFunctionalOperation)expr, context);
 		}
@@ -238,6 +269,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseConditionalExpression(RosettaConditionalExpression expr, Context context);
 	
 	protected abstract Return caseFeatureCall(RosettaFeatureCall expr, Context context);
+	protected abstract Return caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context);
 	
 	protected abstract Return caseBooleanLiteral(RosettaBooleanLiteral expr, Context context);
 	protected abstract Return caseIntLiteral(RosettaIntLiteral expr, Context context);
@@ -264,6 +296,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseNotEqualsOperation(EqualityOperation expr, Context context);
 	protected abstract Return caseContainsOperation(RosettaContainsExpression expr, Context context);
 	protected abstract Return caseDisjointOperation(RosettaDisjointExpression expr, Context context);
+	protected abstract Return caseDefaultOperation(DefaultOperation expr, Context context);
 
 	protected abstract Return caseAsKeyOperation(AsKeyOperation expr, Context context);
 	protected abstract Return caseChoiceOperation(ChoiceOperation expr, Context context);
@@ -283,6 +316,9 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseToIntOperation(ToIntOperation expr, Context context);
 	protected abstract Return caseToTimeOperation(ToTimeOperation expr, Context context);
 	protected abstract Return caseToEnumOperation(ToEnumOperation expr, Context context);
+	protected abstract Return caseToDateOperation(ToDateOperation expr, Context context);
+	protected abstract Return caseToDateTimeOperation(ToDateTimeOperation expr, Context context);
+	protected abstract Return caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context);
 	
 	protected abstract Return caseFilterOperation(FilterOperation expr, Context context);
 	protected abstract Return caseMapOperation(MapOperation expr, Context context);

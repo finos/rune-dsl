@@ -1,14 +1,14 @@
 ---
-title: "Rosetta Modelling Components"
+title: "Rune Modelling Components"
 date: 2023-09-01T12:57:00+02:00
 description: "This document details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the Demonstration Model, a sandbox model of the 'vehicle' domain, are used to illustrate each of those features."
 draft: false
 weight: 2
 ---
 
-# Rosetta Modelling Components
+# Rune Modelling Components
 
-**The Rosetta DSL can express eight types of model components**:
+**The Rune DSL can express eight types of model components**:
 
 - Data
 - Meta-Data
@@ -23,7 +23,7 @@ This documentation details the purpose and features of each type of model compon
 
 ## Data Component
 
-**The Rosetta DSL provides four components to represent data** in a model:
+**The Rune DSL provides four components to represent data** in a model:
 
 - [Built-in type](#built-in-type)
 - [Data type](#data-type)
@@ -34,14 +34,14 @@ Those four components are often collectively referred to as *types*.
 
 ### Built-in Type
 
-Rosetta includes a number of built-in types that are deemed fundamental and applicable to any model. Those types are defined at the language level. There are three types of built-in types:
+Rune includes a number of built-in types that are deemed fundamental and applicable to any model. Those types are defined at the language level. There are three types of built-in types:
 - basic type
 - parameterized basic type
 - record type
 
 #### Basic Type
 
-Rosetta defines five *basic types*. The set of basic types available in the Rosetta DSL are controlled by defining them as `basicType` at the language level.
+Rune defines five *basic types*. The set of basic types available in the Rune DSL are controlled by defining them as `basicType` at the language level.
 
 - `int` - integer numbers
 - `number` - decimal numbers
@@ -99,7 +99,7 @@ type DrivingLicence extends Person: <"Driving licence authorisation granted by a
 
 #### Record Type
 
-Rosetta defines three additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
+Rune defines three additional built-in types that are simple composites known as *record types*. The list is controlled by defining them as `recordType` at the language level.
 
 - `date` - specified by combining a day, month and year.
 - `dateTime` - combines a `date` and a simple `time`.
@@ -108,7 +108,7 @@ Rosetta defines three additional built-in types that are simple composites known
 Record types are different from more complex data types in that:
 
 - they are pure data definitions and do not allow specification of validation logic in a [condition](#condition-statement).
-- they are handled specially in the code-generators and so form part of the Rosetta DSL rather than any specific model.
+- they are handled specially in the code-generators and so form part of the Rune DSL rather than any specific model.
 
 {{< notice info "Note" >}}
 As an alternative to `zonedDateTime`, a model may define a business centre time, where a simple `time` \"5:00:00\" is specified alongside a business centre. The simple time should be interpreted with the time-zone information of the associated business centre.
@@ -126,8 +126,8 @@ Those model-specific data types are sometimes referred to as *complex types* by 
 
 A data type is defined using the keyword `type` and comprises:
 - name - Required. By convention, uses the *PascalCase* (starting with a capital letter, also referred to as the *upper* [CamelCase](https://en.wikipedia.org/wiki/Camel_case)). Type names must be unique across a [namespace](#namespace-component). All those requirements are enforced by syntax validation.
-- [description](#description) - Optional, recommended. A plain-text definition of the concept represented by the data type. All descriptions in the Rosetta DSL must be written as a string enclosed within angle brackets: `<"..">`.
-- [annotations](#annotation) - Optional. Meta-data components that apply to the data type. All annotations in the Rosetta DSL are enclosed within square brackets `[...]`.
+- [description](#description) - Optional, recommended. A plain-text definition of the concept represented by the data type. All descriptions in the Rune DSL must be written as a string enclosed within angle brackets: `<"..">`.
+- [annotations](#annotation) - Optional. Meta-data components that apply to the data type. All annotations in the Rune DSL are enclosed within square brackets `[...]`.
 - [attributes](#attribute) - Optional.
 
 ``` Haskell
@@ -178,12 +178,12 @@ type Engine: <"Description of the engine.">
 ```
 
 {{< notice info "Note" >}}
-The Rosetta DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as `type`, so the start of a new definition marks the end of the previous one. For readability more generally, the Rosetta DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces `{` `}` or semi-colon `;`).
+The Rune DSL does not use any delimiter to end definitions. All model definitions start with a similar opening keyword as `type`, so the start of a new definition marks the end of the previous one. For readability more generally, the Rune DSL looks to eliminate all the delimiters that are often used in traditional programming languages (such as curly braces `{` `}` or semi-colon `;`).
 {{< /notice >}}
 
 #### Inheritance
 
-**The Rosetta DSL supports an inheritance mechanism**, when a data type (known as a *sub-type*) inherits all its behaviour and attributes from another data type (known as a *super-type*) and adds its own behaviour and set of attributes on top. Inheritance is supported by the `extends` keyword:
+**The Rune DSL supports an inheritance mechanism**, when a data type (known as a *sub-type*) inherits all its behaviour and attributes from another data type (known as a *super-type*) and adds its own behaviour and set of attributes on top. Inheritance is supported by the `extends` keyword:
 
 ``` Haskell
 type <SubType> extends <SuperType>
@@ -203,6 +203,38 @@ type Vehicle extends VehicleFeature:
 For clarity purposes, the documentation snippets omit the annotations and definitions that are associated with the data types and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
 
+### Choice Type
+
+#### Purpose
+
+A *choice type* let you describe a group of different types which are somehow related. It consists of a list of types, each of which is an option to choose from.
+
+In other languages, a choice type is often called a *union type*.
+
+#### Syntax
+
+A choice type is defined using the keyword `choice`, followed by a name and a list of option types. Similar to data types, it can also comprise a description and annotations.
+
+``` Haskell
+choice <TypeName>: <"Description">
+  [<annotation1>]
+  [<annotation2>]
+  [...]
+  <Type1>
+  <Type2>
+  <...>
+```
+
+For example:
+
+``` Haskell
+choice Vehicle:
+  [metadata key]
+  Car
+  Bicycle
+  Motorcycle
+```
+
 ### Enumeration
 
 #### Purpose
@@ -220,7 +252,7 @@ enum <EnumerationName>: <"Description">
   <...>
 ```
 
-Enumeration names must be unique across a [namespace](#namespace-component). The Rosetta DSL naming convention uses the same upper CamelCase (PascalCase) as for data types. In addition the enumeration name should end with the suffix Enum. E.g.:
+Enumeration names must be unique across a [namespace](#namespace-component). The Rune DSL naming convention uses the same upper CamelCase (PascalCase) as for data types. In addition the enumeration name should end with the suffix Enum. E.g.:
 
 ``` Haskell
 enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week.">
@@ -230,7 +262,7 @@ enum PeriodEnum: <"The enumerated values to specify the period, e.g. day, week."
   Y <"Year">
 ```
 
-Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`. In order to handle the integration of scheme values which can have special characters, the Rosetta DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
+Enumeration values cannot start with a numerical digit, and the only special character that can be associated with them is the underscore `_`. In order to handle the integration of scheme values which can have special characters, the Rune DSL allows to associate a *display name* to any enumeration value. For those enumeration values, special characters are replaced with `_` while the `displayName` entry corresponds to the actual value.
 
 An example is the day count fraction scheme for interest rate calculation, which includes values such as `ACT/365.FIXED` and `30/360`. These are associated as `displayName` to the `ACT_365_FIXED` and `_30_360` enumeration values, respectively.
 
@@ -273,7 +305,7 @@ enum FloatingRateIndexEnum: <"The enumerated values to specify the list of float
 
 ### Meta-Type
 
-The Rosetta DSL features some special types called *meta-types*, which are useful for its main application in the financial domain. Meta-types are designed to flag attributes that result from some functional logic. This enables a model implementation to identify where to stamp the output when running the corresponding functions.
+The Rune DSL features some special types called *meta-types*, which are useful for its main application in the financial domain. Meta-types are designed to flag attributes that result from some functional logic. This enables a model implementation to identify where to stamp the output when running the corresponding functions.
 
 There are two types of meta-types that are declared at the language level:
 
@@ -354,16 +386,16 @@ annotation <annotationName>: <"Description">
     <...>
 ```
 
-The Rosetta DSL naming convention uses a (lower) camelCase for annotation names, which must be unique across a model. Attributes are optional and many annotations will not require any.
+The Rune DSL naming convention uses a (lower) camelCase for annotation names, which must be unique across a model. Attributes are optional and many annotations will not require any.
 
 <a id='roottype-label'></a>
 
 ``` Haskell
-annotation rootType: <"Mark a type as a root of the rosetta model">
+annotation rootType: <"Mark a type as a root of the rune model">
 ```
 
 {{< notice info "Note" >}}
-Some annotations are provided as standard as part of the Rosetta DSL itself. Additional annotations can always be defined for any model.
+Some annotations are provided as standard as part of the Rune DSL itself. Additional annotations can always be defined for any model.
 {{< /notice >}}
 
 Once an annotation is defined, model components can be annotated with its name and chosen attribute, if any, using the following syntax:
@@ -374,7 +406,7 @@ Once an annotation is defined, model components can be annotated with its name a
 
 #### Meta-Data Annotation
 
-The `metadata` annotation includes attributes that define a set qualifiers that can be applied to a data type or attribute. By default Rosetta includes several metadata annotations:
+The `metadata` annotation includes attributes that define a set qualifiers that can be applied to a data type or attribute. By default Rune includes several metadata annotations:
 
 ``` Haskell
 annotation metadata:
@@ -397,7 +429,7 @@ Each attribute of the `metadata` annotation corresponds to a different qualifier
 
 #### Purpose
 
-A document reference is a specific type of annotation that links model components to external information published in a separate document. The Rosetta DSL allows to define any such external document, who owns it and some of its content as model components, and to associate this information to other model components such as data types or functions.
+A document reference is a specific type of annotation that links model components to external information published in a separate document. The Rune DSL allows to define any such external document, who owns it and some of its content as model components, and to associate this information to other model components such as data types or functions.
 
 The external information may be published in text format, in which case this feature effectively associates a plain-text documentation trail to any model behaviour. As such behaviour may eventually be translated into an operational process run by software, this mechanism provides a form of self-documentation for that software.
 
@@ -543,13 +575,13 @@ type Identifier:
   assignedIdentifier AssignedIdentifier (1..*)
 ```
 
-Rosetta currently supports three different mechanisms for references, each with a different scope.
+Rune currently supports three different mechanisms for references, each with a different scope.
 
 #### Global Reference
 
 The `key` and `id` metadata annotations force a globally unique key to be generated for the type being annotated. The value of the key corresponds to a hash code to be generated by the model implementation. For the attribute annotated with a `reference`, the key need not be defined in the current object but can instead be a reference to an external object.
 
-The global key and reference fields are called, respectively, `globalKey` and `globalReference` in the default implementation in Rosetta. The value of
+The global key and reference fields are called, respectively, `globalKey` and `globalReference` in the default implementation in Rune. The value of
 the key is a *deep hash* that uses the complete set of attribute values that compose the data type and its attributes, recursively.
 
 #### External Reference
@@ -584,7 +616,7 @@ The example below features a `party` object with both a `globalKey` acting as a 
 
 In some cases, an attribute may be used as a variable to be populated with different values to create different objects while other attributes are kept constant. This allows to reduce the storage of large, reusable objects which may have identical values for most of their attributes except for a few variable ones. A single object could be created that is parameterised by these variable attributes. Every individual instance only needs to specify the values of these parameters and does not need to copy the entire object.
 
-The Rosetta DSL supports this use case with a cross-referencing mechanism that is based on pairing an address (for the placeholder containing the variable attribute in the object, i.e. the target) and a location (where the value of this attribute is specified, i.e. the source). The syntax uses the `address` / `location` metadata pair as follows:
+The Rune DSL supports this use case with a cross-referencing mechanism that is based on pairing an address (for the placeholder containing the variable attribute in the object, i.e. the target) and a location (where the value of this attribute is specified, i.e. the source). The syntax uses the `address` / `location` metadata pair as follows:
 
 ``` Haskell
 <targetAttribute>
@@ -600,10 +632,10 @@ The global referencing mechanism cannot be applied to this use case because in t
 
 ## Expression Component
 
-**The Rosetta DSL offers a restricted set of language features to express simple logic**, such as simple operations and comparisons. The language is designed to be unambiguous and understandable by domain experts who are not software engineers while minimising unintentional behaviour. Simple expressions can be built up using operators to form more complex expressions.
+**The Rune DSL offers a restricted set of language features to express simple logic**, such as simple operations and comparisons. The language is designed to be unambiguous and understandable by domain experts who are not software engineers while minimising unintentional behaviour. Simple expressions can be built up using operators to form more complex expressions.
 
 {{< notice info "Note" >}}
-The Rosetta DSL is not a *Turing-complete* language: e.g. it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
+The Rune DSL is not a *Turing-complete* language: e.g. it does not support looping constructs that can fail (e.g. the loop never ends), nor does it natively support concurrency or I/O operations.
 {{< /notice >}}
 
 Logical expressions are used within the following modelling components:
@@ -613,14 +645,14 @@ Logical expressions are used within the following modelling components:
 - [Conditional mappings](#when-clause) and
 - [Reporting rules](#rule-definition)
 
-Expressions are evaluated within the context of a Rosetta object to return a result. The result of an expression can be either:
+Expressions are evaluated within the context of a Rune object to return a result. The result of an expression can be either:
 
 - a single value, which can itself be either of the available types: [built-in](#built-in-type), [complex](#data-type) or [enumeration](#enumeration)
 - a [list](#list) of values, all of the same type from the above
 
 The type of an expression is the type of the result that it will evaluate to. E.g. an expression that evaluates to True or False is of type `boolean`, an expression that evaluates to a `Party` is of type `Party`, etc.
 
-The below sections detail the different types of Rosetta expressions and how they are used.
+The below sections detail the different types of Rune expressions and how they are used.
 
 ### Constant Expression
 
@@ -685,7 +717,7 @@ type Person:
   suffix string (0..1) <"Name suffix, such as Jr., III, etc.">
   dateOfBirth date (0..1) <"The person's date of birth.">
 ```
-To construct a person called "Dwight Schrute" within Rosetta, the following syntax can be used.
+To construct a person called "Dwight Schrute" within Rune, the following syntax can be used.
 ``` Haskell
 Person {
   firstName: "Dwight",
@@ -698,7 +730,7 @@ Person {
 }
 ```
 
-In the example above, we used simple literals to set the properties of a person, but these values may actually be any arbitrary Rosetta expression, e.g.,
+In the example above, we used simple literals to set the properties of a person, but these values may actually be any arbitrary Rune expression, e.g.,
 
 ``` Haskell
 Person {
@@ -718,7 +750,7 @@ Person {
 
 #### Triple-Dot Syntax
 
-Notice that in the first example above most fields of Dwight Schrute are actually `empty`. Types having many optional attributes are common practice in Rosetta models such as the CDM, and assigning `empty` to them explicitly can be verbose. We can solve this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
+Notice that in the first example above most fields of Dwight Schrute are actually `empty`. Types having many optional attributes are common practice in Rune models such as the CDM, and assigning `empty` to them explicitly can be verbose. We can solve this by using the triple-dot keyword `...`, which will implicitly assign `empty` to all absent attributes.
 ``` Haskell
 Person {
   firstName: "Dwight",
@@ -792,11 +824,15 @@ In the above example, if `drivingLicense` is null, the final `penaltyPoints` att
 
 A null value for an expression with multiple cardinality is treated as an empty [list](#list).
 
+#### Deep Paths for Choice Types
+
+For choice types, common attributes can be accessed using a *deep path operator* `->>`. Given a choice type called `Vehicle`, each of its options exposing an attribute `vehicleId`, this identifier can be accessed directly using `vehicle ->> vehicleId`.
+
 ### Operators
 
 #### Purpose
 
-Rosetta supports operators that combine expressions into more complicated expressions. The language emulates the basic logic available in usual programming languages:
+Rune supports operators that combine expressions into more complicated expressions. The language emulates the basic logic available in usual programming languages:
 
 - conditional statements: `if`, `then`, `else`
 - comparison operators: `=`, `<>`, `<`, `<=`, `>=`, `>`
@@ -813,7 +849,7 @@ Conditional statements consist of:
 
 If the *if clause* evaluates to True, the result of the *then clause* is returned by the conditional expression. If it evaluates to False, the result of the *else clause* is returned if present, else *null* is returned.
 
-The type and cardinality of a conditional statement expression is the type and cardinality of the expression contained in the *then clause*. The Rosetta DSL enforces that the type of the *else clause* matches the *then clause*. Multiple *else clauses* can be added by combining `else if` statements ending with a final `else`.
+The type and cardinality of a conditional statement expression is the type and cardinality of the expression contained in the *then clause*. The Rune DSL enforces that the type of the *else clause* matches the *then clause*. Multiple *else clauses* can be added by combining `else if` statements ending with a final `else`.
 
 #### Comparison Operator
 
@@ -867,14 +903,18 @@ If an expression passed to an operator is of single cardinality and [null](#null
 
 #### Arithmetic Operator
 
-Rosetta supports basic arithmetic operators
+Rune supports basic arithmetic operators
 
 - `+` can take either two numerical types or two string typed expressions. The result is the sum of two numerical types or the concatenation of two string types
 - `-`, `*`, `/` take two numerical types and respectively subtract, multiply and divide them to give a number result.
 
+#### Default Operator
+
+The `default` operator takes two values of matching type. If the value to the left of the default is empty then the value of to the right of the default will be returned. Note that the type and cardinality of both sides of the operator must match for the syntax to be valid.
+
 #### Operator Precedence
 
-Expressions are evaluated in Rosetta in the following order, from first to last - see [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)).
+Expressions are evaluated in Rune in the following order, from first to last - see [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)).
 
 1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
 1. Brackets - e.g. `(1+2)`
@@ -885,6 +925,7 @@ Expressions are evaluated in Rosetta in the following order, from first to last 
 1. Additive operators `+`, `-` - e.g. `3-4`
 1. Comparison operators `>=`, `<=`, `>`, `<` - e.g. `3>4`
 1. Existence operators `exists`,`is absent`, `contains`, `disjoint` - e.g. `Lineage -> executionReference exists`
+1. Default operator `a default b`
 1. and - e.g. `5>6 and true`
 1. or - e.g. `5>6 or true`
 
@@ -904,7 +945,7 @@ owner -> drivingLicence -> vehicleEntitlement
 
 returns all the vehicle entitlements from all the owner's driving licenses into a single list.
 
-The Rosetta DSL provides a number of list operators that feature in usual programming languages:
+The Rune DSL provides a number of list operators that feature in usual programming languages:
 
 - Filter
 - Map
@@ -987,7 +1028,7 @@ Reduction is an operation that returns a single value based on elements of a lis
 <list> <reduceOperator> (optional <itemName>) (optional [ <operationExpression> ])
 ```
 
-The Rosetta DSL implements the following set set of reduce operators:
+The Rune DSL implements the following set set of reduce operators:
 
 - `sum` - returns the sum of the elements of a list of `int` or `number` elements
 - `min`, `max` - returns the minimum or maximum of a list of [comparable](#comparable-type) elements
@@ -1033,13 +1074,13 @@ vehicles
 
 #### List Comparison
 
-The Rosetta DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords needed to operate on lists are:
+The Rune DSL supports [comparison operators](#comparison-operator) to function on lists. Comparison operators are operators that always return a boolean value. The additional keywords needed to operate on lists are:
 
-- `contains` - returns true if every element in the right hand expression is equal to an element in the left hand expression
+- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element.  Note that the single cardinality value must be on the right hand side.
+- `contains` - returns true if right hand expression is a subset of the left hand expression. If the right hand expression is single cardinality, then it is equivalent to an `any =` expression.
 - `disjoint` - returns true if no element in the left side expression is equal to any element in the right side expression
-- (`all`/`any`) combined with comparison operators (`=`, `<>`, `<` etc.) - compares a list to a single element
 
-If the `contains` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
+If the `contains` or `disjoint` operator is passed an expression that has single cardinality, that expression is treated as a list containing the single element or an empty list if the element is null.
 
 For the comparison operators, if either the left or right expression has multiple cardinality then the other side should have multiple cardinality. Otherwise if one side's expression has single cardinality, `all` or `any` should be used to qualify the list on the other side.
 
@@ -1060,7 +1101,7 @@ The semantics for list comparisons are as follows:
 
 #### Other List Operator
 
-Rosetta provides a number of additional operators that are specific to lists. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
+Rune provides a number of additional operators that are specific to lists. For all these operators, the syntax enforces that the expression being operated on has multiple cardinality.
 
 - `only-element` - provided that a list contains one and only one element, returns that element
 - `count` - returns the number of elements in a list
@@ -1083,7 +1124,7 @@ owner -> drivingLicense -> countryofIssuance distinct count = 1
 
 ### Conversion operators
 
-Rosetta provides five conversion operators: `to-enum`, `to-string`, `to-number`, `to-int`, and `to-time`. Here are examples of their usage.
+Rune provides five conversion operators: `to-enum`, `to-string`, `to-number`, `to-int`, and `to-time`. Here are examples of their usage.
 
 Given the following enum
 ```
@@ -1102,9 +1143,26 @@ If the conversion fails, the result is an empty value. For example,
 - `"VALUE2" to-enum Foo` results in an empty value, (because `Foo -> VALUE2` has a display name "Value 2", this conversion fails)
 - `"3.14" to-int` results in an empty value.
 
+### Keyword clashes
+
+If a model name, such as an enum value or attribute name, clashes with a Rune DSL keyword then the name must be escaped by prefixing with the `^` operator. The generated code (e.g. Java) and serialised format (e.g. JSON) will not include the `^` prefix.
+
+Given the following enum, the value `E` clashes with the mathematics [E notation](https://en.wikipedia.org/wiki/Scientific_notation#E_notation) which is supported by the Rune DSL, so it has been escaped using the `^` operator.  The generated Java source code would allow `VehicleTaxBandEnum.E` to be specified, and the enum value would serialise to JSON as `E`, i.e., without the `^` operator. 
+
+```
+enum VehicleTaxBandEnum:
+    A
+    B
+    C
+    D
+    ^E
+    F
+    G
+```
+
 ## Data Validation Component
 
-**Data integrity is supported by validation components that are associated to each data type** in the Rosetta DSL. There are two types of validation components:
+**Data integrity is supported by validation components that are associated to each data type** in the Rune DSL. There are two types of validation components:
 
 - Cardinality
 - Condition Statement
@@ -1113,7 +1171,7 @@ The validation components associated to a data type generate executable code des
 
 ### Cardinality
 
-Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rosetta DSL borrows from other modelling languages that typically specify cardinality as `(x..y)`,  where `x` denotes the lower bound and `y` the upper bound for that attribute's number.
+Cardinality is a data integrity mechanism to control how many of each attribute an object of a given type can contain. The Rune DSL borrows from other modelling languages that typically specify cardinality as `(x..y)`,  where `x` denotes the lower bound and `y` the upper bound for that attribute's number.
 
 The lower and upper bounds can both be any integer number. A `0` lower bound means attribute is optional. A `*` upper bound means an unbounded attribute. `(1..1)` represents that there must be one and only one attribute of this type. When the upper bound is greater than 1, the attribute will be considered as a list, to be handled as such in any generated code.
 
@@ -1179,7 +1237,7 @@ Conditions are included in the definition of the data type that they are associa
 
 ### Choice Condition
 
-The Rosetta DSL provides language features to handle the correlated existence or absence of attributes with regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have created unnecessarily verbose, and therefore less readable, expressions.
+The Rune DSL provides language features to handle the correlated existence or absence of attributes with regards to other attributes. Those use-cases were deemed frequent enough and handling them through basic boolean logic components would have created unnecessarily verbose, and therefore less readable, expressions.
 
 #### Choice
 
@@ -1229,7 +1287,7 @@ Choice rules allow a simple and robust construct to translate the XML *xsd:choic
 
 #### One-of
 
-The Rosetta DSL supports the special case where a required choice logic applies to *all* the attributes of a given type, resulting in one and only one of them being present in any instance of that type. In this case, the `one-of` syntax provides a short-hand to by-pass the implementation of the corresponding choice rule.
+The Rune DSL supports the special case where a required choice logic applies to *all* the attributes of a given type, resulting in one and only one of them being present in any instance of that type. In this case, the `one-of` syntax provides a short-hand to by-pass the implementation of the corresponding choice rule.
 
 This feature is illustrated below:
 
@@ -1242,11 +1300,11 @@ type PeriodRange:
 
 ## Function Component
 
-**In programming languages, a function is a fixed set of logical instructions returning an output** which can be parameterised by a set of inputs (also known as *arguments*). A function is *invoked* by specifying a set of values for the inputs and running the instructions accordingly. In the Rosetta DSL, this type of component has been unified under a single *function* construct.
+**In programming languages, a function is a fixed set of logical instructions returning an output** which can be parameterised by a set of inputs (also known as *arguments*). A function is *invoked* by specifying a set of values for the inputs and running the instructions accordingly. In the Rune DSL, this type of component has been unified under a single *function* construct.
 
 Functions are a fundamental building block to automate processes, because the same set of instructions can be executed as many times as required by varying the inputs to generate a different, yet deterministic, result.
 
-Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rosetta DSL allows to model complex processes from reusable function components. Typically, complex processes are defined by combining simpler sub-processes, where one process\'s output can feed as input into another process. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
+Just like a spreadsheet allows users to define and make use of functions to construct complex logic, the Rune DSL allows to model complex processes from reusable function components. Typically, complex processes are defined by combining simpler sub-processes, where one process\'s output can feed as input into another process. Each of those processes and sub-processes are represented by a function. Functions can invoke other functions, so they can represent processes made up of sub-processes, sub-sub-processes, and so on.
 
 Reusing small, modular processes has the following benefits:
 
@@ -1267,7 +1325,7 @@ This concept of combining and reusing small components is also consistent with a
 
 #### Purpose
 
-**Function specification components are used to define the processes applicable to a domain model** in the Rosetta DSL. A function specification defines the function\'s inputs and/or output through their types in the data model. This amounts to specifying the [API](https://en.wikipedia.org/wiki/Application_programming_interface) that implementors should conform to when building the function that supports the corresponding process.
+**Function specification components are used to define the processes applicable to a domain model** in the Rune DSL. A function specification defines the function\'s inputs and/or output through their types in the data model. This amounts to specifying the [API](https://en.wikipedia.org/wiki/Application_programming_interface) that implementors should conform to when building the function that supports the corresponding process.
 
 Standardising those guarantees the integrity, inter-operability and consistency of the automated processes supported by the domain model.
 
@@ -1294,15 +1352,15 @@ func <FunctionName>: (optional: <"Description">)
   (optional: <outputConstruction>)
 ```
 
-The Rosetta DSL convention for a function name is to use a PascalCase (upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case)) word. Function names need to be unique across all types of functions in a model and syntax validation is in place to enforce this.
+The Rune DSL convention for a function name is to use a PascalCase (upper [CamelCase](https://en.wikipedia.org/wiki/Camel_case)) word. Function names need to be unique across all types of functions in a model and syntax validation is in place to enforce this.
 
 {{< notice info "Note" >}}
-The function syntax intentionally mimics the type syntax in the Rosetta DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
+The function syntax intentionally mimics the type syntax in the Rune DSL regarding the use of descriptions, attributes (inputs and output) and conditions, to provide consistency in the expression of model definitions.
 {{< /notice >}}
 
 #### Description
 
-The role of a function must be clear for implementors of the model to build applications that provide such functionality. To better communicate the intent and use of functions, Rosetta supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for any input and output and for any statement block.
+The role of a function must be clear for implementors of the model to build applications that provide such functionality. To better communicate the intent and use of functions, Rune supports multiple plain-text descriptions in functions. Descriptions can be provided for the function itself, for any input and output and for any statement block.
 
 Look for occurrences of text descriptions in the snippets below.
 
@@ -1371,9 +1429,9 @@ func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
 
 ### Function Definition
 
-**The Rosetta DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s inputs and output. Because the Rosetta DSL only provides a limited set of language features, it is not always possible to fully define that logic in the DSL. The creation of valid output object can be fully or partially defined as part of a function specification, or completely left to the implementor.
+**The Rune DSL allows to further define the business logic of a function**, by building the function output instead of just specifying the function\'s inputs and output. Because the Rune DSL only provides a limited set of language features, it is not always possible to fully define that logic in the DSL. The creation of valid output object can be fully or partially defined as part of a function specification, or completely left to the implementor.
 
-- A function is *fully defined* when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the code generated from the function expressed in the Rosetta DSL is fully functional and can be used in an implementation without any further coding.
+- A function is *fully defined* when all validation constraints on the output object have been satisfied as part of the function specification. In this case, the code generated from the function expressed in the Rune DSL is fully functional and can be used in an implementation without any further coding.
 - A function is *partially defined* when the output object\'s validation constraints are only partially satisfied. In this case, implementors will need to extend the generated code, using the features of the corresponding programming language to assign the remaining values on the output object.
 
 A function must be applied to a specific use case to determine whether it is *fully* defined or only *partially* defined. The output object will be systematically validated when invoking a function, so all functions require the output object to be fully valid as part of any model implementation.
@@ -1446,7 +1504,7 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
             then extract firstName + " " + surname
 ```
 
-**The Rosetta DSL supports a number of fully defined function cases**, where the output is being built up to a valid state:
+**The Rune DSL supports a number of fully defined function cases**, where the output is being built up to a valid state:
 
 - Object qualification
 - Calculation
@@ -1456,7 +1514,7 @@ Those functions are typically associated to an annotation to instruct code gener
 
 #### Object Qualification Function
 
-**The Rosetta DSL supports the qualification of objects from their underlying components** according to a given classification taxonomy. This provides support for a composable model for those objects, which can be built based on re-usable components and classified accordingly.
+**The Rune DSL supports the qualification of objects from their underlying components** according to a given classification taxonomy. This provides support for a composable model for those objects, which can be built based on re-usable components and classified accordingly.
 
 An object qualification function evaluates a combination of assertions that uniquely characterise an input object according to a chosen classification. Each function is associated to a qualification name (a `string` from that classification) and returns a boolean. This boolean evaluates to True when the input satisfies all the criteria to be identified according to that qualification name.
 
@@ -1530,7 +1588,7 @@ PaymentDate( EconomicTerms )
 
 #### Purpose
 
-The Rosetta DSL allows to express a function call that returns the output of that function evaluation.
+The Rune DSL allows to express a function call that returns the output of that function evaluation.
 
 #### Syntax
 
@@ -1610,15 +1668,15 @@ In the example above all model components contained within the layers of the `cd
 
 ### Purpose
 
-Mapping in Rosetta provides a mechanism for specifying how documents in other formats (e.g. FpML or ISDACreate) should be transformed into Rosetta documents. Mappings are specified as *synonym* annotations in the model.
+Mapping in Rune provides a mechanism for specifying how documents in other formats (e.g. FpML or ISDACreate) should be transformed into Rune documents. Mappings are specified as *synonym* annotations in the model.
 
-Synonyms added throughout the model are combined to map the data tree of an input document into the output Rosetta document. The synonyms can be used to generate an *Ingestion Environment*, a java library which, given an input document, will output the resulting Rosetta document.
+Synonyms added throughout the model are combined to map the data tree of an input document into the output Rune document. The synonyms can be used to generate an *Ingestion Environment*, a java library which, given an input document, will output the resulting Rune document.
 
 Synonyms are specified on the attributes of data type and the values of enum types.
 
 ### Basic Mapping
 
-Basic mappings specify how a value from the input document can be directly mapped to a value in the resulting Rosetta document.
+Basic mappings specify how a value from the input document can be directly mapped to a value in the resulting Rune document.
 
 #### Synonym Source
 
@@ -1630,7 +1688,7 @@ A synonym source can extend another synonym source. This forms a new synonym sou
 
 #### Basic Synonym
 
-Synonyms are annotations on attributes of Rosetta types and the enumeration values of Rosetta Enums. The model does have some legacy synonyms remaining directly on rosetta types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a separate file to leave the type definitions simpler.
+Synonyms are annotations on attributes of Rune types and the enumeration values of Rune Enums. The model does have some legacy synonyms remaining directly on rune types but the location of the synonym in the model has no impact. They can be written inside the definition of the type or they can be specified in a separate file to leave the type definitions simpler.
 
 ##### Inline
 
@@ -1666,7 +1724,7 @@ synonym source EXTERNAL_SYNONYM_EXAMPLE_8 extends EXTERNAL_SYNONYM_EXAMPLE_8_BAS
 
 ##### Value
 
-The simplest synonym consists of a single value `[value "combustible"]`. This means that the value of the input attribute \"combustible\" will be mapped to the associated Rosetta attribute. If both the input attribute and the Rosetta attribute are basic types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types (with child attributes of their own) then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rosetta type. If one is complex and the other is basic then a mapping error will be recorded.
+The simplest synonym consists of a single value `[value "combustible"]`. This means that the value of the input attribute \"combustible\" will be mapped to the associated Rune attribute. If both the input attribute and the Rune attribute are basic types (string, number, date etc) then the input value will be stored in the appropriate place in the output document. If they are both complex types (with child attributes of their own) then the attributes contained within the complex type will be compared against synonyms inside the corresponding Rune type. If one is complex and the other is basic then a mapping error will be recorded.
 
 ##### Path
 
@@ -1676,11 +1734,11 @@ The value of a synonym can be followed with a path declaration. E.g.:
 [synonym MULTI_CARDINALITY_EXAMPLE_2 value "combustible" path "engineDetail"]
 ```
 
-This allows a path of input document elements to be matched to a single Rosetta attribute. In the example the contents of the xml path `engineDetail.combustible` will be mapped to the Rosetta attribute. Note that the path is applied as a suffix to the synonym value.
+This allows a path of input document elements to be matched to a single Rune attribute. In the example the contents of the xml path `engineDetail.combustible` will be mapped to the Rune attribute. Note that the path is applied as a suffix to the synonym value.
 
 ##### Maps 2
 
-Mappings are expected to be one-to-one with each input value mapping to one Rosetta value. By default if a single input value is mapped to multiple Rosetta output values this is considered an error. However by adding the `maps 2` keyword this can be overridden allowing the input value to map to many output Rosetta values.
+Mappings are expected to be one-to-one with each input value mapping to one Rune value. By default if a single input value is mapped to multiple Rune output values this is considered an error. However by adding the `maps 2` keyword this can be overridden allowing the input value to map to many output Rune values.
 
 ##### Meta
 
@@ -1697,7 +1755,7 @@ type EngineSpecification:
 
 #### Enumeration
 
-A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Hybrid` will be mapped to the enumeration value `EngineEnum.Hybrid` in Rosetta:
+A synonym on an enumeration provides mappings from the string values in the input document to the values of the enumeration. E.g. the FpML value `Hybrid` will be mapped to the enumeration value `EngineEnum.Hybrid` in Rune:
 
 ```
 enum EngineEnum: <"The enumerated values for the natural person's role.">
@@ -1723,15 +1781,15 @@ The algorithm starts by *binding* the root of the input document to a pre-define
 
 It then [recursively](https://en.wikipedia.org/wiki/Recursion_(computer_science)) traverses the input document.
 
-Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rosetta objects in the output.
+Each step of the algorithm starts with the current attribute in the input document *bound* to a set of Rune objects in the output.
 
-For each child attribute of the current input attribute, the rosetta attributes of the type of all Rosetta objects *bound* to the current attribute are checked for synonyms that match that child attribute. For each matching attribute a new Rosetta object instance is created and *bound* to that child attribute. The algorithm then recurses with the current child becoming the current input attribute.
+For each child attribute of the current input attribute, the rune attributes of the type of all Rune objects *bound* to the current attribute are checked for synonyms that match that child attribute. For each matching attribute a new Rune object instance is created and *bound* to that child attribute. The algorithm then recurses with the current child becoming the current input attribute.
 
-When an input attribute has an associated value that value is set as the value of all the rosetta objects that are bound to the input attribute.
+When an input attribute has an associated value that value is set as the value of all the rune objects that are bound to the input attribute.
 
 #### Hints
 
-Hints are synonyms used to bypass a layer of rosetta without *consuming* an input attribute. They are required where an attribute has synonyms that would usually prevent the algorithm for searching down the Rosetta tree for attributes further down, but the current input element needs to still be available to match to synonyms.
+Hints are synonyms used to bypass a layer of rune without *consuming* an input attribute. They are required where an attribute has synonyms that would usually prevent the algorithm for searching down the Rune tree for attributes further down, but the current input element needs to still be available to match to synonyms.
 
 e.g. :
 
@@ -1752,7 +1810,7 @@ In this example the input attribute \"capacityDetail\" is matched to the engineM
 
 #### Merging inputs
 
-Where a Rosetta attribute exists with multiple cardinality, to which more than one input element maps, synonyms can be used to either create a single instance of the Rosetta attribute that merges the input elements or to create multiple attributes - one for each input element. E.g. The synonyms :
+Where a Rune attribute exists with multiple cardinality, to which more than one input element maps, synonyms can be used to either create a single instance of the Rune attribute that merges the input elements or to create multiple attributes - one for each input element. E.g. The synonyms :
 
 ```
 engineSpecification EngineSpecification (0..*)
@@ -1848,7 +1906,7 @@ volume string (0..1)
 
 ##### Output Path Expression
 
-An output path expression checks the path through the rosetta output object that leads to the current value. The path provided can start from any level in the output object. The condition evaluates to true when the current path ends with the given path.
+An output path expression checks the path through the rune output object that leads to the current value. The path provided can start from any level in the output object. The condition evaluates to true when the current path ends with the given path.
 
 e.g. :
 
@@ -1861,7 +1919,7 @@ fuelType string (1..1)
 
 #### Mapper
 
-Occasionally the Rosetta mapping syntax is not powerful enough to perform the required transformation from the input document to the output document. In this case a *Mapper* can be called from a synonym :
+Occasionally the Rune mapping syntax is not powerful enough to perform the required transformation from the input document to the output document. In this case a *Mapper* can be called from a synonym :
 
 ```
 fuelType string (0..1)
@@ -1869,7 +1927,7 @@ fuelType string (0..1)
   [synonym MAPPERS_EXAMPLE_1 value "combustible" path "engineDetail->metric" mapper "Example1"]
 ```
 
-When the ingestion is run a class called `Example1MappingProcessor` will be loaded and its mapping method invoked with the partially mapped Rosetta element. The creation of mapper classes is outside the scope of this document but the full power of the programming language can be used to transform the output.
+When the ingestion is run a class called `Example1MappingProcessor` will be loaded and its mapping method invoked with the partially mapped Rune element. The creation of mapper classes is outside the scope of this document but the full power of the programming language can be used to transform the output.
 
 #### Format
 
@@ -1896,13 +1954,13 @@ type EngineSpecification:
 
 ### Motivation
 
-**One of the applications of the Rosetta DSL is to facilitate the process of complying with, and supervising, financial regulation** - in particular, the large body of data reporting obligations that industry participants are subject to.
+**One of the applications of the Rune DSL is to facilitate the process of complying with, and supervising, financial regulation** - in particular, the large body of data reporting obligations that industry participants are subject to.
 
 The current industry processes to implement those rules are costly and inefficient. They involve translating pages of legal language, in which the rules are originally written, into business requirements which firms then have to code into their systems to support the regulatory data collection. This leads to a duplication of effort across a large number of industry participants and to inconsistencies in how each individual firm applies the rules, in turn generating data of poor quality and comparability for regulators.
 
 By contrast, a domain-model for the business process or activity being regulated provides standardised, unambiguous definitions for business data at the source. In turn, these business data can be used as the basis for the reporting process, such that regulatory data become unambiguous views of the business data.
 
-The Rosetta DSL allows to express those reporting rules as functional components in the same language as the model for the business domain itself. Using code generators, those functional rules are then distributed as executable code, for all industry participants to use consistently in their compliance systems.
+The Rune DSL allows to express those reporting rules as functional components in the same language as the model for the business domain itself. Using code generators, those functional rules are then distributed as executable code, for all industry participants to use consistently in their compliance systems.
 
 ### Regulatory Hierarchy
 
@@ -1912,7 +1970,7 @@ One of the first challenges of expressing regulatory rules for the financial dom
 
 #### Syntax
 
-To organise such regulatory content within a model, the Rosetta DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#document-hierarchy-syntax) section.
+To organise such regulatory content within a model, the Rune DSL supports a number of syntax components that allow to refer to specific documents, their content and who owns them as direct model components. Those components are defined in the [document reference hierarchy](#document-hierarchy-syntax) section.
 
 ### Report Definition
 
@@ -1920,7 +1978,7 @@ To organise such regulatory content within a model, the Rosetta DSL supports a n
 
 A report consists of an inter-connected set of regulatory obligations, which a regulated entity must implement to produce data as required by the relevant regulator.
 
-Generically, the Rosetta DSL allows to specify any report using three types of rules:
+Generically, the Rune DSL allows to specify any report using three types of rules:
 
 - timing - when to report,
 - eligibility - whether to report, and
@@ -1981,11 +2039,11 @@ The next section describes how to define reporting rules as model components.
 
 #### Purpose
 
-The Rosetta DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (*f*) that processes an input (*x*) through a set of logical instructions and returns an output (*y*), such that *y = f( x )*. A function can sometimes also be referred to as a *projection*. Using this terminology, the reported data (*y*) are considered projections of the business data (*x*).
+The Rune DSL applies a functional approach to the process of regulatory reporting. A regulatory rule is a functional model component (*f*) that processes an input (*x*) through a set of logical instructions and returns an output (*y*), such that *y = f( x )*. A function can sometimes also be referred to as a *projection*. Using this terminology, the reported data (*y*) are considered projections of the business data (*x*).
 
 For field rules, the output consists of the data to be reported. For eligibility rules, this output is a boolean that returns `True` when the input is eligible for reporting.
 
-To provide transparency and auditability to the reporting process, the Rosetta DSL supports the development of reporting rules in both human-readable and machine-executable form.
+To provide transparency and auditability to the reporting process, the Rune DSL supports the development of reporting rules in both human-readable and machine-executable form.
 
 - The functional expression of the reporting rules is designed to be readable by professionals with domain knowledge (e.g. regulatory analysts). It consists of a limited set of logical instructions, supported by a compact syntax.
 - The machine-executable form is derived from this functional expression of the reporting logic using code generators, which directly translate it into executable code.
@@ -2022,7 +2080,7 @@ reporting rule EuroEmissionStandard from ReportableEvent:
     as "Emission Standards"
 ```
 
-The expressions may use any type of [expression component](#expression-component) available in the Rosetta DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
+The expressions may use any type of [expression component](#expression-component) available in the Rune DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
 
 ``` Haskell
 extract specification -> dateOfFirstRegistration

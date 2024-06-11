@@ -131,6 +131,8 @@ import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -528,7 +530,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 	@Check
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
 		val annotationAttribute = attribute.eContainer instanceof Annotation
-		if (!annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
+		val choiceOption = attribute instanceof ChoiceOption
+		if (!choiceOption && !annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -997,6 +1000,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			error(resultType.message, binOp, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
+	
+	@Check
+	def checkDefaultOperationMatchingCardinality(DefaultOperation defOp) {
+		val leftCard = cardinality.isMulti(defOp.left)
+		val rightCard = cardinality.isMulti(defOp.right)
+		if (leftCard != rightCard) {
+			val typeError = "Cardinality mismatch - default operator requires both sides to have matching cardinality"
+			error(typeError, defOp, ROSETTA_OPERATION__OPERATOR)
+		}
+	}
 
 	@Check
 	def checkFuncDispatchAttr(FunctionDispatch ele) {
@@ -1184,8 +1197,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 			val type = arg.RType.stripFromTypeAliases
-			if (!(type instanceof RBasicType || type instanceof REnumType)) {
-				error('''The argument of «ele.operator» should be of a basic type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			if (!(type instanceof RBasicType || type instanceof RRecordType || type instanceof REnumType)) {
+				error('''The argument of «ele.operator» should be of a builtin type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 		}
 	}

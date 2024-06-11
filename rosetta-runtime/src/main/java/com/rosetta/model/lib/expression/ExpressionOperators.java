@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.rosetta.model.lib.expression;
 
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +41,7 @@ import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
 import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
@@ -420,7 +437,11 @@ public class ExpressionOperators {
 	
 	// one-of and choice
 
+	@Deprecated
 	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
+		return choice(mapper, choiceFieldNames, necessity == ValidationResult.ChoiceRuleValidationMethod.OPTIONAL ? ChoiceRuleValidationMethod.OPTIONAL : ChoiceRuleValidationMethod.REQUIRED);
+	}
+	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ChoiceRuleValidationMethod necessity) {
 		T object = mapper.get();
 		List<String> populatedFieldNames = new LinkedList<>();
 		for (String a: choiceFieldNames) {

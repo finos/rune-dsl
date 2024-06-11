@@ -20,8 +20,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
-import static org.junit.Assert.assertEquals
 import javax.inject.Inject
+import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -29,6 +29,95 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+	@Inject extension ExpressionParser
+	
+	@Test
+	def void testCannotAccessMetaFeatureAfterDeepFeatureCall() {
+		val context = '''
+		type A:
+			b B (0..1)
+				[metadata reference]
+			c C (0..1)
+				[metadata reference]
+			
+			condition Choice:
+				one-of
+		
+		type B:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		
+		type C:
+			[metadata key]
+			id string (1..1)
+				[metadata scheme]
+		'''.parseRosettaWithNoIssues
+		
+		"a ->> id"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		
+		"a ->> id -> scheme"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'scheme'.")
+	}
+	
+	@Test
+	def void testDeepFeatureCall() {
+		val context = '''
+		choice A:
+			B
+			C
+		
+		type B:
+			opt1 Option1 (0..1)
+			opt2 Option2 (0..1)
+			attr Foo (0..1)
+			
+			condition Choice: one-of
+		
+		type C:
+			opt1 Option1 (0..1)
+			
+			condition Choice: one-of
+		
+		type Option1:
+			attr Foo (1..1)
+		
+		type Option2:
+			attr Foo (1..1)
+			otherAttr string (1..1)
+		
+		type Option3:
+			attr Foo (1..1)
+		
+		type Foo:
+		'''.parseRosettaWithNoIssues
+		
+		"a ->> attr"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		"a ->> opt1"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertNoIssues
+		"b ->> attr"
+			.parseExpression(#[context], #["b B (1..1)"])
+			.assertNoIssues
+		
+		"a ->> B"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'B'.")
+		"a ->> opt2"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'opt2'.")
+		"a ->> otherAttr"
+			.parseExpression(#[context], #["a A (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'otherAttr'.")
+		"b ->> opt1"
+			.parseExpression(#[context], #["b B (1..1)"])
+			.assertError(ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'opt1'.")
+	}
 	
 	@Test
 	def void testCannotCallFuncWithoutInput() {

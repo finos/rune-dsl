@@ -15,6 +15,9 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.util.types.JavaPrimitiveType
+import java.util.List
+import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 
 class RecordJavaUtil {
 	@Inject JavaTypeUtil typeUtil
@@ -64,46 +67,79 @@ class RecordJavaUtil {
 	}
 	
 	def dispatch JavaStatementBuilder recordConstructor(RDateType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
-		features.get("year")
-			.then(
-				features.get("month"),
-				[list,item|JavaExpression.from('''«list», «item»''', null)],
-				scope
-			)
-			.then(
-				features.get("day"),
-				[list,item|JavaExpression.from('''«list», «item»''', null)],
-				scope
-			)
-			.mapExpression[
-				JavaExpression.from('''«Date».of(«it»)''', typeUtil.DATE)
-			]
+		#["year", "month", "day"].ifAllNotNull(features, [args|
+            args.get(0)
+                .then(
+                    args.get(1),
+                    [list,item|JavaExpression.from('''«list», «item»''', null)],
+                    scope
+                )
+                .then(
+                    args.get(2),
+                    [list,item|JavaExpression.from('''«list», «item»''', null)],
+                    scope
+                )
+                .mapExpression[
+                    JavaExpression.from('''«Date».of(«it»)''', typeUtil.DATE)
+                ]
+        ], scope)
 	}
 	def dispatch JavaStatementBuilder recordConstructor(RDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
-		features.get("date")
-			.then(
-				features.get("time"),
-				[list,item|JavaExpression.from('''«list».toLocalDate(), «item»''', null)],
-				scope
-			)
-			.mapExpression[
-				JavaExpression.from('''«LocalDateTime».of(«it»)''', typeUtil.LOCAL_DATE_TIME)
-			]
+		#["date", "time"].ifAllNotNull(features, [args|
+            args.get(0)
+                .then(
+                    args.get(1),
+                    [list,item|JavaExpression.from('''«list».toLocalDate(), «item»''', null)],
+                    scope
+                )
+                .mapExpression[
+                    JavaExpression.from('''«LocalDateTime».of(«it»)''', typeUtil.LOCAL_DATE_TIME)
+                ]
+        ], scope)
 	}
 	def dispatch JavaStatementBuilder recordConstructor(RZonedDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
-		features.get("date")
-			.then(
-				features.get("time"),
-				[list,item|JavaExpression.from('''«list».toLocalDate(), «item»''', null)],
-				scope
-			)
-			.then(
-				features.get("timezone"),
-				[list,item|JavaExpression.from('''«list», «ZoneId».of(«item»)''', null)],
-				scope
-			)
-			.mapExpression[
-				JavaExpression.from('''«ZonedDateTime».of(«it»)''', typeUtil.ZONED_DATE_TIME)
-			]
+		#["date", "time", "timezone"].ifAllNotNull(features, [args|
+		    args.get(0)
+                .then(
+                    args.get(1),
+                    [list,item|JavaExpression.from('''«list».toLocalDate(), «item»''', null)],
+                    scope
+                )
+                .then(
+                    args.get(2),
+                    [list,item|JavaExpression.from('''«list», «ZoneId».of(«item»)''', null)],
+                    scope
+                )
+                .mapExpression[
+                    JavaExpression.from('''«ZonedDateTime».of(«it»)''', typeUtil.ZONED_DATE_TIME)
+                ]
+		], scope)
+	}
+	
+	private def JavaStatementBuilder ifAllNotNull(List<String> featureList, Map<String, JavaStatementBuilder> allFeatures, (List<JavaStatementBuilder>) => JavaStatementBuilder conversion, JavaScope scope) {
+        if (featureList.map[allFeatures.get(it)].forall[expressionType instanceof JavaPrimitiveType]) {
+            return conversion.apply(featureList.map[allFeatures.get(it)])
+        }
+        val nullableArgs = newArrayList
+        return conversion.apply(featureList
+            .map[
+                val feature = allFeatures.get(it)
+                if (feature.expressionType instanceof JavaPrimitiveType) {
+                    return feature
+                } else {
+                    val res = feature
+                        .declareAsVariable(true, it, scope)
+                    nullableArgs.add(scope.getIdentifierOrThrow(feature))
+                    return res
+                }
+            ])
+            .mapExpression[
+                new JavaConditionalExpression(
+                    JavaExpression.from('''«FOR arg : nullableArgs SEPARATOR ' && '»«arg» != null«ENDFOR»''', JavaPrimitiveType.BOOLEAN),
+                    it,
+                    JavaExpression.NULL,
+                    typeUtil
+                )
+            ]
 	}
 }
