@@ -7,7 +7,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
-import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -79,7 +78,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 						.multiply(rightNumber)).bigDecimalValue());
 			} else {
 				// Division by 0 is not allowed
-				if(rightNumber.floatValue() == 0.0) {
+				if (rightNumber.floatValue() == 0.0) {
 					return new RosettaInterpreterErrorValue(
 							new RosettaInterpreterError(
 							"Division by 0 is not allowed"));
