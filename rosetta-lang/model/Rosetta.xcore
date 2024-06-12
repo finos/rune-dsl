@@ -15,7 +15,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
 
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment
 
 class RosettaModel extends RosettaDefinable {
 	String name
@@ -95,8 +95,7 @@ class TypeCallArgument {
 	contains RosettaExpression value
 }
 
-abstract class RosettaInterpreterBaseEnvironment {
-}
+
 
 
 /**********************************************************************
@@ -116,6 +115,7 @@ class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 
 class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
+	
 }
 
 class RosettaRecordFeature extends RosettaTypedFeature {}

@@ -19,7 +19,7 @@ import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
 
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment
 
 
 interface RosettaExpression {
@@ -175,7 +175,7 @@ class RosettaFeatureCall extends RosettaExpression {
 	refers RosettaFeature feature
 	
 	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
-		v.interp(this, nv)
+		v.interp(this,nv)
 	}
 }
 
@@ -194,6 +194,10 @@ class RosettaConditionalExpression extends RosettaExpression {
 class RosettaConstructorExpression extends RosettaExpression, RosettaTyped {
 	contains ConstructorKeyValuePair[] values
 	boolean implicitEmpty
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ConstructorKeyValuePair {
