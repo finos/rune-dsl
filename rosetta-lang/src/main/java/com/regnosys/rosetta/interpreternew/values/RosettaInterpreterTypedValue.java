@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.interpreternew.values;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -23,6 +24,16 @@ public class RosettaInterpreterTypedValue extends RosettaInterpreterBaseValue {
 
 	public List<RosettaInterpreterTypedFeatureValue> getAttributes() {
 		return attributes;
+	}
+	
+	public List<String> getAttributesNames() {
+		List<String> names = new ArrayList<>();
+		
+		for (RosettaInterpreterTypedFeatureValue att : attributes) {
+			names.add(att.getName());
+		}
+		
+		return names;
 	}
 
 	@Override

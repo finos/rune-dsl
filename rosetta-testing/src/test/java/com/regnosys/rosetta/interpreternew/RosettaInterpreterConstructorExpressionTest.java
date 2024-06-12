@@ -28,8 +28,6 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.RosettaConstructorExpressionImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
-import com.regnosys.rosetta.rosetta.simple.impl.AttributeImpl;
-import com.regnosys.rosetta.rosetta.simple.impl.DataImpl;
 import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
@@ -239,15 +237,20 @@ public class RosettaInterpreterConstructorExpressionTest {
 				.getValue());
 	}
 	
-//	@Test
-//	public void testDataTypeError() {
-//		RosettaModel model = mh.parseRosettaWithNoErrors("type Test: value boolean (1..1) "
-//				+ "func M: output: result Test (1..1) set result: Test { value: 1 and True }");
-//		
-//		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
-//				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
-//		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
-//		
-//		assertEquals(error, result);
-//	}
+	@Test
+	public void testDataTypeError() {
+		RosettaModel model = mh.parseRosetta("type Test: value boolean (1..1) "
+				+ "func M: output: result Test (1..1) set result: Test { value: 1 and True }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue errorBool = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+				"Logical Operation: Leftside is not of type Boolean"));
+		RosettaInterpreterErrorValue errorValue = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+				"Constructor Expression: the attribute \"value\" is an error value."));
+		
+		assertEquals(RosettaInterpreterErrorValue.merge(errorValue, errorBool), result);
+	}
 }

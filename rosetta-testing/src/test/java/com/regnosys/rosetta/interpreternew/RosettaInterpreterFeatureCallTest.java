@@ -21,10 +21,14 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterIntegerValue
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.impl.RosettaFeatureCallImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
+import com.regnosys.rosetta.tests.util.ModelHelper;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaInjectorProvider.class)
@@ -35,6 +39,9 @@ public class RosettaInterpreterFeatureCallTest {
 	
 	@Inject
 	RosettaInterpreterNew interpreter;
+	
+	@Inject
+	ModelHelper mh;
 	
 	RosettaInterpreterIntegerValue day = new RosettaInterpreterIntegerValue(BigInteger.valueOf(5));
 	RosettaInterpreterIntegerValue month = new RosettaInterpreterIntegerValue(BigInteger.valueOf(7));
@@ -161,5 +168,17 @@ public class RosettaInterpreterFeatureCallTest {
 		
 		RosettaInterpreterErrorValue errors = RosettaInterpreterErrorValue.merge(error1, error2);
 		assertEquals(errors, result);
+	}
+	
+	@Test
+	public void testDataType() {
+		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "func M: output: result string (1..1) set result: Person { name: \"F\" } -> name");
+		
+		RosettaFeatureCallImpl featureCall = ((RosettaFeatureCallImpl) ((FunctionImpl) 
+				model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(featureCall);
+		
+		assertEquals("F", ((RosettaInterpreterStringValue) result).getValue());
 	}
 }

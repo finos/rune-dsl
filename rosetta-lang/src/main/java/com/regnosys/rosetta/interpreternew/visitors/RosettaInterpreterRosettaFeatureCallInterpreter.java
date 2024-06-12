@@ -7,6 +7,8 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValu
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedFeatureValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -61,7 +63,20 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 									+ "receiver is an error value."));
 			
 			return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
+		} else {
+			List<RosettaInterpreterTypedFeatureValue> attributes = ((RosettaInterpreterTypedValue) 
+					receiverValue).getAttributes();
+			
+			for (RosettaInterpreterTypedFeatureValue att : attributes) {
+				if (att.getName().equals(feature)) {
+					return (RosettaInterpreterBaseValue) ((
+							RosettaInterpreterTypedFeatureValue) att).getValue();
+				}
+			}
+			
 		}
+		
+		// statement never reached
 		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
 				"Feature calls: receiver doesn't exist."));
 	}
