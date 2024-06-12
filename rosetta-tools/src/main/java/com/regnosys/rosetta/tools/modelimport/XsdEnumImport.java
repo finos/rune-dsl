@@ -68,7 +68,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	private RosettaEnumValue registerEnumValue(XsdEnumeration ev, RosettaXsdMapping typeMappings) {
-		String value = ev.getValue();
+		String value = util.toEnumValueName(ev.getValue());
 		RosettaEnumValue rosettaEnumValue = RosettaFactory.eINSTANCE.createRosettaEnumValue();
 		rosettaEnumValue.setName(value);
 		util.extractDocs(ev).ifPresent(rosettaEnumValue::setDefinition);

@@ -96,6 +96,15 @@ public class XsdUtil {
         });
         return builder.toString();
     }
+    
+    public String toEnumValueName(String xsdName) {
+        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        String joined = String.join("_", parts).toUpperCase();
+        if (joined.matches("^[0-9].*")) {
+        	return "_" + joined;
+        }
+    	return joined;
+    }
 	
 	private String allFirstLowerIfNotAbbrevation(String s) {
 		if (s == null || s.isEmpty())
