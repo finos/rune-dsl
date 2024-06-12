@@ -1,7 +1,13 @@
 package com.regnosys.rosetta.interpreternew.visitors;
 
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
@@ -34,10 +40,13 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 		RosettaInterpreterValue leftInterpreted = left.accept(visitor, env);
 		RosettaInterpreterValue rightInterpreted = right.accept(visitor, env); 
 		
+		//Check that the types are correct for the operations
 		if (!(leftInterpreted instanceof RosettaInterpreterNumberValue 
-				|| leftInterpreted instanceof RosettaInterpreterStringValue) 
-				|| !(rightInterpreted instanceof RosettaInterpreterNumberValue 
-				|| rightInterpreted instanceof RosettaInterpreterStringValue)) {
+				|| leftInterpreted instanceof RosettaInterpreterStringValue 
+				|| rightInterpreted instanceof RosettaInterpreterDateValue) 
+				|| !(rightInterpreted instanceof RosettaInterpreterNumberValue
+				|| leftInterpreted instanceof RosettaInterpreterStringValue 
+				|| rightInterpreted instanceof RosettaInterpreterDateValue)) {
 			
 			// Check for errors in the left or right side of the binary operation
 			RosettaInterpreterErrorValue leftErrors = 
@@ -47,6 +56,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			return RosettaInterpreterErrorValue.merge(List.of(leftErrors, rightErrors));
 		}	
 		
+		//Interpret string concatenation
 		if (leftInterpreted instanceof RosettaInterpreterStringValue
 				&& rightInterpreted instanceof RosettaInterpreterStringValue) {
 			String leftString = ((RosettaInterpreterStringValue) leftInterpreted)
@@ -62,6 +72,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				"The terms are strings but the operation "
 				+ "is not concatenation: not implemented"));
 			}
+		//Interpret number operations
 		} else if (leftInterpreted instanceof RosettaInterpreterNumberValue
 				&& rightInterpreted instanceof RosettaInterpreterNumberValue) {
 			RosettaNumber leftNumber = ((RosettaInterpreterNumberValue) leftInterpreted).getValue();
@@ -86,10 +97,23 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				return new RosettaInterpreterNumberValue((leftNumber
 						.divide(rightNumber)).bigDecimalValue());
 			}
+		} else if (leftInterpreted instanceof RosettaInterpreterDateValue
+				&& rightInterpreted instanceof RosettaInterpreterDateValue) {
+			RosettaInterpreterDateValue l = (RosettaInterpreterDateValue) leftInterpreted;
+			RosettaInterpreterDateValue r = (RosettaInterpreterDateValue) rightInterpreted;
+			if (expr.getOperator().equals("-")) {
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
+				String inputString1 = "23 01 1997";
+				String inputString2 = "27 04 1997";
+
+			    LocalDateTime date1 = LocalDate.parse(inputString1, dtf);
+			    LocalDateTime date2 = LocalDate.parse(inputString2, dtf);
+			    long daysBetween = Duration.between(date1, date2).toDays();
+			    System.out.println ("Days: " + daysBetween);
 		} else {
 			return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-				"The terms of the operation are neither both strings nor both numbers"));
+				"The terms of the operation are not both strings or both numbers or both dates"));
 		}	
 	}
 	
@@ -108,7 +132,8 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 	private RosettaInterpreterErrorValue checkForErrors(
 			RosettaInterpreterValue interpretedValue, String side) {
 		if  (interpretedValue instanceof RosettaInterpreterNumberValue 
-				|| interpretedValue instanceof RosettaInterpreterStringValue) {
+				|| interpretedValue instanceof RosettaInterpreterStringValue
+				|| interpretedValue instanceof RosettaInterpreterDateValue) {
 			// If the value satisfies the type conditions, we return an empty 
 			// error value so that the merger has two error values to merge
 			return new RosettaInterpreterErrorValue();
@@ -123,7 +148,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 							"Arithmetic Operation: " + side 
-							+ " is not of type Number/String"));
+							+ " is not of type Number/String/Date"));
 		}
 	}
 }
