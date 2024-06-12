@@ -10,12 +10,21 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 	
 	public String name;
 	public RosettaInterpreterValue value;
-	//public RosettaCardinality card;
+	public RosettaCardinality card;
 
-	public RosettaInterpreterTypedFeatureValue(String name, RosettaInterpreterValue value) {
+	/**
+	 * Constructor for data-type feature value.
+	 *
+	 * @param name 		name value
+	 * @param value		value of feature
+	 * @param card		cardinality value
+	 */
+	public RosettaInterpreterTypedFeatureValue(String name, RosettaInterpreterValue value, 
+			RosettaCardinality card) {
 		super();
 		this.name = name;
 		this.value = value;
+		this.card = card;
 	}
 
 	public String getName() {
@@ -26,9 +35,13 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 		return value;
 	}
 
+	public RosettaCardinality getCard() {
+		return card;
+	}
+
 	@Override
 	public Stream<Object> toElementStream() {
-		return Stream.of(name, value);
+		return Stream.of(name, value, card);
 	}
 
 	@Override
@@ -38,7 +51,7 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, value);
+		return Objects.hash(card, name, value);
 	}
 
 	@Override
@@ -53,11 +66,13 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 			return false;
 		}
 		RosettaInterpreterTypedFeatureValue other = (RosettaInterpreterTypedFeatureValue) obj;
-		return Objects.equals(name, other.name) && Objects.equals(value, other.value);
+		return Objects.equals(card, other.card) && Objects.equals(name, other.name)
+				&& Objects.equals(value, other.value);
 	}
 
 	@Override
 	public String toString() {
-		return "RosettaInterpreterTypedFeatureValue [name=" + name + ", value=" + value + "]";
+		return "RosettaInterpreterTypedFeatureValue [name=" + name + ", value=" + value 
+				+ ", card=" + card + "]";
 	}
 }

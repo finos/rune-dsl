@@ -236,6 +236,26 @@ public class RosettaInterpreterConstructorExpressionTest {
 	}
 	
 	@Test
+	public void testDataTypeExtends() {
+		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "type Age extends Person: age number (1..1)" + "func M: output: result Person (1..1) "
+					+ "set result: Age { name: \"F\", age: 10 }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(2)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Person", result.getSuperType());
+		assertEquals("Age", result.getName());
+		assertEquals("name", result.getAttributes().get(0).getName());
+		assertEquals("F", ((RosettaInterpreterStringValue) result.getAttributes().get(0).getValue())
+				.getValue());
+		assertEquals("age", result.getAttributes().get(1).getName());
+		assertEquals(10, ((RosettaInterpreterNumberValue) result.getAttributes().get(1).getValue())
+				.getValue().intValue());
+	}
+	
+	@Test
 	public void testDataTypeError() {
 		RosettaModel model = mh.parseRosetta("type Test: value boolean (1..1) "
 				+ "func M: output: result Test (1..1) set result: Test { value: 1 and True }");

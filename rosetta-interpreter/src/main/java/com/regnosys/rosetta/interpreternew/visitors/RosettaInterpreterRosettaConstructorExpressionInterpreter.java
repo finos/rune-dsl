@@ -19,7 +19,10 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTim
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
+import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.simple.impl.AttributeImpl;
+import com.regnosys.rosetta.rosetta.simple.impl.DataImpl;
 
 public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends RosettaInterpreterConcreteInterpreter {
 
@@ -93,11 +96,13 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				break;
 			}
 			default: {
-				// check that the data type is defined before, if not return error
 				List<RosettaInterpreterTypedFeatureValue> attributes = new ArrayList<>();
 				
+				// This for will take all the attributes of a data type, 
+				// including the ones of the supertype
 				for (ConstructorKeyValuePair pair : values) {
 					String name = pair.getKey().getName();
+					RosettaCardinality card = ((AttributeImpl) pair.getKey()).getCard();
 					RosettaInterpreterValue value = pair.getValue().accept(visitor, env);
 					
 					if (RosettaInterpreterErrorValue.errorsExist(value)) {
@@ -115,7 +120,14 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 								List.of(newExpError, expError));
 					}
 					
-					attributes.add(new RosettaInterpreterTypedFeatureValue(name, value));
+					attributes.add(new RosettaInterpreterTypedFeatureValue(name, value, card));
+				}
+				
+				if (((DataImpl) expr.getTypeCall().getType()).hasSuperType()) {
+					String superType = ((DataImpl) expr.getTypeCall().getType())
+							.getSuperType().getName();
+					
+					return new RosettaInterpreterTypedValue(superType, typeCall, attributes);
 				}
 				
 				return new RosettaInterpreterTypedValue(typeCall, attributes);

@@ -179,4 +179,18 @@ public class RosettaInterpreterFeatureCallTest {
 		
 		assertEquals("F", ((RosettaInterpreterStringValue) result).getValue());
 	}
+	
+	@Test
+	public void testDataTypeExtends() {
+		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) " 
+				+ "type Age extends Person: age number (1..1) "
+				+ "func M: output: result number (1..1) set result: "
+				+ "Age { name: \"F\", age: 10 } -> age");
+		
+		RosettaFeatureCallImpl featureCall = ((RosettaFeatureCallImpl) ((FunctionImpl) 
+				model.getElements().get(2)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(featureCall);
+		
+		assertEquals(10, ((RosettaInterpreterNumberValue) result).getValue().intValue());
+	}
 }
