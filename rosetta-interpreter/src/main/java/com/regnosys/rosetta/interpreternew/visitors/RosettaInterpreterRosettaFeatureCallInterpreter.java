@@ -38,7 +38,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 	public RosettaInterpreterValue interp(RosettaFeatureCall expr,
 			RosettaInterpreterEnvironment env) {
 			RosettaEnumValue enumVal;
-			if(expr.getFeature() instanceof RosettaEnumValueImpl) {
+			if (expr.getFeature() instanceof RosettaEnumValueImpl) {
 				enumVal = (RosettaEnumValueImpl) expr.getFeature();
 				RosettaEnumeration enumeration = (RosettaEnumeration) 
 						((RosettaSymbolReferenceImpl) expr.getReceiver()).getSymbol();
