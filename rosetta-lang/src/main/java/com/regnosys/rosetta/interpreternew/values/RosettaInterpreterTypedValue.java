@@ -25,16 +25,6 @@ public class RosettaInterpreterTypedValue extends RosettaInterpreterBaseValue {
 	public List<RosettaInterpreterTypedFeatureValue> getAttributes() {
 		return attributes;
 	}
-	
-	public List<String> getAttributesNames() {
-		List<String> names = new ArrayList<>();
-		
-		for (RosettaInterpreterTypedFeatureValue att : attributes) {
-			names.add(att.getName());
-		}
-		
-		return names;
-	}
 
 	@Override
 	public Stream<Object> toElementStream() {
