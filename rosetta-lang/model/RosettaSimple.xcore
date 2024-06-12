@@ -23,7 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
 
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }

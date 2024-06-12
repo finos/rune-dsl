@@ -17,7 +17,6 @@ import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.RosettaInterpreterBaseEnvironment
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
@@ -25,6 +24,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.JoinOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.rosetta.expression.FirstOperation
@@ -32,12 +32,18 @@ import com.regnosys.rosetta.rosetta.expression.LastOperation
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 
 class RosettaInterpreterBaseError{
 	String message
 }
 
 abstract class RosettaInterpreterValue {
+}
+
+abstract class RosettaInterpreterBaseEnvironment {
+	op RosettaInterpreterValue findValue(String name)
+	op RosettaInterpreterValue addValue(String name, RosettaInterpreterValue v)
 }
 
 interface InterpreterVisitor {
@@ -68,6 +74,8 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
 	
 	op RosettaInterpreterBaseEnvironment interp (Function exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)
 	
 	
 }
