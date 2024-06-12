@@ -39,7 +39,6 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterEnumerationInterpreter;
-import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterFeatureCallInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaArithmeticOperationsInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListOperationsInterpreter;
@@ -238,6 +237,9 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	
 	@Override
 	public RosettaInterpreterValue interp(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
-		return new RosettaInterpreterRosettaFeatureCallInterpreter().interp(exp, env);
+		return new RosettaInterpreterRosettaFeatureCallInterpreter().interp(exp, 
+				(RosettaInterpreterEnvironment) env);
+		
+	}
 }
 
