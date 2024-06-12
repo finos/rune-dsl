@@ -41,7 +41,7 @@ public class RosettaInterpreterTypedValue extends RosettaInterpreterBaseValue {
 	}
 	
 	public boolean hasSuperType() {
-		return superType == null;
+		return !(superType == null);
 	}
 
 	public String getSuperType() {
