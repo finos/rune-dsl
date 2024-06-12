@@ -43,9 +43,9 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 		//Check that the types are correct for the operations
 		if (!(leftInterpreted instanceof RosettaInterpreterNumberValue 
 				|| leftInterpreted instanceof RosettaInterpreterStringValue 
-				|| rightInterpreted instanceof RosettaInterpreterDateValue) 
+				|| leftInterpreted instanceof RosettaInterpreterDateValue) 
 				|| !(rightInterpreted instanceof RosettaInterpreterNumberValue
-				|| leftInterpreted instanceof RosettaInterpreterStringValue 
+				|| rightInterpreted instanceof RosettaInterpreterStringValue 
 				|| rightInterpreted instanceof RosettaInterpreterDateValue)) {
 			
 			// Check for errors in the left or right side of the binary operation
@@ -69,7 +69,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			else {
 				return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-				"The terms are strings but the operation "
+				"Both terms are strings but the operation "
 				+ "is not concatenation: not implemented"));
 			}
 		//Interpret number operations
@@ -103,13 +103,38 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			RosettaInterpreterDateValue r = (RosettaInterpreterDateValue) rightInterpreted;
 			if (expr.getOperator().equals("-")) {
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
-				String inputString1 = "23 01 1997";
-				String inputString2 = "27 04 1997";
+				String dayL = l.getDay().getValue().bigDecimalValue().toBigInteger().toString(); 
+				if (dayL.length() == 1) {
+					dayL = "0" + dayL;
+				}
+				String monthL = l.getMonth().getValue().bigDecimalValue().toBigInteger().toString(); 
+				if (monthL.length() == 1) {
+					monthL = "0" + monthL;
+				}
+				String yearL = l.getYear().getValue().bigDecimalValue().toBigInteger().toString(); 
+				String dayR = r.getDay().getValue().bigDecimalValue().toBigInteger().toString(); 
+				if (dayR.length() == 1) {
+					dayR = "0" + dayR;
+				}
+				String monthR = r.getMonth().getValue().bigDecimalValue().toBigInteger().toString(); 
+				if (monthR.length() == 1) {
+					monthR = "0" + monthR;
+				}
+				String yearR = r.getYear().getValue().bigDecimalValue().toBigInteger().toString(); 
+				
+				String inputString1 = dayL + " " + monthL + " " + yearL; 
+				String inputString2 = dayR + " " + monthR + " " + yearR; 
 
-			    LocalDateTime date1 = LocalDate.parse(inputString1, dtf);
-			    LocalDateTime date2 = LocalDate.parse(inputString2, dtf);
+			    LocalDateTime date1 = LocalDate.parse(inputString1, dtf).atStartOfDay();
+			    LocalDateTime date2 = LocalDate.parse(inputString2, dtf).atStartOfDay();
 			    long daysBetween = Duration.between(date1, date2).toDays();
-			    System.out.println ("Days: " + daysBetween);
+			    return new RosettaInterpreterNumberValue(BigDecimal.valueOf(daysBetween));
+				} else {
+					return new RosettaInterpreterErrorValue(
+							new RosettaInterpreterError(
+						"Both terms are dates but the operation "
+						+ "is not subtraction: not implemented"));
+					}
 		} else {
 			return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
