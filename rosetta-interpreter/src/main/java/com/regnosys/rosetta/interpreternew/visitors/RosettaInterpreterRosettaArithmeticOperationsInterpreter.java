@@ -149,7 +149,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			String yearL = appendZeroes(l.getYear());
 			String dayR = appendZeroes(r.getDay());
 			String monthR = appendZeroes(r.getMonth());
-			String yearR = appendZeroes(l.getYear());
+			String yearR = appendZeroes(r.getYear());
 			
 			String inputString1 = dayL + " " + monthL + " " + yearL; 
 			String inputString2 = dayR + " " + monthR + " " + yearR; 
