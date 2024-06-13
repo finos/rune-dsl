@@ -22,11 +22,9 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.Necessity;
 import org.xmlet.xsdparser.xsdelements.*;
-import org.xmlet.xsdparser.xsdelements.elementswrapper.ReferenceBase;
 import org.xmlet.xsdparser.xsdelements.enums.UsageEnum;
 import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 
@@ -108,7 +106,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				.map(xsdMapping::getRosettaTypeFromElement)
 				.filter(t -> t.getName().equals(xsdType.getName()))
 				.findAny();
-		
+
 		Data data = elementType.orElseGet(() -> {
 			Data newData = SimpleFactory.eINSTANCE.createData();
 			newData.setName(util.toTypeName(xsdType.getRawName()));
@@ -142,24 +140,18 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         }
 
         // Post process: make sure all names are unique:
-        makeNamesUnique(result);
+        util.makeNamesUnique(result);
         result.forEach(d -> {
-            makeNamesUnique(d.getAttributes());
-            makeNamesUnique(d.getConditions());
+            util.makeNamesUnique(d.getAttributes());
+            util.makeNamesUnique(d.getConditions());
         });
+
+		elementType.ifPresent(d -> util.makeNamesUnique(d.getAttributes()));
 		
 		return result;
 	}
-    private void makeNamesUnique(List<? extends RosettaNamed> objects) {
-        objects.stream().collect(Collectors.groupingBy(RosettaNamed::getName)).forEach((name, group) -> {
-            if (group.size() > 1) {
-                for (int i=0; i<group.size(); i++) {
-                    group.get(i).setName(name + i);
-                }
-            }
-        });
-    }
-    private void registerXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping, List<Data> result) {
+
+	private void registerXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping, List<Data> result) {
         if (abstractElement instanceof XsdElement elem) {
             Attribute attr = createAttributeFromElement(elem, currentChoiceGroup);
             xsdMapping.registerAttribute(elem, attr);
@@ -172,7 +164,10 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         	Attribute attr = createAttributeFromXsdAttribute(xsdAttr);
             xsdMapping.registerAttribute(xsdAttr, attr);
             currentData.getAttributes().add(attr);
-        } else if (abstractElement instanceof XsdSequence seq) {
+        }
+
+		else if (abstractElement instanceof XsdSequence seq) {
+
             if (currentChoiceGroup != null || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
                 Data newData = createData(currentData.getName() + "Sequence", seq.getXsdElements(), null, xsdMapping, result);
                 xsdMapping.registerComplexType(seq, newData);
@@ -183,7 +178,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             } else {
                 seq.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result));
             }
-        } else if (abstractElement instanceof XsdAll all) {
+        }
+		else if (abstractElement instanceof XsdAll all) {
             if (currentChoiceGroup != null || all.getMinOccurs() == 0) {
                 Data newData = createData(currentData.getName() + "All", all.getXsdElements(), null, xsdMapping, result);
                 xsdMapping.registerComplexType(all, newData);
@@ -231,20 +227,22 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 
         // Add conditions
         choiceGroups.forEach(choiceGroup -> {
-            Condition choice = SimpleFactory.eINSTANCE.createCondition();
-            choice.setName("Choice");
-            if (choiceGroup.attributes.size() == data.getAttributes().size() && choiceGroup.required) {
-                OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
-                oneOf.setOperator("one-of");
-                choice.setExpression(oneOf);
-            } else {
-                ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
-                op.setOperator("choice");
-                op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
-                op.getAttributes().addAll(choiceGroup.attributes);
-                choice.setExpression(op);
-            }
-            data.getConditions().add(choice);
+			if (choiceGroup.attributes.size() > 1) {
+				Condition choice = SimpleFactory.eINSTANCE.createCondition();
+				choice.setName("Choice");
+				if (choiceGroup.attributes.size() == data.getAttributes().size() && choiceGroup.required) {
+					OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
+					oneOf.setOperator("one-of");
+					choice.setExpression(oneOf);
+				} else {
+					ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
+					op.setOperator("choice");
+					op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
+					op.getAttributes().addAll(choiceGroup.attributes);
+					choice.setExpression(op);
+				}
+				data.getConditions().add(choice);
+			}
         });
     }
 

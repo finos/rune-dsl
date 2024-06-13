@@ -177,7 +177,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 				createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, maxLength).ifPresent(arg -> tc.getArguments().add(arg));;
 			}
 			if (restr.getPattern() != null) {
-				String pattern = restr.getPattern().stream().map(XsdStringRestrictions::getValue).collect(Collectors.joining("|"));
+				String pattern = restr.getPatterns().stream().map(XsdStringRestrictions::getValue).collect(Collectors.joining("|"));
 				createTypeArgument(paramBaseType, RStringType.PATTERN_PARAM_NAME, pattern).ifPresent(arg -> tc.getArguments().add(arg));;
 			}
 		}
