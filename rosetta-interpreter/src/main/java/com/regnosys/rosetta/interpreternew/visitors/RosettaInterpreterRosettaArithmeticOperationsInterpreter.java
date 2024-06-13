@@ -102,7 +102,6 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			RosettaInterpreterDateValue l = (RosettaInterpreterDateValue) leftInterpreted;
 			RosettaInterpreterDateValue r = (RosettaInterpreterDateValue) rightInterpreted;
 			if (expr.getOperator().equals("-")) {
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
 				String dayL = l.getDay().getValue().bigDecimalValue().toBigInteger().toString(); 
 				if (dayL.length() == 1) {
 					dayL = "0" + dayL;
@@ -124,6 +123,8 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				
 				String inputString1 = dayL + " " + monthL + " " + yearL; 
 				String inputString2 = dayR + " " + monthR + " " + yearR; 
+
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd MM yyyy");
 
 			    LocalDateTime date1 = LocalDate.parse(inputString1, dtf).atStartOfDay();
 			    LocalDateTime date2 = LocalDate.parse(inputString2, dtf).atStartOfDay();
