@@ -151,6 +151,7 @@ public class RosettaInterpreterFeatureCallTest {
 		assertEquals(time, result);
 	}
 	
+	@SuppressWarnings("unused")
 	@Test
 	public void testError() {
 		RosettaExpression expr = parser.parseExpression(
