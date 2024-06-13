@@ -227,20 +227,22 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 
         // Add conditions
         choiceGroups.forEach(choiceGroup -> {
-            Condition choice = SimpleFactory.eINSTANCE.createCondition();
-            choice.setName("Choice");
-            if (choiceGroup.attributes.size() == data.getAttributes().size() && choiceGroup.required) {
-                OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
-                oneOf.setOperator("one-of");
-                choice.setExpression(oneOf);
-            } else {
-                ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
-                op.setOperator("choice");
-                op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
-                op.getAttributes().addAll(choiceGroup.attributes);
-                choice.setExpression(op);
-            }
-            data.getConditions().add(choice);
+			if (choiceGroup.attributes.size() > 1) {
+				Condition choice = SimpleFactory.eINSTANCE.createCondition();
+				choice.setName("Choice");
+				if (choiceGroup.attributes.size() == data.getAttributes().size() && choiceGroup.required) {
+					OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
+					oneOf.setOperator("one-of");
+					choice.setExpression(oneOf);
+				} else {
+					ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
+					op.setOperator("choice");
+					op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
+					op.getAttributes().addAll(choiceGroup.attributes);
+					choice.setExpression(op);
+				}
+				data.getConditions().add(choice);
+			}
         });
     }
 
