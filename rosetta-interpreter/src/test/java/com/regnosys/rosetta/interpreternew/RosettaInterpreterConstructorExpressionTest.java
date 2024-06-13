@@ -271,4 +271,84 @@ public class RosettaInterpreterConstructorExpressionTest {
 		
 		assertEquals(RosettaInterpreterErrorValue.merge(errorValue, errorBool), result);
 	}
+	
+	
+	@Test
+	public void testDataTypeRequiredChoiceError1() {
+		RosettaModel model = mh.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..1)"
+				+ "condition Choice: required choice one, two "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: 1, two: 2 }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+					"Choice condition not followed. Exactly one attribute should be defined."));
+		
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testDataTypeRequiredChoiceError2() {
+		RosettaModel model = mh.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..1)"
+				+ "condition Choice: required choice one, two "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: empty, two: empty }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+					"Choice condition not followed. Exactly one attribute should be defined."));
+		
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testDataTypeRequiredChoice() {
+		RosettaModel model = mh.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..1)"
+				+ "condition Choice: required choice one, two "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: empty, two: 2 }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Ob", result.getName());
+	}
+	
+	@Test
+	public void testDataTypeOptionalChoice() {
+		RosettaModel model = mh.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..1)"
+				+ "condition Choice: optional choice one, two "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: empty, two: empty }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Ob", result.getName());
+	}
+	
+	@Test
+	public void testDataTypeOptionalChoiceError() {
+		RosettaModel model = mh.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..*)"
+				+ "condition Choice: optional choice one, two "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: 1, two: [2,3] }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+					"Choice condition not followed. At most one attribute should be defined."));
+		
+		assertEquals(expected, result);
+	}
 }

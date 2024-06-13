@@ -2,6 +2,8 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 
@@ -10,6 +12,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValu
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -18,10 +21,15 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
+import com.regnosys.rosetta.rosetta.expression.Necessity;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
+import com.regnosys.rosetta.rosetta.expression.impl.ChoiceOperationImpl;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.impl.AttributeImpl;
+import com.regnosys.rosetta.rosetta.simple.impl.ConditionImpl;
 import com.regnosys.rosetta.rosetta.simple.impl.DataImpl;
 
 public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends RosettaInterpreterConcreteInterpreter {
@@ -105,6 +113,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					RosettaCardinality card = ((AttributeImpl) pair.getKey()).getCard();
 					RosettaInterpreterValue value = pair.getValue().accept(visitor, env);
 					
+					
 					if (RosettaInterpreterErrorValue.errorsExist(value)) {
 						RosettaInterpreterErrorValue expError = 
 								(RosettaInterpreterErrorValue) value;
@@ -123,6 +132,50 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					attributes.add(new RosettaInterpreterTypedFeatureValue(name, value, card));
 				}
 				
+				//check if attributes are correctly defined, considering the conditions
+				List<Condition> conditions = ((DataImpl) expr.getTypeCall().getType()).getConditions();
+				
+				for (Condition condInterface : conditions) {
+					ConditionImpl c = (ConditionImpl)condInterface;
+					if (c.getExpression().getClass().equals(ChoiceOperationImpl.class)) {
+						ChoiceOperationImpl choice = (ChoiceOperationImpl)c.getExpression();
+						List<String> choiceAttributesName = choice.getAttributes().stream()
+								.map(Attribute::getName)
+								.collect(Collectors.toList());
+						
+						if (choice.getNecessity().equals(Necessity.REQUIRED)) {
+							//exactly one attribute allowed to be present
+							// => count non-empty, should be one
+							int nonEmptyCount = countPresentAttributes(
+									choiceAttributesName, 
+									attributes);
+							if (nonEmptyCount != 1) {
+								return new RosettaInterpreterErrorValue(
+										new RosettaInterpreterError(
+										"Choice condition not followed. "
+										+ "Exactly one attribute should "
+										+ "be defined."));
+							}
+						}
+						
+						if (choice.getNecessity().equals(Necessity.OPTIONAL)) {
+							//at most one attribute allowed to be present
+							// => count non-empty, should be less/equal than one
+							int nonEmptyCount = countPresentAttributes(
+									choiceAttributesName, 
+									attributes);
+							if (nonEmptyCount > 1) {
+								return new RosettaInterpreterErrorValue(
+										new RosettaInterpreterError(
+										"Choice condition not followed. "
+										+ "At most one attribute should "
+										+ "be defined."));
+							}
+						}
+						
+					}
+				}
+				
 				if (((DataImpl) expr.getTypeCall().getType()).hasSuperType()) {
 					String superType = ((DataImpl) expr.getTypeCall().getType())
 							.getSuperType().getName();
@@ -136,5 +189,27 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 		
 		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
 				"Constructor Expressions: attribute type is not valid."));
+	}
+
+	private int countPresentAttributes(List<String> names, List<RosettaInterpreterTypedFeatureValue> attributes) {
+		int countEmpty = 0;
+		
+
+		Map<String, RosettaInterpreterValue> valueMap = attributes.stream()
+				.collect(Collectors.toMap(
+						RosettaInterpreterTypedFeatureValue::getName,
+						RosettaInterpreterTypedFeatureValue::getValue));
+		
+		for (String name : names) {
+			RosettaInterpreterValue val = valueMap.get(name);
+			//attribute empty if it is ListValue with size 0
+			if (val instanceof RosettaInterpreterListValue) {
+				if (((RosettaInterpreterListValue)val).getExpressions().size() == 0) {
+					countEmpty++;
+				}
+			}
+		}
+		
+		return attributes.size() - countEmpty;
 	}
 }
