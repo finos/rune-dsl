@@ -39,10 +39,14 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 	@Override
 	public Data registerType(XsdElement xsdElement, RosettaXsdMapping typeMappings, GenerationProperties properties) {
 		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
+        return getData(xsdElement, typeMappings, xsdType);
+	}
+
+	private Data getData(XsdElement xsdElement, RosettaXsdMapping typeMappings, XsdNamedElements xsdType) {
 		if (xsdType != null /* TODO */ && typeMappings.hasType(xsdType)) {
 			if (xsdType instanceof XsdComplexType) {
 				Data dataType = typeMappings.getRosettaTypeFromComplex((XsdComplexType) xsdType);
-				
+
 				String name = StringUtils.capitalize(xsdElement.getName());
 				if (name.equals(dataType.getName())) {
 					// In case the element and type name overlap, we only generate the element.
@@ -55,14 +59,14 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 						}
 					});
 					typeMappings.registerElement(xsdElement, dataType);
-					
+
 					return dataType;
 				} else {
 					Data data = SimpleFactory.eINSTANCE.createData();
 					data.setName(xsdElement.getName());
 					util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 					typeMappings.registerElement(xsdElement, data);
-										
+
 					return data;
 				}
 			} else {
@@ -70,11 +74,11 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 				data.setName(xsdElement.getName());
 				util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 				typeMappings.registerElement(xsdElement, data);
-				
+
 				Attribute valueAttr = typeImport.createValueAttribute();
 				typeMappings.registerAttribute(xsdElement, valueAttr);
 				data.getAttributes().add(valueAttr);
-				
+
 				return data;
 			}
 		} else {
@@ -82,7 +86,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			data.setName(StringUtils.capitalize(xsdElement.getName()));
 			util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 			typeMappings.registerElement(xsdElement, data);
-			
+
 			return data;
 		}
 	}

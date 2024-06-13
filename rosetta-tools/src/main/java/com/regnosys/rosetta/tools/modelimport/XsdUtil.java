@@ -17,10 +17,12 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
@@ -121,5 +123,15 @@ public class XsdUtil {
 			return s.substring(0, 1).toLowerCase() + s.substring(1);
 		}
 		return s.substring(0, upperCased - 1).toLowerCase() + s.substring(upperCased - 1);
+	}
+
+	public void makeNamesUnique(List<? extends RosettaNamed> objects) {
+		objects.stream().collect(Collectors.groupingBy(RosettaNamed::getName)).forEach((name, group) -> {
+			if (group.size() > 1) {
+				for (int i=0; i<group.size(); i++) {
+					group.get(i).setName(name + i);
+				}
+			}
+		});
 	}
 }
