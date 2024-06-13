@@ -90,8 +90,7 @@ class TypeCallArgument {
 	contains RosettaExpression value
 }
 
-abstract class RosettaInterpreterBaseEnvironment {
-}
+
 
 
 /**********************************************************************
@@ -111,6 +110,7 @@ class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 
 class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
+	
 }
 
 class RosettaRecordFeature extends RosettaTypedFeature {}
