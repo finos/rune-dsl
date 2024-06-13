@@ -236,9 +236,9 @@ public class RosettaInterpreterConstructorExpressionTest {
 	}
 	
 	@Test
-	public void test() {
+	public void testOptionalAttributeDataType() {
 		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) height number (0..1)"
-				+ "func M: output: result Person (1..1) set result: Person { name: \"F\", height: empty }");
+				+ "func M: output: result Person (1..1) set result: Person { name: \"F\", height: empty}");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
 				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
