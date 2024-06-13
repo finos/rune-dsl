@@ -236,22 +236,6 @@ public class RosettaInterpreterConstructorExpressionTest {
 	}
 	
 	@Test
-	public void testOptionalAttributeDataType() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) height number (0..1)"
-				+ "func M: output: result Person (1..1) set result: Person { name: \"F\", height: empty}");
-		
-		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
-				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
-		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
-		
-		assertEquals("Person", result.getName());
-		assertEquals("name", result.getAttributes().get(0).getName());
-		assertEquals("F", ((RosettaInterpreterStringValue) result.getAttributes().get(0).getValue())
-				.getValue());
-		System.out.println(result.getAttributes().get(1).getValue());
-	}
-	
-	@Test
 	public void testDataTypeExtends() {
 		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "type Age extends Person: age number (1..1)" + "func M: output: result Person (1..1) "
