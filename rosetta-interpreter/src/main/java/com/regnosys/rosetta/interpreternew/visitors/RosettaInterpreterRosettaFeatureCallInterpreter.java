@@ -45,9 +45,8 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 				RosettaEnumeration enumeration = (RosettaEnumeration) 
 						((RosettaSymbolReferenceImpl) expr.getReceiver()).getSymbol();
 				return interpEnum(enumeration, enumVal, env);
-			}
-			else {
-				return interpRecord(expr, env);
+			} else {
+				return interpType(expr, env);
 			}
 			
 	}
@@ -79,7 +78,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interpRecord(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterBaseValue interpType(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression receiver = exp.getReceiver();
 		RosettaInterpreterValue receiverValue = receiver.accept(visitor, env);
 		
@@ -110,15 +109,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 				return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
 			}
 			
-		} else if (RosettaInterpreterErrorValue.errorsExist(receiverValue)) {
-			RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) receiverValue;
-			RosettaInterpreterErrorValue newExpError = 
-					new RosettaInterpreterErrorValue(
-							new RosettaInterpreterError("Feature calls: the "
-									+ "receiver is an error value."));
-			
-			return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
-		} else {
+		} else if (receiverValue instanceof RosettaInterpreterTypedValue) {
 			List<RosettaInterpreterTypedFeatureValue> attributes = ((RosettaInterpreterTypedValue) 
 					receiverValue).getAttributes();
 			
@@ -128,11 +119,14 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 							RosettaInterpreterTypedFeatureValue) att).getValue();
 				}
 			}
-			
 		}
+	
+		RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) receiverValue;
+		RosettaInterpreterErrorValue newExpError = 
+				new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError("Feature calls: the "
+								+ "receiver is an error value."));
 		
-		// statement never reached
-		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-				"Feature calls: receiver doesn't exist."));
+		return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
 	}
 }

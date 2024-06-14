@@ -174,6 +174,9 @@ public class RosettaInterpreterFeatureCallTest {
 		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "func M: output: result string (1..1) set result: Person { name: \"F\" } -> name");
 		
+		System.out.println(((RosettaFeatureCallImpl) ((FunctionImpl) 
+				model.getElements().get(1)).getOperations().get(0).getExpression()).getReceiver());
+		
 		RosettaFeatureCallImpl featureCall = ((RosettaFeatureCallImpl) ((FunctionImpl) 
 				model.getElements().get(1)).getOperations().get(0).getExpression());
 		RosettaInterpreterValue result = interpreter.interp(featureCall);
