@@ -17,6 +17,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -270,5 +271,37 @@ public class RosettaInterpreterConstructorExpressionTest {
 				"Constructor Expression: the attribute \"value\" is an error value."));
 		
 		assertEquals(RosettaInterpreterErrorValue.merge(errorValue, errorBool), result);
+	}
+	
+	@Test
+	public void testDataTypeCardZero() {
+		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) age number (0..1) "
+			  + "func M: output: result Person (1..1) set result: Person { name: \"F\", age: empty }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Person", result.getName());
+		assertEquals("name", result.getAttributes().get(0).getName());
+		assertEquals("F", ((RosettaInterpreterStringValue) result.getAttributes().get(0).getValue())
+				.getValue());
+		assertEquals(new RosettaInterpreterListValue(List.of()), result.getAttributes().get(1).getValue());
+	}
+	
+	@Test
+	public void testDataTypeCardZero2() {
+		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) age number (0..1) "
+				+ "func M: output: result Person (1..1) set result: Person { name: \"F\", ... }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Person", result.getName());
+		assertEquals("name", result.getAttributes().get(0).getName());
+		assertEquals("F", ((RosettaInterpreterStringValue) result.getAttributes().get(0).getValue())
+				.getValue());
+		assertEquals(new RosettaInterpreterListValue(List.of()), result.getAttributes().get(1).getValue());
 	}
 }
