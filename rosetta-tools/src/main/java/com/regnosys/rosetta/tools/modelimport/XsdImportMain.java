@@ -27,7 +27,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.xmlet.xsdparser.core.XsdParser;
-import org.xmlet.xsdparser.xsdelements.XsdSchema;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,13 +61,12 @@ public class XsdImportMain {
 
         // Parse xsd
         XsdParser parserInstance = new XsdParser(xsdPath);
-        XsdSchema schema = parserInstance.getResultXsdSchemas().findAny().orElseThrow();
 
         // Generate rosetta
         Injector injector = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
         XsdImport xsdImport = injector.getInstance(XsdImport.class);
-        xsdImport.generateRosetta(schema, properties);
-        RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
+        xsdImport.generateRosetta(parserInstance, properties);
+        RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(parserInstance, properties);
         File xmlConfigOutputFile = new File(xmlConfigOutputPath);
         xmlConfigOutputFile.getParentFile().mkdirs();
         getObjectMapper().writerWithDefaultPrettyPrinter().writeValue(xmlConfigOutputFile, xmlConfig);

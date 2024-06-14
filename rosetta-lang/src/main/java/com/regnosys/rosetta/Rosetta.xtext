@@ -89,7 +89,7 @@ Choice:
 ;
 
 ChoiceOption:
-	RosettaTyped
+	RosettaTyped RosettaDefinable?
 ;
 
 Attribute:

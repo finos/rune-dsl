@@ -17,13 +17,11 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
-import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 
@@ -49,13 +47,13 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	@Override
-	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames, GenerationProperties properties) {
+	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
 		RosettaEnumeration rosettaEnumeration = RosettaFactory.eINSTANCE.createRosettaEnumeration();
 		rosettaEnumeration.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(rosettaEnumeration::setDefinition);
 		typeMappings.registerEnumType(xsdType, rosettaEnumeration);
 		
-		List<XsdEnumeration> enumeration = xsdType.getRestriction().getEnumeration();
+		List<XsdEnumeration> enumeration = xsdType.getAllRestrictions().stream().flatMap(r -> r.getEnumeration().stream()).toList();
 
 		enumeration.stream()
 			.map(e -> this.registerEnumValue(e, typeMappings))
@@ -65,12 +63,12 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	@Override
-	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, Map<XsdNamedElements, String> rootTypeNames) {
+	public void completeType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings) {
 		
 	}
 
 	private RosettaEnumValue registerEnumValue(XsdEnumeration ev, RosettaXsdMapping typeMappings) {
-		String value = ev.getValue();
+		String value = util.toEnumValueName(ev.getValue());
 		RosettaEnumValue rosettaEnumValue = RosettaFactory.eINSTANCE.createRosettaEnumValue();
 		rosettaEnumValue.setName(value);
 		util.extractDocs(ev).ifPresent(rosettaEnumValue::setDefinition);

@@ -20,13 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,13 +40,12 @@ import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
-import org.xmlet.xsdparser.xsdelements.XsdSchema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
@@ -89,34 +87,38 @@ public class XsdImportTest {
 		rosettaXsdMapping.initializeBuiltins(resourceSet);
 	}
 	
-	private void runTest(String xsdName) throws IOException {
-		String xsdFile = "src/test/resources/model-import/" + xsdName + ".xsd";
-		String expectedFolder = "model-import/" + xsdName + "-result";
+	private void runTest(String xsdName) throws IOException, URISyntaxException {
+		Path baseFolder = Path.of(getClass().getResource("/model-import/" + xsdName).toURI());
+		Path xsdFile = baseFolder.resolve("schema.xsd");
+		Path expectedFolder = baseFolder.resolve("expected");
 		
 		GenerationProperties properties = mockProperties();
 
 		// Load xsd elements
-		XsdSchema schema = getXsdSchema(xsdFile);
+		XsdParser parsedInstance = new XsdParser(xsdFile.toString());
 				
 		// Test rosetta
-		ResourceSet set = xsdImport.generateRosetta(schema, properties);
+		ResourceSet set = xsdImport.generateRosetta(parsedInstance, properties);
 		List<String> resourceNames = set.getResources().stream()
-				.map(r -> r.getURI())
+				.map(Resource::getURI)
 				.filter(uri -> uri.scheme() == null)
-				.map(uri -> uri.toString())
-				.collect(Collectors.toList());
+				.map(Object::toString)
+				.toList();
 		
-		List<String> expectedResources = getResourceFiles(expectedFolder);
+		List<Path> expectedResources = getResourceFiles(expectedFolder);
 		
-		assertEquals(new HashSet<>(expectedResources), new HashSet<>(resourceNames));
+		assertEquals(
+			expectedResources.stream().map(r -> r.getFileName().toString()).collect(Collectors.toSet()),
+			new HashSet<>(resourceNames)
+		);
 		
-		for (String resource: expectedResources) {
-			String expected = Resources.toString(Resources.getResource(expectedFolder + "/" + resource), StandardCharsets.UTF_8);
+		for (Path resource: expectedResources) {
+			String expected = Files.readString(resource);
 			
-			Resource actualResource = set.getResource(URI.createURI(resource), false);
+			Resource actualResource = set.getResource(URI.createURI(resource.getFileName().toString()), false);
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			actualResource.save(output, null);
-			String actual = new String(output.toByteArray(), StandardCharsets.UTF_8);
+			String actual = output.toString(StandardCharsets.UTF_8);
 			
 			assertEquals(expected, actual);
 		}
@@ -124,9 +126,9 @@ public class XsdImportTest {
 		set.getResources().forEach(resource -> validationTestHelper.assertNoIssues(resource));
 	
 		// Test XML config
-		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(schema, properties);
+		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(parsedInstance, properties);
 		
-		String expected = Resources.toString(Resources.getResource(expectedFolder + "/xml-config.json"), StandardCharsets.UTF_8);
+		String expected = Files.readString(expectedFolder.resolve("xml-config.json"));
 		ObjectMapper mapper = XsdImportMain.getObjectMapper();
 		String actual = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(xmlConfig);
 		assertEquals(expected, actual);
@@ -136,39 +138,50 @@ public class XsdImportTest {
 	}
 	
 	@Test
-	void testEnum() throws IOException {
+	void testEnum() throws IOException, URISyntaxException {
 		runTest("enum");
 	}
 	
 	@Test
-	void testData() throws IOException {
+	void testData() throws IOException, URISyntaxException {
 		runTest("data");
 	}
 
 	@Test
-	void testData2() throws IOException {
+	void testData2() throws IOException, URISyntaxException {
 		runTest("data2");
 	}
 	
 	@Test
-	void testChoice() throws IOException {
+	void testChoice() throws IOException, URISyntaxException {
 		runTest("choice");
 	}
 	
 	@Test
-	void testDataAndEnum() throws IOException {
+	void testDataAndEnum() throws IOException, URISyntaxException {
 		runTest("data-and-enum");
 	}
 	
 	@Test
-	void testSimpleTypeExtension() throws IOException {
+	void testSimpleTypeExtension() throws IOException, URISyntaxException {
 		runTest("simple-type-extension");
 	}
 	
 	@Test
-	void testTopLevel() throws IOException {
+	void testTopLevel() throws IOException, URISyntaxException {
 		runTest("top-level");
 	}
+	
+	@Test
+	@Disabled
+	void testMulti() throws IOException, URISyntaxException {
+		runTest("multi");
+	}
+
+    @Test
+    void testNestedData() throws IOException, URISyntaxException {
+        runTest("nested-data");
+    }
 
 	private GenerationProperties mockProperties() {
 		GenerationProperties properties = mock(GenerationProperties.class);
@@ -178,41 +191,7 @@ public class XsdImportTest {
 		return properties;
 	}
 	
-	private XsdSchema getXsdSchema(String xsdPath) {
-		XsdParser xsdParser = new XsdParser(xsdPath);
-		return xsdParser.getResultXsdSchemas()
-				.findAny()
-				.orElseThrow();
-	}
-	
-	private List<String> getResourceFiles(String path) {
-	    List<String> filenames = new ArrayList<>();
-
-	    try (
-	            InputStream in = getResourceAsStream(path);
-	            BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-	        String resource;
-
-	        while ((resource = br.readLine()) != null) {
-	        	if (resource.endsWith(".rosetta")) {
-	        		filenames.add(resource);
-	        	}
-	        }
-	    } catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-	    return filenames;
-	}
-
-	private InputStream getResourceAsStream(String resource) {
-	    final InputStream in
-	            = getContextClassLoader().getResourceAsStream(resource);
-
-	    return in == null ? getClass().getResourceAsStream(resource) : in;
-	}
-
-	private ClassLoader getContextClassLoader() {
-	    return Thread.currentThread().getContextClassLoader();
+	private List<Path> getResourceFiles(Path expectedPath) throws IOException {
+		return Files.list(expectedPath).filter(r -> r.getFileName().toString().endsWith(".rosetta")).toList();
 	}
 }

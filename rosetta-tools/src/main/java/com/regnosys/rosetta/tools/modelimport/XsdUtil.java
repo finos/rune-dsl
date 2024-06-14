@@ -16,10 +16,13 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
@@ -42,7 +45,8 @@ public class XsdUtil {
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
 				.collect(Collectors.joining(" "))
-			);
+			)
+			.map(docs -> docs.isEmpty() ? null : docs);
 	}
 	
 	public Optional<String> extractDocs(XsdAnnotatedElements ev, String docAnnotationSourceName) {
@@ -57,16 +61,55 @@ public class XsdUtil {
 				.map(x -> x.replace('\n', ' '))
 				.map(x -> x.replace('\r', ' '))
 				.collect(Collectors.joining(" "))
-			);
+			)
+			.map(docs -> docs.isEmpty() ? null : docs);
 	}
 	
 	public boolean isEnumType(XsdSimpleType simpleType) {
 		return simpleType.getAllRestrictions().stream()
-				.anyMatch(e -> e.getEnumeration().size() > 0);
+				.anyMatch(e -> !e.getEnumeration().isEmpty());
 	}
+
+    public String toTypeName(String xsdName) {
+        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        StringBuilder builder = new StringBuilder();
+        for (String part : parts) {
+            if (Character.isUpperCase(part.charAt(0))) {
+                builder.append(part);
+            } else {
+                builder.append(Character.toUpperCase(part.charAt(0)));
+                builder.append(part, 1, part.length());
+            }
+        }
+        return builder.toString();
+    }
+
+    public String toAttributeName(String xsdName) {
+        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        StringBuilder builder = new StringBuilder();
+        builder.append(allFirstLowerIfNotAbbrevation(parts[0]));
+        Arrays.stream(parts).skip(1).forEach(part -> {
+            if (Character.isUpperCase(part.charAt(0))) {
+                builder.append(part);
+            } else {
+                builder.append(Character.toUpperCase(part.charAt(0)));
+                builder.append(part, 1, part.length());
+            }
+        });
+        return builder.toString();
+    }
+    
+    public String toEnumValueName(String xsdName) {
+        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        String joined = String.join("_", parts).toUpperCase();
+        if (joined.matches("^[0-9].*")) {
+        	return "_" + joined;
+        }
+    	return joined;
+    }
 	
-	public String allFirstLowerIfNotAbbrevation(String s) {
-		if (s == null || s.length() == 0)
+	private String allFirstLowerIfNotAbbrevation(String s) {
+		if (s == null || s.isEmpty())
 			return s;
 		int upperCased = 0;
 		while (upperCased < s.length() && Character.isUpperCase(s.charAt(upperCased))) {
@@ -80,5 +123,15 @@ public class XsdUtil {
 			return s.substring(0, 1).toLowerCase() + s.substring(1);
 		}
 		return s.substring(0, upperCased - 1).toLowerCase() + s.substring(upperCased - 1);
+	}
+
+	public void makeNamesUnique(List<? extends RosettaNamed> objects) {
+		objects.stream().collect(Collectors.groupingBy(RosettaNamed::getName)).forEach((name, group) -> {
+			if (group.size() > 1) {
+				for (int i=0; i<group.size(); i++) {
+					group.get(i).setName(name + i);
+				}
+			}
+		});
 	}
 }
