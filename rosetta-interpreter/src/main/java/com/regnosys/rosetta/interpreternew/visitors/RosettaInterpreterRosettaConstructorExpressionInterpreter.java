@@ -31,6 +31,21 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 		EList<ConstructorKeyValuePair> values = expr.getValues();
 		
 		switch (typeCall) {
+			case "time": {
+				RosettaInterpreterValue day = values.get(0).getValue().accept(visitor, env);
+				RosettaInterpreterValue month = values.get(1).getValue().accept(visitor, env);
+				RosettaInterpreterValue year = values.get(2).getValue().accept(visitor, env);
+				
+				if (day instanceof RosettaInterpreterNumberValue 
+						&& month instanceof RosettaInterpreterNumberValue 
+						&& year instanceof RosettaInterpreterNumberValue) {
+					return new RosettaInterpreterDateValue(
+							((RosettaInterpreterNumberValue) day), 
+							((RosettaInterpreterNumberValue) month),
+							((RosettaInterpreterNumberValue) year));
+				}
+				break;
+			}
 			case "date": {
 				RosettaInterpreterValue day = values.get(0).getValue().accept(visitor, env);
 				RosettaInterpreterValue month = values.get(1).getValue().accept(visitor, env);

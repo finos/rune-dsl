@@ -3,6 +3,7 @@ package com.regnosys.rosetta.interpreternew.visitors;
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.interpreternew.RosettaInterpreterVisitor;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -27,7 +28,7 @@ public class RosettaInterpreterVariableInterpreter {
      *         the error.
 	 */
 	public RosettaInterpreterValue interp(RosettaSymbolReference exp, 
-			RosettaInterpreterBaseEnvironment env) {
+			RosettaInterpreterEnvironment env) {
 		
 		if (exp.getSymbol() instanceof FunctionImpl) {
 			return (new RosettaInterpreterFunctionInterpreter())
