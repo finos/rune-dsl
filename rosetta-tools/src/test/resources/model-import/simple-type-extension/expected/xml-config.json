@@ -1,0 +1,9 @@
+{
+  "test.ns.CurrencyAnd19DecimalAmount" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  }
+}
