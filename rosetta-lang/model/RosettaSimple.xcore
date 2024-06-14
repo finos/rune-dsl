@@ -30,7 +30,7 @@ import com.regnosys.rosetta.rosetta.RosettaPackage.Literals
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
 
-class Annotation extends RootElement, RosettaSymbol {
+class Annotation extends RootElement, RosettaNamed {
 	String prefix
 	contains Attribute[] attributes
 }
