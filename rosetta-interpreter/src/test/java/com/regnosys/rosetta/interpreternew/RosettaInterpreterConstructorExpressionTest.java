@@ -17,6 +17,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -42,7 +43,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	RosettaInterpreterNew interpreter;
 	
 	@Inject
-	ModelHelper mh;
+	ModelHelper modelHelper;
 
 	RosettaInterpreterNumberValue day = new RosettaInterpreterNumberValue(5);
 	RosettaInterpreterNumberValue month = new RosettaInterpreterNumberValue(7);
@@ -222,7 +223,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataType() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "func M: output: result Person (1..1) set result: Person { name: \"F\" }");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
@@ -237,7 +238,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeExtends() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "type Age extends Person: age number (1..1)" + "func M: output: result Person (1..1) "
 					+ "set result: Age { name: \"F\", age: 10 }");
 		
@@ -257,7 +258,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeError() {
-		RosettaModel model = mh.parseRosetta("type Test: value boolean (1..1) "
+		RosettaModel model = modelHelper.parseRosetta("type Test: value boolean (1..1) "
 				+ "func M: output: result Test (1..1) set result: Test { value: 1 and True }");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
@@ -272,10 +273,43 @@ public class RosettaInterpreterConstructorExpressionTest {
 		assertEquals(RosettaInterpreterErrorValue.merge(errorValue, errorBool), result);
 	}
 	
+	@Test
+	public void testDataTypeCardZero() {
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "age number (0..1) func M: output: result Person (1..1) "
+				+ "set result: Person { name: \"F\", age: empty }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Person", result.getName());
+		assertEquals("name", result.getAttributes().get(0).getName());
+		assertEquals("F", ((RosettaInterpreterStringValue) result.getAttributes().get(0).getValue())
+				.getValue());
+		assertEquals(new RosettaInterpreterListValue(List.of()), result.getAttributes().get(1).getValue());
+	}
+		
+	@Test
+	public void testDataTypeCardZero2() {
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "age number (0..1) func M: output: result Person (1..1) "
+				+ "set result: Person { name: \"F\", ... }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Person", result.getName());
+		assertEquals("name", result.getAttributes().get(0).getName());
+		assertEquals("F", ((RosettaInterpreterStringValue) result.getAttributes().get(0).getValue())
+				.getValue());
+		assertEquals(new RosettaInterpreterListValue(List.of()), result.getAttributes().get(1).getValue()); 
+	}
 	
 	@Test
 	public void testDataTypeRequiredChoiceError1() {
-		RosettaModel model = mh.parseRosetta("type Ob:"
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
 				+ "one int (0..1) two int (0..1)"
 				+ "condition Choice: required choice one, two "
 				+ "func M: output: result Ob (1..1) set result: Ob { one: 1, two: 2 }");
@@ -292,7 +326,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeRequiredChoiceError2() {
-		RosettaModel model = mh.parseRosetta("type Ob:"
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
 				+ "one int (0..1) two int (0..1)"
 				+ "condition Choice: required choice one, two "
 				+ "func M: output: result Ob (1..1) set result: Ob { one: empty, two: empty }");
@@ -309,7 +343,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeRequiredChoice() {
-		RosettaModel model = mh.parseRosetta("type Ob:"
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
 				+ "one int (0..1) two int (0..1)"
 				+ "condition Choice: required choice one, two "
 				+ "func M: output: result Ob (1..1) set result: Ob { one: empty, two: 2 }");
@@ -320,24 +354,24 @@ public class RosettaInterpreterConstructorExpressionTest {
 		
 		assertEquals("Ob", result.getName());
 	}
-	
+
 	@Test
 	public void testDataTypeOptionalChoice() {
-		RosettaModel model = mh.parseRosetta("type Ob:"
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
 				+ "one int (0..1) two int (0..1)"
 				+ "condition Choice: optional choice one, two "
 				+ "func M: output: result Ob (1..1) set result: Ob { one: empty, two: empty }");
-		
+
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
 				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
 		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
 		
 		assertEquals("Ob", result.getName());
-	}
+	}	
 	
 	@Test
 	public void testDataTypeOptionalChoiceError() {
-		RosettaModel model = mh.parseRosetta("type Ob:"
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
 				+ "one int (0..1) two int (0..*)"
 				+ "condition Choice: optional choice one, two "
 				+ "func M: output: result Ob (1..1) set result: Ob { one: 1, two: [2,3] }");

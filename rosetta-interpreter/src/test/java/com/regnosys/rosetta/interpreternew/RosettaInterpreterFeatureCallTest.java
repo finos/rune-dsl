@@ -16,6 +16,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
@@ -39,7 +40,7 @@ public class RosettaInterpreterFeatureCallTest {
 	RosettaInterpreterNew interpreter;
 	
 	@Inject
-	ModelHelper mh;
+	ModelHelper modelHelper;
 
 	RosettaInterpreterNumberValue day = new RosettaInterpreterNumberValue(5);
 	RosettaInterpreterNumberValue month = new RosettaInterpreterNumberValue(7);
@@ -170,8 +171,11 @@ public class RosettaInterpreterFeatureCallTest {
 	
 	@Test
 	public void testDataType() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "func M: output: result string (1..1) set result: Person { name: \"F\" } -> name");
+		
+		System.out.println(((RosettaFeatureCallImpl) ((FunctionImpl) 
+				model.getElements().get(1)).getOperations().get(0).getExpression()).getReceiver());
 		
 		RosettaFeatureCallImpl featureCall = ((RosettaFeatureCallImpl) ((FunctionImpl) 
 				model.getElements().get(1)).getOperations().get(0).getExpression());
@@ -182,7 +186,7 @@ public class RosettaInterpreterFeatureCallTest {
 	
 	@Test
 	public void testDataTypeExtends() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) " 
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) " 
 				+ "type Age extends Person: age number (1..1) "
 				+ "func M: output: result number (1..1) set result: "
 				+ "Age { name: \"F\", age: 10 } -> age");
@@ -192,5 +196,18 @@ public class RosettaInterpreterFeatureCallTest {
 		RosettaInterpreterValue result = interpreter.interp(featureCall);
 		
 		assertEquals(10, ((RosettaInterpreterNumberValue) result).getValue().intValue());
+	}
+	
+	@Test
+	public void testDataTypeEmpty() {
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "age number (0..1) func M: output: result number (1..1) "
+				+ "set result: Person { name: \"F\", ... } -> age");
+		
+		RosettaFeatureCallImpl featureCall = ((RosettaFeatureCallImpl) ((FunctionImpl) 
+				model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(featureCall);
+		
+		assertEquals(new RosettaInterpreterListValue(List.of()), result);
 	}
 }
