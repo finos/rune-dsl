@@ -18,8 +18,11 @@ import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.JoinOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
@@ -32,7 +35,6 @@ import com.regnosys.rosetta.rosetta.expression.LastOperation
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 
 class RosettaInterpreterBaseError{
 	String message
@@ -72,6 +74,7 @@ interface InterpreterVisitor {
 	op RosettaInterpreterValue interp (DistinctOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (ReverseOperation exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (SumOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterBaseEnvironment interp (RosettaEnumeration exp, RosettaInterpreterBaseEnvironment env)
 	
 	op RosettaInterpreterBaseEnvironment interp (Function exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
