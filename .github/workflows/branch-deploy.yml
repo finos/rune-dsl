@@ -2,6 +2,11 @@ name: Deploy a branch as a snapshot version.
 
 on:
   workflow_dispatch:
+    inputs:
+      run-tests:
+        type: boolean
+        description: Run tests
+        default: true
 
 # Cancel previous jobs
 concurrency:
@@ -12,15 +17,16 @@ jobs:
   deploy-branch:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Normalize branch name
-      id: normalize-branch-name
-      uses: ./.github/actions/normalize-branch-name
-    - name: Set version
-      run: mvn -B versions:set -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
-    - uses: ./.github/actions/maven-build
-      with:
-        build-command: deploy  # Deploy a snapshot build of main
-      env:
-        CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-        CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+      - uses: actions/checkout@v4
+      - name: Normalize branch name
+        id: normalize-branch-name
+        uses: ./.github/actions/normalize-branch-name
+      - name: Set version
+        run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
+      - uses: ./.github/actions/maven-build
+        with:
+          build-command: deploy  # Deploy a snapshot build of a chosen branch
+          run-tests: ${{ github.event.inputs.run-tests }}
+        env:
+          CI_DEPLOY_USERNAME: ${{ vars.CI_DEPLOY_USERNAME }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
