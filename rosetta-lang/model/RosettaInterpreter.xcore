@@ -76,7 +76,6 @@ interface InterpreterVisitor {
 	op RosettaInterpreterBaseEnvironment interp (RosettaEnumeration exp, RosettaInterpreterBaseEnvironment env)
 	
 	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
-	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)
-	
+	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)	
 	
 }
