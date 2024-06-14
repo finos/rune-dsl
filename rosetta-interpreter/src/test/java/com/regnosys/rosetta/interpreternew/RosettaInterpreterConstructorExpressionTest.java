@@ -43,7 +43,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	RosettaInterpreterNew interpreter;
 	
 	@Inject
-	ModelHelper mh;
+	ModelHelper modelHelper;
 
 	RosettaInterpreterNumberValue day = new RosettaInterpreterNumberValue(5);
 	RosettaInterpreterNumberValue month = new RosettaInterpreterNumberValue(7);
@@ -223,7 +223,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataType() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "func M: output: result Person (1..1) set result: Person { name: \"F\" }");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
@@ -238,7 +238,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeExtends() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) "
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
 				+ "type Age extends Person: age number (1..1)" + "func M: output: result Person (1..1) "
 					+ "set result: Age { name: \"F\", age: 10 }");
 		
@@ -258,7 +258,7 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeError() {
-		RosettaModel model = mh.parseRosetta("type Test: value boolean (1..1) "
+		RosettaModel model = modelHelper.parseRosetta("type Test: value boolean (1..1) "
 				+ "func M: output: result Test (1..1) set result: Test { value: 1 and True }");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
@@ -275,8 +275,9 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeCardZero() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) age number (0..1) "
-			  + "func M: output: result Person (1..1) set result: Person { name: \"F\", age: empty }");
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "age number (0..1) func M: output: result Person (1..1) "
+				+ "set result: Person { name: \"F\", age: empty }");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
 				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
@@ -291,8 +292,9 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 	@Test
 	public void testDataTypeCardZero2() {
-		RosettaModel model = mh.parseRosettaWithNoErrors("type Person: name string (1..1) age number (0..1) "
-				+ "func M: output: result Person (1..1) set result: Person { name: \"F\", ... }");
+		RosettaModel model = modelHelper.parseRosettaWithNoErrors("type Person: name string (1..1) "
+				+ "age number (0..1) func M: output: result Person (1..1) "
+				+ "set result: Person { name: \"F\", ... }");
 		
 		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
 				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());

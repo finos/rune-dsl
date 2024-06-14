@@ -52,13 +52,7 @@ public class RosettaInterpreterTypedValue extends RosettaInterpreterBaseValue {
 		return name;
 	}
 
-	/**
-	 * Getter for the attributes of a data-type. If it has a supertype, it return its attributes as well.
-	 *
-	 * @return 		a list of attributes, including the one from a supertype if it has one
-	 */
 	public List<RosettaInterpreterTypedFeatureValue> getAttributes() {
-		// This will return all attributes, including the ones of the supertype
 		return attributes;
 	}
 
