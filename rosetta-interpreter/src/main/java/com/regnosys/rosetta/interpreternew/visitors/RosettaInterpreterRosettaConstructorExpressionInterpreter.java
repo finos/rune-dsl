@@ -169,36 +169,15 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 								.map(Attribute::getName)
 								.collect(Collectors.toList());
 						
-						if (choice.getNecessity().equals(Necessity.REQUIRED)) {
-							//exactly one attribute allowed to be present
-							// => count non-empty, should be one
-							int nonEmptyCount = countPresentAttributes(
-									choiceAttributesName, 
-									attributes);
-							if (nonEmptyCount != 1) {
-								return new RosettaInterpreterErrorValue(
-										new RosettaInterpreterError(
-										"Choice condition not followed. "
-										+ "Exactly one attribute should "
-										+ "be defined."));
-							}
-						}
+						String choiceError = verifyChoiceOperation(
+								choice.getNecessity(),
+								choiceAttributesName,
+								attributes);
 						
-						if (choice.getNecessity().equals(Necessity.OPTIONAL)) {
-							//at most one attribute allowed to be present
-							// => count non-empty, should be less/equal than one
-							int nonEmptyCount = countPresentAttributes(
-									choiceAttributesName, 
-									attributes);
-							if (nonEmptyCount > 1) {
-								return new RosettaInterpreterErrorValue(
-										new RosettaInterpreterError(
-										"Choice condition not followed. "
-										+ "At most one attribute should "
-										+ "be defined."));
-							}
-						}
-						
+						if (choiceError != null) {
+							return new RosettaInterpreterErrorValue(
+									new RosettaInterpreterError(choiceError));
+						}						
 					}
 				}
 				
@@ -216,9 +195,44 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
 				"Constructor Expressions: attribute type is not valid."));
 	}
+	
+	/**
+	 * Verify the Choice operation of this type.
+	 *
+	 * @param necessity - Necessity of choice operation
+	 * @param choiceAttributesName - the names of the attributes choice applies to
+	 * @param attributes - all the attributes of object 
+	 * @return Error message iff condition not met, else null
+	 */
+	private String verifyChoiceOperation(Necessity necessity, List<String> choiceAttributesName,
+			List<RosettaInterpreterTypedFeatureValue> attributes) {
+		if (necessity.equals(Necessity.REQUIRED)) {
+			//exactly one attribute allowed to be present
+			// => count non-empty, should be one
+			int nonEmptyCount = countPresentAttributes(
+					choiceAttributesName, 
+					attributes);
+			if (nonEmptyCount != 1) {
+				return "Choice condition not followed. Exactly one attribute should be defined.";
+			}
+		}
+		
+		if (necessity.equals(Necessity.OPTIONAL)) {
+			//at most one attribute allowed to be present
+			// => count non-empty, should be less/equal than one
+			int nonEmptyCount = countPresentAttributes(
+					choiceAttributesName, 
+					attributes);
+			if (nonEmptyCount > 1) {
+				return "Choice condition not followed. At most one attribute should be defined.";
+			}
+		}
+		return null;
+	}
 
 	/**
-	 * Counts how many attributes mentioned in the first list are non-empty
+	 * Counts how many attributes mentioned in the first list are non-empty.
+	 *
 	 * @param names - the names of the attributes that should be counted
 	 * @param attributes - all the attributes of object
 	 * @return the number of non-empty attributes
