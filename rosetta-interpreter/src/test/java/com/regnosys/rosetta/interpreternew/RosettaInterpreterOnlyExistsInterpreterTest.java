@@ -266,4 +266,35 @@ public class RosettaInterpreterOnlyExistsInterpreterTest {
 		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
 		assertFalse(castedVal.getValue());
 	}
+	
+	@Test
+	public void onlyExistsListWithMultipleElementsTest() {
+		String onlyExistsStr = "foo -> bar only exists";
+		RosettaExpression onlyExistsExpression = 
+				parser.parseExpression(onlyExistsStr, List.of(fooModel), List.of("foo Foo (1..1)"));
+		
+		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
+		RosettaModel constructorModel = modelHelper.parseRosettaWithNoErrors(
+		          "type Foo: bar Bar (0..*) baz Baz (0..1)"
+		        + "type Bar: before number (0..1) after number (0..1) another number (0..1)"
+		        + "type Baz: bazValue number (0..1) other number (0..1)"
+		        + "func M: output: result Foo (1..1) set result: "
+		        + "   Foo { bar: [Bar { before: 10, after: 25, another: 50 }, "
+		        + "   Bar { before: 0, after: 0, another: 0 } ],"
+		        + "   baz: Baz { bazValue: 1, other: empty } }"
+		    );
+		RosettaConstructorExpressionImpl constructor = 
+				((RosettaConstructorExpressionImpl) ((FunctionImpl) 
+						constructorModel.getElements().get(3))
+						.getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue dataTypeInstance = 
+				(RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		env.addValue("foo", dataTypeInstance);
+		
+		RosettaInterpreterValue val = interpreter.interp(onlyExistsExpression, env);
+		System.out.println(val);
+		assertTrue(val instanceof RosettaInterpreterBooleanValue);
+		RosettaInterpreterBooleanValue castedVal = (RosettaInterpreterBooleanValue)val;
+		assertFalse(castedVal.getValue());
+	}
 }

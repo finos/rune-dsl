@@ -10,8 +10,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedFeatureValue;
 
@@ -30,16 +28,8 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
         for (RosettaExpression expression : exp.getArgs()) {
             RosettaFeatureCall featureCall = (RosettaFeatureCall) expression;
             
-            // Recursively get the receiver and get the final feature value
-            RosettaInterpreterValue finalAttribute = getAttributeUtil(featureCall, env);
-            if (finalAttribute instanceof RosettaInterpreterErrorValue) {
-                return finalAttribute;
-            } else if (!(finalAttribute instanceof RosettaInterpreterTypedFeatureValue)) {
-            	return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-            			"The final attribute is not a feature"));
-            }
-            
             // Add the feature name to the set of expected features
+            RosettaInterpreterValue finalAttribute = getAttributeUtil(featureCall, env);
             expectedFeatures.add(((RosettaInterpreterTypedFeatureValue)finalAttribute).getName());
         }
 
@@ -48,11 +38,6 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
         RosettaFeatureCall firstFeatureCall = (RosettaFeatureCall) firstExpression;
         
         RosettaInterpreterValue objectInstance = getReceiverUtil(firstFeatureCall.getReceiver(), env);
-        // Error handling
-        objectInstance = validateReceiver(objectInstance);
-        if (objectInstance instanceof RosettaInterpreterErrorValue) {
-            return objectInstance;
-        }
         
         // Check if the only non-null attributes are the expected features.
         // We expect either to find an attribute from expectedFeatures that is declared
@@ -89,11 +74,6 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
         // Recursively get the next receiver until the last one
     	// (foo -> bar -> baz -> attribute) would mean that the last receiver is "baz"
     	RosettaInterpreterValue receiver = getReceiverUtil(featureCall.getReceiver(), env);
-        // Error handling
-    	receiver = validateReceiver(receiver);
-        if (receiver instanceof RosettaInterpreterErrorValue) {
-            return receiver;
-        }
         
         // Find the correct attribute in the receiver's attribute list
         String featureName = featureCall.getFeature().getName();
@@ -116,15 +96,10 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
             String receiverSymbolName = ref.getSymbol().getName();
             return (RosettaInterpreterTypedValue) env.findValue(receiverSymbolName);
             
-        } else if (receiver instanceof RosettaFeatureCall) {
+        } else {
         	// We need to recursively get the next receiver
             RosettaFeatureCall featureCall = (RosettaFeatureCall) receiver;           
             RosettaInterpreterValue nextReceiver = getReceiverUtil(featureCall.getReceiver(), env);
-            // Error handling
-            nextReceiver = validateReceiver(nextReceiver);
-            if (nextReceiver instanceof RosettaInterpreterErrorValue) {
-                return nextReceiver;
-            }
             
             String featureName = featureCall.getFeature().getName();
             return ((RosettaInterpreterTypedValue) nextReceiver).getAttributes().stream()
@@ -134,19 +109,6 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
                 .map(value -> (RosettaInterpreterTypedValue) value)
                 .findFirst().get();
         }
-        return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-    			"Receiver is not of correct type: only 'feature call'/'symbol reference' are accepted"));
-    }
-    
-    private RosettaInterpreterValue validateReceiver(RosettaInterpreterValue receiver) {
-    	// Just error handling
-        if (receiver instanceof RosettaInterpreterErrorValue) {
-            return receiver;
-        } else if (!(receiver instanceof RosettaInterpreterTypedValue)) {
-            return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-                    "Receiver is not of type RosettaInterpreterTypedValue"));
-        }
-        return receiver;
     }
 }
 
