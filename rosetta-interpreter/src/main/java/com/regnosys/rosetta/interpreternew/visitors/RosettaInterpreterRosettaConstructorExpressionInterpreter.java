@@ -158,28 +158,15 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					}
 				}
 				
-				//check if attributes are correctly defined, considering the conditions
+				//check conditions of type in separate method
 				List<Condition> conditions = ((DataImpl) expr.getTypeCall().getType()).getConditions();
 				
-				for (Condition condInterface : conditions) {
-					ConditionImpl c = (ConditionImpl)condInterface;
-					if (c.getExpression().getClass().equals(ChoiceOperationImpl.class)) {
-						ChoiceOperationImpl choice = (ChoiceOperationImpl)c.getExpression();
-						List<String> choiceAttributesName = choice.getAttributes().stream()
-								.map(Attribute::getName)
-								.collect(Collectors.toList());
-						
-						String choiceError = verifyChoiceOperation(
-								choice.getNecessity(),
-								choiceAttributesName,
-								attributes);
-						
-						if (choiceError != null) {
-							return new RosettaInterpreterErrorValue(
-									new RosettaInterpreterError(choiceError));
-						}						
-					}
+				String conditionsError = verifyConditions(conditions, attributes);
+				if (conditionsError != null) {
+					return new RosettaInterpreterErrorValue(
+							new RosettaInterpreterError(conditionsError));
 				}
+				
 				
 				if (((DataImpl) expr.getTypeCall().getType()).hasSuperType()) {
 					String superType = ((DataImpl) expr.getTypeCall().getType())
@@ -196,6 +183,31 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				"Constructor Expressions: attribute type is not valid."));
 	}
 	
+	
+	/**
+	 * Check all the conditions of the type.
+	 *
+	 * @param conditions - conditions set by type
+	 * @param attr - list of attributes of type
+	 * @return Error message iff conditions not met, else null
+	 */
+	private String verifyConditions(List<Condition> conditions, List<RosettaInterpreterTypedFeatureValue> attr) {
+		for (Condition condInterface : conditions) {
+			ConditionImpl c = (ConditionImpl)condInterface;
+			if (c.getExpression().getClass().equals(ChoiceOperationImpl.class)) {
+				ChoiceOperationImpl choice = (ChoiceOperationImpl)c.getExpression();
+				List<String> choiceAttributesName = choice.getAttributes().stream()
+						.map(Attribute::getName)
+						.collect(Collectors.toList());
+				
+				return verifyChoiceOperation(choice.getNecessity(), choiceAttributesName, attr);
+			}
+		}
+		
+		//if no errors up until this point, return null
+		return null;
+	}
+
 	/**
 	 * Verify the Choice operation of this type.
 	 *
