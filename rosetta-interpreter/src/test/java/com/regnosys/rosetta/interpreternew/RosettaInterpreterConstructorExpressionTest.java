@@ -385,4 +385,18 @@ public class RosettaInterpreterConstructorExpressionTest {
 		
 		assertEquals(expected, result);
 	}
+	
+	@Test
+	public void testDataTypeChoiceThreeDots() {
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..*)"
+				+ "condition Choice: optional choice one, two "
+				+ "func M: output: result Ob (1..1) set result: Ob { ... }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Ob", result.getName());
+	}
 }

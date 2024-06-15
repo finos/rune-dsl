@@ -217,6 +217,12 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				"Constructor Expressions: attribute type is not valid."));
 	}
 
+	/**
+	 * Counts how many attributes mentioned in the first list are non-empty
+	 * @param names - the names of the attributes that should be counted
+	 * @param attributes - all the attributes of object
+	 * @return the number of non-empty attributes
+	 */
 	private int countPresentAttributes(List<String> names, List<RosettaInterpreterTypedFeatureValue> attributes) {
 		int countEmpty = 0;
 		
