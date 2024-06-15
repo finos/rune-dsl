@@ -2,6 +2,8 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -22,10 +24,14 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
+import com.regnosys.rosetta.rosetta.expression.Necessity;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
+import com.regnosys.rosetta.rosetta.expression.impl.ChoiceOperationImpl;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Condition;
+import com.regnosys.rosetta.rosetta.simple.impl.ConditionImpl;
 import com.regnosys.rosetta.rosetta.simple.impl.DataImpl;
 
 public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends RosettaInterpreterConcreteInterpreter {
@@ -152,6 +158,16 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					}
 				}
 				
+				//check conditions of type in separate method
+				List<Condition> conditions = ((DataImpl) expr.getTypeCall().getType()).getConditions();
+				
+				String conditionsError = verifyConditions(conditions, attributes);
+				if (conditionsError != null) {
+					return new RosettaInterpreterErrorValue(
+							new RosettaInterpreterError(conditionsError));
+				}
+				
+				
 				if (((DataImpl) expr.getTypeCall().getType()).hasSuperType()) {
 					String superType = ((DataImpl) expr.getTypeCall().getType())
 							.getSuperType().getName();
@@ -165,5 +181,93 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 		
 		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
 				"Constructor Expressions: attribute type is not valid."));
+	}
+	
+	
+	/**
+	 * Check all the conditions of the type.
+	 *
+	 * @param conditions - conditions set by type
+	 * @param attr - list of attributes of type
+	 * @return Error message iff conditions not met, else null
+	 */
+	private String verifyConditions(List<Condition> conditions, List<RosettaInterpreterTypedFeatureValue> attr) {
+		for (Condition condInterface : conditions) {
+			ConditionImpl c = (ConditionImpl)condInterface;
+			if (c.getExpression().getClass().equals(ChoiceOperationImpl.class)) {
+				ChoiceOperationImpl choice = (ChoiceOperationImpl)c.getExpression();
+				List<String> choiceAttributesName = choice.getAttributes().stream()
+						.map(Attribute::getName)
+						.collect(Collectors.toList());
+				
+				return verifyChoiceOperation(choice.getNecessity(), choiceAttributesName, attr);
+			}
+		}
+		
+		//if no errors up until this point, return null
+		return null;
+	}
+
+	/**
+	 * Verify the Choice operation of this type.
+	 *
+	 * @param necessity - Necessity of choice operation
+	 * @param choiceAttributesName - the names of the attributes choice applies to
+	 * @param attributes - all the attributes of object 
+	 * @return Error message iff condition not met, else null
+	 */
+	private String verifyChoiceOperation(Necessity necessity, List<String> choiceAttributesName,
+			List<RosettaInterpreterTypedFeatureValue> attributes) {
+		if (necessity.equals(Necessity.REQUIRED)) {
+			//exactly one attribute allowed to be present
+			// => count non-empty, should be one
+			int nonEmptyCount = countPresentAttributes(
+					choiceAttributesName, 
+					attributes);
+			if (nonEmptyCount != 1) {
+				return "Choice condition not followed. Exactly one attribute should be defined.";
+			}
+		}
+		
+		if (necessity.equals(Necessity.OPTIONAL)) {
+			//at most one attribute allowed to be present
+			// => count non-empty, should be less/equal than one
+			int nonEmptyCount = countPresentAttributes(
+					choiceAttributesName, 
+					attributes);
+			if (nonEmptyCount > 1) {
+				return "Choice condition not followed. At most one attribute should be defined.";
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Counts how many attributes mentioned in the first list are non-empty.
+	 *
+	 * @param names - the names of the attributes that should be counted
+	 * @param attributes - all the attributes of object
+	 * @return the number of non-empty attributes
+	 */
+	private int countPresentAttributes(List<String> names, List<RosettaInterpreterTypedFeatureValue> attributes) {
+		int countEmpty = 0;
+		
+
+		Map<String, RosettaInterpreterValue> valueMap = attributes.stream()
+				.collect(Collectors.toMap(
+						RosettaInterpreterTypedFeatureValue::getName,
+						RosettaInterpreterTypedFeatureValue::getValue));
+		
+		for (String name : names) {
+			RosettaInterpreterValue val = valueMap.get(name);
+			//attribute empty if it is ListValue with size 0
+			if (val instanceof RosettaInterpreterListValue) {
+				if (((RosettaInterpreterListValue)val).getExpressions().size() == 0) {
+					countEmpty++;
+				}
+			}
+		}
+		
+		return attributes.size() - countEmpty;
 	}
 }
