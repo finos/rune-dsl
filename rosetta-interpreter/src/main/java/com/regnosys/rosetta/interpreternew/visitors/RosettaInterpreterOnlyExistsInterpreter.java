@@ -32,10 +32,7 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
             
             // Recursively get the receiver and get the final feature value
             RosettaInterpreterValue finalAttribute = getAttributeUtil(featureCall, env);
-            if (finalAttribute == null) {
-            	return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-            			"The final attribute was not found"));
-            } else if (finalAttribute instanceof RosettaInterpreterErrorValue) {
+            if (finalAttribute instanceof RosettaInterpreterErrorValue) {
                 return finalAttribute;
             } else if (!(finalAttribute instanceof RosettaInterpreterTypedFeatureValue)) {
             	return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
@@ -102,8 +99,7 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
         String featureName = featureCall.getFeature().getName();
         return ((RosettaInterpreterTypedValue)receiver).getAttributes().stream()
             .filter(attr -> attr.getName().equals(featureName))
-            .findFirst()
-            .orElse(null);
+            .findFirst().get();
     }
 
     
@@ -136,7 +132,7 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
                 .map(RosettaInterpreterTypedFeatureValue::getValue)
                 .filter(value -> value instanceof RosettaInterpreterTypedValue)
                 .map(value -> (RosettaInterpreterTypedValue) value)
-                .findFirst().orElse(null);
+                .findFirst().get();
         }
         return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
     			"Receiver is not of correct type: only 'feature call'/'symbol reference' are accepted"));
@@ -144,10 +140,7 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
     
     private RosettaInterpreterValue validateReceiver(RosettaInterpreterValue receiver) {
     	// Just error handling
-        if (receiver == null) {
-            return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-                    "Receiver was not found"));
-        } else if (receiver instanceof RosettaInterpreterErrorValue) {
+        if (receiver instanceof RosettaInterpreterErrorValue) {
             return receiver;
         } else if (!(receiver instanceof RosettaInterpreterTypedValue)) {
             return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
