@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
@@ -46,7 +48,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		if (!comparisonOperators.contains(expr.getOperator())) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"operator not suppported")); 
+							"operator not suppported", expr)); 
 		}
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
@@ -70,30 +72,28 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		//check cardinality operation
 		switch (expr.getCardMod()) {		
 		case ANY:
-			return compareAny(leftValue, rightValue, expr.getOperator());
+			return compareAny(leftValue, rightValue, expr.getOperator(), expr);
 			
 		case ALL:
-			return compareAll(leftValue, rightValue, expr.getOperator());
-
+			return compareAll(leftValue, rightValue, expr.getOperator(), expr);
 		default: //case NONE
 			//normally compare left and right side.
 			boolean result = checkComparableTypes(leftValue, 
 					rightValue, 
 					expr.getOperator());
-			return new RosettaInterpreterBooleanValue(result);
-			
+			return new RosettaInterpreterBooleanValue(result);			
 		}
 	}
 
 	private RosettaInterpreterBaseValue compareAny(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
-			String operator) {
+			String operator, EObject associatedObject) {
 		//list vs list case:
 		if (leftValue instanceof RosettaInterpreterListValue 
 				&& rightValue instanceof RosettaInterpreterListValue) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"cannot compare two lists"));
+							"cannot compare two lists", associatedObject));
 		}
 		
 		//list vs element case:
@@ -121,18 +121,18 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ANY\" keyword "
-						+ "to compare two elements"));
+						+ "to compare two elements", associatedObject));
 	}
 
 	private RosettaInterpreterBaseValue compareAll(RosettaInterpreterValue leftValue, 
 			RosettaInterpreterValue rightValue, 
-			String operator) {
+			String operator, EObject associatedObject) {
 		//list vs list case:
 		if (leftValue instanceof RosettaInterpreterListValue 
 				&& rightValue instanceof RosettaInterpreterListValue) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-							"cannot compare two lists"));
+							"cannot compare two lists", associatedObject));
 		}
 		
 		//list vs element case:
@@ -160,7 +160,7 @@ public class RosettaInterpreterComparisonOperationInterpreter extends
 		return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ALL\" keyword "
-						+ "to compare two elements"));
+						+ "to compare two elements", associatedObject));
 	}
 
 	private boolean checkComparableTypes(RosettaInterpreterValue leftValue, 
