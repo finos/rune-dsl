@@ -44,6 +44,6 @@ public class RosettaInterpreterErrorTest {
 	void toStringTest() {
 		RosettaInterpreterError e1 = new RosettaInterpreterError("error1");		
 		
-		assertEquals("RosettaInterpreterError [errorMessage=error1]", e1.toString());
+		assertEquals("error1", e1.toString());
 	}
 }

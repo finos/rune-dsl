@@ -2,6 +2,8 @@ package com.regnosys.rosetta.interpreternew.visitors;
 
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
@@ -41,12 +43,24 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			
 			// Check for errors in the left or right side of the binary operation
 			RosettaInterpreterErrorValue leftErrors = 
-					checkForErrors(leftInterpreted, "Leftside");
+					checkForErrors(leftInterpreted, "Leftside", expr);
 			RosettaInterpreterErrorValue rightErrors = 
-					checkForErrors(rightInterpreted, "Rightside");
+					checkForErrors(rightInterpreted, "Rightside", expr);
 			return RosettaInterpreterErrorValue.merge(List.of(leftErrors, rightErrors));
 		}	
 		
+		boolean sameType = 
+				(leftInterpreted instanceof RosettaInterpreterStringValue
+				&& rightInterpreted instanceof RosettaInterpreterStringValue) 
+				|| (!(leftInterpreted instanceof RosettaInterpreterStringValue)
+				&& !(rightInterpreted instanceof RosettaInterpreterStringValue)); 
+		if (!sameType) {
+			return new RosettaInterpreterErrorValue(
+					new RosettaInterpreterError(
+				"The terms of the operation "
+				+ "are neither both strings nor both numbers", expr));
+			}
+			
 		if (leftInterpreted instanceof RosettaInterpreterStringValue
 				&& rightInterpreted instanceof RosettaInterpreterStringValue) {
 			String leftString = ((RosettaInterpreterStringValue) leftInterpreted)
@@ -60,7 +74,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 				"The terms are strings but the operation "
-				+ "is not concatenation: not implemented"));
+				+ "is not concatenation: not implemented", expr));
 			}
 		} else if (leftInterpreted instanceof RosettaInterpreterNumberValue
 				&& rightInterpreted instanceof RosettaInterpreterNumberValue) {
@@ -106,7 +120,8 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 	 *         if the interpretedValue does not cause an error
 	 */
 	private RosettaInterpreterErrorValue checkForErrors(
-			RosettaInterpreterValue interpretedValue, String side) {
+			RosettaInterpreterValue interpretedValue, String side, 
+			EObject associatedObject) {
 		if  (interpretedValue instanceof RosettaInterpreterNumberValue 
 				|| interpretedValue instanceof RosettaInterpreterStringValue) {
 			// If the value satisfies the type conditions, we return an empty 
@@ -123,7 +138,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 							"Arithmetic Operation: " + side 
-							+ " is not of type Number/String"));
+							+ " is not of type Number/String", associatedObject));
 		}
 	}
 }

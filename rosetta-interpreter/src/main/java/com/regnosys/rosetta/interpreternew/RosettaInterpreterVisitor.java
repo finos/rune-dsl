@@ -31,9 +31,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
-
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEmptyError;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterOnlyExistsInterpreter;
@@ -89,7 +88,7 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	public RosettaInterpreterValue interp(RosettaPatternLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("Pattern literals are not supported"));
+				new RosettaInterpreterEmptyError("Pattern literals are not supported"));
 	}
 	
 	@Override

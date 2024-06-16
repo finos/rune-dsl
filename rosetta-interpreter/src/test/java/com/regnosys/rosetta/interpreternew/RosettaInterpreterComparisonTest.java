@@ -104,10 +104,10 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	public void cardinalityAllListsTest() {
+		RosettaExpression expr = parser.parseExpression("[1,2,3] all >= [0]");
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-						"cannot compare two lists"));
-		RosettaExpression expr = parser.parseExpression("[1,2,3] all >= [0]");
+						"cannot compare two lists", expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors().get(0).getMessage(),
 				((RosettaInterpreterErrorValue)val)
@@ -130,10 +130,10 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	public void errorThrownListTest() {
+		RosettaExpression expr = parser.parseExpression("[1,2,3] any <= [1,2]");
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-						"cannot compare two lists"));
-		RosettaExpression expr = parser.parseExpression("[1,2,3] any <= [1,2]");
+						"cannot compare two lists", expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors(),
 				((RosettaInterpreterErrorValue)val).getErrors());
@@ -144,11 +144,11 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	public void errorThrownAllElementsTest() {
+		RosettaExpression expr = parser.parseExpression("1 all > 3");
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ALL\" keyword "
-								+ "to compare two elements"));
-		RosettaExpression expr = parser.parseExpression("1 all > 3");
+								+ "to compare two elements", expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorVal = (RosettaInterpreterErrorValue) val;
 		assertEquals(expectedError.getErrors(),

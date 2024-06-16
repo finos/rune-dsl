@@ -192,10 +192,10 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		List<RosettaInterpreterError> expected = List.of(
 				new RosettaInterpreterError(
 						"The terms are strings but the operation "
-						+ "is not concatenation: not implemented"),
+						+ "is not concatenation: not implemented", expr),
 				new RosettaInterpreterError(
 						"Arithmetic Operation: Rightside "
-						 + "is not of type Number/String")
+						 + "is not of type Number/String", expr)
 					);
 		assertEquals(expected, 
 				((RosettaInterpreterErrorValue)val)
