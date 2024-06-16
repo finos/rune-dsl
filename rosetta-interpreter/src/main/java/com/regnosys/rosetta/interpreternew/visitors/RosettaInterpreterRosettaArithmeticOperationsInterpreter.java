@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
@@ -43,12 +45,13 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			
 		// Check for errors in the left or right side of the binary operation
 		RosettaInterpreterErrorValue leftErrors = 
-				checkForErrors(leftInterpreted, "Leftside");
+				checkForErrors(leftInterpreted, "Leftside", expr);
 		RosettaInterpreterErrorValue rightErrors = 
-				checkForErrors(rightInterpreted, "Rightside");
+				checkForErrors(rightInterpreted, "Rightside", expr);
 		if (leftErrors.getErrors().size() + rightErrors.getErrors().size() > 0) {
 			return RosettaInterpreterErrorValue.merge(List.of(leftErrors, rightErrors));
 		}
+		
 		
 		//Interpret string concatenation
 		if (leftInterpreted instanceof RosettaInterpreterStringValue
@@ -121,7 +124,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 					.multiply(rightNumber)).bigDecimalValue());
 		} else {
 			// Division by 0 is not allowed
-			if (rightNumber.floatValue() == 0.0) {
+			if (rightNumber.bigDecimalValue() == BigDecimal.valueOf(0.0)) {
 				return new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError(
 						"Division by 0 is not allowed"));
@@ -196,12 +199,12 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 	 *         if the interpretedValue does not cause an error
 	 */
 	private RosettaInterpreterErrorValue checkForErrors(
-			RosettaInterpreterValue interpretedValue, String side) {
+			RosettaInterpreterValue interpretedValue, String side, 
+			EObject associatedObject) {
 		if  (interpretedValue instanceof RosettaInterpreterNumberValue 
 				|| interpretedValue instanceof RosettaInterpreterStringValue
 				|| interpretedValue instanceof RosettaInterpreterDateValue) {
-			// If the value satisfies the type conditions, we return an empty 
-			// error value so that the merger has two error values to merge
+			// If the value satisfies the type conditions, return an empty error
 			return new RosettaInterpreterErrorValue();
 		}
 		
@@ -214,7 +217,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
 							"Arithmetic Operation: " + side 
-							+ " is not of type Number/String/Date"));
+							+ " is not of type Number/String/Date", associatedObject));
 		}
 	}
 }
