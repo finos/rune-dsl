@@ -6,6 +6,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
@@ -249,10 +250,12 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		List<RosettaInterpreterError> expected = List.of(
 				new RosettaInterpreterError(
 						"Both terms are strings but the operation "
-						+ "is not concatenation: not implemented"),
+						+ "is not concatenation: not implemented", 
+						((ArithmeticOperation) expr).getLeft()),
 				new RosettaInterpreterError(
 						"Arithmetic Operation: Rightside "
-						 + "is not of type Number/String/Date")
+						 + "is not of type Number/String/Date" ,
+							((ArithmeticOperation) expr).getRight())
 					);
 		assertEquals(expected, 
 				((RosettaInterpreterErrorValue)val)

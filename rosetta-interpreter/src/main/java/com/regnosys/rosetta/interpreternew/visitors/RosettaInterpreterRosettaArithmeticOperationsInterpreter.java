@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -42,14 +41,14 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 		RosettaInterpreterValue leftInterpreted = left.accept(visitor, env);
 		RosettaInterpreterValue rightInterpreted = right.accept(visitor, env); 
 		
-			
+		
 		// Check for errors in the left or right side of the binary operation
 		RosettaInterpreterErrorValue leftErrors = 
 				checkForErrors(leftInterpreted, "Leftside", expr);
 		RosettaInterpreterErrorValue rightErrors = 
 				checkForErrors(rightInterpreted, "Rightside", expr);
 		if (leftErrors.getErrors().size() + rightErrors.getErrors().size() > 0) {
-			return RosettaInterpreterErrorValue.merge(List.of(leftErrors, rightErrors));
+			return RosettaInterpreterErrorValue.merge(leftErrors, rightErrors);
 		}
 		
 		
@@ -71,7 +70,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 		} else {
 			return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-				"The terms of the operation are not both strings or both numbers or both dates"));
+				"The terms of the operation are not both strings or both numbers or both dates", expr));
 		}	
 	}
 	
@@ -96,7 +95,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 			return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 			"Both terms are strings but the operation "
-			+ "is not concatenation: not implemented"));
+			+ "is not concatenation: not implemented", expr));
 		}
 	}
 	
@@ -124,10 +123,10 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 					.multiply(rightNumber)).bigDecimalValue());
 		} else {
 			// Division by 0 is not allowed
-			if (rightNumber.bigDecimalValue() == BigDecimal.valueOf(0.0)) {
+			if (rightNumber.bigDecimalValue() == BigDecimal.valueOf(0)) {
 				return new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError(
-						"Division by 0 is not allowed"));
+						"Division by 0 is not allowed", expr));
 			}
 			return new RosettaInterpreterNumberValue((leftNumber
 					.divide(rightNumber)).bigDecimalValue());
@@ -167,7 +166,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				return new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError(
 					"Both terms are dates but the operation "
-					+ "is not subtraction: not implemented"));
+					+ "is not subtraction: not implemented", expr));
 			}
 	}
 	

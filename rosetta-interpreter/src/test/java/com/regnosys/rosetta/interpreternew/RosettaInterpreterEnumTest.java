@@ -28,11 +28,11 @@ public class RosettaInterpreterEnumTest {
 	RosettaInterpreterNew interpreter;
 	
 	@Inject 
-	ModelHelper mh;
+	ModelHelper modelHelper;
 	
     @Test
     public void enumAddsToEnvironmentTest() {
-    	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
+    	RosettaModel model = modelHelper.parseRosettaWithNoErrors("enum Foo:\r\n"
     			+ "  VALUE1 displayName \"VALUE1\"\r\n"
     			+ "  VALUE2\r\n"
     			+ "\r\n"
@@ -57,7 +57,7 @@ public class RosettaInterpreterEnumTest {
     
     @Test
     public void enumRefTest() {
-	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
+	RosettaModel model = modelHelper.parseRosettaWithNoErrors("enum Foo:\r\n"
 			+ "  VALUE1 displayName \"VALUE1\"\r\n"
 			+ "  VALUE2\r\n"
 			+ "\r\n"
@@ -81,7 +81,7 @@ public class RosettaInterpreterEnumTest {
     
     @Test
     public void combinedTest() {
-	RosettaModel model = mh.parseRosettaWithNoErrors("enum Foo:\r\n"
+	RosettaModel model = modelHelper.parseRosettaWithNoErrors("enum Foo:\r\n"
 			+ "  VALUE1 displayName \"VALUE1\"\r\n"
 			+ "  VALUE2\r\n"
 			+ "\r\n"

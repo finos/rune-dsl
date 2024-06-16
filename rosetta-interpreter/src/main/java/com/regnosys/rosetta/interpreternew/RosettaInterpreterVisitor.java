@@ -26,16 +26,16 @@ import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
-
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEmptyError;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterOnlyExistsInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterEnumerationInterpreter;
@@ -87,7 +87,7 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	public RosettaInterpreterValue interp(RosettaPatternLiteral exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("Pattern literals are not supported"));
+				new RosettaInterpreterEmptyError("Pattern literals are not supported"));
 	}
 	
 	@Override
@@ -240,6 +240,11 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 		return new RosettaInterpreterRosettaFeatureCallInterpreter().interp(exp, 
 				(RosettaInterpreterEnvironment) env);
 		
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(RosettaOnlyExistsExpression exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterOnlyExistsInterpreter().interp(exp, env);
 	}
 }
 
