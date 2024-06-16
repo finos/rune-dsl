@@ -88,7 +88,7 @@ class RosettaInterpreterListOperationsInterpreterTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue err = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-				"Logical Operation: Leftside is not of type Boolean"));
+				"Logical Operation: Leftside is not of type Boolean",expr));
 		assertEquals(err, val);
 	}
 	
@@ -118,7 +118,7 @@ class RosettaInterpreterListOperationsInterpreterTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue err = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-				"Logical Operation: Leftside is not of type Boolean"));
+				"Logical Operation: Leftside is not of type Boolean",expr));
 		assertEquals(err, val);
 	}
 	
@@ -197,7 +197,7 @@ class RosettaInterpreterListOperationsInterpreterTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue err = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-				"Logical Operation: Leftside is not of type Boolean"));
+				"Logical Operation: Leftside is not of type Boolean",expr));
 		assertEquals(err, val);
 	}
 }

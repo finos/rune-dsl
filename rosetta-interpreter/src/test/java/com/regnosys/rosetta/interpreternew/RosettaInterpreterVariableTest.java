@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEmptyError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -71,14 +72,14 @@ public class RosettaInterpreterVariableTest {
 		RosettaInterpreterNumberValue intValue = 
 				new RosettaInterpreterNumberValue(5);
 		env.addValue("a", intValue);
-		
-		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError(
-						"b does not exist in the environment"));
-
-		//give a different environment to the parser
 		RosettaExpression expr = parser.parseExpression("b >= 2", 
 				List.of("b int (1..1)"));
+		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"b does not exist in the environment",expr));
+
+		//give a different environment to the parser
+		
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
@@ -91,14 +92,14 @@ public class RosettaInterpreterVariableTest {
 	public void variableRightErrorComparisonTest() {
 		//create empty environment
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
-		
-		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError(
-						"b does not exist in the environment"));
-
-		//give a different environment to the parser
 		RosettaExpression expr = parser.parseExpression("1 = b", 
 				List.of("b int (1..1)"));
+		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"b does not exist in the environment",expr));
+
+		//give a different environment to the parser
+		
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
@@ -111,16 +112,16 @@ public class RosettaInterpreterVariableTest {
 	public void variableBothErrorTest() {
 		//create empty environment
 		RosettaInterpreterEnvironment env = new RosettaInterpreterEnvironment();
-		
-		List<RosettaInterpreterError> expected = new ArrayList<RosettaInterpreterError>();
-		expected.add(new RosettaInterpreterError(
+		RosettaExpression expr = parser.parseExpression("a <= b", 
+				List.of("a int (1..1)", "b int (1..1)"));
+		List<RosettaInterpreterBaseError> expected = new ArrayList<RosettaInterpreterBaseError>();
+		expected.add(new RosettaInterpreterEmptyError(
 						"a does not exist in the environment"));
-		expected.add(new RosettaInterpreterError(
+		expected.add(new RosettaInterpreterEmptyError(
 						"b does not exist in the environment"));
 
 		//give a different environment to the parser
-		RosettaExpression expr = parser.parseExpression("a <= b", 
-				List.of("a int (1..1)", "b int (1..1)"));
+		
 		
 		RosettaInterpreterValue val = interpreter.interp(expr,env);
 		
@@ -129,8 +130,8 @@ public class RosettaInterpreterVariableTest {
 		
 		assertEquals(expected.size(), errors.size());
 		for (int i = 0; i < expected.size(); i++) {
-			RosettaInterpreterError newError = (RosettaInterpreterError) errors.get(i);
-			assertEquals(expected.get(i).getError(), newError.getError());
+			RosettaInterpreterEmptyError newError = (RosettaInterpreterEmptyError) errors.get(i);
+			assertEquals(expected.get(i).getMessage(), newError.getMessage());
 		}
 	}
 }
