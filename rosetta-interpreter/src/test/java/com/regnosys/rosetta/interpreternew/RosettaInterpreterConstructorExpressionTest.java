@@ -399,4 +399,52 @@ public class RosettaInterpreterConstructorExpressionTest {
 		
 		assertEquals("Ob", result.getName());
 	}
+	
+	@Test
+	public void testDataTypeOneOfGood() {
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..*)"
+				+ "condition: one-of "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: 1 }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Ob", result.getName());
+	}
+	
+	@Test
+	public void testDataTypeOneOfBad() {
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..*)"
+				+ "condition: one-of "
+				+ "func M: output: result Ob (1..1) set result: Ob { ... }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+				"One-of condition not followed. Exactly one attribute should be defined."));
+	
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testDataTypeOneOfNonOptional() {
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..*) three int (1..1) four int (1..*)"
+				+ "condition: one-of "
+				+ "func M: output: result Ob (1..1) set result: Ob { three: 3, four: [4,5] }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+				"One-of condition not followed. Exactly one attribute should be defined."));
+	
+		assertEquals(expected, result);
+	}
 }
