@@ -297,6 +297,9 @@ class JoinOperation extends RosettaBinaryOperation {
 
 class RosettaOnlyExistsExpression extends RosettaExpression {
 	contains RosettaExpression[] args
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 /**
