@@ -61,14 +61,18 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
     	return true; // if it's not a RosettaInterpreterListValue it cannot possibly be "empty"
     }
 
-    
-    // This is just used to get the final attribute's name from a feature call.
-    //
-    // Example:
-   	// For "(foo -> bar -> firstNumber, foo -> bar -> secondNumber) only exists" it will 
-    // get "firstNumber" from the first element, and "secondNumber" from the second one.
-    // These will then be saved in the "expectedFeatures" set so we know which ones are 
-    // supposed to be declared in the "bar" object.
+     /**
+      * This is just used to get the final attribute's name from a feature call.
+      * Example:
+   	  * For "(foo -> bar -> firstNumber, foo -> bar -> secondNumber) only exists" it will 
+      * get "firstNumber" from the first element, and "secondNumber" from the second one.
+      * These will then be saved in the "expectedFeatures" set so we know which ones are 
+      * supposed to be declared in the "bar" object.
+      *
+      * @param featureCall The feature call that contains the attribute at the end
+      * @param env The Current environment
+      * @return The wanted attribute value
+      */
     private RosettaInterpreterValue getAttributeUtil(RosettaFeatureCall featureCall, 
     		RosettaInterpreterBaseEnvironment env) {
         // Recursively get the next receiver until the last one
@@ -81,14 +85,18 @@ public class RosettaInterpreterOnlyExistsInterpreter extends RosettaInterpreterC
             .filter(attr -> attr.getName().equals(featureName))
             .findFirst().get();
     }
-
-    
-    // Recursively gets the receiver value of a feature call.
-    //
-    // Example:
-    // For "foo -> bar -> baz -> attr only exists", it will recursively get the rightside
-    // of the "->", until it gets to the last receiver, which is "baz" in this case.
-    // "baz" will be used afterwards to check which attributes it contains that are/are not declared.
+ 
+    /**
+     * Recursively gets the receiver value of a feature call.
+     * Example:
+     * For "foo -> bar -> baz -> attr only exists", it will recursively get the rightside
+     * of the "->", until it gets to the last receiver, which is "baz" in this case.
+     * "baz" will be used afterwards to check which attributes it contains that are/are not declared.
+     *
+     * @param receiver The receiver of the feature call
+     * @param env The current environment
+     * @return The last receiver of the nested feature call
+     */
     private RosettaInterpreterValue getReceiverUtil(RosettaExpression receiver, RosettaInterpreterBaseEnvironment env) {
         if (receiver instanceof RosettaSymbolReference) {
         	// Meaning we already got to the end, we don't have another feature call
