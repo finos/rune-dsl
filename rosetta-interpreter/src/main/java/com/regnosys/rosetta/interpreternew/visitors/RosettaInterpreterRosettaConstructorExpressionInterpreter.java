@@ -27,6 +27,7 @@ import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.Necessity;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.ChoiceOperationImpl;
+import com.regnosys.rosetta.rosetta.expression.impl.OneOfOperationImpl;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -201,6 +202,18 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 						.collect(Collectors.toList());
 				
 				return verifyChoiceOperation(choice.getNecessity(), choiceAttributesName, attr);
+			}
+			if (c.getExpression().getClass().equals(OneOfOperationImpl.class)) {
+				List<String> allAttributesNames = attr.stream()
+						.map(RosettaInterpreterTypedFeatureValue::getName)
+						.collect(Collectors.toList());
+				
+				int nonEmptyCount = countPresentAttributes(allAttributesNames, attr);
+				if (nonEmptyCount != 1) {
+					return "One-of condition not followed. "
+							+ "Exactly one attribute should be defined.";
+				}
+				
 			}
 		}
 		
