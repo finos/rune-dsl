@@ -417,22 +417,38 @@ class ChoiceOperation extends RosettaUnaryOperation {
 }
 
 class ToStringOperation extends RosettaUnaryOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 interface ParseOperation extends RosettaUnaryOperation {
 }
 
 class ToNumberOperation extends ParseOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ToIntOperation extends ParseOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ToTimeOperation extends ParseOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ToEnumOperation extends ParseOperation {
 	refers RosettaEnumeration enumeration 
+	
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ToDateOperation extends ParseOperation {

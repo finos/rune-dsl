@@ -35,6 +35,11 @@ import com.regnosys.rosetta.rosetta.expression.LastOperation
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 
 class RosettaInterpreterBaseError{
 	String message
@@ -78,6 +83,11 @@ interface InterpreterVisitor {
 	op RosettaInterpreterBaseEnvironment interp (RosettaEnumeration exp, RosettaInterpreterBaseEnvironment env)
 	
 	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
-	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToStringOperation exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (ToNumberOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToIntOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToTimeOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToEnumOperation exp, RosettaInterpreterBaseEnvironment env)
 	
 }
