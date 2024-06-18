@@ -6,6 +6,7 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
+import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.impl.ExpressionFactoryImpl;
@@ -38,6 +39,64 @@ public class RosettaInterpreterArithmeticOperationsTest {
 	@BeforeEach
 	public void setup() {
 		exFactory = ExpressionFactoryImpl.init();
+	}
+	
+	@Test
+	public void dateSubtractionTest1() {
+		RosettaExpression expr = parser.parseExpression(
+				"date { day: 5, month: 7, year: 2025 } - date { day: 5, month: 7, year: 2026 }");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(365)),
+				((RosettaInterpreterNumberValue)val).getValue());
+	}
+	
+	@Test
+	public void dateSubtractionTest2() {
+		RosettaExpression expr = parser.parseExpression(
+				"date { day: 10, month: 10, year: 2025 } - date { day: 10, month: 10, year: 2026 }");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals(RosettaNumber.valueOf(BigDecimal.valueOf(365)),
+				((RosettaInterpreterNumberValue)val).getValue());
+	}
+	
+	@Test
+	public void dateNoSubError() {
+		RosettaExpression expr = parser.parseExpression(
+				"date { day: 5, month: 7, year: 2025 } + date { day: 10, month: 10, year: 2026 }");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals("Both terms are dates but the operation "
+				+ "is not subtraction: not implemented", 
+				((RosettaInterpreterErrorValue)val).getErrors()
+				.get(0).getMessage());
+	}
+	
+	@Test
+	public void mixedTypesLeftTestWithDate() {
+		RosettaExpression expr = parser.parseExpression("5 - date { day: 10, month: 10, year: 2026 }");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals("The terms of the operation "
+				+ "are not both strings or both numbers or both dates", 
+				((RosettaInterpreterErrorValue)val)
+				.getErrors().get(0).getMessage());
+	}
+	
+	@Test
+	public void mixedTypesRightTestWithDate() {
+		RosettaExpression expr = parser.parseExpression("date { day: 10, month: 10, year: 2026 } - 5");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals("The terms of the operation "
+				+ "are not both strings or both numbers or both dates", 
+				((RosettaInterpreterErrorValue)val)
+				.getErrors().get(0).getMessage());
+	}
+	
+	@Test
+	public void wrongTypeRightTestWithDate() {
+		RosettaExpression expr = parser.parseExpression("date { day: 10, month: 10, year: 2026 } + True");
+		RosettaInterpreterValue val = interpreter.interp(expr);
+		assertEquals("Arithmetic Operation: Rightside is not of type Number/String/Date", 
+				((RosettaInterpreterErrorValue)val)
+				.getErrors().get(0).getMessage());
 	}
 	
 	@Test
@@ -95,7 +154,6 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		List<RosettaInterpreterError> expected = List.of(
 				new RosettaInterpreterError(
 						"Division by 0 is not allowed"));
-		
 		assertEquals(expected,
 				((RosettaInterpreterErrorValue)val).getErrors());
 	}
@@ -112,7 +170,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		RosettaExpression expr = parser.parseExpression("\"Hello \" + 5");
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals("The terms of the operation "
-				+ "are neither both strings nor both numbers", 
+				+ "are not both strings or both numbers or both dates", 
 				((RosettaInterpreterErrorValue)val).getErrors()
 				.get(0).getMessage());
 	}
@@ -122,7 +180,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		RosettaExpression expr = parser.parseExpression("5 + \"Hello\"");
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals("The terms of the operation "
-				+ "are neither both strings nor both numbers", 
+				+ "are not both strings or both numbers or both dates", 
 				((RosettaInterpreterErrorValue)val).getErrors()
 				.get(0).getMessage());
 	}
@@ -131,7 +189,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 	public void stringConcatenationErrorTest() {
 		RosettaExpression expr = parser.parseExpression("\"Hello \" - \"World\"");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals("The terms are strings but the operation "
+		assertEquals("Both terms are strings but the operation "
 				+ "is not concatenation: not implemented", 
 				((RosettaInterpreterErrorValue)val).getErrors()
 				.get(0).getMessage());
@@ -141,7 +199,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 	public void wrongTypeLeftTest() {
 		RosettaExpression expr = parser.parseExpression("True - \"World\"");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals("Arithmetic Operation: Leftside is not of type Number/String", 
+		assertEquals("Arithmetic Operation: Leftside is not of type Number/String/Date", 
 				((RosettaInterpreterErrorValue)val)
 				.getErrors().get(0).getMessage());
 	}
@@ -150,7 +208,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 	public void wrongTypeRightTestString() {
 		RosettaExpression expr = parser.parseExpression("\"Hello \" + True");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals("Arithmetic Operation: Rightside is not of type Number/String", 
+		assertEquals("Arithmetic Operation: Rightside is not of type Number/String/Date", 
 				((RosettaInterpreterErrorValue)val)
 				.getErrors().get(0).getMessage());
 	}
@@ -159,7 +217,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 	public void wrongTypeRightTestInteger() {
 		RosettaExpression expr = parser.parseExpression("2 + True");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals("Arithmetic Operation: Rightside is not of type Number/String", 
+		assertEquals("Arithmetic Operation: Rightside is not of type Number/String/Date", 
 				((RosettaInterpreterErrorValue)val)
 				.getErrors().get(0).getMessage());
 	}
@@ -168,7 +226,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 	public void wrongTypeRightTestNumber() {
 		RosettaExpression expr = parser.parseExpression("2.5 + True");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals("Arithmetic Operation: Rightside is not of type Number/String", 
+		assertEquals("Arithmetic Operation: Rightside is not of type Number/String/Date", 
 				((RosettaInterpreterErrorValue)val)
 				.getErrors().get(0).getMessage());
 	}
@@ -178,7 +236,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		RosettaExpression expr = parser
 				.parseExpression("\"Hello \" - \"World\" + \"World\"");
 		RosettaInterpreterValue val = interpreter.interp(expr);
-		assertEquals("The terms are strings but the "
+		assertEquals("Both terms are strings but the "
 				+ "operation is not concatenation: not implemented", 
 				((RosettaInterpreterErrorValue)val)
 				.getErrors().get(0).getMessage());
@@ -191,11 +249,13 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		List<RosettaInterpreterError> expected = List.of(
 				new RosettaInterpreterError(
-						"The terms are strings but the operation "
-						+ "is not concatenation: not implemented", expr),
+						"Both terms are strings but the operation "
+						+ "is not concatenation: not implemented", 
+						((ArithmeticOperation) expr).getLeft()),
 				new RosettaInterpreterError(
 						"Arithmetic Operation: Rightside "
-						 + "is not of type Number/String", expr)
+						 + "is not of type Number/String/Date" ,
+							((ArithmeticOperation) expr).getRight())
 					);
 		assertEquals(expected, 
 				((RosettaInterpreterErrorValue)val)
