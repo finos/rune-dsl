@@ -1,24 +1,37 @@
+image: maven:3.8-openjdk-17
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+  key: one-key-to-rule-them-all
+
+
 stages:
   - build
-  # - test
+  - test
   - checkstyle
 
+
 build:
-  image: maven:3.8-openjdk-17
   stage: build
   script:
-    - mvn clean package -pl rosetta-xcore-plugin-dependencies,rosetta-lang,rosetta-testing
+    - mvn -D"maven.test.skip=true" clean package -pl rosetta-xcore-plugin-dependencies,rosetta-lang,rosetta-testing,rosetta-interpreter
 
-
-# test:
-#   image: maven:3.8-openjdk-17
-#   stage: test
-#   script:
-#     - mvn test -Dtest="/com.regnosys.rosetta.tests/src/test/java/com/regnosys/rosetta/interpreternew/*.java" -Dsurefire.failIfNoSpecifiedTests=false
+test-jdk17:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS clean org.jacoco:jacoco-maven-plugin:prepare-agent test jacoco:report -pl rosetta-xcore-plugin-dependencies,rosetta-lang,rosetta-testing,rosetta-interpreter
+    - cat rosetta-interpreter/target/site/jacoco/index.html | grep -o -E "Total[^%]+?%" | sed -E "s/<.*>//" | sed -E "s/Total/TestCoverage:/"
+  artifacts:
+    paths:
+      - target/site/jacoco/jacoco.xml
+  coverage: /TestCoverage:(\d+)%/
 
 checkstyle:
-  image: maven:3.8-openjdk-17
   stage: checkstyle
   script:
-    - mvn checkstyle:check -pl rosetta-lang,rosetta-testing -D"checkstyle.config.location"="checkstyle-SP.xml"
+    - mvn checkstyle:check -pl rosetta-interpreter
 
