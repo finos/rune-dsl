@@ -12,32 +12,25 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseError;
 public class RosettaInterpreterError extends MinimalEObjectImpl implements RosettaInterpreterBaseError {	
 	private String errorMessage;
 	private EObject associatedObject;
-
-	public RosettaInterpreterError(String errorMessage) {
-		super();
-		this.errorMessage = errorMessage;
-	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(errorMessage);
+		return Objects.hash(associatedObject, errorMessage);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		RosettaInterpreterError other = (RosettaInterpreterError) obj;
-		return Objects.equals(errorMessage, other.errorMessage);
+		return Objects.equals(associatedObject, other.associatedObject)
+				&& Objects.equals(errorMessage, other.errorMessage);
 	}
-	
+
 	public RosettaInterpreterError(String errorMessage, EObject obj) {
 		this.associatedObject = obj;
 		this.errorMessage = errorMessage;
