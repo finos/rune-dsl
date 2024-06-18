@@ -18,6 +18,8 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterFunctionValu
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedFeatureValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
@@ -74,7 +76,12 @@ public class RosettaInterpreterFunctionInterpreter
 		
 		//compute the results of all operations in the function
 		RosettaInterpreterValue result;
-		result = processOperations(f, args, acc, nv);
+		if (nv.findValue(f.getOutput().getTypeCall().getType().getName())
+				instanceof RosettaInterpreterTypedValue) {
+			result = processOperationsTyped(f, acc, nv);
+		} else {
+			result = processOperations(f, acc, nv);
+		}
 		if (result instanceof RosettaInterpreterErrorValue) {
 			return result;
 		}
@@ -197,12 +204,11 @@ public class RosettaInterpreterFunctionInterpreter
 	 * 
 	 *
 	 * @param f The function we are interpreting
-	 * @param args The raw arguments
 	 * @param acc Error accumulator
 	 * @param nv The new, local, environment
 	 * @return The error accumulator if there are any errors, and the result value otherwise
 	 */
-	public RosettaInterpreterValue processOperations(FunctionImpl f, List<RosettaExpression> args,
+	public RosettaInterpreterValue processOperations(FunctionImpl f, 
 			RosettaInterpreterErrorValue acc, RosettaInterpreterBaseEnvironment nv) {
 		
 
@@ -210,6 +216,7 @@ public class RosettaInterpreterFunctionInterpreter
 
 		for (Operation o : f.getOperations()) {
 			if (o.isAdd()) {
+				
 				resultList.add(o.getExpression().accept(visitor, nv));
 			} else {
 				resultList = ((RosettaInterpreterBaseValue) o.getExpression().accept(visitor, nv))
@@ -243,7 +250,44 @@ public class RosettaInterpreterFunctionInterpreter
 		}
 	}
 	
-	
+	/**
+	 * Subroutine for processing operations when the output is a custom typed value.
+	 * 
+	 *
+	 * @param f The function we are interpreting
+	 * @param acc Error accumulator
+	 * @param nv The new, local, environment
+	 * @return The error accumulator if there are any errors, and the result value otherwise
+	 */
+	public RosettaInterpreterValue processOperationsTyped(FunctionImpl f,
+			RosettaInterpreterErrorValue acc, RosettaInterpreterBaseEnvironment nv) {
+		
+
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue)
+				nv.findValue(f.getOutput().getTypeCall().getType().getName());
+
+		for (Operation o : f.getOperations()) {
+			if (o.getPath() != null) {
+				String featureName = o.getPath().getAttribute().getName();
+				RosettaInterpreterValue value = o.getExpression().accept(visitor, nv);
+				acc.addAllErrors(value);
+				for (RosettaInterpreterTypedFeatureValue v : result.getAttributes()) {
+					if (v.getName().equals(featureName)) {
+						v.setValue(value);
+					}
+				}
+			} else {
+				result = (RosettaInterpreterTypedValue) o.getExpression().accept(visitor, nv);
+			}
+		}
+		
+		//check that the function operations yield no errors
+		if (acc.getErrors().size() > 0) {
+			return acc;
+		} else {
+			return result;
+		}
+	}
 	
 	/**
 	 * Subroutine for checking that the function call is valid based on cardinality and type checking.
@@ -364,7 +408,8 @@ public class RosettaInterpreterFunctionInterpreter
 		RosettaInterpreterEnvironment result = new RosettaInterpreterEnvironment();
 		Map<String, RosettaInterpreterValue> environment = env.getEnvironment();
 		for (Map.Entry<String, RosettaInterpreterValue> entry : environment.entrySet()) {
-			if (entry.getValue() instanceof RosettaInterpreterEnumValue) {
+			if (entry.getValue() instanceof RosettaInterpreterEnumValue
+				|| entry.getValue() instanceof RosettaInterpreterTypedValue) {
 				result.addValue(entry.getKey(), entry.getValue());
 			}
 		}

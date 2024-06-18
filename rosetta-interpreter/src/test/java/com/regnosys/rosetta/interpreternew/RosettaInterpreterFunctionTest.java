@@ -24,6 +24,8 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterListValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterStringValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTimeValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedFeatureValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.impl.RosettaSymbolReferenceImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
@@ -331,6 +333,124 @@ public class RosettaInterpreterFunctionTest {
     }
     
     @Test
+    public void funcSimpleSetFeatureTest() {
+    	RosettaModel model = mh.parseRosettaWithNoErrors(
+    			"type A:"
+    			+ "  a int (1..1)"
+    			+ "func Add:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result -> a:\r\n"
+    			+ "    5\r\n"
+    			+ "func MyTest:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    Add()\r\n");
+    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a")));
+    	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
+    			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
+    	RosettaInterpreterEnvironment env = 
+    			(RosettaInterpreterEnvironment) interpreter.interp(function);
+    	env.addValue("A", v);
+    	RosettaInterpreterValue res = interpreter.interp(ref, env);
+    	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a", 
+    					new RosettaInterpreterNumberValue(BigDecimal.valueOf(5)))));
+    	assertEquals(expected, res);
+    }
+    
+    @Test
+    public void funcSimpleSetFeatureErrorTest() {
+    	RosettaModel model = mh.parseRosetta(
+    			"type A:"
+    			+ "  a int (1..1)"
+    			+ "func Add:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result -> a:\r\n"
+    			+ "    5 + True\r\n"
+    			+ "func MyTest:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    Add()\r\n");
+    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a")));
+    	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
+    			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
+    	RosettaInterpreterEnvironment env = 
+    			(RosettaInterpreterEnvironment) interpreter.interp(function);
+    	env.addValue("A", v);
+    	RosettaInterpreterValue res = interpreter.interp(ref, env);
+    	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
+    			new RosettaInterpreterError("Arithmetic Operation: Rightside"
+    					+ " is not of type Number/String/Date",
+    					function.getOperations().get(0).getExpression()));
+    	assertEquals(expected, res);
+    }
+    
+    @Test
+    public void funcSimpleSetFeatureData() {
+    	RosettaModel model = mh.parseRosettaWithNoErrors(
+    			"type A:"
+    			+ "  a int (1..1)"
+    			+ "func Add:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    A { a: 5 }\r\n"
+    			+ "func MyTest:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    Add()\r\n");
+    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a")));
+    	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
+    			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
+    	RosettaInterpreterEnvironment env = 
+    			(RosettaInterpreterEnvironment) interpreter.interp(function);
+    	env.addValue("A", v);
+    	RosettaInterpreterValue res = interpreter.interp(ref, env);
+    	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a", 
+    					new RosettaInterpreterNumberValue(BigDecimal.valueOf(5)),
+    					((RosettaInterpreterTypedValue) res).getAttributes().get(0).getCard())));
+    	assertEquals(expected, res);
+    }
+    
+    @Test
+    public void funcSimpleSetFeatureDataSecond() {
+    	RosettaModel model = mh.parseRosettaWithNoErrors(
+    			"type A:"
+    			+ "  a int (1..1)"
+    			+ "	 b int (1..1)"
+    			+ "func Add:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result -> b:\r\n"
+    			+ "    5\r\n"
+    			+ "func MyTest:\r\n"
+    			+ "  output: result A (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    Add()\r\n");
+    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a"),
+    					new RosettaInterpreterTypedFeatureValue("b")));
+    	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
+    			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
+    	RosettaInterpreterEnvironment env = 
+    			(RosettaInterpreterEnvironment) interpreter.interp(function);
+    	env.addValue("A", v);
+    	RosettaInterpreterValue res = interpreter.interp(ref, env);
+    	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("A", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("a"),
+    					new RosettaInterpreterTypedFeatureValue("b", 
+        				 new RosettaInterpreterNumberValue(BigDecimal.valueOf(5)),
+        				 ((RosettaInterpreterTypedValue) res).getAttributes().get(0).getCard())));
+    	assertEquals(expected, res);
+    }
+    
+    @Test
     public void funcSimpleSetTestWithEnum() {
     	RosettaModel model = mh.parseRosettaWithNoErrors(
     			"enum RoundingModeEnum: \r\n"
@@ -567,7 +687,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("Arithmetic Operation: Rightside"
-    					+ " is not of type Number/String"));
+    					+ " is not of type Number/String/Date", function.getOperations().get(0)));
     	assertEquals(expected, res);
     }
     
@@ -592,7 +712,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("Arithmetic Operation: Rightside"
-    					+ " is not of type Number/String"));
+    					+ " is not of type Number/String/Date", ref.getArgs().get(0)));
     	assertEquals(expected, res);
     }
     
@@ -696,7 +816,8 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("Arithmetic Operation: Rightside"
-    					+ " is not of type Number/String"));
+    					+ " is not of type Number/String/Date", function.getShortcuts()
+    					.get(0).getExpression()));
     	assertEquals(expected, res);
     }
     

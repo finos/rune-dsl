@@ -20,6 +20,10 @@ public class RosettaInterpreterFunctionValue extends RosettaInterpreterBaseValue
 		function = f;
 	}
 	
+	public FunctionImpl getFunction() {
+		return function;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -44,11 +48,6 @@ public class RosettaInterpreterFunctionValue extends RosettaInterpreterBaseValue
 	public int hashCode() {
 		return Objects.hash(function);
 	}
-	
-	public FunctionImpl getFunction() {
-		return function;
-	}
-	
 	
 
 	@Override
