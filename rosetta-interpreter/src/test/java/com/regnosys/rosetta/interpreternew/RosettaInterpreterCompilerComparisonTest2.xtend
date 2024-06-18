@@ -73,12 +73,23 @@ class RosettaInterpreterCompilerComparisonTest2 {
 				output: b int (1..1)
 				set b: 5
 		'''.generateCode
+		
+		// Biggest problem I see is that there's no just way to run a piece of code
+		// from the code text itself
+		// You need to tell it specifically what function its supposed to be 
+		// creating, running and getting output from
+		// Though I guess it could be standardised by calling all functions
+		// the same and passing some arguments?
 		val classes = model.compileToClasses
 		val foo = classes.createFunc('Foo')
 		val output = foo.invokeFunc(Integer)
 		
 		val expr = parser.parseExpression("5")
 		val value = interpreter.interp(expr)
+		
+		// If actually doing this then better approach would be
+		// To have like a helper method that converts a primitive type
+		// Into some value domain type to avoid having to manually set it
 		assertEquals(value, new RosettaInterpreterNumberValue(output))
 	}
 }
