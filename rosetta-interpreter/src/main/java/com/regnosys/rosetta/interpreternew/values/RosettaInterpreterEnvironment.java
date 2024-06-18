@@ -41,7 +41,7 @@ public class RosettaInterpreterEnvironment extends MinimalEObjectImpl implements
 		}
 		else {
 			return new RosettaInterpreterErrorValue(
-					new RosettaInterpreterError(
+					new RosettaInterpreterEmptyError(
 							name 
 							+ " does not exist in the environment"));
 		}

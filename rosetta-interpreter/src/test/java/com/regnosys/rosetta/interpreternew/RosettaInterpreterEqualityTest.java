@@ -88,10 +88,11 @@ public class RosettaInterpreterEqualityTest {
 	
 	@Test
 	public void equalityAnyTwoListsTest() {
+		RosettaExpression expr = parser.parseExpression("[1,2,2] any = [1]");
+
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-						"cannot compare two lists"));
-		RosettaExpression expr = parser.parseExpression("[1,2,2] any = [1]");
+						"cannot compare two lists",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors().get(0).getMessage(),
 				((RosettaInterpreterErrorValue)val)
@@ -107,12 +108,13 @@ public class RosettaInterpreterEqualityTest {
 	
 	@Test
 	public void equalityAnyErrorTest() {
+		RosettaExpression expr = parser.parseExpression("2 any = 2");
+
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ANY\" keyword "
-								+ "to compare two elements"));
+								+ "to compare two elements",expr));
 		
-		RosettaExpression expr = parser.parseExpression("2 any = 2");
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors(),
 				((RosettaInterpreterErrorValue)val).getErrors());
@@ -120,10 +122,11 @@ public class RosettaInterpreterEqualityTest {
 	
 	@Test
 	public void errorThrownListTest() {
+		RosettaExpression expr = parser.parseExpression("[1,2,3] any = [1,2]");
+
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-						"cannot compare two lists"));
-		RosettaExpression expr = parser.parseExpression("[1,2,3] any = [1,2]");
+						"cannot compare two lists",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors(),
 				((RosettaInterpreterErrorValue)val).getErrors());
@@ -131,11 +134,12 @@ public class RosettaInterpreterEqualityTest {
 	
 	@Test
 	public void errorThrownAllElementsTest() {
+		RosettaExpression expr = parser.parseExpression("1 all = 3");
+
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ALL\" keyword "
-								+ "to compare two elements"));
-		RosettaExpression expr = parser.parseExpression("1 all = 3");
+								+ "to compare two elements",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertEquals(expectedError.getErrors(),
 				((RosettaInterpreterErrorValue)val).getErrors());

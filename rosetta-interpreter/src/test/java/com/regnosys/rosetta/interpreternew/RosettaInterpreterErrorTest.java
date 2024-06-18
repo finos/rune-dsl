@@ -19,8 +19,8 @@ public class RosettaInterpreterErrorTest {
 
 	@Test
 	public void simpleErrorTest() {
-		RosettaInterpreterError e1 = new RosettaInterpreterError("e1");
-		RosettaInterpreterError e2 = new RosettaInterpreterError("e2");
+		RosettaInterpreterError e1 = new RosettaInterpreterError("e1",null);
+		RosettaInterpreterError e2 = new RosettaInterpreterError("e2",null);
 		
 		RosettaInterpreterErrorValue val1 = new RosettaInterpreterErrorValue();
 		RosettaInterpreterErrorValue val2 = new RosettaInterpreterErrorValue();
@@ -36,7 +36,7 @@ public class RosettaInterpreterErrorTest {
 	
 	@Test
 	public void errorMessageExists() {
-		RosettaInterpreterError e1 = new RosettaInterpreterError("e1");
+		RosettaInterpreterError e1 = new RosettaInterpreterError("e1",null);
 		RosettaInterpreterErrorValue val1 = new RosettaInterpreterErrorValue(e1);
 		assertEquals("e1", val1.getErrors().get(0).getMessage());
 	}

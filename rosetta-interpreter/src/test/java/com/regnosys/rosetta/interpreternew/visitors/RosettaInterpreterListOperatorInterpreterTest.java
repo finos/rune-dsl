@@ -47,11 +47,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testOnlyElementError() {
+		RosettaExpression expr = parser.parseExpression("(True and 1) only-element");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Logical Operation: "
-						+ "Rightside is not of type Boolean"));
-		RosettaExpression expr = parser.parseExpression("(True and 1) only-element");
+						+ "Rightside is not of type Boolean",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -150,11 +151,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testExistsError() {
+		RosettaExpression expr = parser.parseExpression("(True and 1) single exists");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Logical Operation: "
-						+ "Rightside is not of type Boolean"));
-		RosettaExpression expr = parser.parseExpression("(True and 1) single exists");
+						+ "Rightside is not of type Boolean",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -183,11 +185,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testIsAbsentError() {
+		RosettaExpression expr = parser.parseExpression("(True and 1) is absent");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Logical Operation: "
-						+ "Rightside is not of type Boolean"));
-		RosettaExpression expr = parser.parseExpression("(True and 1) is absent");
+						+ "Rightside is not of type Boolean",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -218,11 +221,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testCountError() {
+		RosettaExpression expr = parser.parseExpression("(True and 1) count");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Logical Operation: "
-						+ "Rightside is not of type Boolean"));
-		RosettaExpression expr = parser.parseExpression("(True and 1) count");
+						+ "Rightside is not of type Boolean",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -231,10 +235,11 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testFirstEmptyList() {
+		RosettaExpression expr = parser.parseExpression("[] first");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("List is empty"));
-		RosettaExpression expr = parser.parseExpression("[] first");
+				new RosettaInterpreterError("List is empty",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -254,11 +259,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testFirstError() {
+		RosettaExpression expr = parser.parseExpression("(True and 1) first");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Logical Operation: "
-						+ "Rightside is not of type Boolean"));
-		RosettaExpression expr = parser.parseExpression("(True and 1) first");
+						+ "Rightside is not of type Boolean",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -267,10 +273,11 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testLastEmptyList() {
+		RosettaExpression expr = parser.parseExpression("[] last");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError("List is empty"));
-		RosettaExpression expr = parser.parseExpression("[] last");
+				new RosettaInterpreterError("List is empty",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;
@@ -290,11 +297,12 @@ class RosettaInterpreterListOperatorInterpreterTest {
 	
 	@Test
 	void testLastError() {
+		RosettaExpression expr = parser.parseExpression("(True and 1) last");
+
 		RosettaInterpreterErrorValue expected = 
 				new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError("Logical Operation: "
-						+ "Rightside is not of type Boolean"));
-		RosettaExpression expr = parser.parseExpression("(True and 1) last");
+						+ "Rightside is not of type Boolean",expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		assertTrue(val instanceof RosettaInterpreterErrorValue);
 		RosettaInterpreterErrorValue castedVal = (RosettaInterpreterErrorValue)val;

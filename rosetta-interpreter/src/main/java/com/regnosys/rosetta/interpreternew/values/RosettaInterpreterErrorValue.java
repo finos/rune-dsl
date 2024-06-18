@@ -145,7 +145,8 @@ public class RosettaInterpreterErrorValue extends RosettaInterpreterBaseValue {
 			return false;
 		}
 		RosettaInterpreterErrorValue other = (RosettaInterpreterErrorValue) obj;
-		return Objects.equals(errors, other.errors);
+		return ((List<RosettaInterpreterBaseError>)errors)
+				.equals(((List<RosettaInterpreterBaseError>)other.errors));
 	}
 
 	@Override

@@ -9,6 +9,8 @@ import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumElementV
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedFeatureValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterTypedValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterZonedDateTimeValue;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
@@ -43,9 +45,8 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 				RosettaEnumeration enumeration = (RosettaEnumeration) 
 						((RosettaSymbolReferenceImpl) expr.getReceiver()).getSymbol();
 				return interpEnum(enumeration, enumVal, env);
-			}
-			else {
-				return interpRecord(expr, env);
+			} else {
+				return interpType(expr, env);
 			}
 			
 	}
@@ -77,7 +78,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interpRecord(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterBaseValue interpType(RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression receiver = exp.getReceiver();
 		RosettaInterpreterValue receiverValue = receiver.accept(visitor, env);
 		
@@ -108,16 +109,24 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 				return ((RosettaInterpreterZonedDateTimeValue) receiverValue).getTimeZone();
 			}
 			
-		} else if (RosettaInterpreterErrorValue.errorsExist(receiverValue)) {
-			RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) receiverValue;
-			RosettaInterpreterErrorValue newExpError = 
-					new RosettaInterpreterErrorValue(
-							new RosettaInterpreterError("Feature calls: the "
-									+ "receiver is an error value."));
+		} else if (receiverValue instanceof RosettaInterpreterTypedValue) {
+			List<RosettaInterpreterTypedFeatureValue> attributes = ((RosettaInterpreterTypedValue) 
+					receiverValue).getAttributes();
 			
-			return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
+			for (RosettaInterpreterTypedFeatureValue att : attributes) {
+				if (att.getName().equals(feature)) {
+					return (RosettaInterpreterBaseValue) ((
+							RosettaInterpreterTypedFeatureValue) att).getValue();
+				}
+			}
 		}
-		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-				"Feature calls: receiver doesn't exist."));
+	
+		RosettaInterpreterErrorValue expError = (RosettaInterpreterErrorValue) receiverValue;
+		RosettaInterpreterErrorValue newExpError = 
+				new RosettaInterpreterErrorValue(
+						new RosettaInterpreterError("Feature calls: the "
+								+ "receiver is an error value."));
+		
+		return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
 	}
 }
