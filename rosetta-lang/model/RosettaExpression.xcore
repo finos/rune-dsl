@@ -452,12 +452,21 @@ class ToEnumOperation extends ParseOperation {
 }
 
 class ToDateOperation extends ParseOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ToDateTimeOperation extends ParseOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class ToZonedDateTimeOperation extends ParseOperation {
+	op RosettaInterpreterValue accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 /**
