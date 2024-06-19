@@ -24,6 +24,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
@@ -47,6 +49,8 @@ import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterOnlyExists
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterParseOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterFunctionDeclarationInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterDataInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterEnumerationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaArithmeticOperationsInterpreter;
@@ -233,6 +237,13 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	}
 	
 	@Override
+	public RosettaInterpreterEnvironment interp(Function exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterFunctionDeclarationInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
+	}
+	
+	@Override
 	public RosettaInterpreterEnvironment interp(RosettaEnumeration exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterEnumerationInterpreter().interp(exp,
@@ -294,6 +305,12 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	@Override
 	public RosettaInterpreterValue interp(ToZonedDateTimeOperation exp, RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterBaseEnvironment interp(Data exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterDataInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 }
 
