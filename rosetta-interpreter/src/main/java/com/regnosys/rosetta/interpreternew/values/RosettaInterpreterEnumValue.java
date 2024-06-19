@@ -48,7 +48,7 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 
 	@Override
 	public String toString() {
-		return "RosettaInterpreterListValue [name = " + name + ", values=" + values.toString() + "]";
+		return "RosettaInterpreterListValue [name = " + name + ", values = " + values.toString() + "]";
 	}
 
 	@Override
@@ -73,6 +73,6 @@ public class RosettaInterpreterEnumValue extends RosettaInterpreterBaseValue {
 
 	@Override
 	public Stream<RosettaInterpreterValue> toValueStream() {
-		return values.stream();
+		return Stream.of(this);
 	}
 }
