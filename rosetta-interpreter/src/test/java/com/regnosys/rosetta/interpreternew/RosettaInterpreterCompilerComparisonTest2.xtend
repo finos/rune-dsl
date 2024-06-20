@@ -100,7 +100,7 @@ class RosettaInterpreterCompilerComparisonTest2 {
 		// If actually doing this then better approach would be
 		// To have like a helper method that converts a primitive type
 		// Into some value domain type to avoid having to manually set it
-		assertEquals(value, new RosettaInterpreterNumberValue(output + 1))
+		assertEquals(value, new RosettaInterpreterNumberValue(output))
 		assertTrue(false)
 	}
 	
@@ -126,7 +126,7 @@ class RosettaInterpreterCompilerComparisonTest2 {
     	
     	val classes = code.generateCode.compileToClasses
     	val myTest = classes.createFunc('MyTest')
-    	val output = myTest.invokeFunc(Double)
+    	val output = myTest.invokeFunc(BigDecimal)
     	println(output)
     	
     	assertEquals(expected, 2)
