@@ -95,7 +95,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 				if (rightNumber.floatValue() == 0.0) {
 					return new RosettaInterpreterErrorValue(
 							new RosettaInterpreterError(
-							"Division by 0 is not allowed"));
+							"Division by 0 is not allowed", expr));
 				}
 				return new RosettaInterpreterNumberValue((leftNumber
 						.divide(rightNumber)).bigDecimalValue());
@@ -103,7 +103,7 @@ public class RosettaInterpreterRosettaArithmeticOperationsInterpreter
 		} else {
 			return new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
-				"The terms of the operation are neither both strings nor both numbers"));
+				"The terms of the operation are neither both strings nor both numbers", expr));
 		}	
 	}
 	

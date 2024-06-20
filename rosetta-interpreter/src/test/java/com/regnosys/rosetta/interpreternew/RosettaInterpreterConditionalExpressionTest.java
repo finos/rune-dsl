@@ -206,7 +206,7 @@ public class RosettaInterpreterConditionalExpressionTest {
 		RosettaExpression expr = parser.parseExpression("if False then 1.2");
 		RosettaInterpreterValue result = interpreter.interp(expr);
 		RosettaInterpreterError expected = new RosettaInterpreterError(
-				"Else branch should be evaluated but does not exist");
+				"Else branch should be evaluated but does not exist", expr);
 		assertEquals(expected, ((RosettaInterpreterErrorValue)result).getErrors().get(0));
 	}
 

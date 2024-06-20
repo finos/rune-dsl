@@ -30,8 +30,7 @@ public class RosettaInterpreterError extends MinimalEObjectImpl implements Roset
 			return false;
 		}
 		RosettaInterpreterError other = (RosettaInterpreterError) obj;
-		return Objects.equals(associatedObject, other.associatedObject)
-				&& Objects.equals(errorMessage, other.errorMessage);
+		return Objects.equals(errorMessage, other.errorMessage);
 	}
 
 	public RosettaInterpreterError(String errorMessage, EObject obj) {
