@@ -21,6 +21,10 @@ import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor
+
+
+import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterBaseEnvironment
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
@@ -68,6 +72,10 @@ class Data extends RosettaType, RootElement, References {
 	op boolean hasSuperType() {
 		return superType !== null
 	}
+	
+	op RosettaInterpreterBaseEnvironment accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
+	}
 }
 
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, References {
@@ -80,6 +88,11 @@ class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, Refer
 	
 	op int numberOfParameters() {
 		inputs.size
+	}
+	
+	
+	op RosettaInterpreterBaseEnvironment accept(InterpreterVisitor v, RosettaInterpreterBaseEnvironment nv) {
+		v.interp(this,nv)
 	}
 }
 

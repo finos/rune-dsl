@@ -450,4 +450,35 @@ public class RosettaInterpreterConstructorExpressionTest {
 	
 		assertEquals(expected, result);
 	}
+	
+	@Test
+	public void testDataTypeCondition() {
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..1)"
+				+ "condition Cond: if one exists then two = 2 "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: 1, two: 2 }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterTypedValue result = (RosettaInterpreterTypedValue) interpreter.interp(constructor);
+		
+		assertEquals("Ob", result.getName());
+	}
+	
+	@Test
+	public void testDataTypeConditionError() {
+		RosettaModel model = modelHelper.parseRosetta("type Ob:"
+				+ "one int (0..1) two int (0..1)"
+				+ "condition Cond: if one exists then two = 2 "
+				+ "func M: output: result Ob (1..1) set result: Ob { one: 1, two: 3 }");
+		
+		RosettaConstructorExpressionImpl constructor = ((RosettaConstructorExpressionImpl) ((
+				FunctionImpl) model.getElements().get(1)).getOperations().get(0).getExpression());
+		RosettaInterpreterValue result = interpreter.interp(constructor);
+		
+		RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
+					"Condition not followed.", null));
+		
+		assertEquals(expected, result);
+	}
 }

@@ -26,6 +26,30 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 		this.value = value;
 		this.card = card;
 	}
+	
+	/**
+	 * Constructor for data-type feature value.
+	 *
+	 * @param name 		name value
+	 */
+	public RosettaInterpreterTypedFeatureValue(String name) {
+		super();
+		this.name = name;
+		this.value = null;
+		this.card = null;
+	}
+	
+	/**
+	 * Constructor for data-type feature value.
+	 *
+	 * @param name 		name value
+	 * @param value		value of feature
+	 */
+	public RosettaInterpreterTypedFeatureValue(String name, RosettaInterpreterValue value) {
+		super();
+		this.name = name;
+		this.value = value;
+	}
 
 	public String getName() {
 		return name;
@@ -33,6 +57,10 @@ public class RosettaInterpreterTypedFeatureValue extends RosettaInterpreterBaseV
 
 	public RosettaInterpreterValue getValue() {
 		return value;
+	}
+	
+	public void setValue(RosettaInterpreterValue value) {
+		this.value = value;
 	}
 
 	public RosettaCardinality getCard() {
