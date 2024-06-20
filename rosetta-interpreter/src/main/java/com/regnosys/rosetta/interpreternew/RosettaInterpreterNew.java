@@ -104,4 +104,18 @@ public class RosettaInterpreterNew {
 		
 		return environment;	
 	}
+	
+	/**
+	 * Simple example interpret function to allow for better understanding 
+	 * of the development workflow. It is used in testing for simplification.
+	 *
+	 * @param expression the expression to be interpreted
+	 * @return value of RosettaIntLiteral otherwise exception
+	 */
+	public RosettaInterpreterEnvironment interp(Data expression) {
+		
+		environment = (RosettaInterpreterEnvironment) expression.accept(visitor, environment);
+		
+		return environment;	
+	}
 }
