@@ -101,7 +101,6 @@ class RosettaInterpreterCompilerComparisonTest2 {
 		// To have like a helper method that converts a primitive type
 		// Into some value domain type to avoid having to manually set it
 		assertEquals(value, new RosettaInterpreterNumberValue(output))
-		assertTrue(false)
 	}
 	
 	@Test
@@ -130,7 +129,6 @@ class RosettaInterpreterCompilerComparisonTest2 {
     	println(output)
     	
     	assertEquals(expected, 2)
-    	assertTrue(false)
 	}
 }
 
