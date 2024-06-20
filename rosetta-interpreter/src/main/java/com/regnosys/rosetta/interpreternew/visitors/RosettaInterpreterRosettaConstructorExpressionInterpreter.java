@@ -11,6 +11,7 @@ import org.eclipse.emf.common.util.EList;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBooleanValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterError;
@@ -53,6 +54,21 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 		EList<ConstructorKeyValuePair> values = expr.getValues();
 		
 		switch (typeCall) {
+			case "time": {
+				RosettaInterpreterValue day = values.get(0).getValue().accept(visitor, env);
+				RosettaInterpreterValue month = values.get(1).getValue().accept(visitor, env);
+				RosettaInterpreterValue year = values.get(2).getValue().accept(visitor, env);
+				
+				if (day instanceof RosettaInterpreterNumberValue 
+						&& month instanceof RosettaInterpreterNumberValue 
+						&& year instanceof RosettaInterpreterNumberValue) {
+					return new RosettaInterpreterDateValue(
+							((RosettaInterpreterNumberValue) day), 
+							((RosettaInterpreterNumberValue) month),
+							((RosettaInterpreterNumberValue) year));
+				}
+				break;
+			}
 			case "date": {
 				RosettaInterpreterValue day = values.get(0).getValue().accept(visitor, env);
 				RosettaInterpreterValue month = values.get(1).getValue().accept(visitor, env);
@@ -149,6 +165,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 							
 							attributes.add(new 
 								RosettaInterpreterTypedFeatureValue(name, value, card));
+							env.addValue(name, value);
 						}
 					}
 					if (!contains) {
@@ -156,13 +173,14 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 								new RosettaInterpreterListValue(List.of());
 						attributes.add(new 
 								RosettaInterpreterTypedFeatureValue(name, empty, card));
+						env.addValue(name, empty);
 					}
 				}
 				
 				//check conditions of type in separate method
 				List<Condition> conditions = ((DataImpl) expr.getTypeCall().getType()).getConditions();
 				
-				String conditionsError = verifyConditions(conditions, attributes);
+				String conditionsError = verifyConditions(conditions, attributes, env);
 				if (conditionsError != null) {
 					return new RosettaInterpreterErrorValue(
 							new RosettaInterpreterError(conditionsError));
@@ -192,7 +210,8 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 	 * @param attr - list of attributes of type
 	 * @return Error message iff conditions not met, else null
 	 */
-	private String verifyConditions(List<Condition> conditions, List<RosettaInterpreterTypedFeatureValue> attr) {
+	private String verifyConditions(List<Condition> conditions, List<RosettaInterpreterTypedFeatureValue> attr,
+			RosettaInterpreterBaseEnvironment env) {
 		for (Condition condInterface : conditions) {
 			ConditionImpl c = (ConditionImpl)condInterface;
 			if (c.getExpression().getClass().equals(ChoiceOperationImpl.class)) {
@@ -214,6 +233,12 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 							+ "Exactly one attribute should be defined.";
 				}
 				
+			} else {
+				RosettaInterpreterValue result = c.getExpression().accept(visitor, env);
+				
+				if (!((RosettaInterpreterBooleanValue) result).getValue()) {
+					return "Condition not followed.";
+				}
 			}
 		}
 		
