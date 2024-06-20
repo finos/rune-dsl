@@ -97,7 +97,8 @@ public class RosettaInterpreterFunctionTest {
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-    			new RosettaInterpreterError("The attribute \"a\" has cardinality higher than the limit 1"));
+    			new RosettaInterpreterError("The attribute \"a\" has cardinality"
+    					+ " higher than the limit 1", null));
     	assertEquals(expected, res);
     }
     
@@ -122,7 +123,8 @@ public class RosettaInterpreterFunctionTest {
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-    			new RosettaInterpreterError("The attribute \"a\" has cardinality lower than the limit 2"));
+    			new RosettaInterpreterError("The attribute \"a\" has cardinality"
+    					+ " lower than the limit 2", null));
     	assertEquals(expected, res);
     }
     
@@ -148,7 +150,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a number, but received a " 
-    					+ (new RosettaInterpreterStringValue("")).getClass()));
+    					+ (new RosettaInterpreterStringValue("")).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -174,7 +176,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a string, but received a " 
-    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass()));
+    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -200,7 +202,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a number, but received a " 
-    					+ (new RosettaInterpreterStringValue("")).getClass()));
+    					+ (new RosettaInterpreterStringValue("")).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -226,7 +228,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a boolean, but received a " 
-    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass()));
+    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -252,7 +254,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a date, but received a " 
-    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass()));
+    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -278,7 +280,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a dateTime, but received a " 
-    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass()));
+    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -304,7 +306,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"a\" requires a zonedDateTime, but received a " 
-    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass()));
+    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass(), null));
     	assertEquals(expected, res);
     }
     
@@ -607,7 +609,8 @@ public class RosettaInterpreterFunctionTest {
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-    			new RosettaInterpreterError("Condition \"Alarger\" does not hold for this function call"));
+    			new RosettaInterpreterError("Condition \"Alarger\""
+    					+ " does not hold for this function call", null));
     	assertEquals(expected, res);
     }
     
@@ -635,7 +638,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("cannot use \"ANY\" keyword "
-						+ "to compare two elements"));
+						+ "to compare two elements", null));
     	assertEquals(expected, res);
     }
     
@@ -662,7 +665,7 @@ public class RosettaInterpreterFunctionTest {
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-    			new RosettaInterpreterError("cannot compare two lists"));
+    			new RosettaInterpreterError("cannot compare two lists", null));
     	assertEquals(expected, res);
     }
     
@@ -738,7 +741,8 @@ public class RosettaInterpreterFunctionTest {
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
-    			new RosettaInterpreterError("Condition \"FalseString\" does not hold for this function call"));
+    			new RosettaInterpreterError("Condition \"FalseString\" "
+    					+ "does not hold for this function call", null));
     	assertEquals(expected, res);
     }
     
@@ -763,7 +767,7 @@ public class RosettaInterpreterFunctionTest {
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("The attribute \"result\" requires a string, but received a " 
-    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass()));
+    					+ (new RosettaInterpreterNumberValue(BigDecimal.valueOf(0))).getClass(), null));
     	assertEquals(expected, res);
     }
     

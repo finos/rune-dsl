@@ -125,7 +125,7 @@ public class RosettaInterpreterRosettaFeatureCallInterpreter extends RosettaInte
 		RosettaInterpreterErrorValue newExpError = 
 				new RosettaInterpreterErrorValue(
 						new RosettaInterpreterError("Feature calls: the "
-								+ "receiver is an error value."));
+								+ "receiver is an error value.", exp));
 		
 		return RosettaInterpreterErrorValue.merge(List.of(newExpError, expError));
 	}

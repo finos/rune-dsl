@@ -161,14 +161,12 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	void badOperatorTest() {
-		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
-				new RosettaInterpreterError(
-						"operator not suppported")); 
-		
 		RosettaBooleanLiteral ex = exFactory.createRosettaBooleanLiteral();
         ex.setValue(true);
 		RosettaExpression expr = createComparisonOperation("><", ex,ex, CardinalityModifier.NONE);
-		
+		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
+				new RosettaInterpreterError(
+						"operator not suppported", expr)); 
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorVal = (RosettaInterpreterErrorValue) val;
 		
@@ -180,11 +178,11 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	void wrongListLengthAnyTest() {
+		RosettaExpression expr = parser.parseExpression("[1] any < 3");
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ANY\" keyword "
-								+ "to compare two elements"));
-		RosettaExpression expr = parser.parseExpression("[1] any < 3");
+								+ "to compare two elements", expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorVal = (RosettaInterpreterErrorValue) val;
 		assertEquals(expectedError.getErrors(),
@@ -197,11 +195,11 @@ public class RosettaInterpreterComparisonTest {
 	
 	@Test
 	void wrongListLengthAllTest() {
+		RosettaExpression expr = parser.parseExpression("[1] all <= 3");
 		RosettaInterpreterErrorValue expectedError = new RosettaInterpreterErrorValue(
 				new RosettaInterpreterError(
 						"cannot use \"ALL\" keyword "
-								+ "to compare two elements"));
-		RosettaExpression expr = parser.parseExpression("[1] all <= 3");
+								+ "to compare two elements", expr));
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		RosettaInterpreterErrorValue errorVal = (RosettaInterpreterErrorValue) val;
 		assertEquals(expectedError.getErrors(),

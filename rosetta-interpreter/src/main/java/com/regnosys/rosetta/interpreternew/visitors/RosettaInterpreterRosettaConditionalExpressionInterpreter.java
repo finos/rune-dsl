@@ -86,7 +86,7 @@ extends RosettaInterpreterConcreteInterpreter {
 			// Else branch should be evaluated but it does not exist
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError(
-					"Else branch should be evaluated but does not exist"));
+					"Else branch should be evaluated but does not exist", expr));
 		}
 	}
 	
