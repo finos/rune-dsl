@@ -31,7 +31,7 @@ public class RosettaInterpreterCompilerComparisonTest {
 	}
 	
 	@Test
-	void SimpleTest() {
+	void simpleTest() {
 		
 					
 	}

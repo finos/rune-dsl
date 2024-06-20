@@ -53,6 +53,11 @@ import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue
+import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment
+import java.math.BigDecimal
+import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterNumberValue
+import com.regnosys.rosetta.rosetta.expression.impl.RosettaSymbolReferenceImpl
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -66,8 +71,11 @@ class RosettaInterpreterCompilerComparisonTest2 {
 	@Inject
 	RosettaInterpreterNew interpreter;
 	
+	@Inject 
+	ModelHelper mh;
+	
 	@Test
-	def void simpleTest() {
+	def void simpleTest2() {
 		val model = '''
 			func Foo:
 				output: b int (1..1)
@@ -92,7 +100,37 @@ class RosettaInterpreterCompilerComparisonTest2 {
 		// If actually doing this then better approach would be
 		// To have like a helper method that converts a primitive type
 		// Into some value domain type to avoid having to manually set it
-		assertEquals(value, new RosettaInterpreterNumberValue(output))
+		assertEquals(value, new RosettaInterpreterNumberValue(output + 1))
+		assertTrue(false)
+	}
+	
+	@Test
+	def void simpleTest() {
+		val code = "func Add:\r\n"
+    			+ "  inputs:"
+    			+ "		a number (1..1)\r\n"
+    			+ "		b int (1..1)\r\n"
+    			+ "  output: result number (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    a + b\r\n"
+    			+ "func MyTest:\r\n"
+    			+ "  output: result number (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    Add(1.0, 2.0)\r\n"
+		val model = mh.parseRosettaWithNoErrors(code)
+    	val function = model.getElements().get(0) as FunctionImpl
+    	val ref = (model.getElements().get(1) as FunctionImpl).getOperations().get(0).getExpression() as RosettaSymbolReferenceImpl
+    	val env = interpreter.interp(function) as RosettaInterpreterEnvironment
+    	val res = interpreter.interp(ref, env)
+    	val expected = new RosettaInterpreterNumberValue(BigDecimal.valueOf(3))
+    	
+    	val classes = code.generateCode.compileToClasses
+    	val myTest = classes.createFunc('MyTest')
+    	val output = myTest.invokeFunc(Double)
+    	println(output)
+    	
+    	assertEquals(expected, 2)
+    	assertTrue(false)
 	}
 }
 
