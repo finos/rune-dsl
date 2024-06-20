@@ -80,6 +80,8 @@ class RosettaInterpreterCompilerComparisonTest2 {
 		// creating, running and getting output from
 		// Though I guess it could be standardised by calling all functions
 		// the same and passing some arguments?
+		// This would require writing a lot of code manually and testing it for
+		// both runtime options
 		val classes = model.compileToClasses
 		val foo = classes.createFunc('Foo')
 		val output = foo.invokeFunc(Integer)
