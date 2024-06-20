@@ -169,7 +169,9 @@ public class RosettaInterpreterFunctionInterpreter
 			if (v instanceof RosettaInterpreterBooleanValue) {
 				if (((RosettaInterpreterBooleanValue) v).getValue() == false) {
 					acc.addError(new RosettaInterpreterError("Condition \"" 
-							+ c.getName() + "\" does not hold for this function call", null));
+							+ c.getName() + "\" "
+									+ "does not hold"
+									+ " for this function call", null));
 				}
 			} else { //must be an error if not a boolean value
 				acc.addAllErrors(v);
