@@ -3,7 +3,6 @@ package com.regnosys.rosetta.interpreternew.visitors;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterBaseValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateTimeValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterDateValue;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnumElementValue;
@@ -35,7 +34,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToStringOperation expr, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ToStringOperation expr, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression argument = expr.getArgument();
 		RosettaInterpreterValue result = argument.accept(visitor, env);
 		
@@ -55,7 +54,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToNumberOperation expr, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ToNumberOperation expr, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression argument = expr.getArgument();
 		
 		if (argument instanceof RosettaStringLiteralImpl) {
@@ -72,7 +71,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToIntOperation expr, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ToIntOperation expr, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression argument = expr.getArgument();
 		
 		if (argument instanceof RosettaStringLiteralImpl) {
@@ -100,7 +99,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToTimeOperation expr, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ToTimeOperation expr, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression argument = expr.getArgument();
 		
 		if (argument instanceof RosettaStringLiteralImpl) {
@@ -147,7 +146,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToDateOperation expr, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ToDateOperation expr, RosettaInterpreterBaseEnvironment env) {
 		RosettaExpression argument = expr.getArgument();
 		
 		if (argument instanceof RosettaStringLiteralImpl) {
@@ -164,7 +163,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToDateTimeOperation expr, RosettaInterpreterBaseEnvironment env) {
+	public RosettaInterpreterValue interp(ToDateTimeOperation expr, RosettaInterpreterBaseEnvironment env) {
 		// 2024-06-18T01:24:14
 		
 		RosettaExpression argument = expr.getArgument();
@@ -197,7 +196,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param env		the environment used
 	 * @return 			the interpreted value
 	 */
-	public RosettaInterpreterBaseValue interp(ToZonedDateTimeOperation expr, 
+	public RosettaInterpreterValue interp(ToZonedDateTimeOperation expr, 
 			RosettaInterpreterBaseEnvironment env) {
 		// 2024-06-18T01:24:14−07:00
 		
@@ -241,7 +240,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param string 		string to be checked
 	 * @return 				the interpreted value
 	 */
-	public RosettaInterpreterBaseValue checkString(String string) {
+	public RosettaInterpreterValue checkString(String string) {
 		BigDecimal number;
 		
 		try {
@@ -264,7 +263,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param string 		string to be transformed
 	 * @return 				the interpreted value
 	 */
-	public RosettaInterpreterBaseValue createTime(String string) {
+	public RosettaInterpreterValue createTime(String string) {
 		String[] strings  = string.split(":");
 		
 		if (strings.length != 3) {
@@ -297,7 +296,7 @@ public class RosettaInterpreterParseOperationInterpreter extends RosettaInterpre
 	 * @param string 		string to be transformed
 	 * @return 				the interpreted value
 	 */
-	public RosettaInterpreterBaseValue createDate(String string) {
+	public RosettaInterpreterValue createDate(String string) {
 		String[] strings  = string.split("-");
 		
 		if (strings.length != 3) {
