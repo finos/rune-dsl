@@ -171,7 +171,9 @@ public class RosettaInterpreterFunctionInterpreter
 					acc.addError(new RosettaInterpreterError("Condition \"" 
 							+ c.getName() + "\" "
 									+ "does not hold"
-									+ " for this function call", c.getExpression()));
+									+ " for this"
+									+ " function"
+									+ " call", c.getExpression()));
 				}
 			} else { //must be an error if not a boolean value
 				acc.addAllErrors(v);
