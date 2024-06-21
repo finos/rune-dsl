@@ -121,14 +121,13 @@ class RosettaInterpreterCompilerComparisonTest2 {
     	val ref = (model.getElements().get(1) as FunctionImpl).getOperations().get(0).getExpression() as RosettaSymbolReferenceImpl
     	val env = interpreter.interp(function) as RosettaInterpreterEnvironment
     	val res = interpreter.interp(ref, env)
-    	val expected = new RosettaInterpreterNumberValue(BigDecimal.valueOf(3))
     	
     	val classes = code.generateCode.compileToClasses
     	val myTest = classes.createFunc('MyTest')
     	val output = myTest.invokeFunc(BigDecimal)
     	println(output)
     	
-    	assertEquals(expected, 2)
+    	assertEquals(res, new RosettaInterpreterNumberValue(output))
 	}
 }
 
