@@ -24,6 +24,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 import com.regnosys.rosetta.rosetta.interpreter.InterpreterVisitor;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
+import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
@@ -31,13 +33,24 @@ import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEmptyError;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterEnvironment;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterLogicalOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterOnlyExistsInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterParseOperationInterpreter;
 import com.regnosys.rosetta.interpreternew.values.RosettaInterpreterErrorValue;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterComparisonOperationInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterFunctionDeclarationInterpreter;
+import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterDataInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterEnumerationInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterListLiteralInterpreter;
 import com.regnosys.rosetta.interpreternew.visitors.RosettaInterpreterRosettaArithmeticOperationsInterpreter;
@@ -224,6 +237,13 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	}
 	
 	@Override
+	public RosettaInterpreterEnvironment interp(Function exp, 
+			RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterFunctionDeclarationInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
+	}
+	
+	@Override
 	public RosettaInterpreterEnvironment interp(RosettaEnumeration exp, 
 			RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterEnumerationInterpreter().interp(exp,
@@ -245,6 +265,52 @@ public class RosettaInterpreterVisitor extends MinimalEObjectImpl implements Int
 	@Override
 	public RosettaInterpreterValue interp(RosettaOnlyExistsExpression exp, RosettaInterpreterBaseEnvironment env) {
 		return new RosettaInterpreterOnlyExistsInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToStringOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToNumberOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToIntOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToTimeOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToEnumOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToDateOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToDateTimeOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterValue interp(ToZonedDateTimeOperation exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterParseOperationInterpreter().interp(exp, env);
+	}
+
+	@Override
+	public RosettaInterpreterBaseEnvironment interp(Data exp, RosettaInterpreterBaseEnvironment env) {
+		return new RosettaInterpreterDataInterpreter().interp(exp,
+				(RosettaInterpreterEnvironment) env);
 	}
 }
 

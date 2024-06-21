@@ -153,7 +153,7 @@ public class RosettaInterpreterArithmeticOperationsTest {
 		RosettaInterpreterValue val = interpreter.interp(expr);
 		List<RosettaInterpreterError> expected = List.of(
 				new RosettaInterpreterError(
-						"Division by 0 is not allowed"));
+						"Division by 0 is not allowed", expr));
 		assertEquals(expected,
 				((RosettaInterpreterErrorValue)val).getErrors());
 	}

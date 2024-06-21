@@ -68,8 +68,8 @@ class RosettaInterpreterErrorValueTest {
 		vb2 = new RosettaInterpreterBooleanValue(false);
 		vals = new ArrayList<>(List.of(v1,v2,v3,vb1,vb2));
 		exFactory = ExpressionFactoryImpl.init();		
-		b1 = new RosettaInterpreterError("b1");
-		b2 = new RosettaInterpreterError("b2");
+		b1 = new RosettaInterpreterError("b1", null);
+		b2 = new RosettaInterpreterError("b2", null);
 		baseErr = new ArrayList<>(List.of(b1,b2));
 	}
 

@@ -53,9 +53,9 @@ public class RosettaInterpreterFeatureCallTest {
 	RosettaInterpreterTimeValue time = new RosettaInterpreterTimeValue(hours, minutes, seconds);
 	
 	RosettaInterpreterErrorValue error1 = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-			"Feature calls: the receiver is an error value."));
+			"Feature calls: the receiver is an error value.", null));
 	RosettaInterpreterErrorValue error2 = new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-			"dates does not exist in the environment"));
+			"dates does not exist in the environment", null));
 	
 	@Test
 	public void testDateDay() {
