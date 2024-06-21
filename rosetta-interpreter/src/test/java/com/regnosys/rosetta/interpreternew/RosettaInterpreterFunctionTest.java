@@ -3,6 +3,7 @@ package com.regnosys.rosetta.interpreternew;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.impl.RosettaSymbolReferenceImpl;
 import com.regnosys.rosetta.rosetta.interpreter.RosettaInterpreterValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.rosetta.simple.impl.DataImpl;
 import com.regnosys.rosetta.rosetta.simple.impl.FunctionImpl;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.tests.util.ModelHelper;
@@ -347,18 +349,60 @@ public class RosettaInterpreterFunctionTest {
     			+ "  output: result A (1..1)\r\n"
     			+ "  set result:\r\n"
     			+ "    Add()\r\n");
-    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
-    			List.of(new RosettaInterpreterTypedFeatureValue("a")));
     	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	DataImpl data = (DataImpl) model.getElements().get(0);
     	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
     			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
     	RosettaInterpreterEnvironment env = 
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
-    	env.addValue("A", v);
+    	env = (RosettaInterpreterEnvironment) interpreter.interp(data);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("A", 
     			List.of(new RosettaInterpreterTypedFeatureValue("a", 
-    					new RosettaInterpreterNumberValue(BigDecimal.valueOf(5)))));
+    					new RosettaInterpreterNumberValue(BigDecimal.valueOf(5)),
+    					((RosettaInterpreterTypedValue) res).getAttributes().get(0).getCard())));
+    	assertEquals(expected, res);
+    }
+    
+    @Test
+    public void funcSimpleSetComplexFeatureTest() {
+    	RosettaModel model = mh.parseRosettaWithNoErrors(
+    			"type Date:"
+    			+ "  day int (1..1)"
+    			+ "	 month int (1..1)"
+    			+ "  year int (1..1)"
+    			+ "func FindMyBday:\r\n"
+    			+ "  output: result Date (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    Date { day: 0, month: 0, year: 0 }\r\n"
+    			+ "	 set result -> day:\r\n"
+    			+ "	   17\r\n"
+    			+ "  set result -> month:\r\n"
+    			+ "    9\r\n"
+    			+ "	 set result -> year:\r\n"
+    			+ "	   2003\r\n"
+    			+ "func MyTest:\r\n"
+    			+ "  output: result Date (1..1)\r\n"
+    			+ "  set result:\r\n"
+    			+ "    FindMyBday()\r\n");
+    	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	DataImpl data = (DataImpl) model.getElements().get(0);
+    	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
+    			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
+    	RosettaInterpreterEnvironment env = 
+    			(RosettaInterpreterEnvironment) interpreter.interp(function);
+    	env = (RosettaInterpreterEnvironment) interpreter.interp(data);
+    	RosettaInterpreterValue res = interpreter.interp(ref, env);
+    	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("Date", 
+    			List.of(new RosettaInterpreterTypedFeatureValue("day", 
+    					new RosettaInterpreterNumberValue(17),
+       				 ((RosettaInterpreterTypedValue) res).getAttributes().get(0).getCard()),
+    					new RosettaInterpreterTypedFeatureValue("month", 
+        				 new RosettaInterpreterNumberValue(BigDecimal.valueOf(9)),
+        				 ((RosettaInterpreterTypedValue) res).getAttributes().get(1).getCard()),
+    					new RosettaInterpreterTypedFeatureValue("year", 
+        				 new RosettaInterpreterNumberValue(BigDecimal.valueOf(2003)),
+        				 ((RosettaInterpreterTypedValue) res).getAttributes().get(2).getCard())));
     	assertEquals(expected, res);
     }
     
@@ -375,14 +419,13 @@ public class RosettaInterpreterFunctionTest {
     			+ "  output: result A (1..1)\r\n"
     			+ "  set result:\r\n"
     			+ "    Add()\r\n");
-    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
-    			List.of(new RosettaInterpreterTypedFeatureValue("a")));
     	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	DataImpl data = (DataImpl) model.getElements().get(0);
     	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
     			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
     	RosettaInterpreterEnvironment env = 
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
-    	env.addValue("A", v);
+    	env = (RosettaInterpreterEnvironment) interpreter.interp(data);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterErrorValue expected = new RosettaInterpreterErrorValue(
     			new RosettaInterpreterError("Arithmetic Operation: Rightside"
@@ -404,14 +447,13 @@ public class RosettaInterpreterFunctionTest {
     			+ "  output: result A (1..1)\r\n"
     			+ "  set result:\r\n"
     			+ "    Add()\r\n");
-    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
-    			List.of(new RosettaInterpreterTypedFeatureValue("a")));
     	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	DataImpl data = (DataImpl) model.getElements().get(0);
     	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
     			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
     	RosettaInterpreterEnvironment env = 
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
-    	env.addValue("A", v);
+    	env = (RosettaInterpreterEnvironment) interpreter.interp(data);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("A", 
     			List.of(new RosettaInterpreterTypedFeatureValue("a", 
@@ -434,21 +476,21 @@ public class RosettaInterpreterFunctionTest {
     			+ "  output: result A (1..1)\r\n"
     			+ "  set result:\r\n"
     			+ "    Add()\r\n");
-    	RosettaInterpreterTypedValue v = new RosettaInterpreterTypedValue("A", 
-    			List.of(new RosettaInterpreterTypedFeatureValue("a"),
-    					new RosettaInterpreterTypedFeatureValue("b")));
     	FunctionImpl function = (FunctionImpl) model.getElements().get(1);
+    	DataImpl data = (DataImpl) model.getElements().get(0);
     	RosettaSymbolReferenceImpl ref = (RosettaSymbolReferenceImpl) 
     			((FunctionImpl)model.getElements().get(2)).getOperations().get(0).getExpression();
     	RosettaInterpreterEnvironment env = 
     			(RosettaInterpreterEnvironment) interpreter.interp(function);
-    	env.addValue("A", v);
+    	env = (RosettaInterpreterEnvironment) interpreter.interp(data);
     	RosettaInterpreterValue res = interpreter.interp(ref, env);
     	RosettaInterpreterTypedValue expected = new RosettaInterpreterTypedValue("A", 
-    			List.of(new RosettaInterpreterTypedFeatureValue("a"),
+    			List.of(new RosettaInterpreterTypedFeatureValue("a", 
+    					new RosettaInterpreterListValue(new ArrayList<>()),
+       				 ((RosettaInterpreterTypedValue) res).getAttributes().get(0).getCard()),
     					new RosettaInterpreterTypedFeatureValue("b", 
         				 new RosettaInterpreterNumberValue(BigDecimal.valueOf(5)),
-        				 ((RosettaInterpreterTypedValue) res).getAttributes().get(0).getCard())));
+        				 ((RosettaInterpreterTypedValue) res).getAttributes().get(1).getCard())));
     	assertEquals(expected, res);
     }
     

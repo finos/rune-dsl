@@ -36,6 +36,14 @@ import com.regnosys.rosetta.rosetta.expression.LastOperation
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.ReverseOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
+import com.regnosys.rosetta.rosetta.expression.ToIntOperation
+import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.simple.Data
 
 class RosettaInterpreterBaseError{
@@ -82,6 +90,14 @@ interface InterpreterVisitor {
 	op RosettaInterpreterBaseEnvironment interp (Function exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterBaseEnvironment interp (Data exp, RosettaInterpreterBaseEnvironment env)
 	op RosettaInterpreterValue interp (RosettaConstructorExpression exp, RosettaInterpreterBaseEnvironment env)
-	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (RosettaFeatureCall exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToStringOperation exp, RosettaInterpreterBaseEnvironment env)	
+	op RosettaInterpreterValue interp (ToNumberOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToIntOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToTimeOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToEnumOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToDateOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToDateTimeOperation exp, RosettaInterpreterBaseEnvironment env)
+	op RosettaInterpreterValue interp (ToZonedDateTimeOperation exp, RosettaInterpreterBaseEnvironment env)
 	
 }
