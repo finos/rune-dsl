@@ -21,15 +21,19 @@ public class RosettaInterpreterEnumElementValue extends RosettaInterpreterBaseVa
 		this.enumName = n;
 		this.value = v;
 	}
+
+	public String getValue() { return value; }
+	
+	public String getEnumName() { return enumName; }
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(value);
+		return Objects.hash(enumName, value);
 	}
 
 	@Override
 	public String toString() {
-		return "RosettaInterpreterEnumElementValue [value=" + value + "]";
+		return "RosettaInterpreterEnumElementValue [value = " + value + "]";
 	}
 
 	@Override
@@ -46,10 +50,6 @@ public class RosettaInterpreterEnumElementValue extends RosettaInterpreterBaseVa
 		RosettaInterpreterEnumElementValue other = (RosettaInterpreterEnumElementValue) obj;
 		return Objects.equals(value, other.value) && Objects.equals(enumName, other.enumName);
 	}
-
-	public String getValue() { return value; }
-	
-	public String getEnumName() { return enumName; }
 
 	@Override
 	public Stream<Object> toElementStream() {
