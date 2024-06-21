@@ -169,7 +169,11 @@ public class RosettaInterpreterFunctionInterpreter
 			if (v instanceof RosettaInterpreterBooleanValue) {
 				if (((RosettaInterpreterBooleanValue) v).getValue() == false) {
 					acc.addError(new RosettaInterpreterError("Condition \"" 
-							+ c.getName() + "\" does not hold for this function call"));
+							+ c.getName() + "\" "
+									+ "does not hold"
+									+ " for this"
+									+ " function"
+									+ " call", c.getExpression()));
 				}
 			} else { //must be an error if not a boolean value
 				acc.addAllErrors(v);
@@ -309,14 +313,14 @@ public class RosettaInterpreterFunctionInterpreter
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" has cardinality lower than the limit "
-							+ lowerLimit));
+							+ lowerLimit, attr));
 		}
 		int upperLimit = attr.getCard().isUnbounded() ? Integer.MAX_VALUE : attr.getCard().getSup();
 		if (paramSize > upperLimit) {
 			return new RosettaInterpreterErrorValue(
 					new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" has cardinality higher than the limit "
-							+ upperLimit));
+							+ upperLimit, attr));
 		}
 		
 		//checking that the potential list of elements in arg and value are of the same type
@@ -327,7 +331,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" requires a number, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;
@@ -337,7 +341,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" requires a number, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;
@@ -347,7 +351,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" requires a boolean, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;
@@ -357,7 +361,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" requires a string, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;
@@ -367,7 +371,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" requires a date, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;
@@ -377,7 +381,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 							+ attr.getName() + "\" requires a dateTime, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;
@@ -387,7 +391,7 @@ public class RosettaInterpreterFunctionInterpreter
 						return new RosettaInterpreterErrorValue(
 								new RosettaInterpreterError("The attribute \"" 
 						+ attr.getName() + "\" requires a zonedDateTime, but received a "
-								+ val.getClass()));
+								+ val.getClass(), attr));
 					}
 				}
 				break;

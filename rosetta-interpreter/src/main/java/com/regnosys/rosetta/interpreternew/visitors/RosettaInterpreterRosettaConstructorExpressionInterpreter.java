@@ -94,7 +94,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					
 					if (!check) {
 						return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-								"Constructor Expressions: time isn't valid."));
+								"Constructor Expressions: time isn't valid.", expr));
 					} else {
 						return new RosettaInterpreterDateTimeValue(
 							((RosettaInterpreterDateValue) date), 
@@ -115,7 +115,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 					
 					if (!check) {
 						return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-								"Constructor Expressions: time isn't valid."));
+								"Constructor Expressions: time isn't valid.", expr));
 					} else {
 						return new RosettaInterpreterZonedDateTimeValue(
 							((RosettaInterpreterDateValue) date), 
@@ -156,7 +156,8 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 												"Constructor Expression"
 												+ ": the attribute \""
 												+ name + "\" is an "
-												+ "error value."));
+												+ "error value.",
+												expr));
 								
 								return RosettaInterpreterErrorValue.merge(
 										List.of(newExpError, expError));
@@ -183,7 +184,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 				String conditionsError = verifyConditions(conditions, attributes, env);
 				if (conditionsError != null) {
 					return new RosettaInterpreterErrorValue(
-							new RosettaInterpreterError(conditionsError));
+							new RosettaInterpreterError(conditionsError, expr));
 				}
 				
 				
@@ -199,7 +200,7 @@ public class RosettaInterpreterRosettaConstructorExpressionInterpreter extends R
 		}
 		
 		return new RosettaInterpreterErrorValue(new RosettaInterpreterError(
-				"Constructor Expressions: attribute type is not valid."));
+				"Constructor Expressions: attribute type is not valid.", expr));
 	}
 	
 	
