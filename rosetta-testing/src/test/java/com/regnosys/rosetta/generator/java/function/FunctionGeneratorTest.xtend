@@ -43,6 +43,29 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void onlyExistsOnAbsentParent() {
+		val code = '''
+		type A:
+		    a1 string (0..1)
+		    a2 string (0..1)
+		
+		func TestOnlyExists:
+			inputs:
+				a A (1..1)
+			output:
+				result boolean (1..1)
+			
+			set result:
+				a -> a1 only exists
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val testOnlyExists = classes.createFunc("TestOnlyExists")
+        assertFalse(testOnlyExists.invokeFunc(Boolean, #[null]))
+	}
+	
+	@Test
 	def void onlyExistsAndOneOfWorkOnStaticType() {
 		val code = '''
 		type A:
