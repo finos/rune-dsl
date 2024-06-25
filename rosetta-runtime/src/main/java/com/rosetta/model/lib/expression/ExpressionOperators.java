@@ -129,6 +129,13 @@ public class ExpressionOperators {
 	
 	public static <T> ComparisonResult onlyExists(Mapper<T> mapper, List<String> allFieldNames, List<String> requiredFields) {
 		T object = mapper.get();
+		
+		if (object == null) {
+			String requiredFieldsMessage = requiredFields.stream().collect(Collectors.joining("', '", "'", "'"));
+			String errorMessage = String.format("Expected only %s to be set, but object was absent.", requiredFieldsMessage);
+			return ComparisonResult.failure(errorMessage);
+		}
+		
 		List<String> populatedFieldNames = new LinkedList<>();
 		for (String a: allFieldNames) {
 			try {
