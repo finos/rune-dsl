@@ -171,6 +171,57 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	def void testDeepPathOperatorWithMultiMeta() {
+		val code = '''
+		choice A:
+			B
+			C
+		
+		type ABase:
+			prop int (0..*)
+				[metadata scheme]
+		
+		type B extends ABase:
+		
+		type C extends ABase:
+		
+		func Test:
+			inputs:
+				a A (1..1)
+			output:
+				result int (0..*)
+			
+			set result:
+				a ->> prop
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+        val aB = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> classes.createInstanceUsingBuilder("B", #{
+    				"prop" -> 
+    					#[
+    						classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+		    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+			    					"scheme" -> "myScheme"
+			    				}),
+		    					"value" -> 42
+		    				}),
+		    				classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+		    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+			    					"scheme" -> "otherScheme"
+			    				}),
+		    					"value" -> 0
+		    				})
+    					]
+	    		})
+	        })
+        
+        assertEquals(#[42, 0], test.invokeFunc(String, #[aB]))
+	}
+	
+	@Test
 	def void testDeepPathOperator() {
 		val code = '''
 		choice A:
