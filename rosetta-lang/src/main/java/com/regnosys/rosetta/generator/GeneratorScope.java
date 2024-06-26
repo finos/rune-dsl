@@ -288,9 +288,6 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 					}
 					lastWasValid = isValid;
 				}
-				while (takenNames.contains(name) || !isValidIdentifier(name)) {
-					name = escapeName(name);
-				}
 				takenNames.add(name);
 				this.actualNames.put(id, name);
 			}
