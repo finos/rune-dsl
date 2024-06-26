@@ -269,9 +269,24 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 			List<GeneratedIdentifier> ids = idsByDesiredName.get(desiredName);
 			for (int i = 0; i < ids.size(); i++) {
 				GeneratedIdentifier id = ids.get(i);
-				String name = id.getDesiredName();
+				String name = desiredName;
 				if (ids.size() > 1) {
 					name += i;
+				}
+				boolean lastWasValid = true;
+				while (true) {
+					boolean isValid = isValidIdentifier(name);
+					if (!lastWasValid && !isValid) {
+						// Escaping the invalid identifier did not work - throw an exception. Otherwise we could end up in an infinite loop.
+						// If this is thrown, this usually indicates there is an implementation error in `escapeName` or `isValidIdentifier`.
+						throw new RuntimeException("Tried escaping the identifier `" + name + "`, but it is still not a valid identifier.");
+					}
+					if (takenNames.contains(name) || !isValid) {
+						name = escapeName(name);
+					} else {
+						break;
+					}
+					lastWasValid = isValid;
 				}
 				while (takenNames.contains(name) || !isValidIdentifier(name)) {
 					name = escapeName(name);

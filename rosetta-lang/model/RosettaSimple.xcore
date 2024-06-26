@@ -100,10 +100,14 @@ class Choice extends Data {
 }
 
 class ChoiceOption extends Attribute {
+	String _hardcodedName
 	contains RosettaCardinality _hardcodedCardinality
 	
 	op String getName() {
-		NodeModelUtils.findNodesForFeature(typeCall, Literals.TYPE_CALL__TYPE).head.text.strip
+		if (_hardcodedName === null) {
+			_hardcodedName = NodeModelUtils.getTokenText(NodeModelUtils.findNodesForFeature(typeCall, Literals.TYPE_CALL__TYPE).head)
+		}
+		return _hardcodedName
 	}
 	
 	op RosettaCardinality getCard() {
