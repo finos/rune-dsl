@@ -115,6 +115,42 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	def void onlyExistsOnList() {
+		val code = '''
+		type A:
+		    a1 string (0..1)
+		    a2 string (0..1)
+		    a3 boolean (0..1)
+		
+		func TestOnlyExists:
+			inputs:
+				a A (0..*)
+			output:
+				result boolean (1..1)
+			
+			set result:
+				a -> a1 only exists
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val a1 = classes.createInstanceUsingBuilder("A", #{
+			"a1" -> "some value"
+		})
+		val a2 = classes.createInstanceUsingBuilder("A", #{
+			"a1" -> "other value"
+		})
+		val a3 = classes.createInstanceUsingBuilder("A", #{
+			"a1" -> "some value",
+			"a2" -> "other value"
+		})
+        
+        val testOnlyExists = classes.createFunc("TestOnlyExists")
+        assertTrue(testOnlyExists.invokeFunc(Boolean, #[List.of(a1, a2)]))
+        assertFalse(testOnlyExists.invokeFunc(Boolean, #[List.of(a1, a2, a3)]))
+	}
+	
+	@Test
 	def void testDeepPathOperatorWithMeta() {
 		val code = '''
 		type A:
