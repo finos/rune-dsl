@@ -27,7 +27,7 @@ QualifiedName:
 ;
 
 Import:
-	'import' importedNamespace=(QualifiedNameWithWildcard) ('as' namespaceAlias=STRING)?;
+	'import' importedNamespace=(QualifiedNameWithWildcard) ('as' namespaceAlias=ValidID)?;
 			
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;

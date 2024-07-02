@@ -45,6 +45,29 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testCanUserImportAlisesWhenWildcardPresent() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			
+			
+			type B:
+				a A (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testCannotAccessMetaFeatureAfterDeepFeatureCall() {
 		val context = '''
 		type A:
