@@ -27,10 +27,11 @@ QualifiedName:
 ;
 
 Import:
-	'import' importedNamespace=QualifiedNameWithWildcard;
-
+	'import' importedNamespace=(QualifiedNameWithWildcard) ('as' namespaceAlias=STRING)?;
+			
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
+	
 
 RootElement:
 	Annotation

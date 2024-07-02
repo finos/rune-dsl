@@ -23,7 +23,10 @@ class RosettaModel extends RosettaDefinable {
 
 class Import {
 	String importedNamespace
+	String namespaceAlias
+	
 }
+
 
 /**********************************************************************
  * Common types

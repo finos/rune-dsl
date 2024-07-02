@@ -20,6 +20,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
@@ -30,6 +32,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+	
+	@Test
+	def void testCannotUseImportAliasesWithoutWildcard() {
+		val model = '''
+			import foo.bar.Test as someAlias
+		'''.parseRosetta
+		
+		model.assertError(IMPORT, null,
+			'"as" statement can only be used with wildcard import'
+		)
+	}
 	
 	@Test
 	def void testCannotAccessMetaFeatureAfterDeepFeatureCall() {
