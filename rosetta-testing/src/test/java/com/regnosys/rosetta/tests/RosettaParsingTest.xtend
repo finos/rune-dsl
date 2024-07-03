@@ -35,6 +35,28 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCanUseAlisesWhenImpoting() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias			
+			
+			
+			type B:
+				a someAlias.A (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testValidDefaultSyntax() {
 		"a default 2"
 			.parseExpression(#["a int (1..1)"])
