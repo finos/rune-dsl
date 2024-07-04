@@ -198,6 +198,17 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return singleType;
 	}
+	public JavaReferenceType toMultiRegularJavaType(ExpandedAttribute expAttr) {
+		JavaReferenceType singleType = toJavaReferenceType(typeSystem.typeCallToRType(expAttr.getRosettaType()));
+		if (expAttr.isMultiple()) {
+			if (expAttr.isDataType()) {
+				return toPolymorphicList(singleType);
+			} else {
+				return typeUtil.wrap(typeUtil.LIST, singleType);
+			}
+		}
+		return singleType;
+	}
 	public JavaClass<?> toMetaJavaType(ExpandedAttribute expAttr) {
 		JavaReferenceType attrType;
 		if (expAttr.getRosettaType() != null) {

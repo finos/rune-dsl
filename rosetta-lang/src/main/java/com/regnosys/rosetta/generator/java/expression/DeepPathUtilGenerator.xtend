@@ -128,7 +128,7 @@ class DeepPathUtilGenerator {
 							]
 					]
 		}
-		val resultType = deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType
+		val resultType = deepFeature.toExpandedAttribute.toMultiRegularJavaType
 		acc.addCoercions(resultType, scope)
 	}
 }
