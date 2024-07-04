@@ -564,13 +564,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 		}
 		if (actualType instanceof RErrorType)
 			error('''«actualType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (actualType == MISSING) {
-			val node = findActualNodeFor(expression)
-			if (node !== null) {
-				error('''Couldn't infer actual type for '«getTokenText(node)»'«»''', owner, ref, index,
-					TYPE_ERROR)
-			}
-		} else if (expectedType instanceof RErrorType)
+		else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
 		else if (expectedType !== null && expectedType != MISSING) {
 			if (!actualType.isSubtypeOf(expectedType))
