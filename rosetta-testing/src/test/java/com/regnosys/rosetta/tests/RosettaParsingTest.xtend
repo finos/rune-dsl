@@ -46,7 +46,7 @@ class RosettaParsingTest {
 		val model2 = '''
 			namespace test
 			
-			import foo.bar.* as someAlias			
+			import foo.bar.* as someAlias
 			
 			
 			type B:
