@@ -6,15 +6,27 @@ package com.regnosys.rosetta.scoping
 import com.google.common.base.Predicate
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -22,48 +34,38 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction
+import com.regnosys.rosetta.rosetta.translate.Translation
+import com.regnosys.rosetta.rosetta.translate.TranslationRule
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import java.util.List
+import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.naming.QualifiedName
+import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
+import org.eclipse.xtext.scoping.impl.ImportNormalizer
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
+import org.eclipse.xtext.scoping.impl.SimpleScope
+import org.eclipse.xtext.util.Strings
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.translate.TranslatePackage.Literals.*
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import java.util.List
-import org.eclipse.xtext.scoping.impl.SimpleScope
-import org.eclipse.xtext.resource.EObjectDescription
-import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.utils.RosettaConfigExtension
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
-import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.rosetta.RosettaTypeAlias
-import com.regnosys.rosetta.rosetta.TypeCall
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
-import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
-import com.regnosys.rosetta.rosetta.translate.Translation
-import com.regnosys.rosetta.rosetta.translate.TranslationRule
-import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction
-import com.regnosys.rosetta.rosetta.simple.Annotated
-import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 
 /**
  * This class contains custom scoping description.
@@ -279,14 +281,40 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
 		return if (context instanceof RosettaModel) {
-			val imports = super.internalGetImportedNamespaceResolvers(context, ignoreCase)
-			imports.add(
-				doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase)
-			)
-			return imports
+			return context.imports.map [createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)]
 		} else
 			emptyList
 	}
+	
+	private def ImportNormalizer createImportedNamespaceResolver(String namespace, String namespaceAlias,
+		boolean ignoreCase) {
+		if (Strings.isEmpty(namespace)) {
+			return null;
+		}
+
+		val importedNamespace = qualifiedNameConverter.toQualifiedName(namespace)
+		if (importedNamespace === null || importedNamespace.isEmpty()) {
+			return null;
+		}
+		
+		val hasWildCard = ignoreCase ? 
+				importedNamespace.getLastSegment().equalsIgnoreCase(getWildCard()) :
+				importedNamespace.getLastSegment().equals(getWildCard());
+
+		if (hasWildCard) {
+			if (importedNamespace.getSegmentCount() <= 1)
+				return null;
+			return doCreateImportNormalizer(importedNamespace.skipLast(1), namespaceAlias, true, ignoreCase);
+		} else {
+			return doCreateImportNormalizer(importedNamespace, namespaceAlias, false, ignoreCase);
+		}
+	}
+	
+	private def ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, String namespaceAlias,  boolean wildcard, boolean ignoreCase) {
+		return new AliasAwareImportNormalizer(importedNamespace, namespaceAlias, wildcard, ignoreCase);
+	}
+	
+
 	
 	private def IScope defaultScope(EObject object, EReference reference) {
 		filteredScope(super.getScope(object, reference), [it.EClass !== FUNCTION_DISPATCH])

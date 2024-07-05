@@ -13,6 +13,7 @@ plugin.xml_gen
 **/*.iml
 .checkstyle
 .classpath
+rosetta-profiling/dependency-reduced-pom.xml
 
 **/.settings
 **/src-gen/
