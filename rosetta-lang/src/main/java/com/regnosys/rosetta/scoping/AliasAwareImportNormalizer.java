@@ -1,31 +1,38 @@
 package com.regnosys.rosetta.scoping;
 
-import java.util.Objects;
-
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
 
 public class AliasAwareImportNormalizer extends ImportNormalizer {
-	private final String namespaceAlias;
+	private final QualifiedName namespaceAlias;
 
-	public AliasAwareImportNormalizer(QualifiedName importedNamespace, boolean wildCard, boolean ignoreCase, String namespaceAlias) {
+	public AliasAwareImportNormalizer(QualifiedName importedNamespace, String namespaceAlias, boolean wildCard,
+			boolean ignoreCase) {
 		super(importedNamespace, wildCard, ignoreCase);
-		this.namespaceAlias = namespaceAlias;
+		this.namespaceAlias = namespaceAlias != null ? QualifiedName.create(namespaceAlias) : null;
 	}
-	
+
 	@Override
-	public QualifiedName deresolve(QualifiedName fullyQualifiedName) { 
+	public QualifiedName deresolve(QualifiedName fullyQualifiedName) {
 		if (namespaceAlias != null) {
-			return null; //TODO: implement this
+			QualifiedName deresolved = super.deresolve(fullyQualifiedName);
+			if (deresolved != null) {
+				return namespaceAlias.append(fullyQualifiedName);
+			}
+			return null;
 		} else {
 			return super.deresolve(fullyQualifiedName);
-		}	
+		}
 	}
-	
+
 	@Override
 	public QualifiedName resolve(QualifiedName relativeName) {
-		if (namespaceAlias != null) {
-			return null; //TODO: implement this
+		if (relativeName.isEmpty())
+			return null;
+
+		if (namespaceAlias != null && relativeName.startsWith(namespaceAlias)
+				&& relativeName.getSegmentCount() != namespaceAlias.getSegmentCount()) {
+			return super.resolve(relativeName.skipFirst(namespaceAlias.getSegmentCount()));
 		} else {
 			return super.resolve(relativeName);
 		}
@@ -33,9 +40,9 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 
 	@Override
 	public String toString() {
-		return getImportedNamespacePrefix().toString() + (hasWildCard() ? ".*" : "") + (namespaceAlias != null ? "as " + namespaceAlias : "");
+		return getImportedNamespacePrefix().toString() + (hasWildCard() ? ".*" : "")
+				+ (namespaceAlias != null ? "as " + namespaceAlias : "");
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -48,20 +55,18 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this==obj)
+		if (this == obj)
 			return true;
-		if (obj==null)
+		if (obj == null)
 			return false;
 		if (super.equals(obj) == false) {
 			return false;
 		}
 		if (obj instanceof AliasAwareImportNormalizer) {
-			AliasAwareImportNormalizer other = (AliasAwareImportNormalizer)obj;
+			AliasAwareImportNormalizer other = (AliasAwareImportNormalizer) obj;
 			return other.namespaceAlias.equals(namespaceAlias);
 		}
 		return false;
 	}
-	
-	
-	
+
 }
