@@ -16,7 +16,6 @@ import java.util.List
 import com.regnosys.rosetta.rosetta.translate.TranslateSource
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.translate.BaseTranslateInstruction
@@ -58,11 +57,11 @@ class RosettaTranslateValidator extends AbstractDeclarativeRosettaValidator {
 		}
 	}
 	
-	private def void translateToFeatureCheck(RosettaFeature feature, List<RosettaExpression> inputs, BaseTranslateInstruction instruction) {
+	private def void translateToFeatureCheck(RosettaFeature feature, boolean isFeatureMulti, List<RosettaExpression> inputs, BaseTranslateInstruction instruction) {
 		// - For single cardinality attributes, all expressions should be single.
 		// - For multi cardinality attributes, all expressions should be of the same cardinality.
 		// - If the translation calls another translation, there should be at least one matching translation in the same translate source.
-		if (!feature.isFeatureMulti) {
+		if (!isFeatureMulti) {
 			inputs.forEach[
 				if (isMulti) {
 					error('''Expression must be of single cardinality when mapping to attribute `«feature.name»` of single cardinality.''', it, null);
@@ -97,7 +96,7 @@ class RosettaTranslateValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkTranslateInstruction(TranslateInstruction instruction) {
 		val container = instruction.eContainer
 		if (container instanceof TranslationRule) {
-			translateToFeatureCheck(container.attribute, instruction.expressions, instruction)
+			translateToFeatureCheck(container.attribute, container.attribute.isFeatureMulti, instruction.expressions, instruction)
 		} else if (container instanceof Translation) {
 			translateToTypeCheck(container.resultType, instruction.expressions, instruction)
 		}
@@ -105,6 +104,12 @@ class RosettaTranslateValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	def void checkTranslateMetaInstruction(TranslateMetaInstruction metaInstruction) {
-		translateToFeatureCheck(metaInstruction.metaFeature, metaInstruction.expressions, metaInstruction)
+		val container = metaInstruction.eContainer
+		val isFeatureMulti = if (container instanceof TranslationRule) {
+				container.attribute.isFeatureMulti
+			} else {
+				false
+			}
+		translateToFeatureCheck(metaInstruction.metaFeature, isFeatureMulti, metaInstruction.expressions, metaInstruction)
 	}
 }

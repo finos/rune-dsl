@@ -122,8 +122,6 @@ class TranslateTest {
 	    		[metadata scheme]
 	    
 	    type Bar:
-	    	v string (1..1)
-	    	t string (1..1)
 	    
 	    translate source FooBar {
 	        Foo from Bar:
@@ -141,19 +139,7 @@ class TranslateTest {
 		
 		val classes = code.compileToClasses
         
-        val bar = classes.createInstanceUsingBuilder("Bar", #{
-	    		"bs" -> #[
-	    			classes.createInstanceUsingBuilder("Qux", #{
-		    			"cs" -> #["a", "b"]
-		    		}),
-		    		classes.createInstanceUsingBuilder("Qux", #{
-		    			"cs" -> #[]
-		    		}),
-		    		classes.createInstanceUsingBuilder("Qux", #{
-		    			"cs" -> #["This", "is", "ignored"]
-		    		})
-	    		]
-	        })
+        val bar = classes.createInstanceUsingBuilder("Bar", #{})
 	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
 	    		"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
 					"key" -> #[Key.builder.setKeyValue("self")]
@@ -164,10 +150,8 @@ class TranslateTest {
     					"id" -> "favoriteNumber"
     				})
 				}),
-				"self" -> classes.createInstanceUsingBuilder("Foo", #{
-					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-    					"reference" -> Reference.builder.setReference("self")
-    				})
+				"self" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+					"reference" -> Reference.builder.setReference("self")
 				}),
 				"value" -> #[
 					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{

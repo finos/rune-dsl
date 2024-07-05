@@ -108,16 +108,23 @@ class CodeGeneratorTestHelper {
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
+		val clazz = classes.get(namespace + '.' + className)
+		if (clazz === null) {
+			throw new RuntimeException('''Class «namespace + '.' + className» not found''')
+		}
 		val rosettaClassBuilderInstance = classes.get(namespace + '.' + className).getMethod(
 			"builder").invoke(null);
 		itemsToSet.forEach [ name, value |
-			rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class]).invoke(
-				rosettaClassBuilderInstance, value);
+			val setter = rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class])
+			if (setter === null) {
+				throw new RuntimeException('''No method #«'set' + name.toFirstUpper»(«value?.class?.simpleName») in «rosettaClassBuilderInstance.class»''')
+			}
+			setter.invoke(rosettaClassBuilderInstance, value);
 		]
 		itemsToAddToList.forEach [ name, objectsToAdd |
 			objectsToAdd.forEach [ value |
-				val clazz = rosettaClassBuilderInstance.class
-				val meth = getMatchingMethod(clazz, 'add' + name.toFirstUpper, #[value].map[class])
+				val builderClazz = rosettaClassBuilderInstance.class
+				val meth = getMatchingMethod(builderClazz, 'add' + name.toFirstUpper, #[value].map[class])
 				meth.invoke(
 					rosettaClassBuilderInstance, value);
 			]
