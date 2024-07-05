@@ -128,14 +128,20 @@ public class ExpressionOperators {
 	}
 	
 	public static <T> ComparisonResult onlyExists(Mapper<T> mapper, List<String> allFieldNames, List<String> requiredFields) {
-		T object = mapper.get();
+		List<T> objects = mapper.getMulti();
 		
-		if (object == null) {
+		if (objects == null || objects.isEmpty()) {
 			String requiredFieldsMessage = requiredFields.stream().collect(Collectors.joining("', '", "'", "'"));
 			String errorMessage = String.format("Expected only %s to be set, but object was absent.", requiredFieldsMessage);
 			return ComparisonResult.failure(errorMessage);
 		}
 		
+		return objects.stream()
+				.map(p -> validateOnlyExists(p, allFieldNames, requiredFields))
+				.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
+	}
+
+	private static <T> ComparisonResult validateOnlyExists(T object, List<String> allFieldNames, List<String> requiredFields) {
 		List<String> populatedFieldNames = new LinkedList<>();
 		for (String a: allFieldNames) {
 			try {
@@ -161,7 +167,7 @@ public class ExpressionOperators {
 		}
 		return ComparisonResult.failure(errorMessage);
 	}
-
+	
 	/**
 	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
 	 */
