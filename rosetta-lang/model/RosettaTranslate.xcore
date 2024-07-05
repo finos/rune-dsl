@@ -4,7 +4,7 @@
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 package com.regnosys.rosetta.rosetta.translate
 
-import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
@@ -12,6 +12,7 @@ import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 
 class TranslateSource extends RosettaRootElement, RosettaNamed {
 	refers TranslateSource[] superSources
@@ -36,12 +37,14 @@ class TranslationParameter extends RosettaSymbol, RosettaTyped {
 class TranslationRule {
     refers Translation translation opposite rules
     
-    refers RosettaFeature feature
+    refers Attribute attribute
     contains TranslateInstruction[] instructions
     contains TranslateMetaInstruction[] metaInstructions
 }
 
 abstract class BaseTranslateInstruction {
+	contains TranslateDispatchOperation _internalDispatchExpression
+	
 	contains RosettaExpression[] expressions
 }
 

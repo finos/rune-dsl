@@ -31,7 +31,6 @@ import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import javax.inject.Inject
@@ -42,6 +41,9 @@ import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.generator.java.reports.RuleGenerator
+import com.regnosys.rosetta.generator.java.translate.TranslationGenerator
+import com.regnosys.rosetta.rosetta.translate.TranslateSource
 
 /**
  * Generates code from your model files on save.
@@ -59,6 +61,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 	@Inject RuleGenerator ruleGenerator
+	@Inject TranslationGenerator translationGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
@@ -192,6 +195,11 @@ class RosettaGenerator implements IGenerator2 {
 						RosettaExternalRuleSource: {
 							it.externalClasses.forEach [ externalClass |
 								tabulatorGenerator.generate(fsa, externalClass.data, Optional.of(it))
+							]
+						}
+						TranslateSource: {
+							it.translations.forEach [
+								translationGenerator.generate(fsa, it)
 							]
 						}
 					}

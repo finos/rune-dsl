@@ -97,7 +97,7 @@ class RosettaTranslateValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkTranslateInstruction(TranslateInstruction instruction) {
 		val container = instruction.eContainer
 		if (container instanceof TranslationRule) {
-			translateToFeatureCheck(container.feature, instruction.expressions, instruction)
+			translateToFeatureCheck(container.attribute, instruction.expressions, instruction)
 		} else if (container instanceof Translation) {
 			translateToTypeCheck(container.resultType, instruction.expressions, instruction)
 		}

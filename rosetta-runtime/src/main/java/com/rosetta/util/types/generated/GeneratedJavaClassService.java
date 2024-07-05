@@ -16,9 +16,14 @@
 
 package com.rosetta.util.types.generated;
 
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.ModelTranslationId;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
@@ -54,6 +59,15 @@ public class GeneratedJavaClassService {
 		DottedPath packageName = id.getNamespace().child("reports");
 		String simpleName = id.getName() + "Rule";
 		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<ReportFunction<?, ?>>() {});
+	}
+	
+	public JavaClass<RosettaFunction> toJavaTranslationFunction(ModelTranslationId translationId) {
+		DottedPath packageName = translationId.getNamespace().child("translate");
+		String inputNames = translationId.getInputTypes().stream().map(id -> StringUtils.capitalize(id.getName())).collect(Collectors.joining("And"));
+		String outputName = StringUtils.capitalize(translationId.getOutputType().getName());
+		String sourceName = StringUtils.capitalize(translationId.getTranslateSource().getName());
+		String simpleName = String.format("Translate%sTo%sUsing%s", inputNames, outputName, sourceName);
+		return new GeneratedJavaClass<>(packageName, simpleName, RosettaFunction.class);
 	}
 	
 	public JavaClass<RosettaModelObject> toJavaType(ModelSymbolId id) {

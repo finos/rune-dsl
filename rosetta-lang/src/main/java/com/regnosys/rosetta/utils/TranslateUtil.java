@@ -7,11 +7,15 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import com.google.common.collect.Streams;
+import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.translate.TranslateSource;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
+import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.ModelTranslationId;
+import com.rosetta.util.DottedPath;
 
 public class TranslateUtil {
 	private final TypeSystem typeSystem;
@@ -61,5 +65,17 @@ public class TranslateUtil {
 		}
 		
 		return true;
+	}
+	
+	public ModelTranslationId toTranslationId(Translation translation) {
+		TranslateSource source = translation.getSource();
+		return new ModelTranslationId(
+				new ModelSymbolId(DottedPath.splitOnDots(source.getModel().getName()), source.getName()),
+				translation.getParameters().stream().map(p -> toModelSymbolId(p.getTypeCall().getType())).collect(Collectors.toList()),
+				toModelSymbolId(translation.getResultType().getType())
+			);
+	}
+	private ModelSymbolId toModelSymbolId(RosettaType t) {
+		return new ModelSymbolId(DottedPath.splitOnDots(t.getModel().getName()), t.getName());
 	}
 }

@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.ModelTranslationId;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.generated.GeneratedJavaClassService;
@@ -26,11 +27,12 @@ public class TranslateTestUtil {
 	}
 	
 	public RosettaFunction createTranslation(Map<String, Class<?>> classes, String sourceName, List<String> inputNames, String outputName) {
-		JavaClass<RosettaFunction> classRepr = generatedJavaClassService.toJavaTranslationFunction(
-					new ModelSymbolId(modelHelper.rootPackage(), sourceName),
-					inputNames.stream().map(n -> new ModelSymbolId(modelHelper.rootPackage(), n)).collect(Collectors.toList()),
-					new ModelSymbolId(modelHelper.rootPackage(), outputName)
-				);
+		ModelTranslationId id = new ModelTranslationId(
+				new ModelSymbolId(modelHelper.rootPackage(), sourceName),
+				inputNames.stream().map(n -> new ModelSymbolId(modelHelper.rootPackage(), n)).collect(Collectors.toList()),
+				new ModelSymbolId(modelHelper.rootPackage(), outputName)
+			);
+		JavaClass<RosettaFunction> classRepr = generatedJavaClassService.toJavaTranslationFunction(id);
 		return (RosettaFunction)injector.getInstance(classes.get(classRepr.getCanonicalName().toString()));
 	}
 }

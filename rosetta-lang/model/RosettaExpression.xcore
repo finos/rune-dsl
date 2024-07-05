@@ -14,7 +14,9 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.translate.TranslateSource
 import org.eclipse.emf.common.util.BasicEList
 
 
@@ -168,6 +170,12 @@ class RosettaConstructorExpression extends RosettaExpression, RosettaTyped {
 class ConstructorKeyValuePair {
 	refers RosettaFeature key
 	contains RosettaExpression value
+}
+
+class TranslateDispatchOperation extends RosettaExpression {
+	refers TranslateSource source
+	refers RosettaExpression[] inputs
+	refers TypeCall outputType
 }
 
 interface RosettaOperation extends RosettaExpression {

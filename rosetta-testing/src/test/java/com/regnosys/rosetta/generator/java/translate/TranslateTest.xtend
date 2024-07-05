@@ -48,11 +48,11 @@ class TranslateTest {
         
         val bar = classes.createInstanceUsingBuilder("Bar", #{
 	    		"b" -> classes.createInstanceUsingBuilder("Qux", #{
-	    			"c" -> "My favorite number is "
+	    			"c" -> "My favourite number is "
 	    		})
 	        })
 	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
-	    		"a" -> "My favorite number is 42"
+	    		"a" -> "My favourite number is 42"
 	        })
         
         val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");
@@ -75,6 +75,7 @@ class TranslateTest {
 	        Foo from Bar:
 	        	+ a
 	           		[from bs, [1, 2]]
+	           		[from "Another string"]
 	        
 	        string from Qux, context number:
 	        	[from cs join ", " + ": " + context to-string]
@@ -97,7 +98,7 @@ class TranslateTest {
 	    		]
 	        })
 	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
-	    		"a" -> #["a, b: 1", ": 2"]
+	    		"a" -> #["a, b: 1", ": 2", "Another string"]
 	        })
         
         val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");

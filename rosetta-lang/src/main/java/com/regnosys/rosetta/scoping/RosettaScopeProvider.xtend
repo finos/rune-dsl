@@ -238,10 +238,10 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
 				}
-				case TRANSLATION_RULE__FEATURE: {
+				case TRANSLATION_RULE__ATTRIBUTE: {
 					if (context instanceof TranslationRule) {
 						val translation = context.translation
-						return createExtendedFeatureScope(translation, typeSystem.typeCallToRType(translation.resultType))
+						return Scopes.scopeFor(typeSystem.typeCallToRType(translation.resultType).allFeatures(context))
 					}
 					return IScope.NULLSCOPE
 				}
@@ -249,7 +249,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof TranslateMetaInstruction) {
 						val container = context.eContainer
 						val annotated = if (container instanceof TranslationRule) {
-								container.feature
+								container.attribute
 							} else if (container instanceof Translation) {
 								container.resultType.type
 							}

@@ -66,6 +66,7 @@ import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.ModelTranslationId;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.model.lib.reports.Tabulator;
@@ -118,6 +119,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			return generatedJavaClassService.toJavaReportFunction(func.getReportId());
 		case RULE:
 			return generatedJavaClassService.toJavaRule(func.getSymbolId());
+		case TRANSLATION:
+			ModelTranslationId id = func.getTranslationId();
+			return generatedJavaClassService.toJavaTranslationFunction(id.getTranslateSource(), id.getInputTypes(), id.getOutputType());
 		default:
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 

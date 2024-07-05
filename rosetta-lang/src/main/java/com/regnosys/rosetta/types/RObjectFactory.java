@@ -26,26 +26,29 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.EcoreUtil2;
 
+import com.google.common.collect.Streams;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.regnosys.rosetta.rosetta.translate.TranslateInstruction;
 import com.regnosys.rosetta.rosetta.translate.TranslateSource;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.utils.TranslateUtil;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.model.lib.ModelTranslationId;
 import com.rosetta.util.DottedPath;
 
 public class RObjectFactory {
@@ -163,6 +166,7 @@ public class RObjectFactory {
 		inputAttributeSymbolRef.setSymbol(inputAttribute);
 		
 		RosettaSymbolReference symbolRef = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
+		symbolRef.setGenerated(true);
 		symbolRef.setSymbol(rule);
 		symbolRef.setExplicitArguments(true);
 		symbolRef.getArgs().add(inputAttributeSymbolRef);
@@ -171,13 +175,25 @@ public class RObjectFactory {
 	}
 	
 	public RFunction buildRFunction(Translation translation) {
-		List<RAttribute> inputs = translation.getParameters().stream().map(this::buildRAttribute).collect(Collectors.toList());
+		List<RAttribute> inputs = translation.getParameters().stream().<RAttribute>map(this::buildRAttribute).collect(Collectors.toList());
 		RType outputRType = typeSystem.typeCallToRType(translation.getResultType());
 		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), false);
-		List<ROperation> operations = translation.getTypeInstructions()
-				.stream()
-				.map(instr -> new ROperation(ROperationType.SET, outputAttribute, List.of(), instr.getExpressions().get(0))) // TODO
-				.collect(Collectors.toList());
+		List<ROperation> operations =
+			Streams.concat(
+				// type level instructions
+				translation.getTypeInstructions()
+					.stream()
+					.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), translation.getResultType(), outputAttribute, List.of(), false)),
+				// attribute level instructions
+				translation.getRules()
+					.stream()
+					.flatMap(rule -> {
+						RAttribute attr = buildRAttribute(rule.getAttribute());
+						return rule.getInstructions()
+							.stream()
+							.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()));
+					})
+			).collect(Collectors.toList());
 		
 		return new RFunction(
 				translateUtil.toTranslationId(translation), 
@@ -193,7 +209,15 @@ public class RObjectFactory {
 			);
 	}
 	
-	public List
+	public ROperation generateOperationForTranslateInstruction(TranslateInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
+		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
+		op.setGenerated(true);
+		op.setOutputType(outputType);
+		op.setSource(source);
+		op.getInputs().addAll(instr.getExpressions());
+		instr.set_internalDispatchExpression(op);
+		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, op);
+	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);

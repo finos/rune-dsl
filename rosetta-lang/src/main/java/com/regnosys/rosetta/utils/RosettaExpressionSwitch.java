@@ -72,6 +72,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
@@ -94,6 +95,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return doSwitch((RosettaReference)expr, context);
 		} else if (expr instanceof RosettaOperation) {
 			return doSwitch((RosettaOperation)expr, context);
+		} else if (expr instanceof TranslateDispatchOperation) {
+			return caseTranslateDispatchOperation((TranslateDispatchOperation)expr, context);
 		}
 		throw errorMissedCase(expr);
 	}
@@ -280,6 +283,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	
 	protected abstract Return caseImplicitVariable(RosettaImplicitVariable expr, Context context);
 	protected abstract Return caseSymbolReference(RosettaSymbolReference expr, Context context);
+	
+	protected abstract Return caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context);
 	
 	protected abstract Return caseAddOperation(ArithmeticOperation expr, Context context);
 	protected abstract Return caseSubtractOperation(ArithmeticOperation expr, Context context);
