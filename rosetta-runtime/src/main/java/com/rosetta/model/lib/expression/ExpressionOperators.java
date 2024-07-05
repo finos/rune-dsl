@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +97,7 @@ public class ExpressionOperators {
 	
 	// onlyExists
 	
+	@Deprecated // Since 9.11.3
 	public static ComparisonResult onlyExists(List<? extends Mapper<?>> o) {
 		// Validation rule checks that all parents match
 		Set<RosettaModelObject> parents = o.stream()
@@ -124,6 +126,41 @@ public class ExpressionOperators {
 			.map(p -> validateOnlyExists(p, fields))
 			.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
 	}
+	
+	public static <T> ComparisonResult onlyExists(Mapper<T> mapper, List<String> allFieldNames, List<String> requiredFields) {
+		T object = mapper.get();
+		
+		if (object == null) {
+			String requiredFieldsMessage = requiredFields.stream().collect(Collectors.joining("', '", "'", "'"));
+			String errorMessage = String.format("Expected only %s to be set, but object was absent.", requiredFieldsMessage);
+			return ComparisonResult.failure(errorMessage);
+		}
+		
+		List<String> populatedFieldNames = new LinkedList<>();
+		for (String a: allFieldNames) {
+			try {
+				Method getter = object.getClass().getMethod("get" + StringUtils.capitalize(a));
+				if (ExistenceChecker.isSet(getter.invoke(object))) {
+					populatedFieldNames.add(a);
+				}
+			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw new IllegalArgumentException(e);
+			}
+		}
+				
+		if (new HashSet<>(populatedFieldNames).equals(new HashSet<>(requiredFields))) {
+			return ComparisonResult.success();
+		}
+		String requiredFieldsMessage = requiredFields.stream().collect(Collectors.joining("', '", "'", "'"));
+		String errorMessage;
+		if (populatedFieldNames.size() == 0) {
+			errorMessage = String.format("Expected only %s to be set, but no fields were set.", requiredFieldsMessage);
+		} else {
+			String setFields = populatedFieldNames.stream().collect(Collectors.joining("', '", "'", "'"));
+			errorMessage = String.format("Expected only %s to be set, but set fields are: %s.", requiredFieldsMessage, setFields);
+		}
+		return ComparisonResult.failure(errorMessage);
+	}
 
 	/**
 	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
@@ -135,6 +172,7 @@ public class ExpressionOperators {
 				attr;
 	}
 	
+	@Deprecated // Since 9.11.3
 	private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(T parent, Set<String> fields) {
 		@SuppressWarnings("unchecked")
 		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
@@ -437,7 +475,7 @@ public class ExpressionOperators {
 	
 	// one-of and choice
 
-	@Deprecated
+	@Deprecated // Since 9.7.0
 	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
 		return choice(mapper, choiceFieldNames, necessity == ValidationResult.ChoiceRuleValidationMethod.OPTIONAL ? ChoiceRuleValidationMethod.OPTIONAL : ChoiceRuleValidationMethod.REQUIRED);
 	}

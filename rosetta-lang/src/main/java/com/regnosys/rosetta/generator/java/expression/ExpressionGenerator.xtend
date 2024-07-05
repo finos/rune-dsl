@@ -128,6 +128,7 @@ import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaSymbol
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -900,9 +901,27 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, Context context) {
-		expr.args.map[it.javaCode(MAPPER.wrapExtends(it), context.scope)]
-			.reduce[acc, stat| acc.then(stat, [list, item| JavaExpression.from('''«list», «item»''', null)], context.scope)]
-			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«Arrays».asList(«it»))''', COMPARISON_RESULT)]
+		val first = expr.args.head
+		var RDataType parentType
+		val parent = if (first instanceof RosettaFeatureCall) {
+			parentType = typeProvider.getRType(first.receiver) as RDataType
+			first.receiver.javaCode(MAPPER.wrapExtends(parentType.toJavaReferenceType), context.scope)
+		} else {
+			parentType = typeProvider.typeOfImplicitVariable(expr) as RDataType
+			typeCoercionService.addCoercions(implicitVariable(expr, context.scope), MAPPER.wrapExtends(parentType.toJavaReferenceType), context.scope)
+		}
+		val requiredAttributes = expr.args.map[
+			if (it instanceof RosettaFeatureCall) {
+				return it.feature
+			} else if (it instanceof RosettaSymbolReference) {
+				return it.symbol
+			}
+			throw new UnsupportedOperationException("Unsupported parent in `only exists` expression of type " + it?.class?.name)
+		]
+		val allAttrs = parentType.data.allNonOverridesAttributes
+		parent
+			.collapseToSingleExpression(context.scope)
+			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«it», «Arrays».asList(«allAttrs.join(", ")['"' + name + '"']»), «Arrays».asList(«requiredAttributes.join(", ")['"' + name + '"']»))''', COMPARISON_RESULT)]
 	}
 
 	override protected caseOrOperation(LogicalOperation expr, Context context) {

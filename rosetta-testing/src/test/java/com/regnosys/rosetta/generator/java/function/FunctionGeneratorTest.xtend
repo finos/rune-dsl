@@ -43,6 +43,78 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void onlyExistsOnAbsentParent() {
+		val code = '''
+		type A:
+		    a1 string (0..1)
+		    a2 string (0..1)
+		
+		func TestOnlyExists:
+			inputs:
+				a A (1..1)
+			output:
+				result boolean (1..1)
+			
+			set result:
+				a -> a1 only exists
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val testOnlyExists = classes.createFunc("TestOnlyExists")
+        assertFalse(testOnlyExists.invokeFunc(Boolean, #[null]))
+	}
+	
+	@Test
+	def void onlyExistsAndOneOfWorkOnStaticType() {
+		val code = '''
+		type A:
+		    a1 string (0..1)
+		    a2 string (0..1)
+		    a3 boolean (0..1)
+		
+		type B extends A:
+		    b1 string (0..1)
+		
+		func TestOnlyExists:
+			inputs:
+				a A (1..1)
+			output:
+				result boolean (1..1)
+			
+			set result:
+				a -> a1 only exists
+		
+		func TestOneOf:
+			inputs:
+				a A (1..1)
+			output:
+				result boolean (1..1)
+			
+			set result:
+				a one-of
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val b1 = classes.createInstanceUsingBuilder("B", #{
+			"a1" -> "some value",
+			"b1" -> "other value"
+		})
+		val b2 = classes.createInstanceUsingBuilder("B", #{
+			"b1" -> "other value"
+		})
+        
+        val testOnlyExists = classes.createFunc("TestOnlyExists")
+        assertTrue(testOnlyExists.invokeFunc(Boolean, #[b1]))
+        assertFalse(testOnlyExists.invokeFunc(Boolean, #[b2]))
+        
+        val testOneOf = classes.createFunc("TestOneOf")
+        assertTrue(testOneOf.invokeFunc(Boolean, #[b1]))
+        assertFalse(testOneOf.invokeFunc(Boolean, #[b2]))
+	}
+	
+	@Test
 	def void testDeepPathOperatorWithMeta() {
 		val code = '''
 		type A:
@@ -96,6 +168,57 @@ class FunctionGeneratorTest {
 	        })
         
         assertEquals("abc123", test.invokeFunc(String, #[aB]))
+	}
+	
+	@Test
+	def void testDeepPathOperatorWithMultiMeta() {
+		val code = '''
+		choice A:
+			B
+			C
+		
+		type ABase:
+			prop int (0..*)
+				[metadata scheme]
+		
+		type B extends ABase:
+		
+		type C extends ABase:
+		
+		func Test:
+			inputs:
+				a A (1..1)
+			output:
+				result int (0..*)
+			
+			set result:
+				a ->> prop
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+        val aB = classes.createInstanceUsingBuilder("A", #{
+	    		"B" -> classes.createInstanceUsingBuilder("B", #{
+    				"prop" -> 
+    					#[
+    						classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+		    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+			    					"scheme" -> "myScheme"
+			    				}),
+		    					"value" -> 42
+		    				}),
+		    				classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+		    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+			    					"scheme" -> "otherScheme"
+			    				}),
+		    					"value" -> 0
+		    				})
+    					]
+	    		})
+	        })
+        
+        assertEquals(#[42, 0], test.invokeFunc(String, #[aB]))
 	}
 	
 	@Test
