@@ -17,7 +17,7 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 		if (namespaceAlias != null) {
 			QualifiedName deresolved = super.deresolve(fullyQualifiedName);
 			if (deresolved != null) {
-				return namespaceAlias.append(fullyQualifiedName);
+				return namespaceAlias.append(deresolved);
 			}
 			return null;
 		} else {
