@@ -35,6 +35,20 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testScopingForImplicitFeatureWithSameNameAsAnnotation() {
+		val model = '''
+		annotation foo:
+		
+		type Bar:
+			foo date (1..1)
+		'''.parseRosettaWithNoIssues
+		
+		"bar extract foo -> day"
+			.parseExpression(#[model], #["bar Bar (1..1)"])
+			.assertNoIssues
+	}
+	
+	@Test
 	def void testValidDefaultSyntax() {
 		"a default 2"
 			.parseExpression(#["a int (1..1)"])
