@@ -311,6 +311,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, String namespaceAlias,  boolean wildcard, boolean ignoreCase) {
+		if (namespaceAlias === null) {
+			return doCreateImportNormalizer(importedNamespace, wildcard, ignoreCase);
+		}
 		return new AliasAwareImportNormalizer(importedNamespace, namespaceAlias, wildcard, ignoreCase);
 	}
 	
