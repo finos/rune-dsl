@@ -10,7 +10,7 @@ public class DefaultRosettaConfigurationProvider implements Provider<RosettaConf
 		return new RosettaConfiguration(
 					new RosettaModelConfiguration("Just another Rosetta model"),
 					List.of(),
-					new RosettaGeneratorsConfiguration(n -> true)
+					new RosettaGeneratorsConfiguration()
 				);
 	}
 }

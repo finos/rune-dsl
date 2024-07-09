@@ -7,7 +7,8 @@ public class RosettaConfiguration {
 	private final List<RosettaDependencyConfiguration> dependencies;
 	private final RosettaGeneratorsConfiguration generators;
 	
-	public RosettaConfiguration(RosettaModelConfiguration model, List<RosettaDependencyConfiguration> dependencies,
+	public RosettaConfiguration(RosettaModelConfiguration model, 
+			List<RosettaDependencyConfiguration> dependencies,
 			RosettaGeneratorsConfiguration generators) {
 		this.model = model;
 		this.dependencies = dependencies;

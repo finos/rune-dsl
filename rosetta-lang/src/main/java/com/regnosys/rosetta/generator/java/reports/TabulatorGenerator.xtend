@@ -132,6 +132,7 @@ class TabulatorGenerator {
 	}
 	
 	def generate(IFileSystemAccess2 fsa, Function func) {
+		//TODO: make this work with config file list of tabulator annotations
 		if (func.isProjection) {
 			val tabulatorClass = func.toProjectionTabulatorJavaClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
