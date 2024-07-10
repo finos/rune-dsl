@@ -153,14 +153,26 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
 	}
+	@Deprecated
 	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Function projection) {
 		return generatedJavaClassService.toJavaProjectionTabulator(getSymbolId(projection));
 	}
-	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Function projection) {
+	@Deprecated
+	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Data type, Function projection) {
 		ModelSymbolId typeId = getSymbolId(type);
 		ModelSymbolId projectionId = getSymbolId(projection);
 		DottedPath packageName = projectionId.getNamespace().child("projections");
 		String simpleName = typeId.getName() + projection.getName() + "TypeTabulator";
+		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
+	}
+	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Function function) {
+		return generatedJavaClassService.toJavaFunctionTabulator(getSymbolId(function));
+	}
+	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Function function) {
+		ModelSymbolId typeId = getSymbolId(type);
+		ModelSymbolId projectionId = getSymbolId(function);
+		DottedPath packageName = projectionId.getNamespace().child("tabulator");
+		String simpleName = typeId.getName() + function.getName() + "TypeTabulator";
 		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
 	}
 	public JavaClass<?> toDeepPathUtilJavaClass(Data choiceType) {
