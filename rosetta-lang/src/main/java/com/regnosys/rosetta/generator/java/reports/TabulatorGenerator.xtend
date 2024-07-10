@@ -209,7 +209,7 @@ class TabulatorGenerator {
 	}
 	
 	private def boolean isFunctionTabulatable(Function func) {
-		if (generateLegacyTabulator) {
+		if (shouldGenerateLegacyTabulator) {
 			return func.isAnnotatedWith("projection")
 		} else {
 			val annotations = rosettaConfiguration.generators.tabulators.annotations
@@ -221,16 +221,16 @@ class TabulatorGenerator {
 		func.annotations.findFirst[annotation.name == with] !== null
 	}
 	
-	private def boolean generateLegacyTabulator() {
+	private def boolean shouldGenerateLegacyTabulator() {
 		(rosettaConfiguration.generators.tabulators.annotations ?: List.of()).empty
 	}
 	
 	private def TabulatorContext createFunctionTabulatorContext(JavaTypeTranslator typeTranslator, Function func) {
-		generateLegacyTabulator ? new ProjectionTabulatorContext(typeTranslator, func) : new FunctionTabulatorContext(typeTranslator, func)
+		shouldGenerateLegacyTabulator ? new ProjectionTabulatorContext(typeTranslator, func) : new FunctionTabulatorContext(typeTranslator, func)
 	}
 	
 	private def JavaClass<Tabulator<?>> toApplicableTabulatorClass(Function func) {
-		generateLegacyTabulator ? func.toProjectionTabulatorJavaClass : func.toTabulatorJavaClass
+		shouldGenerateLegacyTabulator ? func.toProjectionTabulatorJavaClass : func.toTabulatorJavaClass
 	}
 	
 	private def StringConcatenationClient mainTabulatorClassBody(Data inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
