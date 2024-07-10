@@ -169,24 +169,23 @@ class TabulatorGenerator {
 	}
 	
 	def generate(IFileSystemAccess2 fsa, Function func) {
-		//TODO: make this work with config file list of tabulator annotations
 		if (func.isFunctionTabulatable) {
-			val tabulatorClass = func.toProjectionTabulatorJavaClass
+			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
 			val projectionType = typeProvider.getRTypeOfSymbol(func.output)
 			if (projectionType instanceof RDataType) {
-				val context = new ProjectionTabulatorContext(typeTranslator, func)
+				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
 				val classBody = projectionType.data.mainTabulatorClassBody(context, topScope, tabulatorClass)
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 				
-				recursivelyGenerateProjectionTypeTabulators(fsa, projectionType.data, context, newHashSet)
+				recursivelyGenerateFunctionTypeTabulators(fsa, projectionType.data, context, newHashSet)
 			}
 		}
 	}
-	private def void recursivelyGenerateProjectionTypeTabulators(IFileSystemAccess2 fsa, Data type, TabulatorContext context, Set<Data> visited) {
+	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, Data type, TabulatorContext context, Set<Data> visited) {
 		if (visited.add(type)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
 			val topScope = new JavaScope(tabulatorClass.packageName)
@@ -199,7 +198,7 @@ class TabulatorGenerator {
 				.allNonOverridesAttributes
 				.map[typeProvider.getRTypeOfSymbol(it)]
 				.filter(RDataType)
-				.forEach[recursivelyGenerateProjectionTypeTabulators(fsa, data, context, visited)]
+				.forEach[recursivelyGenerateFunctionTypeTabulators(fsa, data, context, visited)]
 		}
 	}
 	
@@ -210,7 +209,7 @@ class TabulatorGenerator {
 	}
 	
 	private def boolean isFunctionTabulatable(Function func) {
-		if (useLegacyTabulatorContext) {
+		if (generateLegacyTabulator) {
 			return func.isAnnotatedWith("projection")
 		} else {
 			val annotations = rosettaConfiguration.generators.tabulators.annotations
@@ -222,12 +221,16 @@ class TabulatorGenerator {
 		func.annotations.findFirst[annotation.name == with] !== null
 	}
 	
-//	private def boolean isProjection(Function func) {
-//		func.annotations.findFirst[annotation.name == "projection"] !== null
-//	}
-//	
-	private def boolean useLegacyTabulatorContext() {
+	private def boolean generateLegacyTabulator() {
 		(rosettaConfiguration.generators.tabulators.annotations ?: List.of()).empty
+	}
+	
+	private def TabulatorContext createFunctionTabulatorContext(JavaTypeTranslator typeTranslator, Function func) {
+		generateLegacyTabulator ? new ProjectionTabulatorContext(typeTranslator, func) : new FunctionTabulatorContext(typeTranslator, func)
+	}
+	
+	private def JavaClass<Tabulator<?>> toApplicableTabulatorClass(Function func) {
+		generateLegacyTabulator ? func.toProjectionTabulatorJavaClass : func.toTabulatorJavaClass
 	}
 	
 	private def StringConcatenationClient mainTabulatorClassBody(Data inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
