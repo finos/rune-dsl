@@ -34,6 +34,7 @@ import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.config.RosettaConfiguration
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -41,7 +42,9 @@ class TabulatorGenerator {
 		def boolean isTabulated(Attribute attr)
 		def JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type)
 		def Optional<RosettaRule> getRule(Attribute attr)
+		def Function getFunction()
 	}
+
 	@org.eclipse.xtend.lib.annotations.Data
 	private static class ReportTabulatorContext implements TabulatorContext {
 		extension RosettaExtensions
@@ -79,7 +82,12 @@ class TabulatorGenerator {
 			Optional.ofNullable(ruleMap.get(attr))
 		}
 		
+		override getFunction() {
+			throw new UnsupportedOperationException("getFunction not available for ReportTabulatorContext")
+		}
+		
 	}
+	@Deprecated
 	@org.eclipse.xtend.lib.annotations.Data
 	private static class ProjectionTabulatorContext implements TabulatorContext {
 		extension JavaTypeTranslator
@@ -94,15 +102,44 @@ class TabulatorGenerator {
 		}
 		
 		override toTabulatorJavaClass(Data type) {
-			type.toTabulatorJavaClass(projection)
+			type.toProjectionTabulatorJavaClass(projection)
 		}
 		
 		override getRule(Attribute attr) {
 			Optional.empty
 		}
+		
+		override getFunction() {
+			projection
+		}
+		
+
+	}
+	@org.eclipse.xtend.lib.annotations.Data
+	private static class FunctionTabulatorContext implements TabulatorContext {
+		extension JavaTypeTranslator
+		Function function
+		
+		override needsTabulator(Data type) {
+			true
+		}
+		
+		override isTabulated(Attribute attr) {
+			true
+		}
+		
+		override toTabulatorJavaClass(Data type) {
+			type.toTabulatorJavaClass(function)
+		}
+		
+		override getRule(Attribute attr) {
+			Optional.empty
+		}
+
 	}
 	
 	@Inject RosettaTypeProvider typeProvider
+	@Inject RosettaConfiguration rosettaConfiguration
 	@Inject extension JavaTypeTranslator typeTranslator
 	@Inject extension ImportManagerExtension
 	
@@ -132,25 +169,25 @@ class TabulatorGenerator {
 	}
 	
 	def generate(IFileSystemAccess2 fsa, Function func) {
-		if (func.isProjection) {
-			val tabulatorClass = func.toProjectionTabulatorJavaClass
+		if (func.isFunctionTabulatable) {
+			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
 			val projectionType = typeProvider.getRTypeOfSymbol(func.output)
 			if (projectionType instanceof RDataType) {
-				val context = new ProjectionTabulatorContext(typeTranslator, func)
+				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
 				val classBody = projectionType.data.mainTabulatorClassBody(context, topScope, tabulatorClass)
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 				
-				recursivelyGenerateProjectionTypeTabulators(fsa, projectionType.data, context, newHashSet)
+				recursivelyGenerateFunctionTypeTabulators(fsa, projectionType.data, context, newHashSet)
 			}
 		}
 	}
-	private def void recursivelyGenerateProjectionTypeTabulators(IFileSystemAccess2 fsa, Data type, ProjectionTabulatorContext context, Set<Data> visited) {
+	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, Data type, TabulatorContext context, Set<Data> visited) {
 		if (visited.add(type)) {
-			val tabulatorClass = type.toTabulatorJavaClass(context.projection)
+			val tabulatorClass = context.toTabulatorJavaClass(type)
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
 			val classBody = type.tabulatorClassBody(context, topScope, tabulatorClass)
@@ -161,7 +198,7 @@ class TabulatorGenerator {
 				.allNonOverridesAttributes
 				.map[typeProvider.getRTypeOfSymbol(it)]
 				.filter(RDataType)
-				.forEach[recursivelyGenerateProjectionTypeTabulators(fsa, data, context, visited)]
+				.forEach[recursivelyGenerateFunctionTypeTabulators(fsa, data, context, visited)]
 		}
 	}
 	
@@ -171,8 +208,29 @@ class TabulatorGenerator {
 		new ReportTabulatorContext(extensions, typeTranslator, ruleMap, ruleSource)
 	}
 	
-	private def boolean isProjection(Function func) {
-		func.annotations.findFirst[annotation.name == "projection"] !== null
+	private def boolean isFunctionTabulatable(Function func) {
+		if (shouldGenerateLegacyTabulator) {
+			return func.isAnnotatedWith("projection")
+		} else {
+			val annotations = rosettaConfiguration.generators.tabulators.annotations
+			annotations.findFirst[func.isAnnotatedWith(it)] !== null
+		}
+	}
+	
+	private def boolean isAnnotatedWith(Function func, String with) {
+		func.annotations.findFirst[annotation.name == with] !== null
+	}
+	
+	private def boolean shouldGenerateLegacyTabulator() {
+		(rosettaConfiguration.generators.tabulators.annotations ?: List.of()).empty
+	}
+	
+	private def TabulatorContext createFunctionTabulatorContext(JavaTypeTranslator typeTranslator, Function func) {
+		shouldGenerateLegacyTabulator ? new ProjectionTabulatorContext(typeTranslator, func) : new FunctionTabulatorContext(typeTranslator, func)
+	}
+	
+	private def JavaClass<Tabulator<?>> toApplicableTabulatorClass(Function func) {
+		shouldGenerateLegacyTabulator ? func.toProjectionTabulatorJavaClass : func.toTabulatorJavaClass
 	}
 	
 	private def StringConcatenationClient mainTabulatorClassBody(Data inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {

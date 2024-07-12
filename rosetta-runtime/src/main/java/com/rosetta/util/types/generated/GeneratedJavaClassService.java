@@ -38,9 +38,16 @@ public class GeneratedJavaClassService {
 		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
 	}
 	
+	@Deprecated
 	public JavaClass<Tabulator<?>> toJavaProjectionTabulator(ModelSymbolId id) {
 		DottedPath packageName = id.getNamespace().child("projections");
 		String simpleName = id.getName() + "ProjectionTabulator";
+		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
+	}
+	
+	public JavaClass<Tabulator<?>> toJavaFunctionTabulator(ModelSymbolId id) {
+		DottedPath packageName = id.getNamespace().child("tabulator");
+		String simpleName = id.getName() + "Tabulator";
 		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
 	}
 	
