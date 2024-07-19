@@ -35,6 +35,26 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testTwoModelsSameNamespaceReferencesEachOther() {
+		val model1 = '''
+			namespace test
+
+			type A:
+				id string (1..1)
+		'''
+
+		val model2 = '''
+			namespace test
+
+
+			type B:
+				a A (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues		
+	}
+	
+	@Test
 	def void testScopingForImplicitFeatureWithSameNameAsAnnotation() {
 		val model = '''
 		annotation foo:

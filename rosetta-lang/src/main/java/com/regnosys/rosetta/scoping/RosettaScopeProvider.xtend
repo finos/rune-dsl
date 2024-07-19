@@ -281,7 +281,10 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
 		return if (context instanceof RosettaModel) {
-			return context.imports.map [createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)]
+			val List<ImportNormalizer> imports = newArrayList(context.imports.map [createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)])
+			//This import allows two models with the same namespace to reference each other
+			imports.add(doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase))
+			return  imports
 		} else
 			emptyList
 	}
