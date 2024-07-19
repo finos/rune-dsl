@@ -38,7 +38,7 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    '''.parseRosetta
 		
 		model.assertError(TRANSLATION_PARAMETER, null,
-			'"as" statement can only be used with wildcard imports'
+			"Duplicate parameter name `var`."
 		)
 	}
 	
