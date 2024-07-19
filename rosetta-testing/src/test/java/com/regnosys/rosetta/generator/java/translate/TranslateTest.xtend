@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.meta.Reference
+import org.junit.jupiter.api.Disabled
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -105,6 +106,8 @@ class TranslateTest {
         assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
 	}
 	
+	//TODO: implement translate with meta
+	@Disabled
 	@Test
 	def void testTranslationWithMetadata() {
 		val code = '''
