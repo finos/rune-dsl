@@ -44,6 +44,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		)
 	}
 	
+	
+	//TODO: write a validation for when the user forgets the alias
 	@Test
 	def void testCanUserImportAlisesWhenWildcardPresent() {
 		val model1 = '''
@@ -61,7 +63,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			
 			type B:
-				a A (1..1)
+				a someAlias.A (1..1)
 		'''
 		
 		#[model1, model2].parseRosettaWithNoIssues
