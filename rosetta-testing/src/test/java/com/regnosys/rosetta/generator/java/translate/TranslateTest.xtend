@@ -110,7 +110,6 @@ class TranslateTest {
 	 	val translation = classes.createTranslation("LongTranslate", #["BarOneWithVeryVeryLongName", "BarTwoWithVeryVeryLongName", "BarThreeWithVeryVeryLongName", "BarFourWithVeryVeryLongName", "BarFiveWithVeryVeryLongName"], "Foo");
   
         val className = translation.class.canonicalName.replaceAll("^com\\.rosetta\\.test\\.model\\.translate\\.", "")
-        System.out.println(className)
         
   		assertTrue(className.length + 4 <= 255,  "Translator class name too long")
 	}
