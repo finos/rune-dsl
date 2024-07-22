@@ -61,6 +61,61 @@ class TranslateTest {
 	}
 	
 	@Test
+	def void testTranslateClassNameIsLegalLength() {
+		val code = '''
+	    type Foo:
+	    	a1 string (1..1)
+	    	a2 string (1..1)
+	    	a3 string (1..1)
+	    	a4 string (1..1)
+	    	a5 string (1..1)
+	    	a6 string (1..1)
+	    
+	    type BarOneWithVeryVeryLongName:
+	    	b string (1..1)
+	    
+	    type BarTwoWithVeryVeryLongName:
+	    	b string (1..1)
+	    	
+	    type BarThreeWithVeryVeryLongName:
+	    	b string (1..1)
+	    	
+	    type BarFourWithVeryVeryLongName:
+	    	b string (1..1)
+	    	
+	    type BarFiveWithVeryVeryLongName:
+	    	b string (1..1)
+	    	
+	    type BarSixWithVeryVeryLongName:
+	    	b string (1..1)	
+	    
+	    translate source LongTranslate {
+	        Foo from BarOneWithVeryVeryLongName, bar2 BarTwoWithVeryVeryLongName, bar3 BarThreeWithVeryVeryLongName, bar4 BarFourWithVeryVeryLongName, bar5 BarFiveWithVeryVeryLongName:
+	        	+ a1
+	           		[from b]
+	           	+ a2
+	           		[from bar2 -> b]
+	           	+ a3
+	           		[from bar3 -> b]
+	           	+ a4
+	           		[from bar4 -> b]
+	           	+ a5
+	           		[from bar5 -> b]
+	    }
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+
+	 	val translation = classes.createTranslation("LongTranslate", #["BarOneWithVeryVeryLongName", "BarTwoWithVeryVeryLongName", "BarThreeWithVeryVeryLongName", "BarFourWithVeryVeryLongName", "BarFiveWithVeryVeryLongName"], "Foo");
+  
+        val className = translation.class.canonicalName.replaceAll("^com\\.rosetta\\.test\\.model\\.translate\\.", "")
+        System.out.println(className)
+        
+  		assertTrue(className.length + 4 <= 255,  "Translator class name too long")
+	}
+	
+	@Test
 	def void testTranslationWithMultiCardinality() {
 		val code = '''
 	    type Foo:

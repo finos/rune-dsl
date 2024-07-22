@@ -70,11 +70,31 @@ public class GeneratedJavaClassService {
 	
 	public JavaClass<RosettaFunction> toJavaTranslationFunction(ModelTranslationId translationId) {
 		DottedPath packageName = translationId.getNamespace().child("translate");
-		String inputNames = translationId.getInputTypes().stream().map(id -> StringUtils.capitalize(id.getName())).collect(Collectors.joining("And"));
+		String inputNames = generateInputName(translationId, false);
 		String outputName = StringUtils.capitalize(translationId.getOutputType().getName());
 		String sourceName = StringUtils.capitalize(translationId.getTranslateSource().getName());
 		String simpleName = String.format("Translate%sTo%sUsing%s", inputNames, outputName, sourceName);
+	 	//Max Linux and Mac file length is 255 chars. A translator called `TranslatorFunc` will result in an inner default file called `TranslatorFunc$TranslatorFuncDefault`
+	 	//So our max translator name can be (255 - 7 for default - 4 for ext - 1 for $)/2 = 121.5. So our char limit for function names is 121
+		//TOOD: A better solution here would be to stop generating the full name for the default inner class
+        if (simpleName.length() > 121) {
+        	inputNames = generateInputName(translationId, true);
+        	simpleName = String.format("Translate%sTo%sUsing%s", inputNames, outputName, sourceName);
+        }
 		return new GeneratedJavaClass<>(packageName, simpleName, RosettaFunction.class);
+	}
+	
+	private String generateInputName(ModelTranslationId translationId, boolean compress) {
+		return translationId.getInputTypes().stream()
+				.map(id -> {
+					if (compress) {
+						return id.getName().substring(0, 2);
+					} else {
+						return id.getName();
+					}
+				})
+				.map(name -> StringUtils.capitalize(name))
+				.collect(Collectors.joining("And"));
 	}
 	
 	public JavaClass<RosettaModelObject> toJavaType(ModelSymbolId id) {
