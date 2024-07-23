@@ -63,6 +63,10 @@ public class ROperation {
 	public boolean isMetaOperation() {
 		return metaFeature != null;
 	}
+	
+	public RAttribute getMetaFeature() {
+		return metaFeature;
+	}
 
 	@Override
 	public int hashCode() {
