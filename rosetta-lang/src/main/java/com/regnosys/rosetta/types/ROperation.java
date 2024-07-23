@@ -22,16 +22,26 @@ import java.util.Objects;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 public class ROperation {
-	private ROperationType rOperationType;
-	private RAssignedRoot pathHead;
-	private List<RAttribute> pathTail;
-	private RosettaExpression expression;
+	private final ROperationType rOperationType;
+	private final RAssignedRoot pathHead;
+	private final List<RAttribute> pathTail;
+	private final RosettaExpression expression;
+	private final RAttribute metaFeature;
 	
 	public ROperation(ROperationType rOperationType, RAssignedRoot pathHead, List<RAttribute> pathTail, RosettaExpression expression) {
 		this.rOperationType = rOperationType;
 		this.pathHead = pathHead;
 		this.pathTail = pathTail;
 		this.expression = expression;
+		this.metaFeature = null;
+	}
+	
+	public ROperation(ROperationType rOperationType, RAssignedRoot pathHead, List<RAttribute> pathTail, RAttribute metaFeature, RosettaExpression expression) {
+		this.rOperationType = rOperationType;
+		this.pathHead = pathHead;
+		this.pathTail = pathTail;
+		this.expression = expression;
+		this.metaFeature = metaFeature;
 	}
 
 	public ROperationType getROperationType() {
@@ -49,10 +59,14 @@ public class ROperation {
 	public RosettaExpression getExpression() {
 		return expression;
 	}
+	
+	public boolean isMetaOperation() {
+		return metaFeature != null;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(expression, pathHead, pathTail, rOperationType);
+		return Objects.hash(expression, metaFeature, pathHead, pathTail, rOperationType);
 	}
 
 	@Override
@@ -64,9 +78,10 @@ public class ROperation {
 		if (getClass() != obj.getClass())
 			return false;
 		ROperation other = (ROperation) obj;
-		return Objects.equals(expression, other.expression) && Objects.equals(pathHead, other.pathHead)
-				&& Objects.equals(pathTail, other.pathTail) && rOperationType == other.rOperationType;
+		return Objects.equals(expression, other.expression) && Objects.equals(metaFeature, other.metaFeature)
+				&& Objects.equals(pathHead, other.pathHead) && Objects.equals(pathTail, other.pathTail)
+				&& rOperationType == other.rOperationType;
 	}
 
-
+	
 }

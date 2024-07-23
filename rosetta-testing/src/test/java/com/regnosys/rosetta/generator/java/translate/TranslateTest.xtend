@@ -160,7 +160,48 @@ class TranslateTest {
         assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
 	}
 	
-	//TODO: implement translate with meta
+	@Disabled
+	@Test
+	def void testTranslationWithMetaSchemeOnly() {
+		val code = '''
+	    metaType key string
+	    metaType id string
+	    metaType reference string
+	    
+	    type Foo:
+	    	a string (1..1)
+	    		[metadata scheme]
+	    
+	    type Bar:
+	    
+	    translate source FooBar {
+	        Foo from Bar:
+	           	+ a
+	           		[from "a"]
+	           		[meta scheme from "schemeA"]
+	    }
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		code.writeClasses("testTranslationWithMetaSchemeOnly")
+        
+        val bar = classes.createInstanceUsingBuilder("Bar", #{})
+	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
+				"a" -> 
+					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+						"value" -> "a",
+						"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+	    					"scheme" -> "schemeA"
+	    				})
+					})
+				
+	        })
+        
+        val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");
+        assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
+	}
+	
 	@Disabled
 	@Test
 	def void testTranslationWithMetadata() {
@@ -193,7 +234,7 @@ class TranslateTest {
 	           		[meta scheme from ["schemeA", "schemeB"]]
 	    }
 		'''.generateCode
-		
+				
 		val classes = code.compileToClasses
         
         val bar = classes.createInstanceUsingBuilder("Bar", #{})

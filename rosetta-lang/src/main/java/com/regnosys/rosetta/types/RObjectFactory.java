@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.rosetta.translate.TranslateInstruction;
+import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction;
 import com.regnosys.rosetta.rosetta.translate.TranslateSource;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
@@ -192,6 +193,15 @@ public class RObjectFactory {
 						return rule.getInstructions()
 							.stream()
 							.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()));
+					}),
+				// attribute level instructions
+				translation.getRules()
+					.stream()
+					.flatMap(rule -> {
+						RAttribute attr = buildRAttribute(rule.getAttribute());
+						return rule.getMetaInstructions()
+							.stream()
+							.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()));
 					})
 			).collect(Collectors.toList());
 		
@@ -208,6 +218,19 @@ public class RObjectFactory {
 				List.of()
 			);
 	}
+	
+	public ROperation generateOperationForTranslateInstruction(TranslateMetaInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
+		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
+		op.setGenerated(true);
+		op.setOutputType(outputType);
+		op.setSource(source);
+		op.getInputs().addAll(instr.getExpressions());
+		instr.set_internalDispatchExpression(op);
+		RType metaRType = typeSystem.typeCallToRType(instr.getMetaFeature().getTypeCall());
+		RAttribute metaFeature = new RAttribute(instr.getMetaFeature().getName(), null, metaRType, List.of(), false);
+		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, metaFeature, op);
+	}
+
 	
 	public ROperation generateOperationForTranslateInstruction(TranslateInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
 		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
