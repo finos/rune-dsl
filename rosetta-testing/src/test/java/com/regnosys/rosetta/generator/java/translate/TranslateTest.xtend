@@ -160,7 +160,6 @@ class TranslateTest {
         assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
 	}
 	
-	@Disabled
 	@Test
 	def void testTranslationWithMetaSchemeOnly() {
 		val code = '''

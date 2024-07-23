@@ -443,7 +443,7 @@ class FunctionGenerator {
 									.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
 								«ELSE»
 									«IF op.isMetaOperation»
-										.«IF op.ROperationType == ROperationType.SET»getOrCreate«seg.value.name.toFirstUpper»().setMeta(MetaFields.builder().set«op.metaFeature.name.toFirstUpper»(«it»))«ENDIF»
+										.«IF op.ROperationType == ROperationType.SET»getOrCreate«seg.value.name.toFirstUpper»().setMeta(com.rosetta.model.metafields.MetaFields.builder().set«op.metaFeature.name.toFirstUpper»(«it»))«ENDIF»
 									«ELSE»
 										.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)
 									«ENDIF»
