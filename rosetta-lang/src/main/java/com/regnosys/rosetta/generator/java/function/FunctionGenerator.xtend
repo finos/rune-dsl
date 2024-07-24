@@ -68,6 +68,7 @@ import java.util.Collections
 import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 
 class FunctionGenerator {
 
@@ -85,6 +86,7 @@ class FunctionGenerator {
 	@Inject ImplicitVariableUtil implicitVariableUtil
 	@Inject extension JavaTypeUtil
 	@Inject TypeCoercionService coercionService
+	@Inject RosettaJavaPackages rosettaJavaPackages
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -433,7 +435,7 @@ class FunctionGenerator {
 
 		} else { // assign an attribute of the function output object
 			if (op.isMetaOperation && !isSupportedMetaOperation(op)) {
-				return JavaExpression.from('''''', JavaPrimitiveType.VOID).completeAsExpressionStatement
+				return JavaExpression.from('''//Meta Operation to set feature `«op.metaFeature.name»` is not currently supported''', JavaPrimitiveType.VOID).completeAsExpressionStatement
 			}
 			assignValue(scope, op, op.assignAsKey, op.pathTail.last.multi)
 				.collapseToSingleExpression(scope)
@@ -445,14 +447,7 @@ class FunctionGenerator {
 									«IF seg.key < op.pathTail.size - 1»
 										.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
 									«ELSE»
-										«IF op.isMetaOperation»
-											.getOrCreate«seg.value.name.toFirstUpper»().setMeta(com.rosetta.model.metafields.MetaFields.builder().set«op.metaFeature.name.toFirstUpper»(«it»))
-										«ELSE»
-											.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)
-										«ENDIF»
-									«ENDIF»
-								«ENDFOR»
-						''',
+										«IF op.isMetaOperation».getOrCreate«seg.value.name.toFirstUpper»().setMeta(«new GeneratedJavaClass(rosettaJavaPackages.basicMetafields, "MetaFields", Object)».builder().set«op.metaFeature.name.toFirstUpper»(«it»))«ELSE».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«ENDIF»«ENDIF»«ENDFOR»''',
 						JavaPrimitiveType.VOID
 					)
 				].completeAsExpressionStatement

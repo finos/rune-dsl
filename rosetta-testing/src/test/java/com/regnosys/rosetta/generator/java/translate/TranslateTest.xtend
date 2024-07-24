@@ -187,9 +187,7 @@ class TranslateTest {
 		'''.generateCode
 		
 		val classes = code.compileToClasses
-		
-		code.writeClasses("testTranslationWithMetaSchemeOnly")
-        
+		        
         val bar = classes.createInstanceUsingBuilder("Bar", #{})
 	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
 				"a" -> 
