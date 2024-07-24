@@ -170,6 +170,8 @@ class TranslateTest {
 	    type Foo:
 	    	a string (1..1)
 	    		[metadata scheme]
+	    	b string (1..1)
+	    		[metadata reference]
 	    
 	    type Bar:
 	    
@@ -178,6 +180,9 @@ class TranslateTest {
 	           	+ a
 	           		[from "a"]
 	           		[meta scheme from "schemeA"]
+	           	+ b
+	           		[from "b"]
+	           		[meta reference from "referenceB"]
 	    }
 		'''.generateCode
 		
@@ -193,8 +198,11 @@ class TranslateTest {
 						"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
 	    					"scheme" -> "schemeA"
 	    				})
+					}),
+				"b" -> 
+					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+						"value" -> "b"
 					})
-				
 	        })
         
         val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");

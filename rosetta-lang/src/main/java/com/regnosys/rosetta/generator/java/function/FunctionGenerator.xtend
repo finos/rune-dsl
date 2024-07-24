@@ -432,27 +432,35 @@ class FunctionGenerator {
 			}
 
 		} else { // assign an attribute of the function output object
+			if (op.isMetaOperation && !isSupportedMetaOperation(op)) {
+				return JavaExpression.from('''''', JavaPrimitiveType.VOID).completeAsExpressionStatement
+			}
 			assignValue(scope, op, op.assignAsKey, op.pathTail.last.multi)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					JavaExpression.from(
 						'''
 							«op.assignTarget(function, outs, scope)»
-							«FOR seg : op.pathTail.indexed»
-								«IF seg.key < op.pathTail.size - 1»
-									.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
-								«ELSE»
-									«IF op.isMetaOperation»
-										.«IF op.ROperationType == ROperationType.SET»getOrCreate«seg.value.name.toFirstUpper»().setMeta(com.rosetta.model.metafields.MetaFields.builder().set«op.metaFeature.name.toFirstUpper»(«it»))«ENDIF»
+								«FOR seg : op.pathTail.indexed»
+									«IF seg.key < op.pathTail.size - 1»
+										.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
 									«ELSE»
-										.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)
+										«IF op.isMetaOperation»
+											.getOrCreate«seg.value.name.toFirstUpper»().setMeta(com.rosetta.model.metafields.MetaFields.builder().set«op.metaFeature.name.toFirstUpper»(«it»))
+										«ELSE»
+											.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)
+										«ENDIF»
 									«ENDIF»
-								«ENDIF»
-							«ENDFOR»''',
+								«ENDFOR»
+						''',
 						JavaPrimitiveType.VOID
 					)
 				].completeAsExpressionStatement
 		}
+	}
+	
+	private def boolean isSupportedMetaOperation(ROperation op) {
+		op.isMetaOperation && op.ROperationType == ROperationType.SET && op.metaFeature.name.toLowerCase.equals("scheme")
 	}
 
 	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey, boolean isAssigneeMulti) {
