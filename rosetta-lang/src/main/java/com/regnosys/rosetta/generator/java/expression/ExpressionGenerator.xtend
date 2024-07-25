@@ -100,6 +100,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.types.RObjectFactory
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
@@ -278,7 +279,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
-		val resultItemType = typeProvider.getRTypeOfFeature(feature).toJavaReferenceType
+		val resultItemType = if (feature instanceof Attribute && !autoValue) {
+			(feature as Attribute).toExpandedAttribute.toMetaOrRegularJavaType
+		} else {
+			typeProvider.getRTypeOfFeature(feature).toJavaReferenceType
+		}
 		val StringConcatenationClient right = switch (feature) {
 			Attribute: {
 				receiverType.buildMapFunc(feature, isDeepFeature, autoValue, scope)
@@ -288,7 +293,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			RosettaEnumValue:
 				return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
 			RosettaRecordFeature:
-				'''.<«feature.typeCall.typeCallToRType.toJavaReferenceType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType as RRecordType, feature, scope)»)'''
+				'''.<«resultItemType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType as RRecordType, feature, scope)»)'''
 			default:
 				throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
@@ -411,7 +416,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 */
 	private def StringConcatenationClient buildMapFunc(RType itemType, Attribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
 		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
-		val resultType = if (attribute.metaAnnotations.nullOrEmpty || isDeepFeature) {
+		val resultType = if (attribute.metaAnnotations.nullOrEmpty) {
 				typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType
 			} else {
 				attribute.toMetaJavaType
@@ -679,7 +684,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {
-		return featureCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, true, context.scope, false)
+		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
+		if (expr.eContainer instanceof RosettaFeatureCall &&
+			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
+			autoValue = false;
+		}
+		return featureCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, true, context.scope, autoValue)
 	}
 
 	override protected caseFilterOperation(FilterOperation expr, Context context) {

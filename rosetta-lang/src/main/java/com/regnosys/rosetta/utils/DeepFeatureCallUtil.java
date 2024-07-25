@@ -1,21 +1,15 @@
 package com.regnosys.rosetta.utils;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
-import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -27,9 +21,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider;
 
 public class DeepFeatureCallUtil {
 	private final RosettaTypeProvider typeProvider;
-	
 	private final CardinalityProvider cardinalityProvider;
-	
 	private final RosettaExtensions ext;
 	
 	@Inject
@@ -78,23 +70,13 @@ public class DeepFeatureCallUtil {
 		return result;
 	}
 	private void intersect(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap) {
-		featuresMapToModify.entrySet().removeIf(entry -> {
-			String attrName = entry.getKey();
-			Attribute otherAttr = otherFeatureMap.get(attrName);
-			if (otherAttr != null) {
-				Attribute attr = entry.getValue();
-				if (match(attr, otherAttr)) {
-					return false;
-				}
-			}
-			return true;
-		});
+		intersectButRetainAttribute(featuresMapToModify, otherFeatureMap, null);
 	}
 	private void intersectButRetainAttribute(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap, Attribute attributeToRetain) {
 		featuresMapToModify.entrySet().removeIf(entry -> {
 			String attrName = entry.getKey();
 			Attribute attr = entry.getValue();
-			if (attributeToRetain.equals(attr)) {
+			if (attr.equals(attributeToRetain)) {
 				return false;
 			}
 			Attribute otherAttr = otherFeatureMap.get(attrName);
@@ -105,6 +87,15 @@ public class DeepFeatureCallUtil {
 			}
 			return true;
 		});
+		// Make sure we don't give back an attribute with metadata if not all of them have it.
+		for (Map.Entry<String, Attribute> e : featuresMapToModify.entrySet()) {
+			String name = e.getKey();
+			Attribute currFeature = e.getValue();
+			Attribute otherFeature = otherFeatureMap.get(name);
+			if (otherFeature != null && !Iterables.isEmpty(ext.metaAnnotations(currFeature)) && Iterables.isEmpty(ext.metaAnnotations(otherFeature))) {
+				e.setValue(otherFeature);
+			}
+		}
 	}
 	private void merge(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap) {
 		otherFeatureMap.forEach((name, attr) -> {
@@ -112,6 +103,9 @@ public class DeepFeatureCallUtil {
 			if (candidate != null) {
 				if (!match(candidate, attr)) {
 					featuresMapToModify.remove(name);
+				} else if (!Iterables.isEmpty(ext.metaAnnotations(candidate)) && Iterables.isEmpty(ext.metaAnnotations(attr))) {
+					// Make sure we don't give back an attribute with metadata if not all of them have it.
+					featuresMapToModify.put(name, attr);
 				}
 			} else {
 				featuresMapToModify.put(name, attr);
