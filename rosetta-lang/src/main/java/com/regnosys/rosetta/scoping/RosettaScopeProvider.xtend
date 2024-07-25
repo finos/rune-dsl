@@ -319,6 +319,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		//if an attribute has metafields then the meta names are valid in a feature call e.g. -> currency -> scheme
 		val feature = if (receiver instanceof RosettaFeatureCall) {
 			receiver.feature
+		} else if (receiver instanceof RosettaDeepFeatureCall) {
+			receiver.feature
 		} else if (receiver instanceof RosettaSymbolReference) {
 			receiver.symbol
 		}

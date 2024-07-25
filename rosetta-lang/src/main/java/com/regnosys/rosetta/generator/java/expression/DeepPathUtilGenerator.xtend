@@ -99,6 +99,7 @@ class DeepPathUtilGenerator {
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(Data choiceType, JavaVariable inputParameter, Attribute deepFeature, Map<Attribute, Map<Attribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
+		val deepFeatureHasMeta = !deepFeature.metaAnnotations.empty
 		val attrs = choiceType.allNonOverridesAttributes
 		val receiverType = new RDataType(choiceType)
 		var JavaStatementBuilder acc = JavaExpression.NULL
@@ -122,13 +123,13 @@ class DeepPathUtilGenerator {
 									} else {
 										(attrType as RDataType).data.allNonOverridesAttributes.findFirst[name.equals(deepFeature.name)]
 									}
-									attrVar.featureCall(attrType, actualFeature, needsToGoDownDeeper, scope, true)
+									attrVar.featureCall(attrType, actualFeature, needsToGoDownDeeper, scope, !deepFeatureHasMeta)
 								}
 								new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)
 							]
 					]
 		}
-		val resultType = deepFeature.toExpandedAttribute.toMultiRegularJavaType
+		val resultType = deepFeature.toExpandedAttribute.toMultiMetaOrRegularJavaType
 		acc.addCoercions(resultType, scope)
 	}
 }
