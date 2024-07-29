@@ -161,59 +161,14 @@ class TranslateTest {
 	}
 	
 	@Test
-	def void testTranslationWithMetaSchemeOnly() {
-		val code = '''
-	    metaType key string
-	    metaType id string
-	    metaType reference string
-	    
-	    type Foo:
-	    	a string (1..1)
-	    		[metadata scheme]
-	    	b string (1..1)
-	    		[metadata reference]
-	    
-	    type Bar:
-	    
-	    translate source FooBar {
-	        Foo from Bar:
-	           	+ a
-	           		[from "a"]
-	           		[meta scheme from "schemeA"]
-	           	+ b
-	           		[from "b"]
-	           		[meta reference from "referenceB"]
-	    }
-		'''.generateCode
-		
-		val classes = code.compileToClasses
-		        
-        val bar = classes.createInstanceUsingBuilder("Bar", #{})
-	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
-				"a" -> 
-					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-						"value" -> "a",
-						"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-	    					"scheme" -> "schemeA"
-	    				})
-					}),
-				"b" -> 
-					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
-						"value" -> "b"
-					})
-	        })
-        
-        val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");
-        assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
-	}
-	
-	@Disabled
-	@Test
 	def void testTranslationWithMetadata() {
 		val code = '''
 	    metaType key string
 	    metaType id string
 	    metaType reference string
+	    metaType template string
+	    metaType location string
+	    metaType address string
 	    
 	    type Foo:
 	    	[metadata key]
@@ -221,13 +176,21 @@ class TranslateTest {
 	    		[metadata id]
 	    	self Foo (1..1)
 	    		[metadata reference]
-	    	value string (0..*)
+	    	value string (0..1)
 	    		[metadata scheme]
 	    
 	    type Bar:
+	    	[metadata key]
+	    	[metadata template]
+	    	a int (1..1)
+	    		[metadata address]
+	    	b Foo (1..1)
+	    		[metadata location]
+	    
+	    type Inp:
 	    
 	    translate source FooBar {
-	        Foo from Bar:
+	        Foo from Inp:
 	        	[meta key from "self"]
 	        	+ a
 	           		[from 42]
@@ -235,48 +198,63 @@ class TranslateTest {
 	           	+ self
 	           		[meta reference from "self"]
 	           	+ value
-	           		[from ["a", "b", "c"]]
-	           		[meta scheme from ["schemeA", "schemeB"]]
+	           		[from "a"]
+	           		[meta scheme from "schemeA"]
+	        
+	        Bar from Inp:
+	        	[meta key from "My key"]
+	        	[meta template from "My template"]
+	        	+ a
+	        		[from 42]
+	        		[meta address from "Some address"]
+	        	+ b
+	        		[from item]
+	        		[meta location from "My location"]
 	    }
 		'''.generateCode
 				
 		val classes = code.compileToClasses
         
-        val bar = classes.createInstanceUsingBuilder("Bar", #{})
-	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
+        val inp = classes.createInstanceUsingBuilder("Inp", #{})
+	    val expectedFoo = classes.createInstanceUsingBuilder("Foo", #{
 	    		"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"key" -> #[Key.builder.setKeyValue("self")]
+					"globalKey" -> "self"
 				}),
 	    		"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 					"value" -> 42,
 					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-    					"id" -> "favoriteNumber"
+    					"globalKey" -> "favoriteNumber"
     				})
 				}),
 				"self" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
-					"reference" -> Reference.builder.setReference("self")
+					"globalReference" -> "self"
 				}),
-				"value" -> #[
-					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-						"value" -> "a",
-						"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-	    					"scheme" -> "schemeA"
-	    				})
-					}),
-					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-						"value" -> "b",
-						"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-	    					"scheme" -> "schemeB"
-	    				})
-					}),
-					classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-						"value" -> "c"
-					})
-				]
+				"value" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+					"value" -> "a",
+					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    					"scheme" -> "schemeA"
+    				})
+				})
 	        })
+	    val expectedBar = classes.createInstanceUsingBuilder("Bar", #{
+		    	"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaAndTemplateFields", #{
+					"globalKey" -> "My key",
+					"template" -> "My template"
+				}),
+				"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+					"value" -> 42,
+					"reference" -> Reference.builder.setScope("DOCUMENT").setReference("Some address")
+				}),
+				"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
+					"value" -> expectedFoo,
+					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+						"key" -> #[Key.builder.setScope("DOCUMENT").setKeyValue("My location")]
+					})
+				})
+		    })
         
-        val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");
-        assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
+        val translation = classes.createTranslation("FooBar", #["Inp"], "Bar");
+        assertEquals(expectedBar, translation.invokeFunc(expectedBar.class, #[inp]))
 	}
 	
 }

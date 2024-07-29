@@ -74,7 +74,7 @@ public class GeneratedJavaClassService {
 		String outputName = StringUtils.capitalize(translationId.getOutputType().getName());
 		String sourceName = StringUtils.capitalize(translationId.getTranslateSource().getName());
 		String simpleName = String.format("Translate%sTo%sUsing%s", inputNames, outputName, sourceName);
-	 	//Max Linux and Mac file length is 255 chars. A translator called `TranslatorFunc` will result in an inner default file called `TranslatorFunc$TranslatorFuncDefault`
+	 	//Max Unix file length is 255 chars. A translator called `TranslatorFunc` will result in an inner default file called `TranslatorFunc$TranslatorFuncDefault`
 	 	//So our max translator name can be (255 - 7 for default - 4 for ext - 1 for $)/2 = 121.5. So our char limit for function names is 121
 		//TOOD: A better solution here would be to stop generating the full name for the default inner class
         if (simpleName.length() > 121) {

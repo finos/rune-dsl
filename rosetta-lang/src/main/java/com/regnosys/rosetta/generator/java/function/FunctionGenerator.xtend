@@ -69,6 +69,8 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.rosetta.model.lib.meta.Reference
+import com.rosetta.model.lib.meta.Key
 
 class FunctionGenerator {
 
@@ -392,7 +394,7 @@ class FunctionGenerator {
 
 	private def JavaStatement assign(JavaScope scope, ROperation op, RFunction function, Map<RShortcut, Boolean> outs, RAttribute attribute) {
 
-		if (op.pathTail.isEmpty) {
+		if (op.pathTail.isEmpty && !op.isMetaOperation) {
 			// assign function output object
 			val expressionType = attribute.attributeToJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
@@ -434,31 +436,57 @@ class FunctionGenerator {
 			}
 
 		} else { // assign an attribute of the function output object
-			if (op.isMetaOperation && !isSupportedMetaOperation(op)) {
-				return JavaExpression.from('''//Meta Operation to set feature `«op.metaFeature.name»` is not currently supported''', JavaPrimitiveType.VOID).completeAsExpressionStatement
-			}
-			assignValue(scope, op, op.assignAsKey, op.pathTail.last.multi)
+			val StringConcatenationClient assignPathCode =
+				'''
+				«op.assignTarget(function, outs, scope)»
+					«FOR seg : op.pathTail.indexed»
+						«IF seg.key < op.pathTail.size - 1 || op.isMetaOperation»
+							.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value) && seg.key < op.pathTail.size - 1».getOrCreateValue()«ENDIF»
+						«ENDIF»
+					«ENDFOR»
+				'''
+			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					JavaExpression.from(
 						'''
-							«op.assignTarget(function, outs, scope)»
-								«FOR seg : op.pathTail.indexed»
-									«IF seg.key < op.pathTail.size - 1»
-										.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
-									«ELSE»
-										«IF op.isMetaOperation».getOrCreate«seg.value.name.toFirstUpper»().setMeta(«new GeneratedJavaClass(rosettaJavaPackages.basicMetafields, "MetaFields", Object)».builder().set«op.metaFeature.name.toFirstUpper»(«it»))«ELSE».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«ENDIF»«ENDIF»«ENDFOR»''',
+							«assignPathCode»
+								«IF op.isMetaOperation»
+									«IF op.metaFeature.name != "reference" && op.metaFeature.name != "address"»
+									.getOrCreateMeta()
+									«ENDIF»
+									«op.metaFeature.metaFeatureSetterCode(it)»«
+								ELSE»
+									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«op.pathTail.last.name.toFirstUpper»«IF op.pathTail.last.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«
+								ENDIF»''',
 						JavaPrimitiveType.VOID
 					)
 				].completeAsExpressionStatement
 		}
 	}
 	
-	private def boolean isSupportedMetaOperation(ROperation op) {
-		op.isMetaOperation && op.ROperationType == ROperationType.SET && op.metaFeature.name.toLowerCase.equals("scheme")
+	private def String metaFeatureToJavaField(RAttribute metaFeature) {
+		switch metaFeature.name {
+			case "key": "globalKey"
+			case "id": "globalKey"
+			case "reference": "globalReference"
+			case "scheme": "scheme"
+			case "template": "template"
+			case "address": "reference"
+			case "location": "key"
+		}
+	}
+	private def StringConcatenationClient metaFeatureSetterCode(RAttribute metaFeature, JavaExpression v) {
+		if (metaFeature.name == "address") {
+			'''.set«metaFeature.metaFeatureToJavaField.toFirstUpper»(«Reference».builder().setScope("DOCUMENT").setReference(«v»))'''
+		} else if (metaFeature.name == "location") {
+			'''.add«metaFeature.metaFeatureToJavaField.toFirstUpper»(«Key».builder().setScope("DOCUMENT").setKeyValue(«v»))'''
+		} else {
+			'''.set«metaFeature.metaFeatureToJavaField.toFirstUpper»(«v»)'''
+		}
 	}
 
-	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey, boolean isAssigneeMulti) {
+	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
 		if (assignAsKey) {
 			val metaClass = op.operationToReferenceWithMetaType
 			if (cardinality.isMulti(op.expression)) {

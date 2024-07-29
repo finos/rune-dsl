@@ -22,11 +22,13 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 public class RShortcut implements RAssignedRoot {
 	private String name;
+	private boolean isMulti;
 	private String definition;
 	private RosettaExpression expression;
 	
-	public RShortcut(String name, String definition, RosettaExpression expression) {
+	public RShortcut(String name, boolean isMulti, String definition, RosettaExpression expression) {
 		this.name = name;
+		this.isMulti = isMulti;
 		this.definition = definition;
 		this.expression = expression;
 	}
@@ -34,6 +36,11 @@ public class RShortcut implements RAssignedRoot {
 	@Override
 	public String getName() {
 		return name;
+	}
+	
+	@Override
+	public boolean isMulti() {
+		return isMulti;
 	}
 
 	public String getDefinition() {
@@ -60,5 +67,5 @@ public class RShortcut implements RAssignedRoot {
 		RShortcut other = (RShortcut) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(expression, other.expression)
 				&& Objects.equals(name, other.name);
-	}	
+	}
 }

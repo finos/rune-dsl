@@ -43,6 +43,7 @@ public class RAttribute implements RAssignedRoot {
 		return rType;
 	}
 
+	@Override
 	public boolean isMulti() {
 		return isMulti;
 	}

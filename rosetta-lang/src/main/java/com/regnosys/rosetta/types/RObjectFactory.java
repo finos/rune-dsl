@@ -185,23 +185,24 @@ public class RObjectFactory {
 				translation.getTypeInstructions()
 					.stream()
 					.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), translation.getResultType(), outputAttribute, List.of(), false)),
+				// type level meta instructions
+				translation.getTypeMetaInstructions()
+					.stream()
+					.map(instr -> generateOperationForTranslateMetaInstruction(instr, translation.getSource(), instr.getMetaFeature().getTypeCall(), outputAttribute, List.of(), false)),
 				// attribute level instructions
 				translation.getRules()
 					.stream()
 					.flatMap(rule -> {
 						RAttribute attr = buildRAttribute(rule.getAttribute());
-						return rule.getInstructions()
-							.stream()
-							.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()));
-					}),
-				// attribute level instructions
-				translation.getRules()
-					.stream()
-					.flatMap(rule -> {
-						RAttribute attr = buildRAttribute(rule.getAttribute());
-						return rule.getMetaInstructions()
-							.stream()
-							.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()));
+						return Streams.concat(
+								rule.getInstructions()
+									.stream()
+									.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti())),
+								// attribute level meta instructions
+								rule.getMetaInstructions()
+									.stream()
+									.map(instr -> generateOperationForTranslateMetaInstruction(instr, translation.getSource(), instr.getMetaFeature().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()))
+							);
 					})
 			).collect(Collectors.toList());
 		
@@ -219,7 +220,17 @@ public class RObjectFactory {
 			);
 	}
 	
-	public ROperation generateOperationForTranslateInstruction(TranslateMetaInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
+	public ROperation generateOperationForTranslateInstruction(TranslateInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
+		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
+		op.setGenerated(true);
+		op.setOutputType(outputType);
+		op.setSource(source);
+		op.getInputs().addAll(instr.getExpressions());
+		instr.set_internalDispatchExpression(op);
+		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, op);
+	}
+	
+	public ROperation generateOperationForTranslateMetaInstruction(TranslateMetaInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
 		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
 		op.setGenerated(true);
 		op.setOutputType(outputType);
@@ -229,17 +240,6 @@ public class RObjectFactory {
 		RType metaRType = typeSystem.typeCallToRType(instr.getMetaFeature().getTypeCall());
 		RAttribute metaFeature = new RAttribute(instr.getMetaFeature().getName(), null, metaRType, List.of(), false);
 		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, metaFeature, op);
-	}
-
-	
-	public ROperation generateOperationForTranslateInstruction(TranslateInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
-		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
-		op.setGenerated(true);
-		op.setOutputType(outputType);
-		op.setSource(source);
-		op.getInputs().addAll(instr.getExpressions());
-		instr.set_internalDispatchExpression(op);
-		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, op);
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
@@ -264,7 +264,7 @@ public class RObjectFactory {
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
-		return new RShortcut(shortcut.getName(), shortcut.getDefinition(), shortcut.getExpression());
+		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression());
 
 	}
 
