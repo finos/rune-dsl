@@ -270,6 +270,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
 		RAttribute attr;
+		if (op.isMetaOperation()) {
+			return attributeToJavaType(op.getMetaFeature());
+		}
 		if (op.getPathTail().isEmpty()) {
 			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
