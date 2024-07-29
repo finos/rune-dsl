@@ -70,7 +70,32 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testCannotAccessMetaFeatureAfterDeepFeatureCall() {
+	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
+		val model = '''
+		type A:
+		    a string (1..1)
+		        [metadata scheme]
+		
+		type B:
+		    a string (1..1)
+		
+		type C:
+		    a string (1..1)
+		    	[metadata scheme]
+		
+		choice ABC:
+		    A
+		    B
+		    C
+		'''.parseRosettaWithNoIssues
+		
+		"abc ->> a -> scheme"
+			.parseExpression(#[model], #["abc ABC (1..1)"])
+			.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'scheme'.")
+	}
+	
+	@Test
+	def void testCanAccessMetaFeatureAfterDeepFeatureCall() {
 		val context = '''
 		type A:
 			b B (0..1)
@@ -98,7 +123,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		"a ->> id -> scheme"
 			.parseExpression(#[context], #["a A (1..1)"])
-			.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'scheme'.")
+			.assertNoIssues
 	}
 	
 	@Test

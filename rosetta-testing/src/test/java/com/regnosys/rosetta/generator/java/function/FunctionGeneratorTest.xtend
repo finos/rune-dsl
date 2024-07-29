@@ -179,7 +179,7 @@ class FunctionGeneratorTest {
 				result string (1..1)
 			
 			set result:
-				a ->> id
+				a ->> id -> scheme
 		'''.generateCode
 		
 		val classes = code.compileToClasses
@@ -203,7 +203,7 @@ class FunctionGeneratorTest {
 	    		})
 	        })
         
-        assertEquals("abc123", test.invokeFunc(String, #[aB]))
+        assertEquals("myScheme", test.invokeFunc(String, #[aB]))
 	}
 	
 	@Test

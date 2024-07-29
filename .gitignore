@@ -14,6 +14,7 @@ plugin.xml_gen
 .checkstyle
 .classpath
 rosetta-profiling/dependency-reduced-pom.xml
+rosetta-profiling/reports/
 
 **/.settings
 **/src-gen/
