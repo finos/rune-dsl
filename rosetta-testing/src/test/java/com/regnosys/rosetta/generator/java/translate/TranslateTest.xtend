@@ -218,16 +218,16 @@ class TranslateTest {
         val inp = classes.createInstanceUsingBuilder("Inp", #{})
 	    val expectedFoo = classes.createInstanceUsingBuilder("Foo", #{
 	    		"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"globalKey" -> "self"
+					"externalKey" -> "self"
 				}),
 	    		"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 					"value" -> 42,
 					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-    					"globalKey" -> "favoriteNumber"
+    					"externalKey" -> "favoriteNumber"
     				})
 				}),
 				"self" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
-					"globalReference" -> "self"
+					"externalReference" -> "self"
 				}),
 				"value" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 					"value" -> "a",
@@ -238,7 +238,7 @@ class TranslateTest {
 	        })
 	    val expectedBar = classes.createInstanceUsingBuilder("Bar", #{
 		    	"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaAndTemplateFields", #{
-					"globalKey" -> "My key",
+					"externalKey" -> "My key",
 					"template" -> "My template"
 				}),
 				"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{

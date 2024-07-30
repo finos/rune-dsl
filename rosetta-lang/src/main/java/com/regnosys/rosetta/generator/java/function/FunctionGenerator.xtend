@@ -467,9 +467,9 @@ class FunctionGenerator {
 	
 	private def String metaFeatureToJavaField(RAttribute metaFeature) {
 		switch metaFeature.name {
-			case "key": "globalKey"
-			case "id": "globalKey"
-			case "reference": "globalReference"
+			case "key": "externalKey"
+			case "id": "externalKey"
+			case "reference": "externalReference"
 			case "scheme": "scheme"
 			case "template": "template"
 			case "address": "reference"

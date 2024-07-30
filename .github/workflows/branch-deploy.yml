@@ -35,10 +35,10 @@ jobs:
         uses: ./.github/actions/normalize-branch-name
       - name: Set version
         run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
-      - name: Publish package
-        run: mvn -B -U clean deploy
+      - uses: ./.github/actions/maven-build
+        with:
+          build-command: deploy
+          run-tests: ${{ inputs.run-tests }}
         env:
-          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
-          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
