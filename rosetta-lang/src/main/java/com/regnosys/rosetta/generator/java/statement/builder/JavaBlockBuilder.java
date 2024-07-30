@@ -59,12 +59,12 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	}
 	
 	@Override
-	public JavaStatementBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
+	public JavaBlockBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
 		return new JavaBlockBuilder(statements, lastStatement.mapExpression(mapper));
 	}
 	
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaBlockBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		if (after instanceof JavaBlockBuilder) {
 			return this.then((JavaBlockBuilder)after, combineExpressions, scope);
 		}

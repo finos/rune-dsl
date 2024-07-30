@@ -2,6 +2,7 @@ grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 import "http://www.rosetta-model.com/RosettaExpression"
+import "http://www.rosetta-model.com/RosettaTranslate"
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 // general TODO: naming is inconsistent, e.g., 
@@ -26,10 +27,11 @@ QualifiedName:
 ;
 
 Import:
-	'import' importedNamespace=QualifiedNameWithWildcard;
-
+	'import' importedNamespace=(QualifiedNameWithWildcard) ('as' namespaceAlias=ValidID)?;
+			
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
+	
 
 RootElement:
 	Annotation
@@ -166,7 +168,7 @@ RosettaRootElement:
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
-	RosettaQualifiedType | RosettaCalculationType
+	RosettaQualifiedType | RosettaCalculationType | TranslateSource
 ;
 
 
@@ -208,8 +210,8 @@ TypeParameterValidID:
 ;
 
 ValidID:
-	ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
-	| 'pattern'
+	ID | 'condition' | 'source' | 'value' | 'version'
+	| 'pattern' | 'translate'
 ;
 
 
@@ -891,3 +893,41 @@ RosettaRule:
 		('as' identifier=STRING)?)
  	)
 ;
+
+/***********
+ * Translate
+ ************/
+TranslateSource:
+    'translate' 'source' RosettaNamed ('extends' superSources+=[TranslateSource|QualifiedName]  (',' superSources+=[TranslateSource|QualifiedName])* )?
+    '{'
+        (translations+=Translation)*
+    '}'
+;
+
+Translation:
+    resultType=TypeCall ('from' parameters+=TranslationParameter (',' parameters+=TranslationParameter)*)? ':'
+    	(typeInstructions+=TranslateInstruction | typeMetaInstructions+=TranslateMetaInstruction)*
+        rules+=TranslationRule*
+;
+
+TranslationParameter:
+    RosettaNamed? RosettaTyped
+;
+
+TranslationRule:
+    '+' attribute=[Attribute|ValidID]
+    	(instructions+=TranslateInstruction | metaInstructions+=TranslateMetaInstruction)*
+;
+
+fragment BaseTranslateInstruction:
+	'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
+;
+
+TranslateInstruction:
+	'[' BaseTranslateInstruction
+;
+
+TranslateMetaInstruction:
+	'[' 'meta' metaFeature=[RosettaMetaType|ValidID] BaseTranslateInstruction
+;
+

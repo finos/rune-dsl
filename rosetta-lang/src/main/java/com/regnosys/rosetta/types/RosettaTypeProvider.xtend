@@ -76,8 +76,10 @@ import javax.inject.Provider
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -159,6 +161,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				cycleTracker.put(symbol, type)
 				type
 			}
+			TranslationParameter: {
+			    symbol.typeCall.typeCallToRType
+			}
 		}
 	}
 	private def RType safeRType(RosettaFeature feature, Map<EObject, RType> cycleTracker) {
@@ -219,14 +224,16 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RType> cycleTracker) {
-		val definingContainer = context.findContainerDefiningImplicitVariable
+		val definingContainer = context.findObjectDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
 				new RDataType(it)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType ?: MISSING
+				input?.typeCallToRType
+			} else if (it instanceof TranslationParameter) {
+			    typeCall.typeCallToRType
 			}
 		].orElse(MISSING)
 	}
@@ -511,6 +518,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RType> context) {
 		ZONED_DATE_TIME
+	}
+	
+	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Map<EObject, RType> context) {
+		expr.outputType.typeCallToRType
 	}
 	
 }

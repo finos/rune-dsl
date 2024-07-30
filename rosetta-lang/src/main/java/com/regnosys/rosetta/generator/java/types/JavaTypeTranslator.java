@@ -118,6 +118,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			return generatedJavaClassService.toJavaReportFunction(func.getReportId());
 		case RULE:
 			return generatedJavaClassService.toJavaRule(func.getSymbolId());
+		case TRANSLATION:
+			return generatedJavaClassService.toJavaTranslationFunction(func.getTranslationId());
 		default:
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 
@@ -268,6 +270,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
 		RAttribute attr;
+		if (op.isMetaOperation()) {
+			return attributeToJavaType(op.getMetaFeature());
+		}
 		if (op.getPathTail().isEmpty()) {
 			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {

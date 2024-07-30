@@ -1,0 +1,56 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaTranslate")
+@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+package com.regnosys.rosetta.rosetta.translate
+
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
+
+class TranslateSource extends RosettaRootElement, RosettaNamed {
+	refers TranslateSource[] superSources
+	contains Translation[] translations opposite source
+}
+
+class Translation {
+	refers TranslateSource source opposite translations
+	
+	contains TypeCall resultType
+	contains TranslationParameter[] parameters
+	contains TranslateInstruction[] typeInstructions
+	contains TranslateMetaInstruction[] typeMetaInstructions
+	
+    contains TranslationRule[] rules opposite translation
+}
+
+class TranslationParameter extends RosettaSymbol, RosettaTyped {
+    
+}
+
+class TranslationRule {
+    refers Translation translation opposite rules
+    
+    refers Attribute attribute
+    contains TranslateInstruction[] instructions
+    contains TranslateMetaInstruction[] metaInstructions
+}
+
+abstract class BaseTranslateInstruction {
+	contains TranslateDispatchOperation _internalDispatchExpression
+	
+	contains RosettaExpression[] expressions
+}
+
+class TranslateInstruction extends BaseTranslateInstruction {
+}
+
+class TranslateMetaInstruction extends BaseTranslateInstruction {
+	refers RosettaMetaType metaFeature
+}

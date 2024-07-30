@@ -60,6 +60,7 @@ Workflow {
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore"
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaSimple.xcore"
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaExpression.xcore"
+			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaTranslate.xcore"
 			name = "com.regnosys.rosetta.Rosetta"
 			fileExtensions = "rosetta"
 

@@ -23,11 +23,13 @@ import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.rosetta.model.lib.ModelId;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.ModelTranslationId;
 import com.rosetta.util.DottedPath;
 
 public class RFunction {
 	private ModelSymbolId symbolId;
 	private ModelReportId reportId;
+	private ModelTranslationId translationId;
 	private String definition;
 	private List<RAttribute> inputs;
 	private RAttribute output;
@@ -66,12 +68,22 @@ public class RFunction {
 			shortcuts, operations, annotations);
 		this.reportId = reportId;
 	}
+	public RFunction(ModelTranslationId translationId, String definition, List<RAttribute> inputs,
+			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
+			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
+		this(definition, inputs, output, origin, preConditions, postConditions,
+			shortcuts, operations, annotations);
+		this.translationId = translationId;
+	}
 	
 	public ModelId getId() {
 		if (symbolId != null) {
 			return symbolId;
 		}
-		return reportId;
+		if (reportId != null) {
+			return reportId;
+		}
+		return translationId;
 	}
 	
 	public ModelSymbolId getSymbolId() {
@@ -80,6 +92,10 @@ public class RFunction {
 	
 	public ModelReportId getReportId() {
 		return reportId;
+	}
+	
+	public ModelTranslationId getTranslationId() {
+		return translationId;
 	}
 	
 	public DottedPath getNamespace() {

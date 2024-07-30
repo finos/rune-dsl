@@ -67,6 +67,7 @@ import com.regnosys.rosetta.interpreter.RosettaValue
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -160,7 +161,7 @@ auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
 }
 
 auxiliary typeOfImplicitVariable(EObject c) {
-	val definingContainer = c.findContainerDefiningImplicitVariable
+	val definingContainer = c.findObjectDefiningImplicitVariable
 	definingContainer.map [
 		if (it instanceof Data) {
 			createListType(new RDataType(it), single)
@@ -168,7 +169,9 @@ auxiliary typeOfImplicitVariable(EObject c) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
 			input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
-		}
+		} else if (it instanceof TranslationParameter) {
+            typeCall.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
+        }
 	]
 }
 
