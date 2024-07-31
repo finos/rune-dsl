@@ -153,14 +153,11 @@ class FunctionGeneratorTest {
 	@Test
 	def void testDeepPathOperatorWithMeta() {
 		val code = '''
-		type A:
-			b B (0..1)
+		choice A:
+			B
 				[metadata reference]
-			c C (0..1)
+			C
 				[metadata reference]
-			
-			condition Choice:
-				one-of
 		
 		type B:
 			[metadata key]
