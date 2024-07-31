@@ -6,8 +6,10 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.eclipse.xtext.EcoreUtil2;
+
 import com.google.common.collect.Streams;
-import com.regnosys.rosetta.rosetta.RosettaType;
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 import com.regnosys.rosetta.rosetta.translate.TranslateSource;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.types.RType;
@@ -59,7 +61,7 @@ public class TranslateUtil {
 		}
 		
 		// Check output matches
-		RType actualResultType = typeSystem.typeCallToRType(translation.getResultType());
+		RType actualResultType = getResultRType(translation);
 		if (!typeSystem.stripFromTypeAliases(resultType).equals(typeSystem.stripFromTypeAliases(actualResultType))) {
 			return false;
 		}
@@ -67,15 +69,27 @@ public class TranslateUtil {
 		return true;
 	}
 	
+	public RType getResultRType(Translation translation) {
+		if (translation.getResultType() != null) {
+			return typeSystem.typeCallToRType(translation.getResultType());
+		} else {
+			return typeProvider.getRType(translation.getExpression());
+		}
+	}
+	
+	public TranslateSource getSource(TranslateDispatchOperation op) {
+		if (op.getSource() == null) {
+			return EcoreUtil2.getContainerOfType(op, TranslateSource.class);
+		}
+		return op.getSource();
+	}
+	
 	public ModelTranslationId toTranslationId(Translation translation) {
 		TranslateSource source = translation.getSource();
 		return new ModelTranslationId(
 				new ModelSymbolId(DottedPath.splitOnDots(source.getModel().getName()), source.getName()),
-				translation.getParameters().stream().map(p -> toModelSymbolId(p.getTypeCall().getType())).collect(Collectors.toList()),
-				toModelSymbolId(translation.getResultType().getType())
+				translation.getParameters().stream().map(p -> typeProvider.getRTypeOfSymbol(p).getSymbolId()).collect(Collectors.toList()),
+				getResultRType(translation).getSymbolId()
 			);
-	}
-	private ModelSymbolId toModelSymbolId(RosettaType t) {
-		return new ModelSymbolId(DottedPath.splitOnDots(t.getModel().getName()), t.getName());
 	}
 }

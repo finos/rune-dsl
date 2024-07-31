@@ -541,7 +541,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Boolean context) {
-		expr.inputs.head.isMulti(context)
+		false
 	}
 	
 }

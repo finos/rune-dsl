@@ -34,13 +34,10 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction
 import com.regnosys.rosetta.rosetta.translate.Translation
-import com.regnosys.rosetta.rosetta.translate.TranslationRule
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.util.List
@@ -65,7 +62,6 @@ import org.slf4j.LoggerFactory
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static com.regnosys.rosetta.rosetta.translate.TranslatePackage.Literals.*
 
 /**
  * This class contains custom scoping description.
@@ -80,7 +76,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	static Logger LOGGER = LoggerFactory.getLogger(RosettaScopeProvider)
 	
 	@Inject RosettaTypeProvider typeProvider
-	@Inject TypeSystem typeSystem
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
@@ -239,27 +234,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
-				}
-				case TRANSLATION_RULE__ATTRIBUTE: {
-					if (context instanceof TranslationRule) {
-						val translation = context.translation
-						return Scopes.scopeFor(typeSystem.typeCallToRType(translation.resultType).allFeatures(context))
-					}
-					return IScope.NULLSCOPE
-				}
-				case TRANSLATE_META_INSTRUCTION__META_FEATURE: {
-					if (context instanceof TranslateMetaInstruction) {
-						val container = context.eContainer
-						val annotated = if (container instanceof TranslationRule) {
-								container.attribute
-							} else if (container instanceof Translation) {
-								container.resultType.type
-							}
-						if (annotated instanceof Annotated) {
-							return new SimpleScope(getMetaDescriptions(annotated))
-						}
-					}
-					return IScope.NULLSCOPE
 				}
 			}
 			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')

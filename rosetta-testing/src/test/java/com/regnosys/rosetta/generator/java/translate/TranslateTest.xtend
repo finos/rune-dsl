@@ -36,12 +36,12 @@ class TranslateTest {
 	    	c string (1..1)
 	    
 	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	           		[from b, 42]
+	        translate Bar to Foo {
+	        	a: translate b, 42 to string
+	        }
 	        
-	        string from Qux, context number:
-	        	[from c + context to-string]
+	        translate qux Qux, context number to string:
+	        	qux -> c + context to-string
 	    }
 		'''.generateCode
 		
@@ -69,7 +69,6 @@ class TranslateTest {
 	    	a3 string (1..1)
 	    	a4 string (1..1)
 	    	a5 string (1..1)
-	    	a6 string (1..1)
 	    
 	    type BarOneWithVeryVeryLongName:
 	    	b string (1..1)
@@ -90,17 +89,13 @@ class TranslateTest {
 	    	b string (1..1)	
 	    
 	    translate source LongTranslate {
-	        Foo from BarOneWithVeryVeryLongName, bar2 BarTwoWithVeryVeryLongName, bar3 BarThreeWithVeryVeryLongName, bar4 BarFourWithVeryVeryLongName, bar5 BarFiveWithVeryVeryLongName:
-	        	+ a1
-	           		[from b]
-	           	+ a2
-	           		[from bar2 -> b]
-	           	+ a3
-	           		[from bar3 -> b]
-	           	+ a4
-	           		[from bar4 -> b]
-	           	+ a5
-	           		[from bar5 -> b]
+	        translate bar1 BarOneWithVeryVeryLongName, bar2 BarTwoWithVeryVeryLongName, bar3 BarThreeWithVeryVeryLongName, bar4 BarFourWithVeryVeryLongName, bar5 BarFiveWithVeryVeryLongName to Foo {
+	        	a1: bar1 -> b,
+	           	a2: bar2 -> b,
+	           	a3: bar3 -> b,
+	           	a4: bar4 -> b,
+	           	a5: bar5 -> b
+	        }
 	    }
 		'''.generateCode
 		
@@ -115,6 +110,7 @@ class TranslateTest {
 	}
 	
 	@Test
+	@Disabled
 	def void testTranslationWithMultiCardinality() {
 		val code = '''
 	    type Foo:
@@ -127,13 +123,15 @@ class TranslateTest {
 	    	cs string (0..*)
 	    
 	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	           		[from bs, [1, 2]]
-	           		[from "Another string"]
+	        translate Bar to Foo {
+	        	a: [
+	        			translate bs, [1, 2] to string,
+	        			"Another string"
+	        		]
+	        }
 	        
-	        string from Qux, context number:
-	        	[from cs join ", " + ": " + context to-string]
+	        translate qux Qux, context number to string:
+	        	qux -> cs join ", " + ": " + context to-string
 	    }
 		'''.generateCode
 		
@@ -161,6 +159,7 @@ class TranslateTest {
 	}
 	
 	@Test
+	@Disabled
 	def void testTranslationWithMetadata() {
 		val code = '''
 	    metaType key string

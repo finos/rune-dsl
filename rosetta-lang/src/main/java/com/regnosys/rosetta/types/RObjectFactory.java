@@ -26,25 +26,19 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.google.common.collect.Streams;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
-import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
-import com.regnosys.rosetta.rosetta.translate.TranslateInstruction;
-import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction;
-import com.regnosys.rosetta.rosetta.translate.TranslateSource;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.utils.TranslateUtil;
@@ -177,34 +171,9 @@ public class RObjectFactory {
 	
 	public RFunction buildRFunction(Translation translation) {
 		List<RAttribute> inputs = translation.getParameters().stream().<RAttribute>map(this::buildRAttribute).collect(Collectors.toList());
-		RType outputRType = typeSystem.typeCallToRType(translation.getResultType());
+		RType outputRType = translateUtil.getResultRType(translation);
 		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), false);
-		List<ROperation> operations =
-			Streams.concat(
-				// type level instructions
-				translation.getTypeInstructions()
-					.stream()
-					.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), translation.getResultType(), outputAttribute, List.of(), false)),
-				// type level meta instructions
-				translation.getTypeMetaInstructions()
-					.stream()
-					.map(instr -> generateOperationForTranslateMetaInstruction(instr, translation.getSource(), instr.getMetaFeature().getTypeCall(), outputAttribute, List.of(), false)),
-				// attribute level instructions
-				translation.getRules()
-					.stream()
-					.flatMap(rule -> {
-						RAttribute attr = buildRAttribute(rule.getAttribute());
-						return Streams.concat(
-								rule.getInstructions()
-									.stream()
-									.map(instr -> generateOperationForTranslateInstruction(instr, translation.getSource(), rule.getAttribute().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti())),
-								// attribute level meta instructions
-								rule.getMetaInstructions()
-									.stream()
-									.map(instr -> generateOperationForTranslateMetaInstruction(instr, translation.getSource(), instr.getMetaFeature().getTypeCall(), outputAttribute, List.of(attr), attr.isMulti()))
-							);
-					})
-			).collect(Collectors.toList());
+		ROperation operation = new ROperation(ROperationType.SET, outputAttribute, List.of(), translation.getExpression());
 		
 		return new RFunction(
 				translateUtil.toTranslationId(translation), 
@@ -215,31 +184,9 @@ public class RObjectFactory {
 				List.of(),
 				List.of(),
 				List.of(),
-				operations,
+				List.of(operation),
 				List.of()
 			);
-	}
-	
-	public ROperation generateOperationForTranslateInstruction(TranslateInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
-		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
-		op.setGenerated(true);
-		op.setOutputType(outputType);
-		op.setSource(source);
-		op.getInputs().addAll(instr.getExpressions());
-		instr.set_internalDispatchExpression(op);
-		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, op);
-	}
-	
-	public ROperation generateOperationForTranslateMetaInstruction(TranslateMetaInstruction instr, TranslateSource source, TypeCall outputType, RAttribute outputAttribute, List<RAttribute> assignPath, boolean isMulti) {
-		TranslateDispatchOperation op = ExpressionFactory.eINSTANCE.createTranslateDispatchOperation();
-		op.setGenerated(true);
-		op.setOutputType(outputType);
-		op.setSource(source);
-		op.getInputs().addAll(instr.getExpressions());
-		instr.set_internalDispatchExpression(op);
-		RType metaRType = typeSystem.typeCallToRType(instr.getMetaFeature().getTypeCall());
-		RAttribute metaFeature = new RAttribute(instr.getMetaFeature().getName(), null, metaRType, List.of(), false);
-		return new ROperation(isMulti ? ROperationType.ADD : ROperationType.SET, outputAttribute, assignPath, metaFeature, op);
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {

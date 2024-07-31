@@ -31,9 +31,9 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	       b string (1..1)
 	    
 	    translate source FooBar {
-	        Foo from var Bar, var string:
-	        	+ a
-	           		[from var]
+	        translate var Bar, var string to Foo {
+	        	a: var
+	        }
 	    }
 	    '''.parseRosetta
 		
@@ -43,7 +43,7 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testMaxOneUnnamedParameter() {
+	def void testNoUnnamedParametersWhenMultipleInputs() {
 	    val model = '''
 	    type Foo:
 	       a string (1..1)
@@ -52,14 +52,14 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	       b string (1..1)
 	    
 	    translate source FooBar {
-	        Foo from Bar, string:
-	        	+ a
-	           		[from b]
+	        translate bar Bar, string to Foo {
+	        	a: item
+	        }
 	    }
 	    '''.parseRosetta
 		
 		model.assertError(TRANSLATION_PARAMETER, null,
-			"Cannot have multiple unnamed parameters."
+			"Cannot have unnamed parameters when there are multiple parameters."
 		)
 	}
 	
@@ -73,60 +73,13 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	       b string (0..2)
 	    
 	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	           		[from b]
+	        translate Bar to string:
+	        	b
 	    }
 	    '''.parseRosetta
 		
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-			"Expression must be of single cardinality when mapping to attribute `a` of single cardinality."
-		)
-	}
-	
-	@Test
-	def void testTypeTranslationMustBeSingle() {
-	    val model = '''
-	    type Foo:
-	       a string (1..1)
-	    
-	    type Bar:
-	       b string (0..2)
-	    
-	    translate source FooBar {
-	        Foo from Bar:
-	        	[from b]
-	        
-	        Foo from string:
-	        	+ a
-	        		[from item]
-	    }
-	    '''.parseRosetta
-		
-		model.assertError(ROSETTA_EXPRESSION, null,
-			"Expression must be of single cardinality when mapping to a type."
-		)
-	}
-	
-	@Test
-	def void testMetaTranslationMustBeSingle() {
-	    val model = '''	    
-	    type Foo:
-	    	a string (1..1)
-	    		[metadata scheme]
-	    
-	    type Bar:
-	    	b string (0..2)
-	    
-	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	        		[meta scheme from b]
-	    }
-	    '''.parseRosetta
-		
-		model.assertError(ROSETTA_EXPRESSION, null,
-			"Expression must be of single cardinality when mapping to attribute `scheme` of single cardinality."
+			"Expected an expression of single cardinality, but was multi."
 		)
 	}
 	
@@ -143,37 +96,14 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    	c string (1..1)
 	    
 	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	           		[from b]
+	        translate Bar to Foo {
+	        	a: translate b to string
+	        }
 	    }
 	    '''.parseRosetta
 		
-		model.assertError(TRANSLATE_INSTRUCTION, null,
+		model.assertError(TRANSLATE_DISPATCH_OPERATION, null,
 			"No translation exists to translate Qux into string."
-		)
-	}
-	
-	@Test
-	def void testMatchingTypeTranslationMustExist() {
-	    val model = '''
-	    type Foo:
-	    	a string (1..1)
-	    
-	    type Bar:
-	    	b Qux (1..1)
-	    
-	    type Qux:
-	    	c string (1..1)
-	    
-	    translate source FooBar {
-	        Foo from Bar:
-	           	[from b]
-	    }
-	    '''.parseRosetta
-		
-		model.assertError(TRANSLATE_INSTRUCTION, null,
-			"No translation exists to translate Qux into Foo."
 		)
 	}
 	
@@ -190,12 +120,12 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    	c string (1..1)
 	    
 	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	           		[from b, 42]
+	        translate Bar to Foo {
+	        	a: translate b, 42 to string
+	        }
 	        
-	        string from Qux, context number:
-	        	[from c]
+	        translate qux Qux, context number to string:
+	        	qux -> c
 	    }
 	    '''.parseRosettaWithNoIssues
 	}
@@ -213,14 +143,14 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    	c string (1..1)
 	    
 	    translate source Parent {
-	        string from Qux:
-	        	[from c]
+	        translate Qux to string:
+	        	c
 	    }
 	    
 	    translate source FooBar extends Parent {
-	        Foo from Bar:
-	        	+ a
-	           		[from b]
+	        translate Bar to Foo {
+	        	a: translate b to string
+	        }
 	    }
 	    '''.parseRosettaWithNoIssues
 	}
@@ -245,11 +175,12 @@ class RosettaTranslateValidationTest implements RosettaIssueCodes {
 	    	c string (1..1)
 	    
 	    translate source FooBar {
-	        Foo from Bar:
-	        	+ a
-	           		[from b]
+	        translate Bar to Foo {
+	        	a: translate b to AttrType
+	        }
 	        
-	        AttrType from SuperQux:
+	        translate SuperQux to AttrType:
+	        	empty
 	    }
 	    '''.parseRosettaWithNoIssues
 	}

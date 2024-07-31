@@ -86,6 +86,12 @@ Workflow {
 			formatter = {
 				generateStub = true
 			}
+			fragment = ParserCompressorFragment {
+				// Enabled to produce shorter Java code and ease debugging at the expense of a little uglier (because more dense) code
+				joinLinesEagerly = true
+				grammarFile = "${parentDir}/rosetta-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rosetta-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
+			}
 		}
 	}
 }

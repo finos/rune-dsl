@@ -211,7 +211,7 @@ TypeParameterValidID:
 
 ValidID:
 	ID | 'condition' | 'source' | 'value' | 'version'
-	| 'pattern' | 'translate'
+	| 'pattern'
 ;
 
 
@@ -751,6 +751,7 @@ ListOperation returns RosettaExpression:
  */
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConstructorExpression
+	| RosettaCalcTranslateDispatchOperation
 	| RosettaCalcConditionalExpression
 	| RosettaCalcOnlyExists
 	| RosettaReferenceOrFunctionCall
@@ -766,6 +767,10 @@ RosettaCalcConstructorExpression returns RosettaExpression:
 
 ConstructorKeyValuePair:
 	key=[RosettaFeature|ValidID] ':' value=RosettaCalcExpressionWithAsKey
+;
+
+RosettaCalcTranslateDispatchOperation returns RosettaExpression:
+	{TranslateDispatchOperation} 'translate' inputs+=RosettaCalcExpression (',' inputs+=RosettaCalcExpression)* 'to' outputType=TypeCall ('using' source=[TranslateSource|QualifiedName])?
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:
@@ -900,13 +905,17 @@ RosettaRule:
 TranslateSource:
     'translate' 'source' RosettaNamed ('extends' superSources+=[TranslateSource|QualifiedName]  (',' superSources+=[TranslateSource|QualifiedName])* )?
     '{'
-        (translations+=Translation)*
+        translations+=Translation*
     '}'
 ;
 
 Translation:
-	'translate' parameters+=TranslationParameter (',' parameters+=TranslationParameter)* 'to' resultType=TypeCall ':'
-		expression=RosettaCalcExpression
+	'translate' parameters+=TranslationParameter (',' parameters+=TranslationParameter)* 'to'
+	(
+		resultType=TypeCall hasExplicitOutputType?=':' expression=RosettaCalcExpression
+		|
+		expression=RosettaCalcConstructorExpression
+	)
 ;
 
 TranslationParameter:

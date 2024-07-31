@@ -132,12 +132,6 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpr
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
-import java.util.ArrayList
-import com.fasterxml.jackson.core.type.TypeReference
-import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
-import com.regnosys.rosetta.generator.java.statement.JavaForLoop
-import com.regnosys.rosetta.generator.java.statement.JavaBlock
-import com.regnosys.rosetta.generator.java.statement.JavaStatementList
 
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
@@ -1187,92 +1181,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {
 		val inputTypes = expr.inputs.map[typeProvider.getRType(it)]
 		val outputType = expr.outputType.typeCallToRType
-		if (inputTypes.size === 1 && inputTypes.head.isSubtypeOf(outputType)) {
-			// Case direct assignment
-			return expr.inputs.head.javaCode(context.expectedType, context.scope)
-		}
 		
-		// Case dispatch
-		val match = translateUtil.findMatches(expr.source, outputType, inputTypes).last
+		val match = translateUtil.findMatches(translateUtil.getSource(expr), outputType, inputTypes).last
 		val rCallable = rObjectFactory.buildRFunction(match)
 		val javaOutputType = rCallable.output.attributeToJavaType
-		if (expr.isMulti) {
-			// The code below generates Java code of the following form:
-			// final List<Input0> input0List = ...;
-			// final List<Input1> input1List = ...;
-			// ...
-			// final List<Output> outputList = new ArrayList<>();
-			// for (int i = 0; i < input0List.size() && i < input1List.size() && ...; i++)
-			//     outputList.add(dispatchFunc.evaluate(input0List.get(i), input1List.get(i), ...));
-			// }
-			// outputList
-			
-			var argsListDeclarations = new JavaBlock(new JavaStatementList());
-			val forScope = context.scope.childScope("for-loop")
-			val indexId = forScope.createUniqueIdentifier("i")
-			var JavaExpression forConditions = null
-			val itemArgs = newArrayList
-			for (var i = 0; i < expr.inputs.size; i++) {
-				// Declare inputs as variables of the form:
-				// List<InputType0> inputList0 = <expr>;
-				// List<InputType1> inputList1 = <expr>;
-				// ...
-				val itemType = rCallable.inputs.get(i).attributeToJavaType
-				val argsExpr = expr.inputs.get(i).javaCode(LIST.wrapExtendsIfNotFinal(itemType), context.scope)
-				val argListVar = context.scope.createUniqueIdentifier(itemType.simpleName.toFirstLower + "List")
-				argsListDeclarations = argsListDeclarations.append(
-					argsExpr.complete[
-						new JavaLocalVariableDeclarationStatement(true, LIST.wrapExtendsIfNotFinal(itemType), argListVar, it)
-					]
-				)
-				// Create a condition of the form:
-				// i < inputList0.size() && i < inputList1.size() && ...
-				val cond = JavaExpression.from('''«indexId» < «argListVar».size()''', JavaPrimitiveType.BOOLEAN)
-				if (forConditions === null) {
-					forConditions = cond
-				} else {
-					val prev = forConditions
-					forConditions = JavaExpression.from('''«prev» && «cond»''', JavaPrimitiveType.BOOLEAN)
-				}
-				// Items of the inputs can be accessed using `inputList0.get(i)`, `inputList1.get(i)`, etc.
-				itemArgs.add(JavaExpression.from('''«argListVar».get(«indexId»)''', itemType))
-			}
-			
-			val accId = context.scope.createUniqueIdentifier(javaOutputType.simpleName.toFirstLower + "List")
-			val accType = LIST.wrap(javaOutputType)
-			argsListDeclarations
-				.append(
-					new JavaLocalVariableDeclarationStatement(
-						true,
-						accType,
-						accId,
-						JavaExpression.from('''new «ArrayList»<>()''',JavaGenericTypeDeclaration.from(new TypeReference<ArrayList<?>>() {}).wrap(javaOutputType))
-					)
-				).append(
-					new JavaForLoop(
-						new JavaLocalVariableDeclarationStatement(false, JavaPrimitiveType.INT, indexId, JavaExpression.from('''0''', JavaPrimitiveType.INT)),
-						forConditions,
-						JavaExpression.from('''«indexId»++''', JavaPrimitiveType.INT),
-						JavaStatementBuilder.invokeMethod(
-							itemArgs,
-							[JavaExpression.from('''«accId».add(«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»))''', JavaPrimitiveType.BOOLEAN)],
-							context.scope
-						).completeAsExpressionStatement
-					)
-				).append(
-					new JavaVariable(accId, accType)
-				)
-		} else {
-			val args = newArrayList
-			for (var i = 0; i < expr.inputs.size; i++) {
-				args.add(expr.inputs.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, context.scope))
-			}
-			JavaStatementBuilder.invokeMethod(
-				args,
-				[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', javaOutputType)],
-				context.scope
-			)
+
+		val args = newArrayList
+		for (var i = 0; i < expr.inputs.size; i++) {
+			args.add(expr.inputs.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, context.scope))
 		}
+		JavaStatementBuilder.invokeMethod(
+			args,
+			[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', javaOutputType)],
+			context.scope
+		)
 	}
 	
 }

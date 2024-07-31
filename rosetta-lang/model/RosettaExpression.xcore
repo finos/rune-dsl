@@ -174,8 +174,8 @@ class ConstructorKeyValuePair {
 
 class TranslateDispatchOperation extends RosettaExpression {
 	refers TranslateSource source
-	refers RosettaExpression[] inputs
-	refers TypeCall outputType
+	contains RosettaExpression[] inputs
+	contains TypeCall outputType
 }
 
 interface RosettaOperation extends RosettaExpression {

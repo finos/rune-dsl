@@ -37,7 +37,7 @@ class JavaDependencyProvider {
 			val inputTypes = op.inputs.map[typeProvider.getRType(it)]
 			val outputType = typeSystem.typeCallToRType(op.outputType)
 			if (inputTypes.size !== 1 || !typeSystem.isSubtypeOf(inputTypes.head, outputType)) {
-				val match = translateUtil.findMatches(op.source, outputType, inputTypes).last
+				val match = translateUtil.findMatches(translateUtil.getSource(op), outputType, inputTypes).last
 				actualDispatches.add(rTypeBuilderFactory.buildRFunction(match))
 			}
 		}

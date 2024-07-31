@@ -22,6 +22,8 @@ class Translation {
 	contains TranslationParameter[] parameters
 	contains TypeCall resultType
 	contains RosettaExpression expression
+	
+	boolean hasExplicitOutputType
 }
 
 class TranslationParameter extends RosettaSymbol, RosettaTyped {
