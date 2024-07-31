@@ -89,6 +89,8 @@ Choice:
 
 ChoiceOption:
 	RosettaTyped RosettaDefinable?
+	(References|Annotations|Synonyms)*
+	RuleReference?
 ;
 
 Attribute:
