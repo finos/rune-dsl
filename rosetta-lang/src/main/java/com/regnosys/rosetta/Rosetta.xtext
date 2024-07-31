@@ -905,29 +905,10 @@ TranslateSource:
 ;
 
 Translation:
-    resultType=TypeCall ('from' parameters+=TranslationParameter (',' parameters+=TranslationParameter)*)? ':'
-    	(typeInstructions+=TranslateInstruction | typeMetaInstructions+=TranslateMetaInstruction)*
-        rules+=TranslationRule*
+	'translate' parameters+=TranslationParameter (',' parameters+=TranslationParameter)* 'to' resultType=TypeCall ':'
+		expression=RosettaCalcExpression
 ;
 
 TranslationParameter:
     RosettaNamed? RosettaTyped
 ;
-
-TranslationRule:
-    '+' attribute=[Attribute|ValidID]
-    	(instructions+=TranslateInstruction | metaInstructions+=TranslateMetaInstruction)*
-;
-
-fragment BaseTranslateInstruction:
-	'from' expressions+=RosettaCalcExpression (',' expressions+=RosettaCalcExpression)* ']'
-;
-
-TranslateInstruction:
-	'[' BaseTranslateInstruction
-;
-
-TranslateMetaInstruction:
-	'[' 'meta' metaFeature=[RosettaMetaType|ValidID] BaseTranslateInstruction
-;
-

@@ -58,10 +58,6 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.translate.TranslateSource
 import com.regnosys.rosetta.rosetta.translate.Translation
-import com.regnosys.rosetta.rosetta.translate.TranslationRule
-import com.regnosys.rosetta.rosetta.translate.TranslateInstruction
-import com.regnosys.rosetta.rosetta.translate.TranslateMetaInstruction
-import com.regnosys.rosetta.rosetta.translate.BaseTranslateInstruction
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -790,98 +786,19 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	def dispatch void format(Translation translation, extension IFormattableDocument document) {
 		val extension translationGrammarAccess = translationAccess
 		
-		translation.regionFor.keyword(fromKeyword_1_0)
-			.surround[oneSpace]
-		translation.regionFor.keywords(commaKeyword_1_2_0).forEach[
+		translation.regionFor.keyword(translateKeyword_0)
+			.append[oneSpace]
+		translation.regionFor.keywords(commaKeyword_2_0).forEach[
 			prepend[noSpace]
 			append[oneSpace]
 		]
+		translation.regionFor.keyword(toKeyword_3)
+			.surround[oneSpace]
 		translation.regionFor.keyword(':').prepend[noSpace]
 		translation.indentInner(document)
-		translation.typeInstructions.forEach[
-			prepend[newLine]
-			format
-		]
-		translation.typeMetaInstructions.forEach[
-			prepend[newLine]
-			format
-		]
-		translation.rules.forEach[
-			prepend[newLine]
-			format
-		]
-	}
-	
-	def dispatch void format(TranslationRule rule, extension IFormattableDocument document) {
-		val extension translationRuleGrammarAccess = translationRuleAccess
-		
-		rule.regionFor.keyword(plusSignKeyword_0)
-			.append[oneSpace]
-		rule.indentInner(document)
-		rule.instructions.forEach[
-			prepend[newLine]
-			format
-		]
-		rule.metaInstructions.forEach[
-			prepend[newLine]
-			format
-		]
-	}
-	
-	private def void formatBaseInstruction(BaseTranslateInstruction baseInstruction, extension IFormattableDocument document) {
-		val extension baseTranslateInstructionGrammarAccess = baseTranslateInstructionAccess
-		
-		baseInstruction.regionFor.keywords(commaKeyword_2_0).forEach[
-			prepend[noSpace]
-		]
-		
-		formatInlineOrMultiline(document, baseInstruction, FormattingMode.NORMAL,
-			[extension doc | // case: short argument list
-				baseInstruction.regionFor.keyword(fromKeyword_0)
-					.append[oneSpace]
-				baseInstruction.regionFor.keyword(rightSquareBracketKeyword_3)
-					.prepend[noSpace]
-				baseInstruction.regionFor.keywords(commaKeyword_2_0).forEach[
-					append[oneSpace]
-				]
-				baseInstruction.expressions.forEach[format(doc)]
-			],
-			[extension doc | // case: long argument list
-				baseInstruction.indentInner(doc)
-				interior(
-					baseInstruction.regionFor.keyword(fromKeyword_0)
-						.append[newLine],
-					baseInstruction.regionFor.keyword(rightSquareBracketKeyword_3)
-						.prepend[newLine],
-					[indent]
-				)
-				baseInstruction.regionFor.keywords(commaKeyword_2_0).forEach[
-					append[newLine]
-				]
-				baseInstruction.expressions.forEach[format(doc)]
-			]
-		)
-	}
-	
-	def dispatch void format(TranslateInstruction instruction, extension IFormattableDocument document) {
-		val extension translateInstructionGrammarAccess = translateInstructionAccess
-		
-		instruction.regionFor.keyword(leftSquareBracketKeyword_0)
-			.append[noSpace]
-		
-		formatBaseInstruction(instruction, document)
-	}
-	
-	def dispatch void format(TranslateMetaInstruction metaInstruction, extension IFormattableDocument document) {
-		val extension translateMetaInstructionGrammarAccess = translateMetaInstructionAccess
-		
-		metaInstruction.regionFor.keyword(metaKeyword_1)
-			.prepend[noSpace]
-			.append[oneSpace]
-		metaInstruction.regionFor.assignment(metaFeatureAssignment_2)
-			.append[oneSpace]
-		
-		formatBaseInstruction(metaInstruction, document)
+		translation.expression
+			.prepend[newLine]
+			.format
 	}
 
 	def void indentedBraces(EObject eObject, extension IFormattableDocument document) {
