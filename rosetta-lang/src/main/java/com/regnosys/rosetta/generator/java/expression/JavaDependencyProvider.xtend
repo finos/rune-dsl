@@ -16,7 +16,6 @@ import com.regnosys.rosetta.types.RDataType
 import java.util.List
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
-import com.regnosys.rosetta.types.TypeSystem
 
 /**
  * A class that helps determine which RosettaFunctions a Rosetta object refers to
@@ -24,7 +23,6 @@ import com.regnosys.rosetta.types.TypeSystem
 class JavaDependencyProvider {
 	@Inject RObjectFactory rTypeBuilderFactory
 	@Inject RosettaTypeProvider typeProvider
-	@Inject TypeSystem typeSystem
 	@Inject extension JavaTypeTranslator
 	@Inject TranslateUtil translateUtil
 
@@ -34,12 +32,8 @@ class JavaDependencyProvider {
 		val translateDispatchOperations = EcoreUtil2.eAllOfType(expression, TranslateDispatchOperation)
 		val actualDispatches = newArrayList
 		for (op : translateDispatchOperations) {
-			val inputTypes = op.inputs.map[typeProvider.getRType(it)]
-			val outputType = typeSystem.typeCallToRType(op.outputType)
-			if (inputTypes.size !== 1 || !typeSystem.isSubtypeOf(inputTypes.head, outputType)) {
-				val match = translateUtil.findMatches(translateUtil.getSource(op), outputType, inputTypes).last
-				actualDispatches.add(rTypeBuilderFactory.buildRFunction(match))
-			}
+			val match = translateUtil.findMatches(op).last
+			actualDispatches.add(rTypeBuilderFactory.buildRFunction(match))
 		}
 		(
 			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass] +

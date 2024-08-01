@@ -1179,10 +1179,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {
-		val inputTypes = expr.inputs.map[typeProvider.getRType(it)]
-		val outputType = expr.outputType.typeCallToRType
-		
-		val match = translateUtil.findMatches(translateUtil.getSource(expr), outputType, inputTypes).last
+		val match = translateUtil.findMatches(expr).last
 		val rCallable = rObjectFactory.buildRFunction(match)
 		val javaOutputType = rCallable.output.attributeToJavaType
 

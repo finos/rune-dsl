@@ -30,6 +30,10 @@ import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableRosettaPars
 import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableContentAssistService
 import com.regnosys.rosetta.ide.contentassist.cancellable.RosettaOperationCanceledManager
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenModifiersProvider
+import org.eclipse.xtext.ide.server.symbol.DocumentSymbolService
+import com.regnosys.rosetta.ide.symbol.RosettaDocumentSymbolService
+import org.eclipse.xtext.findReferences.TargetURICollector
+import com.regnosys.rosetta.ide.symbol.RosettaTargetURICollector
 
 /**
  * Use this class to register ide components.
@@ -94,5 +98,13 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends OperationCanceledManager> bindOperationCanceledManager() {
 		RosettaOperationCanceledManager
+	}
+	
+	def Class<? extends DocumentSymbolService> bindDocumentSymbolService() {
+		RosettaDocumentSymbolService
+	}
+	
+	def Class<? extends TargetURICollector> bindTargetURICollector() {
+		RosettaTargetURICollector
 	}
 }

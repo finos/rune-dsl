@@ -36,12 +36,26 @@ public class TranslateUtil {
 			);
 	}
 	
-	public List<Translation> findMatches(TranslateSource source, RType resultType, List<RType> inputTypes) {
+	public List<Translation> findMatches(TranslateDispatchOperation op) {
+		return findMatches(
+				getSource(op),
+				typeSystem.typeCallToRType(op.getOutputType()),
+				op.getInputs().stream().map(typeProvider::getRType).collect(Collectors.toList())
+			);
+	}
+	private List<Translation> findMatches(TranslateSource source, RType resultType, List<RType> inputTypes) {
 		return getAllTranslations(source)
 				.filter(t -> matches(t, resultType, inputTypes))
 				.collect(Collectors.toList());
 	}
 	
+	public boolean hasAnyMatch(TranslateDispatchOperation op) {
+		return hasAnyMatch(
+				getSource(op),
+				typeSystem.typeCallToRType(op.getOutputType()),
+				op.getInputs().stream().map(typeProvider::getRType).collect(Collectors.toList())
+			);
+	}
 	public boolean hasAnyMatch(TranslateSource source, RType resultType, List<RType> inputTypes) {
 		return getAllTranslations(source)
 				.anyMatch(t -> matches(t, resultType, inputTypes));
