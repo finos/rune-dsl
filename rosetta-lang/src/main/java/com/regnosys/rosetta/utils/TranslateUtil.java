@@ -49,6 +49,20 @@ public class TranslateUtil {
 				.collect(Collectors.toList());
 	}
 	
+	public Translation findLastMatch(TranslateDispatchOperation op) {
+		return findLastMatch(
+				getSource(op),
+				typeSystem.typeCallToRType(op.getOutputType()),
+				op.getInputs().stream().map(typeProvider::getRType).collect(Collectors.toList())
+			);
+	}
+	private Translation findLastMatch(TranslateSource source, RType resultType, List<RType> inputTypes) {
+		return Streams.findLast(
+					getAllTranslations(source)
+						.filter(t -> matches(t, resultType, inputTypes)))
+				.orElse(null);
+	}
+	
 	public boolean hasAnyMatch(TranslateDispatchOperation op) {
 		return hasAnyMatch(
 				getSource(op),

@@ -1,5 +1,7 @@
 module com.regnosys.rosetta.GenerateRosetta
 
+import com.regnosys.rosetta.xcore.compressor.ParserCompressorFragment
+
 import org.eclipse.xtext.xtext.generator.XtextGenerator
 import org.eclipse.xtext.xtext.generator.StandardLanguage
 import org.eclipse.xtext.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment2

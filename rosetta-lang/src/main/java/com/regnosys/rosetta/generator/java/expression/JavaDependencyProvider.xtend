@@ -32,7 +32,7 @@ class JavaDependencyProvider {
 		val translateDispatchOperations = EcoreUtil2.eAllOfType(expression, TranslateDispatchOperation)
 		val actualDispatches = newArrayList
 		for (op : translateDispatchOperations) {
-			val match = translateUtil.findMatches(op).last
+			val match = translateUtil.findLastMatch(op)
 			actualDispatches.add(rTypeBuilderFactory.buildRFunction(match))
 		}
 		(

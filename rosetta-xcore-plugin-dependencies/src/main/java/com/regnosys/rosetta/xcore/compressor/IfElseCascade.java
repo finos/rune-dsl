@@ -8,7 +8,7 @@
  * Contributors:
  *   NumberFour AG - Initial API and implementation
  */
-package com.regnosys.rosetta;
+package com.regnosys.rosetta.xcore.compressor;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -8,7 +8,7 @@
  * Contributors:
  *   NumberFour AG - Initial API and implementation
  */
-package com.regnosys.rosetta;
+package com.regnosys.rosetta.xcore.compressor;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import org.eclipse.xtext.xtext.generator.AbstractXtextGeneratorFragment;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import com.regnosys.rosetta.IfElseCascade.Replacement;
+import com.regnosys.rosetta.xcore.compressor.IfElseCascade.Replacement;
 
 /**
  * MWE fragment that injects the necessary code to compress the generated ANTLR V3 parser in order to avoid problems
