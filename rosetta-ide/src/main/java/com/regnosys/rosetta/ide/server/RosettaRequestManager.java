@@ -17,8 +17,11 @@
 package com.regnosys.rosetta.ide.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.regnosys.rosetta.cache.IRequestScopedCache;
+
 import org.eclipse.xtext.ide.server.concurrent.AbstractRequest;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.xbase.lib.Functions.Function0;
@@ -47,6 +50,7 @@ public class RosettaRequestManager extends RequestManager {
 	                        .setDaemon(true)
 	                        .setNameFormat("rosetta-language-server-request-timeout-%d")
 	                        .build());
+	private final IRequestScopedCache requestCache;
 
 	/*
 	 * TODO: contribute to Xtext
@@ -57,7 +61,7 @@ public class RosettaRequestManager extends RequestManager {
 	protected List<AbstractRequest<?>> removableRequestList = new CopyOnWriteArrayList<>();
 
 	@Inject
-	public RosettaRequestManager(ExecutorService parallel, OperationCanceledManager operationCanceledManager) {
+	public RosettaRequestManager(ExecutorService parallel, OperationCanceledManager operationCanceledManager, IResourceServiceProvider.Registry serviceProviderRegistry) {
 		super(parallel, operationCanceledManager);
 		
 		String rawTimeout = System.getenv(TIMEOUT_ENV_NAME);
@@ -65,6 +69,13 @@ public class RosettaRequestManager extends RequestManager {
 			this.timeout = Duration.ofSeconds(Long.parseLong(rawTimeout));
 		} else {
 			this.timeout = null;
+		}
+		
+		Object serviceProvider = serviceProviderRegistry.getExtensionToFactoryMap().get("rosetta");
+		if (serviceProvider instanceof IResourceServiceProvider) {
+			this.requestCache = ((IResourceServiceProvider) serviceProvider).get(IRequestScopedCache.class);
+		} else {
+			this.requestCache = null;
 		}
 	}
 
@@ -90,7 +101,11 @@ public class RosettaRequestManager extends RequestManager {
 			request.cancel();
 			cfs[i] = request.get();
 		}
-		return CompletableFuture.allOf(cfs);
+		CompletableFuture<Void> cancelAll = CompletableFuture.allOf(cfs);
+		if (requestCache != null) {
+			cancelAll = cancelAll.thenRun(() -> requestCache.clear());
+		}
+		return cancelAll;
 	}
 	
 	@Override
