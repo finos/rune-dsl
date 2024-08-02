@@ -13,6 +13,8 @@ plugin.xml_gen
 **/*.iml
 .checkstyle
 .classpath
+rosetta-profiling/dependency-reduced-pom.xml
+rosetta-profiling/reports/
 
 **/.settings
 **/src-gen/
@@ -27,4 +29,4 @@ com.regnosys.rosetta.web/
 .tycho-consumer-pom.xml
 
 # CVE scan reports
-reports/
+./reports/

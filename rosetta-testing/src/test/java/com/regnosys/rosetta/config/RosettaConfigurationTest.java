@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 
 import com.google.inject.Guice;
@@ -35,6 +36,13 @@ public class RosettaConfigurationTest {
 		assertFalse(filter.test("foo"));
 		assertTrue(filter.test("abc.def"));
 		assertFalse(filter.test("abc.def.sub"));
+		
+		assertNotNull(config.getGenerators().getTabulators());
+		List<String> annotations = config.getGenerators().getTabulators().getAnnotations();
+		assertEquals(2, annotations.size());
+		assertTrue(annotations.contains("projection"));
+		assertTrue(annotations.contains("enrich"));
+		
 	}
 	
 	private static class MyConfigFileProvider extends RosettaConfigurationFileProvider {
@@ -44,3 +52,4 @@ public class RosettaConfigurationTest {
 		}
 	}
 }
+;
