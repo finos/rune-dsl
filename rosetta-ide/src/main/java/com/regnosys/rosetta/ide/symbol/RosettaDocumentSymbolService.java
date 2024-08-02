@@ -63,7 +63,7 @@ public class RosettaDocumentSymbolService extends DocumentSymbolService {
 		// TODO: join functionalities so we only iterate once over all resources
 		Consumer<IImplicitReferenceDescription> acceptor = (IImplicitReferenceDescription implicitReference) -> {
 			doRead(resourceAccess, implicitReference.getSourceEObjectUri(), (EObject obj) -> {
-				Location location = documentExtensions.newLocation(obj);
+				Location location = documentExtensions.newFullLocation(obj);
 				if (location != null) {
 					locations.add(location);
 				}

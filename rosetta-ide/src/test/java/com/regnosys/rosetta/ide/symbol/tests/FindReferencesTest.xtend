@@ -45,8 +45,8 @@ class FindReferencesTest extends AbstractRosettaLanguageServerTest {
 			it.line = 16
 			it.column = 1
 			it.expectedReferences = '''
-				OtherModel.rosetta [[8, 2] .. [8, 11]]
-				MyModel.rosetta [[13, 5] .. [13, 14]]
+				OtherModel.rosetta [[8, 2] .. [8, 57]]
+				MyModel.rosetta [[13, 5] .. [13, 30]]
 				'''
 		]
 	}
