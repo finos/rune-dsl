@@ -67,7 +67,7 @@ class ModelObjectGenerator {
 		'''
 			«javadoc(t.data, version)»
 			@«RosettaDataType»(value="«t.name»", builder=«javaType.toBuilderImplType».class, version="«EcoreUtil2.getContainerOfType(t.data, RosettaModel).version»")
-			public interface «javaType» extends «IF t.data.hasSuperType»«javaType.superclass»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(t.data, interfaces)» {
+			public interface «javaType» extends «IF t.data.hasSuperType»«javaType.interfaces.head»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(t.data, interfaces)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
 
@@ -81,7 +81,7 @@ class ModelObjectGenerator {
 				«pojoInterfaceDefaultOverridenMethods(javaType, metaDataIdentifier, interfaces, t)»
 
 				«startComment('Builder Interface')»
-				interface «javaType»Builder extends «t.name», «IF t.data.hasSuperType»«javaType.superclass.toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
+				interface «javaType»Builder extends «t.name», «IF t.data.hasSuperType»«javaType.interfaces.head.toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
 					«pojoBuilderInterfaceGetterMethods(t, javaType, builderScope)»
 
 					«t.data.builderProcessMethod»
@@ -90,7 +90,7 @@ class ModelObjectGenerator {
 				}
 
 				«startComment('''Immutable Implementation of «t.name»''')»
-				class «javaType»Impl «IF t.data.hasSuperType»extends «javaType.superclass.toImplType» «ENDIF»implements «t.name» {
+				class «javaType»Impl «IF t.data.hasSuperType»extends «javaType.interfaces.head.toImplType» «ENDIF»implements «t.name» {
 					«t.rosettaClass(implScope)»
 
 					«t.data.boilerPlate(implScope)»

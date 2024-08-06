@@ -69,7 +69,7 @@ class ModelMetaGenerator {
 					return «Arrays».asList(
 						«FOR r : conditions SEPARATOR ','»
 							«val containingClassName = r.containingClassNamespace.child(r.className)»
-							«val conditionClassName = r.containingClassNamespace.child("datarule").child(r.conditionName.toConditionJavaType)»
+							«val conditionClassName = r.containingClassNamespace.condition.child(r.conditionName.toConditionJavaType)»
 							factory.<«containingClassName»>create(«conditionClassName».class)
 						«ENDFOR»
 					);
@@ -116,7 +116,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
-		val dataNamespace = t.data.namespace.toDottedPath
+		val dataNamespace = new RootPackage(t.data.namespace.toDottedPath)
 		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t.data), dataNamespace)].toList
 	}
 
@@ -124,6 +124,6 @@ class ModelMetaGenerator {
 	static class ClassRule {
 		String className
 		String conditionName
-		DottedPath containingClassNamespace
+		RootPackage containingClassNamespace
 	}
 }

@@ -31,16 +31,16 @@ class RosettaTranslateParsingTest {
 	    	c string (1..1)
 	    
 	    translate source FooBar1 {
-	        Foo from Bar:
-	        	+ a
-	           		[from b]
-	           		[meta location from c]
+	        translate Bar to Foo {
+	        	a: b
+	        }
+	           		// [meta location from c]
 	    }
 	    
 	    translate source FooBar2 extends FooBar1 {
-	        Foo from bar Bar, string:
-	        	+ a
-	            	[from bar -> b + item]
+	        translate bar Bar, param string to Foo {
+	        	a: bar -> b + param
+	        }
 	    }
 	    '''.parseRosettaWithNoIssues
 	}

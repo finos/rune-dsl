@@ -69,6 +69,7 @@ import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.meta.Key
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.rosetta.model.lib.ModelSymbolId
 
 class FunctionGenerator {
 
@@ -366,7 +367,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					function.symbolId,
+					new ModelSymbolId(function.namespace.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),

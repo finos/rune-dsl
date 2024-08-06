@@ -35,7 +35,7 @@ class ModelObjectBuilderGenerator {
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
 		'''
-		class «javaType»BuilderImpl«IF t.data.hasSuperType» extends «javaType.superclass.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.data)» {
+		class «javaType»BuilderImpl«IF t.data.hasSuperType» extends «javaType.interfaces.head.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.data)» {
 		
 			«FOR attribute : t.data.expandedAttributes»
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
