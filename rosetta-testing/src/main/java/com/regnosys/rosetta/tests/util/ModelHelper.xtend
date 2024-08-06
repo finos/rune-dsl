@@ -8,6 +8,7 @@ import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import java.util.ArrayList
 import javax.inject.Inject
+import com.rosetta.util.DottedPath
 
 class ModelHelper {
 
@@ -63,7 +64,7 @@ class ModelHelper {
 		'''
 	}
 	
-	val rootpack = new RootPackage("com.rosetta.test.model")
+	val rootpack = new RootPackage(DottedPath.splitOnDots("com.rosetta.test.model"))
 
 	final def RootPackage rootPackage() {
 		return rootpack

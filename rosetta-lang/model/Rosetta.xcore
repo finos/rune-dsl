@@ -12,13 +12,12 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
-class RosettaModel extends RosettaDefinable {
-	String name
+
+class RosettaModel extends RosettaDefinable, RosettaNamespace {
 	String version = "0.0.0"
 	boolean overridden
 	contains Import[] imports
 	contains RosettaQualifiableConfiguration[] configurations opposite model 
-	contains RosettaRootElement[] elements opposite model
 }
 
 class Import {
@@ -38,6 +37,10 @@ interface RosettaDefinable {
 
 interface RosettaNamed {
 	String name
+}
+
+interface RosettaNamespace extends RosettaNamed {
+	contains RosettaRootElement[] elements opposite namespace
 }
 
 interface RosettaTyped {
@@ -64,7 +67,7 @@ interface RosettaCallableWithArgs extends RosettaSymbol {
 }
 
 interface RosettaRootElement {
-	container RosettaModel model opposite elements
+	container RosettaNamespace namespace opposite elements
 }
 
 abstract class RosettaFeatureOwner extends RosettaDefinable {

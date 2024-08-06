@@ -80,6 +80,7 @@ import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -96,6 +97,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension TypeSystem
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
+	@Inject extension ModelIdProvider
 	
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -111,7 +113,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
 			RosettaDataReference: {
 				if (extensions.isResolved(seg.data)) {
-					return new RDataType(seg.data)
+					return new RDataType(seg.data, seg.data.symbolId)
 				} else {
 					NOTHING
 				}
@@ -136,7 +138,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 					MISSING
 			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
-				new REnumType(symbol)
+				new REnumType(symbol, symbol.symbolId)
 			}
 			Function: {
 				if (symbol.output !== null) {
@@ -182,7 +184,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				featureType
 			}
 			RosettaEnumValue: {
-				new REnumType(feature.enumeration)
+				new REnumType(feature.enumeration, feature.enumeration.symbolId)
 			}
 			default:
 				new RErrorType("Cannot infer type of feature.")
@@ -227,7 +229,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		val definingContainer = context.findObjectDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				new RDataType(it)
+				new RDataType(it, symbolId)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
@@ -485,7 +487,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> context) {
-		new REnumType(expr.enumeration)
+		new REnumType(expr.enumeration, expr.enumeration.symbolId)
 	}
 	
 	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> context) {

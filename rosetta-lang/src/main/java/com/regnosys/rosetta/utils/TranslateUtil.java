@@ -15,9 +15,6 @@ import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
-import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.model.lib.ModelTranslationId;
-import com.rosetta.util.DottedPath;
 
 public class TranslateUtil {
 	private final TypeSystem typeSystem;
@@ -110,14 +107,5 @@ public class TranslateUtil {
 			return EcoreUtil2.getContainerOfType(op, TranslateSource.class);
 		}
 		return op.getSource();
-	}
-	
-	public ModelTranslationId toTranslationId(Translation translation) {
-		TranslateSource source = translation.getSource();
-		return new ModelTranslationId(
-				new ModelSymbolId(DottedPath.splitOnDots(source.getModel().getName()), source.getName()),
-				translation.getParameters().stream().map(p -> typeProvider.getRTypeOfSymbol(p).getSymbolId()).collect(Collectors.toList()),
-				getResultRType(translation).getSymbolId()
-			);
 	}
 }

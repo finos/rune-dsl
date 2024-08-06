@@ -256,4 +256,63 @@ class TranslateTest {
         assertEquals(expectedBar, translation.invokeFunc(expectedBar.class, #[inp]))
 	}
 	
+	@Test
+	def void testTranslateSourceWithNestedRootElements() {
+		val code = '''
+	    type Foo:
+	    	country string (0..1)
+	    	amount number (1..1)
+	    
+	    type Bar:
+	    	country string (1..1)
+	    	payment Payment (1..1)
+	    	complexAttribute number (1..1)
+	    
+	    type Payment:
+	    	amount number (1..1)
+	    	currency FooBar.CurrencyCodeEnum (1..1)
+	    
+	    translate source FooBar {
+	        type Context:
+	        	globalCurrency CurrencyCodeEnum (1..1)
+	        	defaultCountry string (1..1)
+	        
+	        enum CurrencyCodeEnum:
+	        	EUR
+	        	GBP
+	        	USD
+	        
+	        translate foo Foo, c Context to Bar {
+	        	country: GetActualCountry(foo, c),
+	        	payment: translate foo -> amount, c to Payment,
+	        	complexAttribute: CustomMapper(foo, c)
+	        }
+	        
+	        translate amount number, c Context to Payment {
+	        	amount: amount,
+	        	currency: c -> globalCurrency
+	        }
+	        
+	        func GetActualCountry:
+	        	inputs:
+	        		foo Foo (1..1)
+	        		context Context (1..1)
+	        	output:
+	        		country string (1..1)
+	        	set country:
+	        		foo -> country default context -> defaultCountry
+	        
+	        func CustomMapper:
+	        	inputs:
+	        		foo Foo (1..1)
+	        		context Context (1..1)
+	        	output:
+	        		complexOutput number (1..1)
+	    }
+		'''.generateCode
+				
+		val classes = code.compileToClasses
+        
+        
+	}
 }

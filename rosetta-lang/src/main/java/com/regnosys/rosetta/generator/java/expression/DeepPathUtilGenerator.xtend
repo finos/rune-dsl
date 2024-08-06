@@ -10,7 +10,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -39,8 +38,8 @@ class DeepPathUtilGenerator {
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject JavaTypeUtil typeUtil
 	
-	def void generate(IFileSystemAccess2 fsa, Data choiceType, String version) {
-		val javaClass = choiceType.toDeepPathUtilJavaClass
+	def void generate(IFileSystemAccess2 fsa, RDataType choiceType, String version) {
+		val javaClass = choiceType.data.toDeepPathUtilJavaClass
 		val fileName =  javaClass.canonicalName.withForwardSlashes + ".java"
 
 		val topScope = new JavaScope(javaClass.packageName)
@@ -51,14 +50,14 @@ class DeepPathUtilGenerator {
 	}
 
 	private def StringConcatenationClient classBody(
-		Data choiceType,
+		RDataType choiceType,
 		JavaClass<?> javaClass,
 		JavaScope topScope
 	) {		
 		val classScope = topScope.classScope(javaClass.simpleName)
-		val deepFeatures = new RDataType(choiceType).findDeepFeatures
+		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
-		val recursiveDeepFeaturesMap = choiceType.allNonOverridesAttributes.toMap([it], [
+		val recursiveDeepFeaturesMap = choiceType.data.allNonOverridesAttributes.toMap([it], [
 			val attrType = it.RTypeOfFeature
 			deepFeatures.toMap([it], [
 				if (attrType instanceof RDataType) {
@@ -89,7 +88,7 @@ class DeepPathUtilGenerator {
 				«FOR deepFeature : deepFeatures»
 				«val methodName = '''choose«deepFeature.name.toFirstUpper»'''»
 				«val deepFeatureScope = classScope.methodScope(methodName)»
-				«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), new RDataType(choiceType).toJavaReferenceType)»
+				«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
 				«val methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeaturesMap, deepFeatureScope)»
 				public «methodBody.expressionType» «methodName»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
 				
@@ -98,15 +97,14 @@ class DeepPathUtilGenerator {
 		'''
 	}
 
-	private def JavaStatementBuilder deepFeatureToStatement(Data choiceType, JavaVariable inputParameter, Attribute deepFeature, Map<Attribute, Map<Attribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
+	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, Attribute deepFeature, Map<Attribute, Map<Attribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
 		val deepFeatureHasMeta = !deepFeature.metaAnnotations.empty
-		val attrs = choiceType.allNonOverridesAttributes
-		val receiverType = new RDataType(choiceType)
+		val attrs = choiceType.data.allNonOverridesAttributes
 		var JavaStatementBuilder acc = JavaExpression.NULL
 		for (a : attrs.reverseView) {
 			val currAcc = acc
 			acc = inputParameter
-					.featureCall(receiverType, a, false, scope, true)
+					.featureCall(choiceType, a, false, scope, true)
 					.declareAsVariable(true, a.name.toFirstLower, scope)
 					.mapExpression[attrVar|
 						attrVar.exists(ExistsModifier.NONE, scope)

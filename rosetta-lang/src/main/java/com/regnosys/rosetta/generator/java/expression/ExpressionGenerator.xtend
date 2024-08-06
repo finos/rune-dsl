@@ -132,7 +132,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpr
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
-
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -157,6 +157,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject TranslateUtil translateUtil
+	@Inject extension ModelIdProvider
 	
 	/**
 	 * convert a rosetta expression to code
@@ -998,7 +999,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				
 			}
 			RosettaEnumeration: {
-				val t = new REnumType(s).toJavaType
+				val t = new REnumType(s, s.symbolId).toJavaType
 				JavaExpression.from('''«t»''', t)
 			}
 			ClosureParameter: {
@@ -1039,7 +1040,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = new REnumType(expr.enumeration).toJavaType
+		val javaEnum = new REnumType(expr.enumeration, expr.enumeration.symbolId).toJavaType
 		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
 	}
 

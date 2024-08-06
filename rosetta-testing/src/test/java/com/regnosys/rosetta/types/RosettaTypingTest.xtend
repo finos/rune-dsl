@@ -21,6 +21,7 @@ import com.regnosys.rosetta.tests.util.ExpressionValidationHelper
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import javax.inject.Inject
 import java.math.BigInteger
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -45,6 +46,9 @@ class RosettaTypingTest {
 	
 	@Inject
 	extension RBuiltinTypeService
+	
+	@Inject 
+	extension ModelIdProvider
 	
 	@Test
 	def void testLiteralTypeInference() {
@@ -445,7 +449,8 @@ class RosettaTypingTest {
 			set result:
 				A -> V1
 		'''.parseRosettaWithNoIssues
-		val A = new REnumType(model.elements.get(0) as RosettaEnumeration);
+		val enumA = model.elements.get(0) as RosettaEnumeration
+		val A = new REnumType(enumA, enumA.symbolId);
 		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
 		expr1.assertHasType(createListType(A, 1, 1));
 	}

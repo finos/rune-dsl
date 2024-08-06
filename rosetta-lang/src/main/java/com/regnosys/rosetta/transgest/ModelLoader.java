@@ -23,18 +23,12 @@ import java.util.stream.Stream;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
-import com.regnosys.rosetta.rosetta.RosettaType;
-import com.rosetta.model.lib.RosettaModelObject;	
 
 public interface ModelLoader {
 	
 	List<RosettaModel> loadRosettaModels(Stream<URL> res);
 	List<RosettaModel> loadRosettaModels(URL... urls);
 	List<RosettaModel> loadRosettaModels(Collection<String> resourceLocations);
-
-	RosettaType rosettaClass(List<RosettaModel> rosettaModels, Class<? extends RosettaModelObject> rootObject);	
-
-	RosettaType rosettaClass(List<RosettaModel> rosettaModels, String className);
 
 	/**	
 	 * Will return a list of objects which are assignment-compatible with the object represented 	

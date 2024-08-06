@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import com.regnosys.rosetta.rosetta.RosettaNamespace
 
 /**
  * This class contains custom scoping description.
@@ -255,7 +256,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
 		return if (context instanceof RosettaModel) {
-			val List<ImportNormalizer> imports = newArrayList(context.imports.map [createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)])
+			val List<ImportNormalizer> imports = newArrayList(context.imports.map[createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)])
 			//This import allows two models with the same namespace to reference each other
 			imports.add(doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase))
 			return  imports
@@ -334,9 +335,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			Translation: {
 				Scopes.scopeFor(object.parameters.filter[name !== null], parentScope)
 			}
-			RosettaModel:
+			RosettaNamespace:
 				filteredScope(defaultScope(object, reference))[ descr |
-					#{DATA, ROSETTA_ENUMERATION, FUNCTION, ROSETTA_EXTERNAL_FUNCTION, ROSETTA_RULE}.contains(descr.EClass)
+					ROSETTA_ROOT_ELEMENT.isSuperTypeOf(descr.EClass) && ROSETTA_NAMED.isSuperTypeOf(descr.EClass)
 				]
 			default:
 				parentScope

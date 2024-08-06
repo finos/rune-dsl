@@ -33,6 +33,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaModel
 
 class ModelObjectGenerator {
 	
@@ -42,66 +44,66 @@ class ModelObjectGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
-		fsa.generateFile(root.child(data.name + '.java').withForwardSlashes,
-			generateRosettaClass(root, data, version))
+	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
+		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,
+			generateRosettaClass(root, t, version))
 	}
 
-	private def generateRosettaClass(RootPackage root, Data d, String version) {
+	private def generateRosettaClass(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root)
-		buildClass(root, d.classBody(scope, new GeneratedJavaClass<Object>(root.meta, d.name+'Meta', Object), version), scope)
+		buildClass(root, t.classBody(scope, new GeneratedJavaClass<Object>(root.meta, t.name+'Meta', Object), version), scope)
 	}
 	
-	def StringConcatenationClient classBody(Data d, JavaScope scope, JavaClass<?> metaType, String version) {
-		classBody(d, scope, metaType, version, Collections.emptyList)
+	def StringConcatenationClient classBody(RDataType t, JavaScope scope, JavaClass<?> metaType, String version) {
+		classBody(t, scope, metaType, version, Collections.emptyList)
 	}
 
-	def StringConcatenationClient classBody(Data d, JavaScope scope, JavaClass<?> metaType, String version, Collection<Object> interfaces) {
-		val javaType = new RDataType(d).toJavaType
+	def StringConcatenationClient classBody(RDataType t, JavaScope scope, JavaClass<?> metaType, String version, Collection<Object> interfaces) {
+		val javaType = t.toJavaType
 		val interfaceScope = scope.classScope(javaType.toString)
 		val metaDataIdentifier = interfaceScope.createUniqueIdentifier("metaData");
 		val builderScope = interfaceScope.classScope('''«javaType»Builder''')
 		val implScope = interfaceScope.classScope('''«javaType»Impl''')
 		'''
-			«javadoc(d, version)»
-			@«RosettaDataType»(value="«d.name»", builder=«javaType.toBuilderImplType».class, version="«d.model.version»")
-			public interface «javaType» extends «IF d.hasSuperType»«new RDataType(d.superType).toJavaType»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(d, interfaces)» {
+			«javadoc(t.data, version)»
+			@«RosettaDataType»(value="«t.name»", builder=«javaType.toBuilderImplType».class, version="«EcoreUtil2.getContainerOfType(t.data, RosettaModel).version»")
+			public interface «javaType» extends «IF t.data.hasSuperType»«javaType.superclass»«ELSE»«RosettaModelObject»«ENDIF»«implementsClause(t.data, interfaces)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
 
 				«startComment('Getter Methods')»
-				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, d)»
+				«pojoInterfaceGetterMethods(javaType, metaType, metaDataIdentifier, t)»
 
 				«startComment('Build Methods')»
-				«pojoInterfaceBuilderMethods(javaType, d)»
+				«pojoInterfaceBuilderMethods(javaType, t)»
 
 				«startComment('Utility Methods')»
-				«pojoInterfaceDefaultOverridenMethods(javaType, metaDataIdentifier, interfaces, d)»
+				«pojoInterfaceDefaultOverridenMethods(javaType, metaDataIdentifier, interfaces, t)»
 
 				«startComment('Builder Interface')»
-				interface «javaType»Builder extends «d.name», «IF d.hasSuperType»«new RDataType(d.superType).toJavaType.toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
-					«pojoBuilderInterfaceGetterMethods(d, javaType, builderScope)»
+				interface «javaType»Builder extends «t.name», «IF t.data.hasSuperType»«javaType.superclass.toBuilderType», «ENDIF»«RosettaModelObjectBuilder»«FOR inter:interfaces BEFORE ', ' SEPARATOR ', '»«buildify(inter)»«ENDFOR» {
+					«pojoBuilderInterfaceGetterMethods(t, javaType, builderScope)»
 
-					«d.builderProcessMethod»
+					«t.data.builderProcessMethod»
 
 					«javaType.toBuilderType» prune();
 				}
 
-				«startComment('''Immutable Implementation of «d.name»''')»
-				class «javaType»Impl «IF d.hasSuperType»extends «new RDataType(d.superType).toJavaType.toImplType» «ENDIF»implements «d.name» {
-					«d.rosettaClass(implScope)»
+				«startComment('''Immutable Implementation of «t.name»''')»
+				class «javaType»Impl «IF t.data.hasSuperType»extends «javaType.superclass.toImplType» «ENDIF»implements «t.name» {
+					«t.rosettaClass(implScope)»
 
-					«d.boilerPlate(implScope)»
+					«t.data.boilerPlate(implScope)»
 				}
 
-				«startComment('''Builder Implementation of «d.name»''')»
-				«d.builderClass(interfaceScope)»
+				«startComment('''Builder Implementation of «t.name»''')»
+				«t.builderClass(interfaceScope)»
 			}
 		'''
 	}
 
-	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(Data d, JavaClass<?> javaType, JavaScope builderScope) '''
-		«FOR attribute : d.expandedAttributes»
+	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(RDataType t, JavaClass<?> javaType, JavaScope builderScope) '''
+		«FOR attribute : t.data.expandedAttributes»
 			«IF attribute.isDataType || attribute.hasMetas»
 				«IF attribute.cardinalityIsSingleValue»
 					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
@@ -112,7 +114,7 @@ class ModelObjectGenerator {
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
-		«FOR attribute : d.expandedAttributesPlus»
+		«FOR attribute : t.data.expandedAttributesPlus»
 			«IF attribute.cardinalityIsSingleValue»
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
@@ -132,7 +134,7 @@ class ModelObjectGenerator {
 		'''
 
 
-	protected def StringConcatenationClient pojoInterfaceDefaultOverridenMethods(JavaClass<?> javaType, GeneratedIdentifier metaDataIdentifier, Collection<Object> interfaces, Data d)
+	protected def StringConcatenationClient pojoInterfaceDefaultOverridenMethods(JavaClass<?> javaType, GeneratedIdentifier metaDataIdentifier, Collection<Object> interfaces, RDataType t)
 		'''
 		@Override
 		default «RosettaMetaData»<? extends «javaType»> metaData() {
@@ -151,19 +153,19 @@ class ModelObjectGenerator {
 		}
         «ENDFOR»
 
-		«d.processMethod»
+		«t.data.processMethod»
         '''
 
 
-	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass<?> javaType, JavaClass<?> metaType, GeneratedIdentifier metaDataIdentifier, Data d) '''
-		«FOR attribute : d.expandedAttributes»
+	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass<?> javaType, JavaClass<?> metaType, GeneratedIdentifier metaDataIdentifier, RDataType t) '''
+		«FOR attribute : t.data.expandedAttributes»
 			«javadoc(attribute.definition, attribute.docReferences, null)»
 			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
 		«ENDFOR»
 		'''
 
-	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass<?> javaType, Data d) '''
-			«d.name» build();
+	protected def StringConcatenationClient pojoInterfaceBuilderMethods(JavaClass<?> javaType, RDataType t) '''
+			«t.name» build();
 
 			«javaType.toBuilderType» toBuilder();
 
@@ -190,16 +192,16 @@ class ModelObjectGenerator {
 		return class1.globalKey || (class1.superType !== null && class1.superType.globalKeyRecursive)
 	}
 
-	private def StringConcatenationClient rosettaClass(Data c, JavaScope scope) {
-		val expandedAttributes = c.expandedAttributes
-		val javaType = new RDataType(c).toJavaType
+	private def StringConcatenationClient rosettaClass(RDataType t, JavaScope scope) {
+		val expandedAttributes = t.data.expandedAttributes
+		val javaType = t.toJavaType
 		'''
 		«FOR attribute : expandedAttributes»
 			private final «attribute.toMultiMetaOrRegularJavaType» «scope.createIdentifier(attribute, attribute.name.toFirstLower)»;
 		«ENDFOR»
 
 		protected «javaType»Impl(«javaType.toBuilderType» builder) {
-			«IF c.hasSuperType»
+			«IF t.data.hasSuperType»
 				super(builder);
 			«ENDIF»
 			«FOR attribute : expandedAttributes»
@@ -216,7 +218,7 @@ class ModelObjectGenerator {
 			
 		«ENDFOR»
 		@Override
-		public «c.name» build() {
+		public «t.name» build() {
 			return this;
 		}
 
@@ -228,7 +230,7 @@ class ModelObjectGenerator {
 		}
 		
 		protected void setBuilderFields(«javaType.toBuilderType» builder) {
-			«IF (c.hasSuperType)»
+			«IF (t.data.hasSuperType)»
 				super.setBuilderFields(builder);
 			«ENDIF»
 			«FOR attribute :expandedAttributes»

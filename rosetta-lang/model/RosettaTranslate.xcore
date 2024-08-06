@@ -5,13 +5,14 @@
 package com.regnosys.rosetta.rosetta.translate
 
 import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaNamespace
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
-class TranslateSource extends RosettaRootElement, RosettaNamed {
+class TranslateSource extends RosettaRootElement, RosettaNamed, RosettaNamespace {
 	refers TranslateSource[] superSources
 	contains Translation[] translations opposite source
 }

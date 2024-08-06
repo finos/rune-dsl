@@ -184,7 +184,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	static def ExpandedType toExpandedType(RosettaType type) {
-		return new ExpandedType(type.model, type.name,type instanceof Data, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
+		return new ExpandedType(type.namespace, type.name,type instanceof Data, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
 	}
 	
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {

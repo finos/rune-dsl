@@ -16,8 +16,6 @@
 
 package com.regnosys.rosetta.transgest;
 
-import static com.regnosys.rosetta.generator.util.Util.fullname;
-
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -40,10 +38,12 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.RosettaModelObject;
 
 public class ModelLoaderImpl implements ModelLoader {
 	@Inject Provider<XtextResourceSet> resourceSetProvider;
+	@Inject ModelIdProvider modelIdProvider;
 	
 	public List<RosettaModel> loadRosettaModels(Stream<URL> res) {
 		XtextResourceSet resourceSet = resourceSetProvider.get();
@@ -64,29 +64,6 @@ public class ModelLoaderImpl implements ModelLoader {
 	
 	public List<RosettaModel> loadRosettaModels(Collection<String> resourceLocations) {
 		return loadRosettaModels(resourceLocations.stream().map(Resources::getResource));
-	}
-
-	@Override
-	public RosettaType rosettaClass(List<RosettaModel> rosettaModels, Class<? extends RosettaModelObject> rootObject) {
-		return rosettaModels.stream()
-				.map(RosettaModel::getElements)
-				.flatMap(Collection::stream)
-				.filter(c -> c instanceof Data)
-				.map(c -> (RosettaType) c)
-				.filter(c -> fullname(c).toString().equals(rootObject.getName()))
-				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException(rootObject.getName() + " not found in Rosetta Model"));
-	}
-
-	@Override
-	public RosettaType rosettaClass(List<RosettaModel> rosettaModels, String className) {
-		return rosettaModels.stream().map(RosettaModel::getElements)
-				.flatMap(Collection::stream)
-				.filter(c -> c instanceof Data)
-				.map(c -> (RosettaType) c)
-				.filter(c -> c.getName().equals(className))
-				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException(className + " not found in Rosetta Model"));
 	}
 
 	@Override

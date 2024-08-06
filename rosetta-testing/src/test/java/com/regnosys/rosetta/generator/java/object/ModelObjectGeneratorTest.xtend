@@ -26,6 +26,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import com.rosetta.util.DottedPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -237,7 +238,7 @@ class ModelObjectGeneratorTest {
 	
 	@Test
 	def void shouldGenerateBasicReferenceField() {
-		val namespace = 'test.ns.basicref'
+		val namespace = DottedPath.splitOnDots('test.ns.basicref')
 		val code = '''
 			namespace "«namespace»"
 			
@@ -249,7 +250,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("BasicReferenceTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(new RootPackage('''«namespace»''') + ".TestObject")
+		val generatedClass = classes.get(new RootPackage(namespace) + ".TestObject")
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -286,7 +287,7 @@ class ModelObjectGeneratorTest {
 
 	@Test
     def void shouldGenerateTypeWithMetaFieldImport() {
-    	val namespace = 'test.ns.metafield'
+    	val namespace = DottedPath.splitOnDots('test.ns.metafield')
         val code = '''
             namespace "«namespace»"
             version "test"
@@ -301,7 +302,7 @@ class ModelObjectGeneratorTest {
         '''.generateCode
 //        code.writeClasses("TypeWithMetaFieldImport")
         val classes = code.compileToClasses
-		val generatedClass = classes.get(new RootPackage('''«namespace»''') + ".Foo")
+		val generatedClass = classes.get(new RootPackage(namespace) + ".Foo")
 
 		val schemeMethod = generatedClass.getMethod("getAttr")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())

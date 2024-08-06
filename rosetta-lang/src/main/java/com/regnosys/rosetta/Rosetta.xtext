@@ -16,10 +16,10 @@ RosettaModel:
 	
 	('version' version=STRING)? // TODO: could do better than STRING
 	
-	imports += Import*
+	imports+=Import*
 	
-	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
-	(elements += (RosettaRootElement | RootElement))*
+	configurations+=RosettaQualifiableConfiguration* // TODO think about having only RootElements or only configurations
+	elements+=RosettaRootElement*
 ;
 
 QualifiedName:
@@ -31,19 +31,11 @@ Import:
 			
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
-	
-
-RootElement:
-	Annotation
-	| Data
-	| Choice
-	| Function
-;
 
 Annotation:
 	'annotation' RosettaNamed ':' RosettaDefinable?
 	('[' 'prefix' prefix = ValidID ']')?
-	attributes += Attribute*
+	attributes+=Attribute*
 ;
 
 fragment Annotations returns Annotated:
@@ -162,13 +154,28 @@ EmptyLiteral returns RosettaExpression:
 ListLiteral:
 	{ListLiteral} '[' (elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )*)? ']';
 
-// old stuff
 RosettaRootElement:
-	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
-	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
-	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
-	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
-	RosettaQualifiedType | RosettaCalculationType | TranslateSource
+	Enumeration
+	| RosettaBody
+	| RosettaCorpus
+	| RosettaSegment
+	| RosettaBasicType
+	| RosettaRecordType
+	| RosettaLibraryFunction
+	| RosettaSynonymSource
+	| RosettaRule
+	| RosettaMetaType
+	| RosettaExternalSynonymSource
+	| RosettaExternalRuleSource
+	| RosettaReport
+	| RosettaTypeAlias
+	| RosettaQualifiedType
+	| RosettaCalculationType
+	| TranslateSource
+	| Annotation
+	| Data
+	| Choice
+	| Function
 ;
 
 
@@ -905,7 +912,7 @@ RosettaRule:
 TranslateSource:
     'translate' 'source' RosettaNamed ('extends' superSources+=[TranslateSource|QualifiedName]  (',' superSources+=[TranslateSource|QualifiedName])* )?
     '{'
-        translations+=Translation*
+        (elements+=RosettaRootElement | translations+=Translation)*
     '}'
 ;
 

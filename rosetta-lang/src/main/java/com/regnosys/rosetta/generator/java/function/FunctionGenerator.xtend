@@ -39,7 +39,6 @@ import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaType
@@ -56,7 +55,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
-import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.util.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
@@ -68,9 +66,9 @@ import java.util.Collections
 import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.meta.Key
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 class FunctionGenerator {
 
@@ -88,7 +86,7 @@ class FunctionGenerator {
 	@Inject ImplicitVariableUtil implicitVariableUtil
 	@Inject extension JavaTypeUtil
 	@Inject TypeCoercionService coercionService
-	@Inject RosettaJavaPackages rosettaJavaPackages
+	@Inject extension ModelIdProvider
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -368,7 +366,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					new ModelSymbolId(DottedPath.splitOnDots(function.model.name), function.name + formatEnumName(enumFunc.value.value.name)),
+					function.symbolId,
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),
@@ -385,7 +383,7 @@ class FunctionGenerator {
 	}
 
 	private def JavaClass<?> toDispatchClass(FunctionDispatch ele) {
-		return new GeneratedJavaClass<Object>(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
+		return new GeneratedJavaClass<Object>(ele.namespace.toDottedPath.child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
 	}
 
 	private def boolean assignAsKey(ROperation op) {

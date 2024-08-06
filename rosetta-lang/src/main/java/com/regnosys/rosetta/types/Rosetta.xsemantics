@@ -64,16 +64,17 @@ import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
-import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
+inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
 
@@ -126,7 +127,7 @@ auxiliary symbolListType(ClosureParameter c) {
 }
 
 auxiliary symbolListType(RosettaEnumeration c) {
-	return createListType(new REnumType(c), single)
+	return createListType(new REnumType(c, c.symbolId), single)
 }
 
 auxiliary symbolListType(ShortcutDeclaration c) {
@@ -164,7 +165,7 @@ auxiliary typeOfImplicitVariable(EObject c) {
 	val definingContainer = c.findObjectDefiningImplicitVariable
 	definingContainer.map [
 		if (it instanceof Data) {
-			createListType(new RDataType(it), single)
+			createListType(new RDataType(it, symbolId), single)
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
@@ -180,7 +181,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 		return INT_FUNCTION;
 	}
 	val parameters = typeAlias.parameters;
-	val namespace = DottedPath.splitOnDots(typeAlias.model.name)
+	val namespace = typeAlias.namespace.toDottedPath
 	val equations = 
 			typeAlias.typeCall.arguments.map[arg|
 				val ref = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
@@ -218,12 +219,12 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
-		Data: new RDataType(t)
+		Data: new RDataType(t, t.symbolId)
 		RosettaBuiltinType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			builtinTypes.getType(t.name, argMap).orElse(null)
 		}
-		RosettaEnumeration: new REnumType(t)
+		RosettaEnumeration: new REnumType(t, t.symbolId)
 		RosettaMetaType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			val builtinResult = builtinTypes.getType(t.name, argMap)

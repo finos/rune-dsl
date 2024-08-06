@@ -36,23 +36,23 @@ class ConditionGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 	
-	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, Condition ele, String version) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, Condition ele, String version) {
 		val topScope = new JavaScope(root.condition)
 		
-		val classBody = ele.conditionClassBody(data, topScope, version)
+		val classBody = ele.conditionClassBody(t, topScope, version)
 		val content = buildClass(root.condition, classBody, topScope)
-		fsa.generateFile('''«root.condition.withForwardSlashes»/«ele.conditionName(data).toConditionJavaType».java''', content)
+		fsa.generateFile('''«root.condition.withForwardSlashes»/«ele.conditionName(t.data).toConditionJavaType».java''', content)
 	}
 
-	private def StringConcatenationClient conditionClassBody(Condition rule, Data data, JavaScope scope, String version)  {
-		val rosettaClass = rule.eContainer as Data
-		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(rule, CONDITION__EXPRESSION))
-		val ruleName = rule.conditionName(data)
-		val className = toConditionJavaType(ruleName);
-		val deps = dependencies.javaDependencies(rule.expression)
-		val implicitVarRepr = rule.implicitVarInContext
+	private def StringConcatenationClient conditionClassBody(Condition condition, RDataType t, JavaScope scope, String version)  {
+		val rosettaClass = condition.eContainer as Data
+		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, CONDITION__EXPRESSION))
+		val conditionName = condition.conditionName(t.data)
+		val className = toConditionJavaType(conditionName);
+		val deps = dependencies.javaDependencies(condition.expression)
+		val implicitVarRepr = condition.implicitVarInContext
 		
-		val classScope = scope.classScope(toConditionJavaType(ruleName))
+		val classScope = scope.classScope(toConditionJavaType(conditionName))
 		
 		val validateScope = classScope.methodScope("validate")
 		val pathId = validateScope.createUniqueIdentifier("path")
@@ -78,11 +78,11 @@ class ConditionGenerator {
 		
 		'''
 			«emptyJavadocWithVersion(version)»
-			@«RosettaDataRule»("«ruleName»")
+			@«RosettaDataRule»("«conditionName»")
 			@«ImplementedBy»(«className».Default.class)
-			public interface «className» extends «Validator»<«new RDataType(rosettaClass).toJavaType»> {
+			public interface «className» extends «Validator»<«t.toJavaType»> {
 				
-				String NAME = "«ruleName»";
+				String NAME = "«conditionName»";
 				String DEFINITION = «definition»;
 				
 				«ValidationResult»<«rosettaClass.name»> validate(«RosettaPath» «pathId», «rosettaClass.name» «validateScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)»);
@@ -108,7 +108,7 @@ class ConditionGenerator {
 					}
 					
 					private «ComparisonResult» executeDataRule(«rosettaClass.name» «defaultClassExecuteScope.createIdentifier(implicitVarRepr, rosettaClass.name.toFirstLower)») {
-						try «expressionHandler.javaCode(rule.expression, COMPARISON_RESULT, defaultClassExecuteScope)
+						try «expressionHandler.javaCode(condition.expression, COMPARISON_RESULT, defaultClassExecuteScope)
 								.completeAsReturn.toBlock»
 						catch («Exception» «defaultClassExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExceptionId».getMessage());
