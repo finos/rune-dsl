@@ -35,6 +35,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.config.RosettaConfiguration
+import com.google.inject.ImplementedBy
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -247,22 +248,25 @@ class TabulatorGenerator {
 			val innerTabulatorClass = context.toTabulatorJavaClass(inputType)
 			val innerTabulatorInstance = classScope.createUniqueIdentifier("tabulator")
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-				private final «innerTabulatorClass» «innerTabulatorInstance»;
-				
-				@«Inject»
-				public «tabulatorClass»(«innerTabulatorClass» «innerTabulatorInstance») {
-					this.«innerTabulatorInstance» = «innerTabulatorInstance»;
-				}
-				
-				@Override
-				public «List»<«Field»> getFields() {
-					return «innerTabulatorInstance».getFields();
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return «innerTabulatorInstance».tabulate(«inputParam»);
+			@«ImplementedBy»(«tabulatorClass».Impl.class)
+			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				class Impl implements «tabulatorClass» {
+					private final «innerTabulatorClass» «innerTabulatorInstance»;
+					
+					@«Inject»
+					public Impl(«innerTabulatorClass» «innerTabulatorInstance») {
+						this.«innerTabulatorInstance» = «innerTabulatorInstance»;
+					}
+					
+					@Override
+					public «List»<«Field»> getFields() {
+						return «innerTabulatorInstance».getFields();
+					}
+					
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+						return «innerTabulatorInstance».tabulate(«inputParam»);
+					}
 				}
 			}
 			'''
@@ -270,15 +274,18 @@ class TabulatorGenerator {
 			// There is no available tabulator for `inputType`,
 			// so we generate a dummy implementation.
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-				@Override
-				public «List»<«Field»> getFields() {
-					return «Arrays».asList();
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return «Arrays».asList();
+			@«ImplementedBy»(«tabulatorClass».Impl.class)
+			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				class Impl implements «tabulatorClass» {
+					@Override
+					public «List»<«Field»> getFields() {
+						return «Arrays».asList();
+					}
+					
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+						return «Arrays».asList();
+					}
 				}
 			}
 			'''
@@ -295,37 +302,40 @@ class TabulatorGenerator {
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		'''
-		public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-			«FOR attr : inputType.allNonOverridesAttributes»
-				«IF context.isTabulated(attr)»
-					«val fieldId = classScope.getIdentifierOrThrow(attr)»
-					private final «Field» «fieldId»;
-				«ENDIF»
-			«ENDFOR»
-			«IF !nestedTabulatorInstances.empty»
-			
-			«FOR tabInst : nestedTabulatorInstances»
-				private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-			«ENDFOR»
-			«ENDIF»
-			
-			«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
-			public «tabulatorClass»(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
-				«FOR tabInst : nestedTabulatorInstances»
-					this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
+		@«ImplementedBy»(«tabulatorClass».Impl.class)
+		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+			class Impl implements «tabulatorClass» {
+				«FOR attr : inputType.allNonOverridesAttributes»
+					«IF context.isTabulated(attr)»
+						«val fieldId = classScope.getIdentifierOrThrow(attr)»
+						private final «Field» «fieldId»;
+					«ENDIF»
 				«ENDFOR»
-				«initializeFields(inputType, context, classScope)»
-			}
-			
-			@Override
-			public «List»<«Field»> getFields() {
-				return «Arrays».asList(«FOR field : tabulatedFields SEPARATOR ", "»«classScope.getIdentifierOrThrow(field)»«ENDFOR»);
-			}
-			
-			@Override
-			public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-				«computeFieldValues(inputType, inputParam, context, tabulateScope)»
-				return «fieldValuesAsList(inputType, context, tabulateScope)»;
+				«IF !nestedTabulatorInstances.empty»
+				
+				«FOR tabInst : nestedTabulatorInstances»
+					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+				«ENDFOR»
+				«ENDIF»
+				
+				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
+				public Impl(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
+					«FOR tabInst : nestedTabulatorInstances»
+						this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
+					«ENDFOR»
+					«initializeFields(inputType, context, classScope)»
+				}
+				
+				@Override
+				public «List»<«Field»> getFields() {
+					return «Arrays».asList(«FOR field : tabulatedFields SEPARATOR ", "»«classScope.getIdentifierOrThrow(field)»«ENDFOR»);
+				}
+				
+				@Override
+				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+					«computeFieldValues(inputType, inputParam, context, tabulateScope)»
+					return «fieldValuesAsList(inputType, context, tabulateScope)»;
+				}
 			}
 		}
 		'''
