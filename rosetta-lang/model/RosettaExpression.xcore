@@ -304,6 +304,7 @@ class RosettaOnlyElement extends ListOperation {
 }
 
 class RosettaCountOperation extends RosettaUnaryOperation {
+	
 }
 
 class FlattenOperation extends ListOperation, CanHandleListOfLists {
@@ -365,6 +366,16 @@ class ToDateTimeOperation extends ParseOperation {
 }
 
 class ToZonedDateTimeOperation extends ParseOperation {
+}
+
+class SwitchOperation extends RosettaUnaryOperation {
+	contains CaseStatement[] values
+} 
+
+class CaseStatement {
+	contains RosettaExpression condition
+	contains RosettaExpression expression
+	
 }
 
 /**
