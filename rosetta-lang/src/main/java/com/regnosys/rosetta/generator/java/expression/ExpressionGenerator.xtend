@@ -80,7 +80,6 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
-import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.rosetta.model.lib.expression.CardinalityOperator
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
@@ -129,6 +128,7 @@ import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -277,11 +277,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
+	def JavaStatementBuilder enumCall(RosettaEnumValue feature, EObject context) {
+		val resultItemType = typeProvider.getRTypeOfFeature(feature, context).toJavaReferenceType
+		return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
+	}
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
 		val resultItemType = if (feature instanceof Attribute && !autoValue) {
 			(feature as Attribute).toExpandedAttribute.toMetaOrRegularJavaType
 		} else {
-			typeProvider.getRTypeOfFeature(feature).toJavaReferenceType
+			typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		}
 		val StringConcatenationClient right = switch (feature) {
 			Attribute: {
@@ -289,8 +293,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			RosettaMetaType: 
 				feature.buildMapFunc(scope)
-			RosettaEnumValue:
-				return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
 			RosettaRecordFeature:
 				'''.<«resultItemType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType as RRecordType, feature, scope)»)'''
 			default:
@@ -674,6 +676,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseFeatureCall(RosettaFeatureCall expr, Context context) {
+		if (expr.feature instanceof RosettaEnumValue) {
+			return enumCall(expr.feature as RosettaEnumValue, expr)
+		}
 		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 		if (expr.eContainer instanceof RosettaFeatureCall &&
 			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
@@ -1011,6 +1016,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val t = new REnumType(s).toJavaType
 				JavaExpression.from('''«t»''', t)
 			}
+			RosettaEnumValue: {
+				enumCall(s, expr)
+			}
 			ClosureParameter: {
 				new JavaVariable(context.scope.getIdentifierOrThrow(s), expr.isMulti ? MAPPER_C.wrap(expr) as JavaType : MAPPER_S.wrap(expr))
 			}
@@ -1167,7 +1175,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature).toJavaReferenceType
+			val clazz = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}

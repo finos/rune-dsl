@@ -43,6 +43,8 @@ import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 public class TypeSystem {
+	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
+	
 	@Inject
 	private RosettaTyping typing;
 	@Inject
@@ -88,7 +90,7 @@ public class TypeSystem {
         });
 	}
     private RType getRulesInputTypeFromCache(Data data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
-    	return cache.get(new Pair<>(data, source), typeProvider);
+    	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
     }
 
 	public RType join(RType t1, RType t2) {
