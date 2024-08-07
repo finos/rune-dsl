@@ -126,6 +126,12 @@
                                 <include>**/*</include>
                             </includes>
                         </fileset>
+                        <fileset>
+                            <directory>${basedir}/../rosetta-lang/xtend-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
                         <!-- rosetta-ide -->
                         <fileset>
                             <directory>${basedir}/../rosetta-ide/src-gen/</directory>

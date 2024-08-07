@@ -28,6 +28,7 @@ import javax.inject.Provider;
 
 import org.apache.commons.lang3.Validate;
 
+import com.regnosys.rosetta.cache.IRequestScopedCache;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
@@ -39,18 +40,19 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.xbase.lib.Pair;
 
 public class TypeSystem {
+	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
+	
 	@Inject
 	private RosettaTyping typing;
 	@Inject
 	private RBuiltinTypeService builtins;
 	@Inject
 	private ExternalAnnotationUtil annotationUtil;
+	@Inject
+	private IRequestScopedCache cache;
 	
 	public RListType inferType(RosettaExpression expr) {
 		Objects.requireNonNull(expr);
@@ -88,12 +90,7 @@ public class TypeSystem {
         });
 	}
     private RType getRulesInputTypeFromCache(Data data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
-        Resource resource = source.map(EObject::eResource).orElse(data.eResource());
-        if (resource instanceof XtextResource) {
-            return ((XtextResource) resource).getCache().get(new Pair<>(data, source), resource, typeProvider::get);
-        } else {
-            return typeProvider.get();
-        }
+    	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
     }
 
 	public RType join(RType t1, RType t2) {

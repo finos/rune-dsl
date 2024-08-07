@@ -1,47 +1,10 @@
 package com.regnosys.rosetta.ide.server
 
 import org.junit.jupiter.api.Test
-import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest
-import org.eclipse.xtext.testing.TextDocumentConfiguration
-import org.eclipse.lsp4j.DidChangeTextDocumentParams
-import org.eclipse.lsp4j.VersionedTextDocumentIdentifier
-import org.eclipse.lsp4j.TextDocumentContentChangeEvent
-import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.Position
-import java.util.Map
-import org.junit.jupiter.api.BeforeEach
 import static org.junit.jupiter.api.Assertions.*
+import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest
 
-class ChangeDetectionTest extends AbstractRosettaLanguageServerTest {
-	Map<String, Integer> versionMap
-	
-	@BeforeEach
-	def void beforeEach() {
-		versionMap = newHashMap
-		
-		initializeContext(new TextDocumentConfiguration)
-	}
-	
-	private def String createModel(String fileName, String model) {
-		val uri = fileName.writeFile(model)
-		open(uri, model)
-		versionMap.put(uri, 1)
-		return uri
-	}
-	private def void makeChange(String uri, int line, int character, String oldText, String newText) {
-		val newVersion = versionMap.get(uri) + 1
-		languageServer.didChange(new DidChangeTextDocumentParams(
-                new VersionedTextDocumentIdentifier(uri, newVersion),
-                #[
-                	new TextDocumentContentChangeEvent(
-                		new Range(new Position(line, character), new Position(line, character + oldText.length)),
-                        newText
-                    )
-                ]
-        ));
-        versionMap.put(uri, newVersion)
-	}
-	
+class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {	
 	@Test
 	def void testChangeInAttributeTypeIsPropagated() {
 		val typesURI = createModel("types.rosetta", '''
