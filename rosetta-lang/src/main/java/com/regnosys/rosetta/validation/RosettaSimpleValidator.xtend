@@ -120,6 +120,8 @@ import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
+import com.regnosys.rosetta.types.TypeValidationUtil
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -140,6 +142,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RBuiltinTypeService
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
+	@Inject extension TypeValidationUtil
+	
+	@Check
+	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
+		for (CaseStatement caseStatement : op.values) {
+			if (caseStatement.condition.RType != op.argument.RType) {
+				error('''Mismatched condition type: «op.argument.RType.notASubtypeMessage(caseStatement.condition.RType)»''', caseStatement.condition, null)
+			}
+		}
+	}
 	
 	@Check
 	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
