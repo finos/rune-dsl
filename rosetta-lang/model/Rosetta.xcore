@@ -143,7 +143,7 @@ class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinab
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, References {
+class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References {
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues

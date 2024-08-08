@@ -58,7 +58,7 @@ class DeepPathUtilGenerator {
 		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
 		val recursiveDeepFeaturesMap = choiceType.data.allNonOverridesAttributes.toMap([it], [
-			val attrType = it.RTypeOfFeature
+			val attrType = it.RTypeOfSymbol
 			deepFeatures.toMap([it], [
 				if (attrType instanceof RDataType) {
 					if (attrType.findDeepFeatureMap.containsKey(it.name)) {
@@ -114,7 +114,7 @@ class DeepPathUtilGenerator {
 								val deepFeatureExpr = if (deepFeature.match(a)) {
 									attrVar
 								} else {
-									val attrType = a.RTypeOfFeature
+									val attrType = a.RTypeOfSymbol
 									val needsToGoDownDeeper = recursiveDeepFeaturesMap.get(a).get(deepFeature)
 									val actualFeature = if (needsToGoDownDeeper || !(attrType instanceof RDataType)) {
 										deepFeature

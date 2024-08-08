@@ -5,7 +5,6 @@ package com.regnosys.rosetta.tests
 
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.validation.RosettaIssueCodes
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -100,7 +99,7 @@ class RosettaExpressionsTest {
 				output: result boolean (1..1)
 				set result:
 					test -> one + test -> two = 42
-		'''.parseRosetta.assertError(ROSETTA_BINARY_OPERATION, RosettaIssueCodes.TYPE_ERROR, "Incompatible types: cannot use operator '+' with date and date.")
+		'''.parseRosetta.assertError(ARITHMETIC_OPERATION, null, "Incompatible types: cannot use operator '+' with date and date.")
 	}
 	
 	/**

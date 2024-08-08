@@ -113,10 +113,10 @@ public class DeepFeatureCallUtil {
 		});
 	}
 	public boolean match(Attribute a, Attribute b) {
-		if (!typeProvider.getRTypeOfFeature(a).equals(typeProvider.getRTypeOfFeature(b))) {
+		if (!typeProvider.getRTypeOfSymbol(a).equals(typeProvider.getRTypeOfSymbol(b))) {
 			return false;
 		}
-		if (cardinalityProvider.isFeatureMulti(a) != cardinalityProvider.isFeatureMulti(b)) {
+		if (cardinalityProvider.isSymbolMulti(a) != cardinalityProvider.isSymbolMulti(b)) {
 			return false;
 		}
 		return true;

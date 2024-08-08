@@ -97,14 +97,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Test
 	def void testCanAccessMetaFeatureAfterDeepFeatureCall() {
 		val context = '''
-		type A:
-			b B (0..1)
+		choice A:
+			B
 				[metadata reference]
-			c C (0..1)
+			C
 				[metadata reference]
-			
-			condition Choice:
-				one-of
 		
 		type B:
 			[metadata key]
@@ -1056,16 +1053,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type Foo
 			with source TestA
 			
-			eligibility rule FooRule from ReportableEvent:
-				filter Foo->foo exists
+			eligibility rule FooRule from Foo:
+				filter foo exists
 			
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA from ReportableEvent:
+			reporting rule RA from Foo:
 				"A"
 			
-			reporting rule RB from ReportableEvent:
+			reporting rule RB from Foo:
 				"B"
 			
 			rule source TestA {
@@ -1304,7 +1301,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
+		model.assertError(EQUALITY_OPERATION, null,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
@@ -1332,7 +1329,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
 	
 	@Test
@@ -2916,7 +2913,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x5 int (1..1)
 				x6 string (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
@@ -2935,7 +2932,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
