@@ -1,5 +1,8 @@
 module com.regnosys.rosetta.GenerateRosetta
 
+import com.regnosys.rosetta.xcore.compressor.ParserCompressorFragment
+import com.regnosys.rosetta.xcore.extractor.ParserCaseExtractorFragment
+
 import org.eclipse.xtext.xtext.generator.XtextGenerator
 import org.eclipse.xtext.xtext.generator.StandardLanguage
 import org.eclipse.xtext.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment2
@@ -66,6 +69,13 @@ Workflow {
 			parserGenerator = XtextAntlrGeneratorFragment2 {
 				// set to true to get a debug Grammar
 				debugGrammar = true
+				options = {
+					classSplitting = true
+					casesPerSpecialStateSwitch= "20"
+					fieldsPerClass = "200"
+					methodsPerClass = "200"
+					stripAllComments = true
+				}
 			}
 			serializer = {
 				generateStub = false
@@ -84,6 +94,16 @@ Workflow {
 			}
 			formatter = {
 				generateStub = true
+			}
+			fragment = ParserCompressorFragment {
+				// Enabled to produce shorter Java code and ease debugging at the expense of a little uglier (because more dense) code
+				joinLinesEagerly = true
+				grammarFile = "${parentDir}/rosetta-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rosetta-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
+			}
+			fragment = ParserCaseExtractorFragment {
+				grammarFile = "${parentDir}/rosetta-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rosetta-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
 			}
 		}
 	}
