@@ -516,7 +516,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		if (ele.path !== null) {
 			ele.path.format
 		}
-		ele.formatDefinition(document)
 		
 		ele.regionFor.keyword(colonKeyword_3)
 			.prepend[noSpace]

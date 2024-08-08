@@ -63,6 +63,8 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaNamespace
+import com.regnosys.rosetta.types.ExpectedTypeProvider
+import com.regnosys.rosetta.types.REnumType
 
 /**
  * This class contains custom scoping description.
@@ -77,6 +79,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	static Logger LOGGER = LoggerFactory.getLogger(RosettaScopeProvider)
 	
 	@Inject RosettaTypeProvider typeProvider
+	@Inject ExpectedTypeProvider expectedTypeProvider
 	@Inject extension RosettaExtensions
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
@@ -170,7 +173,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 							inputsAndOutputs.add(function.output)
 						return Scopes.scopeFor(inputsAndOutputs)
 					} else {
-						val implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(context)
+						var implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(context)
+						
+						val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(context)
+						if (expectedType instanceof REnumType) {
+							implicitFeatures = implicitFeatures + expectedType.enumeration.allEnumValues
+						}
 						
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)
 						if(inline !== null) {

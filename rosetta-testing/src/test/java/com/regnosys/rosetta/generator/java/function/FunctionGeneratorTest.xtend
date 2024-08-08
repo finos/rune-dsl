@@ -1,11 +1,9 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.validation.RosettaIssueCodes
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.records.Date
 import java.math.BigDecimal
@@ -32,6 +30,7 @@ import javax.inject.Inject
 import java.time.LocalDateTime
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.rosetta.model.lib.meta.Key
+import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -153,14 +152,11 @@ class FunctionGeneratorTest {
 	@Test
 	def void testDeepPathOperatorWithMeta() {
 		val code = '''
-		type A:
-			b B (0..1)
+		choice A:
+			B
 				[metadata reference]
-			c C (0..1)
+			C
 				[metadata reference]
-			
-			condition Choice:
-				one-of
 		
 		type B:
 			[metadata key]
@@ -2437,7 +2433,7 @@ class FunctionGeneratorTest {
 					top1 -> foo and top2 -> foo
 		'''.parseRosetta
 
-		model.assertError(SimplePackage.Literals.OPERATION, RosettaIssueCodes.TYPE_ERROR,
+		model.assertError(ExpressionPackage.Literals.LOGICAL_OPERATION, null,
 			"Left hand side of 'and' expression must be boolean")
 	}
 

@@ -91,7 +91,6 @@ import org.eclipse.xtext.validation.Check
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
@@ -482,13 +481,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 		if (actualType instanceof RErrorType)
 			error('''«actualType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (actualType == MISSING) {
-			val node = findActualNodeFor(expression)
-			if (node !== null) {
-				error('''Couldn't infer actual type for '«getTokenText(node)»'«»''', owner, ref, index,
-					TYPE_ERROR)
-			}
-		} else if (expectedType instanceof RErrorType)
+		else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
 		else if (expectedType !== null && expectedType != MISSING) {
 			if (!actualType.isSubtypeOf(expectedType))
@@ -784,7 +777,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkPatternAndFormat(RosettaExternalRegularAttribute attribute) {
-		if (!isDateTime(attribute.attributeRef.RTypeOfFeature)){
+		if (!isDateTime(attribute.attributeRef.getRTypeOfFeature(attribute))){
 			for(s:attribute.externalSynonyms) {
 				checkFormatNull(s.body)
 				checkPatternValid(s.body)
@@ -1032,7 +1025,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				if (!seenFeatures.add(feature)) {
 					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
 				}
-				checkType(feature.RTypeOfFeature, expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+				checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
 				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
 					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)

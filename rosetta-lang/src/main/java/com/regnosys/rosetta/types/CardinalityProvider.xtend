@@ -39,7 +39,6 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
-import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
@@ -72,6 +71,7 @@ import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
+import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {

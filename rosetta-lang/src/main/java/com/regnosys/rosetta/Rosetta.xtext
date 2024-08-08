@@ -83,6 +83,8 @@ Choice:
 
 ChoiceOption:
 	RosettaTyped RosettaDefinable?
+	(References|Annotations|Synonyms)*
+	RuleReference?
 ;
 
 Attribute:
@@ -105,7 +107,7 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	 ':' =>RosettaDefinable?
+	 ':' RosettaDefinable?
 	(References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
 	('output' ':' output = Attribute)?
@@ -117,12 +119,12 @@ Function:
 ;
 
 ShortcutDeclaration:
-	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=RosettaCalcExpression
+	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=RosettaCalcExpression // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
 ;
 
 Condition:
-	'condition' RosettaNamed? ':' =>RosettaDefinable?
-		=>(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
+	'condition' RosettaNamed? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
+		=>(References|Annotations)* // Predicate necessary because of conflict between `[` as the start of an annotation and as the start of a list literal.
 		expression=RosettaCalcExpression
 ;
 
@@ -131,12 +133,12 @@ enum Necessity:
 ;
 
 PostCondition returns Condition:
-	postCondition ?= 'post-condition'  RosettaNamed? ':' =>RosettaDefinable?
+	postCondition ?= 'post-condition'  RosettaNamed? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
 	expression     = RosettaCalcExpression
 ;
 
 Operation:
-	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
+	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':'
 		expression = RosettaCalcExpressionWithAsKey
 ;
 
@@ -457,10 +459,10 @@ RosettaDocReference:
 
 DocumentRationale:
 	  'rationale' rationale=STRING
-	  (->'rationale_author' rationaleAuthor=STRING)?
+	  (->'rationale_author' rationaleAuthor=STRING)? // Predicate necessary because otherwise `rationale_author` can be interpreted as a new `DocumentRationale` instead.
 	  |
 	  'rationale_author' rationaleAuthor=STRING
-	  (->'rationale' rationale=STRING)?
+	  (->'rationale' rationale=STRING)? // Predicate necessary because otherwise `rationale` can be interpreted as a new `DocumentRationale` instead.
 ;
 
 
@@ -550,6 +552,7 @@ ClosureParameter:
 
 InlineFunction:
 	=>((parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[') body=RosettaCalcExpression ']'
+	// Predicate necessary because otherwise a ClosureParameter conflicts with a symbol reference inside an ImplicitInlineFunction.
 ;
 
 ImplicitInlineFunction returns InlineFunction:
@@ -583,25 +586,25 @@ enum CardinalityModifier:
 RosettaCalcOr returns RosettaExpression:
 	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
 	// Without left parameter:
-	| ->({LogicalOperation} operator='or' right=RosettaCalcAnd) (=>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
+	| ({LogicalOperation} operator='or' right=RosettaCalcAnd) (=>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
 	RosettaCalcEquality ( =>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*
 	// Without left parameter:
-	| (->({LogicalOperation} operator='and' right=RosettaCalcEquality) (=>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*)
+	| (({LogicalOperation} operator='and' right=RosettaCalcEquality) (=>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*)
 ;
 
 RosettaCalcEquality returns RosettaExpression:
 	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*
 	// Without left parameter:
-	| (->({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=RosettaCalcComparison) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*)
+	| (({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=RosettaCalcComparison) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*)
 ;
 
 RosettaCalcComparison returns RosettaExpression:
 	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 	// Without left parameter:
-	| (->({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*)
+	| (({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*)
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
@@ -611,7 +614,7 @@ RosettaCalcAdditive returns RosettaExpression:
 RosettaCalcMultiplicative returns RosettaExpression:
 	RosettaCalcBinary ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*
 	// Without left parameter:
-	| (->({ArithmeticOperation} operator=('*'|'/') right=RosettaCalcBinary) (=>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*)
+	| (({ArithmeticOperation} operator=('*'|'/') right=RosettaCalcBinary) (=>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*)
 ;
 
 RosettaCalcBinary returns RosettaExpression:
@@ -623,7 +626,7 @@ RosettaCalcBinary returns RosettaExpression:
 	))?
 	| // Without left parameter:
 	(
-		->(
+		(
 			{RosettaContainsExpression} operator='contains' right=UnaryOperation
 			| {RosettaDisjointExpression} operator='disjoint' right=UnaryOperation
 			| {DefaultOperation} operator='default' right=UnaryOperation
@@ -883,7 +886,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
+	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)* // Syntactic predicate necessary to remove ambiguity with another corpus
 ;
 
 RosettaSegmentRef:
@@ -910,7 +913,7 @@ RosettaRuleReference:
 ;
 
 RosettaRule:
- 	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable?
+ 	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
  	(
 		References*
 		(expression = RosettaCalcExpression

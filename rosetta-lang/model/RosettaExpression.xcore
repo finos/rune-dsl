@@ -369,11 +369,12 @@ class ToZonedDateTimeOperation extends ParseOperation {
 }
 
 class SwitchOperation extends RosettaUnaryOperation {
-	contains CaseStatement[] values
+	contains CaseStatement[] values opposite switchOperation
 	contains CaseStatement ^default
-} 
+}
 
 class CaseStatement {
+	container SwitchOperation switchOperation opposite values
 	contains RosettaExpression condition
 	contains RosettaExpression expression
 }

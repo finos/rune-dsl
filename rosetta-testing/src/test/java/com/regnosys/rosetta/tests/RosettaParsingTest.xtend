@@ -35,6 +35,43 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testPropagationForScopingForImplicitEnumType() {
+		val model = '''
+		enum FooEnum:
+			FOO1
+			FOO2
+		'''.parseRosettaWithNoIssues
+		
+		'''
+		myEnumValue
+			= (["bar", "baz"]
+				filter = "baz"
+				then extract FOO1
+				then only-element)
+		'''
+			.parseExpression(#[model], #["myEnumValue FooEnum (1..1)"])
+			.assertNoIssues
+	}
+	
+	@Test
+	def void testScopingForImplicitEnumType() {
+		val model = '''
+		enum FooEnum:
+			FOO1
+			FOO2
+		
+		func OutputOfFunction:
+			output:
+				result FooEnum (1..1)
+			set result:
+				FOO1
+		'''.parseRosettaWithNoIssues
+		
+		"myEnumValue = FOO2"
+			.parseExpression(#[model], #["myEnumValue FooEnum (1..1)"])
+			.assertNoIssues
+	}
+	
 	def void testTwoModelsSameNamespaceReferencesEachOther() {
 		val model1 = '''
 			namespace test
@@ -51,7 +88,7 @@ class RosettaParsingTest {
 				a A (1..1)
 		'''
 		
-		#[model1, model2].parseRosettaWithNoIssues		
+		#[model1, model2].parseRosettaWithNoIssues
 	}
 	
 	@Test
