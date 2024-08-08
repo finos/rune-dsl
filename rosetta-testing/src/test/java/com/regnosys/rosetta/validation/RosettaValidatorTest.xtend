@@ -51,8 +51,33 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					result string (1..1)
 			
 				set result: inFoo switch 
-					Foo then "aValue"
-		'''		
+					inFoo then "aValue"
+		'''
+		
+		model.parseRosetta
+		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")
+	}
+	
+	@Test
+	def void testValidSwitchSyntaxWithOtherwise() {
+		val context ='''
+				enum SomeEnum:
+					A
+					B
+					C
+					D
+		'''.parseRosettaWithNoIssues
+		
+		val expression = '''
+			inEnum switch 
+				SomeEnum -> A then "aValue",
+				SomeEnum -> B then "bValue",
+				SomeEnum -> C then "cValue",
+				default "defaultValue"
+		'''
+		
+		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+		.assertNoIssues
 	}
 	
 	@Test

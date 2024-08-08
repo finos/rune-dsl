@@ -296,6 +296,10 @@ CaseStatement:
 	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
 ;
 
+CaseDefaultStatement returns CaseStatement:
+	'default' expression=RosettaCalcExpression
+;
+
 
 /**********************************************************************
  * Synonyms 
@@ -669,7 +673,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
-			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)*)
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -707,7 +711,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
-			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)*)
+			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -745,7 +749,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
-			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)*)			
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)			
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

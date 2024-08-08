@@ -120,6 +120,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -140,6 +141,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RBuiltinTypeService
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
+	
+	@Check
+	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
+		if (!(op.argument.RType instanceof RBasicType) && !(op.argument.RType instanceof REnumType)) {
+			val message = "Invalid switch argument type, supported argument types are basic types and enumerations"
+			error(message, op.argument, null)
+		}
+	}
 
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
