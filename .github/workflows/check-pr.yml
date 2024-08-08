@@ -21,5 +21,6 @@ jobs:
     name: Maven Build on Windows
     runs-on: windows-latest
     steps:
+    - run: git config --global core.autocrlf true
     - uses: actions/checkout@v4
     - uses: ./.github/actions/maven-build
