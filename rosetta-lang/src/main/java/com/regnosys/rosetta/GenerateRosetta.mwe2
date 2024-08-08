@@ -69,13 +69,6 @@ Workflow {
 			parserGenerator = XtextAntlrGeneratorFragment2 {
 				// set to true to get a debug Grammar
 				debugGrammar = true
-				options = {
-					classSplitting = true
-					casesPerSpecialStateSwitch= "20"
-					fieldsPerClass = "200"
-					methodsPerClass = "200"
-					stripAllComments = true
-				}
 			}
 			serializer = {
 				generateStub = false
