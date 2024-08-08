@@ -293,7 +293,7 @@ RosettaCardinality:
 
 
 CaseStatement:
-	condition=RosettaCalcExpression 'then' expression=RosettaCalcExpression
+	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
 ;
 
 

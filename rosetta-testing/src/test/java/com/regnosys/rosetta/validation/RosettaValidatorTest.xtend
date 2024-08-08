@@ -34,6 +34,59 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testDataTypesAreInvalidSwitchInputs() {
+		val model = '''
+			namespace test
+			
+			type Foo:
+				fooField string (1..1)
+
+			type SomeType:
+				fieldA string (1..1)
+			
+			func SomeFunc:
+				inputs:
+					inFoo Foo (1..1)
+				output:
+					result string (1..1)
+			
+				set result: inFoo switch 
+					Foo then "aValue"
+		'''		
+	}
+	
+	@Test
+	def void testValidSwitchSyntaxOnSet() {
+		val model = '''
+			namespace test
+			
+			enum SomeEnum:
+				A
+				B
+				C
+				D
+				
+			type SomeType:
+				fieldA string (1..1)
+				
+			
+			func SomeFunc:
+				inputs:
+					inEnum SomeEnum (1..1)
+				output:
+					result string (1..1)
+			
+				set result: inEnum switch 
+					SomeEnum -> A then "aValue",
+					SomeEnum -> B then "bValue",
+					SomeEnum -> C then "cValue",
+					SomeEnum -> D then "dValue"
+		'''
+		
+		model.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testCannotUseImportAliasesWithoutWildcard() {
 		val model = '''
 			import foo.bar.Test as someAlias
