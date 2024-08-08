@@ -160,11 +160,6 @@ public class IfElseCascade {
 	public String toString() {
 		String s = bElse ? "else " : "";
 		s += "if (";
-		// final int start, end;
-		// final boolean bElse;
-		// final String tokenVarName;
-		// final String condition;
-		// final Map<String, Integer> tokenToStateMap;
 		s += (tokenVarName != null) ? tokenVarName : "??";
 		s += "==..";
 		s += (condition != null) ? " " + condition : "";

@@ -40,7 +40,8 @@ public class ParserCaseExtractorFragmentTest {
 		File expected = new File("src/test/resources/extractor-test/ExpectedOutputParser.java");
 		
 		assertEquals(
-				Files.asCharSource(expected, StandardCharsets.UTF_8).read(),
-				Files.asCharSource(target, StandardCharsets.UTF_8).read());
+				Files.asCharSource(expected, StandardCharsets.UTF_8).read().replace("\r\n", "\n"),
+				Files.asCharSource(target, StandardCharsets.UTF_8).read().replace("\r\n", "\n")
+			);
 	}
 }
