@@ -133,6 +133,7 @@ import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1185,6 +1186,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 		conversionOperation(expr, context, '''«ZonedDateTime»::parse''', DateTimeParseException)
+	}
+	
+	override protected caseToSwitchOperation(SwitchOperation expr, Context context) {
+		//TODO: sort this out
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {

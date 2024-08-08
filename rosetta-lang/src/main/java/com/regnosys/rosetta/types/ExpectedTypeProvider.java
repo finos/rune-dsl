@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
+import com.regnosys.rosetta.rosetta.expression.CaseStatement;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
@@ -57,6 +58,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
@@ -149,6 +151,14 @@ public interface ExpectedTypeProvider {
 						return builtins.BOOLEAN;
 					} else {
 						LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
+					}
+				} else if (owner instanceof CaseStatement) {
+					CaseStatement caseStat = (CaseStatement) owner;
+					SwitchOperation op = caseStat.getSwitchOperation();
+					if (CASE_STATEMENT__CONDITION.equals(reference)) {
+						return typeProvider.getRType(op.getArgument());
+					} else if (CASE_STATEMENT__EXPRESSION.equals(reference)) {
+						return getExpectedTypeFromContainer(op);
 					}
 				}
 				return null;
@@ -602,6 +612,14 @@ public interface ExpectedTypeProvider {
 
 			@Override
 			protected RType caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {
+				return null;
+			}
+
+			@Override
+			protected RType caseToSwitchOperation(SwitchOperation expr, Context context) {
+				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference) && expr.getValues().stream().allMatch(c -> leavesItemTypeUnchanged(c.getExpression()))) {
+					return getExpectedTypeFromContainer(expr);
+				}
 				return null;
 			}
 		}

@@ -294,6 +294,10 @@ RosettaCardinality:
 ;
 
 
+CaseStatement:
+	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
+;
+
 
 /**********************************************************************
  * Synonyms 
@@ -610,25 +614,25 @@ RosettaCalcMultiplicative returns RosettaExpression:
 ;
 
 RosettaCalcBinary returns RosettaExpression:
-	ListOperation (=>(
-		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
-		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-		| {DefaultOperation.left=current} operator='default' right=ListOperation
-		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
+	UnaryOperation (=>(
+		{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
+		| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
+		| {DefaultOperation.left=current} operator='default' right=UnaryOperation
+		| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
 	))?
 	| // Without left parameter:
 	(
 		(
-			{RosettaContainsExpression} operator='contains' right=ListOperation
-			| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
-			| {DefaultOperation} operator='default' right=ListOperation
-			| {JoinOperation} operator='join' (=>right=ListOperation)?
+			{RosettaContainsExpression} operator='contains' right=UnaryOperation
+			| {RosettaDisjointExpression} operator='disjoint' right=UnaryOperation
+			| {DefaultOperation} operator='default' right=UnaryOperation
+			| {JoinOperation} operator='join' (=>right=UnaryOperation)?
 		)
 		(=>(
-			{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
-			| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-			| {DefaultOperation.left=current} operator='default' right=ListOperation
-			| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
+			{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
+			| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
+			| {DefaultOperation.left=current} operator='default' right=UnaryOperation
+			| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
 		))?
 	)
 ;
@@ -642,7 +646,7 @@ enum ExistsModifier:
 	| MULTIPLE='multiple'
 ;
 
-ListOperation returns RosettaExpression:
+UnaryOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
 		=>(
@@ -668,6 +672,7 @@ ListOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)*)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -679,7 +684,8 @@ ListOperation returns RosettaExpression:
 			|({FilterOperation.argument=current} operator='filter')
 			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
-		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
+		)
+		 (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 	| // Without left parameter:
 	(
@@ -704,6 +710,7 @@ ListOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
+			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)*)
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -741,6 +748,7 @@ ListOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)*)			
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

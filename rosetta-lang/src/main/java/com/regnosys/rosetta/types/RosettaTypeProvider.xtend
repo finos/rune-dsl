@@ -84,6 +84,7 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -529,6 +530,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RType> cycleTracker) {
 		ZONED_DATE_TIME
+	}
+	
+	override protected caseToSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
+		expr.values.map[it.expression.RType].join
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Map<EObject, RType> context) {
