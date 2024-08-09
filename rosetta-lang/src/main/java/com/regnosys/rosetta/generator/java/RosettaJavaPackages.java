@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.generator.java;
 
-import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 import com.rosetta.util.DottedPath;
 
@@ -62,12 +61,11 @@ public class RosettaJavaPackages {
 
 	public static class RootPackage extends DottedPath {
 
-		public RootPackage(RosettaModel model) {
-			this(model.getName());
-		}
-
 		public RootPackage(String namespace) {
-			super(namespace.split("\\."));
+			this(DottedPath.splitOnDots(namespace));
+		}
+		public RootPackage(DottedPath namespace) {
+			super(namespace);
 		}
 
 		public DottedPath metaField() {

@@ -16,12 +16,15 @@
 
 package com.regnosys.rosetta.utils;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.translate.Translation;
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
@@ -44,7 +47,7 @@ public class ImplicitVariableUtil {
 	/**
 	 * Find the enclosing object that defines the implicit variable in the given expression.
 	 */
-	public Optional<EObject> findContainerDefiningImplicitVariable(EObject context) {
+	public Optional<? extends EObject> findObjectDefiningImplicitVariable(EObject context) {
 		Iterable<EObject> containers = EcoreUtil2.getAllContainers(context);
 		EObject prev = context;
 		for (EObject container: containers) {
@@ -58,16 +61,22 @@ public class ImplicitVariableUtil {
 				}
 			} else if (container instanceof RosettaRule) {
 				return Optional.of(container);
+			} else if (container instanceof Translation) {
+				Translation trans = (Translation)container;
+				return findFirstUnnamedParameter(trans.getParameters());
 			}
 			prev = container;
 		}
 		return Optional.empty();
+	}
+	private Optional<TranslationParameter> findFirstUnnamedParameter(List<TranslationParameter> params) {
+		return params.stream().filter(p -> p.getName() == null).findFirst();
 	}
 	
 	/**
 	 * Indicates whether an implicit variable exists in the given context.
 	 */
 	public boolean implicitVariableExistsInContext(EObject context) {
-		return findContainerDefiningImplicitVariable(context).isPresent();
+		return findObjectDefiningImplicitVariable(context).isPresent();
 	}
 }

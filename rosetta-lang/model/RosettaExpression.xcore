@@ -14,7 +14,9 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.translate.TranslateSource
 import org.eclipse.emf.common.util.BasicEList
 
 
@@ -170,6 +172,12 @@ class ConstructorKeyValuePair {
 	contains RosettaExpression value
 }
 
+class TranslateDispatchOperation extends RosettaExpression {
+	refers TranslateSource source
+	contains RosettaExpression[] inputs
+	contains TypeCall outputType
+}
+
 interface RosettaOperation extends RosettaExpression {
 	String operator
 }
@@ -296,6 +304,7 @@ class RosettaOnlyElement extends ListOperation {
 }
 
 class RosettaCountOperation extends RosettaUnaryOperation {
+	
 }
 
 class FlattenOperation extends ListOperation, CanHandleListOfLists {
@@ -357,6 +366,17 @@ class ToDateTimeOperation extends ParseOperation {
 }
 
 class ToZonedDateTimeOperation extends ParseOperation {
+}
+
+class SwitchOperation extends RosettaUnaryOperation {
+	contains CaseStatement[] values opposite switchOperation
+	contains CaseStatement ^default
+}
+
+class CaseStatement {
+	container SwitchOperation switchOperation opposite values
+	contains RosettaExpression condition
+	contains RosettaExpression expression
 }
 
 /**

@@ -35,7 +35,7 @@ import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.serialisation.RosettaXMLConfiguration;
 import com.rosetta.util.serialisation.TypeXMLConfiguration;
@@ -50,15 +50,17 @@ public class XsdImport {
 	private final XsdEnumImport xsdEnumImport;
 	private final XsdTypeAliasImport xsdTypeAliasImport;
 	private final RosettaXsdMapping xsdMapping;
+	private final ModelIdProvider modelIdProvider;
 
 	@Inject
-	public XsdImport(RosettaModelFactory rosettaModelFactory, XsdElementImport xsdElementImport, XsdTypeImport xsdTypeImport, XsdEnumImport xsdEnumImport, XsdTypeAliasImport xsdTypeAliasImport, RosettaXsdMapping xsdMapping) {
+	public XsdImport(RosettaModelFactory rosettaModelFactory, XsdElementImport xsdElementImport, XsdTypeImport xsdTypeImport, XsdEnumImport xsdEnumImport, XsdTypeAliasImport xsdTypeAliasImport, RosettaXsdMapping xsdMapping, ModelIdProvider modelIdProvider) {
 		this.rosettaModelFactory = rosettaModelFactory;
 		this.xsdElementImport = xsdElementImport;
 		this.xsdTypeImport = xsdTypeImport;
 		this.xsdEnumImport = xsdEnumImport;
 		this.xsdTypeAliasImport = xsdTypeAliasImport;
 		this.xsdMapping = xsdMapping;
+		this.modelIdProvider = modelIdProvider;
 	}
 
 	public ResourceSet generateRosetta(XsdParser parsedInstance, GenerationProperties properties) {
@@ -127,13 +129,13 @@ public class XsdImport {
                     xsdElementImport.getXMLConfiguration(xsdElem, xsdMapping, targetNamespace)
 						.ifPresent(elemXMLConfig -> {
 							Data type = xsdMapping.getRosettaTypeFromElement(xsdElem);
-							result.put(new RDataType(type).getSymbolId(), elemXMLConfig);
+							result.put(modelIdProvider.getSymbolId(type), elemXMLConfig);
 						});
 				} else if (abstractElem instanceof XsdComplexType xsdType) {
                     xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, targetNamespace)
 						.ifPresent(typeXMLConfig -> {
 							Data type = xsdMapping.getRosettaTypeFromComplex(xsdType);
-							result.put(new RDataType(type).getSymbolId(), typeXMLConfig);
+							result.put(modelIdProvider.getSymbolId(type), typeXMLConfig);
 						});
 				}
 			});

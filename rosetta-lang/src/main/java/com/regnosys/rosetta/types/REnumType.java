@@ -20,19 +20,15 @@ import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.DottedPath;
 
 public class REnumType extends RAnnotateType {
 	private final RosettaEnumeration enumeration;
 	private final ModelSymbolId symbolId;
 
-	public REnumType(final RosettaEnumeration enumeration) {
+	public REnumType(final RosettaEnumeration enumeration, final ModelSymbolId symbolId) {
 		super();
 		this.enumeration = enumeration;
-		this.symbolId = new ModelSymbolId(
-				DottedPath.splitOnDots(enumeration.getModel().getName()),
-				enumeration.getName()
-			);
+		this.symbolId = symbolId;
 	}
 	
 	@Override

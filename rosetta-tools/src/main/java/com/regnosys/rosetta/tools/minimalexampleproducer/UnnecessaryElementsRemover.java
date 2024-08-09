@@ -58,7 +58,7 @@ public class UnnecessaryElementsRemover {
 	private Map<EClass, Set<EStructuralFeature>> removableFeatures = Map.of(
 			pckg.getRosettaDefinable(), Set.of(pckg.getRosettaDefinable_Definition()),
 			sPckg.getAnnotated(), Set.of(sPckg.getAnnotated_Annotations()),
-			pckg.getRosettaModel(), Set.of(pckg.getRosettaModel_Elements()),
+			pckg.getRosettaNamespace(), Set.of(pckg.getRosettaNamespace_Elements()),
 			sPckg.getData(), Set.of(sPckg.getData_Attributes(), sPckg.getData_Conditions()),
 			sPckg.getReferences(), Set.of(sPckg.getReferences_References()),
 			sPckg.getFunction(), Set.of(sPckg.getFunction_Shortcuts(), sPckg.getFunction_Conditions(), sPckg.getFunction_Operations(), sPckg.getFunction_PostConditions()),

@@ -45,6 +45,8 @@ import org.eclipse.xtext.validation.IResourceValidator
 import com.regnosys.rosetta.validation.CachingResourceValidator
 import com.regnosys.rosetta.config.RosettaConfiguration
 import com.regnosys.rosetta.config.file.FileBasedRosettaConfigurationProvider
+import com.regnosys.rosetta.cache.IRequestScopedCache
+import com.regnosys.rosetta.cache.RequestScopedCache
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -141,5 +143,9 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	def Class<? extends Provider<? extends RosettaConfiguration>> provideRosettaConfiguration() {
 		FileBasedRosettaConfigurationProvider
+	}
+	
+	def Class<? extends IRequestScopedCache> bindIRequestScopedCache() {
+		RequestScopedCache
 	}
 }

@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,23 +39,28 @@ import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
-import com.rosetta.model.lib.ModelReportId;
-import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.DottedPath;
+import com.regnosys.rosetta.rosetta.translate.Translation;
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
+import com.regnosys.rosetta.utils.ModelIdProvider;
+import com.regnosys.rosetta.utils.TranslateUtil;
 
 public class RObjectFactory {
 	@Inject
-	private RosettaTypeProvider rosettaTypeProvider;
+	private RosettaTypeProvider typeProvider;
 	@Inject
 	private CardinalityProvider cardinalityProvider;
 	@Inject
 	private TypeSystem typeSystem;
 	@Inject
 	private RosettaExtensions rosettaExtensions;
+	@Inject
+	private TranslateUtil translateUtil;
+	@Inject
+	private ModelIdProvider modelIdProvider;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
-				new ModelSymbolId(DottedPath.splitOnDots(function.getModel().getName()), function.getName()),
+				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				function.getInputs().stream().map(i -> buildRAttribute(i)).collect(Collectors.toList()),
 				buildRAttribute(function.getOutput()),
@@ -67,12 +73,12 @@ public class RObjectFactory {
 	
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
-		RType outputRType = rosettaTypeProvider.getRType(rule.getExpression());
+		RType outputRType = typeProvider.getRType(rule.getExpression());
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), outputIsMulti);
 		
 		return new RFunction(
-				new ModelSymbolId(DottedPath.splitOnDots(rule.getModel().getName()), rule.getName()), 
+				modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(new RAttribute("input", null, inputRType, List.of(), false)),
 				outputAttribute,
@@ -86,16 +92,13 @@ public class RObjectFactory {
 	}
 	
 	public RFunction buildRFunction(RosettaReport report) {
-		String body = report.getRegulatoryBody().getBody().getName();
-		String[] corpusList = report.getRegulatoryBody().getCorpusList().stream().map(c -> c.getName()).toArray(String[]::new);
-
 		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
 				+ report.getRegulatoryBody().getCorpusList()
 				.stream()
 				.map(c -> c.getName())
 				.collect(Collectors.joining(" "));
 		
-		RType outputRtype = new RDataType(report.getReportType());
+		RType outputRtype = new RDataType(report.getReportType(), modelIdProvider.getSymbolId(report.getReportType()));
 		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
 		
 		Attribute inputAttribute = SimpleFactory.eINSTANCE.createAttribute();
@@ -113,7 +116,7 @@ public class RObjectFactory {
 		
 		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
 		return new RFunction(
-			new ModelReportId(DottedPath.splitOnDots(report.getModel().getName()), body, corpusList),
+			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttribute(inputAttribute)),
 			outputAttribute,
@@ -155,15 +158,36 @@ public class RObjectFactory {
 		inputAttributeSymbolRef.setSymbol(inputAttribute);
 		
 		RosettaSymbolReference symbolRef = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
+		symbolRef.setGenerated(true);
 		symbolRef.setSymbol(rule);
 		symbolRef.setExplicitArguments(true);
 		symbolRef.getArgs().add(inputAttributeSymbolRef);
 		
 		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
+	
+	public RFunction buildRFunction(Translation translation) {
+		List<RAttribute> inputs = translation.getParameters().stream().<RAttribute>map(this::buildRAttribute).collect(Collectors.toList());
+		RType outputRType = translateUtil.getResultRType(translation);
+		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), false);
+		ROperation operation = new ROperation(ROperationType.SET, outputAttribute, List.of(), translation.getExpression());
+		
+		return new RFunction(
+				modelIdProvider.getTranslationId(translation),
+				null,
+				inputs,
+				outputAttribute,
+				RFunctionOrigin.TRANSLATION,
+				List.of(),
+				List.of(),
+				List.of(),
+				List.of(operation),
+				List.of()
+			);
+	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
-		RType rType = this.rosettaTypeProvider.getRTypeOfSymbol(attribute);
+		RType rType = typeProvider.getRTypeOfSymbol(attribute);
 		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
 				.filter(a -> a.getAnnotation().getName().equals("metadata")).map(a -> buildRAttribute(a.getAttribute()))
 				.collect(Collectors.toList());
@@ -172,9 +196,19 @@ public class RObjectFactory {
 				cardinalityProvider.isSymbolMulti(attribute));
 
 	}
+	
+	public RAttribute buildRAttribute(TranslationParameter parameter) {
+		RType rType = typeProvider.getRTypeOfSymbol(parameter);
+		String name = parameter.getName();
+		if (name == null) {
+			name = "item";
+		}
+		return new RAttribute(name, null, rType, Collections.emptyList(), false);
+
+	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
-		return new RShortcut(shortcut.getName(), shortcut.getDefinition(), shortcut.getExpression());
+		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression());
 
 	}
 

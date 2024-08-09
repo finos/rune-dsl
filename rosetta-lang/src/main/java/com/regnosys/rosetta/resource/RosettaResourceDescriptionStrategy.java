@@ -3,6 +3,9 @@ package com.regnosys.rosetta.resource;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+
+import javax.inject.Inject;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
@@ -11,10 +14,19 @@ import org.eclipse.xtext.util.IAcceptor;
 import com.google.inject.Singleton;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.translate.Translation;
+import com.regnosys.rosetta.utils.TranslateUtil;
 
 @Singleton
 public class RosettaResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
+	private final TranslateUtil translateUtil;
+	
+	@Inject
+	public RosettaResourceDescriptionStrategy(TranslateUtil translateUtil) {
+		this.translateUtil = translateUtil;
+	}
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {		
@@ -46,6 +58,18 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
 		} else {
 			return super.createEObjectDescriptions(eObject, acceptor);
 		}
+	}
+	
+	public boolean createImplicitReferenceDescriptions(EObject from, IAcceptor<IImplicitReferenceDescription> acceptor) {
+		if (from instanceof TranslateDispatchOperation) {
+			Translation match = translateUtil.findLastMatch((TranslateDispatchOperation) from);
+			acceptor.accept(createImplicitReferenceDescription(from, match));
+		}
+		return true;
+	}
+	
+	protected IImplicitReferenceDescription createImplicitReferenceDescription(EObject from, EObject to) {
+		return new DefaultImplicitReferenceDescription(from, to);
 	}
 	
 	private String serialize(EObject eObject) {

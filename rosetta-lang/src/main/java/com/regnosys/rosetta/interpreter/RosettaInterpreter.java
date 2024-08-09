@@ -72,6 +72,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
@@ -81,6 +82,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.RType;
@@ -578,9 +580,20 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	}
 	
 	@Override
+	protected RosettaValue caseToSwitchOperation(SwitchOperation expr, RosettaInterpreterContext context) {
+		// TODO Auto-generated method stub
+		throw new RosettaInterpreterException("Switch operations are not supported yet.");
+	}
+	@Override
 	protected RosettaValue caseConstructorExpression(RosettaConstructorExpression expr,
 			RosettaInterpreterContext context) {
-		// TODO Auto-generated method stub
+		// TODO
 		throw new RosettaInterpreterException("Constructor expressions are not supported yet.");
+	}
+	@Override
+	protected RosettaValue caseTranslateDispatchOperation(TranslateDispatchOperation expr,
+			RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("Translate dispatch operations are not supported yet.");
 	}
 }

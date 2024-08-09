@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import com.rosetta.util.DottedPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -486,7 +487,7 @@ class DataRuleGeneratorTest {
 		
 		val classes = code.compileToClasses
 
-		val namespace = new RootPackage('ns2')
+		val namespace = new RootPackage(DottedPath.of('ns2'))
 		val bar1 = classes.createInstanceUsingBuilder(namespace, 'Bar', of('z', 'v1'))
 		val result1 = classes.runCondition(namespace, bar1, 'BarDataRule0')
 		assertFalse(result1.isSuccess)

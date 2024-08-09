@@ -27,7 +27,7 @@ public class IdentifierRepresentationService {
 	private ImplicitVariableUtil implicitVarUtil;
 	
 	public ImplicitVariableRepresentation getImplicitVarInContext(EObject context) {
-		EObject definingContainer = implicitVarUtil.findContainerDefiningImplicitVariable(context).orElseThrow();
+		EObject definingContainer = implicitVarUtil.findObjectDefiningImplicitVariable(context).orElseThrow();
 		return new ImplicitVariableRepresentation(definingContainer);
 	}
 }

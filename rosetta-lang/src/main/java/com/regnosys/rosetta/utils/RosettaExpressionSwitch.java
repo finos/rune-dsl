@@ -63,6 +63,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
@@ -72,6 +73,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation;
 
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
@@ -94,6 +96,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return doSwitch((RosettaReference)expr, context);
 		} else if (expr instanceof RosettaOperation) {
 			return doSwitch((RosettaOperation)expr, context);
+		} else if (expr instanceof TranslateDispatchOperation) {
+			return caseTranslateDispatchOperation((TranslateDispatchOperation)expr, context);
 		}
 		throw errorMissedCase(expr);
 	}
@@ -234,6 +238,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseToDateTimeOperation((ToDateTimeOperation)expr, context);
 		} else if (expr instanceof ToZonedDateTimeOperation) {
 			return caseToZonedDateTimeOperation((ToZonedDateTimeOperation)expr, context);
+		} else if (expr instanceof SwitchOperation) {
+			return caseToSwitchOperation((SwitchOperation)expr, context);
 		} else if (expr instanceof RosettaFunctionalOperation) {
 			return doSwitch((RosettaFunctionalOperation)expr, context);
 		}
@@ -281,6 +287,8 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseImplicitVariable(RosettaImplicitVariable expr, Context context);
 	protected abstract Return caseSymbolReference(RosettaSymbolReference expr, Context context);
 	
+	protected abstract Return caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context);
+	
 	protected abstract Return caseAddOperation(ArithmeticOperation expr, Context context);
 	protected abstract Return caseSubtractOperation(ArithmeticOperation expr, Context context);
 	protected abstract Return caseMultiplyOperation(ArithmeticOperation expr, Context context);
@@ -319,6 +327,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseToDateOperation(ToDateOperation expr, Context context);
 	protected abstract Return caseToDateTimeOperation(ToDateTimeOperation expr, Context context);
 	protected abstract Return caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context);
+	protected abstract Return caseToSwitchOperation(SwitchOperation expr, Context context);
 	
 	protected abstract Return caseFilterOperation(FilterOperation expr, Context context);
 	protected abstract Return caseMapOperation(MapOperation expr, Context context);

@@ -32,12 +32,14 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
+inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
 
@@ -86,7 +88,7 @@ auxiliary join(RDataType t1, RDataType t2) {
 	if (result === null) {
 		return ANY
 	}
-	return new RDataType(result)
+	return new RDataType(result, result.symbolId)
 }
 auxiliary join(REnumType t1, REnumType t2) {
 	val st1 = ancestorEnums(t1.enumeration)
@@ -97,7 +99,7 @@ auxiliary join(REnumType t1, REnumType t2) {
 	if (result === null) {
 		return ANY
 	}
-	return new REnumType(result)
+	return new REnumType(result, result.symbolId)
 }
 auxiliary join(RNumberType t1, RNumberType t2) {
 	t1.join(t2)

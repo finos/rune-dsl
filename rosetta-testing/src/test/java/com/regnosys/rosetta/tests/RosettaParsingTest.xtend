@@ -35,19 +35,98 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testPropagationForScopingForImplicitEnumType() {
+		val model = '''
+		enum FooEnum:
+			FOO1
+			FOO2
+		'''.parseRosettaWithNoIssues
+		
+		'''
+		myEnumValue
+			= (["bar", "baz"]
+				filter = "baz"
+				then extract FOO1
+				then only-element)
+		'''
+			.parseExpression(#[model], #["myEnumValue FooEnum (1..1)"])
+			.assertNoIssues
+	}
+	
+	@Test
+	def void testScopingForImplicitEnumType() {
+		val model = '''
+		enum FooEnum:
+			FOO1
+			FOO2
+		
+		func OutputOfFunction:
+			output:
+				result FooEnum (1..1)
+			set result:
+				FOO1
+		'''.parseRosettaWithNoIssues
+		
+		"myEnumValue = FOO2"
+			.parseExpression(#[model], #["myEnumValue FooEnum (1..1)"])
+			.assertNoIssues
+	}
+	
+	def void testTwoModelsSameNamespaceReferencesEachOther() {
+		val model1 = '''
+			namespace test
+
+			type A:
+				id string (1..1)
+		'''
+
+		val model2 = '''
+			namespace test
+
+
+			type B:
+				a A (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testScopingForImplicitFeatureWithSameNameAsAnnotation() {
 		val model = '''
 		annotation foo:
-		
+
 		type Bar:
 			foo date (1..1)
 		'''.parseRosettaWithNoIssues
-		
+
 		"bar extract foo -> day"
 			.parseExpression(#[model], #["bar Bar (1..1)"])
 			.assertNoIssues
 	}
-	
+
+	@Test
+	def void testCanUseAlisesWhenImpoting() {
+		val model1 = '''
+			namespace foo.bar
+
+			type A:
+				id string (1..1)
+		'''
+
+		val model2 = '''
+			namespace test
+
+			import foo.bar.* as someAlias
+
+
+			type B:
+				a someAlias.A (1..1)
+		'''
+
+		#[model1, model2].parseRosettaWithNoIssues
+	}
+
 	@Test
 	def void testValidDefaultSyntax() {
 		"a default 2"

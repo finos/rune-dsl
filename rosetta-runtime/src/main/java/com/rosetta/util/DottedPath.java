@@ -33,6 +33,9 @@ public class DottedPath implements Comparable<DottedPath> {
 	protected DottedPath(String... segments) {
 		this.segments = segments;
 	}
+	protected DottedPath(DottedPath other) {
+		this(other.segments);
+	}
 	
 	public String first() {
 		return segments[0];

@@ -43,6 +43,7 @@ public class RAttribute implements RAssignedRoot {
 		return rType;
 	}
 
+	@Override
 	public boolean isMulti() {
 		return isMulti;
 	}
@@ -75,6 +76,9 @@ public class RAttribute implements RAssignedRoot {
 				&& Objects.equals(rType, other.rType);
 	}
 
-
+	@Override
+	public String toString() {
+		return String.format("RAttribute[name=%s, type=%s, isMulti=%s]", name, rType, isMulti);
+	}
 
 }

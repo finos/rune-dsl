@@ -100,6 +100,13 @@
                                 <include>**/*</include>
                             </includes>
                         </fileset>
+                        <!-- xtend -->
+                        <fileset>
+                            <directory>${basedir}/xtend-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>

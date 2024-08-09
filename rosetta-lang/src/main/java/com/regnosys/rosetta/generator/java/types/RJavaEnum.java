@@ -19,7 +19,7 @@ package com.regnosys.rosetta.generator.java.types;
 import java.util.Collections;
 import java.util.List;
 
-import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.types.REnumType;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaPrimitiveType;
@@ -27,12 +27,10 @@ import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class RJavaEnum extends JavaClass<Object> {	
-	private final RosettaEnumeration enumeration;
-	private final DottedPath packageName;
+	private final REnumType enumeration;
 
-	public RJavaEnum(RosettaEnumeration enumeration) {
+	public RJavaEnum(REnumType enumeration) {
 		this.enumeration = enumeration;
-		this.packageName = DottedPath.splitOnDots(enumeration.getModel().getName());
 	}
 
 	@Override
@@ -88,7 +86,7 @@ public class RJavaEnum extends JavaClass<Object> {
 
 	@Override
 	public DottedPath getPackageName() {
-		return packageName;
+		return enumeration.getNamespace();
 	}
 
 }

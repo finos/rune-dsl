@@ -20,19 +20,15 @@ import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.DottedPath;
 
 public class RDataType extends RAnnotateType {
 	private final Data data;
 	private final ModelSymbolId symbolId;
 
-	public RDataType(final Data data) {
+	public RDataType(final Data data, final ModelSymbolId symbolId) {
 		super();
 		this.data = data;
-		this.symbolId = new ModelSymbolId(
-				DottedPath.splitOnDots(data.getModel().getName()),
-				data.getName()
-			);
+		this.symbolId = symbolId;
 	}
 	
 	@Override

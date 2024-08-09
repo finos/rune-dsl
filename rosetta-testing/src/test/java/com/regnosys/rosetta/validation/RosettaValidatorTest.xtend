@@ -20,6 +20,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
@@ -30,6 +32,142 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+	
+	@Test
+	def void testSwitchArgumentMatchesCaseStatmentTypes() {
+		val context ='''
+				enum SomeEnum:
+					A
+					B
+					C
+					D
+		'''.parseRosettaWithNoIssues
+		
+		val expression = '''
+			inEnum switch 
+				SomeEnum -> A then "aValue",
+				10 then "bValue",
+				SomeEnum -> C then "cValue",
+				default "defaultValue"
+		'''
+		
+		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+		.assertError(ROSETTA_EXPRESSION, null, '''Mismatched condition type: Expected type `SomeEnum`, but got `int` instead.''')
+	}
+	
+	@Test
+	def void testDataTypesAreInvalidSwitchInputs() {
+		val model = '''
+			namespace test
+			
+			type Foo:
+				fooField string (1..1)
+
+			type SomeType:
+				fieldA string (1..1)
+			
+			func SomeFunc:
+				inputs:
+					inFoo Foo (1..1)
+				output:
+					result string (1..1)
+			
+				set result: inFoo switch 
+					inFoo then "aValue"
+		'''
+		
+		model.parseRosetta
+		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")
+	}
+	
+	@Test
+	def void testValidSwitchSyntaxWithOtherwise() {
+		val context ='''
+				enum SomeEnum:
+					A
+					B
+					C
+					D
+		'''.parseRosettaWithNoIssues
+		
+		val expression = '''
+			inEnum switch 
+				SomeEnum -> A then "aValue",
+				SomeEnum -> B then "bValue",
+				SomeEnum -> C then "cValue",
+				default "defaultValue"
+		'''
+		
+		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+		.assertNoIssues
+	}
+	
+	@Test
+	def void testValidSwitchSyntaxOnSet() {
+		val model = '''
+			namespace test
+			
+			enum SomeEnum:
+				A
+				B
+				C
+				D
+				
+			type SomeType:
+				fieldA string (1..1)
+				
+			
+			func SomeFunc:
+				inputs:
+					inEnum SomeEnum (1..1)
+				output:
+					result string (1..1)
+			
+				set result: inEnum switch 
+					SomeEnum -> A then "aValue",
+					SomeEnum -> B then "bValue",
+					SomeEnum -> C then "cValue",
+					SomeEnum -> D then "dValue"
+		'''
+		
+		model.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testCannotUseImportAliasesWithoutWildcard() {
+		val model = '''
+			import foo.bar.Test as someAlias
+		'''.parseRosetta
+		
+		model.assertError(IMPORT, null,
+			'"as" statement can only be used with wildcard import'
+		)
+	}
+	
+	
+	//TODO: write a validation for when the user forgets the alias
+	@Test
+	def void testCanUserImportAlisesWhenWildcardPresent() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			
+			
+			type B:
+				a someAlias.A (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}
 	
 	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
@@ -1015,16 +1153,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type Foo
 			with source TestA
 			
-			eligibility rule FooRule from ReportableEvent:
-				filter Foo->foo exists
+			eligibility rule FooRule from Foo:
+				filter foo exists
 			
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA from ReportableEvent:
+			reporting rule RA from Foo:
 				"A"
 			
-			reporting rule RB from ReportableEvent:
+			reporting rule RB from Foo:
 				"B"
 			
 			rule source TestA {
@@ -1263,7 +1401,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
+		model.assertError(EQUALITY_OPERATION, null,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
@@ -1291,7 +1429,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
 	
 	@Test
@@ -2875,7 +3013,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x5 int (1..1)
 				x6 string (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
@@ -2894,7 +3032,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
