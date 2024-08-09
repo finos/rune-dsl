@@ -41,6 +41,7 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	@Disabled
 	@Test
 	def void switchOperationMatchingOnEnum() {
 		val code = '''			

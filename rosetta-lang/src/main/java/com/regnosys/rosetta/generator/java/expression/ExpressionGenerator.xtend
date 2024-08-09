@@ -1192,7 +1192,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseToSwitchOperation(SwitchOperation expr, Context context) {
 		val switchArgument = expr.argument
 		val caseStatements = expr.values
-		val defaultExpression = expr.^default === null ? null : expr.^default.expression
+		val defaultExpression = expr.^default === JavaExpression.NULL ? null : expr.^default.expression
 		val switchJavaExpression = createSwitchJavaExpression(switchArgument, caseStatements, defaultExpression)
 		switchJavaExpression
 			.collapseToSingleExpression(context.scope)
