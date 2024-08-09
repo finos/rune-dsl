@@ -65,6 +65,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import com.regnosys.rosetta.rosetta.RosettaNamespace
 import com.regnosys.rosetta.types.ExpectedTypeProvider
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.TypeSystem
 
 /**
  * This class contains custom scoping description.
@@ -84,6 +85,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension DeepFeatureCallUtil
+	@Inject extension TypeSystem
 
 	override getScope(EObject context, EReference reference) {
 		try {
@@ -216,7 +218,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef
 						if (classRef instanceof Data)
-							return Scopes.scopeFor(classRef.allAttributes)
+							return Scopes.scopeFor(classRef.dataToType.allAttributes)
 					}
 					return IScope.NULLSCOPE
 				}

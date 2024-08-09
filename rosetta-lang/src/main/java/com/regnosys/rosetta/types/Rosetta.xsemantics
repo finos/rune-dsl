@@ -68,6 +68,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -77,6 +78,7 @@ inject extension RBuiltinTypeService builtinTypes
 inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
@@ -127,7 +129,7 @@ auxiliary symbolListType(ClosureParameter c) {
 }
 
 auxiliary symbolListType(RosettaEnumeration c) {
-	return createListType(new REnumType(c, c.symbolId), single)
+	return createListType(new REnumType(c, modelIdProvider), single)
 }
 
 auxiliary symbolListType(ShortcutDeclaration c) {
@@ -165,7 +167,7 @@ auxiliary typeOfImplicitVariable(EObject c) {
 	val definingContainer = c.findObjectDefiningImplicitVariable
 	definingContainer.map [
 		if (it instanceof Data) {
-			createListType(new RDataType(it, symbolId), single)
+			createListType(new RDataType(it, typeSystem, modelIdProvider), single)
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
@@ -219,12 +221,12 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
-		Data: new RDataType(t, t.symbolId)
+		Data: new RDataType(t, typeSystem, modelIdProvider)
 		RosettaBuiltinType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			builtinTypes.getType(t.name, argMap).orElse(null)
 		}
-		RosettaEnumeration: new REnumType(t, t.symbolId)
+		RosettaEnumeration: new REnumType(t, modelIdProvider)
 		RosettaMetaType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			val builtinResult = builtinTypes.getType(t.name, argMap)

@@ -367,7 +367,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	@Override
 	protected JavaClass<?> caseDataType(RDataType type, Void context) {
-		return new RJavaPojoInterface(type, modelIdProvider, typeSystem);
+		return new RJavaPojoInterface(type, typeSystem);
 	}
 	@Override
 	protected JavaClass<?> caseEnumType(REnumType type, Void context) {

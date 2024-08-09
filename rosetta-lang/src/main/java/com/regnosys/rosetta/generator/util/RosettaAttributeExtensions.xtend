@@ -29,6 +29,7 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import org.eclipse.xtext.util.SimpleCache
+import com.regnosys.rosetta.types.RDataType
 
 class RosettaAttributeExtensions {
 
@@ -43,14 +44,15 @@ class RosettaAttributeExtensions {
 	/**
 	 * Note that these methods will add a "meta" attribute if the data type has annotations
 	 */
-	static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
-		(data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
+	static def List<ExpandedAttribute> getExpandedAttributes(RDataType data) {
+		(data.data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
 	}
 	
-	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
+	static def List<ExpandedAttribute> expandedAttributesPlus(RDataType data) {
 		val atts = data.expandedAttributes;
-		if (data.hasSuperType) {
-			val attsWithSuper = data.superType.expandedAttributesPlus
+		val s = data.superType
+		if (s !== null && s instanceof RDataType) {
+			val attsWithSuper = (s as RDataType).expandedAttributesPlus
 			val result = newArrayList
 			attsWithSuper.forEach[
 				val overridenAtt = atts.findFirst[att| att.name == name]
@@ -66,14 +68,14 @@ class RosettaAttributeExtensions {
 		return atts
 	}
 	
-	private static def List<ExpandedAttribute> additionalAttributes(Data data) {
+	private static def List<ExpandedAttribute> additionalAttributes(RDataType data) {
 		val res = newArrayList
 		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
-		if(rosExt.hasKeyedAnnotation(data)){
+		if(rosExt.hasKeyedAnnotation(data.data)){
 			res.add(new ExpandedAttribute(
 				'meta',
 				data.name,
-				provideMetaFieldsType(data),
+				provideMetaFieldsType(data.data),
 				null,
 				false,
 				0,

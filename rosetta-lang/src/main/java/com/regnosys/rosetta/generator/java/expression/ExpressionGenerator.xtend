@@ -131,7 +131,6 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpr
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
@@ -158,7 +157,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject TranslateUtil translateUtil
-	@Inject extension ModelIdProvider
 	
 	/**
 	 * convert a rosetta expression to code
@@ -898,7 +896,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseOneOfOperation(OneOfOperation expr, Context context) {
 		val type = typeProvider.getRType(expr.argument) as RDataType
-		buildConstraint(expr.argument, type.data.allAttributes, Necessity.REQUIRED, context)
+		buildConstraint(expr.argument, type.allAttributes, Necessity.REQUIRED, context)
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
@@ -924,7 +922,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			throw new UnsupportedOperationException("Unsupported parent in `only exists` expression of type " + it?.class?.name)
 		]
-		val allAttrs = parentType.data.allNonOverridesAttributes
+		val allAttrs = parentType.allNonOverridesAttributes
 		parent
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«it», «Arrays».asList(«allAttrs.join(", ")['"' + name + '"']»), «Arrays».asList(«requiredAttributes.join(", ")['"' + name + '"']»))''', COMPARISON_RESULT)]
@@ -1005,7 +1003,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				
 			}
 			RosettaEnumeration: {
-				val t = new REnumType(s, s.symbolId).toJavaType
+				val t = s.enumToType.toJavaType
 				JavaExpression.from('''«t»''', t)
 			}
 			RosettaEnumValue: {
@@ -1049,7 +1047,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = new REnumType(expr.enumeration, expr.enumeration.symbolId).toJavaType
+		val javaEnum = expr.enumeration.enumToType.toJavaType
 		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
 	}
 

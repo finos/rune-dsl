@@ -31,20 +31,20 @@ class ModelObjectBuilderGenerator {
 	def StringConcatenationClient builderClass(RDataType t, JavaScope scope) {
 		val javaType = t.toJavaType
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
-		t.data.expandedAttributesPlus.forEach[
+		t.expandedAttributesPlus.forEach[
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
 		'''
 		class «javaType»BuilderImpl«IF t.data.hasSuperType» extends «javaType.interfaces.head.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.data)» {
 		
-			«FOR attribute : t.data.expandedAttributes»
+			«FOR attribute : t.expandedAttributes»
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
 			public «javaType»BuilderImpl() {
 			}
 		
-			«t.data.expandedAttributes.builderGetters(builderScope)»
+			«t.expandedAttributes.builderGetters(builderScope)»
 			«t.setters(builderScope)»
 			
 			@Override
@@ -61,7 +61,7 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «javaType.toBuilderType» prune() {
 				«IF t.data.hasSuperType»super.prune();«ENDIF»
-				«FOR attribute : t.data.expandedAttributes»
+				«FOR attribute : t.expandedAttributes»
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
 					«ELSEIF attribute.isMultiple && attribute.isDataType || attribute.hasMetas»
@@ -71,11 +71,11 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«t.data.expandedAttributes.filter[!it.overriding].hasData(t.data.hasSuperType)»
+			«t.expandedAttributes.filter[!it.overriding].hasData(t.data.hasSuperType)»
 		
-			«t.data.expandedAttributes.filter[!it.overriding].merge(t, t.data.hasSuperType)»
+			«t.expandedAttributes.filter[!it.overriding].merge(t, t.data.hasSuperType)»
 		
-			«t.data.builderBoilerPlate(builderScope)»
+			«t.builderBoilerPlate(builderScope)»
 		}
 		'''
 	}
@@ -164,7 +164,7 @@ class ModelObjectBuilderGenerator {
 	
 	private def StringConcatenationClient setters(RDataType thisClass, JavaScope scope)
 		'''
-		«FOR attribute : thisClass.data.expandedAttributesPlus»
+		«FOR attribute : thisClass.expandedAttributesPlus»
 			«doSetter(thisClass, attribute, scope)»
 		«ENDFOR»
 	'''

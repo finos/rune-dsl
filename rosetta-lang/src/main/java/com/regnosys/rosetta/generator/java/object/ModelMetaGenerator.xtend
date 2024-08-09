@@ -29,7 +29,6 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
-import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.utils.ModelIdProvider
 
 class ModelMetaGenerator {
@@ -58,7 +57,8 @@ class ModelMetaGenerator {
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
 		val context = t.data.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(t.data, context.resources.map[contents.head as RosettaModel].toSet)
-		val conditions = t.data.allSuperTypes.map[new RDataType(it, symbolId).conditionRules(it.conditions)].flatten
+		// TODO: add condition to check type format of basic super type
+		val conditions = t.allSuperTypes.filter(RDataType).map[conditionRules(it.data.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)

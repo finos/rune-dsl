@@ -73,7 +73,7 @@ class ValidatorGenerator {
 					«ModelSymbolId» modelSymbolId = new «ModelSymbolId»(packageName, simpleName);
 				
 				 	«List»<«AttributeValidation»> attributeValidations = new «ArrayList»<>();
-				 	«FOR attribute : data.allNonOverridesAttributes»
+				 	«FOR attribute : type.allNonOverridesAttributes»
 				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(«attribute.attributeValue», path));
 				 	«ENDFOR»
 				 	
@@ -85,7 +85,7 @@ class ValidatorGenerator {
 				 	return new «TypeValidation»(modelSymbolId, attributeValidations, conditionValidations);
 				}
 				
-				«FOR attribute : data.allNonOverridesAttributes»
+				«FOR attribute : type.allNonOverridesAttributes»
 				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.buildRAttribute.attributeToJavaType» atr, «RosettaPath» path) {
 					«List»<«ElementValidationResult»> validationResults = new «ArrayList»<>();
 					«val cardinalityCheck = checkCardinality(attribute)»

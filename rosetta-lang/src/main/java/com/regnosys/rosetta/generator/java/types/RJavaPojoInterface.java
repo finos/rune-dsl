@@ -19,10 +19,9 @@ package com.regnosys.rosetta.generator.java.types;
 import java.util.Collections;
 import java.util.List;
 
-import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.TypeSystem;
-import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
@@ -35,13 +34,11 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 	
 	private final RDataType data;
 	
-	private final ModelIdProvider modelIdProvider;
 	private final TypeSystem typeSystem;
 
-	public RJavaPojoInterface(RDataType data, ModelIdProvider modelIdProvider, TypeSystem typeSystem) {
+	public RJavaPojoInterface(RDataType data, TypeSystem typeSystem) {
 		this.data = data;
 		
-		this.modelIdProvider = modelIdProvider;
 		this.typeSystem = typeSystem;
 	}
 
@@ -76,11 +73,11 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 
 	@Override
 	public List<JavaClass<?>> getInterfaceDeclarations() {
-		Data superType = data.getData().getSuperType();
-		if (superType == null) {
-			return List.of(ROSETTA_MODEL_OBJECT);
+		RType superType = data.getSuperType();
+		if (superType != null && superType instanceof RDataType) {
+			return Collections.singletonList(new RJavaPojoInterface((RDataType) superType, typeSystem));
 		}
-		return Collections.singletonList(new RJavaPojoInterface(new RDataType(superType, modelIdProvider.getSymbolId(superType)), modelIdProvider, typeSystem));
+		return List.of(ROSETTA_MODEL_OBJECT);
 	}
 	
 	@Override

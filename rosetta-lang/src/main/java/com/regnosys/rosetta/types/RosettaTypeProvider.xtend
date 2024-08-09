@@ -94,10 +94,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject IQualifiedNameProvider qNames
 	@Inject RosettaExtensions extensions
 	@Inject extension ImplicitVariableUtil
-	@Inject extension TypeSystem
+	@Inject extension TypeSystem typeSystem
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
-	@Inject extension ModelIdProvider
+	@Inject ModelIdProvider modelIdProvider
 	@Inject IRequestScopedCache cache
 	@Inject extension ExpectedTypeProvider
 	
@@ -124,7 +124,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
 			RosettaDataReference: {
 				if (extensions.isResolved(seg.data)) {
-					return new RDataType(seg.data, seg.data.symbolId)
+					return new RDataType(seg.data, typeSystem, modelIdProvider)
 				} else {
 					NOTHING
 				}
@@ -149,7 +149,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 					MISSING
 			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
-				new REnumType(symbol, symbol.symbolId)
+				new REnumType(symbol, modelIdProvider)
 			}
 			Function: {
 				if (symbol.output !== null) {
@@ -239,7 +239,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		val definingContainer = context.findObjectDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				new RDataType(it, symbolId)
+				new RDataType(it, typeSystem, modelIdProvider)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
@@ -497,7 +497,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> context) {
-		new REnumType(expr.enumeration, expr.enumeration.symbolId)
+		new REnumType(expr.enumeration, modelIdProvider)
 	}
 	
 	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> cycleTracker) {

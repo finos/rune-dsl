@@ -33,6 +33,7 @@ import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -42,6 +43,7 @@ inject extension RBuiltinTypeService builtinTypes
 inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
@@ -51,9 +53,9 @@ auxiliary {
 	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
-	allAttributes(Data d) : Iterable<Attribute>
+	allAttributes(RDataType t) : Iterable<Attribute>
 	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
-	mayBeEmpty(Data d)
+	mayBeEmpty(RDataType d)
 	
 	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
 	allFeatures(RType t, ResourceSet resourceSet) : Iterable<? extends RosettaFeature>
@@ -61,11 +63,14 @@ auxiliary {
 
 /****** AUXILIARY DEFINITIONS *******/
 auxiliary ancestors(Data t) {
-	getAll(t,
-		SimplePackage::eINSTANCE.data_SuperType,
-		SimplePackage::eINSTANCE.data_SuperType,
-		typeof(Data)
-	)
+	val s = t.superType
+	if (s !== null) {
+		val st = s.type
+		if (st instanceof Data) {
+			return newArrayList(#[st] + ancestors(st))
+		}
+	}
+	return newArrayList()
 }
 auxiliary ancestorEnums(RosettaEnumeration t) {
 	getAll(t,
@@ -88,7 +93,7 @@ auxiliary join(RDataType t1, RDataType t2) {
 	if (result === null) {
 		return ANY
 	}
-	return new RDataType(result, result.symbolId)
+	return new RDataType(result, typeSystem, modelIdProvider)
 }
 auxiliary join(REnumType t1, REnumType t2) {
 	val st1 = ancestorEnums(t1.enumeration)
@@ -99,7 +104,7 @@ auxiliary join(REnumType t1, REnumType t2) {
 	if (result === null) {
 		return ANY
 	}
-	return new REnumType(result, result.symbolId)
+	return new REnumType(result, modelIdProvider)
 }
 auxiliary join(RNumberType t1, RNumberType t2) {
 	t1.join(t2)
@@ -197,11 +202,12 @@ auxiliary listJoin(RListType t1, RListType t2) {
 	val sup = join(t1.itemType, t2.itemType);
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
-auxiliary allAttributes(Data d) {
-	if (d.superType === null) {
-		return d.attributes;
+auxiliary allAttributes(RDataType t) {
+	val s = t.superType
+	if (s !== null && s instanceof RDataType) {
+		return allAttributes(s as RDataType) + t.^data.attributes
 	} else {
-		return allAttributes(d.superType) + d.attributes;
+		return t.^data.attributes
 	}
 }
 auxiliary allEnumValues(RosettaEnumeration e) {
@@ -211,7 +217,7 @@ auxiliary allEnumValues(RosettaEnumeration e) {
 		return allEnumValues(e.superType) + e.enumValues;
 	}
 }
-auxiliary mayBeEmpty(Data d) {
+auxiliary mayBeEmpty(RDataType d) {
 	d.allAttributes.forall[
 		card.inf === 0
 	]
@@ -256,7 +262,7 @@ auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, R
 auxiliary allFeatures(RType t, ResourceSet resourceSet) {
 	switch t {
 		RDataType:
-			t.^data.allAttributes
+			t.allAttributes
 		REnumType:
 			t.enumeration.allEnumValues
 		RRecordType: {

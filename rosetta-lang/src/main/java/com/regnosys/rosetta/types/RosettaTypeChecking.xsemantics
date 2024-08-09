@@ -516,13 +516,11 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 		}
 	}
 	if (parentType !== null) {
-		val parentData = (parentType.itemType as RDataType).^data
-		if (parentData !== null) {
-			mayBeEmpty(parentData)
-			or
-			fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
-				source parent
-		}
+		val parentData = parentType.itemType as RDataType
+		mayBeEmpty(parentData)
+		or
+		fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
+			source parent
 	}
 }
 checkrule CheckOneOfOperation for OneOfOperation e from {
