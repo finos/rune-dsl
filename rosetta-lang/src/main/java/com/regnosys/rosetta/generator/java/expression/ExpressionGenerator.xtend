@@ -134,6 +134,7 @@ import com.regnosys.rosetta.utils.TranslateUtil
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1189,8 +1190,30 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseToSwitchOperation(SwitchOperation expr, Context context) {
-		//TODO: sort this out
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		val switchArgument = expr.argument
+		val caseStatements = expr.values
+		val defaultExpression = expr.^default === null ? null : expr.^default.expression
+		val switchJavaExpression = createSwitchJavaExpression(switchArgument, caseStatements, defaultExpression)
+		switchJavaExpression
+			.collapseToSingleExpression(context.scope)
+		
+	}
+	
+	private def JavaStatementBuilder createSwitchJavaExpression(RosettaExpression switchArgument, CaseStatement[] caseStatements, RosettaExpression defaultExpression) {
+		val head = caseStatements.head
+		val tail = caseStatements.tail
+		
+		JavaExpression.from('''«switchArgument».equals(«head.condition»)''', JavaPrimitiveType.BOOLEAN)
+			.mapExpression[
+				new JavaIfThenElseBuilder(
+					it,
+					JavaExpression.from('''«head.expression»''', typeProvider.getRType(head.expression).toJavaType),
+					tail.isEmpty ? 
+						JavaExpression.from('''«defaultExpression»''', typeProvider.getRType(defaultExpression).toJavaType)
+					 	: createSwitchJavaExpression(switchArgument, tail, defaultExpression),
+					typeUtil
+				)
+			]		
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {

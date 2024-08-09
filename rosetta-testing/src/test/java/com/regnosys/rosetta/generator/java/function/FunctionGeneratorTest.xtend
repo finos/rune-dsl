@@ -42,6 +42,40 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void switchOperationMatchingOnEnum() {
+		val code = '''			
+			enum SomeEnum:
+				A
+				B
+				C
+				D
+				
+			type SomeType:
+				fieldA string (1..1)
+				
+			
+			func SomeFunc:
+					
+				output:
+					result string (1..1)
+					
+				alias inEnum: SomeEnum -> B
+				
+			
+				set result: inEnum switch 
+					SomeEnum -> A then "aValue",
+					SomeEnum -> B then "bValue",
+					SomeEnum -> C then "cValue",
+					SomeEnum -> D then "dValue"
+		'''.generateCode
+		
+		 val classes = code.compileToClasses
+		 
+         val someFunc = classes.createFunc("SomeFunc")
+		 assertEquals("bValue", someFunc.invokeFunc(String))
+	}
+	
+	@Test
 	def void onlyExistsOnAbsentParent() {
 		val code = '''
 		type A:
