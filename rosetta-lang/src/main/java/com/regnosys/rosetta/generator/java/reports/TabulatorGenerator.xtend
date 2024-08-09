@@ -35,6 +35,9 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.config.RosettaConfiguration
+import com.google.inject.ImplementedBy
+import java.util.HashMap
+import java.util.Collections
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -247,22 +250,38 @@ class TabulatorGenerator {
 			val innerTabulatorClass = context.toTabulatorJavaClass(inputType)
 			val innerTabulatorInstance = classScope.createUniqueIdentifier("tabulator")
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-				private final «innerTabulatorClass» «innerTabulatorInstance»;
-				
-				@«Inject»
-				public «tabulatorClass»(«innerTabulatorClass» «innerTabulatorInstance») {
-					this.«innerTabulatorInstance» = «innerTabulatorInstance»;
-				}
-				
-				@Override
-				public «List»<«Field»> getFields() {
-					return «innerTabulatorInstance».getFields();
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return «innerTabulatorInstance».tabulate(«inputParam»);
+			@«ImplementedBy»(«tabulatorClass».Impl.class)
+			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				class Impl implements «tabulatorClass» {
+					private final «Map»<«Object», «Field»> visitedMap;
+					
+					private final «innerTabulatorClass» «innerTabulatorInstance»;
+					
+					@«Inject»
+					public Impl(«innerTabulatorClass» «innerTabulatorInstance») {
+						this.visitedMap = new «HashMap»<>();
+						this.«innerTabulatorInstance» = «innerTabulatorInstance»;
+					}
+					
+					@Override
+					public «List»<«Field»> getFields() {
+						return «innerTabulatorInstance».getFields();
+					}
+					
+					@Override
+					public «Map»<«Object», «Field»> getVisitedMap() {
+						return visitedMap;
+					}
+					
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+						return tabulate(«inputParam», visitedMap);
+					}
+					
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam», «Map»<«Object», «Field»> visited) {
+						return «innerTabulatorInstance».tabulate(«inputParam», visited);
+					}
 				}
 			}
 			'''
@@ -270,15 +289,28 @@ class TabulatorGenerator {
 			// There is no available tabulator for `inputType`,
 			// so we generate a dummy implementation.
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-				@Override
-				public «List»<«Field»> getFields() {
-					return «Arrays».asList();
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return «Arrays».asList();
+			@«ImplementedBy»(«tabulatorClass».Impl.class)
+			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				class Impl implements «tabulatorClass» {
+					@Override
+					public «List»<«Field»> getFields() {
+						return «Arrays».asList();
+					}
+					
+					@Override
+					public «Map»<«Object», «Field»> getVisitedMap() {
+						return «Collections».emptyMap();
+					}
+					
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+						return «Arrays».asList();
+					}
+					
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam», «Map»<«Object», «Field»> visited) {
+						return «Arrays».asList();
+					}
 				}
 			}
 			'''
@@ -295,37 +327,53 @@ class TabulatorGenerator {
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		'''
-		public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-			«FOR attr : inputType.allNonOverridesAttributes»
-				«IF context.isTabulated(attr)»
-					«val fieldId = classScope.getIdentifierOrThrow(attr)»
-					private final «Field» «fieldId»;
-				«ENDIF»
-			«ENDFOR»
-			«IF !nestedTabulatorInstances.empty»
-			
-			«FOR tabInst : nestedTabulatorInstances»
-				private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-			«ENDFOR»
-			«ENDIF»
-			
-			«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
-			public «tabulatorClass»(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
-				«FOR tabInst : nestedTabulatorInstances»
-					this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
+		@«ImplementedBy»(«tabulatorClass».Impl.class)
+		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+			class Impl implements «tabulatorClass» {
+				private final «Map»<«Object», «Field»> visitedMap;
+				
+				«FOR attr : inputType.allNonOverridesAttributes»
+					«IF context.isTabulated(attr)»
+						«val fieldId = classScope.getIdentifierOrThrow(attr)»
+						private final «Field» «fieldId»;
+					«ENDIF»
 				«ENDFOR»
-				«initializeFields(inputType, context, classScope)»
-			}
-			
-			@Override
-			public «List»<«Field»> getFields() {
-				return «Arrays».asList(«FOR field : tabulatedFields SEPARATOR ", "»«classScope.getIdentifierOrThrow(field)»«ENDFOR»);
-			}
-			
-			@Override
-			public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-				«computeFieldValues(inputType, inputParam, context, tabulateScope)»
-				return «fieldValuesAsList(inputType, context, tabulateScope)»;
+				«IF !nestedTabulatorInstances.empty»
+				
+				«FOR tabInst : nestedTabulatorInstances»
+					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+				«ENDFOR»
+				«ENDIF»
+				
+				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
+				public Impl(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
+					this.visitedMap = new «HashMap»<>();
+					«FOR tabInst : nestedTabulatorInstances»
+						this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
+					«ENDFOR»
+					«initializeFields(inputType, context, classScope)»
+				}
+				
+				@Override
+				public «List»<«Field»> getFields() {
+					return «Arrays».asList(«FOR field : tabulatedFields SEPARATOR ", "»«classScope.getIdentifierOrThrow(field)»«ENDFOR»);
+				}
+				
+				@Override
+				public «Map»<«Object», «Field»> getVisitedMap() {
+					return visitedMap;
+				}
+				
+				@Override
+				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+					return tabulate(«inputParam», visitedMap);
+				}
+				
+				@Override
+				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam», «Map»<«Object», «Field»> visited) {
+					«computeFieldValues(inputType, inputParam, context, tabulateScope)»
+					return «fieldValuesAsList(inputType, context, tabulateScope)»;
+				}
 			}
 		}
 		'''
@@ -404,28 +452,43 @@ class TabulatorGenerator {
 			val attrType = rType.data
 			val nestedTabulator = scope.getIdentifierOrThrow(attrType.toNestedTabulatorInstance)
 			'''
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.card.isMany»
 				.map(«lambdaParam» -> «lambdaParam».stream()
-					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))
-					.collect(«Collectors».toList()));
+					.map(«nestedLambdaParam» -> {
+						«Field» reference = visited.putIfAbsent(«nestedLambdaParam», «scope.getIdentifierOrThrow(attr)»);
+						if (reference == null) {
+							return «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF», visited);
+						} else {
+							return «Arrays».asList(new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», reference));
+						}})
+					.collect(«Collectors».toList()))
+				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
+				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				.map(«lambdaParam» -> «nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»));
+				.map(«lambdaParam» -> {
+					«Field» reference = visited.putIfAbsent(«lambdaParam», «scope.getIdentifierOrThrow(attr)»);
+					if (reference == null) {
+						return new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF», visited)));
+					} else {
+						return new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», reference);
+					}})
+				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''
 		} else {
 			val resultType = rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
 			'''
 			«IF attr.metaAnnotations.empty»
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»());
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»()));
 			«ELSEIF attr.card.isMany»
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 					.collect(«Collectors».toList()));
 			«ELSE»
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
-				.map(«lambdaParam» -> «lambdaParam».getValue());
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+				.map(«lambdaParam» -> «lambdaParam».getValue()));
 			«ENDIF»
 			'''
 		}
@@ -435,17 +498,7 @@ class TabulatorGenerator {
 		'''
 		«Arrays».asList(
 			«FOR attr : type.allNonOverridesAttributes.filter[context.isTabulated(it)] SEPARATOR ","»
-			«val attrType = attr.typeCall.type»
-			«val valueClass = if (attrType instanceof Data) {
-				if (attr.card.isMany) {
-					MultiNestedFieldValueImpl
-				} else {
-					NestedFieldValueImpl
-				}
-			} else {
-				FieldValueImpl
-			}»
-			new «valueClass»(«scope.getIdentifierOrThrow(attr)», «scope.getIdentifierOrThrow(attr.toComputedField)»)
+			«scope.getIdentifier(attr.toComputedField)»
 			«ENDFOR»
 		)'''
 	}

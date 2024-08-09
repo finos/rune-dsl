@@ -17,6 +17,7 @@
 package com.rosetta.model.lib.reports;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,9 +27,10 @@ import org.apache.commons.lang3.Validate;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public interface Tabulator<T> {
-
 	List<Field> getFields();
+	Map<Object, Field> getVisitedMap();
 	List<FieldValue> tabulate(T report);
+	List<FieldValue> tabulate(T report, Map<Object, Field> visited);
 	
 	public interface Field {
 		String getName();
@@ -46,6 +48,14 @@ public interface Tabulator<T> {
 		
 		default <C> void accept(FieldValueVisitor<C> visitor, C context) {
 			visitor.visitSingle(this, context);
+		}
+		
+		default boolean isAlreadyReferenced() {
+			return false;
+		}
+		
+		default Field getReferencedField() {
+			return null;
 		}
 	}
 	public interface NestedFieldValue extends FieldValue {
@@ -67,10 +77,8 @@ public interface Tabulator<T> {
 		void visitNested(NestedFieldValue fieldValue, C context);
 		void visitMultiNested(MultiNestedFieldValue fieldValue, C context);
 	}
-	
 	public static class FieldImpl implements Field {
 		private String attributeName;
-
 		private boolean isMulti;
 		private Optional<ModelSymbolId> ruleId;
 		private Optional<String> identifier;
@@ -87,36 +95,29 @@ public interface Tabulator<T> {
 			this.identifier = identifier;
 			this.children = children;
 		}
-		
 		@Override
 		public String getName() {
 			return identifier.orElse(attributeName);
 		}
-
 		@Override
 		public String getAttributeName() {
 			return attributeName;
 		}
-		
 		@Override
 		public boolean isMulti() {
 			return isMulti;
 		}
-		
 		public Optional<ModelSymbolId> getRuleId() {
 			return ruleId;
 		}
-
 		@Override
 		public List<Field> getChildren() {
 			return children;
 		}
-		
 		@Override
 		public int hashCode() {
 			return Objects.hash(attributeName, children, identifier, isMulti, ruleId);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -134,6 +135,8 @@ public interface Tabulator<T> {
 	public static class FieldValueImpl implements FieldValue {
 		private Field field;
 		private Optional<? extends Object> value;
+		private boolean alreadyReferenced;
+		private Field referencedField;
 		
 		public FieldValueImpl(Field field, Optional<? extends Object> value) {
 			Objects.requireNonNull(field);
@@ -141,7 +144,14 @@ public interface Tabulator<T> {
 			this.field = field;
 			this.value = value;
 		}
-		
+		public FieldValueImpl(Field field, Field referencedField) {
+			Objects.requireNonNull(field);
+			Objects.requireNonNull(referencedField);
+			this.field = field;
+			this.value = Optional.empty();
+			this.alreadyReferenced = true;
+			this.referencedField = referencedField;
+		}
 		@Override
 		public Field getField() {
 			return field;
@@ -150,17 +160,22 @@ public interface Tabulator<T> {
 		public Optional<? extends Object> getValue() {
 			return value;
 		}
-		
+		@Override
+		public boolean isAlreadyReferenced() {
+			return alreadyReferenced;
+		}
+		@Override
+		public Field getReferencedField() {
+			return referencedField;
+		}
 		@Override
 		public String toString() {
-			return "<" + field.getName() + ", " + value.map(Object::toString).orElse("<empty>") + ">";
+			return String.format("<%s, %s, alreadyReferenced [%b], referencedField [%s]>", field.getName(), value.map(Object::toString).orElse("<empty>"), alreadyReferenced, referencedField.getName());
 		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, value);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -170,7 +185,9 @@ public interface Tabulator<T> {
 			if (getClass() != obj.getClass())
 				return false;
 			FieldValueImpl other = (FieldValueImpl) obj;
-			return Objects.equals(field, other.field) && Objects.equals(value, other.value);
+			return Objects.equals(field, other.field) && Objects.equals(value, other.value)
+					&& Objects.equals(alreadyReferenced, other.alreadyReferenced)
+					&& Objects.equals(referencedField, other.referencedField);
 		}
 	}
 	public static class NestedFieldValueImpl implements NestedFieldValue {
@@ -186,7 +203,6 @@ public interface Tabulator<T> {
 			this.field = field;
 			this.value = value;
 		}
-		
 		@Override
 		public Field getField() {
 			return field;
@@ -195,7 +211,6 @@ public interface Tabulator<T> {
 		public Optional<? extends List<? extends FieldValue>> getValue() {
 			return value;
 		}
-		
 		@Override
 		public String toString() {
 			String valueRepr = value
@@ -205,12 +220,10 @@ public interface Tabulator<T> {
 					.orElse("<empty>");
 			return "<" + field.getName() + ", " + valueRepr + ">";
 		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, value);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -237,7 +250,6 @@ public interface Tabulator<T> {
 			this.field = field;
 			this.value = value;
 		}
-		
 		@Override
 		public Field getField() {
 			return field;
@@ -246,7 +258,6 @@ public interface Tabulator<T> {
 		public Optional<? extends List<? extends List<? extends FieldValue>>> getValue() {
 			return value;
 		}
-		
 		@Override
 		public String toString() {
 			String valueRepr = value
@@ -258,12 +269,10 @@ public interface Tabulator<T> {
 					.orElse("<empty>");
 			return "<" + field.getName() + ", " + valueRepr + ">";
 		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, value);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
