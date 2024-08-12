@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull
 
 @InjectWith(RosettaCustomConfigInjectorProvider)
 @ExtendWith(InjectionExtension)
-class TabulatorCircularReferenceTest {
+class TabulatorCircularDependencyTest {
 	
 	@Inject extension CodeGeneratorTestHelper
 
