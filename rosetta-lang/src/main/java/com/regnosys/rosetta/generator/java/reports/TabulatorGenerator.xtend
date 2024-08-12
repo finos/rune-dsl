@@ -253,13 +253,10 @@ class TabulatorGenerator {
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
 				class Impl implements «tabulatorClass» {
-					private final «Map»<«Object», «Field»> visitedMap;
-					
 					private final «innerTabulatorClass» «innerTabulatorInstance»;
 					
 					@«Inject»
 					public Impl(«innerTabulatorClass» «innerTabulatorInstance») {
-						this.visitedMap = new «HashMap»<>();
 						this.«innerTabulatorInstance» = «innerTabulatorInstance»;
 					}
 					
@@ -269,18 +266,8 @@ class TabulatorGenerator {
 					}
 					
 					@Override
-					public «Map»<«Object», «Field»> getVisitedMap() {
-						return visitedMap;
-					}
-					
-					@Override
 					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-						return tabulate(«inputParam», visitedMap);
-					}
-					
-					@Override
-					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam», «Map»<«Object», «Field»> visited) {
-						return «innerTabulatorInstance».tabulate(«inputParam», visited);
+						return «innerTabulatorInstance».tabulate(«inputParam»);
 					}
 				}
 			}
@@ -298,17 +285,7 @@ class TabulatorGenerator {
 					}
 					
 					@Override
-					public «Map»<«Object», «Field»> getVisitedMap() {
-						return «Collections».emptyMap();
-					}
-					
-					@Override
 					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-						return «Arrays».asList();
-					}
-					
-					@Override
-					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam», «Map»<«Object», «Field»> visited) {
 						return «Arrays».asList();
 					}
 				}
@@ -330,8 +307,6 @@ class TabulatorGenerator {
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
 			class Impl implements «tabulatorClass» {
-				private final «Map»<«Object», «Field»> visitedMap;
-				
 				«FOR attr : inputType.allNonOverridesAttributes»
 					«IF context.isTabulated(attr)»
 						«val fieldId = classScope.getIdentifierOrThrow(attr)»
@@ -347,7 +322,6 @@ class TabulatorGenerator {
 				
 				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
 				public Impl(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
-					this.visitedMap = new «HashMap»<>();
 					«FOR tabInst : nestedTabulatorInstances»
 						this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
 					«ENDFOR»
@@ -360,17 +334,7 @@ class TabulatorGenerator {
 				}
 				
 				@Override
-				public «Map»<«Object», «Field»> getVisitedMap() {
-					return visitedMap;
-				}
-				
-				@Override
 				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return tabulate(«inputParam», visitedMap);
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam», «Map»<«Object», «Field»> visited) {
 					«computeFieldValues(inputType, inputParam, context, tabulateScope)»
 					return «fieldValuesAsList(inputType, context, tabulateScope)»;
 				}
@@ -455,24 +419,12 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.card.isMany»
 				.map(«lambdaParam» -> «lambdaParam».stream()
-					.map(«nestedLambdaParam» -> {
-						«Field» reference = visited.putIfAbsent(«nestedLambdaParam», «scope.getIdentifierOrThrow(attr)»);
-						if (reference == null) {
-							return «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF», visited);
-						} else {
-							return «Arrays».asList(new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», reference));
-						}})
+					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))
 					.collect(«Collectors».toList()))
 				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
 				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				.map(«lambdaParam» -> {
-					«Field» reference = visited.putIfAbsent(«lambdaParam», «scope.getIdentifierOrThrow(attr)»);
-					if (reference == null) {
-						return new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF», visited)));
-					} else {
-						return new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», reference);
-					}})
+				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))))
 				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''

@@ -90,22 +90,17 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.Field;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.test.model.Report;
-			import java.util.HashMap;
 			import java.util.List;
-			import java.util.Map;
 			import javax.inject.Inject;
 
 			
 			@ImplementedBy(TEST_REGCorpReportTabulator.Impl.class)
 			public interface TEST_REGCorpReportTabulator extends Tabulator<Report> {
 				class Impl implements TEST_REGCorpReportTabulator {
-					private final Map<Object, Field> visitedMap;
-					
 					private final ReportTypeTabulator tabulator;
 					
 					@Inject
 					public Impl(ReportTypeTabulator tabulator) {
-						this.visitedMap = new HashMap<>();
 						this.tabulator = tabulator;
 					}
 					
@@ -115,18 +110,8 @@ class TabulatorTest {
 					}
 					
 					@Override
-					public Map<Object, Field> getVisitedMap() {
-						return visitedMap;
-					}
-					
-					@Override
 					public List<FieldValue> tabulate(Report input) {
-						return tabulate(input, visitedMap);
-					}
-					
-					@Override
-					public List<FieldValue> tabulate(Report input, Map<Object, Field> visited) {
-						return tabulator.tabulate(input, visited);
+						return tabulator.tabulate(input);
 					}
 				}
 			}
@@ -151,9 +136,7 @@ class TabulatorTest {
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
 			import java.util.Arrays;
-			import java.util.HashMap;
 			import java.util.List;
-			import java.util.Map;
 			import java.util.Optional;
 			import javax.inject.Inject;
 
@@ -161,8 +144,6 @@ class TabulatorTest {
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
 				class Impl implements ReportTypeTabulator {
-					private final Map<Object, Field> visitedMap;
-					
 					private final Field basicField;
 					private final Field subreportField;
 					private final Field subreportWithRuleField;
@@ -171,7 +152,6 @@ class TabulatorTest {
 					
 					@Inject
 					public Impl(SubreportTypeTabulator subreportTypeTabulator) {
-						this.visitedMap = new HashMap<>();
 						this.subreportTypeTabulator = subreportTypeTabulator;
 						this.basicField = new FieldImpl(
 							"basic",
@@ -202,35 +182,13 @@ class TabulatorTest {
 					}
 					
 					@Override
-					public Map<Object, Field> getVisitedMap() {
-						return visitedMap;
-					}
-					
-					@Override
 					public List<FieldValue> tabulate(Report input) {
-						return tabulate(input, visitedMap);
-					}
-					
-					@Override
-					public List<FieldValue> tabulate(Report input, Map<Object, Field> visited) {
 						FieldValue basic = new FieldValueImpl(basicField, Optional.ofNullable(input.getBasic()));
 						FieldValue subreport = Optional.ofNullable(input.getSubreport())
-							.map(x -> {
-								Field reference = visited.putIfAbsent(x, subreportField);
-								if (reference == null) {
-									return new NestedFieldValueImpl(subreportField, Optional.of(subreportTypeTabulator.tabulate(x, visited)));
-								} else {
-									return new FieldValueImpl(subreportField, reference);
-								}})
+							.map(x -> new NestedFieldValueImpl(subreportField, Optional.of(subreportTypeTabulator.tabulate(x))))
 							.orElse(new NestedFieldValueImpl(subreportField, Optional.empty()));
 						FieldValue subreportWithRule = Optional.ofNullable(input.getSubreportWithRule())
-							.map(x -> {
-								Field reference = visited.putIfAbsent(x, subreportWithRuleField);
-								if (reference == null) {
-									return new NestedFieldValueImpl(subreportWithRuleField, Optional.of(subreportTypeTabulator.tabulate(x, visited)));
-								} else {
-									return new FieldValueImpl(subreportWithRuleField, reference);
-								}})
+							.map(x -> new NestedFieldValueImpl(subreportWithRuleField, Optional.of(subreportTypeTabulator.tabulate(x))))
 							.orElse(new NestedFieldValueImpl(subreportWithRuleField, Optional.empty()));
 						return Arrays.asList(
 							basic,
@@ -336,9 +294,7 @@ class TabulatorTest {
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
 			import java.util.Arrays;
-			import java.util.HashMap;
 			import java.util.List;
-			import java.util.Map;
 			import java.util.Optional;
 			import java.util.stream.Collectors;
 			import javax.inject.Inject;
@@ -347,8 +303,6 @@ class TabulatorTest {
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
 				class Impl implements ReportTypeTabulator {
-					private final Map<Object, Field> visitedMap;
-					
 					private final Field basicListField;
 					private final Field subreportListField;
 					
@@ -356,7 +310,6 @@ class TabulatorTest {
 					
 					@Inject
 					public Impl(SubreportTypeTabulator subreportTypeTabulator) {
-						this.visitedMap = new HashMap<>();
 						this.subreportTypeTabulator = subreportTypeTabulator;
 						this.basicListField = new FieldImpl(
 							"basicList",
@@ -380,27 +333,11 @@ class TabulatorTest {
 					}
 					
 					@Override
-					public Map<Object, Field> getVisitedMap() {
-						return visitedMap;
-					}
-					
-					@Override
 					public List<FieldValue> tabulate(Report input) {
-						return tabulate(input, visitedMap);
-					}
-					
-					@Override
-					public List<FieldValue> tabulate(Report input, Map<Object, Field> visited) {
 						FieldValue basicList = new FieldValueImpl(basicListField, Optional.ofNullable(input.getBasicList()));
 						FieldValue subreportList = Optional.ofNullable(input.getSubreportList())
 							.map(x -> x.stream()
-								.map(_x -> {
-									Field reference = visited.putIfAbsent(_x, subreportListField);
-									if (reference == null) {
-										return subreportTypeTabulator.tabulate(_x, visited);
-									} else {
-										return Arrays.asList(new FieldValueImpl(subreportListField, reference));
-									}})
+								.map(_x -> subreportTypeTabulator.tabulate(_x))
 								.collect(Collectors.toList()))
 							.map(fieldValues -> new MultiNestedFieldValueImpl(subreportListField, Optional.of(fieldValues)))
 							.orElse(new MultiNestedFieldValueImpl(subreportListField, Optional.empty()));
@@ -583,23 +520,18 @@ class TabulatorTest {
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
 			import java.util.Arrays;
-			import java.util.HashMap;
 			import java.util.List;
-			import java.util.Map;
 			import java.util.Optional;
 
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
 				class Impl implements ReportTypeTabulator {
-					private final Map<Object, Field> visitedMap;
-					
 					private final Field basic1Field;
 					private final Field basic2Field;
 					private final Field basic3Field;
 					
 					public Impl() {
-						this.visitedMap = new HashMap<>();
 						this.basic1Field = new FieldImpl(
 							"basic1",
 							false,
@@ -629,17 +561,7 @@ class TabulatorTest {
 					}
 					
 					@Override
-					public Map<Object, Field> getVisitedMap() {
-						return visitedMap;
-					}
-					
-					@Override
 					public List<FieldValue> tabulate(Report input) {
-						return tabulate(input, visitedMap);
-					}
-					
-					@Override
-					public List<FieldValue> tabulate(Report input, Map<Object, Field> visited) {
 						FieldValue basic1 = new FieldValueImpl(basic1Field, Optional.ofNullable(input.getBasic1()));
 						FieldValue basic2 = new FieldValueImpl(basic2Field, Optional.ofNullable(input.getBasic2()));
 						FieldValue basic3 = new FieldValueImpl(basic3Field, Optional.ofNullable(input.getBasic3()));

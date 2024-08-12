@@ -28,9 +28,7 @@ import com.rosetta.model.lib.ModelSymbolId;
 
 public interface Tabulator<T> {
 	List<Field> getFields();
-	Map<Object, Field> getVisitedMap();
 	List<FieldValue> tabulate(T report);
-	List<FieldValue> tabulate(T report, Map<Object, Field> visited);
 	
 	public interface Field {
 		String getName();
@@ -135,22 +133,12 @@ public interface Tabulator<T> {
 	public static class FieldValueImpl implements FieldValue {
 		private Field field;
 		private Optional<? extends Object> value;
-		private boolean alreadyReferenced;
-		private Field referencedField;
 		
 		public FieldValueImpl(Field field, Optional<? extends Object> value) {
 			Objects.requireNonNull(field);
 			Objects.requireNonNull(value);
 			this.field = field;
 			this.value = value;
-		}
-		public FieldValueImpl(Field field, Field referencedField) {
-			Objects.requireNonNull(field);
-			Objects.requireNonNull(referencedField);
-			this.field = field;
-			this.value = Optional.empty();
-			this.alreadyReferenced = true;
-			this.referencedField = referencedField;
 		}
 		@Override
 		public Field getField() {
@@ -161,16 +149,8 @@ public interface Tabulator<T> {
 			return value;
 		}
 		@Override
-		public boolean isAlreadyReferenced() {
-			return alreadyReferenced;
-		}
-		@Override
-		public Field getReferencedField() {
-			return referencedField;
-		}
-		@Override
 		public String toString() {
-			return String.format("<%s, %s, alreadyReferenced [%b], referencedField [%s]>", field.getName(), value.map(Object::toString).orElse("<empty>"), alreadyReferenced, referencedField.getName());
+			return String.format("<%s, %s, alreadyReferenced [%b], referencedField [%s]>", field.getName(), value.map(Object::toString).orElse("<empty>"));
 		}
 		@Override
 		public int hashCode() {
@@ -185,9 +165,7 @@ public interface Tabulator<T> {
 			if (getClass() != obj.getClass())
 				return false;
 			FieldValueImpl other = (FieldValueImpl) obj;
-			return Objects.equals(field, other.field) && Objects.equals(value, other.value)
-					&& Objects.equals(alreadyReferenced, other.alreadyReferenced)
-					&& Objects.equals(referencedField, other.referencedField);
+			return Objects.equals(field, other.field) && Objects.equals(value, other.value);
 		}
 	}
 	public static class NestedFieldValueImpl implements NestedFieldValue {
