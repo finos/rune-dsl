@@ -1194,39 +1194,47 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val caseStatements = expr.values
 		val defaultExpression = expr.^default?.expression
 		
-		//join all caseStatement expression types and default and pass down as returnType
+		val conditionType = MAPPER.wrap(join(caseStatements.map[typeProvider.getRType(it.condition)])
+								.join(typeProvider.getRType(expr.argument)).toJavaReferenceType)
 		
-		//join argument and caseConditions and pass down as conditionType
+		val returnType = MAPPER.wrap(join(
+				caseStatements.map[typeProvider.getRType(it.expression)] + (defaultExpression === null
+					? #[]
+					: #[
+					typeProvider.getRType(defaultExpression)
+				]
+			)
+		).toJavaReferenceType)		
 		
 		switchArgument
 			.declareAsVariable(true, "switchAgument", context.scope)
 			.mapExpression[
-				createSwitchJavaExpression(it, caseStatements, defaultExpression, context.scope)
+				createSwitchJavaExpression(conditionType, returnType, it, caseStatements, defaultExpression, context.scope)
 			]
 	}
 	
-	private def JavaStatementBuilder createSwitchJavaExpression(JavaExpression switchArgument,
+	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
 		CaseStatement[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
 		val head = caseStatements.head
 		val tail = caseStatements.tail
 
-		head.condition.javaCode(switchArgument.expressionType, javaScope).collapseToSingleExpression(javaScope).
+		head.condition.javaCode(conditionType, javaScope).collapseToSingleExpression(javaScope).
 			mapExpression [
 				JavaExpression.
 					from('''«runtimeMethod('areEqual')»(«switchArgument», «it», «toCardinalityOperator(CardinalityModifier.ALL, null)»)''',
 						COMPARISON_RESULT)
 			]
 			.mapExpression[
-				typeCoercionService.addCoercions(it, BOOLEAN, javaScope)
+				typeCoercionService.addCoercions(it, JavaPrimitiveType.BOOLEAN, javaScope)
 			]
 			.mapExpression [
 				new JavaIfThenElseBuilder(
 					it,
-					head.expression.javaCode(typeProvider.getRType(head.expression).toJavaReferenceType, javaScope),
+					head.expression.javaCode(returnType, javaScope),
 					tail.isEmpty
 						? (defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(
-						typeProvider.getRType(defaultExpression).toJavaReferenceType, javaScope))
-						: createSwitchJavaExpression(switchArgument, tail, defaultExpression, javaScope),
+						returnType, javaScope))
+						: createSwitchJavaExpression(conditionType, returnType, switchArgument, tail, defaultExpression, javaScope),
 					typeUtil
 				)
 			]
