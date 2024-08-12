@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedHashMultimap
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaDocReference
@@ -20,6 +21,9 @@ import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
 import com.regnosys.rosetta.rosetta.RosettaSynonymValueBase
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -27,8 +31,11 @@ import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.FilterOperation
 import com.regnosys.rosetta.rosetta.expression.FlattenOperation
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
@@ -38,21 +45,29 @@ import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.MandatoryFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ReduceOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -62,10 +77,18 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.services.RosettaGrammarAccess
+import com.regnosys.rosetta.types.CardinalityProvider
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.TypeValidationUtil
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil.CollectRuleVisitor
@@ -74,15 +97,18 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.time.format.DateTimeFormatter
 import java.util.List
 import java.util.Map
+import java.util.Optional
 import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
+import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
+import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
@@ -93,35 +119,8 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
-import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import org.eclipse.xtext.nodemodel.INode
-import com.regnosys.rosetta.rosetta.expression.RosettaOperation
-import com.regnosys.rosetta.types.CardinalityProvider
-import com.regnosys.rosetta.rosetta.expression.ParseOperation
-import com.regnosys.rosetta.rosetta.expression.ToStringOperation
-import com.regnosys.rosetta.types.builtin.RBasicType
-import com.regnosys.rosetta.types.REnumType
-import java.util.Optional
-import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
-import com.regnosys.rosetta.types.builtin.RRecordType
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
-import com.regnosys.rosetta.rosetta.RosettaRule
-import com.regnosys.rosetta.rosetta.RosettaReport
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption
-import com.regnosys.rosetta.rosetta.expression.DefaultOperation
-import com.regnosys.rosetta.rosetta.expression.SwitchOperation
-import com.regnosys.rosetta.rosetta.expression.CaseStatement
-import com.regnosys.rosetta.types.TypeValidationUtil
+import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -146,9 +145,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
+		val argumentRType = op.argument.RType
 		for (CaseStatement caseStatement : op.values) {
-			if (caseStatement.condition.RType != op.argument.RType) {
-				error('''Mismatched condition type: «op.argument.RType.notASubtypeMessage(caseStatement.condition.RType)»''', caseStatement.condition, null)
+			if (!caseStatement.condition.RType.isSubtypeOf(argumentRType)) {
+				error('''Mismatched condition type: «argumentRType.notASubtypeMessage(caseStatement.condition.RType)»''', caseStatement.condition, null)
 			}
 		}
 	}

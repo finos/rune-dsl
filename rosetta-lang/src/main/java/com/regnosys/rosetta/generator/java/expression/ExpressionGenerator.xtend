@@ -1192,7 +1192,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseToSwitchOperation(SwitchOperation expr, Context context) {
 		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRType(expr.argument).toJavaReferenceType), context.scope)
 		val caseStatements = expr.values
-		val defaultExpression = expr.^default?.expression
+		val defaultExpression = expr.^default
 		
 		val conditionType = MAPPER.wrap(join(caseStatements.map[typeProvider.getRType(it.condition)])
 								.join(typeProvider.getRType(expr.argument)).toJavaReferenceType)

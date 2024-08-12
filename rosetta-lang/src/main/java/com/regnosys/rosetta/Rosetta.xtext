@@ -298,8 +298,8 @@ CaseStatement:
 	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
 ;
 
-CaseDefaultStatement returns CaseStatement:
-	'default' expression=RosettaCalcExpression
+CaseDefaultStatement returns RosettaExpression:
+	'default' RosettaCalcExpression
 ;
 
 
