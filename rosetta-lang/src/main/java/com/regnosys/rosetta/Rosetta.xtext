@@ -68,10 +68,10 @@ AnnotationQualifier:
 ;
 
 Data:
-	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' RosettaDefinable?
-	(References|Annotations|ClassSynonyms)*
-	attributes += Attribute*
-	conditions += Condition*
+	'type' RosettaNamed ('extends' superType=TypeCall)? ':' RosettaDefinable?
+	(References|Annotations|ClassSynonyms|referenceKeyAnnotation=ReferenceKeyAnnotation)*
+	attributes+=Attribute*
+	conditions+=Condition*
 ;
 
 Choice:
@@ -85,6 +85,10 @@ ChoiceOption:
 	RosettaTyped RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
+;
+
+ReferenceKeyAnnotation:
+	'[' 'reference-key' expression=RosettaCalcExpression ']'
 ;
 
 Attribute:
@@ -676,6 +680,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({AsReferenceOperation.argument=current} operator='as-reference')
 			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
@@ -714,6 +719,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
+			|({AsReferenceOperation} operator='as-reference')
 			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| (
@@ -752,6 +758,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({AsReferenceOperation.argument=current} operator='as-reference')
 			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)			
 		)
 		| =>(

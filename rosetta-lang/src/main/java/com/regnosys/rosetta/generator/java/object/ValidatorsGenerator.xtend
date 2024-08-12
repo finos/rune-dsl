@@ -60,17 +60,17 @@ class ValidatorsGenerator {
 
 	private def generateClass(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, t.classBody(version, t.data.allNonOverridesAttributes), scope)
+		buildClass(root.typeValidation, t.classBody(version, t.allNonOverridesAttributes), scope)
 	}
 	
 	private def generateTypeFormatValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.data.allNonOverridesAttributes), scope)
+		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.allNonOverridesAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.data.allNonOverridesAttributes), scope)
+		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.allNonOverridesAttributes), scope)
 	}
 
 	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''

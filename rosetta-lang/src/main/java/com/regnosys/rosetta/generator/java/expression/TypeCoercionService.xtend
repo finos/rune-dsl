@@ -20,6 +20,11 @@ import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import java.util.ArrayList
 import com.rosetta.util.types.JavaReferenceType
+import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RAliasType
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -53,34 +58,24 @@ import com.rosetta.util.types.JavaReferenceType
  */
 class TypeCoercionService {
 	@Inject extension JavaTypeUtil typeUtil
+	@Inject JavaTypeTranslator translator
 	
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
-		val actual = expr.expressionType
-		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
-			return expected.empty
-		}
-		if (actual == expected) {
-			return expr
-		}
-		if (actual == JavaPrimitiveType.VOID) {
-			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
+		val simpleCoercion = coerceSimple(expr, expected)
+		if (simpleCoercion !== null) {
+			return simpleCoercion
 		}
 		
 		expr.mapExpression[addCoercions(expected, scope)]
 	}
 	
 	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaScope scope) {
-		val actual = expr.expressionType
-		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
-			return expected.empty
-		}
-		if (actual == expected) {
-			return expr
-		}
-		if (actual == JavaPrimitiveType.VOID) {
-			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
+		val simpleCoercion = coerceSimple(expr, expected)
+		if (simpleCoercion !== null) {
+			return simpleCoercion
 		}
 		
+		val actual = expr.expressionType
 		if (actual.isWrapper && expected.isWrapper) {
 			wrapperToWrapper(expr, expected, scope)
 		} else if (actual.isWrapper) {
@@ -90,6 +85,19 @@ class TypeCoercionService {
 		} else {
 			itemToItem(expr, expected, scope)
 		}
+	}
+	private def JavaStatementBuilder coerceSimple(JavaStatementBuilder expr, JavaType expected) {
+		val actual = expr.expressionType
+		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
+			return expected.empty
+		}
+		if (actual == expected) {
+			return expr
+		}
+		if (actual == JavaPrimitiveType.VOID) {
+			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
+		}
+		return null
 	}
 	
 	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, JavaScope scope) {
@@ -206,7 +214,21 @@ class TypeCoercionService {
 		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
-		}		
+		} else if (actual instanceof RJavaPojoInterface) {
+			// TODO: refactor so we don't need all of this RType crap in this layer
+			var RType t = actual.RType
+			while (t !== null && (t instanceof RDataType || t instanceof RAliasType)) {
+				if (t instanceof RDataType) {
+					t = t.superType
+				} else if (t instanceof RAliasType) {
+					t = t.refersTo
+				}
+			}
+			val valueType = translator.toJavaReferenceType(t)
+			return Optional.of(getItemConversion(valueType, expected).map[valueToExpectedConversion|
+				[valueToExpectedConversion.apply(getValueConversionExpression(it, valueType))]
+			].orElseGet[[getValueConversionExpression(it, valueType)]])
+		}
 		
 		return Optional.empty
 	}
@@ -351,6 +373,9 @@ class TypeCoercionService {
 		}
 	}
 	
+	private def JavaExpression getValueConversionExpression(JavaExpression expression, JavaType valueType) {
+		JavaExpression.from('''«expression».getValue()''', valueType)
+	}
 	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType expected) {
 		val actual = expression.expressionType
 		if (actual.toReferenceType.isInteger) {

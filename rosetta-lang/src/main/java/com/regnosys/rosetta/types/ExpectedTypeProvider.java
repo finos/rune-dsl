@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
+import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation;
 import com.regnosys.rosetta.rosetta.expression.CaseStatement;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation;
@@ -621,6 +622,14 @@ public interface ExpectedTypeProvider {
 					return getExpectedTypeFromContainer(expr);
 				} else if (SWITCH_OPERATION__DEFAULT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
+				}
+				return null;
+			}
+
+			@Override
+			protected RType caseAsReferenceOperation(AsReferenceOperation expr, Context context) {
+				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
+					return builtins.UNCONSTRAINED_STRING;
 				}
 				return null;
 			}

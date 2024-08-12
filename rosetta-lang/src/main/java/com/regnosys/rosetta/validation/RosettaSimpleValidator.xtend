@@ -318,20 +318,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkRuleSource(RosettaReport report) {
 		val visitor = new CollectRuleErrorVisitor
 
-		report.reportType.collectRuleErrors(Optional.ofNullable(report.ruleSource), visitor)
+		report.reportType.dataToType.collectRuleErrors(Optional.ofNullable(report.ruleSource), visitor)
 
 		visitor.errorMap.entrySet.forEach [
 			error(value, key, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
 		]
 	}
 
-	private def void collectRuleErrors(Data type, Optional<RosettaExternalRuleSource> source, CollectRuleErrorVisitor visitor) {
+	private def void collectRuleErrors(RDataType type, Optional<RosettaExternalRuleSource> source, CollectRuleErrorVisitor visitor) {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
 
 		type.allAttributes.forEach[attr |
-			val attrType = attr.typeCall.type
+			val attrType = attr.RTypeOfSymbol
 
-			if (attrType instanceof Data) {
+			if (attrType instanceof RDataType) {
 				if (!visitor.collectedTypes.contains(attrType)) {
 					visitor.collectedTypes.add(attrType)
 					attrType.collectRuleErrors(source, visitor)
@@ -344,7 +344,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 		final Map<RosettaFeature, RosettaRuleReference> ruleMap = newHashMap;
 		final Map<RosettaExternalRegularAttribute, String> errorMap = newHashMap;
-		final Set<Data> collectedTypes = newHashSet;
+		final Set<RDataType> collectedTypes = newHashSet;
 
 		override void add(RosettaFeature attr, RosettaRuleReference rule) {
 			ruleMap.put(attr, rule);
@@ -505,7 +505,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkAttributes(Data clazz) {
 		val name2attr = HashMultimap.create
-		clazz.allAttributes.forEach [
+		clazz.dataToType.allAttributes.forEach [
 			name2attr.put(name, it)
 		]
 		for (name : clazz.attributes.map[name]) {
@@ -540,8 +540,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		Iterable<Attribute> attrFromClazzes, Iterable<Attribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.filter[override].forEach [ childAttr |
 			attrFromSuperClasses.forEach [ parentAttr |
-				if ((childAttr.typeCall.type instanceof Data && !(childAttr.typeCall.type as Data).isChildOf(parentAttr.typeCall.type)) ||
-					!(childAttr.typeCall.type instanceof Data && childAttr.typeCall.type !== parentAttr.typeCall.type )) {
+				val childAttrType = childAttr.RTypeOfSymbol
+				val parentAttrType = parentAttr.RTypeOfSymbol
+				if ((childAttrType instanceof RDataType && !childAttrType.isSubtypeOf(parentAttrType)) ||
+					!(childAttrType instanceof RDataType && childAttrType != parentAttrType )) {
 					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.typeCall.type.name»''',
 						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
 				}
@@ -563,10 +565,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	protected def cardinality(Attribute attr) '''«attr.card.inf»..«IF attr.card.isMany»*«ELSE»«attr.card.sup»«ENDIF»'''
-
-	private def isChildOf(Data child, RosettaType parent) {
-		return child.allSuperTypes.contains(parent)
-	}
 
 	@Check
 	def checkEnumValuesAreUnique(RosettaEnumeration enumeration) {
@@ -946,8 +944,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkAttribute(Attribute ele) {
-		if (ele.typeCall.type instanceof Data && ele.typeCall?.type.isResolved) {
-			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(ele.typeCall.type as Annotated) || (ele.typeCall.type as Data).allSuperTypes.exists[hasKeyedAnnotation])) {
+		val eleType = ele.RTypeOfSymbol
+		if (eleType instanceof RDataType) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.data) || eleType.allSuperDataTypes.exists[data.hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
 				warning('''«ele.typeCall.type.name» must be annotated with [metadata key] as reference annotation is used''',
 					ROSETTA_TYPED__TYPE_CALL)
@@ -1234,15 +1233,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 		val func = ele as Function
 		
-		val annotationType = annotations.head.attribute.typeCall.type
-		val funcOutputType = func.output.typeCall.type
+		val annotationType = annotations.head.attribute.RTypeOfSymbol
+		val funcOutputType = func.RTypeOfSymbol
 		
-		if (annotationType instanceof Data && funcOutputType instanceof Data) {
-			val annotationDataType = annotationType as Data
-			val funcOutputDataType = funcOutputType as Data
+		if (annotationType instanceof RDataType && funcOutputType instanceof RDataType) {
+			val annotationDataType = annotationType as RDataType
+			val funcOutputDataType = funcOutputType as RDataType
 			
-			val funcOutputSuperTypes = funcOutputDataType.superType.allSuperTypes.toSet
-			val annotationAttributeTypes = annotationDataType.attributes.map[typeCall.type].toList
+			val funcOutputSuperTypes = funcOutputDataType.allSuperDataTypes.toSet
+			val annotationAttributeTypes = annotationDataType.data.attributes.map[RTypeOfSymbol].toList
 			
 			if (annotationDataType != funcOutputDataType
 				&& !funcOutputSuperTypes.contains(annotationDataType) // annotation type is a super type of output type

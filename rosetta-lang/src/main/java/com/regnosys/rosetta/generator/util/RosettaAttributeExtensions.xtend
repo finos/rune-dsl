@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaSynonymBase
@@ -29,6 +28,11 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import org.eclipse.xtext.util.SimpleCache
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.RAliasType
+import com.regnosys.rosetta.types.REnumType
+import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 class RosettaAttributeExtensions {
 
@@ -43,14 +47,18 @@ class RosettaAttributeExtensions {
 	/**
 	 * Note that these methods will add a "meta" attribute if the data type has annotations
 	 */
-	static def List<ExpandedAttribute> getExpandedAttributes(Data data) {
-		(data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
+	static def List<ExpandedAttribute> getExpandedAttributes(RDataType data) {
+		(data.valueAttribute + data.data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
 	}
 	
-	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
+	static def List<ExpandedAttribute> expandedAttributesPlus(RDataType data) {
 		val atts = data.expandedAttributes;
-		if (data.hasSuperType) {
-			val attsWithSuper = data.superType.expandedAttributesPlus
+		var s = data.superType
+		while (s !== null && s instanceof RAliasType) {
+			s = (s as RAliasType).refersTo
+		}
+		if (s !== null && s instanceof RDataType) {
+			val attsWithSuper = (s as RDataType).expandedAttributesPlus
 			val result = newArrayList
 			attsWithSuper.forEach[
 				val overridenAtt = atts.findFirst[att| att.name == name]
@@ -66,14 +74,14 @@ class RosettaAttributeExtensions {
 		return atts
 	}
 	
-	private static def List<ExpandedAttribute> additionalAttributes(Data data) {
+	private static def List<ExpandedAttribute> additionalAttributes(RDataType data) {
 		val res = newArrayList
 		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
-		if(rosExt.hasKeyedAnnotation(data)){
+		if(rosExt.hasKeyedAnnotation(data.data)){
 			res.add(new ExpandedAttribute(
 				'meta',
 				data.name,
-				provideMetaFieldsType(data),
+				provideMetaFieldsType(data.data),
 				null,
 				false,
 				0,
@@ -89,15 +97,39 @@ class RosettaAttributeExtensions {
 		return res
 	}
 	
+	private static def List<ExpandedAttribute> valueAttribute(RDataType data) {
+		val res = newArrayList
+		var s = data.superType
+		while (s !== null && s instanceof RAliasType) {
+			s = (s as RAliasType).refersTo
+		}
+		if (s !== null && !(s instanceof RDataType)) {
+			res.add(new ExpandedAttribute(
+				"value",
+				data.name,
+				new ExpandedType(s.namespace, s.name, false, s instanceof REnumType, false),
+				data.data.superType,
+				false,
+				1,
+				1,
+				false,
+				emptyList,
+				null,
+				emptyList,
+				s instanceof REnumType,
+				emptyList
+			))
+		}
+		return res
+	}
+	
 	public static val METAFIELDS_CLASS_NAME = 'MetaFields'
 	public static val META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
 	
 	static SimpleCache<Data, ExpandedType> metaFieldsCache = new SimpleCache[Data data|
-		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
-		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
 		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
 		val name = if (rosExt.hasTemplateAnnotation(data)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
-		return new ExpandedType(rosModel, name, true, false, false)
+		return new ExpandedType(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), name, true, false, false)
 	]
 	private static def ExpandedType provideMetaFieldsType(Data data) {
 		metaFieldsCache.get(data)
@@ -184,7 +216,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	static def ExpandedType toExpandedType(RosettaType type) {
-		return new ExpandedType(type.namespace, type.name,type instanceof Data, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
+		return new ExpandedType(type.namespace !== null ? new ModelIdProvider().toDottedPath(type.namespace), type.name,type instanceof Data, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
 	}
 	
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {

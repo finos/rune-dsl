@@ -24,10 +24,8 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
-import com.regnosys.rosetta.generator.java.statement.JavaBlock;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
-import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.rosetta.util.types.JavaType;
 
 /**
@@ -45,7 +43,7 @@ import com.rosetta.util.types.JavaType;
  * Say we want to build the following block:
  * ```
  * {
- *     int x = 42;
+ *     final int x = 42;
  *     return x;
  * }
  * ```

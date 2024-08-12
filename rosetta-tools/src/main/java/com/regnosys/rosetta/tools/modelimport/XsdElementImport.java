@@ -13,6 +13,8 @@ import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -117,8 +119,10 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			if (data.equals(dataType)) {
 				// In case the element and type name overlap, we only generate the element.
 				// Completed by `XsdTypeImport`
-			} else {				
-				data.setSuperType(dataType);
+			} else {
+				TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
+				typeCall.setType(data);
+				data.setSuperType(typeCall);
 			}
 		} else {
 			// If the type of this element is not complex, add the type to the dedicated `value` attribute.

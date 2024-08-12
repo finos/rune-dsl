@@ -48,7 +48,6 @@ import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RNumberType
 import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
@@ -68,6 +67,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -77,6 +77,7 @@ inject extension RBuiltinTypeService builtinTypes
 inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
@@ -97,17 +98,15 @@ judgments {
 	inferType |- RosettaExpression expression : output RListType cached
 		error "Cannot type " + stringRep(expression) + "."
 		source expression
-	subtype |- RType subtype <: RType supertype
-		error subtype + " is not a subtype of " + supertype
 	listSubtype |- RListType subtype <| RListType supertype
 		error subtype + " is not a list subtype of " + supertype
 }
 
 /****** AUXILIARY DEFINITIONS *******/
 auxiliary comparable(RType t1, RType t2) {
-	empty |- t1 <: t2
+	typeSystem.isSubtypeOf(t1, t2)
 	or
-	empty |- t2 <: t1
+	typeSystem.isSubtypeOf(t2, t1)
 	or
 	return false
 }
@@ -127,7 +126,7 @@ auxiliary symbolListType(ClosureParameter c) {
 }
 
 auxiliary symbolListType(RosettaEnumeration c) {
-	return createListType(new REnumType(c, c.symbolId), single)
+	return createListType(new REnumType(c, modelIdProvider), single)
 }
 
 auxiliary symbolListType(ShortcutDeclaration c) {
@@ -165,7 +164,7 @@ auxiliary typeOfImplicitVariable(EObject c) {
 	val definingContainer = c.findObjectDefiningImplicitVariable
 	definingContainer.map [
 		if (it instanceof Data) {
-			createListType(new RDataType(it, symbolId), single)
+			createListType(new RDataType(it, typeSystem, modelIdProvider), single)
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
@@ -219,12 +218,12 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
-		Data: new RDataType(t, t.symbolId)
+		Data: new RDataType(t, typeSystem, modelIdProvider)
 		RosettaBuiltinType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			builtinTypes.getType(t.name, argMap).orElse(null)
 		}
-		RosettaEnumeration: new REnumType(t, t.symbolId)
+		RosettaEnumeration: new REnumType(t, modelIdProvider)
 		RosettaMetaType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			val builtinResult = builtinTypes.getType(t.name, argMap)
@@ -255,95 +254,11 @@ auxiliary attributeListType(Attribute a) {
 	return createListType(typeCallToRType(a.typeCall, new RosettaInterpreterContext), a.card)
 }
 
-/*** SUBTYPING **/
-rule SData // SA-Refl, SA-Ancestor
-	G |- RDataType t1 <: RDataType t2
-from {
-	{
-		t1 == t2
-	} or
-	{
-		ancestors(t1.^data).contains(t2.^data)
-	}
-}
-
-rule SNumber
-	G |- RNumberType t1 <: RNumberType t2
-from {
-	true
-}
-rule SString
-	G |- RStringType t1 <: RStringType t2
-from {
-	true
-}
-rule SBasic // SA-Refl, SA-Nothing
-	G |- RBasicType t1 <: RBasicType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t1 == NOTHING
-	} or {
-		t2 == ANY
-	}
-}
-rule SNothing // SA-Refl, SA-Nothing
-	G |- RBasicType t1 <: RType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t1 == NOTHING
-	}
-}
-rule SAny // SA-Refl, SA-Nothing
-	G |- RType t1 <: RBasicType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t2 == ANY
-	}
-}
-
-rule SAliasBoth
-	G |- RAliasType t1 <: RAliasType t2
-from {
-	G |- t1.refersTo <: t2.refersTo
-}
-rule SAliasLeft
-	G |- RAliasType t1 <: RType t2
-from {
-	G |- t1.refersTo <: t2
-}
-rule SAliasRight
-	G |- RType t1 <: RAliasType t2
-from {
-	G |- t1 <: t2.refersTo
-}
-rule SAliasBasic
-	G |- RAliasType t1 <: RBasicType t2
-from {
-	G |- t1.refersTo <: t2
-}
-rule SBasicAlias
-	G |- RBasicType t1 <: RAliasType t2
-from {
-	G |- t1 <: t2.refersTo
-}
-
-rule SRefl
-	G |- RType t1 <: RType t2
-from {
-	t1 == t2
-}
-
 /*** LIST SUBTYPING ***/
 rule SList // SA-List
 	G |- RListType s <| RListType t
 from {
-	G |- s.itemType <: t.itemType
+	typeSystem.isSubtypeOf(s.itemType, t.itemType)
 	s.constraint.isSubconstraintOf(t.constraint)
 }
 
@@ -388,16 +303,16 @@ from {
 		val item1 = t1.itemType
 		val item2 = t2.itemType
 		if (op.operator == '+') {
-			if ({G |- item1 <: DATE}) {
+			if (typeSystem.isSubtypeOf(item1, DATE)) {
 				lt = singleDateTime
-			} else if ({G |- item1 <: UNCONSTRAINED_STRING} && {G |- item2 <: UNCONSTRAINED_STRING}) {
+			} else if (typeSystem.isSubtypeOf(item1, UNCONSTRAINED_STRING) && typeSystem.isSubtypeOf(item2, UNCONSTRAINED_STRING)) {
 				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
 					val s1 = l as RStringType
 					val s2 = r as RStringType
 					val newInterval = s1.interval.add(s2.interval)
 					constrainedString(newInterval, Optional.^empty())
 				]), single)
-			} else if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+			} else if (typeSystem.isSubtypeOf(item1, UNCONSTRAINED_NUMBER) && typeSystem.isSubtypeOf(item2, UNCONSTRAINED_NUMBER)) {
 				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
 					val n1 = l as RNumberType
 					val n2 = r as RNumberType
@@ -407,9 +322,9 @@ from {
 				]), single)
 			}
 		} else if (op.operator == '-') {
-			if ({G |- item1 <: DATE} || {G |- item2 <: DATE}) {
+			if (typeSystem.isSubtypeOf(item1, DATE) || typeSystem.isSubtypeOf(item2, DATE)) {
 				lt = singleUnconstrainedInt
-			} else if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+			} else if (typeSystem.isSubtypeOf(item1, UNCONSTRAINED_NUMBER) && typeSystem.isSubtypeOf(item2, UNCONSTRAINED_NUMBER)) {
 				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
 					val n1 = l as RNumberType
 					val n2 = r as RNumberType
@@ -419,7 +334,7 @@ from {
 				]), single)
 			}
 		} else if (op.operator == '*') {
-			if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+			if (typeSystem.isSubtypeOf(item1, UNCONSTRAINED_NUMBER) && typeSystem.isSubtypeOf(item2, UNCONSTRAINED_NUMBER)) {
 				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
 					val n1 = l as RNumberType
 					val n2 = r as RNumberType
@@ -429,7 +344,7 @@ from {
 				]), single)
 			}
 		} else if (op.operator == '/') {
-			if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
+			if (typeSystem.isSubtypeOf(item1, UNCONSTRAINED_NUMBER) && typeSystem.isSubtypeOf(item2, UNCONSTRAINED_NUMBER)) {
 				lt = singleUnconstrainedNumber
 			}
 		}
@@ -473,8 +388,8 @@ from {
 			if (acc === null) {
 				null
 			} else {
-				val sup = join(telem.itemType, acc.itemType);
-				if ({G |- ANY <: sup}) {
+				val sup = typeSystem.join(telem.itemType, acc.itemType);
+				if (typeSystem.isSubtypeOf(ANY, sup)) {
 					null
 				} else {
 					createListType(sup, telem.constraint + acc.constraint)
