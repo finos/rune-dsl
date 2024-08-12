@@ -41,7 +41,6 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled
 	@Test
 	def void switchOperationMatchingOnEnum() {
 		val code = '''			
@@ -69,6 +68,8 @@ class FunctionGeneratorTest {
 					SomeEnum -> C then "cValue",
 					SomeEnum -> D then "dValue"
 		'''.generateCode
+		
+		code.writeClasses('testSwitchOperation')
 		
 		 val classes = code.compileToClasses
 		 

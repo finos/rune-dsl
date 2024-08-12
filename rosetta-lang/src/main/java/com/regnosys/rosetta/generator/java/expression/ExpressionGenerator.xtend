@@ -1190,30 +1190,46 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseToSwitchOperation(SwitchOperation expr, Context context) {
-		val switchArgument = expr.argument
+		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRType(expr.argument).toJavaReferenceType), context.scope)
 		val caseStatements = expr.values
 		val defaultExpression = expr.^default?.expression
-		val switchJavaExpression = createSwitchJavaExpression(switchArgument, caseStatements, defaultExpression)
-		switchJavaExpression
-			.collapseToSingleExpression(context.scope)
 		
+		//join all caseStatement expression types and default and pass down as returnType
+		
+		//join argument and caseConditions and pass down as conditionType
+		
+		switchArgument
+			.declareAsVariable(true, "switchAgument", context.scope)
+			.mapExpression[
+				createSwitchJavaExpression(it, caseStatements, defaultExpression, context.scope)
+			]
 	}
 	
-	private def JavaStatementBuilder createSwitchJavaExpression(RosettaExpression switchArgument, CaseStatement[] caseStatements, RosettaExpression defaultExpression) {
+	private def JavaStatementBuilder createSwitchJavaExpression(JavaExpression switchArgument,
+		CaseStatement[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
 		val head = caseStatements.head
 		val tail = caseStatements.tail
-		
-		JavaExpression.from('''«switchArgument».equals(«head.condition»)''', JavaPrimitiveType.BOOLEAN)
+
+		head.condition.javaCode(switchArgument.expressionType, javaScope).collapseToSingleExpression(javaScope).
+			mapExpression [
+				JavaExpression.
+					from('''«runtimeMethod('areEqual')»(«switchArgument», «it», «toCardinalityOperator(CardinalityModifier.ALL, null)»)''',
+						COMPARISON_RESULT)
+			]
 			.mapExpression[
+				typeCoercionService.addCoercions(it, BOOLEAN, javaScope)
+			]
+			.mapExpression [
 				new JavaIfThenElseBuilder(
 					it,
-					JavaExpression.from('''«head.expression»''', typeProvider.getRType(head.expression).toJavaType),
-					tail.isEmpty ? 
-						(defaultExpression === null ? JavaExpression.NULL : JavaExpression.from('''«defaultExpression»''', typeProvider.getRType(defaultExpression).toJavaType))
-					 	: createSwitchJavaExpression(switchArgument, tail, defaultExpression),
+					head.expression.javaCode(typeProvider.getRType(head.expression).toJavaReferenceType, javaScope),
+					tail.isEmpty
+						? (defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(
+						typeProvider.getRType(defaultExpression).toJavaReferenceType, javaScope))
+						: createSwitchJavaExpression(switchArgument, tail, defaultExpression, javaScope),
 					typeUtil
 				)
-			]		
+			]
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {
