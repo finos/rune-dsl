@@ -34,6 +34,42 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testReferenceResolving() {
+		'''
+		type Foo:
+		  [reference-key id + parentId]
+		  attr int (1..1)
+		  id string (1..1)
+		  parentId string (1..1)
+		 
+		type Bar:
+		  foo Foo (0..1)
+		
+		type Qux:
+		  foos Foo (0..*)
+		  bars Bar (0..*)
+		
+		func Create:
+		  output: result Qux (1..1)
+		  set result:
+		    Qux {
+		      foos: [
+		        Foo {
+		          attr: 42,
+		          id: "MyId",
+		          parentId: "ParentId"
+		        }
+		      ],
+		      bars: [
+		        Bar: [
+		          foo: "MyIdParentId" as-reference
+		        ]
+		      ]
+		    }
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testUseBasicTypeExtensionWithJoin() {
 		'''
 			namespace test

@@ -133,6 +133,7 @@ import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1203,6 +1204,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', javaOutputType)],
 			context.scope
 		)
+	}
+	
+	override protected caseAsReferenceOperation(AsReferenceOperation expr, Context context) {
+		JavaExpression.NULL
 	}
 	
 }

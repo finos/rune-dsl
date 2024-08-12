@@ -85,6 +85,7 @@ import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -538,6 +539,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Map<EObject, RType> context) {
 		expr.outputType.typeCallToRType
+	}
+	
+	override protected caseAsReferenceOperation(AsReferenceOperation expr, Map<EObject, RType> context) {
+		NOTHING
 	}
 	
 }
