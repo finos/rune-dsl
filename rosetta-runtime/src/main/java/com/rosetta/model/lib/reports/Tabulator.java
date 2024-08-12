@@ -55,14 +55,6 @@ public interface Tabulator<T> {
 		default <C> void accept(FieldValueVisitor<C> visitor, C context) {
 			visitor.visitSingle(this, context);
 		}
-		
-		default boolean isAlreadyReferenced() {
-			return false;
-		}
-		
-		default Field getReferencedField() {
-			return null;
-		}
 	}
 	public interface NestedFieldValue extends FieldValue {
 		Optional<? extends List<? extends FieldValue>> getValue();
