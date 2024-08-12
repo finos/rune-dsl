@@ -250,7 +250,7 @@ class TabulatorGenerator {
 			'''
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-				class Impl implements «tabulatorClass» {
+				public class Impl implements «tabulatorClass» {
 					private final «innerTabulatorClass» «innerTabulatorInstance»;
 					
 					@«Inject»
@@ -294,7 +294,7 @@ class TabulatorGenerator {
 		'''
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-			class Impl implements «tabulatorClass» {
+			public class Impl implements «tabulatorClass» {
 				«FOR attr : inputType.allNonOverridesAttributes»
 					«IF context.isTabulated(attr)»
 						«val fieldId = classScope.getIdentifierOrThrow(attr)»

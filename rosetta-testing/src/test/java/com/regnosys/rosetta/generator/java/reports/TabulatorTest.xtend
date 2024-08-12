@@ -95,7 +95,7 @@ class TabulatorTest {
 			
 			@ImplementedBy(TEST_REGCorpReportTabulator.Impl.class)
 			public interface TEST_REGCorpReportTabulator extends Tabulator<Report> {
-				class Impl implements TEST_REGCorpReportTabulator {
+				public class Impl implements TEST_REGCorpReportTabulator {
 					private final ReportTypeTabulator tabulator;
 					
 					@Inject
@@ -137,7 +137,7 @@ class TabulatorTest {
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
-				class Impl implements ReportTypeTabulator {
+				public class Impl implements ReportTypeTabulator {
 					private final Field basicField;
 					private final Field subreportField;
 					private final Field subreportWithRuleField;
@@ -278,7 +278,7 @@ class TabulatorTest {
 
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
-				class Impl implements ReportTypeTabulator {
+				public class Impl implements ReportTypeTabulator {
 					private final Field basicListField;
 					private final Field subreportListField;
 					
@@ -473,7 +473,7 @@ class TabulatorTest {
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
-				class Impl implements ReportTypeTabulator {
+				public class Impl implements ReportTypeTabulator {
 					private final Field basic1Field;
 					private final Field basic2Field;
 					private final Field basic3Field;
