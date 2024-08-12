@@ -41,6 +41,10 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 		
 		this.typeSystem = typeSystem;
 	}
+	
+	public RDataType getRType() {
+		return data;
+	}
 
 	@Override
 	public boolean isSubtypeOf(JavaType other) {
@@ -73,7 +77,7 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 
 	@Override
 	public List<JavaClass<?>> getInterfaceDeclarations() {
-		RType superType = data.getSuperType();
+		RType superType = typeSystem.stripFromTypeAliases(data.getSuperType());
 		if (superType != null && superType instanceof RDataType) {
 			return Collections.singletonList(new RJavaPojoInterface((RDataType) superType, typeSystem));
 		}

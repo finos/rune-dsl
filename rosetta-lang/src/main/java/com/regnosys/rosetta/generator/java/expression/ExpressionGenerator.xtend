@@ -975,8 +975,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			Attribute: {
 				val attribute = rObjectFactory.buildRAttribute(s)
 				// Data attributes can only be called if there is an implicit variable present.
-				// The current container (Data) is stored in Params, but we need also look for superTypes
-				// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
 				val implicitType = typeProvider.typeOfImplicitVariable(expr)
 				val implicitFeatures = implicitType.allFeatures(expr)
 				if (implicitFeatures.contains(s)) {

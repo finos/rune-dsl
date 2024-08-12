@@ -58,6 +58,8 @@ public class TypeSystem {
 	private IRequestScopedCache cache;
 	@Inject
 	private ModelIdProvider modelIdProvider;
+	@Inject
+	private SubtypeRelation subtypeRelation;
 	
 	public RListType inferType(RosettaExpression expr) {
 		Objects.requireNonNull(expr);
@@ -102,7 +104,7 @@ public class TypeSystem {
 		Objects.requireNonNull(t1);
 		Objects.requireNonNull(t2);
 		
-		return Objects.requireNonNull(typing.join(t1, t2));
+		return subtypeRelation.join(t1, t2);
 	}
 	public RType join(Iterable<RType> types) {
 		Objects.requireNonNull(types);
@@ -153,7 +155,7 @@ public class TypeSystem {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return typing.subtypeSucceeded(sub, sup);
+		return subtypeRelation.isSubtypeOf(sub, sup);
 	}
 	public boolean isListSubtypeOf(RListType sub, RListType sup) {
 		Objects.requireNonNull(sub);

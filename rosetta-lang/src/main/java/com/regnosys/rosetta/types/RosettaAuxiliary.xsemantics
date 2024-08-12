@@ -7,7 +7,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RListType
@@ -50,7 +49,6 @@ auxiliary {
 	ancestors(Data t) : List<Data>
 	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
-	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
 	allAttributes(RDataType t) : Iterable<Attribute>
@@ -84,113 +82,6 @@ auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 	or
 	return false
 }
-auxiliary join(RDataType t1, RDataType t2) {
-	val st1 = ancestors(t1.^data)
-	st1.add(0, t1.^data)
-	val st2 = ancestors(t2.^data)
-	st2.add(0, t2.^data)
-	val result = st2.findFirst[st1.contains(it)]
-	if (result === null) {
-		return ANY
-	}
-	return new RDataType(result, typeSystem, modelIdProvider)
-}
-auxiliary join(REnumType t1, REnumType t2) {
-	val st1 = ancestorEnums(t1.enumeration)
-	st1.add(0, t1.enumeration)
-	val st2 = ancestorEnums(t2.enumeration)
-	st2.add(0, t2.enumeration)
-	val result = st2.findFirst[st1.contains(it)]
-	if (result === null) {
-		return ANY
-	}
-	return new REnumType(result, modelIdProvider)
-}
-auxiliary join(RNumberType t1, RNumberType t2) {
-	t1.join(t2)
-}
-auxiliary join(RStringType t1, RStringType t2) {
-	t1.join(t2)
-}
-auxiliary join(RBasicType t1, RBasicType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t1 == NOTHING) {
-		return t2
-	} else if (t2 == NOTHING) {
-		return t1
-	}
-	return ANY
-}
-auxiliary join(RBasicType t1, RType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t1 == NOTHING) {
-		return t2
-	}
-	return ANY
-}
-auxiliary join(RType t1, RBasicType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t2 == NOTHING) {
-		return t1
-	}
-	return ANY
-}
-auxiliary join(RAliasType t1, RAliasType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t1.typeFunction == t2.typeFunction) {
-		val typeFunc = t1.typeFunction
-		// Attempt to keep the alias
-		val underlyingJoin = join(t1.refersTo, t2.refersTo)
-		val aliasParams = typeFunc.reverse(underlyingJoin)
-		return aliasParams.<RType>map[new RAliasType(typeFunc, it, underlyingJoin)]
-			.orElse(underlyingJoin)
-	} else {
-		val superAliases = newArrayList
-		var RType curr = t1
-		while (curr instanceof RAliasType) {
-			superAliases.add(curr)
-			curr = curr.refersTo
-		}
-		curr = t2
-		while (curr instanceof RAliasType) {
-			val tf = curr.typeFunction
-			val match = superAliases.findFirst[tf == typeFunction]
-			if (match !== null) {
-				return join(match, curr)
-			}
-			curr = curr.refersTo
-		}
-		return join(t1.refersTo, t2.refersTo)
-	}
-}
-auxiliary join(RAliasType t1, RType t2) {
-	return join(t1.refersTo, t2)
-}
-auxiliary join(RType t1, RAliasType t2) {
-	return join(t1, t2.refersTo)
-}
-auxiliary join(RAliasType t1, RBasicType t2) {
-	if (t2 == NOTHING) {
-		return t1
-	}
-	return join(t1.refersTo, t2)
-}
-auxiliary join(RBasicType t1, RAliasType t2) {
-	if (t1 == NOTHING) {
-		return t2
-	}
-	return join(t1, t2.refersTo)
-}
-auxiliary join(RType t1, RType t2) {
-	if (t1 == t2) {
-		return t1
-	}
-	return ANY
-}
 auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	if (c1.unbounded || c2.unbounded) {
 		return createConstraint(Math.min(c1.inf, c2.inf))
@@ -199,7 +90,7 @@ auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	}
 }
 auxiliary listJoin(RListType t1, RListType t2) {
-	val sup = join(t1.itemType, t2.itemType);
+	val sup = typeSystem.join(t1.itemType, t2.itemType);
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
 auxiliary allAttributes(RDataType t) {

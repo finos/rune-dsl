@@ -34,6 +34,54 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testUseBasicTypeExtensionWithJoin() {
+		'''
+			namespace test
+			
+			type A extends B:
+			type B extends C:
+			type C extends D(foo: 0):
+			
+			type H extends I:
+			typeAlias I: D(foo: 1)
+			
+			typeAlias D(foo int): F
+			type F extends G:
+			typeAlias G: string
+			
+			func Func:
+				inputs:
+					f F (1..1)
+				output:
+					result F (1..1)
+			
+			func DoTheThing:
+				output:
+					result F (1..1)
+				set result:
+					Func(if True then A {} else H {})
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testUseBasicTypeExtensionAsSubtypeOfBasicType() {
+		'''
+			namespace test
+			
+			type StringWithScheme extends string:
+				scheme string (1..1)
+			
+			func DoTheThing:
+				inputs:
+					inp StringWithScheme (1..1)
+				output:
+					result string (1..1)
+				set result:
+					inp
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testSwitchArgumentMatchesCaseStatmentTypes() {
 		val context ='''
 				enum SomeEnum:

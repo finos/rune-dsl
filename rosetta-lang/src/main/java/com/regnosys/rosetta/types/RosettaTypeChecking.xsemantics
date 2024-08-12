@@ -35,6 +35,7 @@ import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.types.TypeSystem
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -43,6 +44,7 @@ inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
@@ -71,7 +73,7 @@ auxiliary listSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
 auxiliary looseListSubtypeCheck(RosettaExpression sourceObject, RListType expected) {
     var RListType actual
     empty |- sourceObject : actual or actual = null
-    if (expected !== null && actual !== null && !({empty |- actual.itemType <: expected.itemType} && overlap(expected.constraint, actual.constraint))) {
+    if (expected !== null && actual !== null && !(typeSystem.isSubtypeOf(actual.itemType, expected.itemType) && overlap(expected.constraint, actual.constraint))) {
         fail error notAListSubtypeMessage(expected, actual)
             source sourceObject
     }
@@ -79,7 +81,7 @@ auxiliary looseListSubtypeCheck(RosettaExpression sourceObject, RListType expect
 auxiliary subtypeCheck(RosettaExpression sourceObject, RType expected) {
 	var RListType actual
 	empty |- sourceObject : actual or actual = null
-	if (expected !== null && actual !== null && !{empty |- actual.itemType <: expected}) {
+	if (expected !== null && actual !== null && !typeSystem.isSubtypeOf(actual.itemType, expected)) {
 		fail error notASubtypeMessage(expected, actual.itemType)
 			source sourceObject
 	}
@@ -252,31 +254,31 @@ from {
 	if (tl !== null && tr !== null) {
 		if (op.operator == '+') {
 			{
-				empty |- tl.itemType <: DATE
-				empty |- tr.itemType <: TIME
+				typeSystem.isSubtypeOf(tl.itemType, DATE)
+				typeSystem.isSubtypeOf(tr.itemType, TIME)
 			}
 			or
 			{
-				empty |- tl.itemType <: UNCONSTRAINED_STRING
-				empty |- tr.itemType <: UNCONSTRAINED_STRING
+				typeSystem.isSubtypeOf(tl.itemType, UNCONSTRAINED_STRING)
+				typeSystem.isSubtypeOf(tr.itemType, UNCONSTRAINED_STRING)
 			}
 			or
 			{
-				empty |- tl.itemType <: UNCONSTRAINED_NUMBER
-				empty |- tr.itemType <: UNCONSTRAINED_NUMBER
+				typeSystem.isSubtypeOf(tl.itemType, UNCONSTRAINED_NUMBER)
+				typeSystem.isSubtypeOf(tr.itemType, UNCONSTRAINED_NUMBER)
 			}
 			or 
 				fail error "Expected arguments to be either both a `string` or both a `number`, but got `" + relevantItemTypeDescription(tl, tr) + "` and `" + relevantItemTypeDescription(tr, tl) + "` instead."
 					source op
 		} else if (op.operator == '-') {
 			{
-				empty |- tl.itemType <: DATE
-				empty |- tr.itemType <: DATE
+				typeSystem.isSubtypeOf(tl.itemType, DATE)
+				typeSystem.isSubtypeOf(tr.itemType, DATE)
 			}
 			or
 			{
-				empty |- tl.itemType <: UNCONSTRAINED_NUMBER
-				empty |- tr.itemType <: UNCONSTRAINED_NUMBER
+				typeSystem.isSubtypeOf(tl.itemType, UNCONSTRAINED_NUMBER)
+				typeSystem.isSubtypeOf(tr.itemType, UNCONSTRAINED_NUMBER)
 			}
 			or 
 				fail error "Expected arguments to be either both a `date` or both a `number`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
@@ -358,18 +360,18 @@ from {
 	empty |- op.right : tr or tr = null
 	if (tl !== null && tr !== null) {
 		{
-			empty |- tl.itemType <: ZONED_DATE_TIME
-			empty |- tr.itemType <: ZONED_DATE_TIME
+			typeSystem.isSubtypeOf(tl.itemType, ZONED_DATE_TIME)
+			typeSystem.isSubtypeOf(tr.itemType, ZONED_DATE_TIME)
 		}
 		or
 		{
-			empty |- tl.itemType <: DATE
-			empty |- tr.itemType <: DATE
+			typeSystem.isSubtypeOf(tl.itemType, DATE)
+			typeSystem.isSubtypeOf(tr.itemType, DATE)
 		}
 		or
 		{
-			empty |- tl.itemType <: UNCONSTRAINED_NUMBER
-			empty |- tr.itemType <: UNCONSTRAINED_NUMBER
+			typeSystem.isSubtypeOf(tl.itemType, UNCONSTRAINED_NUMBER)
+			typeSystem.isSubtypeOf(tr.itemType, UNCONSTRAINED_NUMBER)
 		}
 		or
 			fail error "Expected arguments to be either both a `date`, both a `number` or both a `zonedDateTime`, but got `" + tl.itemType.toString() + "` and `" + tr.itemType.toString() + "` instead."
@@ -395,7 +397,7 @@ from {
 	if (tthen !== null && telse !== null) {
 		val joined = listJoin(tthen, telse)
 		
-		if ({empty |- ANY <: joined.itemType}) {
+		if (typeSystem.isSubtypeOf(ANY, joined.itemType)) {
 			fail error "Types `" + tthen.itemType.name + "` and `" + telse.itemType.name + "` do not have a common supertype."
 		}
 	}
@@ -417,8 +419,8 @@ from {
 			if (acc === null) {
 				null
 			} else {
-				val sup = join(telem.itemType, acc.itemType);
-				if ({empty |- ANY <: sup}) {
+				val sup = typeSystem.join(telem.itemType, acc.itemType);
+				if (typeSystem.isSubtypeOf(ANY, sup)) {
 					null
 				} else {
 					createListType(sup, telem.constraint + acc.constraint)

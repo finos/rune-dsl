@@ -42,6 +42,33 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void typeCoercionFromTypeExtendingBasicType() {
+		val code = '''
+		type IntWithScheme extends int:
+			scheme string (1..1)
+		
+		func ExtractNumber:
+			inputs:
+				inp IntWithScheme (1..1)
+			output:
+				result number (1..1)
+			
+			set result:
+				inp
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val inp = classes.createInstanceUsingBuilder("IntWithScheme", #{
+			"value" -> 42,
+			"scheme" -> "some scheme"
+		})
+        
+        val extractNumber = classes.createFunc("ExtractNumber")
+        assertEquals(new BigDecimal("42"), extractNumber.invokeFunc(String, #[inp]))
+	}
+	
+	@Test
 	def void onlyExistsOnAbsentParent() {
 		val code = '''
 		type A:

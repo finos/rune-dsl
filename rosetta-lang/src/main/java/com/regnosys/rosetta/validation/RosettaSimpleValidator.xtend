@@ -542,7 +542,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			attrFromSuperClasses.forEach [ parentAttr |
 				val childAttrType = childAttr.RTypeOfSymbol
 				val parentAttrType = parentAttr.RTypeOfSymbol
-				if ((childAttrType instanceof RDataType && !(childAttrType as RDataType).isChildOf(parentAttrType)) ||
+				if ((childAttrType instanceof RDataType && !childAttrType.isSubtypeOf(parentAttrType)) ||
 					!(childAttrType instanceof RDataType && childAttrType != parentAttrType )) {
 					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.typeCall.type.name»''',
 						childAttr, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
@@ -565,10 +565,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	protected def cardinality(Attribute attr) '''«attr.card.inf»..«IF attr.card.isMany»*«ELSE»«attr.card.sup»«ENDIF»'''
-
-	private def isChildOf(RDataType child, RType parent) {
-		return child.allSuperTypes.contains(parent)
-	}
 
 	@Check
 	def checkEnumValuesAreUnique(RosettaEnumeration enumeration) {
@@ -950,7 +946,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def checkAttribute(Attribute ele) {
 		val eleType = ele.RTypeOfSymbol
 		if (eleType instanceof RDataType) {
-			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.data) || eleType.allSuperTypes.filter(RDataType).exists[data.hasKeyedAnnotation])) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.data) || eleType.allSuperDataTypes.exists[data.hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
 				warning('''«ele.typeCall.type.name» must be annotated with [metadata key] as reference annotation is used''',
 					ROSETTA_TYPED__TYPE_CALL)
@@ -1244,7 +1240,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			val annotationDataType = annotationType as RDataType
 			val funcOutputDataType = funcOutputType as RDataType
 			
-			val funcOutputSuperTypes = funcOutputDataType.allSuperTypes.toSet
+			val funcOutputSuperTypes = funcOutputDataType.allSuperDataTypes.toSet
 			val annotationAttributeTypes = annotationDataType.data.attributes.map[RTypeOfSymbol].toList
 			
 			if (annotationDataType != funcOutputDataType

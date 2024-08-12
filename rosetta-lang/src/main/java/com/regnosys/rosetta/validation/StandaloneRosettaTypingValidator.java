@@ -144,7 +144,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	@Check
 	public void checkReportType(Data data) {
 		RDataType rData = ts.dataToType(data);
-		RType superType = rData.getSuperType();
+		RType superType = ts.stripFromTypeAliases(rData.getSuperType());
 		RType current;
 		if (superType != null && superType instanceof RDataType) {
 			current = ts.getRulesInputType((RDataType)superType, Optional.empty());

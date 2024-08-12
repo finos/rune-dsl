@@ -29,6 +29,7 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import org.eclipse.emf.ecore.resource.ResourceSet
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RAliasType
 
 class RosettaExtensions {
 	
@@ -59,14 +60,18 @@ class RosettaExtensions {
 		}
 	}
 	
-	def Set<RType> getAllSuperTypes(RDataType t) {
+	def Set<RDataType> getAllSuperDataTypes(RDataType t) {
 		doGetSuperTypes(t, newLinkedHashSet)
 	}
 	
-	private def Set<RType> doGetSuperTypes(RDataType t, Set<RType> seenTypes) {
-		if(t !== null && seenTypes.add(t)) {
-			val s = t.superType
-			if (s instanceof RDataType) {
+	private def Set<RDataType> doGetSuperTypes(RType t, Set<RDataType> seenTypes) {
+		if(t !== null) {
+			if (t instanceof RDataType) {
+				seenTypes.add(t)
+				val s = t.superType
+				doGetSuperTypes(s, seenTypes)
+			} else if (t instanceof RAliasType) {
+				val s = t.refersTo
 				doGetSuperTypes(s, seenTypes)
 			}
 		}
@@ -74,7 +79,7 @@ class RosettaExtensions {
 	}
 
 	def getAllAttributes(RDataType t) {
-		t.allSuperTypes.filter(RDataType).flatMap[data.attributes]
+		t.allSuperDataTypes.flatMap[data.attributes]
 	}
 	
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {

@@ -24,12 +24,14 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.rosetta.util.types.JavaType
 import javax.inject.Inject
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.TypeSystem
 
 class ModelObjectBoilerPlate {
 
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension JavaTypeTranslator
+	@Inject extension TypeSystem
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
@@ -192,7 +194,7 @@ class ModelObjectBoilerPlate {
 	
 	private def boolean hasSuperDataType(RDataType c) {
 		val s = c.superType
-		return s !== null && s instanceof RDataType
+		return s !== null && s.stripFromTypeAliases instanceof RDataType
 	}
 	
 	def needsBuilder(ExpandedAttribute attribute){
