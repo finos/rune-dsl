@@ -16,6 +16,7 @@
 
 package com.rosetta.model.lib.reports;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,7 +27,15 @@ import org.apache.commons.lang3.Validate;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public interface Tabulator<T> {
-	List<Field> getFields();
+
+	/**
+	 * Deprecated because it was only used in tests
+	 * @return Arrays.asList()
+	 */
+	@Deprecated
+	default List<Field> getFields() {
+		return Arrays.asList();
+	}
 	List<FieldValue> tabulate(T report);
 	
 	public interface Field {

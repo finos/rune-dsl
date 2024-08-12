@@ -36,8 +36,6 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.config.RosettaConfiguration
 import com.google.inject.ImplementedBy
-import java.util.HashMap
-import java.util.Collections
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -261,11 +259,6 @@ class TabulatorGenerator {
 					}
 					
 					@Override
-					public «List»<«Field»> getFields() {
-						return «innerTabulatorInstance».getFields();
-					}
-					
-					@Override
 					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
 						return «innerTabulatorInstance».tabulate(«inputParam»);
 					}
@@ -279,10 +272,6 @@ class TabulatorGenerator {
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
 				class Impl implements «tabulatorClass» {
-					@Override
-					public «List»<«Field»> getFields() {
-						return «Arrays».asList();
-					}
 					
 					@Override
 					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
@@ -300,7 +289,6 @@ class TabulatorGenerator {
 		val classScope = topScope.classScope(tabulatorClass.simpleName)
 		val tabulatedFields = findTabulatedFieldsAndCreateIdentifiers(inputType, context, classScope)
 		val nestedTabulatorInstances = findNestedTabulatorsAndCreateIdentifiers(inputType, context, classScope)
-		
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		'''
@@ -326,11 +314,6 @@ class TabulatorGenerator {
 						this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
 					«ENDFOR»
 					«initializeFields(inputType, context, classScope)»
-				}
-				
-				@Override
-				public «List»<«Field»> getFields() {
-					return «Arrays».asList(«FOR field : tabulatedFields SEPARATOR ", "»«classScope.getIdentifierOrThrow(field)»«ENDFOR»);
 				}
 				
 				@Override
@@ -364,11 +347,7 @@ class TabulatorGenerator {
 					«attr.card.isMany»,
 					«rule.map[model].map[name].map[new ModelSymbolId(DottedPath.splitOnDots(it), rule.get.name).toModelSymbolCode].toOptionalCode»,
 					«rule.map[identifier].map['"' + it + '"'].toOptionalCode»,
-					«IF attrType instanceof Data»
-						«scope.getIdentifierOrThrow(attrType.toNestedTabulatorInstance)».getFields()
-					«ELSE»
-						«Arrays».asList()
-					«ENDIF»
+					«Arrays».asList()
 				);
 			«ENDIF»
 		«ENDFOR»
@@ -395,6 +374,7 @@ class TabulatorGenerator {
 		«ENDFOR»
 		'''
 	}
+
 	private def StringConcatenationClient fieldValue(Attribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
 		val rType = typeProvider.getRTypeOfSymbol(attr)
 			

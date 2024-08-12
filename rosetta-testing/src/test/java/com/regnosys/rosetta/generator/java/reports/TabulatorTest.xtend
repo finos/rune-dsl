@@ -87,7 +87,6 @@ class TabulatorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.reports.Tabulator;
-			import com.rosetta.model.lib.reports.Tabulator.Field;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.test.model.Report;
 			import java.util.List;
@@ -102,11 +101,6 @@ class TabulatorTest {
 					@Inject
 					public Impl(ReportTypeTabulator tabulator) {
 						this.tabulator = tabulator;
-					}
-					
-					@Override
-					public List<Field> getFields() {
-						return tabulator.getFields();
 					}
 					
 					@Override
@@ -165,20 +159,15 @@ class TabulatorTest {
 							false,
 							Optional.empty(),
 							Optional.empty(),
-							subreportTypeTabulator.getFields()
+							Arrays.asList()
 						);
 						this.subreportWithRuleField = new FieldImpl(
 							"subreportWithRule",
 							false,
 							Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "SubreportWithRule")),
 							Optional.of("Subreport from a rule"),
-							subreportTypeTabulator.getFields()
+							Arrays.asList()
 						);
-					}
-					
-					@Override
-					public List<Field> getFields() {
-						return Arrays.asList(basicField, subreportField, subreportWithRuleField);
 					}
 					
 					@Override
@@ -203,19 +192,6 @@ class TabulatorTest {
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		basic
-		
-		subreport
-			subbasic
-		
-		subreportWithRule
-		"Subreport from a rule"
-			subbasic
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val subreport1 = classes.createInstanceUsingBuilder("Subreport", #{"subbasic" -> "My reportable input - sub"})
 		val subreport2 = classes.createInstanceUsingBuilder("Subreport", #{"subbasic" -> "My reportable input - created"})
@@ -323,13 +299,8 @@ class TabulatorTest {
 							true,
 							Optional.of(new ModelSymbolId(DottedPath.of("com", "rosetta", "test", "model"), "SubreportList")),
 							Optional.of("Subreport group"),
-							subreportTypeTabulator.getFields()
+							Arrays.asList()
 						);
-					}
-					
-					@Override
-					public List<Field> getFields() {
-						return Arrays.asList(basicListField, subreportListField);
 					}
 					
 					@Override
@@ -353,19 +324,6 @@ class TabulatorTest {
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		basicList*
-		
-		subreportList*
-		"Subreport group"
-			subbasic
-			"Basic value of subreport"
-			
-			n
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val subreport1 = classes.createInstanceUsingBuilder("Subreport", #{"subbasic" -> "My reportable input 1 - sub"})
 		val subreport2 = classes.createInstanceUsingBuilder("Subreport", #{"subbasic" -> "My reportable input 2 - sub", "n" -> 42})
@@ -433,17 +391,6 @@ class TabulatorTest {
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		subreportList*
-		"Subreport group"
-			subsubreportList*
-			"List of subsubreports"
-				subsubbasic
-				"Basic value of subsubreport"
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val subsubreport1 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "1"})
 		val subsubreport2 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "2"})
@@ -556,11 +503,6 @@ class TabulatorTest {
 					}
 					
 					@Override
-					public List<Field> getFields() {
-						return Arrays.asList(basic1Field, basic2Field, basic3Field);
-					}
-					
-					@Override
 					public List<FieldValue> tabulate(Report input) {
 						FieldValue basic1 = new FieldValueImpl(basic1Field, Optional.ofNullable(input.getBasic1()));
 						FieldValue basic2 = new FieldValueImpl(basic2Field, Optional.ofNullable(input.getBasic2()));
@@ -578,17 +520,6 @@ class TabulatorTest {
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		basic1
-		
-		basic2
-		"Basic 2 Rule - Modified"
-		
-		basic3
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val report = classes.createInstanceUsingBuilder("Report", #{"basic1" -> "My reportable input", "basic2" -> 42, "basic3" -> new BigDecimal("10.5")})
 		val flatReport = tabulator.tabulate(report)
@@ -689,18 +620,6 @@ class TabulatorTest {
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
-		val expectedFields =
-		'''
-		basic1
-		"Inline"
-		
-		basic2
-		"Basic 2 Rule modified"
-		
-		basic3
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
-		
 		val report = classes.createInstanceUsingBuilder("Report", #{"basic1" -> "My reportable input", "basic2" -> 42, "basic3" -> new BigDecimal("10.5")})
 		val flatReport = tabulator.tabulate(report)
 		val expectedValues =
@@ -790,14 +709,6 @@ class TabulatorTest {
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		subreportList*
-			subsubreportList*
-				subsubbasic
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val subsubreport1 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "1"})
 		val subsubreport2 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "2"})
