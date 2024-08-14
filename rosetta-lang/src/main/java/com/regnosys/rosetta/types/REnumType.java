@@ -19,17 +19,16 @@ package com.regnosys.rosetta.types;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
-import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public class REnumType extends RAnnotateType {
 	private final RosettaEnumeration enumeration;
 	private final ModelSymbolId symbolId;
 
-	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider) {
+	public REnumType(final RosettaEnumeration enumeration, final ModelSymbolId symbolId) {
 		super();
 		this.enumeration = enumeration;
-		this.symbolId = modelIdProvider.getSymbolId(enumeration);
+		this.symbolId = symbolId;
 	}
 	
 	@Override

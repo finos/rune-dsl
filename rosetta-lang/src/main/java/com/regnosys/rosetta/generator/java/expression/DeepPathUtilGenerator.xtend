@@ -57,7 +57,7 @@ class DeepPathUtilGenerator {
 		val classScope = topScope.classScope(javaClass.simpleName)
 		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
-		val recursiveDeepFeaturesMap = choiceType.allNonOverridesAttributes.toMap([it], [
+		val recursiveDeepFeaturesMap = choiceType.data.allNonOverridesAttributes.toMap([it], [
 			val attrType = it.RTypeOfSymbol
 			deepFeatures.toMap([it], [
 				if (attrType instanceof RDataType) {
@@ -99,7 +99,7 @@ class DeepPathUtilGenerator {
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, Attribute deepFeature, Map<Attribute, Map<Attribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
 		val deepFeatureHasMeta = !deepFeature.metaAnnotations.empty
-		val attrs = choiceType.allNonOverridesAttributes
+		val attrs = choiceType.data.allNonOverridesAttributes
 		var JavaStatementBuilder acc = JavaExpression.NULL
 		for (a : attrs.reverseView) {
 			val currAcc = acc
@@ -119,7 +119,7 @@ class DeepPathUtilGenerator {
 									val actualFeature = if (needsToGoDownDeeper || !(attrType instanceof RDataType)) {
 										deepFeature
 									} else {
-										(attrType as RDataType).allNonOverridesAttributes.findFirst[name.equals(deepFeature.name)]
+										(attrType as RDataType).data.allNonOverridesAttributes.findFirst[name.equals(deepFeature.name)]
 									}
 									attrVar.featureCall(attrType, actualFeature, needsToGoDownDeeper, scope, !deepFeatureHasMeta)
 								}

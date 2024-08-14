@@ -18,7 +18,6 @@ package com.regnosys.rosetta.utils;
 
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
-import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
@@ -239,8 +238,6 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 			return caseToDateTimeOperation((ToDateTimeOperation)expr, context);
 		} else if (expr instanceof ToZonedDateTimeOperation) {
 			return caseToZonedDateTimeOperation((ToZonedDateTimeOperation)expr, context);
-		} else if (expr instanceof AsReferenceOperation) {
-			return caseAsReferenceOperation((AsReferenceOperation)expr, context);
 		} else if (expr instanceof SwitchOperation) {
 			return caseToSwitchOperation((SwitchOperation)expr, context);
 		} else if (expr instanceof RosettaFunctionalOperation) {
@@ -330,7 +327,6 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseToDateOperation(ToDateOperation expr, Context context);
 	protected abstract Return caseToDateTimeOperation(ToDateTimeOperation expr, Context context);
 	protected abstract Return caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context);
-	protected abstract Return caseAsReferenceOperation(AsReferenceOperation expr, Context context);
 	protected abstract Return caseToSwitchOperation(SwitchOperation expr, Context context);
 	
 	protected abstract Return caseFilterOperation(FilterOperation expr, Context context);

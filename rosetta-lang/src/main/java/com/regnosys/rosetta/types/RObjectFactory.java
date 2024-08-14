@@ -34,13 +34,13 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.TranslateUtil;
 
@@ -57,8 +57,6 @@ public class RObjectFactory {
 	private TranslateUtil translateUtil;
 	@Inject
 	private ModelIdProvider modelIdProvider;
-	@Inject
-	private ExternalAnnotationUtil externalAnnotationUtil;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
@@ -100,7 +98,7 @@ public class RObjectFactory {
 				.map(c -> c.getName())
 				.collect(Collectors.joining(" "));
 		
-		RType outputRtype = new RDataType(report.getReportType(), typeSystem, modelIdProvider);
+		RType outputRtype = new RDataType(report.getReportType(), modelIdProvider.getSymbolId(report.getReportType()));
 		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
 		
 		Attribute inputAttribute = SimpleFactory.eINSTANCE.createAttribute();
@@ -111,12 +109,12 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
-		Map<Attribute, RosettaRule> attributeToRuleMap = externalAnnotationUtil.getAllReportingRules(report)
+		Map<Attribute, RosettaRule> attributeToRuleMap = rosettaExtensions.getAllReportingRules(report)
 			.entrySet()
 			.stream()
 			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));
 		
-		List<ROperation> operations = generateReportOperations(typeSystem.dataToType(report.getReportType()), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
+		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
 		return new RFunction(
 			modelIdProvider.getReportId(report),
 			reportDefinition,
@@ -131,7 +129,7 @@ public class RObjectFactory {
 		);
 	}
 	
-	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<Attribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
+	private List<ROperation> generateReportOperations(Data reportDataType, Map<Attribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
 		Iterable<Attribute> attributes = rosettaExtensions.getAllAttributes(reportDataType);
 		List<ROperation> operations = new ArrayList<>();
 		
@@ -145,7 +143,8 @@ public class RObjectFactory {
 			}
 			if (rAttribute.getRType() instanceof RDataType) {
 				RDataType rData = (RDataType) rAttribute.getRType();
-				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
+				Data data = rData.getData();		
+				operations.addAll(generateReportOperations(data, attributeToRuleMap, inputAttribute, newAssignPath));
 			}
 		}
 		return operations;

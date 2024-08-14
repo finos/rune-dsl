@@ -61,8 +61,6 @@ import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.model.lib.reports.Tabulator;
@@ -224,7 +222,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		} else {
 			attrType = expandedTypeToJavaType(expAttr.getType());
 		}
-		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getType().getNamespace());
+		DottedPath namespace = getModelPackage(expAttr.getRosettaType().getType());
+		return toMetaJavaType(attrType, expAttr.refIndex() < 0, namespace);
 	}
 	public JavaReferenceType expandedTypeToJavaType(ExpandedType type) {
 		if (type.getName().equals(RosettaAttributeExtensions.METAFIELDS_CLASS_NAME) || type.getName().equals(RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME)) {
@@ -236,7 +235,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (type.isBuiltInType()) {
 			return toJavaReferenceType(builtins.getType(type.getName(), Collections.emptyMap()));
 		}
-		return new GeneratedJavaClass<>(type.getNamespace(), type.getName(), Object.class);
+		return new GeneratedJavaClass<>(modelIdProvider.toDottedPath(type.getNamespace()), type.getName(), Object.class);
 	}
 	private JavaClass<?> toMetaJavaType(JavaReferenceType base, boolean hasMetaFieldAnnotations, DottedPath namespace) {
 		String attributeTypeName = base.getSimpleName();
@@ -336,9 +335,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Impl", Object.class);
 	}
 	public JavaClass<?> toBuilderType(JavaClass<?> type) {
-		if (type.equals(JavaClass.from(RosettaModelObject.class))) {
-			return JavaClass.from(RosettaModelObjectBuilder.class);
-		}
 		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Builder", Object.class);
 	}
 	public JavaClass<?> toBuilderImplType(JavaClass<?> type) {
@@ -371,7 +367,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	@Override
 	protected JavaClass<?> caseDataType(RDataType type, Void context) {
-		return new RJavaPojoInterface(type, typeSystem);
+		return new RJavaPojoInterface(type, modelIdProvider, typeSystem);
 	}
 	@Override
 	protected JavaClass<?> caseEnumType(REnumType type, Void context) {

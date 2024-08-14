@@ -131,10 +131,10 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpr
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
+import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.CaseStatement
-import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -159,6 +159,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject TranslateUtil translateUtil
+	@Inject extension ModelIdProvider
 	
 	/**
 	 * convert a rosetta expression to code
@@ -898,7 +899,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseOneOfOperation(OneOfOperation expr, Context context) {
 		val type = typeProvider.getRType(expr.argument) as RDataType
-		buildConstraint(expr.argument, type.allAttributes, Necessity.REQUIRED, context)
+		buildConstraint(expr.argument, type.data.allAttributes, Necessity.REQUIRED, context)
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
@@ -924,7 +925,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			throw new UnsupportedOperationException("Unsupported parent in `only exists` expression of type " + it?.class?.name)
 		]
-		val allAttrs = parentType.allNonOverridesAttributes
+		val allAttrs = parentType.data.allNonOverridesAttributes
 		parent
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«it», «Arrays».asList(«allAttrs.join(", ")['"' + name + '"']»), «Arrays».asList(«requiredAttributes.join(", ")['"' + name + '"']»))''', COMPARISON_RESULT)]
@@ -977,6 +978,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			Attribute: {
 				val attribute = rObjectFactory.buildRAttribute(s)
 				// Data attributes can only be called if there is an implicit variable present.
+				// The current container (Data) is stored in Params, but we need also look for superTypes
+				// so we could also do: (s.eContainer as Data).allSuperTypes.map[it|params.getClass(it)].filterNull.head
 				val implicitType = typeProvider.typeOfImplicitVariable(expr)
 				val implicitFeatures = implicitType.allFeatures(expr)
 				if (implicitFeatures.contains(s)) {
@@ -1003,7 +1006,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				
 			}
 			RosettaEnumeration: {
-				val t = s.enumToType.toJavaType
+				val t = new REnumType(s, s.symbolId).toJavaType
 				JavaExpression.from('''«t»''', t)
 			}
 			RosettaEnumValue: {
@@ -1047,7 +1050,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = expr.enumeration.enumToType.toJavaType
+		val javaEnum = new REnumType(expr.enumeration, expr.enumeration.symbolId).toJavaType
 		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
 	}
 
@@ -1251,10 +1254,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', javaOutputType)],
 			context.scope
 		)
-	}
-	
-	override protected caseAsReferenceOperation(AsReferenceOperation expr, Context context) {
-		JavaExpression.NULL
 	}
 	
 }

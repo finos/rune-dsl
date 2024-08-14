@@ -379,9 +379,6 @@ class CaseStatement {
 	contains RosettaExpression expression
 }
 
-class AsReferenceOperation extends RosettaUnaryOperation {
-}
-
 /**
  * Functional operations
  */

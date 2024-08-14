@@ -13,7 +13,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
-import com.regnosys.rosetta.types.TypeSystem
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -21,7 +20,6 @@ class RosettaExtensionsTest {
 	
 	@Inject extension ParseHelper<RosettaModel> 
 	@Inject extension RosettaExtensions
-	@Inject extension TypeSystem
 	
 	@Test
 	def testSuperClasses() {
@@ -31,10 +29,10 @@ class RosettaExtensionsTest {
 			type Foo extends Bar:
 			type Bar extends Baz:
 			type Baz:
-		'''.parse.elements.filter(Data).map[dataToType]
-		assertEquals(classes.toSet, classes.head.allSuperDataTypes)
-		assertEquals(classes.tail.toSet, classes.get(1).allSuperDataTypes)
-		assertEquals(#{classes.last}, classes.get(2).allSuperDataTypes)
+		'''.parse.elements.filter(Data)
+		assertEquals(classes.toSet, classes.head.allSuperTypes)
+		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes)
+		assertEquals(#{classes.last}, classes.get(2).allSuperTypes)
 	}
 	
 	@Test
@@ -45,10 +43,10 @@ class RosettaExtensionsTest {
 			type Foo extends Bar:
 			type Bar extends Baz:
 			type Baz extends Foo:
-		'''.parse.elements.filter(Data).map[dataToType]
-		assertEquals(classes.toSet, classes.head.allSuperDataTypes)
-		assertEquals(classes.toSet, classes.get(1).allSuperDataTypes)
-		assertEquals(classes.toSet, classes.get(2).allSuperDataTypes)
+		'''.parse.elements.filter(Data)
+		assertEquals(classes.toSet, classes.head.allSuperTypes)
+		assertEquals(classes.toSet, classes.get(1).allSuperTypes)
+		assertEquals(classes.toSet, classes.get(2).allSuperTypes)
 	}
 	
 	@Test 

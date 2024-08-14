@@ -6,8 +6,8 @@ import com.regnosys.rosetta.rosetta.RosettaMergeSynonymValue
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
-import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.RosettaNamespace
 
 @Data
 final class ExpandedAttribute {
@@ -72,9 +72,9 @@ final class ExpandedAttribute {
 	}
 	
 	def javaAnnotation() {
-		if (name == "key" && type.name == "Key" && type.namespace.toString == "com.rosetta.model.lib.meta") {
+		if (name === "key" && type.name === "Key" && type.namespace.name === "com.rosetta.model.lib.meta") {
 			return 'location'
-		} else if (name == "reference" && type.name == "Reference" && type.namespace.toString == "com.rosetta.model.lib.meta") {
+		} else if (name === "reference" && type.name === "Reference" && type.namespace.name === "com.rosetta.model.lib.meta") {
 			return 'address'
 		} else
 			return name
@@ -83,7 +83,7 @@ final class ExpandedAttribute {
 
 @Data
 final class ExpandedType {
-	DottedPath namespace
+	RosettaNamespace namespace
 	String name
 
 	boolean type // type is instance of  Data

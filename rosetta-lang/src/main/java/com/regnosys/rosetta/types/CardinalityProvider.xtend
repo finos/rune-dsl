@@ -73,7 +73,6 @@ import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
-import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -547,10 +546,6 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Boolean context) {
-		false
-	}
-	
-	override protected caseAsReferenceOperation(AsReferenceOperation expr, Boolean context) {
 		false
 	}
 	

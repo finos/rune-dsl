@@ -23,20 +23,17 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.rosetta.util.types.JavaType
 import javax.inject.Inject
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.TypeSystem
 
 class ModelObjectBoilerPlate {
 
 	@Inject extension RosettaExtensions
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension JavaTypeTranslator
-	@Inject extension TypeSystem
 
 	val toBuilder = [String s|s + 'Builder']
 	val identity = [String s|s]
 
-	def StringConcatenationClient builderBoilerPlate(RDataType c, JavaScope scope) {
+	def StringConcatenationClient builderBoilerPlate(Data c, JavaScope scope) {
 		val attrs = c.expandedAttributes.toList
 		'''
 			«c.contributeEquals(attrs, scope)»
@@ -45,11 +42,11 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 	
-	def StringConcatenationClient implementsClause(RDataType d, Collection<Object> extraInterfaces) {
+	def StringConcatenationClient implementsClause(Data d, Collection<Object> extraInterfaces) {
 		val interfaces = newHashSet
-		if(d.data.hasKeyedAnnotation)
+		if(d.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
-		if(d.data.hasTemplateAnnotation)
+		if(d.hasTemplateAnnotation)
 			interfaces.add(Templatable)
 		interfaces.addAll(extraInterfaces)
 		if (interfaces.empty) null else ''', «FOR i : interfaces.sortBy[class.name] SEPARATOR ', '»«i»«ENDFOR»'''
@@ -68,7 +65,7 @@ class ModelObjectBoilerPlate {
 		else attribute.toMetaOrRegularJavaType;
 	}
 
-	def StringConcatenationClient boilerPlate(RDataType c, JavaScope scope) {
+	def StringConcatenationClient boilerPlate(Data c, JavaScope scope) {
 		val attributes = c.expandedAttributes.toList
 		'''
 			«c.contributeEquals(attributes, scope)»
@@ -92,7 +89,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeHashCode(RDataType c, List<ExpandedAttribute> attributes, JavaScope scope) {
+	private def StringConcatenationClient contributeHashCode(Data c, List<ExpandedAttribute> attributes, JavaScope scope) {
 		val methodScope = scope.methodScope("hashCode")
 		'''
 		@Override
@@ -107,7 +104,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeToString(RDataType c, (String)=>String classNameFunc, JavaScope scope) {
+	private def StringConcatenationClient contributeToString(Data c, (String)=>String classNameFunc, JavaScope scope) {
 		val methodScope = scope.methodScope("toString")
 		'''
 		@Override
@@ -116,19 +113,19 @@ class ModelObjectBoilerPlate {
 				«FOR attribute : c.expandedAttributes.filter[!overriding] SEPARATOR ' ", " +'»
 					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
 				«ENDFOR»
-			'}'«IF c.hasSuperDataType» + " " + super.toString()«ENDIF»;
+			'}'«IF c.hasSuperType» + " " + super.toString()«ENDIF»;
 		}
 		'''
 	}
 
-	private def StringConcatenationClient contributeEquals(RDataType c, List<ExpandedAttribute> attributes, JavaScope scope) {
+	private def StringConcatenationClient contributeEquals(Data c, List<ExpandedAttribute> attributes, JavaScope scope) {
 		val methodScope = scope.methodScope("equals")
 		'''
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || !(o instanceof «RosettaModelObject») || !getType().equals(((RosettaModelObject)o).getType())) return false;
-			«IF c.hasSuperDataType»
+			«IF c.hasSuperType»
 				if (!super.equals(o)) return false;
 			«ENDIF»
 		
@@ -151,11 +148,11 @@ class ModelObjectBoilerPlate {
 	«ENDIF»
 	'''
 
-	private def contribtueSuperHashCode(RDataType c) {
-		if(c.hasSuperDataType) 'super.hashCode()' else '0'
+	private def contribtueSuperHashCode(Data c) {
+		if(c.hasSuperType) 'super.hashCode()' else '0'
 	}
 	
-	def StringConcatenationClient processMethod(RDataType c) '''
+	def StringConcatenationClient processMethod(Data c) '''
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR a : c.expandedAttributesPlus.filter[!overriding]»
@@ -169,7 +166,7 @@ class ModelObjectBoilerPlate {
 		
 	'''
 	
-	def StringConcatenationClient builderProcessMethod(RDataType c) '''
+	def StringConcatenationClient builderProcessMethod(Data c) '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR a : c.expandedAttributesPlus.filter[!overriding]»
@@ -190,11 +187,6 @@ class ModelObjectBoilerPlate {
 		else if (attribute.hasIdAnnotation) {
 			''', «AttributeMeta».GLOBAL_KEY_FIELD'''
 		}
-	}
-	
-	private def boolean hasSuperDataType(RDataType c) {
-		val s = c.superType
-		return s !== null && s.stripFromTypeAliases instanceof RDataType
 	}
 	
 	def needsBuilder(ExpandedAttribute attribute){

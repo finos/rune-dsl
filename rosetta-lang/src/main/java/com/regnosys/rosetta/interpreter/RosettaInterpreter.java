@@ -33,7 +33,6 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
-import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
@@ -582,7 +581,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	
 	@Override
 	protected RosettaValue caseToSwitchOperation(SwitchOperation expr, RosettaInterpreterContext context) {
-		// TODO
+		// TODO Auto-generated method stub
 		throw new RosettaInterpreterException("Switch operations are not supported yet.");
 	}
 	@Override
@@ -596,10 +595,5 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 			RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("Translate dispatch operations are not supported yet.");
-	}
-	@Override
-	protected RosettaValue caseAsReferenceOperation(AsReferenceOperation expr, RosettaInterpreterContext context) {
-		// TODO
-		throw new RosettaInterpreterException("AsReference operations are not supported yet.");
 	}
 }
