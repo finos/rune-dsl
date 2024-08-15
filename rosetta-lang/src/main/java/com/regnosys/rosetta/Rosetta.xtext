@@ -138,7 +138,7 @@ PostCondition returns Condition:
 ;
 
 Operation:
-	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':'
+	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
 		expression = RosettaCalcExpressionWithAsKey
 ;
 
@@ -184,7 +184,8 @@ RosettaRootElement:
 
 /**********************************************************************
  * Common rules 
- */
+ */ 
+ 
 fragment RosettaDefinable: // TODO should a definition be able to hold any character? Escape characters? Spaces between '<' and '"'?
 	('<' definition=STRING '>') // TODO rename to documentation?
 ;

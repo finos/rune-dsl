@@ -35,6 +35,21 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCommentsAfterAssignmentAreValid() {
+		val model = '''
+			func SomeFunction:
+				
+				output:
+					results string (1..*)
+				
+				add results: <"Some comment">
+					 "foo"
+		'''
+		
+		model.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testPropagationForScopingForImplicitEnumType() {
 		val model = '''
 		enum FooEnum:
