@@ -19,25 +19,46 @@ package com.regnosys.rosetta.types;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public class RDataType extends RAnnotateType {
 	private final Data data;
-	private final ModelSymbolId symbolId;
+	
+	private RType superType = null;
+	private ModelSymbolId symbolId = null;
+	
+	private final TypeSystem typeSystem;
+	private final ModelIdProvider modelIdProvider;
 
-	public RDataType(final Data data, final ModelSymbolId symbolId) {
+	public RDataType(final Data data, final TypeSystem typeSystem, final ModelIdProvider modelIdProvider) {
 		super();
 		this.data = data;
-		this.symbolId = symbolId;
+		
+		this.typeSystem = typeSystem;
+		this.modelIdProvider = modelIdProvider;
 	}
 	
 	@Override
 	public ModelSymbolId getSymbolId() {
+		if (this.symbolId == null) {
+			this.symbolId = modelIdProvider.getSymbolId(data);;
+		}
 		return this.symbolId;
 	}
 
 	public Data getData() {
 		return this.data;
+	}
+	
+	public RType getSuperType() {
+		if (data.hasSuperType()) {
+			if (this.superType == null) {
+				this.superType = typeSystem.typeCallToRType(data.getSuperType());
+			}
+			return this.superType;
+		}
+		return null;
 	}
 
 	@Override

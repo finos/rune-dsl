@@ -2,7 +2,6 @@ package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
@@ -18,29 +17,22 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil
-import com.rosetta.model.lib.path.RosettaPath
 import java.util.Collection
 import java.util.List
-import java.util.Map
 import java.util.Set
 import javax.inject.Inject
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import org.eclipse.emf.ecore.resource.ResourceSet
 import com.regnosys.rosetta.rosetta.RosettaRecordType
-import java.util.Optional
 import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.rosetta.RosettaReport
-import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.types.RAliasType
 
 class RosettaExtensions {
 	
-	@Inject ExternalAnnotationUtil externalAnn
 	@Inject RBuiltinTypeService builtins
 	
 	def boolean isResolved(EObject obj) {
@@ -53,7 +45,7 @@ class RosettaExtensions {
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
 			RDataType:
-				t.data.allAttributes
+				t.allAttributes
 			REnumType:
 				t.enumeration.allEnumValues
 			RRecordType: {
@@ -68,29 +60,38 @@ class RosettaExtensions {
 		}
 	}
 	
-	def Set<Data> getAllSuperTypes(Data clazz) {
-		doGetSuperTypes(clazz, newLinkedHashSet)
+	def Set<RDataType> getAllSuperDataTypes(RDataType t) {
+		doGetSuperTypes(t, newLinkedHashSet)
 	}
 	
-	private def Set<Data> doGetSuperTypes(Data clazz, Set<Data> seenClasses) {
-		if(clazz !== null && seenClasses.add(clazz)) 
-			doGetSuperTypes(clazz.superType, seenClasses)
-		return seenClasses
+	private def Set<RDataType> doGetSuperTypes(RType t, Set<RDataType> seenTypes) {
+		if(t !== null) {
+			if (t instanceof RDataType) {
+				seenTypes.add(t)
+				val s = t.superType
+				doGetSuperTypes(s, seenTypes)
+			} else if (t instanceof RAliasType) {
+				val s = t.refersTo
+				doGetSuperTypes(s, seenTypes)
+			}
+		}
+		return seenTypes
 	}
 
-	def getAllAttributes(Data clazz) {
-		clazz.allSuperTypes.map[attributes].flatten
+	def getAllAttributes(RDataType t) {
+		t.allSuperDataTypes.flatMap[data.attributes]
 	}
 	
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
 	}
 	
-	 def List<Attribute>allNonOverridesAttributes(Data data) {
+	 def List<Attribute>allNonOverridesAttributes(RDataType t) {
 		val atts = newArrayList;
-		atts.addAll(data.attributes)
-		if (data.hasSuperType) {
-			val attsWithSuper = data.superType.allNonOverridesAttributes
+		atts.addAll(t.data.attributes)
+		val s = t.superType
+		if (s !== null && s instanceof RDataType) {
+			val attsWithSuper = (s as RDataType).allNonOverridesAttributes
 			val result = newArrayList
 			attsWithSuper.forEach[
 				val overridenAtt = atts.findFirst[att| att.name == name]
@@ -253,57 +254,5 @@ class RosettaExtensions {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
-	}
-	
-	/**
-	 * Get all reporting rules for a report
-	 */
-	def getAllReportingRules(RosettaReport report) {
-		getAllReportingRules(report.reportType, Optional.ofNullable(report.ruleSource))
-	}
-	
-	def getAllReportingRules(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
-		val rules = newHashMap
-		val path = RosettaPath.valueOf(type.name)
-		type.collectReportingRules(path, ruleSource, rules, newHashSet)
-		rules
-	}
-	
-	/**
-	 * Recursively collects all reporting rules for all attributes
-	 */
-	private def void collectReportingRules(Data dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<Data> collectedTypes) {
-		val attrRules = externalAnn.getAllRuleReferencesForType(ruleSource, dataType)
-		
-		dataType.allNonOverridesAttributes.forEach[attr |
-			val attrType = attr.typeCall.type
-			val attrEx = attr.toExpandedAttribute
-			val rule = attrRules.get(attr)
-			
-			if (attrEx.builtInType || attrEx.isEnum) {
-				if (rule !== null) {
-					visitor.put(new PathAttribute(path, attr), rule.reportingRule)
-				}
-			} 
-			else if (attrType instanceof Data) {
-				if (rule !== null) {
-					visitor.put(new PathAttribute(path, attr), rule.reportingRule)
-				}
-				if (collectedTypes.add(attrType)) {
-					val subPath = attrEx.isMultiple ?
-						path.newSubPath(attr.name, 0) :
-						path.newSubPath(attr.name)
-					attrType.collectReportingRules(subPath, ruleSource, visitor, collectedTypes)
-				}
-			} 
-			else {
-				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType)
-			}
-		]	
-	}
-	
-	@org.eclipse.xtend.lib.annotations.Data static class PathAttribute {
-		RosettaPath path
-		Attribute attr
 	}
 }

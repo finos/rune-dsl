@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
 
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -65,7 +66,9 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Assign
 
 
 class Data extends RosettaType, RootElement, References {
-	refers Data superType
+	contains ReferenceKeyAnnotation referenceKeyAnnotation
+	
+	contains TypeCall superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
 	contains Condition[] conditions
@@ -184,3 +187,6 @@ class RosettaRuleReference {
 	refers RosettaRule reportingRule
 }
 
+class ReferenceKeyAnnotation {
+	contains RosettaExpression expression
+}

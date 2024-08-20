@@ -7,7 +7,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RListType
@@ -33,6 +32,7 @@ import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -42,18 +42,18 @@ inject extension RBuiltinTypeService builtinTypes
 inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
 	ancestors(Data t) : List<Data>
 	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
-	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
-	allAttributes(Data d) : Iterable<Attribute>
+	allAttributes(RDataType t) : Iterable<Attribute>
 	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
-	mayBeEmpty(Data d)
+	mayBeEmpty(RDataType d)
 	
 	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
 	allFeatures(RType t, ResourceSet resourceSet) : Iterable<? extends RosettaFeature>
@@ -61,11 +61,14 @@ auxiliary {
 
 /****** AUXILIARY DEFINITIONS *******/
 auxiliary ancestors(Data t) {
-	getAll(t,
-		SimplePackage::eINSTANCE.data_SuperType,
-		SimplePackage::eINSTANCE.data_SuperType,
-		typeof(Data)
-	)
+	val s = t.superType
+	if (s !== null) {
+		val st = s.type
+		if (st instanceof Data) {
+			return newArrayList(#[st] + ancestors(st))
+		}
+	}
+	return newArrayList()
 }
 auxiliary ancestorEnums(RosettaEnumeration t) {
 	getAll(t,
@@ -79,113 +82,6 @@ auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 	or
 	return false
 }
-auxiliary join(RDataType t1, RDataType t2) {
-	val st1 = ancestors(t1.^data)
-	st1.add(0, t1.^data)
-	val st2 = ancestors(t2.^data)
-	st2.add(0, t2.^data)
-	val result = st2.findFirst[st1.contains(it)]
-	if (result === null) {
-		return ANY
-	}
-	return new RDataType(result, result.symbolId)
-}
-auxiliary join(REnumType t1, REnumType t2) {
-	val st1 = ancestorEnums(t1.enumeration)
-	st1.add(0, t1.enumeration)
-	val st2 = ancestorEnums(t2.enumeration)
-	st2.add(0, t2.enumeration)
-	val result = st2.findFirst[st1.contains(it)]
-	if (result === null) {
-		return ANY
-	}
-	return new REnumType(result, result.symbolId)
-}
-auxiliary join(RNumberType t1, RNumberType t2) {
-	t1.join(t2)
-}
-auxiliary join(RStringType t1, RStringType t2) {
-	t1.join(t2)
-}
-auxiliary join(RBasicType t1, RBasicType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t1 == NOTHING) {
-		return t2
-	} else if (t2 == NOTHING) {
-		return t1
-	}
-	return ANY
-}
-auxiliary join(RBasicType t1, RType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t1 == NOTHING) {
-		return t2
-	}
-	return ANY
-}
-auxiliary join(RType t1, RBasicType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t2 == NOTHING) {
-		return t1
-	}
-	return ANY
-}
-auxiliary join(RAliasType t1, RAliasType t2) {
-	if (t1 == t2) {
-		return t1
-	} else if (t1.typeFunction == t2.typeFunction) {
-		val typeFunc = t1.typeFunction
-		// Attempt to keep the alias
-		val underlyingJoin = join(t1.refersTo, t2.refersTo)
-		val aliasParams = typeFunc.reverse(underlyingJoin)
-		return aliasParams.<RType>map[new RAliasType(typeFunc, it, underlyingJoin)]
-			.orElse(underlyingJoin)
-	} else {
-		val superAliases = newArrayList
-		var RType curr = t1
-		while (curr instanceof RAliasType) {
-			superAliases.add(curr)
-			curr = curr.refersTo
-		}
-		curr = t2
-		while (curr instanceof RAliasType) {
-			val tf = curr.typeFunction
-			val match = superAliases.findFirst[tf == typeFunction]
-			if (match !== null) {
-				return join(match, curr)
-			}
-			curr = curr.refersTo
-		}
-		return join(t1.refersTo, t2.refersTo)
-	}
-}
-auxiliary join(RAliasType t1, RType t2) {
-	return join(t1.refersTo, t2)
-}
-auxiliary join(RType t1, RAliasType t2) {
-	return join(t1, t2.refersTo)
-}
-auxiliary join(RAliasType t1, RBasicType t2) {
-	if (t2 == NOTHING) {
-		return t1
-	}
-	return join(t1.refersTo, t2)
-}
-auxiliary join(RBasicType t1, RAliasType t2) {
-	if (t1 == NOTHING) {
-		return t2
-	}
-	return join(t1, t2.refersTo)
-}
-auxiliary join(RType t1, RType t2) {
-	if (t1 == t2) {
-		return t1
-	}
-	return ANY
-}
 auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	if (c1.unbounded || c2.unbounded) {
 		return createConstraint(Math.min(c1.inf, c2.inf))
@@ -194,14 +90,15 @@ auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	}
 }
 auxiliary listJoin(RListType t1, RListType t2) {
-	val sup = join(t1.itemType, t2.itemType);
+	val sup = typeSystem.join(t1.itemType, t2.itemType);
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
-auxiliary allAttributes(Data d) {
-	if (d.superType === null) {
-		return d.attributes;
+auxiliary allAttributes(RDataType t) {
+	val s = t.superType
+	if (s !== null && s instanceof RDataType) {
+		return allAttributes(s as RDataType) + t.^data.attributes
 	} else {
-		return allAttributes(d.superType) + d.attributes;
+		return t.^data.attributes
 	}
 }
 auxiliary allEnumValues(RosettaEnumeration e) {
@@ -211,7 +108,7 @@ auxiliary allEnumValues(RosettaEnumeration e) {
 		return allEnumValues(e.superType) + e.enumValues;
 	}
 }
-auxiliary mayBeEmpty(Data d) {
+auxiliary mayBeEmpty(RDataType d) {
 	d.allAttributes.forall[
 		card.inf === 0
 	]
@@ -256,7 +153,7 @@ auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, R
 auxiliary allFeatures(RType t, ResourceSet resourceSet) {
 	switch t {
 		RDataType:
-			t.^data.allAttributes
+			t.allAttributes
 		REnumType:
 			t.enumeration.allEnumValues
 		RRecordType: {

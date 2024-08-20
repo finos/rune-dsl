@@ -42,16 +42,16 @@ public class DeepFeatureCallUtil {
 		
 		Map<String, Attribute> deepIntersection = null;
 		Map<String, Attribute> result = new HashMap<>();
-		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
+		for (Attribute attr : ext.allNonOverridesAttributes(type)) {
 			result.put(attr.getName(), attr);
 		}
-		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
+		for (Attribute attr : ext.allNonOverridesAttributes(type)) {
 			RType attrType = typeProvider.getRTypeOfSymbol(attr);
 			Map<String, Attribute> attrDeepFeatureMap;
 			if (attrType instanceof RDataType) {
 				RDataType attrDataType = (RDataType)attrType;
 				attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
-				for (Attribute attrFeature : ext.allNonOverridesAttributes(attrDataType.getData())) {
+				for (Attribute attrFeature : ext.allNonOverridesAttributes(attrDataType)) {
 					attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
 				}
 			} else {

@@ -31,6 +31,7 @@ import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -258,7 +259,9 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 			getBaseComplexType(ct)
 				.ifPresent(base -> {
 					Data superType = xsdMapping.getRosettaTypeFromComplex(base);
-					data.setSuperType(superType);
+					TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
+					typeCall.setType(superType);
+					data.setSuperType(typeCall);
 				});
 			
 			// If the complex type extends a simple type, add the corresponding type
