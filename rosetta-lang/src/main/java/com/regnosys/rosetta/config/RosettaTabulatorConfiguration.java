@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.Validate;
+
 public class RosettaTabulatorConfiguration {
 	private final List<String> annotations;
 
@@ -12,6 +14,8 @@ public class RosettaTabulatorConfiguration {
 		this(Collections.emptyList());
 	}
 	public RosettaTabulatorConfiguration(List<String> annotations) {
+		Validate.noNullElements(annotations);
+		
 		this.annotations = annotations;
 	}
 
