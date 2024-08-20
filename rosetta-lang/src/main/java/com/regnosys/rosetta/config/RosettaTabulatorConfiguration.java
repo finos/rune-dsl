@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.config;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -7,6 +8,9 @@ import javax.inject.Inject;
 public class RosettaTabulatorConfiguration {
 	private final List<String> annotations;
 
+	public RosettaTabulatorConfiguration() {
+		this(Collections.emptyList());
+	}
 	public RosettaTabulatorConfiguration(List<String> annotations) {
 		this.annotations = annotations;
 	}
