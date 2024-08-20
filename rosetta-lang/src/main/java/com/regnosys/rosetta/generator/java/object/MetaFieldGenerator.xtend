@@ -84,37 +84,43 @@ class MetaFieldGenerator {
 		
 		//find all the reference types
 		val namespaceClasses = Multimaps.index(modelClasses, [c|c.namespace]).asMap
-		for (nsc: namespaceClasses.entrySet) {
+		for (nsc : namespaceClasses.entrySet) {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.filter(Data).flatMap[expandedAttributes].filter[hasMetas && metas.exists[name=="reference" || name=="address"]].toSet
-			
-			for (ref:refs) {
-				val targetModel = ref.type.model
-				if (targetModel.shouldGenerate) {
+			val refs = nsc.value.filter(Data).flatMap[expandedAttributes].filter [
+				hasMetas && metas.exists[name == "reference" || name == "address"]
+			].toSet
+
+			if (nsc.value.head.model.shouldGenerate) {
+				for (ref : refs) {
+					val targetModel = ref.type.model
 					val targetPackage = new RootPackage(targetModel)
 					val metaJt = ref.toMetaJavaType
-					
+
 					if (ctx.cancelIndicator.canceled) {
 						return
 					}
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, ref.rosettaType))
+					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''',
+						referenceWithMeta(targetPackage, metaJt, ref.rosettaType))
+
 				}
 			}
+			
+
 			//find all the metaed types
 			val metas =  nsc.value.filter(Data).flatMap[expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].toSet
-			for (meta:metas) {
-				val targetModel = meta.type.model
-				if (targetModel.shouldGenerate) {
-					val targetPackage = new RootPackage(targetModel)
-					val metaJt = meta.toMetaJavaType
-					
-					if (ctx.cancelIndicator.canceled) {
-						return
-					}
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.rosettaType))
-				}
+			if (nsc.value.head.model.shouldGenerate) {
+				for (meta:metas) {
+					val targetModel = meta.type.model
+						val targetPackage = new RootPackage(targetModel)
+						val metaJt = meta.toMetaJavaType
+						
+						if (ctx.cancelIndicator.canceled) {
+							return
+						}
+						fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.rosettaType))
+				}	
 			}
 		}
 	}
