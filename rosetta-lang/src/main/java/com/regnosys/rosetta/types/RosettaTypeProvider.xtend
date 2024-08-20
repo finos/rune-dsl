@@ -542,7 +542,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseAsReferenceOperation(AsReferenceOperation expr, Map<EObject, RType> context) {
-		NOTHING
+		expr.expectedTypeFromContainer ?: NOTHING
 	}
 	
 }

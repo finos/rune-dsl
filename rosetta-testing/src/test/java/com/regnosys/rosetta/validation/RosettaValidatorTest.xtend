@@ -70,6 +70,28 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testReferenceTypeChecking() {
+		val model = '''
+		type Foo:
+		  [reference-key attr]
+		  attr int (1..1)
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_EXPRESSION, TYPE_ERROR, "Expected type 'string' but was 'int'")
+		
+		"42 as-reference"
+			.parseExpression
+			.assertError(AS_REFERENCE_OPERATION, null, "The argument of as-reference should be a string.")
+	}
+	
+	@Test
+	def void testReferenceWithNoTypeContext() {
+		"\"foo\" as-reference"
+			.parseExpression
+			.assertError(AS_REFERENCE_OPERATION, null, "The type of the reference is unknown.")
+	}
+	
+	@Test
 	def void testUseBasicTypeExtensionWithJoin() {
 		'''
 			namespace test

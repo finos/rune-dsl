@@ -135,6 +135,8 @@ import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
+import com.rosetta.model.lib.meta.ReferenceService
+import com.rosetta.util.types.JavaClass
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1083,41 +1085,56 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val type = typeProvider.getRType(expr).stripFromTypeAliases
 		val clazz = type.toJavaReferenceType
 		if (type instanceof RDataType) {
-			if (expr.values.empty) {
-				JavaExpression.from('''
-					«clazz».builder()
-						.build()
-					''',
-					clazz
-				)
-			} else {
-				expr.values.map[pair|
-					val attr = pair.key as Attribute
-					val attrExpr = pair.value
-					val isReference = attr.isReference
-					val assignAsKey = attrExpr instanceof AsKeyOperation
-					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
-						.collapseToSingleExpression(context.scope)
-						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
-				].reduce[acc,attrCode|
-					acc.then(attrCode, [allSetCode,setAttr|
-						JavaExpression.from(
-							'''
-							«allSetCode»
-							«setAttr»
-							''',
-							null
-						)], context.scope
-					)
-				].mapExpression[
+			val buildExpr = if (expr.values.empty) {
 					JavaExpression.from('''
 						«clazz».builder()
-							«it»
-							.build()
-						''',
+							.build()''',
 						clazz
 					)
-				]
+				} else {
+					expr.values.map[pair|
+						val attr = pair.key as Attribute
+						val attrExpr = pair.value
+						val isReference = attr.isReference
+						val assignAsKey = attrExpr instanceof AsKeyOperation
+						evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
+							.collapseToSingleExpression(context.scope)
+							.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
+					].reduce[acc,attrCode|
+						acc.then(attrCode, [allSetCode,setAttr|
+							JavaExpression.from(
+								'''
+								«allSetCode»
+								«setAttr»
+								''',
+								null
+							)], context.scope
+						)
+					].mapExpression[
+						JavaExpression.from('''
+							«clazz».builder()
+								«it»
+								.build()''',
+							clazz
+						)
+					]
+				}
+			if (type.data.referenceKeyAnnotation === null) {
+				buildExpr
+			} else {
+				val referenceService = JavaClass.from(ReferenceService).toDependencyInstance
+				val buildExprAsVariable = buildExpr
+					.declareAsVariable(true, type.name.toFirstLower, context.scope)
+				val keyExpr = type.data.referenceKeyAnnotation.expression
+				val referenceKeyScope = context.scope.childScope("Key computation of " + clazz.simpleName)
+				referenceKeyScope.createKeySynonym(keyExpr.implicitVarInContext, buildExpr)
+				buildExprAsVariable
+					.then(
+						keyExpr.javaCode(STRING, referenceKeyScope),
+						[instanceCode, keyCode|JavaExpression.from('''«context.scope.getIdentifierOrThrow(referenceService)».register(«instanceCode», «keyCode», «clazz».class)''', clazz)],
+						context.scope
+					)
+					
 			}
 		} else { // type instanceof RRecordType
 			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(key, value, false, false, context.scope)])
@@ -1254,7 +1271,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseAsReferenceOperation(AsReferenceOperation expr, Context context) {
-		JavaExpression.NULL
+		val type = typeProvider.getRType(expr).toJavaReferenceType
+		val referenceService = JavaClass.from(ReferenceService).toDependencyInstance
+		expr.argument.javaCode(STRING, context.scope)
+			.collapseToSingleExpression(context.scope)
+			.mapExpression[JavaExpression.from('''«context.scope.getIdentifierOrThrow(referenceService)».getProxy(«it», «type».class)''', type)]
 	}
 	
 }

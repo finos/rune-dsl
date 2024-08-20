@@ -142,7 +142,11 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	@Override
 	public String toString() {
 		StringConcatenation repr = new StringConcatenation();
-		repr.append(this);
+		repr.append(new StringConcatenationClient() {
+			protected void appendTo(TargetStringConcatenation target) {
+				JavaConditionalExpression.this.appendTo(target);
+			}
+		});
 		return repr.toString();
 	}
 }

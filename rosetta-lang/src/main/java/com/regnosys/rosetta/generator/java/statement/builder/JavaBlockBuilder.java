@@ -155,8 +155,11 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		result.append("{");
 		result.newLine();
 		result.append("\t");
-		result.append(statements, "\t");
-		result.newLine();
+		statements.forEach(stat -> {
+			result.append(stat, "\t");
+			result.newLine();
+			result.append("\t");
+		});
 		result.append(lastStatement, "\t");
 		result.newLine();
 		result.append('}');

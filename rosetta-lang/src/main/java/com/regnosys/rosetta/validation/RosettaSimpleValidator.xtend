@@ -121,6 +121,9 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.ReferenceKeyAnnotation
+import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
+import com.regnosys.rosetta.types.ExpectedTypeProvider
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -142,6 +145,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 	@Inject extension TypeValidationUtil
+	@Inject ExpectedTypeProvider expectedTypeProvider
+	
+	@Check
+	def void checkReferenceKey(ReferenceKeyAnnotation ann) {
+		checkType(UNCONSTRAINED_STRING, ann.expression, ann.expression, null, INSIGNIFICANT_INDEX)
+		if (ann.expression.isMulti) {
+			error('''A key should be of single cardinality.''', ann.expression, null)
+		}
+	}
 	
 	@Check
 	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
@@ -1122,6 +1134,22 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (!(type instanceof RBasicType || type instanceof RRecordType || type instanceof REnumType)) {
 				error('''The argument of «ele.operator» should be of a builtin type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
+		}
+	}
+	
+	@Check
+	def void checkAsReferenceOperation(AsReferenceOperation op) {
+		val arg = op.argument
+		if (arg.isResolved) {
+			if (cardinality.isMulti(arg)) {
+				error('''The argument of «op.operator» should be of singular cardinality.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+			if (!arg.RType.isSubtypeOf(UNCONSTRAINED_STRING)) {
+				error('''The argument of «op.operator» should be a string.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+		}
+		if (expectedTypeProvider.getExpectedTypeFromContainer(op) === null) {
+			error('''The type of the reference is unknown.''', op, null)
 		}
 	}
 

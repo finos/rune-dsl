@@ -42,6 +42,75 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testAsReference() {
+		val code = '''			
+			type Foo:
+			  [reference-key id + parentId]
+			  attr int (1..1)
+			  id string (1..1)
+			  parentId string (1..1)
+			 
+			type Bar:
+			  foo Foo (0..1)
+			
+			type Qux:
+			  foos Foo (0..*)
+			  bars Bar (0..*)
+			
+			func Create:
+			  output: result Qux (1..1)
+			  set result:
+			    Qux {
+			      foos: [
+			      	"MyIdOtherParentId" as-reference,
+			        Foo {
+			          attr: 42,
+			          id: "MyId",
+			          parentId: "ParentId"
+			        },
+			        Foo {
+			          attr: 42,
+			          id: "MyId",
+			          parentId: "OtherParentId"
+			        }
+			      ],
+			      bars: [
+			        Bar {
+			          foo: "MyIdParentId" as-reference
+			        }
+			      ]
+			    }
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val foo1 = classes.createInstanceUsingBuilder("Foo", #{
+			"attr" -> 42,
+			"id" -> "MyId",
+			"parentId" -> "ParentId"
+		})
+		val foo2 = classes.createInstanceUsingBuilder("Foo", #{
+			"attr" -> 42,
+			"id" -> "MyId",
+			"parentId" -> "OtherParentId"
+		})
+		val expectedQux = classes.createInstanceUsingBuilder("Qux", #{
+			"foos" -> #[
+				foo2, foo1, foo2
+			],
+			"bars" -> #[
+				classes.createInstanceUsingBuilder("Bar", #{
+					"foo" -> foo1
+				})
+			]
+		})
+		 
+        val someFunc = classes.createFunc("Create")
+        
+        assertEquals(expectedQux, someFunc.invokeFunc(expectedQux.class))
+	}
+	
+	@Test
 	def void switchOperationWithNoMatchesReturnsDefaultWithImplicitEnums() {
 		val code = '''			
 			enum SomeEnum:

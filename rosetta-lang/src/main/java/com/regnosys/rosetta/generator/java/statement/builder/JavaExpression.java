@@ -126,7 +126,11 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	@Override
 	public String toString() {
 		StringConcatenation repr = new StringConcatenation();
-		repr.append(this);
+		repr.append(new StringConcatenationClient() {
+			protected void appendTo(TargetStringConcatenation target) {
+				JavaExpression.this.appendTo(target);
+			}
+		});
 		return repr.toString();
 	}
 }
