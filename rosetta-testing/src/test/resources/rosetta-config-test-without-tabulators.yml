@@ -1,0 +1,7 @@
+model:
+  name: XYZ Model
+dependencies:
+generators:
+  namespaces:
+  - xyz.*   # project namespace
+  - abc.def # forked namespace

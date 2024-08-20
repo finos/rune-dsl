@@ -223,7 +223,7 @@ class TabulatorGenerator {
 	}
 	
 	private def boolean shouldGenerateLegacyTabulator() {
-		(rosettaConfiguration.generators.tabulators.annotations ?: List.of()).empty
+		rosettaConfiguration.generators.tabulators.annotations.empty
 	}
 	
 	private def TabulatorContext createFunctionTabulatorContext(JavaTypeTranslator typeTranslator, Function func) {
