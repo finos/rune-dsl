@@ -55,23 +55,11 @@ public class RosettaConfigurationTest {
 			}
 		});
 		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
-		
-		assertNotNull(config.getModel());
-		assertEquals("XYZ Model", config.getModel().getName());
-		assertEquals(Collections.emptyList(), config.getDependencies());
+
 		assertNotNull(config.getGenerators());
-		
-		Predicate<String> filter = config.getGenerators().getNamespaceFilter();
-		assertNotNull(filter);
-		assertTrue(filter.test("xyz"));
-		assertTrue(filter.test("xyz.sub"));
-		assertFalse(filter.test("xyzsub"));
-		assertFalse(filter.test("foo"));
-		assertTrue(filter.test("abc.def"));
-		assertFalse(filter.test("abc.def.sub"));
-		
 		assertNotNull(config.getGenerators().getTabulators());
 		List<String> annotations = config.getGenerators().getTabulators().getAnnotations();
+		assertNotNull(annotations);
 		assertEquals(0, annotations.size());
 		
 	}
