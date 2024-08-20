@@ -16,6 +16,8 @@
 
 package com.regnosys.rosetta.generator.java.statement;
 
+import org.eclipse.xtend2.lib.StringConcatenation;
+
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaBlockBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
@@ -118,5 +120,12 @@ public abstract class JavaStatement implements TargetLanguageRepresentation {
 	 */
 	public JavaBlockBuilder append(JavaStatementBuilder builder) {
 		return new JavaBlockBuilder(this.asStatementList(), builder);
+	}
+	
+	@Override
+	public String toString() {
+		StringConcatenation repr = new StringConcatenation();
+		repr.append(this);
+		return repr.toString();
 	}
 }

@@ -67,9 +67,10 @@ class RosettaExtensions {
 	private def Set<RDataType> doGetSuperTypes(RType t, Set<RDataType> seenTypes) {
 		if(t !== null) {
 			if (t instanceof RDataType) {
-				seenTypes.add(t)
-				val s = t.superType
-				doGetSuperTypes(s, seenTypes)
+				if (seenTypes.add(t)) {
+					val s = t.superType
+					doGetSuperTypes(s, seenTypes)
+				}
 			} else if (t instanceof RAliasType) {
 				val s = t.refersTo
 				doGetSuperTypes(s, seenTypes)

@@ -19,6 +19,7 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
@@ -136,5 +137,12 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 				target.append(JavaConditionalExpression.this);
 			}
 		}, commonType);
+	}
+	
+	@Override
+	public String toString() {
+		StringConcatenation repr = new StringConcatenation();
+		repr.append(this);
+		return repr.toString();
 	}
 }

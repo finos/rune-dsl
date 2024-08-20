@@ -215,6 +215,7 @@ class TypeCoercionService {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
 		} else if (actual instanceof RJavaPojoInterface) {
+			// Basic type extension to value
 			// TODO: refactor so we don't need all of this RType crap in this layer
 			var RType t = actual.RType
 			while (t !== null && (t instanceof RDataType || t instanceof RAliasType)) {
@@ -223,6 +224,9 @@ class TypeCoercionService {
 				} else if (t instanceof RAliasType) {
 					t = t.refersTo
 				}
+			}
+			if (t === null) {
+				return Optional.empty
 			}
 			val valueType = translator.toJavaReferenceType(t)
 			return Optional.of(getItemConversion(valueType, expected).map[valueToExpectedConversion|

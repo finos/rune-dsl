@@ -19,6 +19,9 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.eclipse.xtend2.lib.StringConcatenation;
+import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.JavaBlock;
@@ -144,5 +147,19 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	@Override
 	public JavaLambdaBody toLambdaBody() {
 		return completeAsReturn();
+	}
+	
+	@Override
+	public String toString() {
+		StringConcatenation result = new StringConcatenation();
+		result.append("{");
+		result.newLine();
+		result.append("\t");
+		result.append(statements, "\t");
+		result.newLine();
+		result.append(lastStatement, "\t");
+		result.newLine();
+		result.append('}');
+		return result.toString();
 	}
 }

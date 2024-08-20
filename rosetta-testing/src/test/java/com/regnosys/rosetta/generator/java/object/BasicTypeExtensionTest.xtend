@@ -97,7 +97,7 @@ class BasicTypeExtensionTest {
 			
 		
 			/*********************** Builder Interface  ***********************/
-			interface MyStringBuilder extends MyString, Max3StringWithScheme.Max3StringWithSchemeBuilder, RosettaModelObjectBuilder {
+			interface MyStringBuilder extends MyString, Max3StringWithScheme.Max3StringWithSchemeBuilder {
 				MyString.MyStringBuilder setValue(String value);
 				MyString.MyStringBuilder setScheme(String scheme);
 				MyString.MyStringBuilder setFoo(Integer foo);
@@ -276,9 +276,6 @@ class BasicTypeExtensionTest {
 		package com.rosetta.test.model;
 		
 		import com.rosetta.model.lib.RosettaModelObject;
-		import com.rosetta.model.lib.RosettaModelObject.RosettaModelObjectBuilder;
-		import com.rosetta.model.lib.RosettaModelObject.RosettaModelObjectBuilderImpl;
-		import com.rosetta.model.lib.RosettaModelObject.RosettaModelObjectImpl;
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
@@ -337,7 +334,7 @@ class BasicTypeExtensionTest {
 			
 		
 			/*********************** Builder Interface  ***********************/
-			interface Max3StringWithSchemeBuilder extends Max3StringWithScheme, RosettaModelObject.RosettaModelObjectBuilder, RosettaModelObjectBuilder {
+			interface Max3StringWithSchemeBuilder extends Max3StringWithScheme, RosettaModelObjectBuilder {
 				Max3StringWithScheme.Max3StringWithSchemeBuilder setValue(String value);
 				Max3StringWithScheme.Max3StringWithSchemeBuilder setScheme(String scheme);
 		
@@ -352,12 +349,11 @@ class BasicTypeExtensionTest {
 			}
 		
 			/*********************** Immutable Implementation of Max3StringWithScheme  ***********************/
-			class Max3StringWithSchemeImpl extends RosettaModelObject.RosettaModelObjectImpl implements Max3StringWithScheme {
+			class Max3StringWithSchemeImpl implements Max3StringWithScheme {
 				private final String value;
 				private final String scheme;
 				
 				protected Max3StringWithSchemeImpl(Max3StringWithScheme.Max3StringWithSchemeBuilder builder) {
-					super(builder);
 					this.value = builder.getValue();
 					this.scheme = builder.getScheme();
 				}
@@ -387,7 +383,6 @@ class BasicTypeExtensionTest {
 				}
 				
 				protected void setBuilderFields(Max3StringWithScheme.Max3StringWithSchemeBuilder builder) {
-					super.setBuilderFields(builder);
 					ofNullable(getValue()).ifPresent(builder::setValue);
 					ofNullable(getScheme()).ifPresent(builder::setScheme);
 				}
@@ -422,7 +417,7 @@ class BasicTypeExtensionTest {
 			}
 		
 			/*********************** Builder Implementation of Max3StringWithScheme  ***********************/
-			class Max3StringWithSchemeBuilderImpl extends RosettaModelObject.RosettaModelObjectBuilderImpl  implements Max3StringWithScheme.Max3StringWithSchemeBuilder {
+			class Max3StringWithSchemeBuilderImpl implements Max3StringWithScheme.Max3StringWithSchemeBuilder {
 			
 				protected String value;
 				protected String scheme;
@@ -468,13 +463,11 @@ class BasicTypeExtensionTest {
 				@SuppressWarnings("unchecked")
 				@Override
 				public Max3StringWithScheme.Max3StringWithSchemeBuilder prune() {
-					super.prune();
 					return this;
 				}
 				
 				@Override
 				public boolean hasData() {
-					if (super.hasData()) return true;
 					if (getValue()!=null) return true;
 					if (getScheme()!=null) return true;
 					return false;
@@ -483,8 +476,6 @@ class BasicTypeExtensionTest {
 				@SuppressWarnings("unchecked")
 				@Override
 				public Max3StringWithScheme.Max3StringWithSchemeBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-					super.merge(other, merger);
-					
 					Max3StringWithScheme.Max3StringWithSchemeBuilder o = (Max3StringWithScheme.Max3StringWithSchemeBuilder) other;
 					
 					

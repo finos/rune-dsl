@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 
 // Issue https://github.com/finos/rune-dsl/issues/785
 class Issue785 extends AbstractRosettaLanguageServerValidationTest {
+	// NOTE: when I run all IDE tests in Eclipse, this test sometimes fails. If I run it separately, it succeeds.
 	@Test
 	def void testIssue785() {
 		val reportURI = createModel("foo-report.rosetta", '''

@@ -19,6 +19,7 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
@@ -120,5 +121,12 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	@Override
 	public JavaLambdaBody toLambdaBody() {
 		return this;
+	}
+	
+	@Override
+	public String toString() {
+		StringConcatenation repr = new StringConcatenation();
+		repr.append(this);
+		return repr.toString();
 	}
 }

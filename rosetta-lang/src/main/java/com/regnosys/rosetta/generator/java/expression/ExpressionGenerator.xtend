@@ -298,7 +298,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			default:
 				throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
-		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(resultItemType), scope)
+		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
 		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !cardinalityProvider.isFeatureMulti(feature)) {
 			MAPPER_S as JavaGenericTypeDeclaration<?>
 		} else {

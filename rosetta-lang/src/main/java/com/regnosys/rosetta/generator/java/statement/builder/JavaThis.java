@@ -40,4 +40,9 @@ public class JavaThis extends JavaExpression {
 	public void appendTo(TargetStringConcatenation target) {
 		target.append("this");
 	}
+	
+	@Override
+	public String toString() {
+		return "this";
+	}
 }

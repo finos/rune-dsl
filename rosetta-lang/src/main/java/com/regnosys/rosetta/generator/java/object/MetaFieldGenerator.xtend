@@ -92,7 +92,7 @@ class MetaFieldGenerator {
 			val refs = nsc.value.filter(Data).flatMap[dataToType.expandedAttributes].filter[hasMetas && metas.exists[name=="reference" || name=="address"]].toSet
 			
 			for (ref:refs) {
-				val targetModel = EcoreUtil2.getContainerOfType(ref.rosettaType, RosettaModel)
+				val targetModel = EcoreUtil2.getContainerOfType(ref.rosettaType.type, RosettaModel)
 				if (targetModel.shouldGenerate) {
 					val targetPackage = new RootPackage(targetModel.toDottedPath)
 					val metaJt = ref.toMetaJavaType
@@ -106,7 +106,7 @@ class MetaFieldGenerator {
 			//find all the metaed types
 			val metas =  nsc.value.filter(Data).flatMap[dataToType.expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].toSet
 			for (meta:metas) {
-				val targetModel = EcoreUtil2.getContainerOfType(meta.rosettaType, RosettaModel)
+				val targetModel = EcoreUtil2.getContainerOfType(meta.rosettaType.type, RosettaModel)
 				if (targetModel.shouldGenerate) {
 					val targetPackage = new RootPackage(targetModel.toDottedPath)
 					val metaJt = meta.toMetaJavaType
