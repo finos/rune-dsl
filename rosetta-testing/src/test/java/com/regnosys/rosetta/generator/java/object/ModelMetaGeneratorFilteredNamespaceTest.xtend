@@ -17,13 +17,15 @@ class ModelMetaGeneratorFilteredNamespaceTest {
 	
 	@Test
 	def void shouldGenerateBasicTypeReferencesFoo() {
-		val model1Code = '''
+		val model1 = '''
 			namespace model1
 			
 				type Foo:
-		'''.generateCodeForModel(Model1FileConfigProvider)
+		'''
+		
+		val model1Code = model1.generateCodeForModel(Model1FileConfigProvider)
 
-		val model2Code = '''
+		val model2 = '''
 			namespace model2
 			
 			import model1.Foo
@@ -31,7 +33,9 @@ class ModelMetaGeneratorFilteredNamespaceTest {
 				type Bar:
 					foo Foo (1..1)
 					[metadata reference]
-		'''	.generateCodeForModel(Model2FileConfigProvider)
+		'''	
+		
+		val model2Code = #[model1, model2].generateCodeForModel(Model2FileConfigProvider)
 		
 		#[model1Code, model2Code].compileToClassesForModel(Model2FileConfigProvider)
 	}
@@ -46,6 +50,11 @@ class ModelMetaGeneratorFilteredNamespaceTest {
 	def generateCodeForModel(CharSequence model, Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		codeGeneratorTestHelper.generateCode(model)
+	}
+	
+	def generateCodeForModel(List<? extends CharSequence> models, Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
+		codeGeneratorTestHelper.generateCode(models)
 	}
 	
 	def CodeGeneratorTestHelper getCodeGeneratorTestHelper(Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
