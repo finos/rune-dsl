@@ -36,7 +36,7 @@ class CustomConfigTestHelper {
 
 	static private def Injector getInjector(Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val provider = createProvider(configurationFileProvider)
-		provider.injector
+		provider.getInjector
 	}
 
 	static private def RosettaCustomConfigInjectorProvider createProvider(
