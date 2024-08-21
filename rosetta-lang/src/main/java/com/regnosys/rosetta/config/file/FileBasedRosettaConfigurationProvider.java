@@ -37,6 +37,7 @@ public class FileBasedRosettaConfigurationProvider implements Provider<RosettaCo
 				.addMixIn(RosettaGeneratorsConfiguration.class, RosettaGeneratorsConfigurationMixin.class)
 				.addMixIn(RosettaTabulatorConfiguration.class, RosettaTabulatorConfigurationMixin.class);
 		mapper.configOverride(RosettaGeneratorsConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+		mapper.configOverride(RosettaTabulatorConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
         mapper.configOverride(NamespaceFilter.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 		mapper.configOverride(List.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 	}

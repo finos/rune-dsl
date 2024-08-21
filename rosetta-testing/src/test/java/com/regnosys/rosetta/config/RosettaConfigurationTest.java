@@ -17,6 +17,7 @@ public class RosettaConfigurationTest {
 	@Test
 	public void testConfig() {
 		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
+			@SuppressWarnings("unused")
 			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
 				return MyConfigFileProvider.class;
 			}
@@ -45,11 +46,34 @@ public class RosettaConfigurationTest {
 		
 	}
 	
+	@Test
+	public void testConfigWithoutTabulatorsConfig() {
+		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
+			@SuppressWarnings("unused")
+			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
+				return ConfigWithoutTabulatorsFileProvider.class;
+			}
+		});
+		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
+
+		assertNotNull(config.getGenerators());
+		assertNotNull(config.getGenerators().getTabulators());
+		List<String> annotations = config.getGenerators().getTabulators().getAnnotations();
+		assertNotNull(annotations);
+		assertEquals(0, annotations.size());
+		
+	}
+	
 	private static class MyConfigFileProvider extends RosettaConfigurationFileProvider {
 		@Override
 		public URL get() {
 			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test.yml");
 		}
 	}
+	private static class ConfigWithoutTabulatorsFileProvider extends RosettaConfigurationFileProvider {
+		@Override
+		public URL get() {
+			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test-without-tabulators.yml");
+		}
+	}
 }
-;

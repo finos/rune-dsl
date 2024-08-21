@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.config;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -16,6 +17,9 @@ public class RosettaGeneratorsConfiguration {
 		this(n -> true, new RosettaTabulatorConfiguration(List.of()));
 	}
 	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter, RosettaTabulatorConfiguration tabulators) {
+		Objects.requireNonNull(namespaceFilter);
+		Objects.requireNonNull(tabulators);
+		
 		this.namespaceFilter = namespaceFilter;
 		this.rosettaTabulatorConfiguration = tabulators;
 	}
