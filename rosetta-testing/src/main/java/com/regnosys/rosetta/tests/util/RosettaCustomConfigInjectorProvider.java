@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.config;
+package com.regnosys.rosetta.tests.util;
 
 import java.net.URL;
 
