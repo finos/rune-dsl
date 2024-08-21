@@ -1,26 +1,42 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.google.common.collect.Multimaps
+import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
+import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.impl.RosettaFactoryImpl
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.types.TypeSystem
 import com.rosetta.model.lib.GlobalKey
+import com.rosetta.model.lib.meta.BasicRosettaMetaData
+import com.rosetta.model.lib.meta.FieldWithMeta
 import com.rosetta.model.lib.meta.GlobalKeyFields
 import com.rosetta.model.lib.meta.MetaDataFields
 import com.rosetta.model.lib.meta.ReferenceWithMeta
 import com.rosetta.model.lib.meta.TemplateFields
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaParameterizedType
+import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.ArrayList
 import java.util.Collection
 import java.util.List
+import javax.inject.Inject
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 
@@ -51,7 +67,7 @@ class MetaFieldGenerator {
 	@Inject extension TypeSystem
 	@Inject RosettaGeneratorsConfiguration config
 	@Inject extension ModelIdProvider
-	
+
 	 
 	def void generate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
 		// moved from RosettaGenerator
@@ -85,29 +101,33 @@ class MetaFieldGenerator {
 		
 		//find all the reference types
 		val namespaceClasses = Multimaps.index(modelClasses, [c|c.namespace]).asMap
-		for (nsc: namespaceClasses.entrySet) {
+		for (nsc : namespaceClasses.entrySet) {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.filter(Data).flatMap[dataToType.expandedAttributes].filter[hasMetas && metas.exists[name=="reference" || name=="address"]].toSet
+			val refs = nsc.value.filter(Data).flatMap[dataToType.expandedAttributes].filter [
+				hasMetas && metas.exists[name == "reference" || name == "address"]
+			].toSet
 			
-			for (ref:refs) {
+			for (ref : refs) {
 				val targetModel = EcoreUtil2.getContainerOfType(ref.rosettaType.type, RosettaModel)
-				if (targetModel.shouldGenerate) {
-					val targetPackage = new RootPackage(targetModel.toDottedPath)
-					val metaJt = ref.toMetaJavaType
-					
-					if (ctx.cancelIndicator.canceled) {
-						return
-					}
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, ref.rosettaType))
+				val targetPackage = new RootPackage(targetModel.toDottedPath)
+				val metaJt = ref.toMetaJavaType
+
+				if (ctx.cancelIndicator.canceled) {
+					return
 				}
+				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''',
+					referenceWithMeta(targetPackage, metaJt, ref.rosettaType))
 			}
+
+
+
 			//find all the metaed types
 			val metas =  nsc.value.filter(Data).flatMap[dataToType.expandedAttributes].filter[hasMetas && !metas.exists[name=="reference" || name=="address"]].toSet
+
 			for (meta:metas) {
 				val targetModel = EcoreUtil2.getContainerOfType(meta.rosettaType.type, RosettaModel)
-				if (targetModel.shouldGenerate) {
 					val targetPackage = new RootPackage(targetModel.toDottedPath)
 					val metaJt = meta.toMetaJavaType
 					
@@ -115,7 +135,6 @@ class MetaFieldGenerator {
 						return
 					}
 					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.rosettaType))
-				}
 			}
 		}
 	}
@@ -305,10 +324,6 @@ class MetaFieldGenerator {
 		buildClass(root.metaField, body, scope)
 	}
 
-	private def boolean shouldGenerate(RosettaModel model) {
-		config.namespaceFilter.test(model.name) || model.overridden
-	}
-	
 	/** generate once per resource marker */
 	static class MarkerAdapterFactory extends AdapterFactoryImpl {
 

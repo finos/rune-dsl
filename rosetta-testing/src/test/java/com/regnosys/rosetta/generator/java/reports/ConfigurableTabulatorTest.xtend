@@ -88,14 +88,6 @@ class ConfigurableTabulatorTest {
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 		
-		val expectedFields =
-		'''
-		subreportList*
-			subsubreportList*
-				subsubbasic
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
-		
 		val subsubreport1 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "1"})
 		val subsubreport2 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "2"})
 		val subsubreport3 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "3"})

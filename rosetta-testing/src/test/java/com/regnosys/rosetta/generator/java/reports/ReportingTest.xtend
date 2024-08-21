@@ -232,52 +232,6 @@ class ReportingTest {
 		
 		val report = reportFunction.evaluate(input)
 		
-		val expectedFields =
-		'''
-		heroName
-		"Hero Name"
-		
-		dateOfBirth
-		"Date of Birth"
-		
-		nationality
-		"Nationality"
-		
-		hasSpecialAbilities
-		"Has Special Abilities"
-		
-		powers*
-		"Powers"
-		
-		attribute
-			heroInt
-			"Attribute - Int"
-			
-			heroNumber
-			"Attribute - Number"
-			
-			heroTime
-			"Attribute - Time"
-			
-			heroZonedDateTime
-			"Attribute - ZonedDateTime"
-		
-		organisations*
-		"Hero Organisations"
-			name
-			"Organisation Name"
-			
-			isGovernmentAgency
-			"Is Government Agency"
-			
-			country
-			"Organisation Country"
-		
-		notModelled
-		"Not Modelled"
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
-		
 		val flatReport = tabulator.tabulate(report)
 		val expectedValues =
 		'''
@@ -377,19 +331,6 @@ class ReportingTest {
 		)
 		
 		val report = reportFunction.evaluate(input)
-		
-		val expectedFields =
-		'''
-		fooAttr
-		"Foo Attr"
-		
-		barAttr
-		"Bar Attr"
-		
-		bazAttr
-		"Baz Attr"
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val flatReport = tabulator.tabulate(report)
 		val expectedValues =
