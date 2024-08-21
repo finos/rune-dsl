@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.regnosys.rosetta.config.RosettaCustomConfigInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.regnosys.rosetta.tests.util.RosettaCustomConfigInjectorProvider
 import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
