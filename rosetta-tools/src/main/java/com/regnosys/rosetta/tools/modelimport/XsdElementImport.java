@@ -121,7 +121,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 				// Completed by `XsdTypeImport`
 			} else {
 				TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
-				typeCall.setType(data);
+				typeCall.setType(dataType);
 				data.setSuperType(typeCall);
 			}
 		} else {
