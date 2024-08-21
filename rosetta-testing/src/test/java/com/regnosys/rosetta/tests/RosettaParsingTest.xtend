@@ -35,7 +35,7 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
-	def void testFullyQualifiedNamesCanBeUsedInEspression() {
+	def void testFullyQualifiedNamesCanBeUsedInExpression() {
 		val modelBar = '''
 			namespace test.bar
 			
