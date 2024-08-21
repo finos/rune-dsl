@@ -1,18 +1,16 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
-import org.eclipse.xtext.testing.InjectWith
-import org.junit.jupiter.api.Test
-import com.regnosys.rosetta.config.RosettaCustomConfigInjectorProvider
-import com.regnosys.rosetta.RosettaRuntimeModule
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
-import java.net.URL
 import com.google.inject.Injector
+import com.regnosys.rosetta.RosettaRuntimeModule
+import com.regnosys.rosetta.config.RosettaCustomConfigInjectorProvider
+import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
+import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import java.util.List
+import java.net.URL
 import java.util.HashMap
+import java.util.List
+import org.junit.jupiter.api.Test
 
-@InjectWith(RosettaInjectorProvider)
 class ModelMetaGeneratorFilteredNamespaceTest {
 
 	@Test
