@@ -3,6 +3,7 @@ package com.rosetta.model.lib.meta;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +37,10 @@ public class ReferenceService {
 			return null;
 		}
 		return clazz.cast(instance);
+	}
+	
+	public Map<String, Object> getGlobalScope() {
+		return Collections.unmodifiableMap(keyToInstanceMap);
 	}
 
 	private class ProxyInvocationHandler<T> implements InvocationHandler {
