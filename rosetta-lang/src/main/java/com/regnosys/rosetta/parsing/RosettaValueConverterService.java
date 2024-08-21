@@ -37,6 +37,11 @@ public class RosettaValueConverterService extends DefaultTerminalConverters {
 		return validIDValueConverter;
 	}
 	
+	@ValueConverter(rule = "QualifiedName")
+	public IValueConverter<String> getQualifiedNameConverter() {
+		return validIDValueConverter;
+	}
+	
 	@ValueConverter(rule = "Integer")
 	public IValueConverter<BigInteger> getBigIntegerConverter() {
 		return bigIntegerConverter;
