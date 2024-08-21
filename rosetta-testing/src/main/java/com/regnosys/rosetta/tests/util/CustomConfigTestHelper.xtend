@@ -8,7 +8,7 @@ import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 
 class CustomConfigTestHelper {
-	def compileToClassesForModel(List<HashMap<String, String>> code,
+	static def compileToClassesForModel(List<HashMap<String, String>> code,
 		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		val generatedCode = newHashMap
@@ -16,30 +16,30 @@ class CustomConfigTestHelper {
 		codeGeneratorTestHelper.compileToClasses(generatedCode)
 	}
 
-	def generateCodeForModel(CharSequence model,
+	static def generateCodeForModel(CharSequence model,
 		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		codeGeneratorTestHelper.generateCode(model)
 	}
 
-	def generateCodeForModel(List<? extends CharSequence> models,
+	static def generateCodeForModel(List<? extends CharSequence> models,
 		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		codeGeneratorTestHelper.generateCode(models)
 	}
 
-	private def CodeGeneratorTestHelper getCodeGeneratorTestHelper(
+	static private def CodeGeneratorTestHelper getCodeGeneratorTestHelper(
 		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val injector = getInjector(configurationFileProvider)
 		injector.getInstance(CodeGeneratorTestHelper)
 	}
 
-	private def Injector getInjector(Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+	static private def Injector getInjector(Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val provider = createProvider(configurationFileProvider)
 		provider.injector
 	}
 
-	private def RosettaCustomConfigInjectorProvider createProvider(
+	static private def RosettaCustomConfigInjectorProvider createProvider(
 		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 
 		new RosettaCustomConfigInjectorProvider() {

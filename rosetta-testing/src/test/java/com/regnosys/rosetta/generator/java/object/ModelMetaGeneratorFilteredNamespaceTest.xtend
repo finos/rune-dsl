@@ -3,7 +3,7 @@ package com.regnosys.rosetta.generator.java.object
 import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
 import java.net.URL
 import org.junit.jupiter.api.Test
-import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper
+import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
 
 class ModelMetaGeneratorFilteredNamespaceTest {
 
