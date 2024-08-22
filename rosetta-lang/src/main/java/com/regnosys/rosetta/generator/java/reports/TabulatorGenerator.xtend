@@ -255,9 +255,9 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def boolean isDataTabulatable(Data type) {
+	private def boolean isDataTabulatable(Data data) {
 		val types = rosettaConfiguration.generators.tabulators.types
-		val fqn = String.format("%s.%s", type.model.name, type.name)
+		val fqn = String.format("%s.%s", data.model.name, data.name)
 		types.contains(fqn)
 	}
 
