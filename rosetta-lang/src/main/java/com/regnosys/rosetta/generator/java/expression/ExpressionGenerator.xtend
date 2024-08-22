@@ -162,6 +162,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject TranslateUtil translateUtil
 	
+	//TODO: implement meta constructor generation
+	
 	/**
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters

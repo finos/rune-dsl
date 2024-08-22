@@ -32,7 +32,48 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+
+	@Test
+	def void metaConstructorValidatesValueType() {
+		val model = '''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			set result:
+			  NumberWithScheme ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_STRING_LITERAL, TYPE_ERROR, "Expected type 'number' but was 'string'")
+
+	}
 	
+	@Test
+	def void metaConstructorOnlySetValueWnenSuperTypeExists() {
+		val model = '''
+			type Foo:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result Foo (1..1)
+			  
+			set result:
+			  Foo ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null, "The type 'Foo' must be an extension of a literal type to set a meta value")
+
+	}
+		
+		
 	@Test
 	def void metaConstructorValueAsExpressionVariable() {
 		'''

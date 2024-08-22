@@ -116,10 +116,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
 				
 		interior(
-			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
+			expr.regionFor.keyword(leftCurlyBracketKeyword_3)
 				.prepend[oneSpace]
 				.append[newLine],
-			expr.regionFor.keyword(rightCurlyBracketKeyword_4)
+			expr.regionFor.keyword(rightCurlyBracketKeyword_5)
 				.prepend[newLine],
 			[indent]
 		)
