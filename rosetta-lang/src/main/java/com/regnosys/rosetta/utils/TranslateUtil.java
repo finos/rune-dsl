@@ -73,6 +73,10 @@ public class TranslateUtil {
 	}
 
 	public boolean matches(Translation translation, RType resultType, List<RType> inputTypes) {
+		if (resultType == null) {
+			// For invalid models
+			return false;
+		}
 		// Check parameters match
 		if (translation.getParameters().size() != inputTypes.size()) {
 			return false;
@@ -80,6 +84,10 @@ public class TranslateUtil {
 		for (int i=0;i<inputTypes.size();i++) {
 			RType inputType = inputTypes.get(i);
 			RType actualInputType = typeProvider.getRTypeOfSymbol(translation.getParameters().get(i));
+			if (actualInputType == null) {
+				// For invalid models
+				return false;
+			}
 			if (!typeSystem.isSubtypeOf(inputType, actualInputType)) {
 				return false;
 			}

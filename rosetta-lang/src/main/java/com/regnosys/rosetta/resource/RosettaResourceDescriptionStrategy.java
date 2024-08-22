@@ -63,7 +63,9 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
 	public boolean createImplicitReferenceDescriptions(EObject from, IAcceptor<IImplicitReferenceDescription> acceptor) {
 		if (from instanceof TranslateDispatchOperation) {
 			Translation match = translateUtil.findLastMatch((TranslateDispatchOperation) from);
-			acceptor.accept(createImplicitReferenceDescription(from, match));
+			if (match != null) {
+				acceptor.accept(createImplicitReferenceDescription(from, match));
+			}
 		}
 		return true;
 	}

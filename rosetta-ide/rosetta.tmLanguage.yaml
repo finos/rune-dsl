@@ -44,7 +44,7 @@ variables:
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
-  expressionEndIgnoringComma: '(?=\)|\]|\})|(?={{wordStart}}to{{wordEnd}})|({{sectionEnd}})(?!{{wordStart}}translate{{wordEnd}})'
+  expressionEndIgnoringComma: '(?=\)|\]|\})|(?={{wordStart}}to{{wordEnd}}\s)|{{sectionEnd}}'
   expressionEnd: '(?=,)|{{expressionEndIgnoringComma}}'
   functionalOperationEnd: (?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
 
@@ -1119,6 +1119,33 @@ repository:
         - include: '#comment'
         - include: '#documentationFollowedByExpression'
 
+      expressionWithTranslate:
+        name: meta.expression.rosetta
+        begin: (?!,|\(|\s|^|$)
+        end: '{{expressionEnd}}|(?!{{wordStart}}translate{{wordEnd}})'
+        patterns:
+        - include: '#comment'
+        - name: meta.translate-operation.rosetta
+          begin: '\s{{wordStart}}(trans){{wordEnd}}'
+          beginCaptures:
+            1: { name: keyword.operator.word.rosetta }
+          end: '{{expressionEnd}}'
+          patterns:
+          - include: '#comment'
+          - begin: '(?<={{wordStart}}translate{{wordEnd}})'
+            end: ({{wordStart}}to{{wordEnd}})|{{expressionEndIgnoringComma}}
+            endCaptures:
+              1: { name: keyword.operator.word.rosetta }
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+          - begin: '(?<={{wordStart}}to{{wordEnd}})'
+            end: '{{expressionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#typeCall'
+        - include: '#expression'
+      
       expression:
         name: meta.expression.rosetta
         begin: (?!,|\(|\s|^|$)
@@ -1210,32 +1237,28 @@ repository:
           begin: '{{wordStart}}to-enum{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.operator.word.rosetta }
-          end: '{{identifier}}'
+          end: '{{qualifiedIdentifier}}'
           endCaptures:
             0: { name: entity.name.type.enum.rosetta }
           patterns:
           - include: '#comment'
-        - name: meta.translate-operation.rosetta
-          begin: '{{wordStart}}translate{{wordEnd}}'
+        - name: meta.switch-operation.rosetta
+          begin: '{{wordStart}}switch{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.operator.word.rosetta }
-          end: '{{expressionEnd}}|(?={{wordStart}}translate{{wordEnd}})'
+          end: '{{expressionEndIgnoringComma}}'
           patterns:
           - include: '#comment'
-          - begin: '(?<={{wordStart}}translate{{wordEnd}})'
-            end: ({{wordStart}}to{{wordEnd}})|{{expressionEndIgnoringComma}}
-            endCaptures:
-              1: { name: keyword.operator.word.rosetta }
+          - begin: '{{wordStart}}then{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.control.conditional.then.rosetta }
+            end: '{{expressionEnd}}'
             patterns:
             - include: '#comment'
             - include: '#expression'
-          - begin: '(?<={{wordStart}}to{{wordEnd}})'
-            end: '{{expressionEnd}}|(?={{wordStart}}translate{{wordEnd}})'
-            patterns:
-            - include: '#comment'
-            - include: '#typeCall'
+          - include: '#expression'
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|switch|to-string|as-reference){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|as-reference){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable
@@ -1246,7 +1269,7 @@ repository:
         begin: (\{)
         beginCaptures:
           1: { name: punctuation.constructor.begin.rosetta }
-        end: (\})|{{expressionEnd}}
+        end: (\})|{{expressionEndIgnoringComma}}
         endCaptures:
           1: { name: punctuation.constructor.end.rosetta }
         patterns:

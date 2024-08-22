@@ -1148,8 +1148,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				error('''The argument of «op.operator» should be a string.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 		}
-		if (expectedTypeProvider.getExpectedTypeFromContainer(op) === null) {
+		val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(op)
+		if (expectedType === null) {
 			error('''The type of the reference is unknown.''', op, null)
+		} else if (!(expectedType.stripFromTypeAliases instanceof RDataType)) {
+			error('''A reference may not be of type «expectedType».''', op, null)
 		}
 	}
 
