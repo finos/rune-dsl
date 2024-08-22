@@ -14,7 +14,7 @@ public class RosettaGeneratorsConfiguration {
 	private final RosettaTabulatorConfiguration rosettaTabulatorConfiguration;
 
 	public RosettaGeneratorsConfiguration() {
-		this(n -> true, new RosettaTabulatorConfiguration(List.of()));
+		this(n -> true, new RosettaTabulatorConfiguration(List.of(), List.of()));
 	}
 	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter, RosettaTabulatorConfiguration tabulators) {
 		Objects.requireNonNull(namespaceFilter);
