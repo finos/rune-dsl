@@ -792,7 +792,7 @@ RosettaCalcPrimary returns RosettaExpression:
 ;
 
 RosettaCalcConstructorExpression returns RosettaExpression:
-	{RosettaConstructorExpression} typeCall=TypeCall '{' ((values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)* (',' | ',' implicitEmpty?='...')?) | implicitEmpty?='...')? '}'
+	{RosettaConstructorExpression} typeCall=TypeCall ('[' valueExpression=RosettaCalcExpression ']')? '{' ((values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)* (',' | ',' implicitEmpty?='...')?) | implicitEmpty?='...')? '}'
 ;
 
 ConstructorKeyValuePair:

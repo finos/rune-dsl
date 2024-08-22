@@ -34,6 +34,60 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void metaConstructorValueAsExpressionVariable() {
+		'''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			  alias someValue: 10*2
+			  
+			set result:
+			  NumberWithScheme [someValue] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void metaConstructorValueAsExpression() {
+		'''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			set result:
+			  NumberWithScheme [10*2] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void metaConstructorSyntaxIsValid() {
+		'''
+			type StringWithScheme extends string:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result StringWithScheme (1..1)
+			  
+			set result:
+			  StringWithScheme ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}
+	
+	
+	@Test
 	def void testReferenceResolving() {
 		'''
 		type Foo:

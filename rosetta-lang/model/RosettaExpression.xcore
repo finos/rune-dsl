@@ -164,6 +164,7 @@ class RosettaConditionalExpression extends RosettaExpression {
 
 class RosettaConstructorExpression extends RosettaExpression, RosettaTyped {
 	contains ConstructorKeyValuePair[] values
+	contains RosettaExpression valueExpression
 	boolean implicitEmpty
 }
 
