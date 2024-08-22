@@ -175,6 +175,7 @@ class RosettaGenerator implements IGenerator2 {
 							if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(new RDataType(it))) {
 								deepPathUtilGenerator.generate(fsa, it, version)
 							}
+							tabulatorGenerator.generate(fsa, it)
 						}
 						Function: {
 							if (!isDispatchingFunction) {
