@@ -38,6 +38,7 @@ import com.regnosys.rosetta.config.RosettaConfiguration
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.google.inject.ImplementedBy
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -152,7 +153,7 @@ class TabulatorGenerator {
 	@Inject extension JavaTypeUtil
 	@Inject extension ModelIdProvider
 	@Inject extension TypeSystem
-	
+
 	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
 		val topScope = new JavaScope(tabulatorClass.packageName)
@@ -231,7 +232,7 @@ class TabulatorGenerator {
 	}
 	
 	private def boolean shouldGenerateLegacyTabulator() {
-		(rosettaConfiguration.generators.tabulators.annotations ?: List.of()).empty
+		rosettaConfiguration.generators.tabulators.annotations.empty
 	}
 	
 	private def TabulatorContext createFunctionTabulatorContext(JavaTypeTranslator typeTranslator, Function func) {
@@ -256,22 +257,20 @@ class TabulatorGenerator {
 			val innerTabulatorClass = context.toTabulatorJavaClass(inputType)
 			val innerTabulatorInstance = classScope.createUniqueIdentifier("tabulator")
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-				private final «innerTabulatorClass» «innerTabulatorInstance»;
-				
-				@«Inject»
-				public «tabulatorClass»(«innerTabulatorClass» «innerTabulatorInstance») {
-					this.«innerTabulatorInstance» = «innerTabulatorInstance»;
-				}
-				
-				@Override
-				public «List»<«Field»> getFields() {
-					return «innerTabulatorInstance».getFields();
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return «innerTabulatorInstance».tabulate(«inputParam»);
+			@«ImplementedBy»(«tabulatorClass».Impl.class)
+			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				public class Impl implements «tabulatorClass» {
+					private final «innerTabulatorClass» «innerTabulatorInstance»;
+
+					@«Inject»
+					public Impl(«innerTabulatorClass» «innerTabulatorInstance») {
+						this.«innerTabulatorInstance» = «innerTabulatorInstance»;
+					}
+
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+						return «innerTabulatorInstance».tabulate(«inputParam»);
+					}
 				}
 			}
 			'''
@@ -279,15 +278,14 @@ class TabulatorGenerator {
 			// There is no available tabulator for `inputType`,
 			// so we generate a dummy implementation.
 			'''
-			public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-				@Override
-				public «List»<«Field»> getFields() {
-					return «Arrays».asList();
-				}
-				
-				@Override
-				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-					return «Arrays».asList();
+			@«ImplementedBy»(«tabulatorClass».Impl.class)
+			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				class Impl implements «tabulatorClass» {
+
+					@Override
+					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+						return «Arrays».asList();
+					}
 				}
 			}
 			'''
@@ -298,43 +296,40 @@ class TabulatorGenerator {
 		val inputClass = inputType.toJavaReferenceType
 		
 		val classScope = topScope.classScope(tabulatorClass.simpleName)
-		val tabulatedFields = findTabulatedFieldsAndCreateIdentifiers(inputType, context, classScope)
+		findTabulatedFieldsAndCreateIdentifiers(inputType, context, classScope)
 		val nestedTabulatorInstances = findNestedTabulatorsAndCreateIdentifiers(inputType, context, classScope)
-		
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		'''
-		public class «tabulatorClass» implements «Tabulator»<«inputClass»> {
-			«FOR attr : inputType.allNonOverridesAttributes»
-				«IF context.isTabulated(attr)»
-					«val fieldId = classScope.getIdentifierOrThrow(attr)»
-					private final «Field» «fieldId»;
-				«ENDIF»
-			«ENDFOR»
-			«IF !nestedTabulatorInstances.empty»
-			
-			«FOR tabInst : nestedTabulatorInstances»
-				private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-			«ENDFOR»
-			«ENDIF»
-			
-			«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
-			public «tabulatorClass»(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
-				«FOR tabInst : nestedTabulatorInstances»
-					this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
+		@«ImplementedBy»(«tabulatorClass».Impl.class)
+		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+			public class Impl implements «tabulatorClass» {
+				«FOR attr : inputType.allNonOverridesAttributes»
+					«IF context.isTabulated(attr)»
+						«val fieldId = classScope.getIdentifierOrThrow(attr)»
+						private final «Field» «fieldId»;
+					«ENDIF»
 				«ENDFOR»
-				«initializeFields(inputType, context, classScope)»
-			}
-			
-			@Override
-			public «List»<«Field»> getFields() {
-				return «Arrays».asList(«FOR field : tabulatedFields SEPARATOR ", "»«classScope.getIdentifierOrThrow(field)»«ENDFOR»);
-			}
-			
-			@Override
-			public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
-				«computeFieldValues(inputType, inputParam, context, tabulateScope)»
-				return «fieldValuesAsList(inputType, context, tabulateScope)»;
+				«IF !nestedTabulatorInstances.empty»
+
+					«FOR tabInst : nestedTabulatorInstances»
+						private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+					«ENDFOR»
+				«ENDIF»
+
+				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
+				public Impl(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
+					«FOR tabInst : nestedTabulatorInstances»
+						this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;
+					«ENDFOR»
+					«initializeFields(inputType, context, classScope)»
+				}
+
+				@Override
+				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
+					«computeFieldValues(inputType, inputParam, context, tabulateScope)»
+					return «fieldValuesAsList(inputType, context, tabulateScope)»;
+				}
 			}
 		}
 		'''
@@ -361,11 +356,7 @@ class TabulatorGenerator {
 					«attr.card.isMany»,
 					«rule.map[symbolId.toModelSymbolCode].toOptionalCode»,
 					«rule.map[identifier].map['"' + it + '"'].toOptionalCode»,
-					«IF attrType instanceof RDataType»
-						«scope.getIdentifierOrThrow(attrType.toNestedTabulatorInstance)».getFields()
-					«ELSE»
-						«Arrays».asList()
-					«ENDIF»
+					«Arrays».asList()
 				);
 			«ENDIF»
 		«ENDFOR»
@@ -392,6 +383,7 @@ class TabulatorGenerator {
 		«ENDFOR»
 		'''
 	}
+
 	private def StringConcatenationClient fieldValue(Attribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
 		val rType = typeProvider.getRTypeOfSymbol(attr)
 			
@@ -412,28 +404,31 @@ class TabulatorGenerator {
 			rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
 			val nestedTabulator = scope.getIdentifierOrThrow(rType.toNestedTabulatorInstance)
 			'''
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.card.isMany»
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))
-					.collect(«Collectors».toList()));
+					.collect(«Collectors».toList()))
+				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
+				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				.map(«lambdaParam» -> «nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»));
+				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))))
+				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''
 		} else {
 			val resultType = rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
 			'''
 			«IF attr.metaAnnotations.empty»
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»());
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»()));
 			«ELSEIF attr.card.isMany»
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 					.collect(«Collectors».toList()));
 			«ELSE»
-			«Optional»<«resultType»> «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
-				.map(«lambdaParam» -> «lambdaParam».getValue());
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+				.map(«lambdaParam» -> «lambdaParam».getValue()));
 			«ENDIF»
 			'''
 		}
@@ -443,17 +438,7 @@ class TabulatorGenerator {
 		'''
 		«Arrays».asList(
 			«FOR attr : type.allNonOverridesAttributes.filter[context.isTabulated(it)] SEPARATOR ","»
-			«val attrType = attr.typeCall.type»
-			«val valueClass = if (attrType instanceof Data) {
-				if (attr.card.isMany) {
-					MultiNestedFieldValueImpl
-				} else {
-					NestedFieldValueImpl
-				}
-			} else {
-				FieldValueImpl
-			}»
-			new «valueClass»(«scope.getIdentifierOrThrow(attr)», «scope.getIdentifierOrThrow(attr.toComputedField)»)
+			«scope.getIdentifier(attr.toComputedField)»
 			«ENDFOR»
 		)'''
 	}

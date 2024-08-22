@@ -41,6 +41,8 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	//TODO: test generated meta constructor setting here
+	
 	@Test
 	def void testAsReference() {
 		val code = '''			

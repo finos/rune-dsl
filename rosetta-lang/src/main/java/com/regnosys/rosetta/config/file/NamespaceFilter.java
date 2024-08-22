@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.rosetta.util.DottedPath;
 
@@ -17,6 +19,8 @@ public class NamespaceFilter implements Predicate<String> {
 	}
 	@JsonCreator
 	public NamespaceFilter(List<DottedPath> allowedNamespacePatterns) {
+		Validate.noNullElements(allowedNamespacePatterns);
+		
 		this.genericNamespaces = new ArrayList<>();
 		this.specificNamespaces = new ArrayList<>();
 		for (DottedPath namespacePattern : allowedNamespacePatterns) {

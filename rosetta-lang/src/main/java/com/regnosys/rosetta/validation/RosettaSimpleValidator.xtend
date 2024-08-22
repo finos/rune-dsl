@@ -1054,6 +1054,26 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
 				}
 			}
+			
+			if (ele.valueExpression !== null) {
+				val message = '''The type '«rType.name»' must be an extension of a literal type to set a meta value'''
+				
+				if (baseRType instanceof RDataType) {
+					var basicSuperType = baseRType.superType;
+					while (basicSuperType !== null && basicSuperType.stripFromTypeAliases instanceof RDataType) {
+						basicSuperType = (basicSuperType.stripFromTypeAliases() as RDataType).superType;
+					}
+					if (basicSuperType === null) {
+						error(message, ele, ROSETTA_CONSTRUCTOR_EXPRESSION__VALUE_EXPRESSION)	
+					} else {
+						basicSuperType.checkType(ele.valueExpression, ele.valueExpression, null, INSIGNIFICANT_INDEX)
+					}
+
+				} else {
+					error(message, ele, ROSETTA_CONSTRUCTOR_EXPRESSION__VALUE_EXPRESSION)	
+				}
+			}
+			
 			val absentAttributes = rType
 				.allFeatures(ele)
 				.filter[!seenFeatures.contains(it)]

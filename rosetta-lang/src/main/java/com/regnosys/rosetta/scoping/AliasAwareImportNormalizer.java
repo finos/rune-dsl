@@ -5,7 +5,6 @@ import org.eclipse.xtext.scoping.impl.ImportNormalizer;
 
 public class AliasAwareImportNormalizer extends ImportNormalizer {
 	private final QualifiedName namespaceAlias;
-	private static final String NULL_ALIAS_ERROR = AliasAwareImportNormalizer.class.getSimpleName() + " does not support null namespaceAlias values";
 
 	public AliasAwareImportNormalizer(QualifiedName importedNamespace, String namespaceAlias, boolean wildCard,
 			boolean ignoreCase) {
@@ -22,7 +21,7 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 			}
 			return null;
 		} else {
-			throw new IllegalStateException(NULL_ALIAS_ERROR);
+			return super.deresolve(fullyQualifiedName);
 		}
 	}
 
@@ -35,7 +34,7 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 				&& relativeName.getSegmentCount() != namespaceAlias.getSegmentCount()) {
 			return super.resolve(relativeName.skipFirst(namespaceAlias.getSegmentCount()));
 		} else {
-			throw new IllegalStateException(NULL_ALIAS_ERROR);
+			return super.resolve(relativeName);
 		}
 	}
 

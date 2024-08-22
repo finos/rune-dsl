@@ -32,6 +32,101 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+
+	@Test
+	def void metaConstructorValidatesValueType() {
+		val model = '''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			set result:
+			  NumberWithScheme ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_STRING_LITERAL, TYPE_ERROR, "Expected type 'number' but was 'string'")
+
+	}
+	
+	@Test
+	def void metaConstructorOnlySetValueWnenSuperTypeExists() {
+		val model = '''
+			type Foo:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result Foo (1..1)
+			  
+			set result:
+			  Foo ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null, "The type 'Foo' must be an extension of a literal type to set a meta value")
+
+	}
+		
+		
+	@Test
+	def void metaConstructorValueAsExpressionVariable() {
+		'''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			  alias someValue: 10*2
+			  
+			set result:
+			  NumberWithScheme [someValue] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void metaConstructorValueAsExpression() {
+		'''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			set result:
+			  NumberWithScheme [10*2] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void metaConstructorSyntaxIsValid() {
+		'''
+			type StringWithScheme extends string:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result StringWithScheme (1..1)
+			  
+			set result:
+			  StringWithScheme ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}
+	
 	
 	@Test
 	def void testReferenceResolving() {
@@ -238,6 +333,57 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		model.parseRosettaWithNoIssues
 	}
+	
+	@Test
+	def void testCanUseMixOfImportAliasAnFullyQualified() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+				
+			type D:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			type B:
+				a someAlias.A (1..1)
+				d foo.bar.D (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void testCanUseMixOfImportAliasAndNoAlias() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			
+			type D:
+				id string (1..1)
+			
+			type B:
+				a someAlias.A (1..1)
+				d D (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}	
 	
 	@Test
 	def void testCannotUseImportAliasesWithoutWildcard() {

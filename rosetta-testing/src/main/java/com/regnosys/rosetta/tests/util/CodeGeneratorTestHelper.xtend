@@ -21,13 +21,14 @@ import com.rosetta.model.lib.RosettaModelObject
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.rosetta.model.lib.RosettaModelObjectBuilder
 
 class CodeGeneratorTestHelper {
 
 	@Inject extension RosettaGenerator
 	@Inject extension ModelHelper
 	@Inject extension ModelIdProvider
-	
+
 	def generateCode(CharSequence model, RosettaInternalGenerator generator) {
 		val fsa = new RegisteringFileSystemAccess()
 		val eResource = model.parseRosettaWithNoErrors.eResource;
@@ -109,19 +110,31 @@ class CodeGeneratorTestHelper {
 		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet, itemsToAddToList)
 	}
 
+	def createBuilderInstance(Map<String, Class<?>> classes, RootPackage namespace, String className) {
+		classes.get(namespace + '.' + className).getMethod("builder").invoke(null) as RosettaModelObjectBuilder
+	}
+
+	def createBuilderInstance(Map<String, Class<?>> classes, String className) {
+		createBuilderInstance(classes, rootPackage, className)
+	}
+
+	def setAttribute(RosettaModelObjectBuilder rosettaClassBuilderInstance, String name, Object value) {
+    val setter = rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class])
+    if (setter === null) {
+      throw new RuntimeException('''No method #«'set' + name.toFirstUpper»(«value?.class?.simpleName») in «rosettaClassBuilderInstance.class»''')
+    }
+		rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class]).invoke(
+				rosettaClassBuilderInstance, value);
+	}
+
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
-		val clazz = classes.get(namespace + '.' + className)
-		if (clazz === null) {
-			throw new RuntimeException('''Class «namespace + '.' + className» not found''')
-		}
-		val rosettaClassBuilderInstance = classes.get(namespace + '.' + className).getMethod(
-			"builder").invoke(null);
+    val clazz = classes.get(namespace + '.' + className)
+    if (clazz === null) {
+      throw new RuntimeException('''Class «namespace + '.' + className» not found''')
+    }
+		val rosettaClassBuilderInstance = createBuilderInstance(classes, namespace, className)
 		itemsToSet.forEach [ name, value |
-			val setter = rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class])
-			if (setter === null) {
-				throw new RuntimeException('''No method #«'set' + name.toFirstUpper»(«value?.class?.simpleName») in «rosettaClassBuilderInstance.class»''')
-			}
-			setter.invoke(rosettaClassBuilderInstance, value);
+			setAttribute(rosettaClassBuilderInstance, name, value)
 		]
 		itemsToAddToList.forEach [ name, objectsToAdd |
 			objectsToAdd.forEach [ value |
