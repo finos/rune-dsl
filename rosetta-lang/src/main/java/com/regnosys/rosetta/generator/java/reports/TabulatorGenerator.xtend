@@ -191,7 +191,7 @@ class TabulatorGenerator {
 	}
 	
 	def generate(IFileSystemAccess2 fsa, Data data) {
-		if (data.isTypeTabulatable) {
+		if (data.isDataTabulatable) {
 			val context = createDataTabulatorContext(typeTranslator, data)
 
 			val tabulatorClass = data.toTabulatorJavaClass
@@ -255,7 +255,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def boolean isTypeTabulatable(Data type) {
+	private def boolean isDataTabulatable(Data type) {
 		val types = rosettaConfiguration.generators.tabulators.types
 		val fqn = String.format("%s.%s", type.model.name, type.name)
 		types.contains(fqn)
