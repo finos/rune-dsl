@@ -8,17 +8,7 @@ import java.net.URL
 import static org.junit.jupiter.api.Assertions.*
 import static org.hamcrest.MatcherAssert.*
 import org.hamcrest.CoreMatchers
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
-import org.eclipse.xtext.testing.extensions.InjectionExtension
-import org.eclipse.xtext.testing.InjectWith
-import org.junit.jupiter.api.^extension.ExtendWith
-import javax.inject.Inject
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import com.rosetta.util.types.generated.GeneratedJavaClassService
-import com.regnosys.rosetta.generator.java.reports.TabulatorTestUtil
 
-@InjectWith(RosettaInjectorProvider)
-@ExtendWith(InjectionExtension)
 class ConfigurableTypeTabulatorTest {
 		
 	@Test
