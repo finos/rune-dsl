@@ -137,7 +137,6 @@ class TabulatorGenerator {
 	@org.eclipse.xtend.lib.annotations.Data
 	private static class DataTabulatorContext implements TabulatorContext {
 		extension JavaTypeTranslator typeTranslator
-		Data data
 
 		override needsTabulator(Data type) {
 			true
@@ -190,14 +189,14 @@ class TabulatorGenerator {
 		}
 	}
 	
-	def generate(IFileSystemAccess2 fsa, Data data) {
-		if (data.isDataTabulatable) {
-			val context = createDataTabulatorContext(typeTranslator, data)
+	def generate(IFileSystemAccess2 fsa, Data type) {
+		if (type.isDataTabulatable) {
+			val context = createDataTabulatorContext(typeTranslator)
 
-			val tabulatorClass = data.toTabulatorJavaClass
+			val tabulatorClass = type.toTabulatorJavaClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 
-			generateTabulator(data, context, topScope, tabulatorClass, fsa)
+			generateTabulator(type, context, topScope, tabulatorClass, fsa)
 		}
 	}
 
@@ -255,9 +254,9 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def boolean isDataTabulatable(Data data) {
+	private def boolean isDataTabulatable(Data type) {
 		val types = rosettaConfiguration.generators.tabulators.types
-		val fqn = String.format("%s.%s", data.model.name, data.name)
+		val fqn = String.format("%s.%s", type.model.name, type.name)
 		types.contains(fqn)
 	}
 
@@ -273,8 +272,8 @@ class TabulatorGenerator {
 		shouldGenerateLegacyTabulator ? new ProjectionTabulatorContext(typeTranslator, func) : new FunctionTabulatorContext(typeTranslator, func)
 	}
 	
-	private def TabulatorContext createDataTabulatorContext(JavaTypeTranslator typeTranslator, Data data) {
-		new DataTabulatorContext(typeTranslator, data)
+	private def TabulatorContext createDataTabulatorContext(JavaTypeTranslator typeTranslator) {
+		new DataTabulatorContext(typeTranslator)
 	}
 
 	private def JavaClass<Tabulator<?>> toApplicableTabulatorClass(Function func) {
