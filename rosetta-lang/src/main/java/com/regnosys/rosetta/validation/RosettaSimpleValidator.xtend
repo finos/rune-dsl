@@ -1062,7 +1062,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				}
 			} else {
 				if (ele.valueExpression === null) {
-					error('''Missing a value for type «rType»''', ele.typeCall, null)
+					error('''Missing a value of type «valueType» when constructing «rType»''', ele.typeCall, null)
 				} else {
 					checkType(valueType, ele.valueExpression, ele.valueExpression, null, INSIGNIFICANT_INDEX)
 				}

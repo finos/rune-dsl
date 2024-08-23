@@ -215,13 +215,17 @@ public class TypeSystem {
 	 * 
 	 * If no such type exists, returns `null`.
 	 * 
-	 * If the given type is not a data type and not an alias of a data type, returns itself.
+	 * If the given type is not a data type and not an alias of a data type, returns null.
 	 */
 	public RType getValueType(RType type) {
 		RType result = type;
-		RType stripped;
-		while(result != null && (stripped = stripFromTypeAliases(result)) instanceof RDataType) {
+		RType stripped = stripFromTypeAliases(result);
+		if (!(stripped instanceof RDataType)) {
+			return null;
+		}
+		while(stripped != null && stripped instanceof RDataType) {
 			result = ((RDataType)stripped).getSuperType();
+			stripped = stripFromTypeAliases(result);
 		}
 		return result;
 	}

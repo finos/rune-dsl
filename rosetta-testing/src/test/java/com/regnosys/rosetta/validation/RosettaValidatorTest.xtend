@@ -69,7 +69,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  }
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null, "The type 'Foo' must be an extension of a literal type to set a meta value")
+		model.assertError(ROSETTA_STRING_LITERAL, null, "Cannot set a value for type Foo")
 
 	}
 		
@@ -212,7 +212,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output:
 					result F (1..1)
 				set result:
-					Func(if True then A {} else H {})
+					Func(if True then A [""] {} else H [""] {})
 		'''.parseRosettaWithNoIssues
 	}
 	
