@@ -251,8 +251,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			return defaultScope(context, reference)
 		}
 		catch (Exception e) {
-			LOGGER.error ("Error scoping rosetta - \"" + e.message + "\" see debug logging for full trace");
-			LOGGER.debug("Full trace of error ", e);
+			LOGGER.error ("Error scoping rosetta", e);
 			//Any exception that is thrown here is going to have been caused by invalid grammar
 			//However invalid grammar is checked as the next step of the process - after scoping
 			//so just return an empty scope here and let the validator do its thing afterwards
@@ -266,10 +265,16 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
 		return if (context instanceof RosettaModel) {
-			val List<ImportNormalizer> imports = newArrayList(context.imports.map[createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)])
+			val List<ImportNormalizer> imports = newArrayList()
+			context.imports.forEach[
+				val resolver = createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)
+				if (resolver !== null) {
+					imports.add(resolver)
+				}
+			]
 			//This import allows two models with the same namespace to reference each other
 			imports.add(doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase))
-			return  imports
+			return imports
 		} else
 			emptyList
 	}
@@ -284,6 +289,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		if (importedNamespace === null || importedNamespace.isEmpty()) {
 			return null;
 		}
+		val qualifiedAlias = namespaceAlias === null ? null : qualifiedNameConverter.toQualifiedName(namespaceAlias)
 		
 		val hasWildCard = ignoreCase ? 
 				importedNamespace.getLastSegment().equalsIgnoreCase(getWildCard()) :
@@ -292,13 +298,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		if (hasWildCard) {
 			if (importedNamespace.getSegmentCount() <= 1)
 				return null;
-			return doCreateImportNormalizer(importedNamespace.skipLast(1), namespaceAlias, true, ignoreCase);
+			return doCreateImportNormalizer(importedNamespace.skipLast(1), qualifiedAlias, true, ignoreCase);
 		} else {
-			return doCreateImportNormalizer(importedNamespace, namespaceAlias, false, ignoreCase);
+			return doCreateImportNormalizer(importedNamespace, qualifiedAlias, false, ignoreCase);
 		}
 	}
 	
-	private def ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, String namespaceAlias,  boolean wildcard, boolean ignoreCase) {
+	private def ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, QualifiedName namespaceAlias,  boolean wildcard, boolean ignoreCase) {
 		if (namespaceAlias === null) {
 			return doCreateImportNormalizer(importedNamespace, wildcard, ignoreCase);
 		}
