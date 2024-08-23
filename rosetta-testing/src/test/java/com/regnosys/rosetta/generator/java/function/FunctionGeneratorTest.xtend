@@ -40,8 +40,36 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
-	
-	//TODO: test generated meta constructor setting here
+		
+	@Test
+	def void testMetaConstructor() {
+		val code = '''
+			type StringWithScheme extends string:
+					scheme string (1..1)
+			
+			func Create:
+			  output:
+			    result StringWithScheme (1..1)
+			  
+			  set result:
+			    StringWithScheme ["My value"] {
+			        scheme: "My scheme"
+			    }
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+        val someFunc = classes.createFunc("Create")
+        
+        val expected = classes.createInstanceUsingBuilder("StringWithScheme", #{
+        	"value" -> "My value",
+        	"scheme" -> "My scheme"
+        })
+		
+		val output = someFunc.invokeFunc(expected.class)
+		
+		assertEquals(expected, output)
+	}
 	
 	@Test
 	def void testAsReference() {
