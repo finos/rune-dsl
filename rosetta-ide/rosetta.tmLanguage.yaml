@@ -30,7 +30,7 @@ variables:
   identifiersConflictingWithNamespace: '{{wordStart}}(version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
   unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func|translate){{wordEnd}}'
-  rootStart: '{{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}}'
+  rootStart: '{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   namespaceEnd: (?={{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}})
   rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
   unambiguousRootEnd: (?={{unambiguousRootStart}})
@@ -55,7 +55,6 @@ patterns:
 repository:
   model:
     patterns:
-    - include: '#override'
     - include: '#namespace'
     - include: '#version'
     - include: '#import'
@@ -63,21 +62,12 @@ repository:
     - include: '#rootElement'
 
     repository:
-      override:
-        name: meta.override.rosetta
-        begin: '{{wordStart}}override{{wordEnd}}'
-        beginCaptures:
-          0: { name: keyword.other.override.rosetta }
-        end: '{{rootEnd}}'
-        patterns:
-        - include: '#comment'
-        - include: '#string'
-
       namespace:
         name: meta.namespace.rosetta
-        begin: '{{wordStart}}namespace{{wordEnd}}'
+        begin: '{{wordStart}}(override){{wordEnd}}\s+{{wordStart}}(namespace){{wordEnd}}'
         beginCaptures:
-          0: { name: keyword.other.namespace.rosetta }
+          1: { name: keyword.other.override.rosetta }
+          2: { name: keyword.other.namespace.rosetta }
         end: '{{namespaceEnd}}'
         patterns:
         - include: '#comment'
