@@ -1094,7 +1094,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						clazz
 					)
 				} else {
-					expr.values.map[pair|
+					var expressions = expr.values.map[pair|
 						val attr = pair.key as Attribute
 						val attrExpr = pair.value
 						val isReference = attr.isReference
@@ -1102,7 +1102,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
 							.collapseToSingleExpression(context.scope)
 							.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
-					].reduce[acc,attrCode|
+					]
+					
+					if (expr.valueExpression !== null) {
+						expressions = newArrayList(expressions)
+						val javaStatement = expr.valueExpression.javaCode(type.valueType.toJavaReferenceType, context.scope)
+						expressions.add(JavaExpression.from('''.setValue(«javaStatement»)''', null))
+					}
+					
+					expressions.reduce[acc,attrCode|
 						acc.then(attrCode, [allSetCode,setAttr|
 							JavaExpression.from(
 								'''
