@@ -1107,7 +1107,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					if (expr.valueExpression !== null) {
 						expressions = newArrayList(expressions)
 						val javaStatement = expr.valueExpression.javaCode(type.valueType.toJavaReferenceType, context.scope)
-						expressions.add(JavaExpression.from('''.setValue(«javaStatement»)''', null))
+						expressions.add(
+							javaStatement
+							.collapseToSingleExpression(context.scope)
+							.mapExpression[JavaExpression.from('''.setValue(«it»)''', null)]
+						)
 					}
 					
 					expressions.reduce[acc,attrCode|
