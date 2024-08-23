@@ -64,7 +64,7 @@ repository:
     repository:
       namespace:
         name: meta.namespace.rosetta
-        begin: '{{wordStart}}(override){{wordEnd}}\s+{{wordStart}}(namespace){{wordEnd}}'
+        begin: '(?:{{wordStart}}(override){{wordEnd}}\s+)?{{wordStart}}(namespace){{wordEnd}}'
         beginCaptures:
           1: { name: keyword.other.override.rosetta }
           2: { name: keyword.other.namespace.rosetta }

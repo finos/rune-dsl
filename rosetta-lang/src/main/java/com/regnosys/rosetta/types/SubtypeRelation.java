@@ -70,7 +70,7 @@ public class SubtypeRelation {
 		if (t1.equals(t2)) {
 			return t1;
 		} else {
-			return joinByTraversingAncestors(t1, t2);
+			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
 	public RType join(RAliasType t1, RAliasType t2) {
@@ -84,10 +84,10 @@ public class SubtypeRelation {
 			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin))
 				.orElse(underlyingJoin);
 		} else {
-			return joinByTraversingAncestors(t1, t2);
+			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
-	private RType joinByTraversingAncestors(RType t1, RType t2) {
+	private RType joinByTraversingAncestorsAndAliases(RType t1, RType t2) {
 		// Get a list of all Data/Alias ancestors of t1, including t1 itself.
 		List<RDataType> dataAncestors = new ArrayList<>();
 		List<RAliasType> aliasAncestors = new ArrayList<>();

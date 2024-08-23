@@ -233,6 +233,9 @@ public interface ExpectedTypeProvider {
 
 			@Override
 			protected RType caseConstructorExpression(RosettaConstructorExpression expr, Context context) {
+				if (ROSETTA_CONSTRUCTOR_EXPRESSION__VALUE_EXPRESSION.equals(context.reference)) {
+					return typeSystem.getValueType(typeProvider.getRType(expr));
+				}
 				return null;
 			}
 

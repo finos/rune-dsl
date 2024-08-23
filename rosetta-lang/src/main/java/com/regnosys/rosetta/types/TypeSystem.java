@@ -197,8 +197,8 @@ public class TypeSystem {
 	}
 	
 	public RType stripFromTypeAliases(RType t) {
-		if (t instanceof RAliasType) {
-			return stripFromTypeAliases(((RAliasType)t).getRefersTo());
+		while (t instanceof RAliasType) {
+			t = ((RAliasType)t).getRefersTo();
 		}
 		return t;
 	}
@@ -208,5 +208,21 @@ public class TypeSystem {
 	}
 	public REnumType enumToType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider);
+	}
+	
+	/**
+	 * Returns the first ancestor of the given type which does not extend any data type.
+	 * 
+	 * If no such type exists, returns `null`.
+	 * 
+	 * If the given type is not a data type and not an alias of a data type, returns itself.
+	 */
+	public RType getValueType(RType type) {
+		RType result = type;
+		RType stripped;
+		while(result != null && (stripped = stripFromTypeAliases(result)) instanceof RDataType) {
+			result = ((RDataType)stripped).getSuperType();
+		}
+		return result;
 	}
 }

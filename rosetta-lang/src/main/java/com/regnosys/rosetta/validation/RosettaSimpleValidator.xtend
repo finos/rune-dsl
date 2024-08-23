@@ -1055,22 +1055,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				}
 			}
 			
-			if (ele.valueExpression !== null) {
-				val message = '''The type '«rType.name»' must be an extension of a literal type to set a meta value'''
-				
-				if (baseRType instanceof RDataType) {
-					var basicSuperType = baseRType.superType;
-					while (basicSuperType !== null && basicSuperType.stripFromTypeAliases instanceof RDataType) {
-						basicSuperType = (basicSuperType.stripFromTypeAliases() as RDataType).superType;
-					}
-					if (basicSuperType === null) {
-						error(message, ele, ROSETTA_CONSTRUCTOR_EXPRESSION__VALUE_EXPRESSION)	
-					} else {
-						basicSuperType.checkType(ele.valueExpression, ele.valueExpression, null, INSIGNIFICANT_INDEX)
-					}
-
+			val valueType = rType.valueType
+			if (valueType === null) {
+				if (ele.valueExpression !== null) {
+					error('''Cannot set a value for type «rType»''', ele.valueExpression, null)
+				}
+			} else {
+				if (ele.valueExpression === null) {
+					error('''Missing a value for type «rType»''', ele.typeCall, null)
 				} else {
-					error(message, ele, ROSETTA_CONSTRUCTOR_EXPRESSION__VALUE_EXPRESSION)	
+					checkType(valueType, ele.valueExpression, ele.valueExpression, null, INSIGNIFICANT_INDEX)
 				}
 			}
 			
@@ -1169,10 +1163,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 		val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(op)
-		if (expectedType === null) {
+		val strippedExpectedType = expectedType.stripFromTypeAliases
+		if (strippedExpectedType === null) {
 			error('''The type of the reference is unknown.''', op, null)
-		} else if (!(expectedType.stripFromTypeAliases instanceof RDataType)) {
+		} else if (!(strippedExpectedType instanceof RDataType)) {
 			error('''A reference may not be of type «expectedType».''', op, null)
+		} else if ((strippedExpectedType as RDataType).data.referenceKeyAnnotation === null) {
+			error('''The type «expectedType» does not have a `reference-key` annotation.''', op, null)
 		}
 	}
 
