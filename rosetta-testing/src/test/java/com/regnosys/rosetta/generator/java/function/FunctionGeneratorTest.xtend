@@ -40,6 +40,39 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testMetaConstructorAsReference() {
+		val code = '''
+			type NumberWithScheme extends number:
+					scheme string (1..1)
+			
+			func Create:
+			  output:
+			    result NumberWithScheme (1..1)
+			    
+			   alias myNewNumber: 10*2
+			  
+			  set result:
+			    NumberWithScheme [myNewNumber] {
+			        scheme: "My scheme"
+			    }
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+        val someFunc = classes.createFunc("Create")
+        
+        val expected = classes.createInstanceUsingBuilder("NumberWithScheme", #{
+        	"value" -> BigDecimal.valueOf(20),
+        	"scheme" -> "My scheme"
+        })
+		
+		val output = someFunc.invokeFunc(expected.class)
+		
+		assertEquals(expected, output)
+	}	
+	
 		
 	@Test
 	def void testMetaConstructor() {
