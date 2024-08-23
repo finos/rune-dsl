@@ -620,7 +620,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseToSwitchOperation(SwitchOperation expr, Context context) {
+			protected RType caseSwitchOperation(SwitchOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference) && expr.getValues().stream().allMatch(c -> leavesItemTypeUnchanged(c.getExpression()))) {
 					return getExpectedTypeFromContainer(expr);
 				} else if (SWITCH_OPERATION__DEFAULT.equals(context.reference)) {

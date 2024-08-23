@@ -581,7 +581,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	}
 	
 	@Override
-	protected RosettaValue caseToSwitchOperation(SwitchOperation expr, RosettaInterpreterContext context) {
+	protected RosettaValue caseSwitchOperation(SwitchOperation expr, RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("Switch operations are not supported yet.");
 	}

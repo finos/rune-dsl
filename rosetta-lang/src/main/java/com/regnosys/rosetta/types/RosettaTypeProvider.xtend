@@ -138,6 +138,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 
 	private def RType safeRType(RosettaSymbol symbol, EObject context, Map<EObject, RType> cycleTracker) {
+		if (!extensions.isResolved(symbol)) {
+			return NOTHING
+		}
 		switch symbol {
 			RosettaFeature: {
 				safeRType(symbol as RosettaFeature, context, cycleTracker)
@@ -184,6 +187,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 	}
 	private def RType safeRType(RosettaFeature feature, EObject context, Map<EObject, RType> cycleTracker) {
+		if (!extensions.isResolved(feature)) {
+			return NOTHING
+		}
 		switch (feature) {
 			RosettaTypedFeature: {
 				val featureType = if (feature.isTypeInferred) {
@@ -533,7 +539,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		ZONED_DATE_TIME
 	}
 	
-	override protected caseToSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
+	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
 		expr.values.map[it.expression.RType].join
 	}
 	

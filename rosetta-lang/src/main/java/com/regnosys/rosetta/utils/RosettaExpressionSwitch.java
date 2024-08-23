@@ -242,7 +242,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 		} else if (expr instanceof AsReferenceOperation) {
 			return caseAsReferenceOperation((AsReferenceOperation)expr, context);
 		} else if (expr instanceof SwitchOperation) {
-			return caseToSwitchOperation((SwitchOperation)expr, context);
+			return caseSwitchOperation((SwitchOperation)expr, context);
 		} else if (expr instanceof RosettaFunctionalOperation) {
 			return doSwitch((RosettaFunctionalOperation)expr, context);
 		}
@@ -331,7 +331,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	protected abstract Return caseToDateTimeOperation(ToDateTimeOperation expr, Context context);
 	protected abstract Return caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context);
 	protected abstract Return caseAsReferenceOperation(AsReferenceOperation expr, Context context);
-	protected abstract Return caseToSwitchOperation(SwitchOperation expr, Context context);
+	protected abstract Return caseSwitchOperation(SwitchOperation expr, Context context);
 	
 	protected abstract Return caseFilterOperation(FilterOperation expr, Context context);
 	protected abstract Return caseMapOperation(MapOperation expr, Context context);

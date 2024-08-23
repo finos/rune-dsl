@@ -542,7 +542,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 		false
 	}
 	
-	override protected caseToSwitchOperation(SwitchOperation expr, Boolean breakOnClosureParameter) {
+	override protected caseSwitchOperation(SwitchOperation expr, Boolean breakOnClosureParameter) {
 		false
 	}
 	
