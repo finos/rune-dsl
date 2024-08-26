@@ -450,7 +450,7 @@ repository:
         beginCaptures:
           1: { name: keyword.other.translate.rosetta }
           2: { name: keyword.other.source.rosetta }
-        end: (\})|{{rootEnd}}
+        end: (\})
         endCaptures:
           1: { name: punctuation.section.braces.end.rosetta }
         patterns:
@@ -1111,7 +1111,7 @@ repository:
 
       expressionWithTranslate:
         name: meta.expression-with-translate.rosetta
-        begin: (?!,|\(|\s|^|$)
+        begin: (?!,|\s|^|$)
         end: '({{expressionEnd}})(?!{{wordStart}}translate{{wordEnd}})'
         patterns:
         - include: '#comment'
@@ -1240,7 +1240,7 @@ repository:
             - include: '#expression'
           - include: '#expression'
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|as-reference){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|as-reference){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable
@@ -1248,7 +1248,7 @@ repository:
       
       expression:
         name: meta.expression.rosetta
-        begin: (?!,|\(|\s|^|$)
+        begin: (?!,|\s|^|$)
         end: '{{expressionEnd}}'
         patterns:
         - include: '#comment'
@@ -1358,7 +1358,7 @@ repository:
             - include: '#expression'
           - include: '#expression'
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|as-reference){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|as-reference){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable

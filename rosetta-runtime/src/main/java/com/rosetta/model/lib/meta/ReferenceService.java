@@ -21,15 +21,22 @@ public class ReferenceService {
 			throw new RuntimeException("There is already an instance registered with key '" + key + "'.");
 		}
 		keyToInstanceMap.put(key, instance);
-		return getProxy(key, clazz);
+		return createProxy(key, clazz, instance);
 	}
 	public <T extends RosettaModelObject> T getProxy(String key, Class<T> clazz) {
 		RosettaModelObject proxy = keyToProxyMap.get(key);
 		if (proxy == null) {
-			ProxyInvocationHandler<T> proxyHandler = new ProxyInvocationHandler<>(key, clazz);
-			proxy = (RosettaModelObject) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz, RosettaProxy.class }, proxyHandler);
-			keyToProxyMap.put(key, proxy);
+			T newProxy = createProxy(key, clazz, null);
+			keyToProxyMap.put(key, newProxy);
+			return newProxy;
+		} else {
+			return clazz.cast(proxy);
 		}
+	}
+	private <T extends RosettaModelObject> T createProxy(String key, Class<T> clazz, T instance) {
+		ProxyInvocationHandler<T> proxyHandler = new ProxyInvocationHandler<>(key, clazz, instance);
+		Class<?> proxyClass = instance == null ? RosettaProxy.class : RosettaOriginalProxy.class;
+		Object proxy = Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz, proxyClass }, proxyHandler);
 		return clazz.cast(proxy);
 	}
 	
@@ -48,11 +55,12 @@ public class ReferenceService {
 	private class ProxyInvocationHandler<T extends RosettaModelObject> implements InvocationHandler {
 		private final String key;
 		private final Class<T> clazz;
-		private T instance = null;
+		private T instance;
 		
-		public ProxyInvocationHandler(String key, Class<T> clazz) {
+		public ProxyInvocationHandler(String key, Class<T> clazz, T initialInstance) {
 			this.key = key;
 			this.clazz = clazz;
+			this.instance = initialInstance;
 		}
 
 		@Override
@@ -60,13 +68,13 @@ public class ReferenceService {
 			if (method.getName().equals("getKey")) {
 				return key;
 			}
+			if (method.getName().equals("getType")) {
+				return clazz;
+			}
 			if (method.getName().equals("equals") && args.length == 1) {
 				if (proxy == args[0]) {
 					return true;
 				}
-			}
-			if (method.getName().equals("getType")) {
-				return clazz;
 			}
 			
 			resolve();
