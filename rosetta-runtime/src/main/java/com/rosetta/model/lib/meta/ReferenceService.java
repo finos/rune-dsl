@@ -27,6 +27,9 @@ public class ReferenceService {
 		return createProxy(key, clazz, instance);
 	}
 	public <T extends RosettaModelObject> T getProxy(String key, Class<T> clazz) {
+		if (key == null) {
+			return null;
+		}
 		RosettaModelObject proxy = keyToProxyMap.get(key);
 		if (proxy == null) {
 			T newProxy = createProxy(key, clazz, null);
