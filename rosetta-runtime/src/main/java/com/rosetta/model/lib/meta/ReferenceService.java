@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.inject.Singleton;
 
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 @Singleton
 public class ReferenceService {
@@ -77,6 +78,12 @@ public class ReferenceService {
 			if (method.getName().equals("getType")) {
 				return clazz;
 			}
+			if (method.getName().equals("build")) {
+				return proxy;
+			}
+			if (method.getName().equals("toBuilder")) {
+				return toBuilderProxy((RosettaProxy<?>) proxy);
+			}
 			if (method.getName().equals("equals") && args.length == 1) {
 				if (proxy == args[0]) {
 					return true;
@@ -101,6 +108,49 @@ public class ReferenceService {
 			if (this.instance == null) {
 				this.instance = getInstance(key, clazz);
 			}
+		}
+		private Object toBuilderProxy(RosettaProxy<?> proxy) {
+			BuilderProxyInvocationHandler builderProxyHandler = new BuilderProxyInvocationHandler(proxy);
+			Class<?> builderClass;
+			try {
+				builderClass = clazz.getMethod("builder").getReturnType();
+			} catch (NoSuchMethodException | SecurityException e) {
+				throw new RuntimeException(e);
+			}
+			Object builderProxy = Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { builderClass }, builderProxyHandler);
+			return builderProxy;
+		}
+	}
+	private class BuilderProxyInvocationHandler implements InvocationHandler {
+		private final RosettaProxy<?> proxy;
+		private RosettaModelObjectBuilder builder = null;
+		
+		public BuilderProxyInvocationHandler(RosettaProxy<?> proxy) {
+			this.proxy = proxy;
+		}
+
+		@Override
+		public Object invoke(Object builderProxy, Method method, Object[] args) throws Throwable {
+			if (builder == null) {
+				if (isGetter(method)) {
+					return method.invoke(proxy, args);
+				}
+				if (method.getName().equals("build")) {
+					return proxy;
+				}
+				if (method.getName().equals("toBuilder")) {
+					return builderProxy;
+				}
+				resolve();
+			}
+			return method.invoke(builder, args);
+		}
+		
+		private void resolve() {
+			this.builder = proxy.getInstance().toBuilder();
+		}
+		private boolean isGetter(Method method) {
+			return method.getName().startsWith("get") && !method.getName().startsWith("getOrCreate");
 		}
 	}
 }

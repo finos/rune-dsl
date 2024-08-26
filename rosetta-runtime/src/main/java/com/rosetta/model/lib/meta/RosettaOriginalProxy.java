@@ -1,4 +1,6 @@
 package com.rosetta.model.lib.meta;
 
-public interface RosettaOriginalProxy<T> extends RosettaProxy<T> {
+import com.rosetta.model.lib.RosettaModelObject;
+
+public interface RosettaOriginalProxy<T extends RosettaModelObject> extends RosettaProxy<T> {
 }
