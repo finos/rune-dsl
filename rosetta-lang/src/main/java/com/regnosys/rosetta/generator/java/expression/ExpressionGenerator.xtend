@@ -1273,15 +1273,28 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val rCallable = rObjectFactory.buildRFunction(match)
 		val javaOutputType = rCallable.output.attributeToJavaType
 
-		val args = newArrayList
-		for (var i = 0; i < expr.inputs.size; i++) {
-			args.add(expr.inputs.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, context.scope))
+		if (expr.inputs.size === 1 && expr.inputs.head.isMulti) {			
+			val argCode = expr.inputs.head.javaCode(MAPPER_C.wrap(rCallable.inputs.head.attributeToJavaType), context.scope)
+				.collapseToSingleExpression(context.scope)
+				
+			val lambdaScope = context.scope.lambdaScope
+			val paramId = lambdaScope.createUniqueIdentifier(argCode.expressionType.itemType.simpleName.toFirstLower)
+			
+			val StringConcatenationClient body = '''«paramId» -> «MapperS».of(«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«paramId».get()))'''
+				
+			argCode
+				.mapExpression[JavaExpression.from('''«it».mapItem(«body»)''', MAPPER_C.wrap(javaOutputType))]
+		} else {
+			val args = newArrayList
+			for (var i = 0; i < expr.inputs.size; i++) {
+				args.add(expr.inputs.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, context.scope))
+			}
+			JavaStatementBuilder.invokeMethod(
+				args,
+				[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', javaOutputType)],
+				context.scope
+			)
 		}
-		JavaStatementBuilder.invokeMethod(
-			args,
-			[JavaExpression.from('''«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«it»)''', javaOutputType)],
-			context.scope
-		)
 	}
 	
 	override protected caseAsReferenceOperation(AsReferenceOperation expr, Context context) {

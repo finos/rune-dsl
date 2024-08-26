@@ -159,6 +159,54 @@ class TranslateTest {
 	}
 	
 	@Test
+	def void testTranslationWithMultiCardinality2() {
+		val code = '''
+	    type Foo:
+	    	a string (0..*)
+	    
+	    type Bar:
+	    	bs Qux (0..*)
+	    
+	    type Qux:
+	    	cs string (0..*)
+	    
+	    translate source FooBar {
+	        translate Bar to Foo {
+	        	a: [
+	        			translate bs to string,
+	        			"Another string"
+	        		]
+	        }
+	        
+	        translate qux Qux to string:
+	        	qux -> cs join ", "
+	    }
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val bar = classes.createInstanceUsingBuilder("Bar", #{
+	    		"bs" -> #[
+	    			classes.createInstanceUsingBuilder("Qux", #{
+		    			"cs" -> #["a", "b"]
+		    		}),
+		    		classes.createInstanceUsingBuilder("Qux", #{
+		    			"cs" -> #[]
+		    		}),
+		    		classes.createInstanceUsingBuilder("Qux", #{
+		    			"cs" -> #["This", "is", "ignored"]
+		    		})
+	    		]
+	        })
+	    val expectedResult = classes.createInstanceUsingBuilder("Foo", #{
+	    		"a" -> #["a, b", "", "This, is, ignored", "Another string"]
+	        })
+        
+        val translation = classes.createTranslation("FooBar", #["Bar"], "Foo");
+        assertEquals(expectedResult, translation.invokeFunc(expectedResult.class, #[bar]))
+	}
+	
+	@Test
 	@Disabled
 	def void testTranslationWithMetadata() {
 		val code = '''

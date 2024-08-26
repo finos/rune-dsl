@@ -53,11 +53,13 @@ class RosettaTranslateValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	def void checkTranslateDispatch(TranslateDispatchOperation op) {
-		op.inputs.forEach[
-			if (isMulti) {
-				error('''Expected an expression of single cardinality, but was multi.''', it, null)
-			}
-		]
+		if (op.inputs.size > 1) {
+			op.inputs.forEach[
+				if (isMulti) {
+					error('''Expected an expression of single cardinality, but was multi.''', it, null)
+				}
+			]
+		}
 		
 		val source = util.getSource(op)
 		if (source === null) {
