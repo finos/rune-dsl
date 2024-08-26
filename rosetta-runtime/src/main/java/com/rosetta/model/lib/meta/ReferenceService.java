@@ -142,12 +142,19 @@ public class ReferenceService {
 					return builderProxy;
 				}
 				resolve();
+				if (builder == null) {
+					return null;
+				}
 			}
+			
 			return method.invoke(builder, args);
 		}
 		
 		private void resolve() {
-			this.builder = proxy.getInstance().toBuilder();
+			RosettaModelObject instance = proxy.getInstance();
+			if (instance != null) {
+				this.builder = instance.toBuilder();
+			}
 		}
 		private boolean isGetter(Method method) {
 			return method.getName().startsWith("get") && !method.getName().startsWith("getOrCreate");
