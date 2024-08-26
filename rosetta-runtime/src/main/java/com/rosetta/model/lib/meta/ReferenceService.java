@@ -1,6 +1,7 @@
 package com.rosetta.model.lib.meta;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
@@ -110,7 +111,7 @@ public class ReferenceService {
 			}
 		}
 		private Object toBuilderProxy(RosettaProxy<?> proxy) {
-			BuilderProxyInvocationHandler builderProxyHandler = new BuilderProxyInvocationHandler(proxy);
+			BuilderProxyInvocationHandler<T> builderProxyHandler = new BuilderProxyInvocationHandler<T>(proxy, clazz);
 			Class<?> builderClass;
 			try {
 				builderClass = clazz.getMethod("builder").getReturnType();
@@ -121,12 +122,14 @@ public class ReferenceService {
 			return builderProxy;
 		}
 	}
-	private class BuilderProxyInvocationHandler implements InvocationHandler {
+	private class BuilderProxyInvocationHandler<T extends RosettaModelObject> implements InvocationHandler {
 		private final RosettaProxy<?> proxy;
+		private final Class<T> clazz;
 		private RosettaModelObjectBuilder builder = null;
 		
-		public BuilderProxyInvocationHandler(RosettaProxy<?> proxy) {
+		public BuilderProxyInvocationHandler(RosettaProxy<?> proxy, Class<T> clazz) {
 			this.proxy = proxy;
+			this.clazz = clazz;
 		}
 
 		@Override
@@ -141,10 +144,10 @@ public class ReferenceService {
 				if (method.getName().equals("toBuilder")) {
 					return builderProxy;
 				}
-				resolve();
-				if (builder == null) {
-					return null;
+				if (method.getName().equals("prune")) {
+					return builderProxy;
 				}
+				resolve();
 			}
 			
 			return method.invoke(builder, args);
@@ -154,6 +157,13 @@ public class ReferenceService {
 			RosettaModelObject instance = proxy.getInstance();
 			if (instance != null) {
 				this.builder = instance.toBuilder();
+			} else {
+				try {
+					this.builder = (RosettaModelObjectBuilder) clazz.getMethod("builder").invoke(null);
+				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+						| NoSuchMethodException | SecurityException e) {
+					throw new RuntimeException();
+				}
 			}
 		}
 		private boolean isGetter(Method method) {
