@@ -42,6 +42,39 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void test() {
+		val code = '''
+			type StringWithScheme extends string:
+					scheme string (1..1)
+			
+			enum MyEnum:
+				ENUM1
+			
+			func Create:
+			  output:
+			    result MyEnum (1..1)
+			  
+			  set result:
+			    StringWithScheme ["bar"] {
+			        scheme: "My scheme"
+			    } to-enum MyEnum
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+        val someFunc = classes.createFunc("Create")
+        
+        val expected = classes.createInstanceUsingBuilder("NumberWithScheme", #{
+        	"value" -> BigDecimal.valueOf(20),
+        	"scheme" -> "My scheme"
+        })
+		
+		val output = someFunc.invokeFunc(expected.class)
+		
+		assertEquals(expected, output)
+	}	
+	
+	@Test
 	def void testMetaConstructorAsReference() {
 		val code = '''
 			type NumberWithScheme extends number:

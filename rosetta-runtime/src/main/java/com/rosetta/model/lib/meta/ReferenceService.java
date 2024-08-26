@@ -17,6 +17,9 @@ public class ReferenceService {
 	private final Map<String, RosettaModelObject> keyToProxyMap = new HashMap<>();
 
 	public <T extends RosettaModelObject> T register(T instance, String key, Class<T> clazz) {
+		if (key == null) {
+			return instance;
+		}
 		if (keyToInstanceMap.containsKey(key)) {
 			throw new RuntimeException("There is already an instance registered with key '" + key + "'.");
 		}
