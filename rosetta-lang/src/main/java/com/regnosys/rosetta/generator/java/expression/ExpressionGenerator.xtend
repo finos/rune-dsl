@@ -1045,7 +1045,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	private def JavaStatementBuilder conversionOperation(RosettaUnaryOperation expr, Context context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
-		expr.argument.javaCode(MAPPER_S.wrapExtends(expr.argument), context.scope)
+		expr.argument.javaCode(MAPPER_S.wrapExtends(STRING), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«it».checkedMap("«expr.operator»", «conversion», «errorClass».class)''', MAPPER_S.wrap(expr))]
 	}
