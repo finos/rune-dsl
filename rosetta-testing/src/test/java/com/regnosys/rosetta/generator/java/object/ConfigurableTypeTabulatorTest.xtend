@@ -76,9 +76,80 @@ class ConfigurableTypeTabulatorTest {
 		assertEquals(expected, fooTabulatorCode)
 	}
 	
+	@Test
+	def void shouldGenerateTabulatorsForTypeEngineSpecificationConfig() {
+		val model2 = '''
+			namespace model2
+			
+			    metaType scheme string
+			
+				type Root:
+				   engineSpecification EngineSpecification (1..1)
+				
+				type EngineSpecification:
+				   fuel string (1..*)
+				   [metadata scheme]
+		'''
+
+		val model2Code = model2.generateCodeForModel(Model2FileConfigProvider)
+		val engineSpecificationTabulatorCode = model2Code.get("model2.tabulator.EngineSpecificationTypeTabulator")
+		assertThat(engineSpecificationTabulatorCode, CoreMatchers.notNullValue())
+		var expected = '''
+			package model2.tabulator;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.reports.Tabulator;
+			import com.rosetta.model.lib.reports.Tabulator.Field;
+			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
+			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
+			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
+			import java.util.Arrays;
+			import java.util.List;
+			import java.util.Optional;
+			import java.util.stream.Collectors;
+			import model2.EngineSpecification;
+			
+			
+			@ImplementedBy(EngineSpecificationTypeTabulator.Impl.class)
+			public interface EngineSpecificationTypeTabulator extends Tabulator<EngineSpecification> {
+				public class Impl implements EngineSpecificationTypeTabulator {
+					private final Field fuelField;
+					
+					public Impl() {
+						this.fuelField = new FieldImpl(
+							"fuel",
+							true,
+							Optional.empty(),
+							Optional.empty(),
+							Arrays.asList()
+						);
+					}
+					
+					@Override
+					public List<FieldValue> tabulate(EngineSpecification input) {
+						FieldValue fuel = new FieldValueImpl(fuelField, Optional.ofNullable(input.getFuel())
+							.map(x -> x.stream()
+								.map(_x -> _x.getValue())
+								.collect(Collectors.toList())));
+						return Arrays.asList(
+							fuel
+						);
+					}
+				}
+			}
+		'''
+		assertEquals(expected, engineSpecificationTabulatorCode)
+	}
+	
 	private static class Model1FileConfigProvider extends RosettaConfigurationFileProvider {
 		override URL get() {
 			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-type-config-model1.yml")
+		}
+	}
+	
+	private static class Model2FileConfigProvider extends RosettaConfigurationFileProvider {
+		override URL get() {
+			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-type-config-model2.yml")
 		}
 	}
 }

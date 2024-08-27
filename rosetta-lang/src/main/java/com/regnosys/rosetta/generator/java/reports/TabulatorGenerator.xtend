@@ -463,7 +463,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
-					.collect(«Collectors».toList()));
+					.collect(«Collectors».toList())));
 			«ELSE»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».getValue()));
