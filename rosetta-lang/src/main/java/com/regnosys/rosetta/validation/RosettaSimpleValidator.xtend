@@ -167,7 +167,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
-		if (!(op.argument.RType instanceof RBasicType) && !(op.argument.RType instanceof REnumType)) {
+		val inputType = op.argument.RType
+		if (inputType instanceof RDataType && inputType.valueType === null) {
 			val message = "Invalid switch argument type, supported argument types are basic types and enumerations"
 			error(message, op.argument, null)
 		}
