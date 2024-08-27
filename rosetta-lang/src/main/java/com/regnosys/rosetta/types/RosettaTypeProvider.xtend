@@ -540,7 +540,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
-		expr.values.map[it.expression.RType].join
+		expr.values
+		.map[it.expression.RType ?: NOTHING]
+		.join
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Map<EObject, RType> context) {
