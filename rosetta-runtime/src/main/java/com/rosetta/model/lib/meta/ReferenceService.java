@@ -85,6 +85,9 @@ public class ReferenceService {
 			if (method.getName().equals("toBuilder")) {
 				return toBuilderProxy((RosettaProxy<?>) proxy);
 			}
+			if (method.getName().equals("process")) {
+				return null;
+			}
 			if (method.getName().equals("equals") && args.length == 1) {
 				if (proxy == args[0]) {
 					return true;
@@ -134,6 +137,9 @@ public class ReferenceService {
 
 		@Override
 		public Object invoke(Object builderProxy, Method method, Object[] args) throws Throwable {
+			if (method.getName().equals("process")) {
+				return null;
+			}
 			if (builder == null) {
 				if (isGetter(method)) {
 					return method.invoke(proxy, args);
