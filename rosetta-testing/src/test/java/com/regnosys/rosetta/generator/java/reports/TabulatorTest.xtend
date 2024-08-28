@@ -730,4 +730,34 @@ class TabulatorTest {
 		'''
 		assertFieldValuesEqual(expectedValues, flatReport)
 	}
+	
+	@Test
+	def void confirmToString() {
+		val model = '''
+			«HEADER»
+			
+			type ReportableInput:
+				title string (1..1)
+			
+			type Report:
+				basic string (1..1)
+					[ruleReference Basic]
+			
+			
+			reporting rule Basic from ReportableInput:
+				extract title
+		'''
+		val code = model.generateCode
+		
+		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val tabulatorClass = reportId.toJavaReportTabulator
+		val classes = code.compileToClasses
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		val report = classes.createInstanceUsingBuilder("Report", #{"basic" -> "My reportable input"})
+		val actual = tabulator.tabulate(report)
+		
+		val expected = "[<basic, My reportable input>]"
+		
+		assertEquals(actual.toString(), expected)
+	}
 }
