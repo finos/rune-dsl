@@ -150,7 +150,7 @@ public interface Tabulator<T> {
 		}
 		@Override
 		public String toString() {
-			return String.format("<%s, %s, alreadyReferenced [%b], referencedField [%s]>", field.getName(), value.map(Object::toString).orElse("<empty>"));
+			return String.format("<%s, %s>", field.getName(), value.map(Object::toString).orElse("<empty>"));
 		}
 		@Override
 		public int hashCode() {
