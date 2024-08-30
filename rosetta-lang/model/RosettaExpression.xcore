@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 
 interface RosettaExpression {
@@ -208,6 +209,10 @@ class DefaultOperation extends RosettaBinaryOperation {
 }
 
 class LogicalOperation extends RosettaBinaryOperation {
+}
+
+class WithMetaOperation extends RosettaBinaryOperation {
+	refers RosettaMetaType metaFeature
 }
 
 enum CardinalityModifier {
