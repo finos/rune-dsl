@@ -760,4 +760,26 @@ class TabulatorTest {
 		
 		assertEquals(actual.toString(), expected)
 	}
+	
+	@Test
+	def void confirmNullPointerIsNotGenerated() {
+		val model = '''
+		    «HEADER»
+		    
+			type Bar:
+			    [metadata key]
+		
+			type Foo:
+			    bar Bar (0..1)
+		'''
+		val code = model.generateCode
+
+		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTypeTabulator", Tabulator)
+		
+		val classes = code.compileToClasses
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		val report = classes.createInstanceUsingBuilder("Report", #{"b" -> "My reportable input"})
+		val actual = tabulator.tabulate(report)		
+	}
 }
