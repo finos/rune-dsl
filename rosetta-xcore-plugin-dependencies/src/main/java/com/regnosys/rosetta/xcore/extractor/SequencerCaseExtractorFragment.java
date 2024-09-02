@@ -90,7 +90,12 @@ public class SequencerCaseExtractorFragment extends AbstractXtextGeneratorFragme
 	}
 	
 	private static final Pattern SEQUENCE_MATCHER = Pattern.compile(
-			"public void sequence\\(ISerializationContext context, EObject semanticObject\\).*?(if \\(epackage == ExpressionPackage.eINSTANCE\\).*?\\}.*)else if \\(epackage == RosettaPackage.eINSTANCE\\).*?\\}\\n\\n" //match long case statement
+			"^\\s+public void sequence\\(ISerializationContext context, EObject semanticObject\\).*?\\}\\n\\n"
+			, Pattern.DOTALL | Pattern.MULTILINE
+			);
+	
+	private static final Pattern PACKAGE_MATCHER = Pattern.compile(
+			"^\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==.+?\\)\\n(?:^(?!\\s*(?:else)?\\s*if\\s+\\(epackage\\s*=).*?$\\n)+"
 			, Pattern.DOTALL | Pattern.MULTILINE);
 	
 	public static final Pattern CASE_PATTERN = Pattern.compile(
