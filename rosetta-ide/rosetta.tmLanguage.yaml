@@ -98,6 +98,8 @@ repository:
         patterns:
         - include: '#comment'
         - include: '#string'
+        - name: keyword.other.as.rosetta
+          match: '{{wordStart}}as{{wordEnd}}'
         - name: entity.name.namespace.rosetta
           match: '{{identifier}}'
         - name: punctuation.separator.dot.rosetta
@@ -1119,7 +1121,7 @@ repository:
           begin: '{{wordStart}}translate{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.operator.word.rosetta }
-          end: '({{expressionEnd}})(?!{{wordStart}}translate{{wordEnd}})'
+          end: '(?={{wordStart}}using{{wordEnd}})|({{expressionEnd}})(?!{{wordStart}}translate{{wordEnd}})'
           patterns:
           - include: '#comment'
           - begin: '(?<={{wordStart}}translate{{wordEnd}})'
@@ -1130,7 +1132,7 @@ repository:
             - include: '#comment'
             - include: '#expression'
           - begin: '(?<={{wordStart}}to{{wordEnd}})'
-            end: '({{expressionEnd}})(?!{{wordStart}}translate{{wordEnd}})'
+            end: '(?={{wordStart}}using{{wordEnd}})|({{expressionEnd}})(?!{{wordStart}}translate{{wordEnd}})'
             patterns:
             - include: '#comment'
             - include: '#typeCall'
