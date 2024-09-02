@@ -226,7 +226,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				}
 			}
 			if (!extensions.isResolved(expression)) {
-				return null
+				return NOTHING
 			}
 			doSwitch(expression, cycleTracker)
 		])
@@ -347,7 +347,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	override protected caseFeatureCall(RosettaFeatureCall expr, Map<EObject, RType> cycleTracker) {
 		val feature = expr.feature
 		if (!extensions.isResolved(feature)) {
-			return null
+			return NOTHING
 		}
 		if (feature instanceof RosettaEnumValue) {
 			expr.receiver.safeRType(cycleTracker)
@@ -540,7 +540,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
-		expr.values.map[it.expression.RType].join
+		expr.values
+		.map[it.expression.RType]
+		.join
 	}
 	
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Map<EObject, RType> context) {

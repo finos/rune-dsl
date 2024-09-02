@@ -32,6 +32,21 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+	
+	@Test
+	def void missingImportedMetaValidatesWithError() {
+		val model = '''
+			func Test:
+			    output:
+			     result string (1..1)
+			
+			    set result: "A" switch
+			            "A" then missingInput -> fieldA
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaSymbol 'missingInput'.")
+		model.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'fieldA'.")		
+	}
 
 	@Test
 	def void metaConstructorValidatesValueType() {

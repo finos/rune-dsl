@@ -628,6 +628,7 @@ RosettaCalcBinary returns RosettaExpression:
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
 		| {DefaultOperation.left=current} operator='default' right=UnaryOperation
 		| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
+//		| {WithMetaOperation.left=current} operator='with-meta' metaFeature=[RosettaMetaType] 'from' right=UnaryOperation
 	))?
 	| // Without left parameter:
 	(
@@ -636,12 +637,14 @@ RosettaCalcBinary returns RosettaExpression:
 			| {RosettaDisjointExpression} operator='disjoint' right=UnaryOperation
 			| {DefaultOperation} operator='default' right=UnaryOperation
 			| {JoinOperation} operator='join' (=>right=UnaryOperation)?
+//			| {WithMetaOperation} operator='with-meta' metaFeature=[RosettaMetaType] 'from' right=UnaryOperation
 		)
 		(=>(
 			{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
 			| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
 			| {DefaultOperation.left=current} operator='default' right=UnaryOperation
 			| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
+//			| {WithMetaOperation.left=current} operator='with-meta' metaFeature=[RosettaMetaType] 'from' right=UnaryOperation
 		))?
 	)
 ;
