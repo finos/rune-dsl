@@ -16,6 +16,7 @@
 
 package com.rosetta.model.lib.reports;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,7 +28,14 @@ import com.rosetta.model.lib.ModelSymbolId;
 
 public interface Tabulator<T> {
 
-	List<Field> getFields();
+	/**
+	 * Deprecated because it was only used in tests
+	 * @return Arrays.asList()
+	 */
+	@Deprecated
+	default List<Field> getFields() {
+		return Arrays.asList();
+	}
 	List<FieldValue> tabulate(T report);
 	
 	public interface Field {
@@ -67,10 +75,8 @@ public interface Tabulator<T> {
 		void visitNested(NestedFieldValue fieldValue, C context);
 		void visitMultiNested(MultiNestedFieldValue fieldValue, C context);
 	}
-	
 	public static class FieldImpl implements Field {
 		private String attributeName;
-
 		private boolean isMulti;
 		private Optional<ModelSymbolId> ruleId;
 		private Optional<String> identifier;
@@ -87,36 +93,29 @@ public interface Tabulator<T> {
 			this.identifier = identifier;
 			this.children = children;
 		}
-		
 		@Override
 		public String getName() {
 			return identifier.orElse(attributeName);
 		}
-
 		@Override
 		public String getAttributeName() {
 			return attributeName;
 		}
-		
 		@Override
 		public boolean isMulti() {
 			return isMulti;
 		}
-		
 		public Optional<ModelSymbolId> getRuleId() {
 			return ruleId;
 		}
-
 		@Override
 		public List<Field> getChildren() {
 			return children;
 		}
-		
 		@Override
 		public int hashCode() {
 			return Objects.hash(attributeName, children, identifier, isMulti, ruleId);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -141,7 +140,6 @@ public interface Tabulator<T> {
 			this.field = field;
 			this.value = value;
 		}
-		
 		@Override
 		public Field getField() {
 			return field;
@@ -150,17 +148,14 @@ public interface Tabulator<T> {
 		public Optional<? extends Object> getValue() {
 			return value;
 		}
-		
 		@Override
 		public String toString() {
-			return "<" + field.getName() + ", " + value.map(Object::toString).orElse("<empty>") + ">";
+			return String.format("<%s, %s>", field.getName(), value.map(Object::toString).orElse("<empty>"));
 		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, value);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -186,7 +181,6 @@ public interface Tabulator<T> {
 			this.field = field;
 			this.value = value;
 		}
-		
 		@Override
 		public Field getField() {
 			return field;
@@ -195,7 +189,6 @@ public interface Tabulator<T> {
 		public Optional<? extends List<? extends FieldValue>> getValue() {
 			return value;
 		}
-		
 		@Override
 		public String toString() {
 			String valueRepr = value
@@ -205,12 +198,10 @@ public interface Tabulator<T> {
 					.orElse("<empty>");
 			return "<" + field.getName() + ", " + valueRepr + ">";
 		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, value);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -237,7 +228,6 @@ public interface Tabulator<T> {
 			this.field = field;
 			this.value = value;
 		}
-		
 		@Override
 		public Field getField() {
 			return field;
@@ -246,7 +236,6 @@ public interface Tabulator<T> {
 		public Optional<? extends List<? extends List<? extends FieldValue>>> getValue() {
 			return value;
 		}
-		
 		@Override
 		public String toString() {
 			String valueRepr = value
@@ -258,12 +247,10 @@ public interface Tabulator<T> {
 					.orElse("<empty>");
 			return "<" + field.getName() + ", " + valueRepr + ">";
 		}
-
 		@Override
 		public int hashCode() {
 			return Objects.hash(field, value);
 		}
-
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)

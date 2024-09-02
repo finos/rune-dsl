@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.regnosys.rosetta.config.RosettaCustomConfigInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.regnosys.rosetta.tests.util.RosettaCustomConfigInjectorProvider
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.util.DottedPath
@@ -12,8 +12,8 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import static org.junit.jupiter.api.Assertions.*
 
+import static org.junit.jupiter.api.Assertions.assertNotNull
 
 @InjectWith(RosettaCustomConfigInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -87,14 +87,6 @@ class ConfigurableTabulatorTest {
 		
 		val classes = code.compileToClasses
 		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		
-		val expectedFields =
-		'''
-		subreportList*
-			subsubreportList*
-				subsubbasic
-		'''
-		assertFieldsEqual(expectedFields, tabulator.fields)
 		
 		val subsubreport1 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "1"})
 		val subsubreport2 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "2"})

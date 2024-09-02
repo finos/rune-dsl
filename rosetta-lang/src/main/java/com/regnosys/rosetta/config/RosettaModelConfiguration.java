@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.config;
 
+import java.util.Objects;
+
 import javax.inject.Inject;
 
 import com.google.inject.ProvidedBy;
@@ -9,6 +11,8 @@ public class RosettaModelConfiguration {
 	private final String name;
 
 	public RosettaModelConfiguration(String name) {
+		Objects.requireNonNull(name);
+		
 		this.name = name;
 	}
 

@@ -35,6 +35,31 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testFullyQualifiedNamesCanBeUsedInExpression() {
+		val modelBar = '''
+			namespace test.bar
+			
+			enum SomeEnum:
+				A
+				B
+				C
+				D
+			
+		'''
+		
+		val modelFoo = '''
+			namespace test.foo
+			
+			func Test:
+			    output:
+			        partyIdType test.bar.SomeEnum (1..1)
+			    set partyIdType: test.bar.SomeEnum -> A
+		'''
+		
+		#[modelBar, modelFoo].parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testScopingForImplicitFeatureWithSameNameAsAnnotation() {
 		val model = '''
 		annotation foo:
