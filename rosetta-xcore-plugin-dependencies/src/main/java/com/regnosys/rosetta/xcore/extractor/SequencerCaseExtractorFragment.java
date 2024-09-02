@@ -95,7 +95,7 @@ public class SequencerCaseExtractorFragment extends AbstractXtextGeneratorFragme
 			);
 	
 	private static final Pattern PACKAGE_MATCHER = Pattern.compile(
-			"^\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==.+?\\)\\n(?:^(?!\\s*(?:else)?\\s*if\\s+\\(epackage\\s*=).*?$\\n)+"
+			"^\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==.+?\\)\\n(?:^(?!\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==)(?!\\s*if\\s*\\(errorAcceptor).*?$\\n)+"
 			, Pattern.DOTALL | Pattern.MULTILINE);
 	
 	public static final Pattern CASE_PATTERN = Pattern.compile(
