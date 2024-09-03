@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 
 import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
+import static com.google.common.collect.ImmutableMap.*
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -139,7 +140,7 @@ class TabulatorTest {
 			import java.util.List;
 			import java.util.Optional;
 			import javax.inject.Inject;
-
+			
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
@@ -281,7 +282,7 @@ class TabulatorTest {
 			import java.util.stream.Collectors;
 			import javax.inject.Inject;
 			
-
+			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
 			public interface ReportTypeTabulator extends Tabulator<Report> {
 				public class Impl implements ReportTypeTabulator {
@@ -771,7 +772,7 @@ class TabulatorTest {
 	final RootPackage MODEL3_META_PKG = new RootPackage("model3.metafields")
 	final RootPackage META_PKG = new RootPackage("com.rosetta.model.metafields")
 	
-	def getModel3Classes() {
+	def getModel3SingleCardinalityClasses() {
 		val model = '''
 			namespace model3
 			
@@ -799,8 +800,8 @@ class TabulatorTest {
 	}
 	
 	@Test
-	def void shouldTabulateTypesWithReferences_ResolvedReference() {
-		val classes = getModel3Classes
+	def void shouldTabulatSingleCardinalityTypes_ResolvedReference() {
+		val classes = getModel3SingleCardinalityClasses
 		val rootTabulator = classes.getModel3RootTabulator
 
 		// bar and barReference is set
@@ -820,8 +821,8 @@ class TabulatorTest {
 	}
 	
 	@Test
-	def void shouldTabulateTypesWithReferences_EmptyReferenceAndValue() {
-		val classes = getModel3Classes
+	def void shouldTabulateSingleCardinalityTypes_EmptyReferenceAndValue() {
+		val classes = getModel3SingleCardinalityClasses
 		val rootTabulator = classes.getModel3RootTabulator
 		
 		 // bar and barReference is null
@@ -836,8 +837,8 @@ class TabulatorTest {
 	}
 
 	@Test
-	def void shouldTabulateTypesWithReferences_UnresolvedReference() {
-		val classes = getModel3Classes
+	def void shouldTabulateSingleCardinalityTypes_UnresolvedReference() {
+		val classes = getModel3SingleCardinalityClasses
 		val rootTabulator = classes.getModel3RootTabulator
 
         // bar is set and barReference is set as an unresolved reference
@@ -854,9 +855,90 @@ class TabulatorTest {
 		val tabulatedRoot = rootTabulator.tabulate(root)	
 		
 		assertNotNull(tabulatedRoot)
-		assertEquals("[<r1, rValue>, <foo, {<f1, fValue>, <barReference, {<b1, bValue>}>}>, <bar, {<b1, bValue>}>]", tabulatedRoot.toString)
+		assertEquals("[<r1, rValue>, <foo, {<f1, fValue>, <barReference, <empty>>}>, <bar, {<b1, bValue>}>]", tabulatedRoot.toString)
 	}
 
+	def getModel3MulitCardinalityClasses() {
+		val model = '''
+			namespace model3
+			
+			type Root:
+				r1 string (1..1)
+				foo Foo (1..1)
+				bar Bar (1..1)
+			
+			type Foo:
+				f1 string (1..1)
+			    barReferences Bar (1..*)
+			    	[metadata reference]
+
+			type Bar:
+				[metadata key]
+			    b1 string (1..1)
+	'''
+		val code = model.generateCodeForModel(Model3RosettaConfigProvider)
+		println(code.get("model3.tabulator.FooTypeTabulator"))
+		return #[code].compileToClassesForModel(Model3RosettaConfigProvider)
+	}
+	
+	@Test
+	def void shouldTabulateMultiCardinalityTypes_ResolvedReference() {
+		val classes = getModel3MulitCardinalityClasses
+		val rootTabulator = classes.getModel3RootTabulator
+
+		// bar and barReference is set
+		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"b1" -> "b1Value"})
+		val barReference = classes.createInstanceUsingBuilder(MODEL3_META_PKG, "ReferenceWithMetaBar", #{"value" -> bar})
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "f1Value", "barReferences" -> #[barReference]})
+		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "r1Value", "foo" -> foo, "bar" -> bar})
+		assertEquals("Root {r1=r1Value, " +
+			"foo=Foo {f1=f1Value, barReferences=[ReferenceWithMetaBar {value=Bar {b1=b1Value, meta=null}, globalReference=null, externalReference=null, reference=null}]}, " +
+			"bar=Bar {b1=b1Value, meta=null}}", 
+			root.toString)
+		
+		val tabulatedRoot = rootTabulator.tabulate(root)	
+		
+		assertNotNull(tabulatedRoot)
+		assertEquals("[<r1, r1Value>, <foo, {<f1, f1Value>, <barReferences, [{<b1, b1Value>}]>}>, <bar, {<b1, b1Value>}>]", tabulatedRoot.toString)
+	}
+	
+	@Test
+	def void shouldTabulateMultiCardinalityTypes_EmptyReferenceAndValue() {
+		val classes = getModel3MulitCardinalityClasses
+		val rootTabulator = classes.getModel3RootTabulator
+		
+		 // bar and barReference is null
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "fValue"}) // bar not set
+		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "rValue", "foo" -> foo})
+		assertEquals("Root {r1=rValue, foo=Foo {f1=fValue, barReferences=null}, bar=null}", root.toString)
+		
+		val tabulatedRoot = rootTabulator.tabulate(root)	
+		
+		assertNotNull(tabulatedRoot)
+		assertEquals("[<r1, rValue>, <foo, {<f1, fValue>, <barReferences, <empty>>}>, <bar, <empty>>]", tabulatedRoot.toString)
+	}
+
+	@Test
+	def void shouldTabulateMultiCardinalityTypes_UnresolvedReference() {
+		val classes = getModel3MulitCardinalityClasses
+		val rootTabulator = classes.getModel3RootTabulator
+
+        // bar is set and barReference is set as an unresolved reference
+		val barMetaFields = classes.createInstanceUsingBuilder(META_PKG, "MetaFields", #{"externalKey" -> "barExtKey", "globalKey" -> "barGlobalKey"})
+		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"meta" -> barMetaFields, "b1" -> "bValue"})
+		val barReference = classes.createInstanceUsingBuilder(MODEL3_META_PKG, "ReferenceWithMetaBar", #{"externalReference" -> "barExtKey", "globalReference" -> "barGlobalKey"})
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "fValue", "barReferences" -> #[barReference]})
+		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "rValue", "foo" -> foo, "bar" -> bar})
+		assertEquals("Root {r1=rValue, " +
+			"foo=Foo {f1=fValue, barReferences=[ReferenceWithMetaBar {value=null, globalReference=barGlobalKey, externalReference=barExtKey, reference=null}]}, " +
+			"bar=Bar {b1=bValue, meta=MetaFields {scheme=null, globalKey=barGlobalKey, externalKey=barExtKey, key=null}}}", 
+			root.toString)
+		
+		val tabulatedRoot = rootTabulator.tabulate(root)	
+		
+		assertNotNull(tabulatedRoot)
+		assertEquals("[<r1, rValue>, <foo, {<f1, fValue>, <barReferences, []>}>, <bar, {<b1, bValue>}>]", tabulatedRoot.toString)
+	}
 	
 	private static class Model3RosettaConfigProvider extends RosettaConfigurationFileProvider {
 		override URL get() {

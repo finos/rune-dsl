@@ -161,6 +161,7 @@ class ConfigurableTypeTabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
 			import java.util.Arrays;
 			import java.util.List;
+			import java.util.Objects;
 			import java.util.Optional;
 			import java.util.stream.Collectors;
 			import model2.EngineSpecification;
@@ -186,6 +187,7 @@ class ConfigurableTypeTabulatorTest {
 						FieldValue fuel = new FieldValueImpl(fuelField, Optional.ofNullable(input.getFuel())
 							.map(x -> x.stream()
 								.map(_x -> _x.getValue())
+								.filter(Objects::nonNull)
 								.collect(Collectors.toList())));
 						return Arrays.asList(
 							fuel

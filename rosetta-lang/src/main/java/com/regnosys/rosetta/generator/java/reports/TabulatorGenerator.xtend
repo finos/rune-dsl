@@ -36,6 +36,7 @@ import javax.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import java.util.Objects
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -445,12 +446,17 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.card.isMany»
 				.map(«lambdaParam» -> «lambdaParam».stream()
-					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))
+					«IF !attr.metaAnnotations.empty»
+						.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
+						.filter(«Objects»::nonNull)
+					«ENDIF»
+					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»))
 					.collect(«Collectors».toList()))
 				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
 				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))))
+				«IF !attr.metaAnnotations.empty».map(«lambdaParam» -> «lambdaParam».getValue())«ENDIF»
+				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»))))
 				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''
@@ -463,6 +469,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
+					.filter(«Objects»::nonNull)
 					.collect(«Collectors».toList())));
 			«ELSE»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
