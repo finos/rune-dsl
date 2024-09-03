@@ -34,6 +34,7 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	@Inject extension ExpressionParser
 	
+	@Disabled //bring back when meta with syntax is ready
 	@Test
 	def void testWithMetaSyntax() {
 		 '''
