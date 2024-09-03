@@ -25,7 +25,6 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 
 import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
-import static com.google.common.collect.ImmutableMap.*
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -777,17 +776,17 @@ class TabulatorTest {
 			namespace model3
 			
 			type Root:
-				r1 string (1..1)
-				foo Foo (1..1)
-				bar Bar (1..1)
+			    r1 string (1..1)
+			    foo Foo (1..1)
+			    bar Bar (1..1)
 			
 			type Foo:
-				f1 string (1..1)
+			    f1 string (1..1)
 			    barReference Bar (1..1)
-			    	[metadata reference]
+			        [metadata reference]
 
 			type Bar:
-				[metadata key]
+			    [metadata key]
 			    b1 string (1..1)
 	'''
 		val code = model.generateCodeForModel(Model3RosettaConfigProvider)
@@ -864,17 +863,17 @@ class TabulatorTest {
 			namespace model3
 			
 			type Root:
-				r1 string (1..1)
-				foo Foo (1..1)
-				bar Bar (1..1)
+			    r1 string (1..1)
+			    foo Foo (1..1)
+			    bar Bar (1..1)
 			
 			type Foo:
-				f1 string (1..1)
+			    f1 string (1..1)
 			    barReferences Bar (1..*)
-			    	[metadata reference]
+			        [metadata reference]
 
 			type Bar:
-				[metadata key]
+			    [metadata key]
 			    b1 string (1..1)
 	'''
 		val code = model.generateCodeForModel(Model3RosettaConfigProvider)
