@@ -81,25 +81,55 @@ public class SequencerCaseExtractorFragment extends AbstractXtextGeneratorFragme
 	
 	private String process(String input, File file) {
 		StringBuffer result = new StringBuffer();
-		Matcher sequenceMatchwer = SEQUENCE_MATCHER.matcher(input);
-		while(sequenceMatchwer.find()) {
+		Matcher sequenceMatcher = SEQUENCE_MATCHER.matcher(input);
+		if (sequenceMatcher.find()) {
+			String sequenceMethod = sequenceMatcher.group(1);
+			List<String> replacementConentAndMethods = extractSwitchStatements(sequenceMethod);
+			String replacement = "$1" + replacementConentAndMethods.get(0) + "$3" + replacementConentAndMethods.get(1);
+			sequenceMatcher.appendReplacement(result, replacement);
 			
 		}
-		
+		sequenceMatcher.appendTail(result);
 		return result.toString();
 	}
 	
+	private List<String> extractSwitchStatements(String sequenceMethod) {
+		StringBuffer content = new StringBuffer();
+		StringBuffer newMethods = new StringBuffer();
+
+		Matcher switchMatcher = SWITCH_MATCHER.matcher(sequenceMethod);
+		while(switchMatcher.find()) {
+			String switchContent = switchMatcher.group(1);
+			List<String> replacementConentAndMethods = 
+					extractCaseStatments(STRIP_CLOSING_BRACKET_MATCHER.matcher(switchContent).replaceAll("$1"));
+			String replacement = "$1" + replacementConentAndMethods.get(0) + "$3";
+			switchMatcher.appendReplacement(content, replacement);
+			newMethods.append(replacementConentAndMethods.get(1));
+		}
+		switchMatcher.appendTail(content);
+		return List.of(content.toString(), newMethods.toString());
+	}
+	
+	private List<String> extractCaseStatments(String caseStatement) {
+		
+		
+		return List.of("new switch content", "new methods");
+	}
+
 	private static final Pattern SEQUENCE_MATCHER = Pattern.compile(
-			"^\\s+public void sequence\\(ISerializationContext context, EObject semanticObject\\).*?\\}\\n\\n"
+			"(^\\s*public void sequence\\(ISerializationContext context, EObject semanticObject\\)\\s*\\{\\n.*?)(^\\s*if\\s+\\(epackage\\s*==.*?)(\\}\\n\\n)"
 			, Pattern.DOTALL | Pattern.MULTILINE
 			);
 	
-	private static final Pattern PACKAGE_MATCHER = Pattern.compile(
-			"^\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==.+?\\)\\n(?:^(?!\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==)(?!\\s*if\\s*\\(errorAcceptor).*?$\\n)+"
+	private static final Pattern SWITCH_MATCHER = Pattern.compile(
+			"(^\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==.+?\\)\\s*switch[^{]+\\{\\s)((?:^(?!\\s*(?:else)?\\s*if\\s+\\(epackage\\s*==)(?!\\s*if\\s*\\(errorAcceptor).*?$\\s)+)"
 			, Pattern.DOTALL | Pattern.MULTILINE);
 	
+	private static final Pattern STRIP_CLOSING_BRACKET_MATCHER = Pattern.compile("(.*)^\\s*?}$", Pattern.DOTALL | Pattern.MULTILINE);
+			
+	
 	public static final Pattern CASE_PATTERN = Pattern.compile(
-			"(?:^\\s*case\\s+(?:\\w+\\.\\w+)\\s*:(?:\\s*)\\n\\s*if.*?)(?:^(?!\\s*case).*?$\\n)+" 
+			"(?:^(\\s*case\\s+(?:\\w+\\.\\w+)\\s*:)(?:\\s*)\\n\\s*if.*?)(?:^(?!\\s*case).*?$\\n)+" 
 			, Pattern.DOTALL | Pattern.MULTILINE);
 
 }
