@@ -34,6 +34,28 @@ class RosettaParsingTest {
 	@Inject extension ValidationTestHelper
 	@Inject extension ExpressionParser
 	
+	@Disabled //bring back when meta with syntax is ready
+	@Test
+	def void testWithMetaSyntax() {
+		 '''
+			type Foo:
+			  attr string (1..1)
+				  [metadata scheme]
+				  
+			func SomeFunc:
+				inputs:
+					someValue string (1..1)
+					someScheme string (1..1)
+				
+				output:
+					result Foo (1..1)
+					
+				set result: Foo {
+					attribute: someValue with-meta scheme from someScheme
+				}
+		'''.parseRosettaWithNoIssues
+	}
+	
 	@Test
 	def void testFullyQualifiedNamesCanBeUsedInExpression() {
 		val modelBar = '''
