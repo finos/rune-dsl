@@ -806,7 +806,8 @@ class TabulatorTest {
 
 		// bar and barReference is set
 		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"b1" -> "b1Value"})
-		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "f1Value", "barReference" -> bar})
+		val barReference = classes.createInstanceUsingBuilder(MODEL3_META_PKG, "ReferenceWithMetaBar", #{"value" -> bar})
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "f1Value", "barReference" -> barReference})
 		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "r1Value", "foo" -> foo, "bar" -> bar})
 		assertEquals("Root {" + 
 			"r1=r1Value, "+
