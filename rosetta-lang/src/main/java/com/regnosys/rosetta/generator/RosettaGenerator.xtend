@@ -209,6 +209,7 @@ class RosettaGenerator implements IGenerator2 {
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
+        tabulatorGenerator.generate(fsa, t)
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {

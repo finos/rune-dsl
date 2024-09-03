@@ -171,6 +171,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = typeId.getName() + function.getName() + "TypeTabulator";
 		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
 	}
+	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type) {
+		ModelSymbolId typeId = getSymbolId(type);
+		DottedPath packageName = typeId.getNamespace().child("tabulator");
+		String simpleName = typeId.getName() + "TypeTabulator";
+		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
+	}
 	public JavaClass<?> toDeepPathUtilJavaClass(Data choiceType) {
 		ModelSymbolId typeId = modelIdProvider.getSymbolId(choiceType);
 		DottedPath packageName = typeId.getNamespace().child("util");

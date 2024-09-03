@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class RosettaTabulatorConfigurationMixin {
 	@JsonCreator
-	public RosettaTabulatorConfigurationMixin(@JsonProperty("annotations") List<String> annotations ) {}
+	public RosettaTabulatorConfigurationMixin(@JsonProperty("annotations") List<String> annotations,
+			@JsonProperty("types") List<String> types) {}
 
 }
