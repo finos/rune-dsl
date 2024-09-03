@@ -164,7 +164,7 @@ ListLiteral:
 
 // old stuff
 RosettaRootElement:
-	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment |
+	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
 	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
 	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
 	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |

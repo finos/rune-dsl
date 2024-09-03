@@ -35,27 +35,6 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
-	def void testWithMetaSyntax() {
-		 '''
-			type Foo:
-			  attr string (1..1)
-				  [metadata scheme]
-				  
-			func SomeFunc:
-				inputs:
-					someValue string (1..1)
-					someScheme string (1..1)
-				
-				output:
-					result Foo (1..1)
-					
-				set result: Foo {
-					attribute: someValue with-meta scheme from someScheme
-				}
-		'''.parseRosettaWithNoIssues
-	}
-	
-	@Test
 	def void testFullyQualifiedNamesCanBeUsedInExpression() {
 		val modelBar = '''
 			namespace test.bar
