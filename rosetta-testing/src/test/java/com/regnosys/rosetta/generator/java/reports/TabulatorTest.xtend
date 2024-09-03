@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.reports
 
 import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.ModelReportId
@@ -11,6 +12,7 @@ import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.util.types.generated.GeneratedJavaClassService
 import java.math.BigDecimal
 import java.net.URL
+import java.util.Map
 import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.testing.InjectWith
@@ -765,60 +767,100 @@ class TabulatorTest {
 		assertEquals(actual.toString(), expected)
 	}
 	
-	@Test
-	def void confirmNullPointerIsNotGenerated() {
+	final RootPackage MODEL3_PKG = new RootPackage("model3")
+	final RootPackage MODEL3_META_PKG = new RootPackage("model3.metafields")
+	final RootPackage META_PKG = new RootPackage("com.rosetta.model.metafields")
+	
+	def getModel3Classes() {
 		val model = '''
-			namespace com.rosetta.test.model
+			namespace model3
 			
 			type Root:
-				foo Foo (1..1)
 				r1 string (1..1)
+				foo Foo (1..1)
+				bar Bar (1..1)
 			
 			type Foo:
-			    f1 string (1..1)
-			    f2 string (1..1)
+				f1 string (1..1)
+			    barReference Bar (1..1)
+			    	[metadata reference]
 
-		'''
-		val code = model.generateCodeForModel(FooRosettaConfigProvider)
-		val classes = #[code].compileToClassesForModel(FooRosettaConfigProvider)
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.tabulator"), "FooTypeTabulator", Tabulator)
-		val fooTabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		val foo = classes.createInstanceUsingBuilder("Foo", #{"f1" -> "blah1", "f2" -> "blah2"})
-		println(foo)
-		println(code.get("com.rosetta.test.model.tabulator.FooTypeTabulator"))
-		val tabulatedFoo = fooTabulator.tabulate(foo)	
-		println(tabulatedFoo)
+			type Bar:
+				[metadata key]
+			    b1 string (1..1)
+	'''
+		val code = model.generateCodeForModel(Model3RosettaConfigProvider)
+		return #[code].compileToClassesForModel(Model3RosettaConfigProvider)
+	}
+	
+	def getModel3RootTabulator(Map<String, Class<?>> classes) {
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("model3.tabulator"), "RootTypeTabulator", Tabulator)
+		return classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
 	}
 	
 	@Test
-	def void confirmNullPointerIsNotGenerated_Root() {
-		val model = '''
-			namespace com.rosetta.test.model
-			
-			type Root:
-				foo Foo (1..1)
-				r1 string (1..1)
-			
-			type Foo:
-			    f1 string (1..1)
-			    f2 string (1..1)
+	def void shouldTabulateTypesWithReferences_ResolvedReference() {
+		val classes = getModel3Classes
+		val rootTabulator = classes.getModel3RootTabulator
 
-		'''
-		val code = model.generateCodeForModel(FooRosettaConfigProvider)
-		val classes = #[code].compileToClassesForModel(FooRosettaConfigProvider)
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.tabulator"), "RootTypeTabulator", Tabulator)
-		val rootTabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		val foo = classes.createInstanceUsingBuilder("Foo", #{"f1" -> "blah1", "f2" -> "blah2"})
-		val root = classes.createInstanceUsingBuilder("Root", #{"foo" -> foo, "r1" -> "blah0"})
-		println(root)
-		println(code.get("com.rosetta.test.model.tabulator.RootTypeTabulator"))
+		// bar and barReference is set
+		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"b1" -> "b1Value"})
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "f1Value", "barReference" -> bar})
+		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "r1Value", "foo" -> foo, "bar" -> bar})
+		assertEquals("Root {" + 
+			"r1=r1Value, "+
+			"foo=Foo {f1=f1Value, barReference=ReferenceWithMetaBar {value=Bar {b1=b1Value, meta=null}, globalReference=null, externalReference=null, reference=null}}, "+
+			"bar=Bar {b1=b1Value, meta=null}}", 
+			root.toString)
+		
 		val tabulatedRoot = rootTabulator.tabulate(root)	
-		println(tabulatedRoot)
+		
+		assertNotNull(tabulatedRoot)
+		assertEquals("[<r1, r1Value>, <foo, {<f1, f1Value>, <barReference, {<b1, b1Value>}>}>, <bar, {<b1, b1Value>}>]", tabulatedRoot.toString)
 	}
 	
-	private static class FooRosettaConfigProvider extends RosettaConfigurationFileProvider {
+	@Test
+	def void shouldTabulateTypesWithReferences_EmptyReferenceAndValue() {
+		val classes = getModel3Classes
+		val rootTabulator = classes.getModel3RootTabulator
+		
+		 // bar and barReference is null
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "fValue"}) // bar not set
+		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "rValue", "foo" -> foo})
+		assertEquals("Root {r1=rValue, foo=Foo {f1=fValue, barReference=null}, bar=null}", root.toString)
+		
+		val tabulatedRoot = rootTabulator.tabulate(root)	
+		
+		assertNotNull(tabulatedRoot)
+		assertEquals("[<r1, rValue>, <foo, {<f1, fValue>, <barReference, <empty>>}>, <bar, <empty>>]", tabulatedRoot.toString)
+	}
+
+	@Test
+	def void shouldTabulateTypesWithReferences_UnresolvedReference() {
+		val classes = getModel3Classes
+		val rootTabulator = classes.getModel3RootTabulator
+
+        // bar is set and barReference is set as an unresolved reference
+		val barMetaFields = classes.createInstanceUsingBuilder(META_PKG, "MetaFields", #{"externalKey" -> "barExtKey", "globalKey" -> "barGlobalKey"})
+		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"meta" -> barMetaFields, "b1" -> "bValue"})
+		val barReference = classes.createInstanceUsingBuilder(MODEL3_META_PKG, "ReferenceWithMetaBar", #{"externalReference" -> "barExtKey", "globalReference" -> "barGlobalKey"})
+		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "fValue", "barReference" -> barReference})
+		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "rValue", "foo" -> foo, "bar" -> bar})
+		assertEquals("Root {r1=rValue, " +
+			"foo=Foo {f1=fValue, barReference=ReferenceWithMetaBar {value=null, globalReference=barGlobalKey, externalReference=barExtKey, reference=null}}, " +
+			"bar=Bar {b1=bValue, meta=MetaFields {scheme=null, globalKey=barGlobalKey, externalKey=barExtKey, key=null}}}", 
+			root.toString)
+		
+		val tabulatedRoot = rootTabulator.tabulate(root)	
+		
+		assertNotNull(tabulatedRoot)
+		assertEquals("[<r1, rValue>, <foo, {<f1, fValue>, <barReference, {<b1, bValue>}>}>, <bar, {<b1, bValue>}>]", tabulatedRoot.toString)
+	}
+
+	
+	private static class Model3RosettaConfigProvider extends RosettaConfigurationFileProvider {
 		override URL get() {
-			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-test-config-foo.yml")
+			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-type-config-model3.yml")
 		}
 	}
 }

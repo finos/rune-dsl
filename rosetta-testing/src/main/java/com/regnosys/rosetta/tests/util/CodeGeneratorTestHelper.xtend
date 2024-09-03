@@ -116,9 +116,13 @@ class CodeGeneratorTestHelper {
 		createBuilderInstance(classes, rootPackage, className)
 	}
 
-	def setAttribute(RosettaModelObjectBuilder rosettaClassBuilderInstance, String name, Object value) {
-		rosettaClassBuilderInstance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class]).invoke(
-				rosettaClassBuilderInstance, value);
+	def setAttribute(RosettaModelObjectBuilder instance, String name, Object value) {
+		var method = instance.class.getMatchingMethod('set' + name.toFirstUpper, #[value?.class])
+		if (method !== null) {
+			method.invoke(instance, value)
+		} else {
+			instance.class.getMatchingMethod('set' + name.toFirstUpper + 'Value', #[value?.class]).invoke(instance, value)
+		}	
 	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {

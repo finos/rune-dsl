@@ -1,15 +1,71 @@
 package com.regnosys.rosetta.generator.java.object
 
-import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
+import java.net.URL
+import org.hamcrest.CoreMatchers
+import org.junit.jupiter.api.Test
+
+import static org.hamcrest.MatcherAssert.*
+import static org.junit.jupiter.api.Assertions.*
 
 import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
-import java.net.URL
-import static org.junit.jupiter.api.Assertions.*
-import static org.hamcrest.MatcherAssert.*
-import org.hamcrest.CoreMatchers
 
 class ConfigurableTypeTabulatorTest {
+
+	@Test
+	def void shouldGenerateTabulatorsForSingleTypeListedInConfig() {
+		val model1 = '''
+			namespace model1
+			
+				type Foo:
+				   bar string (1..1)
+		'''
+
+		val model1Code = model1.generateCodeForModel(Model1FileConfigProvider)
+		val fooTabulatorCode = model1Code.get("model1.tabulator.FooTypeTabulator")
+		assertThat(fooTabulatorCode, CoreMatchers.notNullValue())
+		var expected = '''
+			package model1.tabulator;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.reports.Tabulator;
+			import com.rosetta.model.lib.reports.Tabulator.Field;
+			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
+			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
+			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
+			import java.util.Arrays;
+			import java.util.List;
+			import java.util.Optional;
+			import model1.Foo;
+			
+			
+			@ImplementedBy(FooTypeTabulator.Impl.class)
+			public interface FooTypeTabulator extends Tabulator<Foo> {
+				public class Impl implements FooTypeTabulator {
+					private final Field barField;
+					
+					public Impl() {
+						this.barField = new FieldImpl(
+							"bar",
+							false,
+							Optional.empty(),
+							Optional.empty(),
+							Arrays.asList()
+						);
+					}
+					
+					@Override
+					public List<FieldValue> tabulate(Foo input) {
+						FieldValue bar = new FieldValueImpl(barField, Optional.ofNullable(input.getBar()));
+						return Arrays.asList(
+							bar
+						);
+					}
+				}
+			}
+		'''
+		assertEquals(expected, fooTabulatorCode)
+	}
 		
 	@Test
 	def void shouldGenerateTabulatorsForTypeListedInConfig() {

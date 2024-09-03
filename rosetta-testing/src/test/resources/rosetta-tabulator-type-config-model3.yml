@@ -3,8 +3,8 @@ model:
 dependencies:
 generators:
   namespaces:
-  - com.rosetta.test.model.*
+  - model3.*
   tabulators:
     annotations:
     types:
-    - com.rosetta.test.model.Root
+    - model3.Root
