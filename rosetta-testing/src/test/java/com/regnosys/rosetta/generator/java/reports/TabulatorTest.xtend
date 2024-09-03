@@ -799,7 +799,7 @@ class TabulatorTest {
 	}
 	
 	@Test
-	def void shouldTabulatSingleCardinalityTypes_ResolvedReference() {
+	def void shouldTabulateSingleCardinalityTypes_ResolvedReference() {
 		val classes = getModel3SingleCardinalityClasses
 		val rootTabulator = classes.getModel3RootTabulator
 
