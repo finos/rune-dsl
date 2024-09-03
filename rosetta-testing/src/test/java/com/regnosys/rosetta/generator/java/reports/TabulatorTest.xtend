@@ -1,7 +1,18 @@
 package com.regnosys.rosetta.generator.java.reports
 
+import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
+import com.rosetta.model.lib.ModelReportId
+import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.reports.Tabulator
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.generated.GeneratedJavaClass
+import com.rosetta.util.types.generated.GeneratedJavaClassService
+import java.math.BigDecimal
+import java.net.URL
+import javax.inject.Inject
+import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.hamcrest.CoreMatchers
@@ -10,15 +21,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.util.DottedPath
-import com.rosetta.model.lib.reports.Tabulator
-import com.rosetta.model.lib.RosettaModelObject
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import java.math.BigDecimal
-import javax.inject.Inject
-import com.rosetta.model.lib.ModelReportId
-import com.rosetta.util.types.generated.GeneratedJavaClassService
-import com.rosetta.util.types.generated.GeneratedJavaClass
+
+import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -764,22 +768,57 @@ class TabulatorTest {
 	@Test
 	def void confirmNullPointerIsNotGenerated() {
 		val model = '''
-		    «HEADER»
-		    
-			type Bar:
-			    [metadata key]
-		
+			namespace com.rosetta.test.model
+			
+			type Root:
+				foo Foo (1..1)
+				r1 string (1..1)
+			
 			type Foo:
-			    bar Bar (0..1)
-		'''
-		val code = model.generateCode
+			    f1 string (1..1)
+			    f2 string (1..1)
 
-		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "TEST_REG", "Corp")
-		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.reports"), "ReportTypeTabulator", Tabulator)
-		
-		val classes = code.compileToClasses
-		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
-		val report = classes.createInstanceUsingBuilder("Report", #{"b" -> "My reportable input"})
-		val actual = tabulator.tabulate(report)		
+		'''
+		val code = model.generateCodeForModel(FooRosettaConfigProvider)
+		val classes = #[code].compileToClassesForModel(FooRosettaConfigProvider)
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.tabulator"), "FooTypeTabulator", Tabulator)
+		val fooTabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		val foo = classes.createInstanceUsingBuilder("Foo", #{"f1" -> "blah1", "f2" -> "blah2"})
+		println(foo)
+		println(code.get("com.rosetta.test.model.tabulator.FooTypeTabulator"))
+		val tabulatedFoo = fooTabulator.tabulate(foo)	
+		println(tabulatedFoo)
+	}
+	
+	@Test
+	def void confirmNullPointerIsNotGenerated_Root() {
+		val model = '''
+			namespace com.rosetta.test.model
+			
+			type Root:
+				foo Foo (1..1)
+				r1 string (1..1)
+			
+			type Foo:
+			    f1 string (1..1)
+			    f2 string (1..1)
+
+		'''
+		val code = model.generateCodeForModel(FooRosettaConfigProvider)
+		val classes = #[code].compileToClassesForModel(FooRosettaConfigProvider)
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.tabulator"), "RootTypeTabulator", Tabulator)
+		val rootTabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		val foo = classes.createInstanceUsingBuilder("Foo", #{"f1" -> "blah1", "f2" -> "blah2"})
+		val root = classes.createInstanceUsingBuilder("Root", #{"foo" -> foo, "r1" -> "blah0"})
+		println(root)
+		println(code.get("com.rosetta.test.model.tabulator.RootTypeTabulator"))
+		val tabulatedRoot = rootTabulator.tabulate(root)	
+		println(tabulatedRoot)
+	}
+	
+	private static class FooRosettaConfigProvider extends RosettaConfigurationFileProvider {
+		override URL get() {
+			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-test-config-foo.yml")
+		}
 	}
 }
