@@ -53,10 +53,9 @@ class TabulatorGenerator {
 		extension JavaTypeTranslator
 		Map<Attribute, RosettaRule> ruleMap
 		Optional<RosettaExternalRuleSource> ruleSource
-		Set<Data> reportedTypes
 		
 		override needsTabulator(Data type) {
-			reportedTypes.contains(type)
+			needsTabulator(type, newHashSet)
 		}
 		private def boolean needsTabulator(Data type, Set<Data> visited) {
 			if (visited.add(type)) {
@@ -246,8 +245,7 @@ class TabulatorGenerator {
 	private def ReportTabulatorContext getReportTabulatorContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val ruleMap = newHashMap
 		type.getAllReportingRules(ruleSource).forEach[key, rule| ruleMap.put(key.attr, rule)]
-		val reportedTypes = type.getAllReportedTypes
-		new ReportTabulatorContext(extensions, typeTranslator, ruleMap, ruleSource, reportedTypes)
+		new ReportTabulatorContext(extensions, typeTranslator, ruleMap, ruleSource)
 	}
 	
 	private def boolean isFunctionTabulatable(Function func) {
