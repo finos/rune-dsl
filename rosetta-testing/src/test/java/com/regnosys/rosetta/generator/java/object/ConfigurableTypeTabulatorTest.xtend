@@ -13,6 +13,43 @@ import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
 class ConfigurableTypeTabulatorTest {
 
 	@Test
+	def void shouldGenerateTabulatorsForSingleTypeListedInConfigBlah() {
+		val model1 = '''
+			namespace com.rosetta.test.model
+			
+			type Foo:
+			   bar string (1..1)
+		'''
+
+		val model1Code = model1.generateCodeForModel(DefaultFileConfigProvider)
+		val fooTabulatorCode = model1Code.get("com.rosetta.test.model.tabulator.FooTypeTabulator")
+		assertThat(fooTabulatorCode, CoreMatchers.notNullValue())
+		var expected = '''
+			package com.rosetta.test.model.tabulator;
+			
+			import com.google.inject.ImplementedBy;
+			import com.rosetta.model.lib.reports.Tabulator;
+			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
+			import com.rosetta.test.model.Foo;
+			import java.util.Arrays;
+			import java.util.List;
+			
+			
+			@ImplementedBy(FooTypeTabulator.Impl.class)
+			public interface FooTypeTabulator extends Tabulator<Foo> {
+				class Impl implements FooTypeTabulator {
+					
+					@Override
+					public List<FieldValue> tabulate(Foo input) {
+						return Arrays.asList();
+					}
+				}
+			}
+		'''
+		assertEquals(expected, fooTabulatorCode)
+	}
+
+	@Test
 	def void shouldGenerateTabulatorsForSingleTypeListedInConfig() {
 		val model1 = '''
 			namespace model1
@@ -208,6 +245,12 @@ class ConfigurableTypeTabulatorTest {
 	private static class Model2FileConfigProvider extends RosettaConfigurationFileProvider {
 		override URL get() {
 			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-type-config-model2.yml")
+		}
+	}
+	
+	private static class DefaultFileConfigProvider extends RosettaConfigurationFileProvider {
+		override URL get() {
+			Thread.currentThread.contextClassLoader.getResource("rosetta-tabulator-type-config-default.yml")
 		}
 	}
 }

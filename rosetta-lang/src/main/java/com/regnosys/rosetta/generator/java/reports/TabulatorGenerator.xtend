@@ -289,7 +289,7 @@ class TabulatorGenerator {
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		
-		if (context.needsTabulator(inputType)) {
+		if (context.needsTabulator(inputType) && !tabulatorClass.equals(context.toTabulatorJavaClass(inputType))) { // TODO temp change to investigate Windows issue
 			// There will be a tabulator available for `inputType`,
 			// so we can inject it.
 			val innerTabulatorClass = context.toTabulatorJavaClass(inputType)
