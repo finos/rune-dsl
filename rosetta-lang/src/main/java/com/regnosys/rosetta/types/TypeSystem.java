@@ -30,6 +30,7 @@ import org.apache.commons.lang3.Validate;
 
 import com.regnosys.rosetta.cache.IRequestScopedCache;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
+import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.TypeCall;
@@ -40,9 +41,13 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+import com.regnosys.rosetta.utils.ModelIdProvider;
+
 import org.eclipse.xtext.xbase.lib.Pair;
 
 public class TypeSystem {
+	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
+	
 	@Inject
 	private RosettaTyping typing;
 	@Inject
@@ -51,6 +56,10 @@ public class TypeSystem {
 	private ExternalAnnotationUtil annotationUtil;
 	@Inject
 	private IRequestScopedCache cache;
+	@Inject
+	private ModelIdProvider modelIdProvider;
+	@Inject
+	private SubtypeRelation subtypeRelation;
 	
 	public RListType inferType(RosettaExpression expr) {
 		Objects.requireNonNull(expr);
@@ -58,10 +67,10 @@ public class TypeSystem {
 		return typing.inferType(expr).getValue();
 	}
 	
-	public RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source) {
+	public RType getRulesInputType(RDataType data, Optional<RosettaExternalRuleSource> source) {
 		return getRulesInputType(data, source, new HashSet<>());
 	}
-	private RType getRulesInputType(Data data, Optional<RosettaExternalRuleSource> source, Set<Data> visited) {
+	private RType getRulesInputType(RDataType data, Optional<RosettaExternalRuleSource> source, Set<RDataType> visited) {
 		Objects.requireNonNull(data);
         return getRulesInputTypeFromCache(data, source, () -> {
             if (!visited.add(data)) {
@@ -70,7 +79,7 @@ public class TypeSystem {
 
             Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
             RType result = builtins.ANY;
-            for (Attribute attr: data.getAttributes()) {
+            for (Attribute attr: data.getData().getAttributes()) {
                 RosettaRuleReference ref = ruleReferences.get(attr);
                 if (ref != null) {
                     RType inputType = typeCallToRType(ref.getReportingRule().getInput());
@@ -78,7 +87,7 @@ public class TypeSystem {
                 } else {
                     RType attrType = stripFromTypeAliases(typeCallToRType(attr.getTypeCall()));
                     if (attrType instanceof RDataType) {
-                        Data attrData = ((RDataType)attrType).getData();
+                    	RDataType attrData = (RDataType)attrType;
                         RType inputType = getRulesInputType(attrData, source, visited);
                         result = meet(result, inputType);
                     }
@@ -87,15 +96,15 @@ public class TypeSystem {
             return result;
         });
 	}
-    private RType getRulesInputTypeFromCache(Data data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
-    	return cache.get(new Pair<>(data, source), typeProvider);
+    private RType getRulesInputTypeFromCache(RDataType data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
+    	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
     }
 
 	public RType join(RType t1, RType t2) {
 		Objects.requireNonNull(t1);
 		Objects.requireNonNull(t2);
 		
-		return Objects.requireNonNull(typing.join(t1, t2));
+		return subtypeRelation.join(t1, t2);
 	}
 	public RType join(Iterable<RType> types) {
 		Objects.requireNonNull(types);
@@ -146,7 +155,7 @@ public class TypeSystem {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return typing.subtypeSucceeded(sub, sup);
+		return subtypeRelation.isSubtypeOf(sub, sup);
 	}
 	public boolean isListSubtypeOf(RListType sub, RListType sup) {
 		Objects.requireNonNull(sub);
@@ -188,9 +197,36 @@ public class TypeSystem {
 	}
 	
 	public RType stripFromTypeAliases(RType t) {
-		if (t instanceof RAliasType) {
-			return stripFromTypeAliases(((RAliasType)t).getRefersTo());
+		while (t instanceof RAliasType) {
+			t = ((RAliasType)t).getRefersTo();
 		}
 		return t;
+	}
+	
+	public RDataType dataToType(Data data) {
+		return new RDataType(data, this, modelIdProvider);
+	}
+	public REnumType enumToType(RosettaEnumeration enumeration) {
+		return new REnumType(enumeration, modelIdProvider);
+	}
+	
+	/**
+	 * Returns the first ancestor of the given type which does not extend any data type.
+	 * 
+	 * If no such type exists, returns `null`.
+	 * 
+	 * If the given type is not a data type and not an alias of a data type, returns null.
+	 */
+	public RType getValueType(RType type) {
+		RType result = type;
+		RType stripped = stripFromTypeAliases(result);
+		if (!(stripped instanceof RDataType)) {
+			return null;
+		}
+		while(stripped != null && stripped instanceof RDataType) {
+			result = ((RDataType)stripped).getSuperType();
+			stripped = stripFromTypeAliases(result);
+		}
+		return result;
 	}
 }

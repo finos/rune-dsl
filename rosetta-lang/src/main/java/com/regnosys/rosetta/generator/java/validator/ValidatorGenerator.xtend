@@ -7,7 +7,6 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
@@ -34,13 +33,6 @@ import java.util.List
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ConditionValidation
 import com.rosetta.util.types.generated.GeneratedJavaClass
-import java.util.Set
-import java.util.Map
-import com.rosetta.model.lib.validation.ExistenceChecker
-import com.rosetta.model.lib.validation.ValidatorWithArg
-import com.google.common.collect.ImmutableMap
-import com.rosetta.model.lib.validation.ValidationData
-import java.util.concurrent.ConcurrentHashMap
 import com.regnosys.rosetta.types.RObjectFactory
 import com.rosetta.model.lib.validation.ElementValidationResult
 
@@ -54,18 +46,18 @@ class ValidatorGenerator {
 	@Inject extension JavaTypeUtil
 	@Inject extension RObjectFactory
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType type, String version) {
 		val topScope = new JavaScope(root.typeValidation)
 
-		val classBody = data.classBody(topScope, root)
+		val classBody = type.classBody(topScope, root)
 		val content = buildClass(root.typeValidation, classBody, topScope)
-		fsa.generateFile('''«root.typeValidation.withForwardSlashes»/«data.name»Validator.java''', content)
+		fsa.generateFile('''«root.typeValidation.withForwardSlashes»/«type.name»Validator.java''', content)
 	}
 
-	private def StringConcatenationClient classBody(Data data, JavaScope scope, RootPackage root) {
+	private def StringConcatenationClient classBody(RDataType type, JavaScope scope, RootPackage root) {
 
-		val modelPojo = new RDataType(data).toJavaReferenceType
-		val rDataType = new RDataType(data)
+		val modelPojo = type.toJavaReferenceType
+		val data = type.data
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				«FOR con : data.conditions»
@@ -74,14 +66,14 @@ class ValidatorGenerator {
 				«ENDFOR»
 				
 				@Override
-				public «TypeValidation» validate(«RosettaPath» path, «rDataType.toJavaReferenceType» o) {
+				public «TypeValidation» validate(«RosettaPath» path, «modelPojo» o) {
 				
 					«DottedPath» packageName = «DottedPath».of(o.getClass().getPackage().toString());
 					«String» simpleName = o.getClass().getSimpleName();
 					«ModelSymbolId» modelSymbolId = new «ModelSymbolId»(packageName, simpleName);
 				
 				 	«List»<«AttributeValidation»> attributeValidations = new «ArrayList»<>();
-				 	«FOR attribute : data.allNonOverridesAttributes»
+				 	«FOR attribute : type.allNonOverridesAttributes»
 				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(«attribute.attributeValue», path));
 				 	«ENDFOR»
 				 	
@@ -93,7 +85,7 @@ class ValidatorGenerator {
 				 	return new «TypeValidation»(modelSymbolId, attributeValidations, conditionValidations);
 				}
 				
-				«FOR attribute : data.allNonOverridesAttributes»
+				«FOR attribute : type.allNonOverridesAttributes»
 				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.buildRAttribute.attributeToJavaType» atr, «RosettaPath» path) {
 					«List»<«ElementValidationResult»> validationResults = new «ArrayList»<>();
 					«val cardinalityCheck = checkCardinality(attribute)»
@@ -116,7 +108,7 @@ class ValidatorGenerator {
 				«ENDFOR»
 				
 				«FOR dataCondition : data.conditions»
-				public «ConditionValidation» validate«dataCondition.conditionName(data).toFirstUpper»(«rDataType.toJavaReferenceType» data, «RosettaPath» path) {
+				public «ConditionValidation» validate«dataCondition.conditionName(data).toFirstUpper»(«modelPojo» data, «RosettaPath» path) {
 					«ElementValidationResult» result = «dataCondition.conditionName(data).toFirstLower».validate(path, data);
 					
 					return new «ConditionValidation»(«dataCondition.conditionName(data).toFirstLower».toString(), result);
@@ -149,7 +141,6 @@ class ValidatorGenerator {
 				return '''«method(ValidationUtil, "checkString")»("«attr.name»", «atrVariable», «min», «max», «pattern», path)'''
 			}
 		} else if (t instanceof RNumberType) {
-			val testintomethod = false
 			if (t != UNCONSTRAINED_NUMBER) {
 				val digits = t.digits.optional
 				val fractionalDigits = t.fractionalDigits.optional

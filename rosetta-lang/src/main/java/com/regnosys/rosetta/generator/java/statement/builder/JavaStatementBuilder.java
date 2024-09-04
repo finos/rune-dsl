@@ -16,8 +16,11 @@
 
 package com.regnosys.rosetta.generator.java.statement.builder;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
@@ -40,7 +43,7 @@ import com.rosetta.util.types.JavaType;
  * Say we want to build the following block:
  * ```
  * {
- *     int x = 42;
+ *     final int x = 42;
  *     return x;
  * }
  * ```
@@ -52,7 +55,7 @@ import com.rosetta.util.types.JavaType;
  * ```
  * 
  * *Example 2*
- * Say we want to build the following block:
+ * Say we want to build the following block (we don't really care about the name of the variable):
  * ```
  * {
  *     int ifThenElseResult;
@@ -85,6 +88,30 @@ import com.rosetta.util.types.JavaType;
  * ```
  */
 public abstract class JavaStatementBuilder {
+	
+	public static JavaStatementBuilder invokeMethod(List<JavaStatementBuilder> arguments, Function<JavaExpression, ? extends JavaStatementBuilder> methodInvoker, JavaScope scope) {
+		if (arguments.isEmpty()) {
+			return methodInvoker.apply(null);
+		}
+		JavaStatementBuilder argCode = arguments.get(0);
+		for (var i = 1; i < arguments.size(); i++) {
+			argCode = argCode.then(
+				arguments.get(i),
+				(argList, newArg) -> new JavaExpression(null) {
+					@Override
+					public void appendTo(TargetStringConcatenation target) {
+						target.append(argList);
+						target.append(", ");
+						target.append(newArg);
+					}
+				},
+				scope
+			);
+		}
+		return argCode.collapseToSingleExpression(scope).mapExpression(methodInvoker);
+	}
+	
+	
 	/**
 	 * Get the type of the last expression of this builder,
 	 * or the least common supertype of all expressions in different branches of this builder.

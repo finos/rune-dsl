@@ -1,47 +1,50 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.google.inject.ImplementedBy
-import com.regnosys.rosetta.RosettaExtensions
-import com.regnosys.rosetta.config.RosettaConfiguration
-import com.regnosys.rosetta.generator.GeneratedIdentifier
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
-import com.regnosys.rosetta.rosetta.RosettaReport
-import com.regnosys.rosetta.rosetta.RosettaRule
-import com.regnosys.rosetta.rosetta.simple.Attribute
+import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.rosetta.model.lib.ModelSymbolId
+import com.regnosys.rosetta.generator.java.JavaScope
+import javax.inject.Inject
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.rosetta.util.types.JavaClass
 import com.rosetta.model.lib.reports.Tabulator
+import com.regnosys.rosetta.types.RDataType
+import com.rosetta.util.DottedPath
 import com.rosetta.model.lib.reports.Tabulator.Field
 import com.rosetta.model.lib.reports.Tabulator.FieldImpl
+import java.util.Optional
+import com.regnosys.rosetta.generator.GeneratedIdentifier
+import java.util.List
+import java.util.Arrays
 import com.rosetta.model.lib.reports.Tabulator.FieldValue
+import java.util.stream.Collectors
 import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.RosettaExtensions
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
+import java.util.Map
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import java.util.Set
+import org.apache.commons.text.StringEscapeUtils
 import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
 import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
-import com.rosetta.util.DottedPath
-import com.rosetta.util.types.JavaClass
-import java.util.Arrays
-import java.util.List
-import java.util.Map
-import java.util.Optional
-import java.util.Set
-import java.util.stream.Collectors
-import javax.inject.Inject
-import org.apache.commons.text.StringEscapeUtils
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.rosetta.model.lib.ModelSymbolId
+import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.config.RosettaConfiguration
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.google.inject.ImplementedBy
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
-		def boolean needsTabulator(Data type)
+		def boolean needsTabulator(RDataType type)
 		def boolean isTabulated(Attribute attr)
-		def JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type)
+		def JavaClass<Tabulator<?>> toTabulatorJavaClass(RDataType type)
 		def Optional<RosettaRule> getRule(Attribute attr)
 		def Function getFunction()
 	}
@@ -50,14 +53,15 @@ class TabulatorGenerator {
 	private static class ReportTabulatorContext implements TabulatorContext {
 		extension RosettaExtensions
 		extension JavaTypeTranslator
+		extension RosettaTypeProvider
 		Map<Attribute, RosettaRule> ruleMap
 		Optional<RosettaExternalRuleSource> ruleSource
 		
-		override needsTabulator(Data type) {
+		override needsTabulator(RDataType type) {
 			needsTabulator(type, newHashSet)
 		}
-		private def boolean needsTabulator(Data type, Set<Data> visited) {
-			if (visited.add(type)) {
+		private def boolean needsTabulator(RDataType type, Set<Data> visited) {
+			if (visited.add(type.data)) {
 				type.allAttributes.exists[isTabulated(visited)]
 			} else {
 				false
@@ -67,16 +71,16 @@ class TabulatorGenerator {
 			isTabulated(attr, newHashSet)
 		}
 		private def boolean isTabulated(Attribute attr, Set<Data> visited) {
-			val attrType = attr.typeCall.type
-			if (attrType instanceof Data) {
+			val attrType = attr.RTypeOfSymbol
+			if (attrType instanceof RDataType) {
 				needsTabulator(attrType, visited)
 			} else {
 				ruleMap.containsKey(attr)
 			}
 		}
 		
-		override toTabulatorJavaClass(Data type) {
-			type.toTabulatorJavaClass(ruleSource)
+		override toTabulatorJavaClass(RDataType type) {
+			type.data.toTabulatorJavaClass(ruleSource)
 		}
 		
 		override getRule(Attribute attr) {
@@ -86,6 +90,7 @@ class TabulatorGenerator {
 		override getFunction() {
 			throw new UnsupportedOperationException("getFunction not available for ReportTabulatorContext")
 		}
+		
 	}
 	@Deprecated
 	@org.eclipse.xtend.lib.annotations.Data
@@ -93,7 +98,7 @@ class TabulatorGenerator {
 		extension JavaTypeTranslator
 		Function projection
 		
-		override needsTabulator(Data type) {
+		override needsTabulator(RDataType type) {
 			true
 		}
 		
@@ -101,8 +106,8 @@ class TabulatorGenerator {
 			true
 		}
 		
-		override toTabulatorJavaClass(Data type) {
-			type.toProjectionTabulatorJavaClass(projection)
+		override toTabulatorJavaClass(RDataType type) {
+			type.data.toProjectionTabulatorJavaClass(projection)
 		}
 		
 		override getRule(Attribute attr) {
@@ -112,13 +117,15 @@ class TabulatorGenerator {
 		override getFunction() {
 			projection
 		}
+		
+
 	}
 	@org.eclipse.xtend.lib.annotations.Data
 	private static class FunctionTabulatorContext implements TabulatorContext {
 		extension JavaTypeTranslator
 		Function function
 		
-		override needsTabulator(Data type) {
+		override needsTabulator(RDataType type) {
 			true
 		}
 		
@@ -126,37 +133,14 @@ class TabulatorGenerator {
 			true
 		}
 		
-		override toTabulatorJavaClass(Data type) {
-			type.toTabulatorJavaClass(function)
+		override toTabulatorJavaClass(RDataType type) {
+			type.data.toTabulatorJavaClass(function)
 		}
 		
 		override getRule(Attribute attr) {
 			Optional.empty
 		}
-	}
-	@org.eclipse.xtend.lib.annotations.Data
-	private static class DataTabulatorContext implements TabulatorContext {
-		extension JavaTypeTranslator typeTranslator
 
-		override needsTabulator(Data type) {
-			true
-		}
-
-		override isTabulated(Attribute attr) {
-			true
-		}
-
-		override toTabulatorJavaClass(Data type) {
-			typeTranslator.toTabulatorJavaClass(type)
-		}
-
-		override getRule(Attribute attr) {
-			Optional.empty
-		}
-
-		override getFunction() {
-			throw new UnsupportedOperationException("TODO: remove")
-		}
 	}
 	
 	@Inject RosettaTypeProvider typeProvider
@@ -165,65 +149,54 @@ class TabulatorGenerator {
 	@Inject extension ImportManagerExtension
 	
 	@Inject extension RosettaExtensions extensions
+	@Inject extension ExternalAnnotationUtil
 	@Inject extension JavaTypeUtil
-	
+	@Inject extension ModelIdProvider
+	@Inject extension TypeSystem
+
 	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
 		val topScope = new JavaScope(tabulatorClass.packageName)
-
-		val context = getContext(report.reportType, Optional.ofNullable(report.ruleSource))
-		val classBody = report.reportType.mainTabulatorClassBody(context, topScope, tabulatorClass)
+		
+		val inputType = report.reportType.dataToType
+		val context = getContext(inputType, Optional.ofNullable(report.ruleSource))
+		val classBody = inputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 	}
 	
-	def generate(IFileSystemAccess2 fsa, Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+	def generate(IFileSystemAccess2 fsa, RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val context = getContext(type, ruleSource)
 		if (context.needsTabulator(type)) {
-			val tabulatorClass = type.toTabulatorJavaClass(ruleSource)
+			val tabulatorClass = type.data.toTabulatorJavaClass(ruleSource)
 			val topScope = new JavaScope(tabulatorClass.packageName)
-
+			
 			val classBody = type.tabulatorClassBody(context, topScope, tabulatorClass)
 			val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 			fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 		}
 	}
 	
-	def generate(IFileSystemAccess2 fsa, Data type) {
-		if (type.isDataTabulatable) {
-			val context = createDataTabulatorContext(typeTranslator)
-
-			val tabulatorClass = type.toTabulatorJavaClass
-			val topScope = new JavaScope(tabulatorClass.packageName)
-
-			generateTabulator(type, context, topScope, tabulatorClass, fsa)
-		}
-	}
-
 	def generate(IFileSystemAccess2 fsa, Function func) {
 		if (func.isFunctionTabulatable) {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
-			val functionOutputType = typeProvider.getRTypeOfSymbol(func.output)
-			if (functionOutputType instanceof RDataType) {
+			val projectionType = typeProvider.getRTypeOfSymbol(func.output)
+			if (projectionType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
-				generateTabulator(functionOutputType.data, context, topScope, tabulatorClass, fsa)
+				val inputType = projectionType.data.dataToType
+				val classBody = inputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
+				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
+				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
+				
+				recursivelyGenerateFunctionTypeTabulators(fsa, inputType, context, newHashSet)
 			}
 		}
 	}
-
-	private def void generateTabulator(Data type, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass, IFileSystemAccess2 fsa) {
-		val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
-		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
-		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
-
-		recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
-	}
-
-	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, Data type, TabulatorContext context, Set<Data> visited) {
-		if (visited.add(type)) {
+	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, RDataType type, TabulatorContext context, Set<Data> visited) {
+		if (visited.add(type.data)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
@@ -235,14 +208,14 @@ class TabulatorGenerator {
 				.allNonOverridesAttributes
 				.map[typeProvider.getRTypeOfSymbol(it)]
 				.filter(RDataType)
-				.forEach[recursivelyGenerateFunctionTypeTabulators(fsa, data, context, visited)]
+				.forEach[recursivelyGenerateFunctionTypeTabulators(fsa, it, context, visited)]
 		}
 	}
 	
-	private def ReportTabulatorContext getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+	private def ReportTabulatorContext getContext(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val ruleMap = newHashMap
 		type.getAllReportingRules(ruleSource).forEach[key, rule| ruleMap.put(key.attr, rule)]
-		new ReportTabulatorContext(extensions, typeTranslator, ruleMap, ruleSource)
+		new ReportTabulatorContext(extensions, typeTranslator, typeProvider, ruleMap, ruleSource)
 	}
 	
 	private def boolean isFunctionTabulatable(Function func) {
@@ -254,12 +227,6 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def boolean isDataTabulatable(Data type) {
-		val types = rosettaConfiguration.generators.tabulators.types
-		val fqn = String.format("%s.%s", type.model.name, type.name)
-		types.contains(fqn)
-	}
-
 	private def boolean isAnnotatedWith(Function func, String with) {
 		func.annotations.findFirst[annotation.name == with] !== null
 	}
@@ -272,16 +239,12 @@ class TabulatorGenerator {
 		shouldGenerateLegacyTabulator ? new ProjectionTabulatorContext(typeTranslator, func) : new FunctionTabulatorContext(typeTranslator, func)
 	}
 	
-	private def TabulatorContext createDataTabulatorContext(JavaTypeTranslator typeTranslator) {
-		new DataTabulatorContext(typeTranslator)
-	}
-
 	private def JavaClass<Tabulator<?>> toApplicableTabulatorClass(Function func) {
 		shouldGenerateLegacyTabulator ? func.toProjectionTabulatorJavaClass : func.toTabulatorJavaClass
 	}
 	
-	private def StringConcatenationClient mainTabulatorClassBody(Data inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
-		val inputClass = new RDataType(inputType).toJavaReferenceType
+	private def StringConcatenationClient mainTabulatorClassBody(RDataType inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
+		val inputClass = inputType.toJavaReferenceType
 		
 		val classScope = topScope.classScope(tabulatorClass.simpleName)
 		
@@ -298,12 +261,12 @@ class TabulatorGenerator {
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
 				public class Impl implements «tabulatorClass» {
 					private final «innerTabulatorClass» «innerTabulatorInstance»;
-					
+
 					@«Inject»
 					public Impl(«innerTabulatorClass» «innerTabulatorInstance») {
 						this.«innerTabulatorInstance» = «innerTabulatorInstance»;
 					}
-					
+
 					@Override
 					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
 						return «innerTabulatorInstance».tabulate(«inputParam»);
@@ -318,7 +281,7 @@ class TabulatorGenerator {
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
 				class Impl implements «tabulatorClass» {
-					
+
 					@Override
 					public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
 						return «Arrays».asList();
@@ -329,11 +292,11 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient tabulatorClassBody(Data inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
-		val inputClass = new RDataType(inputType).toJavaReferenceType
+	private def StringConcatenationClient tabulatorClassBody(RDataType inputType, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass) {
+		val inputClass = inputType.toJavaReferenceType
 		
 		val classScope = topScope.classScope(tabulatorClass.simpleName)
-		val tabulatedFields = findTabulatedFieldsAndCreateIdentifiers(inputType, context, classScope)
+		findTabulatedFieldsAndCreateIdentifiers(inputType, context, classScope)
 		val nestedTabulatorInstances = findNestedTabulatorsAndCreateIdentifiers(inputType, context, classScope)
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
@@ -348,12 +311,12 @@ class TabulatorGenerator {
 					«ENDIF»
 				«ENDFOR»
 				«IF !nestedTabulatorInstances.empty»
-				
-				«FOR tabInst : nestedTabulatorInstances»
-					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-				«ENDFOR»
+
+					«FOR tabInst : nestedTabulatorInstances»
+						private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+					«ENDFOR»
 				«ENDIF»
-				
+
 				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
 				public Impl(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
 					«FOR tabInst : nestedTabulatorInstances»
@@ -361,7 +324,7 @@ class TabulatorGenerator {
 					«ENDFOR»
 					«initializeFields(inputType, context, classScope)»
 				}
-				
+
 				@Override
 				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
 					«computeFieldValues(inputType, inputParam, context, tabulateScope)»
@@ -372,7 +335,7 @@ class TabulatorGenerator {
 		'''
 	}
 	
-	private def List<Attribute> findTabulatedFieldsAndCreateIdentifiers(Data type, TabulatorContext context, JavaScope scope) {
+	private def List<Attribute> findTabulatedFieldsAndCreateIdentifiers(RDataType type, TabulatorContext context, JavaScope scope) {
 		type
 			.allNonOverridesAttributes
 			.filter[context.isTabulated(it)]
@@ -381,17 +344,17 @@ class TabulatorGenerator {
 				it
 			].toList
 	}
-	private def StringConcatenationClient initializeFields(Data type, TabulatorContext context, JavaScope scope) {
+	private def StringConcatenationClient initializeFields(RDataType type, TabulatorContext context, JavaScope scope) {
 		'''
 		«FOR attr : type.allNonOverridesAttributes»
 			«IF context.isTabulated(attr)»
 				«val fieldId = scope.getIdentifierOrThrow(attr)»
 				«val rule = context.getRule(attr)»
-				«val attrType = attr.typeCall.type»
+				«val attrType = typeProvider.getRTypeOfSymbol(attr)»
 				this.«fieldId» = new «FieldImpl»(
 					"«StringEscapeUtils.escapeJava(attr.name)»",
 					«attr.card.isMany»,
-					«rule.map[model].map[name].map[new ModelSymbolId(DottedPath.splitOnDots(it), rule.get.name).toModelSymbolCode].toOptionalCode»,
+					«rule.map[symbolId.toModelSymbolCode].toOptionalCode»,
 					«rule.map[identifier].map['"' + it + '"'].toOptionalCode»,
 					«Arrays».asList()
 				);
@@ -400,18 +363,18 @@ class TabulatorGenerator {
 		'''
 	}
 	
-	private def Set<NestedTabulatorInstance> findNestedTabulatorsAndCreateIdentifiers(Data type, TabulatorContext context, JavaScope scope) {
+	private def Set<NestedTabulatorInstance> findNestedTabulatorsAndCreateIdentifiers(RDataType type, TabulatorContext context, JavaScope scope) {
 		val result = type.allNonOverridesAttributes
 			.filter[context.isTabulated(it)]
-			.map[typeCall.type]
-			.filter(Data)
+			.map[typeProvider.getRTypeOfSymbol(it)]
+			.filter(RDataType)
 			.map[toNestedTabulatorInstance]
 			.toSet
 		result.forEach[scope.createIdentifier(it, context.toTabulatorJavaClass(it.type).simpleName.toFirstLower)]
 		result
 	}
 	
-	private def StringConcatenationClient computeFieldValues(Data type, GeneratedIdentifier inputParam, TabulatorContext context, JavaScope scope) {
+	private def StringConcatenationClient computeFieldValues(RDataType type, GeneratedIdentifier inputParam, TabulatorContext context, JavaScope scope) {
 		'''
 		«FOR attr : type.allNonOverridesAttributes»
 			«IF context.isTabulated(attr)»
@@ -439,8 +402,7 @@ class TabulatorGenerator {
 				LIST.wrap(JavaClass.from(FieldValue))
 			}
 			rType.toPolymorphicListOrSingleJavaType(attr.card.isMany)
-			val attrType = rType.data
-			val nestedTabulator = scope.getIdentifierOrThrow(attrType.toNestedTabulatorInstance)
+			val nestedTabulator = scope.getIdentifierOrThrow(rType.toNestedTabulatorInstance)
 			'''
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.card.isMany»
@@ -463,7 +425,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
-					.collect(«Collectors».toList())));
+					.collect(«Collectors».toList()));
 			«ELSE»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».getValue()));
@@ -472,7 +434,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient fieldValuesAsList(Data type, TabulatorContext context, JavaScope scope) {
+	private def StringConcatenationClient fieldValuesAsList(RDataType type, TabulatorContext context, JavaScope scope) {
 		'''
 		«Arrays».asList(
 			«FOR attr : type.allNonOverridesAttributes.filter[context.isTabulated(it)] SEPARATOR ","»
@@ -495,12 +457,12 @@ class TabulatorGenerator {
 		'''new «ModelSymbolId»(«symbolId.namespace.toDottedPathCode», "«symbolId.name»")'''
 	}
 	
-	private def toNestedTabulatorInstance(Data type) {
+	private def toNestedTabulatorInstance(RDataType type) {
 		new NestedTabulatorInstance(type)
 	}
 	@org.eclipse.xtend.lib.annotations.Data
 	private static class NestedTabulatorInstance {
-		Data type
+		RDataType type
 	}
 	private def toComputedField(Attribute attr) {
 		new ComputedField(attr)

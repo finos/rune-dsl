@@ -7,7 +7,6 @@ import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath
@@ -50,29 +49,28 @@ class ValidatorsGenerator {
 	@Inject extension RBuiltinTypeService
 	@Inject extension JavaTypeUtil
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
-		val t = new RDataType(data)
-		fsa.generateFile(t.toValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateClass(root, data, version))
-		fsa.generateFile(t.toTypeFormatValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateTypeFormatValidator(root, data, version))
-		fsa.generateFile(t.toOnlyExistsValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateOnlyExistsValidator(root, data, version))
+	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType type, String version) {
+		fsa.generateFile(type.toValidatorClass.canonicalName.withForwardSlashes + ".java",
+			generateClass(root, type, version))
+		fsa.generateFile(type.toTypeFormatValidatorClass.canonicalName.withForwardSlashes + ".java",
+			generateTypeFormatValidator(root, type, version))
+		fsa.generateFile(type.toOnlyExistsValidatorClass.canonicalName.withForwardSlashes + ".java",
+			generateOnlyExistsValidator(root, type, version))
 	}
 
-	private def generateClass(RootPackage root, Data d, String version) {
+	private def generateClass(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, new RDataType(d).classBody(version, d.allNonOverridesAttributes), scope)
+		buildClass(root.typeValidation, t.classBody(version, t.allNonOverridesAttributes), scope)
 	}
 	
-	private def generateTypeFormatValidator(RootPackage root, Data d, String version) {
+	private def generateTypeFormatValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, new RDataType(d).typeFormatClassBody(version, d.allNonOverridesAttributes), scope)
+		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.allNonOverridesAttributes), scope)
 	}
 
-	private def generateOnlyExistsValidator(RootPackage root, Data d, String version) {
+	private def generateOnlyExistsValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, new RDataType(d).onlyExistsClassBody(version, d.allNonOverridesAttributes), scope)
+		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.allNonOverridesAttributes), scope)
 	}
 
 	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''

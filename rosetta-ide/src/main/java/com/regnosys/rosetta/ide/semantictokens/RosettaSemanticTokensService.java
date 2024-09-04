@@ -22,6 +22,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.google.common.collect.Sets;
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
@@ -36,10 +37,12 @@ import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -53,14 +56,18 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.types.CardinalityProvider;
+import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RosettaTypeProvider;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesEnum.*;
 import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenModifiersEnum.*;
@@ -70,6 +77,8 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	private RosettaExtensions extensions;
 	@Inject
 	private CardinalityProvider cardinalityProvider;
+	@Inject
+	private RosettaTypeProvider typeProvider;
 	
 	@Inject
 	public RosettaSemanticTokensService(ISemanticTokenTypesProvider tokenTypesProvider,
@@ -158,9 +167,15 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		return null;
 	}
 	
-	private SemanticToken markAttribute(EObject objectToMark, EStructuralFeature featureToMark, Attribute attribute) {
+	private SemanticToken markAttribute(EObject objectToMark, EStructuralFeature featureToMark, Attribute attribute, AttributeType t) {
 		if (attribute instanceof ChoiceOption) {
 			return null;
+		}
+		
+		if (t == AttributeType.INPUT) {
+			return createSemanticToken(objectToMark, featureToMark, PARAMETER, getCardinalityModifier(attribute));
+		} else if (t == AttributeType.OUTPUT) {
+			return createSemanticToken(objectToMark, featureToMark, OUTPUT, getCardinalityModifier(attribute));
 		}
 		
 		RosettaSemanticTokenTypesEnum tokenType = null;
@@ -180,7 +195,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	@MarkSemanticToken
 	public SemanticToken markAttributeDeclaration(Attribute attribute) {
-		return markAttribute(attribute, ROSETTA_NAMED__NAME, attribute);
+		return markAttribute(attribute, ROSETTA_NAMED__NAME, attribute, AttributeType.OTHER);
 	}
 	
 	private SemanticToken markClosureParameter(EObject objectToMark, EStructuralFeature featureToMark, ClosureParameter param) {
@@ -212,7 +227,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		for (Segment seg : operation.pathAsSegmentList()) {
 			Attribute segAttr = seg.getAttribute();
 			if (extensions.isResolved(segAttr)) {
-				SemanticToken segmentToken = markAttribute(seg, SEGMENT__ATTRIBUTE, segAttr);
+				SemanticToken segmentToken = markAttribute(seg, SEGMENT__ATTRIBUTE, segAttr, AttributeType.OUTPUT);
 				if (segmentToken != null) {
 					result.add(segmentToken);
 				}
@@ -225,16 +240,16 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	public SemanticToken markConstructorFeature(ConstructorKeyValuePair pair) {
 		RosettaFeature feature = pair.getKey();
 		if (extensions.isResolved(feature)) {
-			return markFeature(pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY, feature);
+			return markFeature(pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY, feature, AttributeType.OUTPUT);
 		}
 		return null;
 	}
 	
-	private SemanticToken markFeature(EObject objectToMark, EStructuralFeature featureToMark, RosettaFeature feature) {
+	private SemanticToken markFeature(EObject objectToMark, EStructuralFeature featureToMark, RosettaFeature feature, AttributeType t) {
 		if (feature instanceof RosettaEnumValue) {
 			return createSemanticToken(objectToMark, featureToMark, ENUM_MEMBER);
 		} else if (feature instanceof Attribute) {
-			return markAttribute(objectToMark, featureToMark, (Attribute)feature);
+			return markAttribute(objectToMark, featureToMark, (Attribute)feature, t);
 		} else if (feature instanceof RosettaMetaType) {
 			return createSemanticToken(objectToMark, featureToMark, META_MEMBER);
 		}
@@ -244,14 +259,21 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	public SemanticToken markFeature(RosettaFeatureCall featureCall) {
 		RosettaFeature feature = featureCall.getFeature();
 		if (extensions.isResolved(feature)) {
-			return markFeature(featureCall, ROSETTA_FEATURE_CALL__FEATURE, feature);
+			return markFeature(featureCall, ROSETTA_FEATURE_CALL__FEATURE, feature, AttributeType.OTHER);
 		}
 		return null;
 	}
 	
 	private SemanticToken markSymbol(EObject objectToMark, EStructuralFeature featureToMark, RosettaSymbol symbol) {
 		if (symbol instanceof Attribute) {
-			return markAttribute(objectToMark, featureToMark, (Attribute)symbol);
+			RType implicitType = typeProvider.typeOfImplicitVariable(objectToMark);
+			if (implicitType != null) {
+				Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeatures(implicitType, objectToMark));
+				if (implicitFeatures.contains(symbol)) {
+					return markAttribute(objectToMark, featureToMark, (Attribute)symbol, AttributeType.INPUT);
+				}
+			}
+			return markAttribute(objectToMark, featureToMark, (Attribute)symbol, AttributeType.OTHER);
 		} else if (symbol instanceof ClosureParameter) {
 			return markClosureParameter(objectToMark, featureToMark, (ClosureParameter)symbol);
 		} else if (symbol instanceof Function) {
@@ -263,6 +285,8 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		} else if (symbol instanceof ShortcutDeclaration) {
 			return markAlias(objectToMark, featureToMark, (ShortcutDeclaration)symbol);
 		} else if (symbol instanceof TypeParameter) {
+			return createSemanticToken(objectToMark, featureToMark, PARAMETER);
+		} else if (symbol instanceof TranslationParameter) {
 			return createSemanticToken(objectToMark, featureToMark, PARAMETER);
 		}
 		return null;
