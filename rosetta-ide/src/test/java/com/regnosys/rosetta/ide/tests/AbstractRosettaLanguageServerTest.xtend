@@ -25,6 +25,11 @@ import com.google.inject.Module
 import org.eclipse.lsp4j.DiagnosticSeverity
 import com.regnosys.rosetta.RosettaStandaloneSetup
 import java.util.HashMap
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.EValidator
+import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 
 /**
  * TODO: contribute to Xtext.
@@ -38,6 +43,11 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	}
 	
 	protected override Module getServerModule() {
+		EPackage.Registry.INSTANCE.remove(RosettaPackage.eNS_URI);
+		EPackage.Registry.INSTANCE.remove(SimplePackage.eNS_URI);
+		EPackage.Registry.INSTANCE.remove(ExpressionPackage.eNS_URI);
+		EValidator.Registry.INSTANCE.clear
+		
 		RosettaStandaloneSetup.doSetup
 		return RosettaServerModule.create
 	}

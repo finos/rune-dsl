@@ -71,20 +71,17 @@ import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
-import org.eclipse.xtext.resource.XtextResource
 import javax.inject.Provider
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
+import com.regnosys.rosetta.cache.IRequestScopedCache
+import com.regnosys.rosetta.rosetta.TypeParameter
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
-
-	// MP - Disabling the Expression Cache due to "ISSUE-919: Errors appear in model after adding a type".
-	// The cache can be re-enabled for testing using `-DEXPRESSION_RTYPE_CACHE_KEY_ENABLED=true` in the BSP.
-	public static boolean EXPRESSION_RTYPE_CACHE_KEY_ENABLED = Boolean.getBoolean("EXPRESSION_RTYPE_CACHE_KEY_ENABLED");
 
 
 	@Inject extension RosettaOperators
@@ -94,6 +91,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension TypeSystem
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
+	@Inject IRequestScopedCache cache
 	
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -159,6 +157,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				cycleTracker.put(symbol, type)
 				type
 			}
+			TypeParameter: {
+				symbol.typeCall.typeCallToRType
+			}
 		}
 	}
 	private def RType safeRType(RosettaFeature feature, Map<EObject, RType> cycleTracker) {
@@ -200,18 +201,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		])
 	}
 	private def RType getRTypeFromCache(String cacheKey, EObject object, Provider<RType> typeProvider) {
-		if (!EXPRESSION_RTYPE_CACHE_KEY_ENABLED) {
-			return typeProvider.get()
-		}
 		if (object === null) {
 			return typeProvider.get()
 		}
-		val resource = object.eResource
-		if (resource instanceof XtextResource) {
-			resource.cache.get(cacheKey -> object, resource, [typeProvider.get])
-		} else {
-			typeProvider.get()
-		}
+		cache.get(cacheKey -> object, typeProvider)
 	}
 	
 	def typeOfImplicitVariable(EObject context) {
