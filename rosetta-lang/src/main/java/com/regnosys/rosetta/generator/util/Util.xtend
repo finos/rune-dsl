@@ -61,6 +61,8 @@ class Util {
 		}
 	}
 	
+	@Deprecated // Inject ModelIdProvider instead
 	def static String fullname(RosettaType clazz) '''«clazz.model.name».«clazz.name»'''
+	@Deprecated // Inject ModelIdProvider instead
 	def static String packageName(RosettaType clazz)  {clazz.model.name}
 }

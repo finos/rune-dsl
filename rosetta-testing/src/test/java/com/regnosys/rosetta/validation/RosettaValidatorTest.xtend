@@ -1015,16 +1015,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type Foo
 			with source TestA
 			
-			eligibility rule FooRule from ReportableEvent:
-				filter Foo->foo exists
+			eligibility rule FooRule from Foo:
+				filter foo exists
 			
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA from ReportableEvent:
+			reporting rule RA from Foo:
 				"A"
 			
-			reporting rule RB from ReportableEvent:
+			reporting rule RB from Foo:
 				"B"
 			
 			rule source TestA {

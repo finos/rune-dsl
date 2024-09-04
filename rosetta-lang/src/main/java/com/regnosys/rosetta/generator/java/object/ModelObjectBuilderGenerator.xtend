@@ -22,6 +22,7 @@ import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.util.types.JavaClass
 import com.rosetta.model.lib.RosettaModelObject
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class ModelObjectBuilderGenerator {
 	
@@ -29,6 +30,7 @@ class ModelObjectBuilderGenerator {
 	@Inject extension RosettaExtensions
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
+	@Inject extension JavaTypeUtil
 
 	def StringConcatenationClient builderClass(RDataType t, JavaScope scope) {
 		val javaType = t.toJavaType
@@ -38,7 +40,7 @@ class ModelObjectBuilderGenerator {
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
 		'''
-		class «javaType»BuilderImpl«IF superInterface != JavaClass.from(RosettaModelObject)» extends «superInterface.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.data)» {
+		class «javaType»BuilderImpl«IF superInterface != ROSETTA_MODEL_OBJECT» extends «superInterface.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.data)» {
 		
 			«FOR attribute : t.expandedAttributes»
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMultiple» = new «ArrayList»<>()«ENDIF»;
@@ -63,7 +65,7 @@ class ModelObjectBuilderGenerator {
 			@SuppressWarnings("unchecked")
 			@Override
 			public «javaType.toBuilderType» prune() {
-				«IF superInterface != JavaClass.from(RosettaModelObject)»super.prune();«ENDIF»
+				«IF superInterface != ROSETTA_MODEL_OBJECT»super.prune();«ENDIF»
 				«FOR attribute : t.expandedAttributes»
 					«IF !attribute.isMultiple && (attribute.isDataType || attribute.hasMetas)»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
@@ -74,9 +76,9 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«t.expandedAttributes.filter[!it.overriding].hasData(superInterface != JavaClass.from(RosettaModelObject))»
+			«t.expandedAttributes.filter[!it.overriding].hasData(superInterface != ROSETTA_MODEL_OBJECT)»
 		
-			«t.expandedAttributes.filter[!it.overriding].merge(t, superInterface != JavaClass.from(RosettaModelObject))»
+			«t.expandedAttributes.filter[!it.overriding].merge(t, superInterface != ROSETTA_MODEL_OBJECT)»
 		
 			«t.builderBoilerPlate(builderScope)»
 		}

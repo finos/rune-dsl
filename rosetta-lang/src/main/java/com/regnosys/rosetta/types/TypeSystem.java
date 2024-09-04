@@ -202,31 +202,4 @@ public class TypeSystem {
 		}
 		return t;
 	}
-	
-	public RDataType dataToType(Data data) {
-		return new RDataType(data, this, modelIdProvider);
-	}
-	public REnumType enumToType(RosettaEnumeration enumeration) {
-		return new REnumType(enumeration, modelIdProvider);
-	}
-	
-	/**
-	 * Returns the first ancestor of the given type which does not extend any data type.
-	 * 
-	 * If no such type exists, returns `null`.
-	 * 
-	 * If the given type is not a data type and not an alias of a data type, returns null.
-	 */
-	public RType getValueType(RType type) {
-		RType result = type;
-		RType stripped = stripFromTypeAliases(result);
-		if (!(stripped instanceof RDataType)) {
-			return null;
-		}
-		while(stripped != null && stripped instanceof RDataType) {
-			result = ((RDataType)stripped).getSuperType();
-			stripped = stripFromTypeAliases(result);
-		}
-		return result;
-	}
 }

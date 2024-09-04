@@ -2,14 +2,10 @@ package com.regnosys.rosetta.resource;
 
 import java.util.Collection;
 
-import javax.inject.Inject;
-
 import org.eclipse.xtext.resource.IResourceDescription.Delta;
-import org.eclipse.xtext.resource.impl.EObjectDescriptionLookUp;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.DerivedStateAwareResourceDescriptionManager;
-import org.eclipse.xtext.util.IResourceScopeCache;
 import org.eclipse.xtext.util.RuntimeIOException;
 
 import org.eclipse.emf.ecore.resource.Resource;
@@ -19,10 +15,6 @@ import java.io.IOException;
 import org.eclipse.xtext.resource.IEObjectDescription;
 
 public class RosettaResourceDescriptionManager extends DerivedStateAwareResourceDescriptionManager {
-	
-	@Inject
-	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
-
 	/**
 	 * Need to re-validate all the resources with isEvent or isProduct when the root class configuration 'isEvent root' or 'isProduct root' changes
 	 */
@@ -69,20 +61,5 @@ public class RosettaResourceDescriptionManager extends DerivedStateAwareResource
 		} else {
 			return super.internalGetResourceDescription(resource, strategy);
 		}
-	}
-	
-	@Override
-	protected IResourceDescription createResourceDescription(Resource resource, IDefaultResourceDescriptionStrategy strategy) {
-		if (strategy instanceof RosettaResourceDescriptionStrategy) {
-			return new DefaultRosettaResourceDescription(resource, (RosettaResourceDescriptionStrategy) strategy, cache) {
-				@Override
-				protected EObjectDescriptionLookUp getLookUp() {
-					if (lookup == null)
-						lookup = new EObjectDescriptionLookUp(computeExportedObjects());
-					return lookup;
-				}
-			};
-		}
-		return super.createResourceDescription(resource, strategy);
 	}
 }

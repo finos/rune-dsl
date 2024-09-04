@@ -24,24 +24,39 @@ import com.rosetta.util.DottedPath;
 
 public class RDataType extends RAnnotateType {
 	private final Data data;
-	private final ModelSymbolId symbolId;
+	
+	private RDataType superType = null;
+	private ModelSymbolId symbolId = null;
+	
+	private final ModelIdProvider modelIdProvider;
 
-	public RDataType(final Data data) {
+	public RDataType(final Data data, final ModelIdProvider modelIdProvider) {
 		super();
 		this.data = data;
-		this.symbolId = new ModelSymbolId(
-				DottedPath.splitOnDots(data.getModel().getName()),
-				data.getName()
-			);
+		
+		this.modelIdProvider = modelIdProvider;
 	}
 	
 	@Override
 	public ModelSymbolId getSymbolId() {
+		if (this.symbolId == null) {
+			this.symbolId = modelIdProvider.getSymbolId(data);;
+		}
 		return this.symbolId;
 	}
 
 	public Data getData() {
 		return this.data;
+	}
+	
+	public RDataType getSuperType() {
+		if (data.hasSuperType()) {
+			if (this.superType == null) {
+				this.superType = new RDataType(data.getSuperType(), modelIdProvider);
+			}
+			return this.superType;
+		}
+		return null;
 	}
 
 	@Override

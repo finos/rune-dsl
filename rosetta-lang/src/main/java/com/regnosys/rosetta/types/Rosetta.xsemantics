@@ -67,14 +67,18 @@ import com.regnosys.rosetta.interpreter.RosettaValue
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
+inject extension ModelIdProvider modelIdProvider
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
@@ -252,87 +256,10 @@ auxiliary attributeListType(Attribute a) {
 }
 
 /*** SUBTYPING **/
-rule SData // SA-Refl, SA-Ancestor
-	G |- RDataType t1 <: RDataType t2
-from {
-	{
-		t1 == t2
-	} or
-	{
-		ancestors(t1.^data).contains(t2.^data)
-	}
-}
-
-rule SNumber
-	G |- RNumberType t1 <: RNumberType t2
-from {
-	true
-}
-rule SString
-	G |- RStringType t1 <: RStringType t2
-from {
-	true
-}
-rule SBasic // SA-Refl, SA-Nothing
-	G |- RBasicType t1 <: RBasicType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t1 == NOTHING
-	} or {
-		t2 == ANY
-	}
-}
-rule SNothing // SA-Refl, SA-Nothing
-	G |- RBasicType t1 <: RType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t1 == NOTHING
-	}
-}
-rule SAny // SA-Refl, SA-Nothing
-	G |- RType t1 <: RBasicType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t2 == ANY
-	}
-}
-
-rule SAliasBoth
-	G |- RAliasType t1 <: RAliasType t2
-from {
-	G |- t1.refersTo <: t2.refersTo
-}
-rule SAliasLeft
-	G |- RAliasType t1 <: RType t2
-from {
-	G |- t1.refersTo <: t2
-}
-rule SAliasRight
-	G |- RType t1 <: RAliasType t2
-from {
-	G |- t1 <: t2.refersTo
-}
-rule SAliasBasic
-	G |- RAliasType t1 <: RBasicType t2
-from {
-	G |- t1.refersTo <: t2
-}
-rule SBasicAlias
-	G |- RBasicType t1 <: RAliasType t2
-from {
-	G |- t1 <: t2.refersTo
-}
-
-rule SRefl
+rule SAll
 	G |- RType t1 <: RType t2
 from {
-	t1 == t2
+	typeSystem.isSubtypeOf(t1, t2)
 }
 
 /*** LIST SUBTYPING ***/

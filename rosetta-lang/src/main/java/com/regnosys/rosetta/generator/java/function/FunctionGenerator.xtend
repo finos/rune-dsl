@@ -85,6 +85,7 @@ class FunctionGenerator {
 	@Inject ImplicitVariableUtil implicitVariableUtil
 	@Inject extension JavaTypeUtil
 	@Inject TypeCoercionService coercionService
+	@Inject extension ModelIdProvider
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -364,7 +365,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					new ModelSymbolId(DottedPath.splitOnDots(function.model.name), function.name + formatEnumName(enumFunc.value.value.name)),
+					new ModelSymbolId(function.model.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),
@@ -381,7 +382,7 @@ class FunctionGenerator {
 	}
 
 	private def JavaClass<?> toDispatchClass(FunctionDispatch ele) {
-		return new GeneratedJavaClass<Object>(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
+		return new GeneratedJavaClass<Object>(ele.model.toDottedPath.child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
 	}
 
 	private def boolean assignAsKey(ROperation op) {
@@ -432,7 +433,7 @@ class FunctionGenerator {
 			}
 
 		} else { // assign an attribute of the function output object
-			assignValue(scope, op, op.assignAsKey, op.pathTail.last.multi)
+			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					JavaExpression.from(
@@ -449,7 +450,7 @@ class FunctionGenerator {
 		}
 	}
 
-	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey, boolean isAssigneeMulti) {
+	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
 		if (assignAsKey) {
 			val metaClass = op.operationToReferenceWithMetaType
 			if (cardinality.isMulti(op.expression)) {

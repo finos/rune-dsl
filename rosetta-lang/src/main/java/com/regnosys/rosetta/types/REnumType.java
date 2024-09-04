@@ -24,19 +24,23 @@ import com.rosetta.util.DottedPath;
 
 public class REnumType extends RAnnotateType {
 	private final RosettaEnumeration enumeration;
-	private final ModelSymbolId symbolId;
+	
+	private ModelSymbolId symbolId = null;
+	
+	private final ModelIdProvider modelIdProvider;
 
-	public REnumType(final RosettaEnumeration enumeration) {
+	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider) {
 		super();
 		this.enumeration = enumeration;
-		this.symbolId = new ModelSymbolId(
-				DottedPath.splitOnDots(enumeration.getModel().getName()),
-				enumeration.getName()
-			);
+		
+		this.modelIdProvider = modelIdProvider;
 	}
 	
 	@Override
 	public ModelSymbolId getSymbolId() {
+		if (this.symbolId == null) {
+			this.symbolId = modelIdProvider.getSymbolId(enumeration);
+		}
 		return this.symbolId;
 	}
 

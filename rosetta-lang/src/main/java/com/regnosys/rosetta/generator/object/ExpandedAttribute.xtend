@@ -72,9 +72,9 @@ final class ExpandedAttribute {
 	}
 	
 	def javaAnnotation() {
-		if (name === "key" && type.name === "Key" && type.model.name === "com.rosetta.model.lib.meta") {
+		if (name == "key" && type.name == "Key" && type.model.name == "com.rosetta.model.lib.meta") {
 			return 'location'
-		} else if (name === "reference" && type.name === "Reference" && type.model.name === "com.rosetta.model.lib.meta") {
+		} else if (name == "reference" && type.name == "Reference" && type.model.name == "com.rosetta.model.lib.meta") {
 			return 'address'
 		} else
 			return name

@@ -57,8 +57,7 @@ class ModelMetaGenerator {
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
 		val context = t.data.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(t.data, context.resources.map[contents.head as RosettaModel].toSet)
-		// TODO: add condition to check type format of basic super type
-		val conditions = t.allSuperDataTypes.map[conditionRules(it.data.conditions)].flatten
+		val conditions = t.allSuperTypes.map[conditionRules(it.data.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)

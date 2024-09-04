@@ -12,7 +12,6 @@ import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.annotations.RosettaDataType
 import com.rosetta.model.lib.meta.RosettaMetaData
@@ -192,8 +191,8 @@ class ModelObjectGenerator {
 		if (class1.data.globalKey) {
 			return true
 		}
-		val s = class1.superType.stripFromTypeAliases
-		if (s !== null && s instanceof RDataType) {
+		val s = class1.superType
+		if (s !== null) {
 			return globalKeyRecursive(s as RDataType)
 		}
 		return false
