@@ -118,12 +118,8 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.rosetta.simple.ReferenceKeyAnnotation
-import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
-import com.regnosys.rosetta.types.ExpectedTypeProvider
 
 // TODO: split expression validator
 // TODO: type check type call arguments

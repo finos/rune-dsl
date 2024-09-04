@@ -87,8 +87,7 @@ ChoiceOption:
 ;
 
 Attribute:
-	// @Compat remove `override`
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
+	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
 ;

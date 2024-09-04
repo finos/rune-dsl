@@ -115,7 +115,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
-		val dataNamespace = new RootPackage(t.data.namespace.toDottedPath)
+		val dataNamespace = new RootPackage(t.data.model.toDottedPath)
 		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t.data), dataNamespace)].toList
 	}
 

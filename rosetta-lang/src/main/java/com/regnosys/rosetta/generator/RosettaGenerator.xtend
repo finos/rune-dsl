@@ -41,10 +41,10 @@ import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
-import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RTypeFactory
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 /**
  * Generates code from your model files on save.

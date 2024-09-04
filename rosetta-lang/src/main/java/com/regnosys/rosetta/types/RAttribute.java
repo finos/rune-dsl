@@ -19,19 +19,29 @@ package com.regnosys.rosetta.types;
 import java.util.List;
 import java.util.Objects;
 
-public class RAttribute implements RAssignedRoot {
-	private String name;
-	private String definition;
-	private RType rType;
-	private List<RAttribute> metaAnnotations;
-	private boolean isMulti;
+import com.regnosys.rosetta.rosetta.RosettaDocReference;
+import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
-	public RAttribute(String name, String definition, RType rType, List<RAttribute> metaAnnotations, boolean isMulti) {
+public class RAttribute implements RAssignedRoot {
+	private final String name;
+	private final String definition;
+	private final List<RosettaDocReference> docReferences;
+	private final RType rType;
+	private final List<RAttribute> metaAnnotations;
+	private final PositiveIntegerInterval cardinality;
+	private final boolean isMeta;
+
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality) {
+		this(name, definition, docReferences, rType, metaAnnotations, cardinality, false);
+	}
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality, boolean isMeta) {
 		this.name = name;
 		this.definition = definition;
+		this.docReferences = docReferences;
 		this.rType = rType;
 		this.metaAnnotations = metaAnnotations;
-		this.isMulti = isMulti;
+		this.cardinality = cardinality;
+		this.isMeta = isMeta;
 	}
 	
 	@Override
@@ -45,21 +55,37 @@ public class RAttribute implements RAssignedRoot {
 
 	@Override
 	public boolean isMulti() {
-		return isMulti;
+		return cardinality.getMax().map(m -> m > 1).orElse(true);
+	}
+	
+	public PositiveIntegerInterval getCardinality() {
+		return cardinality;
 	}
 	
 	public String getDefinition() {
 		return definition;
 	}
 	
+	public List<RosettaDocReference> getDocReferences() {
+		return docReferences;
+	}
 	
 	public List<RAttribute> getMetaAnnotations() {
 		return metaAnnotations;
 	}
+	
+	@Deprecated
+	public boolean hasReferenceOrAddressMetadata() {
+		return metaAnnotations.stream().anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
+	}
+	
+	public boolean isMeta() {
+		return isMeta;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(definition, isMulti, metaAnnotations, name, rType);
+		return Objects.hash(definition, cardinality, metaAnnotations, name, rType);
 	}
 
 	@Override
@@ -71,14 +97,13 @@ public class RAttribute implements RAssignedRoot {
 		if (getClass() != obj.getClass())
 			return false;
 		RAttribute other = (RAttribute) obj;
-		return Objects.equals(definition, other.definition) && isMulti == other.isMulti
+		return Objects.equals(definition, other.definition) && cardinality == other.cardinality
 				&& Objects.equals(metaAnnotations, other.metaAnnotations) && Objects.equals(name, other.name)
 				&& Objects.equals(rType, other.rType);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("RAttribute[name=%s, type=%s, isMulti=%s]", name, rType, isMulti);
+		return String.format("RAttribute[name=%s, type=%s, cardinality=%s]", name, rType, cardinality);
 	}
-
 }

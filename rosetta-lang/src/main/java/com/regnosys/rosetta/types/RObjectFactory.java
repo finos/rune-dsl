@@ -39,6 +39,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
@@ -165,14 +166,16 @@ public class RObjectFactory {
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
+		return buildRAttribute(attribute, false);
+	}
+	private RAttribute buildRAttribute(Attribute attribute, boolean isMeta) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);
 		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
-				.filter(a -> a.getAnnotation().getName().equals("metadata")).map(a -> buildRAttribute(a.getAttribute()))
+				.filter(a -> a.getAnnotation().getName().equals("metadata")).map(a -> buildRAttribute(a.getAttribute(), true))
 				.collect(Collectors.toList());
 
 		return new RAttribute(attribute.getName(), attribute.getDefinition(), rType, metaAnnotations,
-				cardinalityProvider.isSymbolMulti(attribute));
-
+				cardinalityProvider.isSymbolMulti(attribute), isMeta);
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {

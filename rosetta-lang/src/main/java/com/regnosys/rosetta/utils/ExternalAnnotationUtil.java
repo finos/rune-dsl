@@ -30,7 +30,6 @@ import javax.inject.Inject;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.generator.object.ExpandedAttribute;
-import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
@@ -45,6 +44,7 @@ import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
+import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
@@ -271,9 +271,9 @@ public class ExternalAnnotationUtil {
 	
 	public static class PathAttribute {
 		private final RosettaPath path;
-		private final Attribute attr;
+		private final RAttribute attr;
 		
-		public PathAttribute(RosettaPath path, Attribute attr) {
+		public PathAttribute(RosettaPath path, RAttribute attr) {
 			this.path = path;
 			this.attr = attr;
 		}
@@ -282,7 +282,7 @@ public class ExternalAnnotationUtil {
 			return path;
 		}
 
-		public Attribute getAttr() {
+		public RAttribute getAttr() {
 			return attr;
 		}
 

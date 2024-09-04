@@ -19,8 +19,8 @@ package com.regnosys.rosetta.types;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.DottedPath;
 
 public class REnumType extends RAnnotateType {
 	private final RosettaEnumeration enumeration;

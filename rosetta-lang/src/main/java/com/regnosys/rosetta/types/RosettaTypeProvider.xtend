@@ -94,6 +94,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
+	@Inject extension RTypeFactory
 	
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -115,7 +116,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
 			RosettaDataReference: {
 				if (extensions.isResolved(seg.data)) {
-					return new RDataType(seg.data)
+					return seg.data.dataToType
 				} else {
 					NOTHING
 				}
@@ -143,7 +144,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 					MISSING
 			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
-				new REnumType(symbol)
+				symbol.enumToType
 			}
 			Function: {
 				if (symbol.output !== null) {
@@ -233,7 +234,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		val definingContainer = context.findContainerDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				new RDataType(it)
+				dataToType
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
@@ -489,7 +490,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> cycleTracker) {
-		new REnumType(expr.enumeration)
+		expr.enumeration.enumToType
 	}
 	
 	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> cycleTracker) {

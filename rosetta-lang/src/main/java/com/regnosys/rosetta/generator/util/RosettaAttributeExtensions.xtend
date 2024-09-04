@@ -30,6 +30,7 @@ import java.util.Collections
 import java.util.List
 import org.eclipse.xtext.util.SimpleCache
 
+@Deprecated // Use RosettaExtensions instead
 class RosettaAttributeExtensions {
 
 	static def boolean cardinalityIsSingleValue(ExpandedAttribute attribute) {
@@ -154,7 +155,7 @@ class RosettaAttributeExtensions {
 					annoRef.annotation.name,
 					annoAttr.typeCall.type.toExpandedType,
 					annoAttr.typeCall,
-					annoAttr.override,
+					false,
 					0,
 					1,
 					false,
@@ -171,7 +172,7 @@ class RosettaAttributeExtensions {
 			(attr.eContainer as RosettaType).name,
 			attr.typeCall?.type?.toExpandedType,
 			attr.typeCall,
-			attr.override,
+			false,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,
