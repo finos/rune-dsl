@@ -169,18 +169,18 @@ class TabulatorGenerator {
 	@Inject extension RosettaExtensions extensions
 	@Inject extension JavaTypeUtil
 	
-	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
+	def generateTabulatorForReport(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
 		val topScope = new JavaScope(tabulatorClass.packageName)
 
-		val context = getContext(report.reportType, Optional.ofNullable(report.ruleSource))
+		val context = getReportTabulatorContext(report.reportType, Optional.ofNullable(report.ruleSource))
 		val classBody = report.reportType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 	}
 	
-	def generate(IFileSystemAccess2 fsa, Data type, Optional<RosettaExternalRuleSource> ruleSource) {
-		val context = getContext(type, ruleSource)
+	def generateTabulatorForReportData(IFileSystemAccess2 fsa, Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+		val context = getReportTabulatorContext(type, ruleSource)
 		if (context.needsTabulator(type)) {
 			val tabulatorClass = type.toTabulatorJavaClass(ruleSource)
 			val topScope = new JavaScope(tabulatorClass.packageName)
@@ -191,7 +191,7 @@ class TabulatorGenerator {
 		}
 	}
 	
-	def generate(IFileSystemAccess2 fsa, Data type) {
+	def generateTabulatorForData(IFileSystemAccess2 fsa, Data type) {
 		if (type.isDataTabulatable) {
 			val context = createDataTabulatorContext(typeTranslator)
 
@@ -202,7 +202,7 @@ class TabulatorGenerator {
 		}
 	}
 
-	def generate(IFileSystemAccess2 fsa, Function func) {
+	def generateTabulatorForFunction(IFileSystemAccess2 fsa, Function func) {
 		if (func.isFunctionTabulatable) {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
@@ -243,14 +243,10 @@ class TabulatorGenerator {
 		}
 	}
 	
-	private def ReportTabulatorContext getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
+	private def ReportTabulatorContext getReportTabulatorContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val ruleMap = newHashMap
 		type.getAllReportingRules(ruleSource).forEach[key, rule| ruleMap.put(key.attr, rule)]
 		val reportedTypes = type.getAllReportedTypes
-		println("    ")
-		println("all collected rule types for type " + type.name)
-		reportedTypes.forEach[println("    type " + it.name)]
-		
 		new ReportTabulatorContext(extensions, typeTranslator, ruleMap, ruleSource, reportedTypes)
 	}
 	
@@ -297,12 +293,7 @@ class TabulatorGenerator {
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		
-		println("main inputType " + inputType)
-		println("main tabulatorClass " + tabulatorClass)
-		println("main innerTabulatorClass " + context.toTabulatorJavaClass(inputType))
-		println("main needsTabulator " + context.needsTabulator(inputType))
-		
-		if (context.needsTabulator(inputType)) { // TODO temp change to investigate Windows issue //  && !tabulatorClass.equals(context.toTabulatorJavaClass(inputType)
+		if (context.needsTabulator(inputType)) {
 			// There will be a tabulator available for `inputType`,
 			// so we can inject it.
 			val innerTabulatorClass = context.toTabulatorJavaClass(inputType)
@@ -351,11 +342,6 @@ class TabulatorGenerator {
 		val nestedTabulatorInstances = findNestedTabulatorsAndCreateIdentifiers(inputType, context, classScope)
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
-		
-		println("    ")
-		println("class inputType2 " + inputType)
-		println("class tabulatorClass2 " + tabulatorClass)
-		println("class innerTabulatorClass2 " + context.toTabulatorJavaClass(inputType))
 		
 		'''
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
