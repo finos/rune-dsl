@@ -58,6 +58,8 @@ import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import org.eclipse.xtext.scoping.impl.ImportNormalizer
+import org.eclipse.xtext.util.Strings
 
 /**
  * This class contains custom scoping description.
@@ -251,14 +253,51 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	override protected internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
 		return if (context instanceof RosettaModel) {
-			val imports = super.internalGetImportedNamespaceResolvers(context, ignoreCase)
-			imports.add(
-				doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase)
-			)
+			val List<ImportNormalizer> imports = newArrayList()
+			context.imports.forEach[
+				val resolver = createImportedNamespaceResolver(importedNamespace, namespaceAlias, ignoreCase)
+				if (resolver !== null) {
+					imports.add(resolver)
+				}
+			]
+			//This import allows two models with the same namespace to reference each other
+			imports.add(doCreateImportNormalizer(getQualifiedNameConverter.toQualifiedName(context.name), true, ignoreCase))
 			return imports
 		} else
 			emptyList
 	}
+	
+	private def ImportNormalizer createImportedNamespaceResolver(String namespace, String namespaceAlias,
+		boolean ignoreCase) {
+		if (Strings.isEmpty(namespace)) {
+			return null;
+		}
+
+		val importedNamespace = qualifiedNameConverter.toQualifiedName(namespace)
+		if (importedNamespace === null || importedNamespace.isEmpty()) {
+			return null;
+		}
+		val qualifiedAlias = namespaceAlias === null ? null : qualifiedNameConverter.toQualifiedName(namespaceAlias)
+
+		val hasWildCard = ignoreCase ? 
+				importedNamespace.getLastSegment().equalsIgnoreCase(getWildCard()) :
+				importedNamespace.getLastSegment().equals(getWildCard());
+
+		if (hasWildCard) {
+			if (importedNamespace.getSegmentCount() <= 1)
+				return null;
+			return doCreateImportNormalizer(importedNamespace.skipLast(1), qualifiedAlias, true, ignoreCase);
+		} else {
+			return doCreateImportNormalizer(importedNamespace, qualifiedAlias, false, ignoreCase);
+		}
+	}
+
+	private def ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, QualifiedName namespaceAlias,  boolean wildcard, boolean ignoreCase) {
+		if (namespaceAlias === null) {
+			return doCreateImportNormalizer(importedNamespace, wildcard, ignoreCase);
+		}
+		return new AliasAwareImportNormalizer(importedNamespace, namespaceAlias, wildcard, ignoreCase);
+	}	
 	
 	private def IScope defaultScope(EObject object, EReference reference) {
 		filteredScope(super.getScope(object, reference), [it.EClass !== FUNCTION_DISPATCH])

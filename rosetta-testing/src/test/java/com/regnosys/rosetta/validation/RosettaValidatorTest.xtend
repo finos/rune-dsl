@@ -32,6 +32,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+ 	def void testCannotUseImportAliasesWithoutWildcard() {
+ 		val model = '''
+ 			import foo.bar.Test as someAlias
+ 		'''.parseRosetta
+
+ 		model.assertError(IMPORT, null,
+ 			'"as" statement can only be used with wildcard import'
+ 		)
+ 	}
+	
+	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''
 		type A:
