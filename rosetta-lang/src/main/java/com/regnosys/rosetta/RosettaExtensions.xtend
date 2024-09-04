@@ -254,6 +254,14 @@ class RosettaExtensions {
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
 	}
+		
+	def getAllReportedTypes(Data type) {
+		val types = newHashSet
+		val path = RosettaPath.valueOf(type.name)
+		types.add(type)
+		type.collectReportingRules(path, Optional.empty, newHashMap, types)
+		types
+	}
 	
 	/**
 	 * Get all reporting rules for a report
