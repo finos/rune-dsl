@@ -194,7 +194,7 @@ class TabulatorGenerator {
 		if (type.isDataTabulatable) {
 			val context = createDataTabulatorContext(typeTranslator)
 			
-			recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
+			recursivelyGenerateTabulators(fsa, type, context, newHashSet)
 		}
 	}
 
@@ -212,12 +212,12 @@ class TabulatorGenerator {
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 				
-				recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
+				recursivelyGenerateTabulators(fsa, type, context, newHashSet)
 			}
 		}
 	}
 
-	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, Data type, TabulatorContext context, Set<Data> visited) {
+	private def void recursivelyGenerateTabulators(IFileSystemAccess2 fsa, Data type, TabulatorContext context, Set<Data> visited) {
 		if (visited.add(type)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
 			val topScope = new JavaScope(tabulatorClass.packageName)
@@ -230,7 +230,7 @@ class TabulatorGenerator {
 				.allNonOverridesAttributes
 				.map[typeProvider.getRTypeOfSymbol(it)]
 				.filter(RDataType)
-				.forEach[recursivelyGenerateFunctionTypeTabulators(fsa, data, context, visited)]
+				.forEach[recursivelyGenerateTabulators(fsa, data, context, visited)]
 		}
 	}
 	
