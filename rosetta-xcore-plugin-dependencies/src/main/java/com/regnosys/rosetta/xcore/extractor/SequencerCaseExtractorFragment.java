@@ -83,7 +83,7 @@ public class SequencerCaseExtractorFragment extends AbstractXtextGeneratorFragme
 		StringBuffer result = new StringBuffer();
 		Matcher sequenceMatcher = SEQUENCE_MATCHER.matcher(input);
 		if (sequenceMatcher.find()) {
-			String sequenceMethod = sequenceMatcher.group(1);
+			String sequenceMethod = sequenceMatcher.group(2);
 			List<String> replacementConentAndMethods = extractSwitchStatements(sequenceMethod);
 			String replacement = "$1" + replacementConentAndMethods.get(0) + "$3" + replacementConentAndMethods.get(1);
 			sequenceMatcher.appendReplacement(result, replacement);
@@ -111,13 +111,43 @@ public class SequencerCaseExtractorFragment extends AbstractXtextGeneratorFragme
 	}
 	
 	private List<String> extractCaseStatments(String caseStatement) {
+		Matcher caseMatcher = CASE_PATTERN.matcher(caseStatement);
 		
+		int i=0;
 		
-		return List.of("new switch content", "new methods");
+		StringBuffer newCaseContent = new StringBuffer();
+		StringBuffer newMethods = new StringBuffer();
+		
+		while(caseMatcher.find()) {
+			String methodName = "caseMethod" + i;
+			String caseCondition = caseMatcher.group(1);
+			
+			newCaseContent.append(caseCondition);
+			newCaseContent.append("\nboolean shouldBreak = " + methodName + "();\n");
+			newCaseContent.append("if (shouldBreak) break; else return;\n");
+			
+			String newMethodContent = createMethod(methodName, caseMatcher.group().replace(caseCondition, ""));
+			newMethods.append(newMethodContent);
+			i++;
+		}
+		caseMatcher.appendTail(newCaseContent);
+		return List.of(newCaseContent.toString(), newMethods.toString());
+	}
+
+	private String createMethod(String methodName, String caseContent) {
+		StringBuffer method = new StringBuffer();
+		method.append("\n");
+		method.append("private boolean " + methodName + "() {\n");
+		String newCaseContent = caseContent
+		.replace("return;", "return false;")
+		.replace("break;", "return true;");
+		method.append(newCaseContent);
+		method.append("}\n");
+		return method.toString();
 	}
 
 	private static final Pattern SEQUENCE_MATCHER = Pattern.compile(
-			"(^\\s*public void sequence\\(ISerializationContext context, EObject semanticObject\\)\\s*\\{\\n.*?)(^\\s*if\\s+\\(epackage\\s*==.*?)(\\}\\n\\n)"
+			"(^\\s*public void sequence\\(ISerializationContext context, EObject semanticObject\\)\\s*\\{\\n.*?)(^\\s*if\\s+\\(epackage\\s*==.*?)(^\\s*\\}\\s*?)\\/\\*\\*"
 			, Pattern.DOTALL | Pattern.MULTILINE
 			);
 	
@@ -129,7 +159,7 @@ public class SequencerCaseExtractorFragment extends AbstractXtextGeneratorFragme
 			
 	
 	public static final Pattern CASE_PATTERN = Pattern.compile(
-			"(?:^(\\s*case\\s+(?:\\w+\\.\\w+)\\s*:)(?:\\s*)\\n\\s*if.*?)(?:^(?!\\s*case).*?$\\n)+" 
+			"(?:^(\\s*case\\s+(?:\\w+\\.\\w+)\\s*:(?:\\s*)$\\s)\\s*if.*?)(?:^(?!\\s*case).*?$\\s)+" 
 			, Pattern.DOTALL | Pattern.MULTILINE);
 
 }

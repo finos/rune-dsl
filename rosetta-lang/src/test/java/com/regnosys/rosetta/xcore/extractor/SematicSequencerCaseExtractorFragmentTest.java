@@ -27,7 +27,6 @@ public class SematicSequencerCaseExtractorFragmentTest {
 		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore");
 		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/RosettaSimple.xcore");
 		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/RosettaExpression.xcore");
-		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/RosettaTranslate.xcore");
 		lang.setGrammarUri(new File("src/main/java", "com.regnosys.rosetta.Rosetta".replace(".", "/") + ".xtext").toURI().toString());
 		lang.addFragment(fragment);
 		
