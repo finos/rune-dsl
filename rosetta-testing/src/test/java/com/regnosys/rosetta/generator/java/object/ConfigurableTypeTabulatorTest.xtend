@@ -31,17 +31,23 @@ class ConfigurableTypeTabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.test.model.Foo;
-			import java.util.Arrays;
 			import java.util.List;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(FooTypeTabulator.Impl.class)
 			public interface FooTypeTabulator extends Tabulator<Foo> {
-				class Impl implements FooTypeTabulator {
+				public class Impl implements FooTypeTabulator {
+					private final FooTypeTabulator tabulator;
+					
+					@Inject
+					public Impl(FooTypeTabulator tabulator) {
+						this.tabulator = tabulator;
+					}
 					
 					@Override
 					public List<FieldValue> tabulate(Foo input) {
-						return Arrays.asList();
+						return tabulator.tabulate(input);
 					}
 				}
 			}

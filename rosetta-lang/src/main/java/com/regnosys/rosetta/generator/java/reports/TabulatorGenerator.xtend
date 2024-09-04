@@ -70,7 +70,9 @@ class TabulatorGenerator {
 		private def boolean isTabulated(Attribute attr, Set<Data> visited) {
 			val attrType = attr.typeCall.type
 			if (attrType instanceof Data) {
-				needsTabulator(attrType, visited)
+				//needsTabulator(attrType, visited)
+				//false
+				ruleMap.keySet.map[typeCall.type].contains(attrType)
 			} else {
 				ruleMap.containsKey(attr)
 			}
@@ -243,6 +245,9 @@ class TabulatorGenerator {
 	private def ReportTabulatorContext getContext(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val ruleMap = newHashMap
 		type.getAllReportingRules(ruleSource).forEach[key, rule| ruleMap.put(key.attr, rule)]
+		println("    ")
+		println("all reporting attributes for type " + type.name)
+		ruleMap.keySet.forEach[println("    rule attributes " + it.typeCall.type.name)]
 		new ReportTabulatorContext(extensions, typeTranslator, ruleMap, ruleSource)
 	}
 	
@@ -289,7 +294,12 @@ class TabulatorGenerator {
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
 		
-		if (context.needsTabulator(inputType) && !tabulatorClass.equals(context.toTabulatorJavaClass(inputType))) { // TODO temp change to investigate Windows issue
+		println("main inputType " + inputType)
+		println("main tabulatorClass " + tabulatorClass)
+		println("main innerTabulatorClass " + context.toTabulatorJavaClass(inputType))
+		println("main needsTabulator " + context.needsTabulator(inputType))
+		
+		if (context.needsTabulator(inputType)) { // TODO temp change to investigate Windows issue //  && !tabulatorClass.equals(context.toTabulatorJavaClass(inputType)
 			// There will be a tabulator available for `inputType`,
 			// so we can inject it.
 			val innerTabulatorClass = context.toTabulatorJavaClass(inputType)
@@ -338,6 +348,12 @@ class TabulatorGenerator {
 		val nestedTabulatorInstances = findNestedTabulatorsAndCreateIdentifiers(inputType, context, classScope)
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
+		
+		println("    ")
+		println("class inputType2 " + inputType)
+		println("class tabulatorClass2 " + tabulatorClass)
+		println("class innerTabulatorClass2 " + context.toTabulatorJavaClass(inputType))
+		
 		'''
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
