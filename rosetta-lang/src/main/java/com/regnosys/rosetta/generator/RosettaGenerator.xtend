@@ -41,10 +41,10 @@ import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
-import com.regnosys.rosetta.types.RTypeFactory
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.RObjectFactory
 
 /**
  * Generates code from your model files on save.
@@ -80,7 +80,7 @@ class RosettaGenerator implements IGenerator2 {
 	RosettaGeneratorsConfiguration config;
 	
 	@Inject extension ModelIdProvider
-	@Inject extension RTypeFactory
+	@Inject extension RObjectFactory
 
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta', 'basictypes.rosetta', 'annotations.rosetta'}
@@ -191,7 +191,7 @@ class RosettaGenerator implements IGenerator2 {
 		}
 		switch (elem) {
 			Data: {
-				val t = elem.dataToType
+				val t = elem.buildRDataType
 				dataGenerator.generate(packages, fsa, t, version)
 				metaGenerator.generate(packages, fsa, t, version)
 				// Legacy
@@ -205,7 +205,7 @@ class RosettaGenerator implements IGenerator2 {
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
-				tabulatorGenerator.generate(fsa, t)
+				// tabulatorGenerator.generate(fsa, t)
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {
@@ -222,7 +222,7 @@ class RosettaGenerator implements IGenerator2 {
 			}
 			RosettaExternalRuleSource: {
 				elem.externalClasses.forEach [ externalClass |
-					tabulatorGenerator.generate(fsa, externalClass.data.dataToType, Optional.of(elem))
+					tabulatorGenerator.generate(fsa, externalClass.data.buildRDataType, Optional.of(elem))
 				]
 			}
 			RosettaEnumeration: {

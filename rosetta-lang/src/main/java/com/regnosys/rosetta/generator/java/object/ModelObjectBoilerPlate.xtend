@@ -46,9 +46,9 @@ class ModelObjectBoilerPlate {
 	
 	def StringConcatenationClient implementsClause(RDataType d, Collection<Object> extraInterfaces) {
 		val interfaces = newHashSet
-		if(d.data.hasKeyedAnnotation)
+		if(d.EObject.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
-		if(d.data.hasTemplateAnnotation)
+		if(d.EObject.hasTemplateAnnotation)
 			interfaces.add(Templatable)
 		interfaces.addAll(extraInterfaces)
 		if (interfaces.empty) null else ''', «FOR i : interfaces.sortBy[class.name] SEPARATOR ', '»«i»«ENDFOR»'''
@@ -112,7 +112,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		public String toString() {
 			return "«classNameFunc.apply(c.name)» {" +
-				«FOR attribute : c.expandedAttributes.filter[!overriding] SEPARATOR ' ", " +'»
+				«FOR attribute : c.ownAttributes SEPARATOR ' ", " +'»
 					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
 				«ENDFOR»
 			'}'«IF c.hasSuperDataType» + " " + super.toString()«ENDIF»;

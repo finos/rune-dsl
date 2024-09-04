@@ -34,7 +34,7 @@ class DeepPathUtilGenerator {
 	@Inject JavaTypeUtil typeUtil
 	
 	def void generate(IFileSystemAccess2 fsa, RDataType choiceType, String version) {
-		val javaClass = choiceType.data.toDeepPathUtilJavaClass
+		val javaClass = choiceType.toDeepPathUtilJavaClass
 		val fileName =  javaClass.canonicalName.withForwardSlashes + ".java"
 
 		val topScope = new JavaScope(javaClass.packageName)
@@ -57,7 +57,7 @@ class DeepPathUtilGenerator {
 			deepFeatures.toMap([it], [
 				if (attrType instanceof RDataType) {
 					if (attrType.findDeepFeatureMap.containsKey(it.name)) {
-						dependencies.add(attrType.data.toDeepPathUtilJavaClass)
+						dependencies.add(attrType.toDeepPathUtilJavaClass)
 						return true
 					}
 				}

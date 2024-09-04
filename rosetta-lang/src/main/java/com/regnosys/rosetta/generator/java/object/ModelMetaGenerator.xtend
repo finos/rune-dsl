@@ -55,9 +55,9 @@ class ModelMetaGenerator {
 		val validator = t.toValidatorClass
 		val typeFormatValidator = t.toTypeFormatValidatorClass
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
-		val context = t.data.eResource.resourceSet
-		val qualifierFuncs = qualifyFuncs(t.data, context.resources.map[contents.head as RosettaModel].toSet)
-		val conditions = t.allSuperTypes.map[conditionRules(it.data.conditions)].flatten
+		val context = t.EObject.eResource.resourceSet
+		val qualifierFuncs = qualifyFuncs(t.EObject, context.resources.map[contents.head as RosettaModel].toSet)
+		val conditions = t.allSuperTypes.map[conditionRules(it.EObject.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -115,8 +115,8 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
-		val dataNamespace = new RootPackage(t.data.model.toDottedPath)
-		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t.data), dataNamespace)].toList
+		val dataNamespace = new RootPackage(t.EObject.model.toDottedPath)
+		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t), dataNamespace)].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data

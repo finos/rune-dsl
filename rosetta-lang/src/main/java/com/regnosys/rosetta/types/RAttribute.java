@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaDocReference;
+import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RAttribute implements RAssignedRoot {
@@ -30,11 +32,13 @@ public class RAttribute implements RAssignedRoot {
 	private final List<RAttribute> metaAnnotations;
 	private final PositiveIntegerInterval cardinality;
 	private final boolean isMeta;
+	private final RosettaRule ruleReference;
+	private final Attribute origin;
 
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality) {
-		this(name, definition, docReferences, rType, metaAnnotations, cardinality, false);
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
+		this(name, definition, docReferences, rType, metaAnnotations, cardinality, false, ruleReference, origin);
 	}
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality, boolean isMeta) {
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
@@ -42,11 +46,17 @@ public class RAttribute implements RAssignedRoot {
 		this.metaAnnotations = metaAnnotations;
 		this.cardinality = cardinality;
 		this.isMeta = isMeta;
+		this.ruleReference = ruleReference;
+		this.origin = origin;
 	}
 	
 	@Override
 	public String getName() {		
 		return name;
+	}
+	
+	public Attribute getEObject() {
+		return origin;
 	}
 
 	public RType getRType() {
@@ -77,6 +87,10 @@ public class RAttribute implements RAssignedRoot {
 	@Deprecated
 	public boolean hasReferenceOrAddressMetadata() {
 		return metaAnnotations.stream().anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
+	}
+	
+	public RosettaRule getRuleReference() {
+		return ruleReference;
 	}
 	
 	public boolean isMeta() {

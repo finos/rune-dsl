@@ -36,14 +36,14 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 
-import com.regnosys.rosetta.types.RTypeFactory
+import com.regnosys.rosetta.types.RObjectFactory
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject extension ModelObjectGenerator
 	@Inject RosettaJavaPackages packages
 	@Inject extension JavaTypeTranslator
-	@Inject extension RTypeFactory
+	@Inject extension RObjectFactory
 
 	 
 	def void generate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext ctx) {
@@ -82,7 +82,7 @@ class MetaFieldGenerator {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.filter(Data).flatMap[dataToType.ownAttributes].filter [
+			val refs = nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter [
 				metaAnnotations.exists[name == "reference" || name == "address"]
 			].toSet
 			
@@ -101,7 +101,7 @@ class MetaFieldGenerator {
 
 
 			//find all the metaed types
-			val metas =  nsc.value.filter(Data).flatMap[dataToType.ownAttributes].filter[
+			val metas =  nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter[
 				!metaAnnotations.exists[name=="reference" || name=="address"]
 			].toSet
 
@@ -207,7 +207,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(packages.basicMetafields)
 		
 		val StringConcatenationClient body = '''		
-		«d.dataToType.classBody(scope, new GeneratedJavaClass<Object>(packages.basicMetafields, d.name+'Meta', Object), "1", interfaces)»
+		«d.buildRDataType.classBody(scope, new GeneratedJavaClass<Object>(packages.basicMetafields, d.name+'Meta', Object), "1", interfaces)»
 		
 		class «name»Meta extends «BasicRosettaMetaData»<«name»>{
 		
@@ -245,7 +245,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(metaJavaType.packageName)
 		
 		val StringConcatenationClient body = '''
-			«d.dataToType.classBody(scope, new GeneratedJavaClass<Object>(metaJavaType.packageName, d.name + "Meta", Object), "1", #[GlobalKey, FWMType])»
+			«d.buildRDataType.classBody(scope, new GeneratedJavaClass<Object>(metaJavaType.packageName, d.name + "Meta", Object), "1", #[GlobalKey, FWMType])»
 			
 			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»>{
 			
@@ -295,7 +295,7 @@ class MetaFieldGenerator {
 		val scope = new JavaScope(root.metaField)
 		
 		val StringConcatenationClient body = '''
-			«d.dataToType.classBody(scope, new GeneratedJavaClass<Object>(root.metaField, d.name + "Meta", Object), "1", #[refInterface])»
+			«d.buildRDataType.classBody(scope, new GeneratedJavaClass<Object>(root.metaField, d.name + "Meta", Object), "1", #[refInterface])»
 			
 			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»>{
 			

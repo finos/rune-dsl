@@ -18,6 +18,8 @@ package com.regnosys.rosetta.types;
 
 import java.util.Objects;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 public class RShortcut implements RAssignedRoot {
@@ -67,5 +69,10 @@ public class RShortcut implements RAssignedRoot {
 		RShortcut other = (RShortcut) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(expression, other.expression)
 				&& Objects.equals(name, other.name);
+	}
+
+	@Override
+	public EObject getEObject() {
+		return expression.eContainer();
 	}
 }

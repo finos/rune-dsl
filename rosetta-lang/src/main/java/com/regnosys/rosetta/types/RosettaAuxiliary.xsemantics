@@ -5,7 +5,6 @@ validatorExtends AbstractDeclarativeValidator
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaPackage
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
@@ -19,9 +18,6 @@ import java.util.List
 
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import com.regnosys.rosetta.types.builtin.RNumberType
-import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
@@ -53,7 +49,6 @@ auxiliary {
 	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
-	allAttributes(RDataType d) : Iterable<Attribute>
 	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
 	mayBeEmpty(RDataType d)
 	
@@ -95,14 +90,6 @@ auxiliary listJoin(RListType t1, RListType t2) {
 	val sup = join(t1.itemType, t2.itemType);
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
-auxiliary allAttributes(RDataType t) {
-	val s = t.superType
-	if (s !== null) {
-		return allAttributes(s) + t.^data.attributes
-	} else {
-		return t.^data.attributes
-	}
-}
 auxiliary allEnumValues(RosettaEnumeration e) {
 	if (e.superType === null) {
 		return e.enumValues;
@@ -112,7 +99,7 @@ auxiliary allEnumValues(RosettaEnumeration e) {
 }
 auxiliary mayBeEmpty(RDataType t) {
 	t.allAttributes.forall[
-		card.inf === 0
+		cardinality.minBound === 0
 	]
 }
 
@@ -155,9 +142,9 @@ auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, R
 auxiliary allFeatures(RType t, ResourceSet resourceSet) {
 	switch t {
 		RDataType:
-			t.allAttributes
+			t.allAttributes.map[EObject]
 		REnumType:
-			t.enumeration.allEnumValues
+			t.EObject.allEnumValues
 		RRecordType: {
 			if (resourceSet !== null) {
 				builtinTypes.toRosettaType(t, RosettaRecordType, resourceSet).features

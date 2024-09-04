@@ -52,11 +52,11 @@ class ValidatorGenerator {
 	private def StringConcatenationClient classBody(RDataType type, JavaScope scope, RootPackage root) {
 
 		val modelPojo = type.toJavaReferenceType
-		val data = type.data
+		val data = type.EObject
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				«FOR con : data.conditions»
-				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(data).toConditionJavaType, Object)» «con.conditionName(data).toFirstLower» ;
+				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(type).toConditionJavaType, Object)» «con.conditionName(type).toFirstLower» ;
 										
 				«ENDFOR»
 				
@@ -74,7 +74,7 @@ class ValidatorGenerator {
 				 	
 				 	«List»<«ConditionValidation»> conditionValidations = new «ArrayList»<>();
 				 	«FOR dataCondition : data.conditions»
-				 		conditionValidations.add(validate«dataCondition.conditionName(data).toFirstUpper»(o, path));
+				 		conditionValidations.add(validate«dataCondition.conditionName(type).toFirstUpper»(o, path));
 				 	«ENDFOR»
 
 				 	return new «TypeValidation»(modelSymbolId, attributeValidations, conditionValidations);
@@ -103,10 +103,10 @@ class ValidatorGenerator {
 				«ENDFOR»
 				
 				«FOR dataCondition : data.conditions»
-				public «ConditionValidation» validate«dataCondition.conditionName(data).toFirstUpper»(«modelPojo» data, «RosettaPath» path) {
-					«ElementValidationResult» result = «dataCondition.conditionName(data).toFirstLower».validate(path, data);
+				public «ConditionValidation» validate«dataCondition.conditionName(type).toFirstUpper»(«modelPojo» data, «RosettaPath» path) {
+					«ElementValidationResult» result = «dataCondition.conditionName(type).toFirstLower».validate(path, data);
 					
-					return new «ConditionValidation»(«dataCondition.conditionName(data).toFirstLower».toString(), result);
+					return new «ConditionValidation»(«dataCondition.conditionName(type).toFirstLower».toString(), result);
 				}
 				«ENDFOR»
 			}

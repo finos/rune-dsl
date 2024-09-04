@@ -17,16 +17,19 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
+import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
@@ -36,13 +39,12 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.rosetta.model.lib.ModelReportId;
-import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.DottedPath;
+import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RObjectFactory {
 	@Inject
@@ -51,8 +53,6 @@ public class RObjectFactory {
 	private CardinalityProvider cardinalityProvider;
 	@Inject
 	private TypeSystem typeSystem;
-	@Inject
-	private RosettaExtensions rosettaExtensions;
 	@Inject
 	private ModelIdProvider modelIdProvider;
 	@Inject
@@ -71,16 +71,19 @@ public class RObjectFactory {
 				function.getAnnotations());
 	}
 	
+	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
+		return new RAttribute("output", null, Collections.emptyList(), type, List.of(), isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
+	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
 		RType outputRType = typeProvider.getRType(rule.getExpression());
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
-		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), outputIsMulti);
+		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
 				modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
-				List.of(new RAttribute("input", null, inputRType, List.of(), false)),
+				List.of(createArtificialAttribute("input", inputRType, false)),
 				outputAttribute,
 				RFunctionOrigin.RULE,
 				List.of(),
@@ -98,8 +101,8 @@ public class RObjectFactory {
 				.map(c -> c.getName())
 				.collect(Collectors.joining(" "));
 		
-		RType outputRtype = new RDataType(report.getReportType());
-		RAttribute outputAttribute = new RAttribute("output", null, outputRtype, List.of(), false);
+		RDataType outputRtype = buildRDataType(report.getReportType());
+		RAttribute outputAttribute = createArtificialAttribute("output", outputRtype, false);
 		
 		Attribute inputAttribute = SimpleFactory.eINSTANCE.createAttribute();
 		inputAttribute.setName("input");
@@ -109,12 +112,12 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
-		Map<Attribute, RosettaRule> attributeToRuleMap = externalAnnotationUtil.getAllReportingRules(report)
+		Map<RAttribute, RosettaRule> attributeToRuleMap = externalAnnotationUtil.getAllReportingRules(report)
 			.entrySet()
 			.stream()
 			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));
 		
-		List<ROperation> operations = generateReportOperations(report.getReportType(), attributeToRuleMap, inputAttribute, List.of(outputAttribute));
+		List<ROperation> operations = generateReportOperations(outputRtype, attributeToRuleMap, inputAttribute, List.of(outputAttribute));
 		return new RFunction(
 			modelIdProvider.getReportId(report),
 			reportDefinition,
@@ -129,20 +132,19 @@ public class RObjectFactory {
 		);
 	}
 	
-	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<Attribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
-		Iterable<Attribute> attributes = rosettaExtensions.getAllAttributes(reportDataType);
+	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<RAttribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
+		Collection<RAttribute> attributes = reportDataType.getAllNonOverridenAttributes();
 		List<ROperation> operations = new ArrayList<>();
 		
-		for (Attribute attribute : attributes) {
-			RAttribute rAttribute = buildRAttribute(attribute);
+		for (RAttribute attribute : attributes) {
 			List<RAttribute> newAssignPath = new ArrayList<>(assignPath);
-			newAssignPath.add(rAttribute);
+			newAssignPath.add(attribute);
 			if (attributeToRuleMap.containsKey(attribute)) {
 				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
 				continue;
 			}
-			if (rAttribute.getRType() instanceof RDataType) {
-				RDataType rData = (RDataType) rAttribute.getRType();
+			if (attribute.getRType() instanceof RDataType) {
+				RDataType rData = (RDataType) attribute.getRType();
 				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
 			}
 		}
@@ -173,9 +175,13 @@ public class RObjectFactory {
 		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
 				.filter(a -> a.getAnnotation().getName().equals("metadata")).map(a -> buildRAttribute(a.getAttribute(), true))
 				.collect(Collectors.toList());
+		PositiveIntegerInterval card = new PositiveIntegerInterval(
+				attribute.getCard().getInf(),
+				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));
+		RosettaRuleReference ruleRef = attribute.getRuleReference();
 
-		return new RAttribute(attribute.getName(), attribute.getDefinition(), rType, metaAnnotations,
-				cardinalityProvider.isSymbolMulti(attribute), isMeta);
+		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rType, metaAnnotations,
+				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
@@ -199,4 +205,10 @@ public class RObjectFactory {
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
 	}
 
+	public RDataType buildRDataType(Data data) {
+		return new RDataType(data, modelIdProvider, this);
+	}
+	public REnumType buildREnumType(RosettaEnumeration enumeration) {
+		return new REnumType(enumeration, modelIdProvider);
+	}
 }

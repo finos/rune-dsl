@@ -32,7 +32,6 @@ import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
@@ -41,8 +40,10 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RListType;
+import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.TypeValidationUtil;
@@ -69,6 +70,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	
 	@Inject
 	private ExternalAnnotationUtil annotationUtil;
+	
+	@Inject
+	private RObjectFactory objectFactory;
 	
 	@Override
 	protected List<EPackage> getEPackages() {
@@ -129,7 +133,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 			}
 		}
 		
-		RType reportTypeInputType = ts.getRulesInputType(ts.dataToType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
+		RType reportTypeInputType = ts.getRulesInputType(objectFactory.buildRDataType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
 		if (reportTypeInputType != builtins.ANY) {
 			if (!ts.isSubtypeOf(reportTypeInputType, inputType)) {
 				if (report.getRuleSource() != null) {
@@ -143,7 +147,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	
 	@Check
 	public void checkReportType(Data data) {
-		RDataType rData = ts.dataToType(data);
+		RDataType rData = objectFactory.buildRDataType(data);
 		RType superType = ts.stripFromTypeAliases(rData.getSuperType());
 		RType current;
 		if (superType != null && superType instanceof RDataType) {
@@ -186,18 +190,17 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	@Check
 	public void checkExternalRuleSource(RosettaExternalRuleSource source) {
 		for (RosettaExternalClass externalClass: source.getExternalClasses()) {
-			RDataType data = ts.dataToType(externalClass.getData());
-			Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(Optional.of(source), data);
+			RDataType data = objectFactory.buildRDataType(externalClass.getData());
+			Map<RAttribute, RosettaRule> ruleReferences = annotationUtil.getAllRuleReferencesForType(Optional.of(source), data);
 			
 			RType current = builtins.ANY;
-			for (Attribute attr: data.getData().getAttributes()) {
+			for (RAttribute attr: data.getOwnAttributes()) {
 				Optional<RosettaExternalRegularAttribute> maybeExtAttr = externalClass.getRegularAttributes().stream()
 						.filter(ext -> ext.getOperator() == ExternalValueOperator.PLUS)
-						.filter(ext -> ext.getAttributeRef().equals(attr))
+						.filter(ext -> ext.getAttributeRef().equals(attr.getEObject()))
 						.findAny();
-				RosettaRuleReference ref = ruleReferences.get(attr);
-				if (ref != null) {
-					RosettaRule rule = ref.getReportingRule();
+				RosettaRule rule = ruleReferences.get(attr);
+				if (rule != null) {
 					RType inputType = ts.typeCallToRType(rule.getInput());
 					RType newCurrent = ts.meet(current, inputType);
 					if (newCurrent.equals(builtins.NOTHING)) {
@@ -209,7 +212,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 						current = newCurrent;
 					}
 				} else {
-					RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
+					RType attrType = ts.stripFromTypeAliases(attr.getRType());
 					if (attrType instanceof RDataType) {
 						RDataType attrData = (RDataType)attrType;
 						RType inputType = ts.getRulesInputType(attrData, Optional.of(source));

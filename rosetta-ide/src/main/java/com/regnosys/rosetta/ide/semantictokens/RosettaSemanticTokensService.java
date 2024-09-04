@@ -37,12 +37,10 @@ import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
-import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -64,7 +62,6 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -285,8 +282,6 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		} else if (symbol instanceof ShortcutDeclaration) {
 			return markAlias(objectToMark, featureToMark, (ShortcutDeclaration)symbol);
 		} else if (symbol instanceof TypeParameter) {
-			return createSemanticToken(objectToMark, featureToMark, PARAMETER);
-		} else if (symbol instanceof TranslationParameter) {
 			return createSemanticToken(objectToMark, featureToMark, PARAMETER);
 		}
 		return null;

@@ -22,7 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 
-public class REnumType extends RAnnotateType {
+public class REnumType extends RAnnotateType implements RObject {
 	private final RosettaEnumeration enumeration;
 	
 	private ModelSymbolId symbolId = null;
@@ -44,7 +44,8 @@ public class REnumType extends RAnnotateType {
 		return this.symbolId;
 	}
 
-	public RosettaEnumeration getEnumeration() {
+	@Override
+	public RosettaEnumeration getEObject() {
 		return this.enumeration;
 	}
 

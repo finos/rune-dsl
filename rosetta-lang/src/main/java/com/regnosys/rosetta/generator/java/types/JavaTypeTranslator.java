@@ -168,8 +168,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = typeId.getName() + function.getName() + "TypeTabulator";
 		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
 	}
-	public JavaClass<?> toDeepPathUtilJavaClass(Data choiceType) {
-		ModelSymbolId typeId = modelIdProvider.getSymbolId(choiceType);
+	public JavaClass<?> toDeepPathUtilJavaClass(RDataType choiceType) {
+		ModelSymbolId typeId = modelIdProvider.getSymbolId(choiceType.getEObject());
 		DottedPath packageName = typeId.getNamespace().child("util");
 		String simpleName = typeId.getName() + "DeepPathUtil";
 		return new GeneratedJavaClass<>(packageName, simpleName, Object.class);
@@ -368,13 +368,13 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	
 	public JavaClass<?> toValidatorClass(RDataType t) {
-		return new GeneratedJavaClass<>(validation(getModelPackage(t.getData())), t.getName() + "Validator", Object.class);
+		return new GeneratedJavaClass<>(validation(getModelPackage(t.getEObject())), t.getName() + "Validator", Object.class);
 	}
 	public JavaClass<?> toTypeFormatValidatorClass(RDataType t) {
-		return new GeneratedJavaClass<>(validation(getModelPackage(t.getData())), t.getName() + "TypeFormatValidator", Object.class);
+		return new GeneratedJavaClass<>(validation(getModelPackage(t.getEObject())), t.getName() + "TypeFormatValidator", Object.class);
 	}
 	public JavaClass<?> toOnlyExistsValidatorClass(RDataType t) {
-		return new GeneratedJavaClass<>(existsValidation(getModelPackage(t.getData())), t.getName() + "OnlyExistsValidator", Object.class);
+		return new GeneratedJavaClass<>(existsValidation(getModelPackage(t.getEObject())), t.getName() + "OnlyExistsValidator", Object.class);
 	}
 	
 	private DottedPath metaField(DottedPath p) {

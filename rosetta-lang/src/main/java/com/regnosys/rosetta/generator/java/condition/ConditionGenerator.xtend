@@ -41,13 +41,13 @@ class ConditionGenerator {
 		
 		val classBody = ele.conditionClassBody(t, topScope, version)
 		val content = buildClass(root.condition, classBody, topScope)
-		fsa.generateFile('''«root.condition.withForwardSlashes»/«ele.conditionName(t.data).toConditionJavaType».java''', content)
+		fsa.generateFile('''«root.condition.withForwardSlashes»/«ele.conditionName(t).toConditionJavaType».java''', content)
 	}
 
 	private def StringConcatenationClient conditionClassBody(Condition condition, RDataType t, JavaScope scope, String version)  {
 		val rosettaClass = condition.eContainer as Data
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, CONDITION__EXPRESSION))
-		val conditionName = condition.conditionName(t.data)
+		val conditionName = condition.conditionName(t)
 		val className = toConditionJavaType(conditionName);
 		val deps = dependencies.javaDependencies(condition.expression)
 		val implicitVarRepr = condition.implicitVarInContext

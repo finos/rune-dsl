@@ -59,6 +59,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.types.RObjectFactory
 
 /**
  * This class contains custom scoping description.
@@ -77,6 +78,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension DeepFeatureCallUtil
+	@Inject extension RObjectFactory
 
 	override getScope(EObject context, EReference reference) {
 		try {
@@ -204,7 +206,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef
 						if (classRef instanceof Data)
-							return Scopes.scopeFor(classRef.allAttributes)
+							return Scopes.scopeFor(classRef.buildRDataType.allAttributes.map[EObject])
 					}
 					return IScope.NULLSCOPE
 				}			
@@ -344,7 +346,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	private def IScope createDeepFeatureScope(RType receiverType) {
 		if (receiverType instanceof RDataType) {
-			return Scopes.scopeFor(receiverType.findDeepFeatures)
+			return Scopes.scopeFor(receiverType.findDeepFeatures.filter[EObject !== null].map[EObject])
 		}
 		return IScope.NULLSCOPE
 	}

@@ -111,7 +111,7 @@ public class DeepFeatureCallUtil {
 		// 1. The data type has a `one-of` condition.
 		// 2. All attributes have a cardinality of the form `(0..1)`.
 		// 3. Type has at least one attribute.
-		Data data = type.getData();
+		Data data = type.getEObject();
 		if (data.getConditions().stream().anyMatch(cond -> isOneOfItem(cond.getExpression()))) {
 			if (data.getAttributes().stream().allMatch(a -> isSingularOptional(a.getCard()))) {
 				if (!data.getAttributes().isEmpty()) {

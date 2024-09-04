@@ -127,7 +127,6 @@ import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
-import com.regnosys.rosetta.types.RTypeFactory
 import com.regnosys.rosetta.types.RAttribute
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
@@ -152,7 +151,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject RObjectFactory rObjectFactory;
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
-	@Inject extension RTypeFactory
 	@Inject extension RObjectFactory
 	
 	/**
@@ -521,7 +519,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(itemType.name.toFirstLower)
 		if (isDeepFeature) {
-			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((itemType as RDataType).data.toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
+			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((itemType as RDataType).toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
 		} else {
 			'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «lambdaParam».get«attribute.name.toFirstUpper»()'''
 		}
@@ -1041,7 +1039,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = expr.enumeration.enumToType.toJavaType
+		val javaEnum = expr.enumeration.buildREnumType.toJavaType
 		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
 	}
 

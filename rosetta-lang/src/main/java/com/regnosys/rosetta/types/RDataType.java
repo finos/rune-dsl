@@ -30,7 +30,7 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 
-public class RDataType extends RAnnotateType {
+public class RDataType extends RAnnotateType implements RObject {
 	private final Data data;
 	
 	private RDataType superType = null;
@@ -48,7 +48,8 @@ public class RDataType extends RAnnotateType {
 		this.objectFactory = objectFactory;
 	}
 	
-	public Data getData() {
+	@Override
+	public Data getEObject() {
 		return this.data;
 	}
 	

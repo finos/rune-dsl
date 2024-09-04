@@ -63,8 +63,8 @@ class ModelObjectGenerator {
 		val builderScope = interfaceScope.classScope('''«javaType»Builder''')
 		val implScope = interfaceScope.classScope('''«javaType»Impl''')
 		'''
-			«javadoc(t.data, version)»
-			@«RosettaDataType»(value="«t.name»", builder=«javaType.toBuilderImplType».class, version="«EcoreUtil2.getContainerOfType(t.data, RosettaModel).version»")
+			«javadoc(t.EObject, version)»
+			@«RosettaDataType»(value="«t.name»", builder=«javaType.toBuilderImplType».class, version="«EcoreUtil2.getContainerOfType(t.EObject, RosettaModel).version»")
 			public interface «javaType» extends «superInterface»«implementsClause(t, interfaces)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
@@ -185,7 +185,7 @@ class ModelObjectGenerator {
 	}
 
 	def boolean globalKeyRecursive(RDataType class1) {
-		if (class1.data.hasKeyedAnnotation) {
+		if (class1.EObject.hasKeyedAnnotation) {
 			return true
 		}
 		val s = class1.superType

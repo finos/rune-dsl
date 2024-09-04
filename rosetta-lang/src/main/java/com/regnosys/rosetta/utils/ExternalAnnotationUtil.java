@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.regnosys.rosetta.RosettaExtensions;
-import com.regnosys.rosetta.generator.object.ExpandedAttribute;
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
@@ -39,26 +37,18 @@ import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
-import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.model.lib.path.RosettaPath;
 
 public class ExternalAnnotationUtil {
-	
 	@Inject
-	private RosettaExtensions rosettaExtensions;
-	@Inject
-	private RosettaTypeProvider typeProvider;
-	@Inject
-	private TypeSystem ts;
+	private RObjectFactory objectFactory;
 	
 	
 	// @Compat. Can be removed once `RosettaSynonymSource` is gone.
@@ -79,7 +69,7 @@ public class ExternalAnnotationUtil {
 	
 	public Optional<RosettaExternalClass> getExternalType(ExternalAnnotationSource source, RDataType type) {
 		for (RosettaExternalClass extT: source.getExternalClasses()) {
-			if (extT.getTypeRef().equals(type.getData())) {
+			if (extT.getTypeRef().equals(type.getEObject())) {
 				return Optional.of(extT);
 			}
 		}
@@ -149,8 +139,8 @@ public class ExternalAnnotationUtil {
 		return result;
 	}
 	
-	public Map<RosettaFeature, RosettaRuleReference> getAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type) {
-		CollectRuleVisitor.Default visitor = new CollectRuleVisitor.Default();
+	public Map<RAttribute, RosettaRule> getAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type) {
+		CollectRuleVisitor.Default visitor = new CollectRuleVisitor.Default(objectFactory);
 		
 		collectAllRuleReferencesForType(maybeSource, type, visitor);
 		
@@ -159,7 +149,7 @@ public class ExternalAnnotationUtil {
 	
 	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type, T visitor) {
 		// collect inline rule reference
-		rosettaExtensions.getAllAttributes(type)
+		type.getAllNonOverridenAttributes()
 			.forEach(attr -> 
 				Optional.ofNullable(attr.getRuleReference()).ifPresent(rule -> visitor.add(attr, rule)));
 		
@@ -184,7 +174,7 @@ public class ExternalAnnotationUtil {
 					visitor.remove(extAttr);
 				} else {
 					if (extAttr.getExternalRuleReference() != null) {
-						visitor.add(extAttr, extAttr.getExternalRuleReference());
+						visitor.add(extAttr, extAttr.getExternalRuleReference().getReportingRule());
 					}
 				}
 			}
@@ -193,30 +183,34 @@ public class ExternalAnnotationUtil {
 	
 	public interface CollectRuleVisitor {
 		
-		void add(RosettaFeature attr, RosettaRuleReference rule);
-		void add(RosettaExternalRegularAttribute extAttr, RosettaRuleReference rule);
+		void add(RAttribute attr, RosettaRule rule);
+		void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule);
 		void remove(RosettaExternalRegularAttribute attr);
 		
 		public static class Default implements CollectRuleVisitor {
+			private final RObjectFactory objectFactory;
+			public Default(RObjectFactory objectFactory) {
+				this.objectFactory = objectFactory;
+			}
 
-			private final Map<RosettaFeature, RosettaRuleReference> map = new HashMap<>();
+			private final Map<RAttribute, RosettaRule> map = new HashMap<>();
 			
 			@Override
-			public void add(RosettaFeature attr, RosettaRuleReference rule) {
+			public void add(RAttribute attr, RosettaRule rule) {
 				map.put(attr, rule);
 			}
 			
 			@Override
-			public void add(RosettaExternalRegularAttribute extAttr, RosettaRuleReference rule) {
-				map.put(extAttr.getAttributeRef(), rule);
+			public void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule) {
+				map.put(objectFactory.buildRAttribute((Attribute) extAttr.getAttributeRef()), rule);
 			}
 
 			@Override
 			public void remove(RosettaExternalRegularAttribute extAttr) {
-				map.remove(extAttr.getAttributeRef());
+				map.remove(objectFactory.buildRAttribute((Attribute) extAttr.getAttributeRef()));
 			}
 			
-			public Map<RosettaFeature, RosettaRuleReference> getMap() {
+			public Map<RAttribute, RosettaRule> getMap() {
 				return map;
 			}
 		}
@@ -226,7 +220,7 @@ public class ExternalAnnotationUtil {
 	 * Get all reporting rules for a report
 	 */
 	public Map<PathAttribute, RosettaRule> getAllReportingRules(RosettaReport report) {
-		return getAllReportingRules(ts.dataToType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
+		return getAllReportingRules(objectFactory.buildRDataType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
 	}
 	
 	public Map<PathAttribute, RosettaRule> getAllReportingRules(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
@@ -240,31 +234,27 @@ public class ExternalAnnotationUtil {
 	 * Recursively collects all reporting rules for all attributes
 	 */
 	private void collectReportingRules(RDataType dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<RDataType> collectedTypes) {
-		Map<RosettaFeature, RosettaRuleReference> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
+		Map<RAttribute, RosettaRule> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
 		
-		rosettaExtensions.allNonOverridesAttributes(dataType).forEach(attr -> {
-			RType attrType = typeProvider.getRTypeOfSymbol(attr);
-			ExpandedAttribute attrEx = RosettaAttributeExtensions.toExpandedAttribute(attr);
-			RosettaRuleReference rule = attrRules.get(attr);
+		dataType.getAllNonOverridenAttributes().forEach(attr -> {
+			RType attrType = attr.getRType();
+			RosettaRule rule = attrRules.get(attr);
 			
-			if (attrEx.builtInType() || attrEx.isEnum()) {
+			if (!(attrType instanceof RDataType)) {
 				if (rule != null) {
-					visitor.put(new PathAttribute(path, attr), rule.getReportingRule());
+					visitor.put(new PathAttribute(path, attr), rule);
 				}
-			} else if (attrType instanceof RDataType) {
+			} else {
 				if (rule != null) {
-					visitor.put(new PathAttribute(path, attr), rule.getReportingRule());
+					visitor.put(new PathAttribute(path, attr), rule);
 				}
 				RDataType attrDataType = (RDataType) attrType;
 				if (collectedTypes.add(attrDataType)) {
-					RosettaPath subPath = attrEx.isMultiple() ?
+					RosettaPath subPath = attr.isMulti() ?
 						path.newSubPath(attr.getName(), 0) :
 						path.newSubPath(attr.getName());
 					collectReportingRules(attrDataType, subPath, ruleSource, visitor, collectedTypes);
 				}
-			} 
-			else {
-				throw new IllegalArgumentException("Did not collect reporting rules from type " + attrType);
 			}
 		});	
 	}

@@ -37,7 +37,7 @@ import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.google.inject.ImplementedBy
 import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.types.RTypeFactory
+import com.regnosys.rosetta.types.RObjectFactory
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -60,7 +60,7 @@ class TabulatorGenerator {
 			needsTabulator(type, newHashSet)
 		}
 		private def boolean needsTabulator(RDataType type, Set<Data> visited) {
-			if (visited.add(type.data)) {
+			if (visited.add(type.EObject)) {
 				type.allAttributes.exists[isTabulated(visited)]
 			} else {
 				false
@@ -79,7 +79,7 @@ class TabulatorGenerator {
 		}
 		
 		override toTabulatorJavaClass(RDataType type) {
-			type.data.toTabulatorJavaClass(ruleSource)
+			type.EObject.toTabulatorJavaClass(ruleSource)
 		}
 		
 		override getRule(RAttribute attr) {
@@ -106,7 +106,7 @@ class TabulatorGenerator {
 		}
 		
 		override toTabulatorJavaClass(RDataType type) {
-			type.data.toProjectionTabulatorJavaClass(projection)
+			type.EObject.toProjectionTabulatorJavaClass(projection)
 		}
 		
 		override getRule(RAttribute attr) {
@@ -133,7 +133,7 @@ class TabulatorGenerator {
 		}
 		
 		override toTabulatorJavaClass(RDataType type) {
-			type.data.toTabulatorJavaClass(function)
+			type.EObject.toTabulatorJavaClass(function)
 		}
 		
 		override getRule(RAttribute attr) {
@@ -150,13 +150,13 @@ class TabulatorGenerator {
 	@Inject extension RosettaExtensions extensions
 	@Inject extension ExternalAnnotationUtil
 	@Inject extension ModelIdProvider
-	@Inject extension RTypeFactory
+	@Inject extension RObjectFactory
 
 	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
 		val topScope = new JavaScope(tabulatorClass.packageName)
 		
-		val inputType = report.reportType.dataToType
+		val inputType = report.reportType.buildRDataType
 		val context = getContext(inputType, Optional.ofNullable(report.ruleSource))
 		val classBody = inputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
@@ -166,7 +166,7 @@ class TabulatorGenerator {
 	def generate(IFileSystemAccess2 fsa, RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val context = getContext(type, ruleSource)
 		if (context.needsTabulator(type)) {
-			val tabulatorClass = type.data.toTabulatorJavaClass(ruleSource)
+			val tabulatorClass = type.EObject.toTabulatorJavaClass(ruleSource)
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
 			val classBody = type.tabulatorClassBody(context, topScope, tabulatorClass)
@@ -184,7 +184,7 @@ class TabulatorGenerator {
 			if (projectionType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
-				val inputType = projectionType.data.dataToType
+				val inputType = projectionType
 				val classBody = inputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
@@ -194,7 +194,7 @@ class TabulatorGenerator {
 		}
 	}
 	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, RDataType type, TabulatorContext context, Set<Data> visited) {
-		if (visited.add(type.data)) {
+		if (visited.add(type.EObject)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			

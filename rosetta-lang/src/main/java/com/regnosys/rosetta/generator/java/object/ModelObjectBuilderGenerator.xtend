@@ -28,11 +28,11 @@ class ModelObjectBuilderGenerator {
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
-		t.expandedAttributesPlus.forEach[
+		t.allAttributes.forEach[
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
 		'''
-		class «javaType»BuilderImpl«IF superInterface != ROSETTA_MODEL_OBJECT» extends «superInterface.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.data)» {
+		class «javaType»BuilderImpl«IF superInterface != ROSETTA_MODEL_OBJECT» extends «superInterface.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.EObject)» {
 		
 			«FOR attribute : t.ownAttributes»
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMulti» = new «ArrayList»<>()«ENDIF»;
