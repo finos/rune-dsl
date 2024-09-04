@@ -217,10 +217,12 @@ class TabulatorGenerator {
 	}
 
 	private def void generateTabulator(Data type, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass, IFileSystemAccess2 fsa) {
-		val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
-		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
-		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
-
+		if (!tabulatorClass.equals(context.toTabulatorJavaClass(type))) {
+			val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
+			val content = buildClass(tabulatorClass.packageName, classBody, topScope)
+			fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
+		}
+		
 		recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
 	}
 

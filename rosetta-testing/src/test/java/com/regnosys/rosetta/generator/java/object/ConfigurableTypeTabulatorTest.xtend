@@ -29,25 +29,37 @@ class ConfigurableTypeTabulatorTest {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.reports.Tabulator;
+			import com.rosetta.model.lib.reports.Tabulator.Field;
+			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
+			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
 			import com.rosetta.test.model.Foo;
+			import java.util.Arrays;
 			import java.util.List;
-			import javax.inject.Inject;
+			import java.util.Optional;
 			
 			
 			@ImplementedBy(FooTypeTabulator.Impl.class)
 			public interface FooTypeTabulator extends Tabulator<Foo> {
 				public class Impl implements FooTypeTabulator {
-					private final FooTypeTabulator tabulator;
+					private final Field barField;
 					
-					@Inject
-					public Impl(FooTypeTabulator tabulator) {
-						this.tabulator = tabulator;
+					public Impl() {
+						this.barField = new FieldImpl(
+							"bar",
+							false,
+							Optional.empty(),
+							Optional.empty(),
+							Arrays.asList()
+						);
 					}
 					
 					@Override
 					public List<FieldValue> tabulate(Foo input) {
-						return tabulator.tabulate(input);
+						FieldValue bar = new FieldValueImpl(barField, Optional.ofNullable(input.getBar()));
+						return Arrays.asList(
+							bar
+						);
 					}
 				}
 			}
