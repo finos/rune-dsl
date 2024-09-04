@@ -4,6 +4,9 @@ import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaReport
+import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
@@ -15,28 +18,25 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.rosetta.model.lib.path.RosettaPath
 import java.util.Collection
 import java.util.List
 import java.util.Map
+import java.util.Optional
 import java.util.Set
 import javax.inject.Inject
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.ResourceSet
 
 import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
-import com.regnosys.rosetta.types.builtin.RRecordType
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import org.eclipse.emf.ecore.resource.ResourceSet
-import com.regnosys.rosetta.rosetta.RosettaRecordType
-import java.util.Optional
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.rosetta.RosettaReport
-import com.regnosys.rosetta.rosetta.RosettaRule
 
 class RosettaExtensions {
 	
@@ -253,14 +253,6 @@ class RosettaExtensions {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
-	}
-		
-	def getAllReportedTypes(Data type) {
-		val types = newHashSet
-		val path = RosettaPath.valueOf(type.name)
-		types.add(type)
-		type.collectReportingRules(path, Optional.empty, newHashMap, types)
-		types
 	}
 	
 	/**
