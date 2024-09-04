@@ -877,8 +877,7 @@ class TabulatorTest {
 			    b1 string (1..1)
 	'''
 		val code = model.generateCodeForModel(Model3RosettaConfigProvider)
-		println(code.get("model3.tabulator.RootTypeTabulator"))
-		return #[code].compileToClassesForModel(Model3RosettaConfigProvider)
+		#[code].compileToClassesForModel(Model3RosettaConfigProvider)
 	}
 	
 	@Test
