@@ -142,7 +142,7 @@ auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, R
 auxiliary allFeatures(RType t, ResourceSet resourceSet) {
 	switch t {
 		RDataType:
-			t.allAttributes.map[EObject]
+			t.allNonOverridenAttributes.map[EObject]
 		REnumType:
 			t.EObject.allEnumValues
 		RRecordType: {

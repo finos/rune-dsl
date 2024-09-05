@@ -206,7 +206,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef
 						if (classRef instanceof Data)
-							return Scopes.scopeFor(classRef.buildRDataType.allAttributes.map[EObject])
+							return Scopes.scopeFor(classRef.buildRDataType.allNonOverridenAttributes.map[EObject])
 					}
 					return IScope.NULLSCOPE
 				}			

@@ -177,7 +177,7 @@ class ValidatorsGenerator {
 	'''
 
 	private def StringConcatenationClient checkCardinality(RAttribute attr) {
-		if (attr.cardinality.minBound === 0 && attr.cardinality.isUnbounded) {
+		if (attr.cardinality.minBound === 0 && attr.cardinality.unboundedRight) {
 			null
 		} else {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */

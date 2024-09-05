@@ -114,7 +114,7 @@ class ValidatorGenerator {
 		
 	}
 	private def StringConcatenationClient checkCardinality(RAttribute attr) {
-		if (attr.cardinality.minBound === 0 && attr.cardinality.unbounded) {
+		if (attr.cardinality.minBound === 0 && attr.cardinality.unboundedRight) {
 			null
 		} else {
 			if (attr.isMulti) {

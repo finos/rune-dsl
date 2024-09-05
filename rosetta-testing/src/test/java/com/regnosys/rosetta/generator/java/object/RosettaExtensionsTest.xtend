@@ -32,9 +32,9 @@ class RosettaExtensionsTest {
 			type Bar extends Baz:
 			type Baz:
 		'''.parse.elements.filter(Data).map[buildRDataType]
-		assertEquals(classes.toSet, classes.head.allSuperTypes)
-		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes)
-		assertEquals(#{classes.last}, classes.get(2).allSuperTypes)
+		assertEquals(classes.toSet, classes.head.allSuperTypes.toSet)
+		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes.toSet)
+		assertEquals(#{classes.last}, classes.get(2).allSuperTypes.toSet)
 	}
 	
 	@Test
@@ -46,9 +46,9 @@ class RosettaExtensionsTest {
 			type Bar extends Baz:
 			type Baz extends Foo:
 		'''.parse.elements.filter(Data).map[buildRDataType]
-		assertEquals(classes.toSet, classes.head.allSuperTypes)
-		assertEquals(classes.toSet, classes.get(1).allSuperTypes)
-		assertEquals(classes.toSet, classes.get(2).allSuperTypes)
+		assertEquals(classes.toSet, classes.head.allSuperTypes.toSet)
+		assertEquals(classes.toSet, classes.get(1).allSuperTypes.toSet)
+		assertEquals(classes.toSet, classes.get(2).allSuperTypes.toSet)
 	}
 	
 	@Test 

@@ -128,6 +128,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.types.RAttribute
+import java.util.Collection
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -472,7 +473,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		)
 	}
 
-	private def buildConstraint(RosettaExpression arg, List<RAttribute> usedAttributes,
+	private def buildConstraint(RosettaExpression arg, Collection<RAttribute> usedAttributes,
 		Necessity validationType, Context context) {
 		val argItemType = typeProvider.getRType(arg).toJavaReferenceType
 		arg.javaCode(MAPPER.wrapExtends(argItemType), context.scope)
@@ -901,7 +902,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseOneOfOperation(OneOfOperation expr, Context context) {
 		val type = typeProvider.getRType(expr.argument) as RDataType
-		buildConstraint(expr.argument, type.allAttributes, Necessity.REQUIRED, context)
+		buildConstraint(expr.argument, type.allNonOverridenAttributes, Necessity.REQUIRED, context)
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {

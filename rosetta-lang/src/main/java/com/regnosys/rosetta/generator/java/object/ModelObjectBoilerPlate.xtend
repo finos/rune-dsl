@@ -13,7 +13,6 @@ import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
 import java.util.Collection
-import java.util.List
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
@@ -67,12 +66,12 @@ class ModelObjectBoilerPlate {
 //		else attribute.toMetaOrRegularJavaType;
 //	}
 
-	def StringConcatenationClient boilerPlate(RDataType c, JavaScope scope) {
-		val attributes = c.ownAttributes
+	def StringConcatenationClient boilerPlate(RDataType t, JavaScope scope) {
+		val attributes = t.ownAttributes + t.additionalAttributes
 		'''
-			«c.contributeEquals(attributes, scope)»
-			«c.contributeHashCode(attributes, scope)»
-			«c.contributeToString(identity, scope)»
+			«t.contributeEquals(attributes, scope)»
+			«t.contributeHashCode(attributes, scope)»
+			«t.contributeToString(identity, scope)»
 		'''
 	}
 
@@ -91,7 +90,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeHashCode(RDataType c, List<RAttribute> attributes, JavaScope scope) {
+	private def StringConcatenationClient contributeHashCode(RDataType c, Iterable<RAttribute> attributes, JavaScope scope) {
 		val methodScope = scope.methodScope("hashCode")
 		'''
 		@Override
@@ -120,7 +119,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeEquals(RDataType c, List<RAttribute> attributes, JavaScope scope) {
+	private def StringConcatenationClient contributeEquals(RDataType c, Iterable<RAttribute> attributes, JavaScope scope) {
 		val methodScope = scope.methodScope("equals")
 		'''
 		@Override
@@ -168,10 +167,10 @@ class ModelObjectBoilerPlate {
 		
 	'''
 	
-	def StringConcatenationClient builderProcessMethod(RDataType c) '''
+	def StringConcatenationClient builderProcessMethod(RDataType t) '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
-			«FOR a : c.allNonOverridenAttributes»
+			«FOR a : t.allNonOverridenAttributes + t.additionalAttributes»
 				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»

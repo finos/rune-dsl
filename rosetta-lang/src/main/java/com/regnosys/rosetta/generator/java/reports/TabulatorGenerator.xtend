@@ -141,6 +141,30 @@ class TabulatorGenerator {
 		}
 
 	}
+	@org.eclipse.xtend.lib.annotations.Data
+	private static class DataTabulatorContext implements TabulatorContext {
+		extension JavaTypeTranslator typeTranslator
+
+		override needsTabulator(RDataType type) {
+			true
+		}
+
+		override isTabulated(RAttribute attr) {
+			true
+		}
+
+		override toTabulatorJavaClass(RDataType type) {
+			typeTranslator.toTabulatorJavaClass(type)
+		}
+
+		override getRule(RAttribute attr) {
+			Optional.empty
+		}
+
+		override getFunction() {
+			throw new UnsupportedOperationException("TODO: remove")
+		}
+	}
 	
 	@Inject RosettaTypeProvider typeProvider
 	@Inject RosettaConfiguration rosettaConfiguration
@@ -175,24 +199,39 @@ class TabulatorGenerator {
 		}
 	}
 	
+	def generate(IFileSystemAccess2 fsa, RDataType type) {
+		if (type.isDataTabulatable) {
+			val context = new DataTabulatorContext(typeTranslator)
+
+			val tabulatorClass = type.toTabulatorJavaClass
+			val topScope = new JavaScope(tabulatorClass.packageName)
+
+			generateTabulator(type, context, topScope, tabulatorClass, fsa)
+		}
+	}
+	
 	def generate(IFileSystemAccess2 fsa, Function func) {
 		if (func.isFunctionTabulatable) {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
-			
-			val projectionType = typeProvider.getRTypeOfSymbol(func.output)
-			if (projectionType instanceof RDataType) {
+
+			val functionOutputType = typeProvider.getRTypeOfSymbol(func.output)
+			if (functionOutputType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
-				
-				val inputType = projectionType
-				val classBody = inputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
-				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
-				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
-				
-				recursivelyGenerateFunctionTypeTabulators(fsa, inputType, context, newHashSet)
+
+				generateTabulator(functionOutputType, context, topScope, tabulatorClass, fsa)
 			}
 		}
 	}
+	
+	private def void generateTabulator(RDataType type, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass, IFileSystemAccess2 fsa) {
+		val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
+		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
+		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
+
+		recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
+	}
+	
 	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, RDataType type, TabulatorContext context, Set<Data> visited) {
 		if (visited.add(type.EObject)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
@@ -223,6 +262,11 @@ class TabulatorGenerator {
 			val annotations = rosettaConfiguration.generators.tabulators.annotations
 			annotations.findFirst[func.isAnnotatedWith(it)] !== null
 		}
+	}
+	
+	private def boolean isDataTabulatable(RDataType type) {
+		val types = rosettaConfiguration.generators.tabulators.types
+		types.contains(type.symbolId.toString)
 	}
 	
 	private def boolean isAnnotatedWith(Function func, String with) {
@@ -393,7 +437,6 @@ class TabulatorGenerator {
 		val nestedLambdaParam = nestedLambdaScope.createUniqueIdentifier("x")
 		
 		if (rType instanceof RDataType) {
-			rType.toPolymorphicListOrSingleJavaType(attr.isMulti)
 			val nestedTabulator = scope.getIdentifierOrThrow(rType.toNestedTabulatorInstance)
 			'''
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
@@ -416,7 +459,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
-					.collect(«Collectors».toList()));
+					.collect(«Collectors».toList())));
 			«ELSE»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».getValue()));

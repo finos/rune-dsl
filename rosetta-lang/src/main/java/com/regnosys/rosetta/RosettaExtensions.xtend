@@ -28,11 +28,21 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.types.RAttribute
 import javax.inject.Singleton
+import java.util.List
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import com.regnosys.rosetta.utils.PositiveIntegerInterval
+import org.eclipse.xtext.util.SimpleCache
+import com.regnosys.rosetta.generator.object.ExpandedType
+import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory
+import com.regnosys.rosetta.types.RObjectFactory
 
 @Singleton // see `metaFieldsCache`
 class RosettaExtensions {
 	
 	@Inject RBuiltinTypeService builtins
+	@Inject RObjectFactory objectFactory
 	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
@@ -44,7 +54,7 @@ class RosettaExtensions {
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
 			RDataType:
-				t.allAttributes.map[EObject]
+				t.allNonOverridenAttributes.map[EObject]
 			REnumType:
 				t.EObject.allEnumValues
 			RRecordType: {
@@ -283,40 +293,38 @@ class RosettaExtensions {
 //		return atts
 //	}
 //	
-//	private def List<ExpandedAttribute> additionalAttributes(RDataType t) {
-//		val res = newArrayList
-//		if(hasKeyedAnnotation(t.EObject)){
-//			res.add(new ExpandedAttribute(
-//				'meta',
-//				t.name,
-//				provideMetaFieldsType(t),
-//				null,
-//				false,
-//				0,
-//				1,
-//				false,
-//				emptyList,
-//				"",
-//				emptyList,
-//				false,
-//				emptyList
-//			))
-//		}
-//		return res
-//	}
-//	
-//	String METAFIELDS_CLASS_NAME = 'MetaFields'
-//	String META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
-//	
-//	SimpleCache<RDataType, ExpandedType> metaFieldsCache = new SimpleCache[RDataType t|
-//		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
-//		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
-//		val name = if (hasTemplateAnnotation(t.EObject)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
-//		return new ExpandedType(rosModel, name, true, false, false)
-//	]
-//	private def ExpandedType provideMetaFieldsType(RDataType t) {
-//		metaFieldsCache.get(t)
-//	}
+	def List<RAttribute> additionalAttributes(RDataType t) {
+		val res = newArrayList
+		if(hasKeyedAnnotation(t.EObject)){
+			res.add(new RAttribute(
+				'meta',
+				null,
+				emptyList,
+				provideMetaFieldsType(t),
+				emptyList,
+				PositiveIntegerInterval.bounded(0, 1),
+				null,
+				null
+			))
+		}
+		return res
+	}
+	
+	String METAFIELDS_CLASS_NAME = 'MetaFields'
+	String META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
+	
+	SimpleCache<RDataType, RDataType> metaFieldsCache = new SimpleCache[RDataType t|
+		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
+		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE + ".metafields"
+		val name = if (hasTemplateAnnotation(t.EObject)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
+		val data = SimpleFactory.eINSTANCE.createData
+		data.model = rosModel
+		data.name = name
+		return objectFactory.buildRDataType(data)
+	]
+	private def RType provideMetaFieldsType(RDataType t) {
+		metaFieldsCache.get(t)
+	}
 //	
 //	def List<ExpandedAttribute> getExpandedAttributes(RosettaEnumeration rosettaEnum) {
 //		rosettaEnum.enumValues.map[expandedEnumAttribute]

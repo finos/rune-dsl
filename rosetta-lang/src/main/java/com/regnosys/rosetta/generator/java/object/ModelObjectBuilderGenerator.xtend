@@ -28,20 +28,22 @@ class ModelObjectBuilderGenerator {
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
-		t.allAttributes.forEach[
+		val attrs = t.ownAttributes + t.additionalAttributes
+		val allAttrs = t.allNonOverridenAttributes + t.additionalAttributes
+		allAttrs.forEach[
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
 		'''
 		class «javaType»BuilderImpl«IF superInterface != ROSETTA_MODEL_OBJECT» extends «superInterface.toBuilderImplType» «ENDIF» implements «javaType.toBuilderType»«implementsClauseBuilder(t.EObject)» {
 		
-			«FOR attribute : t.ownAttributes»
+			«FOR attribute : attrs»
 				protected «attribute.toBuilderType» «builderScope.getIdentifierOrThrow(attribute)»«IF attribute.isMulti» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
 		
 			public «javaType»BuilderImpl() {
 			}
 		
-			«t.ownAttributes.builderGetters(builderScope)»
+			«attrs.builderGetters(builderScope)»
 			«t.setters(builderScope)»
 			
 			@Override
@@ -58,7 +60,7 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «javaType.toBuilderType» prune() {
 				«IF superInterface != ROSETTA_MODEL_OBJECT»super.prune();«ENDIF»
-				«FOR attribute : t.ownAttributes»
+				«FOR attribute : attrs»
 					«IF !attribute.isMulti && (attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty)»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
 					«ELSEIF attribute.isMulti && attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
@@ -68,9 +70,9 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«t.ownAttributes.hasData(superInterface != ROSETTA_MODEL_OBJECT)»
+			«attrs.hasData(superInterface != ROSETTA_MODEL_OBJECT)»
 		
-			«t.ownAttributes.merge(t, superInterface != ROSETTA_MODEL_OBJECT)»
+			«attrs.merge(t, superInterface != ROSETTA_MODEL_OBJECT)»
 		
 			«t.builderBoilerPlate(builderScope)»
 		}
@@ -159,15 +161,15 @@ class ModelObjectBuilderGenerator {
 	'''
 	
 	
-	private def StringConcatenationClient setters(RDataType thisClass, JavaScope scope)
+	private def StringConcatenationClient setters(RDataType t, JavaScope scope)
 		'''
-		«FOR attribute : thisClass.allAttributes»
-			«doSetter(thisClass, attribute, scope)»
+		«FOR attribute : t.allNonOverridenAttributes + t.additionalAttributes»
+			«doSetter(t, attribute, scope)»
 		«ENDFOR»
 	'''
 	
-	private def StringConcatenationClient doSetter(RDataType thisClass, RAttribute attribute, JavaScope scope) {
-		val thisName = thisClass.toJavaType.toBuilderType
+	private def StringConcatenationClient doSetter(RDataType t, RAttribute attribute, JavaScope scope) {
+		val thisName = t.toJavaType.toBuilderType
 		'''
 		«IF attribute.isMulti»
 			@Override
