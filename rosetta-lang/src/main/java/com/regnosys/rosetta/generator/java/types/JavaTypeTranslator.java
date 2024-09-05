@@ -21,7 +21,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +28,6 @@ import javax.inject.Inject;
 
 import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
-import com.regnosys.rosetta.generator.object.ExpandedAttribute;
-import com.regnosys.rosetta.generator.object.ExpandedType;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
@@ -75,11 +72,9 @@ import com.rosetta.util.types.generated.GeneratedJavaClass;
 import com.rosetta.util.types.generated.GeneratedJavaClassService;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
-	private RBuiltinTypeService builtins;
 	@Inject
 	public JavaTypeTranslator(RBuiltinTypeService builtins) {
 		super(builtins);
-		this.builtins = builtins;
 	}
 	@Inject
 	private RosettaJavaPackages packages;
@@ -188,19 +183,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toItemJavaType(RAttribute attr) {
 		return toJavaReferenceType(attr.getRType());
 	}
-//	public JavaReferenceType toMetaOrRegularJavaType(ExpandedAttribute expAttr) {
-//		JavaReferenceType attrType;
-//		if (expAttr.getRosettaType() != null) {
-//			attrType = toJavaReferenceType(typeSystem.typeCallToRType(expAttr.getRosettaType()));
-//		} else {
-//			attrType = expandedTypeToJavaType(expAttr.getType());
-//		}
-//		if (!expAttr.hasMetas()) {
-//			return attrType;
-//		}
-//		DottedPath namespace = getModelPackage(expAttr.getRosettaType().getType());
-//		return toMetaJavaType(attrType, expAttr.refIndex() < 0, namespace);
-//	}
 	public JavaClass<?> toMetaItemJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
 		if (attr.getMetaAnnotations().isEmpty()) {
@@ -214,17 +196,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		DottedPath namespace = attr.getRType().getNamespace();
 		return toMetaJavaType(itemType, !attr.hasReferenceOrAddressMetadata(), namespace);
 	}
-//	public JavaReferenceType toMultiMetaOrRegularJavaType(ExpandedAttribute expAttr) {
-//		JavaReferenceType singleType = toMetaOrRegularJavaType(expAttr);
-//		if (expAttr.isMultiple()) {
-//			if (expAttr.isDataType() || expAttr.hasMetas()) {
-//				return toPolymorphicList(singleType);
-//			} else {
-//				return typeUtil.wrap(typeUtil.LIST, singleType);
-//			}
-//		}
-//		return singleType;
-//	}
 	public JavaClass<?> toMetaJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toMetaItemJavaType(attr);
 		if (attr.isMulti()) {
@@ -236,17 +207,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
-//	public JavaReferenceType toMultiRegularJavaType(ExpandedAttribute expAttr) {
-//		JavaReferenceType singleType = toJavaReferenceType(typeSystem.typeCallToRType(expAttr.getRosettaType()));
-//		if (expAttr.isMultiple()) {
-//			if (expAttr.isDataType()) {
-//				return toPolymorphicList(singleType);
-//			} else {
-//				return typeUtil.wrap(typeUtil.LIST, singleType);
-//			}
-//		}
-//		return singleType;
-//	}
 	public JavaClass<?> toJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
 		if (attr.isMulti()) {
@@ -258,27 +218,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
-//	public JavaClass<?> toMetaJavaType(ExpandedAttribute expAttr) {
-//		JavaReferenceType attrType;
-//		if (expAttr.getRosettaType() != null) {
-//			attrType = toJavaReferenceType(typeSystem.typeCallToRType(expAttr.getRosettaType()));
-//		} else {
-//			attrType = expandedTypeToJavaType(expAttr.getType());
-//		}
-//		return toMetaJavaType(attrType, expAttr.refIndex() < 0, expAttr.getType().getNamespace());
-//	}
-//	public JavaReferenceType expandedTypeToJavaType(ExpandedType type) {
-//		if (type.getName().equals(RosettaAttributeExtensions.METAFIELDS_CLASS_NAME) || type.getName().equals(RosettaAttributeExtensions.META_AND_TEMPLATE_FIELDS_CLASS_NAME)) {
-//			return new GeneratedJavaClass<>(packages.basicMetafields(), type.getName(), Object.class);
-//		}
-//		if (type.isMetaType()) {//TODO ExpandedType needs to store the underlying type for meta types if we want them to be anything other than strings
-//			return typeUtil.STRING;
-//		}
-//		if (type.isBuiltInType()) {
-//			return toJavaReferenceType(builtins.getType(type.getName(), Collections.emptyMap()));
-//		}
-//		return new GeneratedJavaClass<>(type.getNamespace(), type.getName(), Object.class);
-//	}
 	private JavaClass<?> toMetaJavaType(JavaReferenceType base, boolean hasMetaFieldAnnotations, DottedPath namespace) {
 		String attributeTypeName = base.getSimpleName();
 		String name;

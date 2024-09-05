@@ -61,10 +61,6 @@ class ModelObjectBoilerPlate {
 			interfaces.add('''«TemplatableBuilder»''')
 		if(interfaces.empty) null else ''', «FOR i : interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
-//	def JavaType toListOrSingleMetaType(ExpandedAttribute attribute) {
-//		if (attribute.isMultiple) attribute.toMetaOrRegularJavaType.toPolymorphicList
-//		else attribute.toMetaOrRegularJavaType;
-//	}
 
 	def StringConcatenationClient boilerPlate(RDataType t, JavaScope scope) {
 		val attributes = t.ownAttributes + t.additionalAttributes

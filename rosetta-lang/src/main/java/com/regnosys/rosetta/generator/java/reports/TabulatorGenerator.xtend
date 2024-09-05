@@ -192,7 +192,7 @@ class TabulatorGenerator {
 		if (context.needsTabulator(type)) {
 			val tabulatorClass = type.EObject.toTabulatorJavaClass(ruleSource)
 			val topScope = new JavaScope(tabulatorClass.packageName)
-			
+
 			val classBody = type.tabulatorClassBody(context, topScope, tabulatorClass)
 			val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 			fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
@@ -209,7 +209,7 @@ class TabulatorGenerator {
 			generateTabulator(type, context, topScope, tabulatorClass, fsa)
 		}
 	}
-	
+
 	def generate(IFileSystemAccess2 fsa, Function func) {
 		if (func.isFunctionTabulatable) {
 			val tabulatorClass = func.toApplicableTabulatorClass
@@ -223,7 +223,7 @@ class TabulatorGenerator {
 			}
 		}
 	}
-	
+
 	private def void generateTabulator(RDataType type, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass, IFileSystemAccess2 fsa) {
 		val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
 		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
@@ -231,7 +231,7 @@ class TabulatorGenerator {
 
 		recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
 	}
-	
+
 	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, RDataType type, TabulatorContext context, Set<Data> visited) {
 		if (visited.add(type.EObject)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
@@ -268,7 +268,7 @@ class TabulatorGenerator {
 		val types = rosettaConfiguration.generators.tabulators.types
 		types.contains(type.symbolId.toString)
 	}
-	
+
 	private def boolean isAnnotatedWith(Function func, String with) {
 		func.annotations.findFirst[annotation.name == with] !== null
 	}
@@ -354,9 +354,9 @@ class TabulatorGenerator {
 				«ENDFOR»
 				«IF !nestedTabulatorInstances.empty»
 
-					«FOR tabInst : nestedTabulatorInstances»
-						private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-					«ENDFOR»
+				«FOR tabInst : nestedTabulatorInstances»
+					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+				«ENDFOR»
 				«ENDIF»
 
 				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
