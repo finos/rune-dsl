@@ -406,3 +406,15 @@ class MinOperation extends ComparingFunctionalOperation, ListOperation {
 class MaxOperation extends ComparingFunctionalOperation, ListOperation {
 }
 
+
+class SwitchOperation extends RosettaUnaryOperation {
+	contains CaseStatement[] values opposite switchOperation
+	contains RosettaExpression ^default
+}
+
+class CaseStatement {
+	container SwitchOperation switchOperation opposite values
+	contains RosettaExpression condition
+	contains RosettaExpression expression
+}
+

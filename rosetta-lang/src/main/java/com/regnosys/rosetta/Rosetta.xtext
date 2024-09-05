@@ -568,25 +568,25 @@ enum CardinalityModifier:
 RosettaCalcOr returns RosettaExpression:
 	RosettaCalcAnd ( =>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
 	// Without left parameter:
-	| ->({LogicalOperation} operator='or' right=RosettaCalcAnd) (=>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
+	| ({LogicalOperation} operator='or' right=RosettaCalcAnd) (=>({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
 ;
 
 RosettaCalcAnd returns RosettaExpression:
 	RosettaCalcEquality ( =>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*
 	// Without left parameter:
-	| (->({LogicalOperation} operator='and' right=RosettaCalcEquality) (=>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*)
+	| (({LogicalOperation} operator='and' right=RosettaCalcEquality) (=>({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*)
 ;
 
 RosettaCalcEquality returns RosettaExpression:
 	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*
 	// Without left parameter:
-	| (->({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=RosettaCalcComparison) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*)
+	| (({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=RosettaCalcComparison) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*)
 ;
 
 RosettaCalcComparison returns RosettaExpression:
 	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
 	// Without left parameter:
-	| (->({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*)
+	| (({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*)
 ;
 
 RosettaCalcAdditive returns RosettaExpression:
@@ -596,43 +596,50 @@ RosettaCalcAdditive returns RosettaExpression:
 RosettaCalcMultiplicative returns RosettaExpression:
 	RosettaCalcBinary ( =>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*
 	// Without left parameter:
-	| (->({ArithmeticOperation} operator=('*'|'/') right=RosettaCalcBinary) (=>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*)
+	| (({ArithmeticOperation} operator=('*'|'/') right=RosettaCalcBinary) (=>({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*)
 ;
 
 RosettaCalcBinary returns RosettaExpression:
-	ListOperation (=>(
-		{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
-		| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-		| {DefaultOperation.left=current} operator='default' right=ListOperation
-		| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
+	UnaryOperation (=>(
+		{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
+		| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
+		| {DefaultOperation.left=current} operator='default' right=UnaryOperation
+		| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
 	))?
 	| // Without left parameter:
 	(
 		->(
-			{RosettaContainsExpression} operator='contains' right=ListOperation
-			| {RosettaDisjointExpression} operator='disjoint' right=ListOperation
-			| {DefaultOperation} operator='default' right=ListOperation
-			| {JoinOperation} operator='join' (=>right=ListOperation)?
+			{RosettaContainsExpression} operator='contains' right=UnaryOperation
+			| {RosettaDisjointExpression} operator='disjoint' right=UnaryOperation
+			| {DefaultOperation} operator='default' right=UnaryOperation
+			| {JoinOperation} operator='join' (=>right=UnaryOperation)?
 		)
 		(=>(
-			{RosettaContainsExpression.left=current} operator='contains' right=ListOperation
-			| {RosettaDisjointExpression.left=current} operator='disjoint' right=ListOperation
-			| {DefaultOperation.left=current} operator='default' right=ListOperation
-			| {JoinOperation.left=current} operator='join' (=>right=ListOperation)?
+			{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
+			| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
+			| {DefaultOperation.left=current} operator='default' right=UnaryOperation
+			| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
 		))?
 	)
 ;
 
-
 /**
- * List operations
+ * Unary operations
  */
 enum ExistsModifier:
 	  SINGLE='single'
 	| MULTIPLE='multiple'
 ;
 
-ListOperation returns RosettaExpression:
+CaseStatement:
+ 	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
+ ;
+
+ CaseDefaultStatement returns RosettaExpression:
+ 	'default' RosettaCalcExpression
+ ;
+
+UnaryOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
 		=>(
@@ -658,6 +665,7 @@ ListOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -694,6 +702,7 @@ ListOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
+			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -731,6 +740,7 @@ ListOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

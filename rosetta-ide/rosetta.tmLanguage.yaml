@@ -1161,6 +1161,21 @@ repository:
             0: { name: entity.name.type.enum.rosetta }
           patterns:
           - include: '#comment'
+        - name: meta.switch-operation.rosetta
+          begin: '{{wordStart}}switch{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{expressionEndIgnoringComma}}'
+          patterns:
+          - include: '#comment'
+          - begin: '{{wordStart}}then{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.control.conditional.then.rosetta }
+            end: '{{expressionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+          - include: '#expression'
         - name: keyword.operator.word.rosetta
           match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string){{wordEnd}}'
         - name: keyword.operator.rosetta
