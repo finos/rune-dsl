@@ -632,7 +632,7 @@ enum ExistsModifier:
 ;
 
 CaseStatement:
- 	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
+ 	(literalCondition=RosettaLiteral | enumCondition=[RosettaEnumValue|ValidID]) 'then' expression=RosettaCalcExpression
  ;
 
  CaseDefaultStatement returns RosettaExpression:

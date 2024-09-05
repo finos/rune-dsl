@@ -80,6 +80,7 @@ import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -114,6 +115,13 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				}
 			}
 		}
+	}
+	def RType getRTypeOfCaseStatmentCondition(CaseStatement caseStatement) {
+		if (caseStatement.literalCondition !== null) {
+			getRType(caseStatement.literalCondition)
+		} else {
+			getRTypeOfFeature(caseStatement.enumCondition)
+		}		
 	}
 	
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {

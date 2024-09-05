@@ -1190,8 +1190,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRType(expr.argument).toJavaReferenceType), context.scope)
  		val caseStatements = expr.values
  		val defaultExpression = expr.^default
+ 		
 
- 		val conditionType = MAPPER.wrap(join(caseStatements.map[typeProvider.getRType(it.condition)])
+ 		val conditionType = MAPPER.wrap(join(caseStatements.map[typeProvider.getRTypeOfCaseStatmentCondition(it)])
  								.join(typeProvider.getRType(expr.argument)).toJavaReferenceType)
 
  		val returnType = MAPPER.wrap(join(
@@ -1214,8 +1215,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		CaseStatement[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
  		val head = caseStatements.head
  		val tail = caseStatements.tail
+ 		
+ 		val javaStatment = if (head.literalCondition !== null) {
+ 			head.literalCondition.javaCode(conditionType, javaScope).collapseToSingleExpression(javaScope)
+ 		} else {
+ 			val condition = head.enumCondition
+ 			val resultItemType = typeProvider.getRTypeOfFeature(condition).toJavaReferenceType
+ 		   JavaExpression.from('''«resultItemType».«condition.convertValues»''', resultItemType)
+ 		}
 
- 		head.condition.javaCode(conditionType, javaScope).collapseToSingleExpression(javaScope).
+ 		javaStatment.
  			mapExpression [
  				JavaExpression.
  					from('''«runtimeMethod('areEqual')»(«switchArgument», «it», «toCardinalityOperator(CardinalityModifier.ALL, null)»)''',

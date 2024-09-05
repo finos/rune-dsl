@@ -238,8 +238,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
  	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
  		val argumentRType = op.argument.RType
  		for (CaseStatement caseStatement : op.values) {
- 			if (!caseStatement.condition.RType.isSubtypeOf(argumentRType)) {
- 				error('''Mismatched condition type: «argumentRType.notASubtypeMessage(caseStatement.condition.RType)»''', caseStatement.condition, null)
+ 			
+ 			if (!caseStatement.getRTypeOfCaseStatmentCondition.isSubtypeOf(argumentRType)) {
+ 				error('''Mismatched condition type: «argumentRType.notASubtypeMessage(caseStatement.getRTypeOfCaseStatmentCondition)»''', caseStatement.literalCondition ?: caseStatement.enumCondition , null)
  			}
  		}
  	}

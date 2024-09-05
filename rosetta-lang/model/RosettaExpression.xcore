@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
 
 interface RosettaExpression {
@@ -414,7 +415,8 @@ class SwitchOperation extends RosettaUnaryOperation {
 
 class CaseStatement {
 	container SwitchOperation switchOperation opposite values
-	contains RosettaExpression condition
+	contains RosettaLiteral literalCondition
+	refers RosettaEnumValue enumCondition
 	contains RosettaExpression expression
 }
 
