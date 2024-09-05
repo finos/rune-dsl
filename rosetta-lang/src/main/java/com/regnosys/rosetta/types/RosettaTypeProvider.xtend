@@ -79,6 +79,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -120,6 +121,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 
 	private def RType safeRType(RosettaSymbol symbol, Map<EObject, RType> cycleTracker) {
+		if (!extensions.isResolved(symbol)) {
+ 			return NOTHING
+ 		}
 		switch symbol {
 			RosettaFeature: {
 				safeRType(symbol as RosettaFeature, cycleTracker)
@@ -505,5 +509,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RType> context) {
 		ZONED_DATE_TIME
 	}
+	
+	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
+ 		expr.values
+ 		.map[it.expression.RType]
+ 		.join
+ 	}
 	
 }

@@ -30,7 +30,84 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
-	
+
+	@Test
+ 	def void testDataTypesAreInvalidSwitchInputs() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			type Foo:
+ 				fooField string (1..1)
+ 			type SomeType:
+ 				fieldA string (1..1)
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inFoo Foo (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inFoo switch 
+ 					inFoo then "aValue"
+ 		'''
+
+ 		model.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")
+ 	}
+
+ 	@Test
+ 	def void testValidSwitchSyntaxWithDefault() {
+ 		val context ='''
+ 				enum SomeEnum:
+ 					A
+ 					B
+ 					C
+ 					D
+ 		'''.parseRosettaWithNoIssues
+
+ 		val expression = '''
+ 			inEnum switch 
+ 				SomeEnum -> A then "aValue",
+ 				SomeEnum -> B then "bValue",
+ 				SomeEnum -> C then "cValue",
+ 				default "defaultValue"
+ 		'''
+
+ 		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+ 		.assertNoIssues
+ 	}
+
+ 	@Test
+ 	def void testValidSwitchSyntaxOnSet() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 				
+ 			type SomeType:
+ 				fieldA string (1..1)
+ 				
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					SomeEnum -> A then "aValue",
+ 					SomeEnum -> B then "bValue",
+ 					SomeEnum -> C then "cValue",
+ 					SomeEnum -> D then "dValue"
+ 		'''
+
+ 		model.parseRosettaWithNoIssues
+ 	}
+ 		
 	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''

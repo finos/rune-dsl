@@ -41,7 +41,130 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
-	
+
+	@Test
+ 	def void switchOperationWithNoMatchesReturnsDefaultWithImplicitEnums() {
+ 		val code = '''			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 					
+ 				output:
+ 					result SomeEnum (1..1)
+ 					
+ 				alias inString: "noMatch"
+ 				
+ 			
+ 				set result: inString switch 
+ 					"aCondition" then SomeEnum -> A,
+ 					"bCondition" then SomeEnum -> B,
+ 					"cCondition" then SomeEnum -> C,
+ 					default SomeEnum -> D
+ 		'''.generateCode
+
+ 		 val classes = code.compileToClasses
+
+          val someFunc = classes.createFunc("SomeFunc")
+          val result = someFunc.invokeFunc(Enum)
+ 		 assertEquals("D", result.toString)
+ 	}
+
+ 	@Test
+ 	def void switchOperationWithNoMatchesReturnsDefault() {
+ 		val code = '''			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 					
+ 				output:
+ 					result SomeEnum (1..1)
+ 					
+ 				alias inString: "noMatch"
+ 				
+ 			
+ 				set result: inString switch 
+ 					"aCondition" then SomeEnum -> A,
+ 					"bCondition" then SomeEnum -> B,
+ 					"cCondition" then SomeEnum -> C,
+ 					default SomeEnum -> D
+ 		'''.generateCode
+
+ 		 val classes = code.compileToClasses
+
+          val someFunc = classes.createFunc("SomeFunc")
+          val result = someFunc.invokeFunc(Enum)
+ 		 assertEquals("D", result.toString)
+ 	}
+
+ 	@Test
+ 	def void switchOperationMatchingOnString() {
+ 		val code = '''			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 					
+ 				output:
+ 					result SomeEnum (1..1)
+ 					
+ 				alias inString: "bCondition"
+ 				
+ 			
+ 				set result: inString switch 
+ 					"aCondition" then SomeEnum -> A,
+ 					"bCondition" then SomeEnum -> B,
+ 					"cCondition" then SomeEnum -> C,
+ 					"dCondition" then SomeEnum -> D
+ 		'''.generateCode
+
+ 		 val classes = code.compileToClasses
+
+          val someFunc = classes.createFunc("SomeFunc")
+          val result = someFunc.invokeFunc(Enum)
+ 		 assertEquals("B", result.toString)
+ 	}
+
+ 	@Test
+ 	def void switchOperationMatchingOnEnum() {
+ 		val code = '''			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 				
+ 			func SomeFunc:
+ 					
+ 				output:
+ 					result string (1..1)
+ 					
+ 				alias inEnum: SomeEnum -> B
+ 				
+ 			
+ 				set result: inEnum switch 
+ 					SomeEnum -> A then "aValue",
+ 					SomeEnum -> B then "bValue",
+ 					SomeEnum -> C then "cValue",
+ 					SomeEnum -> D then "dValue"
+ 		'''.generateCode
+
+ 		 val classes = code.compileToClasses
+
+          val someFunc = classes.createFunc("SomeFunc")
+ 		 assertEquals("bValue", someFunc.invokeFunc(String))
+ 	}
+ 		
 	@Test
 	def void onlyExistsOnAbsentParent() {
 		val code = '''

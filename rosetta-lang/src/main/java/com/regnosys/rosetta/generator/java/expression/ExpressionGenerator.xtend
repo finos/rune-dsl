@@ -129,6 +129,8 @@ import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1183,4 +1185,55 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 		conversionOperation(expr, context, '''«ZonedDateTime»::parse''', DateTimeParseException)
 	}
+
+	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
+ 		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRType(expr.argument).toJavaReferenceType), context.scope)
+ 		val caseStatements = expr.values
+ 		val defaultExpression = expr.^default
+
+ 		val conditionType = MAPPER.wrap(join(caseStatements.map[typeProvider.getRType(it.condition)])
+ 								.join(typeProvider.getRType(expr.argument)).toJavaReferenceType)
+
+ 		val returnType = MAPPER.wrap(join(
+ 				caseStatements.map[typeProvider.getRType(it.expression)] + (defaultExpression === null
+ 					? #[]
+ 					: #[
+ 					typeProvider.getRType(defaultExpression)
+ 				]
+ 			)
+ 		).toJavaReferenceType)		
+
+ 		switchArgument
+ 			.declareAsVariable(true, "switchAgument", context.scope)
+ 			.mapExpression[
+ 				createSwitchJavaExpression(conditionType, returnType, it, caseStatements, defaultExpression, context.scope)
+ 			]
+ 	}
+
+ 	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
+ 		CaseStatement[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
+ 		val head = caseStatements.head
+ 		val tail = caseStatements.tail
+
+ 		head.condition.javaCode(conditionType, javaScope).collapseToSingleExpression(javaScope).
+ 			mapExpression [
+ 				JavaExpression.
+ 					from('''«runtimeMethod('areEqual')»(«switchArgument», «it», «toCardinalityOperator(CardinalityModifier.ALL, null)»)''',
+ 						COMPARISON_RESULT)
+ 			]
+ 			.mapExpression[
+ 				typeCoercionService.addCoercions(it, JavaPrimitiveType.BOOLEAN, javaScope)
+ 			]
+ 			.mapExpression [
+ 				new JavaIfThenElseBuilder(
+ 					it,
+ 					head.expression.javaCode(returnType, javaScope),
+ 					tail.isEmpty
+ 						? (defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(
+ 						returnType, javaScope))
+ 						: createSwitchJavaExpression(conditionType, returnType, switchArgument, tail, defaultExpression, javaScope),
+ 					typeUtil
+ 				)
+ 			]
+ 	}	
 }
