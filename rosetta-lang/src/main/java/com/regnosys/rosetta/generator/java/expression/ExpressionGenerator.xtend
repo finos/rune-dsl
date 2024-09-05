@@ -1078,8 +1078,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			if (expr.values.empty) {
 				JavaExpression.from('''
 					«clazz».builder()
-						.build()
-					''',
+						.build()''',
 					clazz
 				)
 			} else {
@@ -1105,8 +1104,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					JavaExpression.from('''
 						«clazz».builder()
 							«it»
-							.build()
-						''',
+							.build()''',
 						clazz
 					)
 				]

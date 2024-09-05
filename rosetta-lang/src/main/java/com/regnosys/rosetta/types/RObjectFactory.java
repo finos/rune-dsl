@@ -208,6 +208,10 @@ public class RObjectFactory {
 	public RDataType buildRDataType(Data data) {
 		return new RDataType(data, modelIdProvider, this);
 	}
+	// TODO: remove this hack
+	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
+		return new RDataType(data, modelIdProvider, this, additionalAttributes);
+	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider);
 	}

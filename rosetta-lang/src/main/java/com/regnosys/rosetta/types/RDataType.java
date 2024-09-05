@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -39,6 +40,9 @@ public class RDataType extends RAnnotateType implements RObject {
 	
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
+	
+	// TODO: remove this hack
+	private List<RAttribute> additionalAttributes = null;
 
 	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
 		super();
@@ -46,6 +50,11 @@ public class RDataType extends RAnnotateType implements RObject {
 		
 		this.modelIdProvider = modelIdProvider;
 		this.objectFactory = objectFactory;
+	}
+	// TODO: remove this hack
+	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
+		this(data, modelIdProvider, objectFactory);
+		this.additionalAttributes = additionalAttributes;
 	}
 	
 	@Override
@@ -96,7 +105,11 @@ public class RDataType extends RAnnotateType implements RObject {
 	 */
 	public List<RAttribute> getOwnAttributes() {
 		if (ownAttributes == null) {
-			this.ownAttributes = data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr)).collect(Collectors.toList());
+			if (additionalAttributes != null) {
+				this.ownAttributes = Streams.concat(additionalAttributes.stream(), data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr))).collect(Collectors.toList());
+			} else {
+				this.ownAttributes = data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr)).collect(Collectors.toList());
+			}
 		}
 		return ownAttributes;
 	}

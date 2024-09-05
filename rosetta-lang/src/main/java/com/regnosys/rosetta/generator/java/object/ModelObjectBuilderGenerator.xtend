@@ -61,7 +61,7 @@ class ModelObjectBuilderGenerator {
 				«FOR attribute : t.ownAttributes»
 					«IF !attribute.isMulti && (attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty)»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
-					«ELSEIF attribute.isMulti && attribute.RType instanceof RDataType || attribute.metaAnnotations.isEmpty»
+					«ELSEIF attribute.isMulti && attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
 						«builderScope.getIdentifierOrThrow(attribute)» = «builderScope.getIdentifierOrThrow(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»

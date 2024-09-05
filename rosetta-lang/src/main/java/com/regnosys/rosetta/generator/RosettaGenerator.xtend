@@ -201,11 +201,11 @@ class RosettaGenerator implements IGenerator2 {
 				]
 				// new
 				// validatorGenerator.generate(packages, fsa, it, version)
-				tabulatorGenerator.generate(fsa, t, Optional.empty)
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
-				// tabulatorGenerator.generate(fsa, t)
+				tabulatorGenerator.generate(fsa, t, Optional.empty)
+				tabulatorGenerator.generate(fsa, t)
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {

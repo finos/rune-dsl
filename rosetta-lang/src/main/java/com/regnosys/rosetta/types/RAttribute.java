@@ -111,7 +111,7 @@ public class RAttribute implements RAssignedRoot {
 		if (getClass() != obj.getClass())
 			return false;
 		RAttribute other = (RAttribute) obj;
-		return Objects.equals(definition, other.definition) && cardinality == other.cardinality
+		return Objects.equals(definition, other.definition) && Objects.equals(cardinality, other.cardinality)
 				&& Objects.equals(metaAnnotations, other.metaAnnotations) && Objects.equals(name, other.name)
 				&& Objects.equals(rType, other.rType);
 	}

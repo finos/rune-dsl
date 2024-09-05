@@ -37,6 +37,9 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.utils.PositiveIntegerInterval
+import com.regnosys.rosetta.types.RType
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -89,13 +92,13 @@ class MetaFieldGenerator {
 			for (ref : refs) {
 				val targetModel = ref.RType.namespace
 				val targetPackage = new RootPackage(targetModel)
-				val metaJt = ref.toMetaJavaType
+				val metaJt = ref.toForcedMetaItemJavaType
 
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
 				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''',
-					referenceWithMeta(targetPackage, metaJt))
+					referenceWithMeta(targetPackage, metaJt, ref.RType))
 			}
 
 
@@ -108,12 +111,12 @@ class MetaFieldGenerator {
 			for (meta:metas) {
 				val targetModel = meta.RType.namespace
 				val targetPackage = new RootPackage(targetModel)
-				val metaJt = meta.toMetaJavaType
+				val metaJt = meta.toForcedMetaItemJavaType
 				
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
-				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt))
+				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.RType))
 			}
 		}
 	}
@@ -216,12 +219,10 @@ class MetaFieldGenerator {
 		buildClass(packages.basicMetafields, body, scope)
 	}
 
-	def CharSequence fieldWithMeta(RootPackage root, JavaClass<?> metaJavaType) {		
-		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()
-		valueAttribute.card = cardSingle
-		valueAttribute.name = "value"
-		// TODO
-		// valueAttribute.typeCall = EcoreUtil2.copy(typeCall)
+	def CharSequence fieldWithMeta(RootPackage root, JavaClass<?> metaJavaType, RType valueType) {
+		val valueAttribute = new RAttribute(
+			"value", null, emptyList, valueType, emptyList, PositiveIntegerInterval.bounded(0, 1), null, null
+		)
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
 		metaType.setName("MetaFields")
@@ -237,15 +238,15 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
 		d.attributes.addAll(#[
-			valueAttribute, metaAttribute
+			metaAttribute
 		])
 		
-		val FWMType = JavaParameterizedType.from(new TypeReference<FieldWithMeta<?>>() {}, metaJavaType)
+		val FWMType = JavaParameterizedType.from(new TypeReference<FieldWithMeta<?>>() {}, valueType.toJavaReferenceType)
 		
 		val scope = new JavaScope(metaJavaType.packageName)
 		
 		val StringConcatenationClient body = '''
-			«d.buildRDataType.classBody(scope, new GeneratedJavaClass<Object>(metaJavaType.packageName, d.name + "Meta", Object), "1", #[GlobalKey, FWMType])»
+			«d.buildRDataType(#[valueAttribute]).classBody(scope, new GeneratedJavaClass<Object>(metaJavaType.packageName, d.name + "Meta", Object), "1", #[GlobalKey, FWMType])»
 			
 			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»>{
 			
@@ -255,14 +256,7 @@ class MetaFieldGenerator {
 		buildClass(metaJavaType.packageName, body, scope)
 	}
 	
-	def referenceAttributes() {
-		// TODO
-		val valueAttribute = SimpleFactory.eINSTANCE.createAttribute()
-		valueAttribute.card = cardSingle
-		valueAttribute.name = "value"
-//		valueAttribute.typeCall = EcoreUtil2.copy(typeCall)
-		
-		
+	private def referenceAttributes() {
 		val globalRefAttribute = SimpleFactory.eINSTANCE.createAttribute()
 		globalRefAttribute.setName("globalReference")
 		globalRefAttribute.card = cardSingle
@@ -281,21 +275,25 @@ class MetaFieldGenerator {
 		refAttribute.setName("reference")
 		refAttribute.typeCall = refType.toTypeCall
 		refAttribute.card = cardSingle
-		 #[valueAttribute, globalRefAttribute, externalRefAttribute, refAttribute]
+		 #[globalRefAttribute, externalRefAttribute, refAttribute]
 	}
 	
-	def referenceWithMeta(RootPackage root, JavaClass<?> metaJavaType) {		
+	def referenceWithMeta(RootPackage root, JavaClass<?> metaJavaType, RType valueType) {
+		val valueAttribute = new RAttribute(
+			"value", null, emptyList, valueType, emptyList, PositiveIntegerInterval.bounded(0, 1), null, null
+		)
+			
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = metaJavaType.simpleName
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
 		d.attributes.addAll(referenceAttributes())
-		val refInterface = JavaParameterizedType.from(new TypeReference<ReferenceWithMeta<?>>() {}, metaJavaType)
+		val refInterface = JavaParameterizedType.from(new TypeReference<ReferenceWithMeta<?>>() {}, valueType.toJavaReferenceType)
 		
 		val scope = new JavaScope(root.metaField)
 		
 		val StringConcatenationClient body = '''
-			«d.buildRDataType.classBody(scope, new GeneratedJavaClass<Object>(root.metaField, d.name + "Meta", Object), "1", #[refInterface])»
+			«d.buildRDataType(#[valueAttribute]).classBody(scope, new GeneratedJavaClass<Object>(root.metaField, d.name + "Meta", Object), "1", #[refInterface])»
 			
 			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»>{
 			

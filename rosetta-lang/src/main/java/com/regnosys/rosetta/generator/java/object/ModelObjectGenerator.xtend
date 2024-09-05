@@ -123,7 +123,7 @@ class ModelObjectGenerator {
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«IF !attribute.metaAnnotations.isEmpty»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF !attribute.metaAnnotations.isEmpty»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 			«ENDIF»
 		«ENDFOR»

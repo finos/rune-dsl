@@ -203,6 +203,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		DottedPath namespace = attr.getRType().getNamespace();
 		return toMetaJavaType(itemType, !attr.hasReferenceOrAddressMetadata(), namespace);
 	}
+	public JavaClass<?> toForcedMetaItemJavaType(RAttribute attr) {
+		JavaClass<?> itemType = toItemJavaType(attr);
+		DottedPath namespace = attr.getRType().getNamespace();
+		return toMetaJavaType(itemType, !attr.hasReferenceOrAddressMetadata(), namespace);
+	}
 //	public JavaReferenceType toMultiMetaOrRegularJavaType(ExpandedAttribute expAttr) {
 //		JavaReferenceType singleType = toMetaOrRegularJavaType(expAttr);
 //		if (expAttr.isMultiple()) {

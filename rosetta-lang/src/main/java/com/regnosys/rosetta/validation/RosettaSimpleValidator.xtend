@@ -81,7 +81,6 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
@@ -344,7 +343,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 
 		override void remove(RosettaExternalRegularAttribute extAttr) {
-			val attr = extAttr.attributeRef
+			val attr = (extAttr.attributeRef as Attribute).buildRAttribute
 			if (ruleMap.containsKey(attr)) {
 				ruleMap.remove(attr);
 			} else {
@@ -497,8 +496,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				val attrFromClazzes = attrByName.filter[EObject.eContainer == clazz]
 				val attrFromSuperClasses = attrByName.filter[EObject.eContainer != clazz]
 
-				attrFromClazzes.
-					checkOverridingTypeAttributeMustHaveSameOrExtendedTypeAsParent(attrFromSuperClasses, name)
 				attrFromClazzes.checkTypeAttributeMustHaveSameTypeAsParent(attrFromSuperClasses, name)
 				attrFromClazzes.checkAttributeCardinalityMatchSuper(attrFromSuperClasses, name)
 			}
@@ -519,34 +516,19 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		]
 	}
 
-	protected def void checkOverridingTypeAttributeMustHaveSameOrExtendedTypeAsParent(
-		Iterable<RAttribute> attrFromClazzes, Iterable<RAttribute> attrFromSuperClasses, String name) {
-		attrFromClazzes.forEach [ childAttr |
-			attrFromSuperClasses.forEach [ parentAttr |
-				val childAttrType = childAttr.RType
-				val parentAttrType = parentAttr.RType
-				if ((childAttrType instanceof RDataType && !childAttrType.isSubtypeOf(parentAttrType)) ||
-					!(childAttrType instanceof RDataType && childAttrType != parentAttrType )) {
-					error('''Overriding attribute '«name»' must have a type that overrides its parent attribute type of «parentAttr.RType.name»''',
-						childAttr.EObject, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
-				}
-			]
-		]
-	}
-
 	protected def void checkAttributeCardinalityMatchSuper(Iterable<RAttribute> attrFromClazzes,
 		Iterable<RAttribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.forEach [ childAttr |
 			attrFromSuperClasses.forEach [ parentAttr |
 				if (childAttr.cardinality != parentAttr.cardinality) {
-					error('''Overriding attribute '«name»' with cardinality («childAttr.cardinality») must match the cardinality of the attribute it overrides («parentAttr.cardinality»)''',
+					error('''Overriding attribute '«name»' with cardinality («childAttr.cardRepr») must match the cardinality of the attribute it overrides («parentAttr.cardRepr»)''',
 						childAttr.EObject, ROSETTA_NAMED__NAME, CARDINALITY_ERROR)
 				}
 			]
 		]
 	}
 
-	protected def cardinality(Attribute attr) '''«attr.card.inf»..«IF attr.card.isMany»*«ELSE»«attr.card.sup»«ENDIF»'''
+	private def cardRepr(RAttribute attr) '''«attr.cardinality.minBound»..«attr.cardinality.max.map[toString].orElse('*')»'''
 
 	@Check
 	def checkEnumValuesAreUnique(RosettaEnumeration enumeration) {
@@ -1022,6 +1004,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
 					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+				}
+			}
+			val absentAttributes = rType
+				.allFeatures(ele)
+				.filter[!seenFeatures.contains(it)]
+			val requiredAbsentAttributes = absentAttributes
+				.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
+			if (ele.implicitEmpty) {
+				if (!requiredAbsentAttributes.empty) {
+					error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
+				}
+				if (absentAttributes.size === requiredAbsentAttributes.size) {
+					error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
+				}
+			} else {
+				if (!absentAttributes.empty) {
+					error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
 				}
 			}
 		}
