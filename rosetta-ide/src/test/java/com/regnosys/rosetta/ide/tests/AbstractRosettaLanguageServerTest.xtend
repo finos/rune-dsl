@@ -43,11 +43,6 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	}
 	
 	protected override Module getServerModule() {
-		EPackage.Registry.INSTANCE.remove(RosettaPackage.eNS_URI);
-		EPackage.Registry.INSTANCE.remove(SimplePackage.eNS_URI);
-		EPackage.Registry.INSTANCE.remove(ExpressionPackage.eNS_URI);
-		EValidator.Registry.INSTANCE.clear
-		
 		RosettaStandaloneSetup.doSetup
 		return RosettaServerModule.create
 	}

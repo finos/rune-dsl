@@ -1,0 +1,10 @@
+model:
+  name: My test model
+dependencies:
+generators:
+  namespaces:
+  - com.rosetta.test.model.*
+  tabulators:
+    annotations:
+    types:
+    - com.rosetta.test.model.Foo
