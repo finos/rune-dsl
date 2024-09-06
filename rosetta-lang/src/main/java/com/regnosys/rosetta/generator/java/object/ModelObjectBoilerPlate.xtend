@@ -101,16 +101,16 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeToString(RDataType c, (String)=>String classNameFunc, JavaScope scope) {
+	private def StringConcatenationClient contributeToString(RDataType t, (String)=>String classNameFunc, JavaScope scope) {
 		val methodScope = scope.methodScope("toString")
 		'''
 		@Override
 		public String toString() {
-			return "«classNameFunc.apply(c.name)» {" +
-				«FOR attribute : c.ownAttributes SEPARATOR ' ", " +'»
+			return "«classNameFunc.apply(t.name)» {" +
+				«FOR attribute : t.ownAttributes + t.additionalAttributes SEPARATOR ' ", " +'»
 					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
 				«ENDFOR»
-			'}'«IF c.hasSuperDataType» + " " + super.toString()«ENDIF»;
+			'}'«IF t.hasSuperDataType» + " " + super.toString()«ENDIF»;
 		}
 		'''
 	}

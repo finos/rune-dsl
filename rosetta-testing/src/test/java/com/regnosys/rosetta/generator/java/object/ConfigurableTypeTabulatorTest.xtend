@@ -42,7 +42,7 @@ class ConfigurableTypeTabulatorTest {
 			public interface FooTypeTabulator extends Tabulator<Foo> {
 				public class Impl implements FooTypeTabulator {
 					private final Field barField;
-					
+			
 					public Impl() {
 						this.barField = new FieldImpl(
 							"bar",
@@ -52,7 +52,7 @@ class ConfigurableTypeTabulatorTest {
 							Arrays.asList()
 						);
 					}
-					
+			
 					@Override
 					public List<FieldValue> tabulate(Foo input) {
 						FieldValue bar = new FieldValueImpl(barField, Optional.ofNullable(input.getBar()));
@@ -62,6 +62,7 @@ class ConfigurableTypeTabulatorTest {
 					}
 				}
 			}
+
 		'''
 		assertEquals(expected, fooTabulatorCode)
 	}
