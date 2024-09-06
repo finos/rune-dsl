@@ -131,6 +131,8 @@ import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.CaseStatement
+import java.util.Objects
+import com.rosetta.model.lib.mapper.MapperUtils
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1219,18 +1221,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  			head.literalCondition.javaCode(conditionType, javaScope).collapseToSingleExpression(javaScope)
  		} else {
  			val condition = head.enumCondition
- 			val resultItemType = typeProvider.getRTypeOfFeature(condition).toJavaReferenceType
- 		   JavaExpression.from('''«resultItemType».«condition.convertValues»''', resultItemType)
+ 			val resultItemType = typeProvider.getRTypeOfFeature(condition).toJavaReferenceType 			
+ 			JavaExpression.from('''«MapperS».of(«resultItemType».«condition.convertValues»)''', resultItemType)
+ 			
  		}
 
  		javaStatment.
  			mapExpression [
  				JavaExpression.
- 					from('''«runtimeMethod('areEqual')»(«switchArgument», «it», «toCardinalityOperator(CardinalityModifier.ALL, null)»)''',
+ 					from('''«Objects».equals(«switchArgument»,«it»)''',
  						COMPARISON_RESULT)
- 			]
- 			.mapExpression[
- 				typeCoercionService.addCoercions(it, JavaPrimitiveType.BOOLEAN, javaScope)
  			]
  			.mapExpression [
  				new JavaIfThenElseBuilder(
