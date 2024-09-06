@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.utils
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaQualifiableConfiguration
 import com.regnosys.rosetta.rosetta.RosettaQualifiableType
 import com.regnosys.rosetta.rosetta.RosettaType
@@ -10,11 +9,13 @@ import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import javax.inject.Inject
+import com.regnosys.rosetta.RosettaEcoreUtil
+import org.eclipse.emf.common.util.URI
 
 class RosettaConfigExtension {
 
 	@Inject IResourceDescriptionsProvider index
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 
 
 	def isRootEventOrProduct(RosettaType type) {
@@ -34,6 +35,18 @@ class RosettaConfigExtension {
 			filter [
 				isProjectLocal(ctx.eResource.URI, it.EObjectURI)
 			]
+	}
+	
+	def boolean isProjectLocal(URI platformResourceURI, URI candidateUri) {
+		if (!platformResourceURI.isPlatformResource) {
+			// synthetic tests URI
+			return true
+		}
+		val projectName = platformResourceURI.segment(1)
+		if (candidateUri.isPlatformResource) {
+			return projectName == candidateUri.segment(1)
+		}
+		return false
 	}
 	
 	/**

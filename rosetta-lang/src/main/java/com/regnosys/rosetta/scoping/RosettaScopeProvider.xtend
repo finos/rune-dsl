@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.scoping
 
 import com.google.common.base.Predicate
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -58,6 +57,9 @@ import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 /**
  * This class contains custom scoping description.
@@ -72,10 +74,11 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	static Logger LOGGER = LoggerFactory.getLogger(RosettaScopeProvider)
 	
 	@Inject RosettaTypeProvider typeProvider
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension DeepFeatureCallUtil
+	@Inject extension RObjectFactory
 
 	override getScope(EObject context, EReference reference) {
 		try {
@@ -203,7 +206,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef
 						if (classRef instanceof Data)
-							return Scopes.scopeFor(classRef.allAttributes)
+							return Scopes.scopeFor(classRef.buildRDataType.allNonOverridenAttributes.map[EObject])
 					}
 					return IScope.NULLSCOPE
 				}			
@@ -236,8 +239,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			return defaultScope(context, reference)
 		}
 		catch (Exception e) {
-			LOGGER.error ("Error scoping rosetta - \"" + e.message + "\" see debug logging for full trace");
-			LOGGER.debug("Full trace of error ", e);
+			LOGGER.error ("Error scoping rosetta", e);
 			//Any exception that is thrown here is going to have been caused by invalid grammar
 			//However invalid grammar is checked as the next step of the process - after scoping
 			//so just return an empty scope here and let the validator do its thing afterwards
@@ -325,20 +327,26 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			receiver.symbol
 		}
 		if (feature instanceof Attribute) {
-			val metas = feature.metaAnnotations.map[it.attribute?.name].filterNull.toList
-			if (metas !== null && !metas.isEmpty) {
-				allPosibilities.addAll(configs.findMetaTypes(feature).filter[
-					metas.contains(it.name.lastSegment.toString)
-				].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)])
-			}
+			allPosibilities.addAll(getMetaDescriptions(feature))
 		}
 		
 		return new SimpleScope(allPosibilities)
 	}
 	
+	private def Iterable<IEObjectDescription> getMetaDescriptions(Annotated obj) {
+		val metas = obj.metaAnnotations.map[it.attribute?.name].filterNull.toList
+		if (!metas.isEmpty) {
+			configs.findMetaTypes(obj).filter[
+				metas.contains(it.name.lastSegment.toString)
+			].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)]
+		} else {
+			emptyList
+		}
+	}
+	
 	private def IScope createDeepFeatureScope(RType receiverType) {
 		if (receiverType instanceof RDataType) {
-			return Scopes.scopeFor(receiverType.findDeepFeatures)
+			return Scopes.scopeFor(receiverType.findDeepFeatures.filter[EObject !== null].map[EObject])
 		}
 		return IScope.NULLSCOPE
 	}

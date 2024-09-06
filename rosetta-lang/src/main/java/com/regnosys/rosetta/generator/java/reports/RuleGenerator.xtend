@@ -23,7 +23,7 @@ class RuleGenerator {
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaRule rule, String version) {
 		val rFunctionRule = buildRFunction(rule)
 		val clazz = rFunctionRule.toFunctionJavaClass
-		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunctionRule.inputs.head.attributeToJavaType, rFunctionRule.output.attributeToJavaType)
+		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunctionRule.inputs.head.toMetaJavaType, rFunctionRule.output.toMetaJavaType)
 		val topScope = new JavaScope(clazz.packageName)
 		val classBody = functionGenerator.rBuildClass(rFunctionRule, false, #[baseInterface], emptyMap, true, topScope)
 		

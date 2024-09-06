@@ -44,7 +44,7 @@ public class ImplicitVariableUtil {
 	/**
 	 * Find the enclosing object that defines the implicit variable in the given expression.
 	 */
-	public Optional<EObject> findContainerDefiningImplicitVariable(EObject context) {
+	public Optional<? extends EObject> findContainerDefiningImplicitVariable(EObject context) {
 		Iterable<EObject> containers = EcoreUtil2.getAllContainers(context);
 		EObject prev = context;
 		for (EObject container: containers) {

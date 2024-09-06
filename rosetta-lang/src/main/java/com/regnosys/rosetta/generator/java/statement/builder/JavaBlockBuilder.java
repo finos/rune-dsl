@@ -19,6 +19,9 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.eclipse.xtend2.lib.StringConcatenation;
+import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.JavaBlock;
@@ -59,12 +62,12 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	}
 	
 	@Override
-	public JavaStatementBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
+	public JavaBlockBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
 		return new JavaBlockBuilder(statements, lastStatement.mapExpression(mapper));
 	}
 	
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaBlockBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
 		if (after instanceof JavaBlockBuilder) {
 			return this.then((JavaBlockBuilder)after, combineExpressions, scope);
 		}
@@ -144,5 +147,22 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	@Override
 	public JavaLambdaBody toLambdaBody() {
 		return completeAsReturn();
+	}
+	
+	@Override
+	public String toString() {
+		StringConcatenation result = new StringConcatenation();
+		result.append("{");
+		result.newLine();
+		result.append("\t");
+		statements.forEach(stat -> {
+			result.append(stat, "\t");
+			result.newLine();
+			result.append("\t");
+		});
+		result.append(lastStatement, "\t");
+		result.newLine();
+		result.append('}');
+		return result.toString();
 	}
 }

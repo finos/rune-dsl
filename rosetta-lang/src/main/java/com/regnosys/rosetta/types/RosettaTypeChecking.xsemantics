@@ -516,7 +516,7 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 		}
 	}
 	if (parentType !== null) {
-		val parentData = (parentType.itemType as RDataType).^data
+		val parentData = parentType.itemType as RDataType
 		if (parentData !== null) {
 			mayBeEmpty(parentData)
 			or

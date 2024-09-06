@@ -16,7 +16,13 @@
 
 package com.regnosys.rosetta.generator.java.statement;
 
+import org.eclipse.xtend2.lib.StringConcatenation;
+import org.eclipse.xtend2.lib.StringConcatenationClient;
+import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaBlockBuilder;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 
 /**
  * A representation of a statement in Java. Examples:
@@ -107,5 +113,25 @@ public abstract class JavaStatement implements TargetLanguageRepresentation {
 			return other.prepend(this);
 		}
 		return new JavaBlock(JavaStatementList.of(this, other));
+	}
+	/**
+	 * Append the given statement builder to this statement. Behaves the same as `builder.prepend(this)`.
+	 * 
+	 * This operation flattens block statements. See #append(JavaStatement) for examples.
+	 * ```
+	 */
+	public JavaBlockBuilder append(JavaStatementBuilder builder) {
+		return new JavaBlockBuilder(this.asStatementList(), builder);
+	}
+	
+	@Override
+	public String toString() {
+		StringConcatenation repr = new StringConcatenation();
+		repr.append(new StringConcatenationClient() {
+			protected void appendTo(TargetStringConcatenation target) {
+				JavaStatement.this.appendTo(target);
+			}
+		});
+		return repr.toString();
 	}
 }

@@ -22,6 +22,9 @@ class RosettaOperators {
 	@Inject extension TypeSystem
 
 	def RType resultType(String op, RType left, RType right) {
+		if (left == NOTHING || right === NOTHING) {
+			return NOTHING
+		}
 		val resultType = if (op == '+') {
 			if (left.isSubtypeOf(DATE) && right.isSubtypeOf(TIME)) {
 				DATE_TIME

@@ -42,7 +42,7 @@ class ConfigurableTypeTabulatorTest {
 			public interface FooTypeTabulator extends Tabulator<Foo> {
 				public class Impl implements FooTypeTabulator {
 					private final Field barField;
-					
+			
 					public Impl() {
 						this.barField = new FieldImpl(
 							"bar",
@@ -52,7 +52,7 @@ class ConfigurableTypeTabulatorTest {
 							Arrays.asList()
 						);
 					}
-					
+			
 					@Override
 					public List<FieldValue> tabulate(Foo input) {
 						FieldValue bar = new FieldValueImpl(barField, Optional.ofNullable(input.getBar()));
@@ -101,9 +101,9 @@ class ConfigurableTypeTabulatorTest {
 			public interface FooTypeTabulator extends Tabulator<Foo> {
 				public class Impl implements FooTypeTabulator {
 					private final Field barField;
-					
+			
 					private final BarTypeTabulator barTypeTabulator;
-					
+			
 					@Inject
 					public Impl(BarTypeTabulator barTypeTabulator) {
 						this.barTypeTabulator = barTypeTabulator;
@@ -115,7 +115,7 @@ class ConfigurableTypeTabulatorTest {
 							Arrays.asList()
 						);
 					}
-					
+			
 					@Override
 					public List<FieldValue> tabulate(Foo input) {
 						FieldValue bar = Optional.ofNullable(input.getBar())
@@ -170,7 +170,7 @@ class ConfigurableTypeTabulatorTest {
 			public interface EngineSpecificationTypeTabulator extends Tabulator<EngineSpecification> {
 				public class Impl implements EngineSpecificationTypeTabulator {
 					private final Field fuelField;
-					
+			
 					public Impl() {
 						this.fuelField = new FieldImpl(
 							"fuel",
@@ -180,7 +180,7 @@ class ConfigurableTypeTabulatorTest {
 							Arrays.asList()
 						);
 					}
-					
+			
 					@Override
 					public List<FieldValue> tabulate(EngineSpecification input) {
 						FieldValue fuel = new FieldValueImpl(fuelField, Optional.ofNullable(input.getFuel())

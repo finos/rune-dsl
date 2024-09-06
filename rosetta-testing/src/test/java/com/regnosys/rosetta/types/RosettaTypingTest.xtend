@@ -46,6 +46,9 @@ class RosettaTypingTest {
 	@Inject
 	extension RBuiltinTypeService
 	
+	@Inject
+	extension RObjectFactory
+	
 	@Test
 	def void testLiteralTypeInference() {
 		'False'.assertIsValidWithType(singleBoolean)
@@ -445,7 +448,7 @@ class RosettaTypingTest {
 			set result:
 				A -> V1
 		'''.parseRosettaWithNoIssues
-		val A = new REnumType(model.elements.get(0) as RosettaEnumeration);
+		val A = (model.elements.get(0) as RosettaEnumeration).buildREnumType;
 		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
 		expr1.assertHasType(createListType(A, 1, 1));
 	}

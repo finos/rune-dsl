@@ -22,10 +22,10 @@ import java.util.Objects;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 public class ROperation {
-	private ROperationType rOperationType;
-	private RAssignedRoot pathHead;
-	private List<RAttribute> pathTail;
-	private RosettaExpression expression;
+	private final ROperationType rOperationType;
+	private final RAssignedRoot pathHead;
+	private final List<RAttribute> pathTail;
+	private final RosettaExpression expression;
 	
 	public ROperation(ROperationType rOperationType, RAssignedRoot pathHead, List<RAttribute> pathTail, RosettaExpression expression) {
 		this.rOperationType = rOperationType;
