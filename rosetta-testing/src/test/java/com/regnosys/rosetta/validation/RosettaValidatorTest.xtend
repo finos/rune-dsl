@@ -38,8 +38,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  			
  			type Foo:
  				fooField string (1..1)
- 			type SomeType:
- 				fieldA string (1..1)
  			
  			func SomeFunc:
  				inputs:
@@ -67,9 +65,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
  		val expression = '''
  			inEnum switch 
- 				SomeEnum -> A then "aValue",
- 				SomeEnum -> B then "bValue",
- 				SomeEnum -> C then "cValue",
+ 				A then "aValue",
+ 				B then "bValue",
+ 				C then "cValue",
  				default "defaultValue"
  		'''
 
@@ -78,7 +76,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  	}
 
  	@Test
- 	def void testValidSwitchSyntaxOnSet() {
+ 	def void testValidSwitchSyntaxEnum() {
  		val model = '''
  			namespace test
  			
@@ -87,10 +85,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  				B
  				C
  				D
- 				
- 			type SomeType:
- 				fieldA string (1..1)
- 				
  			
  			func SomeFunc:
  				inputs:
@@ -99,10 +93,29 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  					result string (1..1)
  			
  				set result: inEnum switch 
- 					SomeEnum -> A then "aValue",
- 					SomeEnum -> B then "bValue",
- 					SomeEnum -> C then "cValue",
- 					SomeEnum -> D then "dValue"
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue",
+ 					D then "dValue"
+ 		'''
+
+ 		model.parseRosettaWithNoIssues
+ 	}
+ 	
+ 	@Test
+ 	def void testValidSwitchSyntaxString() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					someInput string (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: someInput switch 
+ 					"A" then "aValue",
+ 					"B" then "bValue"
  		'''
 
  		model.parseRosettaWithNoIssues

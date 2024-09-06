@@ -116,14 +116,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			}
 		}
 	}
-	def RType getRTypeOfCaseStatmentCondition(CaseStatement caseStatement) {
-		if (caseStatement.literalCondition !== null) {
-			getRType(caseStatement.literalCondition)
-		} else {
-			getRTypeOfFeature(caseStatement.enumCondition)
-		}		
-	}
-	
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
 		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
@@ -190,6 +182,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				featureType
 			}
 			RosettaEnumValue: {
+				if (feature.enumeration === null) {
+					return NOTHING
+				}
 				new REnumType(feature.enumeration)
 			}
 			default:

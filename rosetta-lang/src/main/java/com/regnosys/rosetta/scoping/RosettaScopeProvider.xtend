@@ -6,15 +6,27 @@ package com.regnosys.rosetta.scoping
 import com.google.common.base.Predicate
 import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
 import com.regnosys.rosetta.rosetta.RosettaExternalEnum
 import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.rosetta.TypeCall
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
+import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -22,42 +34,32 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import java.util.List
+import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.naming.QualifiedName
+import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
+import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
+import org.eclipse.xtext.scoping.impl.SimpleScope
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import java.util.List
-import org.eclipse.xtext.scoping.impl.SimpleScope
-import org.eclipse.xtext.resource.EObjectDescription
-import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.utils.RosettaConfigExtension
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
-import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.rosetta.RosettaTypeAlias
-import com.regnosys.rosetta.rosetta.TypeCall
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
-import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
-import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 /**
  * This class contains custom scoping description.
@@ -230,6 +232,16 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
+				}
+				case CASE_STATEMENT__ENUM_CONDITION: {
+					if (context instanceof CaseStatement) {
+						val argumentType = typeProvider.getRType(context.switchOperation.argument)
+						if (argumentType instanceof REnumType) {
+						   return Scopes.scopeFor(argumentType.enumeration.allEnumValues)
+						}
+					}
+					return IScope.NULLSCOPE
+					
 				}
 			}
 			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')
