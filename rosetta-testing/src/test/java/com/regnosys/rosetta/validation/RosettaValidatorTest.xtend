@@ -32,6 +32,34 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 
 	@Test
+ 	def void testSwitchArgumentMatchesCaseStatmentTypes() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 					
+ 			set result: inEnum switch 
+ 				A 	then "aValue",
+ 				10 	then "bValue",
+ 				C 	then "cValue",
+ 				default "defaultValue"
+ 		'''
+
+ 		model.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, '''Mismatched condition type: Expected type `SomeEnum`, but got `int` instead.''')
+ 	}
+ 	
+	@Test
  	def void testDataTypesAreInvalidSwitchInputs() {
  		val model = '''
  			namespace test
