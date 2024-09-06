@@ -3,6 +3,7 @@ package com.regnosys.rosetta
 import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
@@ -13,6 +14,7 @@ import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RType
@@ -21,18 +23,14 @@ import java.util.Set
 import javax.inject.Inject
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.resource.ResourceSet
 
 import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import org.eclipse.emf.ecore.resource.ResourceSet
-import com.regnosys.rosetta.rosetta.RosettaRecordType
-import com.regnosys.rosetta.types.RAttribute
 import javax.inject.Singleton
 import java.util.List
-import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import org.eclipse.xtext.util.SimpleCache
-import com.regnosys.rosetta.generator.object.ExpandedType
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory

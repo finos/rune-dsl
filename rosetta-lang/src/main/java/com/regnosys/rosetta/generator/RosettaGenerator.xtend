@@ -204,25 +204,25 @@ class RosettaGenerator implements IGenerator2 {
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
-				tabulatorGenerator.generate(fsa, t, Optional.empty)
-				tabulatorGenerator.generate(fsa, t)
+				tabulatorGenerator.generateTabulatorForReportData(fsa, t, Optional.empty)
+				tabulatorGenerator.generateTabulatorForData(fsa, t)
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {
 					funcGenerator.generate(packages, fsa, elem, version)
 				}
-				tabulatorGenerator.generate(fsa, elem)
+				tabulatorGenerator.generateTabulatorForFunction(fsa, elem)
 			}
 			RosettaRule: {
 				ruleGenerator.generate(packages, fsa, elem, version)
 			}
 			RosettaReport: {
 				reportGenerator.generate(packages, fsa, elem, version)
-				tabulatorGenerator.generate(fsa, elem)
+				tabulatorGenerator.generateTabulatorForReport(fsa, elem)
 			}
 			RosettaExternalRuleSource: {
 				elem.externalClasses.forEach [ externalClass |
-					tabulatorGenerator.generate(fsa, externalClass.data.buildRDataType, Optional.of(elem))
+					tabulatorGenerator.generateTabulatorForReportData(fsa, externalClass.data.buildRDataType, Optional.of(elem))
 				]
 			}
 			RosettaEnumeration: {

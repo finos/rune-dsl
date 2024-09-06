@@ -38,6 +38,7 @@ import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.google.inject.ImplementedBy
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RObjectFactory
+import java.util.Objects
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -176,19 +177,19 @@ class TabulatorGenerator {
 	@Inject extension ModelIdProvider
 	@Inject extension RObjectFactory
 
-	def generate(IFileSystemAccess2 fsa, RosettaReport report) {
+	def generateTabulatorForReport(IFileSystemAccess2 fsa, RosettaReport report) {
 		val tabulatorClass = report.toReportTabulatorJavaClass
 		val topScope = new JavaScope(tabulatorClass.packageName)
 		
 		val inputType = report.reportType.buildRDataType
-		val context = getContext(inputType, Optional.ofNullable(report.ruleSource))
+		val context = getReportTabulatorContext(inputType, Optional.ofNullable(report.ruleSource))
 		val classBody = inputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 	}
 	
-	def generate(IFileSystemAccess2 fsa, RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
-		val context = getContext(type, ruleSource)
+	def generateTabulatorForReportData(IFileSystemAccess2 fsa, RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
+		val context = getReportTabulatorContext(type, ruleSource)
 		if (context.needsTabulator(type)) {
 			val tabulatorClass = type.EObject.toTabulatorJavaClass(ruleSource)
 			val topScope = new JavaScope(tabulatorClass.packageName)
@@ -199,18 +200,15 @@ class TabulatorGenerator {
 		}
 	}
 	
-	def generate(IFileSystemAccess2 fsa, RDataType type) {
+	def generateTabulatorForData(IFileSystemAccess2 fsa, RDataType type) {
 		if (type.isDataTabulatable) {
 			val context = new DataTabulatorContext(typeTranslator)
 
-			val tabulatorClass = type.toTabulatorJavaClass
-			val topScope = new JavaScope(tabulatorClass.packageName)
-
-			generateTabulator(type, context, topScope, tabulatorClass, fsa)
+			recursivelyGenerateTabulators(fsa, type, context, newHashSet)
 		}
 	}
 
-	def generate(IFileSystemAccess2 fsa, Function func) {
+	def generateTabulatorForFunction(IFileSystemAccess2 fsa, Function func) {
 		if (func.isFunctionTabulatable) {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
@@ -218,22 +216,19 @@ class TabulatorGenerator {
 			val functionOutputType = typeProvider.getRTypeOfSymbol(func.output)
 			if (functionOutputType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
-
-				generateTabulator(functionOutputType, context, topScope, tabulatorClass, fsa)
+				
+				val type = functionOutputType
+				val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
+				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
+				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
+				
+				recursivelyGenerateTabulators(fsa, type, context, newHashSet)
 			}
 		}
 	}
 
-	private def void generateTabulator(RDataType type, TabulatorContext context, JavaScope topScope, JavaClass<Tabulator<?>> tabulatorClass, IFileSystemAccess2 fsa) {
-		val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
-		val content = buildClass(tabulatorClass.packageName, classBody, topScope)
-		fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
-
-		recursivelyGenerateFunctionTypeTabulators(fsa, type, context, newHashSet)
-	}
-
-	private def void recursivelyGenerateFunctionTypeTabulators(IFileSystemAccess2 fsa, RDataType type, TabulatorContext context, Set<Data> visited) {
-		if (visited.add(type.EObject)) {
+	private def void recursivelyGenerateTabulators(IFileSystemAccess2 fsa, RDataType type, TabulatorContext context, Set<RDataType> visited) {
+		if (visited.add(type)) {
 			val tabulatorClass = context.toTabulatorJavaClass(type)
 			val topScope = new JavaScope(tabulatorClass.packageName)
 			
@@ -245,11 +240,11 @@ class TabulatorGenerator {
 				.allNonOverridenAttributes
 				.map[RType]
 				.filter(RDataType)
-				.forEach[recursivelyGenerateFunctionTypeTabulators(fsa, it, context, visited)]
+				.forEach[recursivelyGenerateTabulators(fsa, it, context, visited)]
 		}
 	}
 	
-	private def ReportTabulatorContext getContext(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
+	private def ReportTabulatorContext getReportTabulatorContext(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val ruleMap = newHashMap
 		type.getAllReportingRules(ruleSource).forEach[key, rule| ruleMap.put(key.attr, rule)]
 		new ReportTabulatorContext(extensions, typeTranslator, typeProvider, ruleMap, ruleSource)
@@ -342,6 +337,7 @@ class TabulatorGenerator {
 		val nestedTabulatorInstances = findNestedTabulatorsAndCreateIdentifiers(inputType, context, classScope)
 		val tabulateScope = classScope.methodScope("tabulate")
 		val inputParam = tabulateScope.createUniqueIdentifier("input")
+		
 		'''
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
@@ -442,12 +438,17 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.isMulti»
 				.map(«lambdaParam» -> «lambdaParam».stream()
-					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))
+					«IF !attr.metaAnnotations.empty»
+						.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
+						.filter(«Objects»::nonNull)
+					«ENDIF»
+					.map(«nestedLambdaParam» -> «nestedTabulator».tabulate(«nestedLambdaParam»))
 					.collect(«Collectors».toList()))
 				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
 				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»«IF !attr.metaAnnotations.empty».getValue()«ENDIF»))))
+				«IF !attr.metaAnnotations.empty».map(«lambdaParam» -> «lambdaParam».getValue())«ENDIF»
+				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»))))
 				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''
@@ -459,6 +460,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
+					.filter(«Objects»::nonNull)
 					.collect(«Collectors».toList())));
 			«ELSE»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
