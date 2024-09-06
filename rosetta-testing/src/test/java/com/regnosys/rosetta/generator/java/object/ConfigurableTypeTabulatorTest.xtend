@@ -62,7 +62,6 @@ class ConfigurableTypeTabulatorTest {
 					}
 				}
 			}
-
 		'''
 		assertEquals(expected, fooTabulatorCode)
 	}
