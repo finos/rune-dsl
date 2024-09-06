@@ -153,10 +153,10 @@ class FunctionGeneratorTest {
  				
  			
  				set result: inEnum switch 
- 					SomeEnum -> A then "aValue",
- 					SomeEnum -> B then "bValue",
- 					SomeEnum -> C then "cValue",
- 					SomeEnum -> D then "dValue"
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue",
+ 					D then "dValue"
  		'''.generateCode
 
  		 val classes = code.compileToClasses
