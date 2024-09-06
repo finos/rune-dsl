@@ -30,7 +30,81 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
-	
+
+	@Test
+ 	def void testCanUseMixOfImportAliasAnFullyQualified() {
+ 		val model1 = '''
+ 			namespace foo.bar
+ 			
+ 			type A:
+ 				id string (1..1)
+ 				
+ 			type D:
+ 				id string (1..1)
+ 		'''
+
+ 		val model2 = '''
+ 			namespace test
+ 			
+ 			import foo.bar.* as someAlias
+ 			
+ 			type B:
+ 				a someAlias.A (1..1)
+ 				d foo.bar.D (1..1)
+ 		'''
+
+ 		#[model1, model2].parseRosettaWithNoIssues
+ 	}	
+
+ 	@Test
+ 	def void testCanUseMixOfImportAliasAndNoAlias() {
+ 		val model1 = '''
+ 			namespace foo.bar
+ 			
+ 			type A:
+ 				id string (1..1)
+ 		'''
+
+ 		val model2 = '''
+ 			namespace test
+ 			
+ 			import foo.bar.* as someAlias
+ 			
+ 			
+ 			type D:
+ 				id string (1..1)
+ 			
+ 			type B:
+ 				a someAlias.A (1..1)
+ 				d D (1..1)
+ 		'''
+
+ 		#[model1, model2].parseRosettaWithNoIssues
+ 	}	
+
+ 	@Test
+ 	def void testCanUserImportAlisesWhenWildcardPresent() {
+ 		val model1 = '''
+ 			namespace foo.bar
+ 			
+ 			type A:
+ 				id string (1..1)
+ 		'''
+
+ 		val model2 = '''
+ 			namespace test
+ 			
+ 			import foo.bar.* as someAlias
+ 			
+ 			
+ 			
+ 			type B:
+ 				a someAlias.A (1..1)
+ 		'''
+
+ 		#[model1, model2].parseRosettaWithNoIssues
+ 	}
+ 		
 	@Test
  	def void testCannotUseImportAliasesWithoutWildcard() {
  		val model = '''
