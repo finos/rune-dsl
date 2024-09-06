@@ -26,7 +26,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.regnosys.rosetta.RosettaExtensions;
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
@@ -79,7 +79,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
 	private RosettaJavaPackages packages;
 	@Inject
-	private RosettaExtensions extensions;
+	private RosettaEcoreUtil extensions;
 	@Inject
 	private RosettaTypeProvider typeProvider;
 	@Inject

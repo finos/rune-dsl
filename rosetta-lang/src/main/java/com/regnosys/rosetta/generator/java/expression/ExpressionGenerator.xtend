@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -129,6 +128,7 @@ import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.types.RAttribute
 import java.util.Collection
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -141,7 +141,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject RosettaOperators operators
 	@Inject extension CardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension ImportManagerExtension
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImplicitVariableUtil

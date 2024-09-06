@@ -30,8 +30,8 @@ import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ModelObjectGenerator {
 	
@@ -39,7 +39,7 @@ class ModelObjectGenerator {
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,

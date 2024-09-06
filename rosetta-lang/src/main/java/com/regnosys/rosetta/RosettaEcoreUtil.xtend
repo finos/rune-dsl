@@ -7,9 +7,6 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -21,7 +18,6 @@ import com.regnosys.rosetta.types.RType
 import java.util.Collection
 import java.util.Set
 import javax.inject.Inject
-import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
 
@@ -37,7 +33,7 @@ import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.types.RObjectFactory
 
 @Singleton // see `metaFieldsCache`
-class RosettaExtensions {
+class RosettaEcoreUtil {
 	
 	@Inject RBuiltinTypeService builtins
 	@Inject RObjectFactory objectFactory
@@ -67,16 +63,19 @@ class RosettaExtensions {
 		}
 	}
 	
+	@Deprecated // TODO: move to REnumType, similar to RDataType
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
 	}
 	
+	@Deprecated
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
 		if(e !== null && seenEnums.add(e)) 
 			doGetSuperEnumerations(e.superType, seenEnums)
 		return seenEnums
 	}
-
+	
+	@Deprecated // TODO: move to REnumType, similar to RDataType
 	def getAllEnumValues(RosettaEnumeration e) {
 		e.allSuperEnumerations.map[enumValues].flatten
 	}
@@ -89,40 +88,6 @@ class RosettaExtensions {
 		if(s !== null && seenSynonyms.add(s)) 
 			doGetSynonyms(s, seenSynonyms)
 		return seenSynonyms		
-	}
-
-	/**
-	 * Collect all expressions
-	 */
-	def void collectExpressions(RosettaExpression expr, (RosettaExpression) => void visitor) {
-		if(expr instanceof RosettaBinaryOperation) {
-			if(expr.operator.equals("or") || expr.operator.equals("and")) {
-				expr.left.collectExpressions(visitor)
-				expr.right.collectExpressions(visitor)
-			}
-			else {
-				visitor.apply(expr)
-			}	
-		}
-		if(expr instanceof RosettaConditionalExpression) {
-			expr.ifthen.collectExpressions(visitor)
-			expr.elsethen.collectExpressions(visitor)
-		}
-		else {
-			visitor.apply(expr)
-		}
-	}
-	
-	def boolean isProjectLocal(URI platformResourceURI, URI candidateUri) {
-		if (!platformResourceURI.isPlatformResource) {
-			// synthetic tests URI
-			return true
-		}
-		val projectName = platformResourceURI.segment(1)
-		if (candidateUri.isPlatformResource) {
-			return projectName == candidateUri.segment(1)
-		}
-		return false
 	}
 	
 	def metaAnnotations(Annotated it) {
@@ -181,14 +146,17 @@ class RosettaExtensions {
 		withAnnotations?.annotations?.filter[annotation.isResolved]
 	}
 	
+	@Deprecated
 	def String conditionName(Condition cond, RDataType data) {
 		return cond.conditionName(data.name, data.EObject.conditions)
 	}
 
+	@Deprecated
 	def String conditionName(Condition cond, Function func) {
 		return cond.conditionName(func.name, func.conditions)
 	}
 	
+	@Deprecated
 	def boolean isConstraintCondition(Condition cond) {
 		return cond.isOneOf || cond.isChoice
 	}
@@ -217,13 +185,14 @@ class RosettaExtensions {
 		return '''«containerName»«name»'''
 	}
 	
+	@Deprecated
 	def String toConditionJavaType(String conditionName) {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
 	}
 	
-	
+	@Deprecated
 	def String javaAnnotation(RAttribute attr) {
 		if (attr.name == "key" && attr.RType.name == "Key" && attr.RType.namespace.toString == "com.rosetta.model.lib.meta") {
 			return 'location'
@@ -233,6 +202,7 @@ class RosettaExtensions {
 			return attr.name
 	}
 	// Copied over from RosettaAttributeExtensions.
+	@Deprecated
 	def List<RAttribute> additionalAttributes(RDataType t) {
 		val res = newArrayList
 		if(hasKeyedAnnotation(t.EObject)){
@@ -250,9 +220,12 @@ class RosettaExtensions {
 		return res
 	}
 	
+	@Deprecated
 	String METAFIELDS_CLASS_NAME = 'MetaFields'
+	@Deprecated
 	String META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
 	
+	@Deprecated
 	SimpleCache<RDataType, RDataType> metaFieldsCache = new SimpleCache[RDataType t|
 		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
 		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE + ".metafields"

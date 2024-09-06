@@ -23,7 +23,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.google.common.collect.Sets;
-import com.regnosys.rosetta.RosettaExtensions;
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaBasicType;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
@@ -71,7 +71,7 @@ import static com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenModifi
 
 public class RosettaSemanticTokensService extends AbstractSemanticTokensService {
 	@Inject
-	private RosettaExtensions extensions;
+	private RosettaEcoreUtil extensions;
 	@Inject
 	private CardinalityProvider cardinalityProvider;
 	@Inject

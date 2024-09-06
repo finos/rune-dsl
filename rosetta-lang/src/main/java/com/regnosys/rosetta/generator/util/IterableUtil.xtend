@@ -5,7 +5,8 @@ import java.util.Iterator
 import java.util.NoSuchElementException
 import com.regnosys.rosetta.rosetta.RosettaType
 
-class Util {
+@Deprecated
+class IterableUtil {
 	
 	static def <T> Iterable<T> distinct(Iterable<T> parentIterable) {
 		return new DistinctByIterator(parentIterable, [it])

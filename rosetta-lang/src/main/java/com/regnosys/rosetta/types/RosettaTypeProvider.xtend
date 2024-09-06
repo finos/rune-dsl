@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
@@ -81,6 +80,7 @@ import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -88,7 +88,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
-	@Inject RosettaExtensions extensions
+	@Inject RosettaEcoreUtil extensions
 	@Inject extension ImplicitVariableUtil
 	@Inject extension TypeSystem
 	@Inject extension TypeFactory

@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.ImplementedBy
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -68,6 +67,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class FunctionGenerator {
 
@@ -75,7 +75,7 @@ class FunctionGenerator {
 	@Inject JavaDependencyProvider dependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality

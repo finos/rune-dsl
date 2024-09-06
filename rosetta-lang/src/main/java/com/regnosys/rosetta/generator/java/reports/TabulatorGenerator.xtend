@@ -20,7 +20,6 @@ import java.util.Arrays
 import com.rosetta.model.lib.reports.Tabulator.FieldValue
 import java.util.stream.Collectors
 import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import java.util.Map
 import com.regnosys.rosetta.types.RosettaTypeProvider
@@ -39,6 +38,7 @@ import com.google.inject.ImplementedBy
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RObjectFactory
 import java.util.Objects
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -51,7 +51,7 @@ class TabulatorGenerator {
 
 	@org.eclipse.xtend.lib.annotations.Data
 	private static class ReportTabulatorContext implements TabulatorContext {
-		extension RosettaExtensions
+		extension RosettaEcoreUtil
 		extension JavaTypeTranslator
 		extension RosettaTypeProvider
 		Map<RAttribute, RosettaRule> ruleMap
@@ -172,7 +172,7 @@ class TabulatorGenerator {
 	@Inject extension JavaTypeTranslator typeTranslator
 	@Inject extension ImportManagerExtension
 	
-	@Inject extension RosettaExtensions extensions
+	@Inject extension RosettaEcoreUtil extensions
 	@Inject extension ExternalAnnotationUtil
 	@Inject extension ModelIdProvider
 	@Inject extension RObjectFactory

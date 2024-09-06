@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -30,11 +29,12 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ModelMetaGenerator {
 
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator

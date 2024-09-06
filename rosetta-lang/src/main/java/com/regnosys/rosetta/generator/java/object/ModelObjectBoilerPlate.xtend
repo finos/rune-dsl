@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder
@@ -23,10 +22,11 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ModelObjectBoilerPlate {
 
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem

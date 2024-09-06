@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.validator
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -32,10 +31,11 @@ import com.rosetta.model.lib.validation.ConditionValidation
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.model.lib.validation.ElementValidationResult
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension JavaTypeTranslator
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService

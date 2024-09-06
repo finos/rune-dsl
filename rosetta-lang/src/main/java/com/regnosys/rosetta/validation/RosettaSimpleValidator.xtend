@@ -2,7 +2,6 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
@@ -117,12 +116,13 @@ import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 // TODO: split expression validator
 // TODO: type check type call arguments
 class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
 	@Inject extension IQualifiedNameProvider
@@ -594,7 +594,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				val EObject toCheck = valuesByName.get(0)
 				val qName = toCheck.fullyQualifiedName
 				val sameNamed = resourceDescription.getExportedObjects(toCheck.eClass(), qName, false).filter [
-					isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
+					confExtensions.isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
 				].map[EObjectURI]
 				if (sameNamed.size > 1) {
 					error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
@@ -1088,7 +1088,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 	}
-	
+
 	@Check
 	def checkFunctionPrefix(Function ele) {
 		ele.annotations.forEach [ a |

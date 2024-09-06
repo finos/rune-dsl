@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
@@ -26,10 +25,11 @@ import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension ImportManagerExtension
 	@Inject JavaDependencyProvider dependencies
 	@Inject extension JavaIdentifierRepresentationService

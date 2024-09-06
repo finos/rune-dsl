@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.process.BuilderMerger
 import java.util.ArrayList
@@ -16,11 +15,12 @@ import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ModelObjectBuilderGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 
