@@ -173,7 +173,7 @@ public class RObjectFactory {
 	private RAttribute buildRAttribute(Attribute attribute, boolean isMeta) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);
 		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
-				.filter(a -> a.getAnnotation().getName().equals("metadata")).map(a -> buildRAttribute(a.getAttribute(), true))
+				.filter(a -> a.getAnnotation().getName().equals("metadata") && a.getAttribute() != null).map(a -> buildRAttribute(a.getAttribute(), true))
 				.collect(Collectors.toList());
 		PositiveIntegerInterval card = new PositiveIntegerInterval(
 				attribute.getCard().getInf(),
