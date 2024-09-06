@@ -233,6 +233,22 @@ class RosettaSimpleValidator extends AbstractDeclarativeValidator {
 			}
 		}
 	}
+	
+	@Check
+	def void switchStatementMustProvideCaseForAllEnumValues(SwitchOperation op) {
+		val argumentType = op.argument.RType
+		if (op.^default === null && argumentType instanceof REnumType) {
+			val enumConditions = op.values.map[it.enumCondition].toSet
+			
+			val enumeration = (argumentType as REnumType).enumeration
+			for (enumValue : enumeration.enumValues) {
+				if (!enumConditions.contains(enumValue)) {
+					error("Not all possible values of enumeration provided to switch, either provide all or use default", enumValue, null)
+				}
+			}
+		}
+		
+	}
 
 	@Check
  	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {

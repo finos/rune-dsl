@@ -30,6 +30,33 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+	
+ 	@Test
+ 	def void testValidSwitchSyntaxEnumFailsValitionWhenMissingEnumValues() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue"
+ 		'''
+
+ 		model.parseRosetta
+ 		.assertError(ROSETTA_ENUM_VALUE, null, "Not all possible values of enumeration provided to switch, either provide all or use default")
+ 	}	
 
 	@Test
  	def void testSwitchArgumentMatchesCaseStatmentTypes() {
