@@ -151,7 +151,7 @@ class TabulatorTest {
 					private final Field basicField;
 					private final Field subreportField;
 					private final Field subreportWithRuleField;
-			
+
 					private final SubreportTypeTabulator subreportTypeTabulator;
 			
 					@Inject
@@ -179,7 +179,7 @@ class TabulatorTest {
 							Arrays.asList()
 						);
 					}
-			
+
 					@Override
 					public List<FieldValue> tabulate(Report input) {
 						FieldValue basic = new FieldValueImpl(basicField, Optional.ofNullable(input.getBasic()));
@@ -293,9 +293,9 @@ class TabulatorTest {
 				class Impl implements ReportTypeTabulator {
 					private final Field basicListField;
 					private final Field subreportListField;
-			
+
 					private final SubreportTypeTabulator subreportTypeTabulator;
-			
+
 					@Inject
 					public Impl(SubreportTypeTabulator subreportTypeTabulator) {
 						this.subreportTypeTabulator = subreportTypeTabulator;
@@ -314,7 +314,7 @@ class TabulatorTest {
 							Arrays.asList()
 						);
 					}
-			
+
 					@Override
 					public List<FieldValue> tabulate(Report input) {
 						FieldValue basicList = new FieldValueImpl(basicListField, Optional.ofNullable(input.getBasicList()));
@@ -491,7 +491,7 @@ class TabulatorTest {
 					private final Field basic1Field;
 					private final Field basic2Field;
 					private final Field basic3Field;
-			
+
 					public Impl() {
 						this.basic1Field = new FieldImpl(
 							"basic1",
@@ -515,7 +515,7 @@ class TabulatorTest {
 							Arrays.asList()
 						);
 					}
-			
+
 					@Override
 					public List<FieldValue> tabulate(Report input) {
 						FieldValue basic1 = new FieldValueImpl(basic1Field, Optional.ofNullable(input.getBasic1()));
