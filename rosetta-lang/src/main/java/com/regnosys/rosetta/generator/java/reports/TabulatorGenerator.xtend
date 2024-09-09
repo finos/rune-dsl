@@ -1,43 +1,45 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.generator.java.JavaScope
-import javax.inject.Inject
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
-import com.rosetta.util.types.JavaClass
-import com.rosetta.model.lib.reports.Tabulator
-import com.regnosys.rosetta.types.RDataType
-import com.rosetta.util.DottedPath
-import com.rosetta.model.lib.reports.Tabulator.Field
-import com.rosetta.model.lib.reports.Tabulator.FieldImpl
-import java.util.Optional
+import com.google.inject.ImplementedBy
+import com.regnosys.rosetta.config.RosettaConfiguration
 import com.regnosys.rosetta.generator.GeneratedIdentifier
-import java.util.List
-import java.util.Arrays
-import com.rosetta.model.lib.reports.Tabulator.FieldValue
-import java.util.stream.Collectors
-import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
-import java.util.Map
-import com.regnosys.rosetta.types.RosettaTypeProvider
-import java.util.Set
-import org.apache.commons.text.StringEscapeUtils
-import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
-import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
-import com.rosetta.model.lib.ModelSymbolId
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.config.RosettaConfiguration
-import com.regnosys.rosetta.utils.ModelIdProvider
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil
-import com.google.inject.ImplementedBy
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.rosetta.model.lib.ModelSymbolId
+import com.rosetta.model.lib.reports.Tabulator
+import com.rosetta.model.lib.reports.Tabulator.Field
+import com.rosetta.model.lib.reports.Tabulator.FieldImpl
+import com.rosetta.model.lib.reports.Tabulator.FieldValue
+import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl
+import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl
+import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl
+import com.rosetta.util.DottedPath
+import com.rosetta.util.types.JavaClass
+import java.util.Arrays
+import java.util.List
+import java.util.Map
 import java.util.Objects
+import java.util.Optional
+import java.util.Set
+import java.util.stream.Collectors
+import javax.inject.Inject
+import javax.inject.Singleton
+import org.apache.commons.text.StringEscapeUtils
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.RosettaEcoreUtil
 
 class TabulatorGenerator {
@@ -296,7 +298,8 @@ class TabulatorGenerator {
 			'''
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-				public class Impl implements «tabulatorClass» {
+				@«Singleton»
+				class Impl implements «tabulatorClass» {
 					private final «innerTabulatorClass» «innerTabulatorInstance»;
 
 					@«Inject»
@@ -317,6 +320,7 @@ class TabulatorGenerator {
 			'''
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
+				@«Singleton»
 				class Impl implements «tabulatorClass» {
 
 					@Override
@@ -341,7 +345,8 @@ class TabulatorGenerator {
 		'''
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-			public class Impl implements «tabulatorClass» {
+			@«Singleton»
+			class Impl implements «tabulatorClass» {
 				«FOR attr : inputType.allNonOverridenAttributes»
 					«IF context.isTabulated(attr)»
 						«val fieldId = classScope.getIdentifierOrThrow(attr)»
