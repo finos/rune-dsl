@@ -151,7 +151,6 @@ class TabulatorTest {
 					private final Field basicField;
 					private final Field subreportField;
 					private final Field subreportWithRuleField;
-					
 					private final SubreportTypeTabulator subreportTypeTabulator;
 			
 					@Inject
