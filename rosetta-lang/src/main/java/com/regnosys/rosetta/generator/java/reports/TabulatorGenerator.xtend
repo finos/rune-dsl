@@ -352,11 +352,11 @@ class TabulatorGenerator {
 						private final «Field» «fieldId»;
 					«ENDIF»
 				«ENDFOR»
-		
 				«IF !nestedTabulatorInstances.empty»
-					«FOR tabInst : nestedTabulatorInstances»
-						private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-					«ENDFOR»
+				
+				«FOR tabInst : nestedTabulatorInstances»
+					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+				«ENDFOR»
 				«ENDIF»
 
 				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
