@@ -17,6 +17,7 @@
 package com.rosetta.model.lib.reports;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,11 +77,11 @@ public interface Tabulator<T> {
 		void visitMultiNested(MultiNestedFieldValue fieldValue, C context);
 	}
 	public static class FieldImpl implements Field {
-		private String attributeName;
-		private boolean isMulti;
-		private Optional<ModelSymbolId> ruleId;
-		private Optional<String> identifier;
-		private List<Field> children;
+		private final String attributeName;
+		private final boolean isMulti;
+		private final Optional<ModelSymbolId> ruleId;
+		private final Optional<String> identifier;
+		private final List<Field> children;
 		
 		public FieldImpl(String attributeName, boolean isMulti, Optional<ModelSymbolId> ruleId, Optional<String> identifier, List<Field> children) {
 			Objects.requireNonNull(ruleId);
@@ -91,7 +92,7 @@ public interface Tabulator<T> {
 			this.attributeName = attributeName;
 			this.isMulti = isMulti;
 			this.identifier = identifier;
-			this.children = children;
+			this.children = Collections.unmodifiableList(children);
 		}
 		@Override
 		public String getName() {

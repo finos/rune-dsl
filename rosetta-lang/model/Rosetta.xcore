@@ -46,16 +46,10 @@ interface RosettaTyped {
 	}
 }
 
-class RosettaFeature extends RosettaNamed {
-	/**
-	 * @return The name or 'value' if it's <code>null</code>
-	 */
-	derived String getNameOrDefault get {
-		return name ?: 'value'
-	}
+interface RosettaFeature extends RosettaNamed {
 }
 
-class RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
+interface RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
 
 /**
  * A named symbol that may be used in an expression to reference an object
@@ -144,7 +138,7 @@ class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinab
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaNamed, RosettaDefinable, RosettaFeature, References {
+class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References {
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues

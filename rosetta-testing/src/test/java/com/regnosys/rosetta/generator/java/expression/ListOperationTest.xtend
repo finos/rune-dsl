@@ -1025,8 +1025,7 @@ class ListOperationTest {
 										return MapperS.of(Foo.builder()
 											.setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
 											.setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
-											.build()
-										);
+											.build());
 									}
 									return item;
 								}).getMulti());

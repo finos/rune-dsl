@@ -16,7 +16,7 @@
 
 package com.regnosys.rosetta.transgest;
 
-import static com.regnosys.rosetta.generator.util.Util.fullname;
+import static com.regnosys.rosetta.generator.util.IterableUtil.fullname;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

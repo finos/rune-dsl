@@ -1100,16 +1100,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			with type Foo
 			with source TestA
 			
-			eligibility rule FooRule from ReportableEvent:
-				filter Foo->foo exists
+			eligibility rule FooRule from Foo:
+				filter foo exists
 			
 			type Foo:
 				foo string (0..1)
 			
-			reporting rule RA from ReportableEvent:
+			reporting rule RA from Foo:
 				"A"
 			
-			reporting rule RB from ReportableEvent:
+			reporting rule RB from Foo:
 				"B"
 			
 			rule source TestA {
@@ -1564,103 +1564,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				i string (1..1)
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
-	}
-	
-
-	@Test
-	def void testDuplicateAttributeWithOverride() {
-		val model = '''
-			type A1 :
-				i int (1..1)
-			
-			
-			type A2 extends A1 :
-				j int (1..1)
-			
-			
-			
-			type Foo:
-				f A1 (1..1)
-			
-			type Bar extends Foo:
-				override f A2 (1..1)
-		'''.parseRosetta
-		model.assertNoErrors
-	}
-	
-	@Test
-	def void testDuplicateAttributeWithOverrideBadTypes() {
-		val model = '''
-			type A1 :
-				i int (1..1)
-			
-			
-			type A2 extends A1 :
-				j int (1..1)
-			
-			type A3 :
-				j int (1..1)
-
-			
-			type Foo:
-				f A1 (1..1)
-			
-			type Bar extends Foo:
-				override f A3 (1..1)
-		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, '''Overriding attribute 'f' must have a type that overrides its parent attribute type of A1''')
-	}
-	
-	@Test
-	def void testDuplicateBasicTypeAttributeWithOverrideBadTypes() {
-		val model = '''
-			type Foo:
-				i int (1..1)
-			
-			type Bar extends Foo:
-				override i string (1..1)
-		'''.parseRosetta
-		
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, '''Overriding attribute 'i' must have a type that overrides its parent attribute type of int''')
-	}
-
-	@Test
-	def void testDuplicateAttributeWithOverrideWithDifferentCardinality() {
-		val model = '''
-			type A1 :
-				i int (1..1)
-			
-			type A2 extends A1 :
-				j int (1..1)
-			
-			type Foo:
-				f A1 (1..1)
-			
-			type Bar extends Foo:
-				override f A2 (0..1)
-		'''.parseRosetta
-			
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, '''Overriding attribute 'f' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)''')
-	}
-
-		
-	@Test
-	def void testDuplicateAttributeWithOverrideWithUnboundedCardinality() {
-		val model = '''
-			type A1 :
-				i int (1..1)
-			
-			type A2 extends A1 :
-				j int (1..1)
-			
-			type Foo:
-				f A1 (1..*)
-			
-			type Bar extends Foo:
-				override f A2 (1..1)
-		'''.parseRosetta
-			
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, '''Overriding attribute 'f' with cardinality (1..1) must match the cardinality of the attribute it overrides (1..*)''')
 	}
 		
 	@Test

@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.types;
 
-public interface RAssignedRoot {
+public interface RAssignedRoot extends RObject {
 	String getName();
+	boolean isMulti();
 }

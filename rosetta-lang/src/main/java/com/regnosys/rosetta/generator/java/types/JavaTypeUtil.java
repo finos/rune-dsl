@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
+import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
@@ -73,6 +74,8 @@ public class JavaTypeUtil {
 	public final JavaGenericTypeDeclaration<MapperC<?>> MAPPER_C = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaClass<ComparisonResult> COMPARISON_RESULT = JavaClass.from(ComparisonResult.class);
 	public final JavaGenericTypeDeclaration<MapperListOfLists<?>> MAPPER_LIST_OF_LISTS = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	
+	public final JavaClass<RosettaModelObject> ROSETTA_MODEL_OBJECT = JavaClass.from(RosettaModelObject.class);
 
 	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, itemType.toReferenceType());

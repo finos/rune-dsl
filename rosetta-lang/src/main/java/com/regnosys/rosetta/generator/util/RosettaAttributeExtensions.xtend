@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.util
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.generator.object.ExpandedSynonym
 import com.regnosys.rosetta.generator.object.ExpandedSynonymValue
@@ -29,7 +28,9 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import org.eclipse.xtext.util.SimpleCache
+import com.regnosys.rosetta.RosettaEcoreUtil
 
+@Deprecated // Use RosettaExtensions instead
 class RosettaAttributeExtensions {
 
 	static def boolean cardinalityIsSingleValue(ExpandedAttribute attribute) {
@@ -68,7 +69,7 @@ class RosettaAttributeExtensions {
 	
 	private static def List<ExpandedAttribute> additionalAttributes(Data data) {
 		val res = newArrayList
-		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
+		val rosExt = new RosettaEcoreUtil // Can't inject as used in rosetta-translate and daml directly
 		if(rosExt.hasKeyedAnnotation(data)){
 			res.add(new ExpandedAttribute(
 				'meta',
@@ -95,7 +96,7 @@ class RosettaAttributeExtensions {
 	static SimpleCache<Data, ExpandedType> metaFieldsCache = new SimpleCache[Data data|
 		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
 		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE
-		val rosExt = new RosettaExtensions // Can't inject as used in rosetta-translate and daml directly
+		val rosExt = new RosettaEcoreUtil // Can't inject as used in rosetta-translate and daml directly
 		val name = if (rosExt.hasTemplateAnnotation(data)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
 		return new ExpandedType(rosModel, name, true, false, false)
 	]
@@ -154,7 +155,7 @@ class RosettaAttributeExtensions {
 					annoRef.annotation.name,
 					annoAttr.typeCall.type.toExpandedType,
 					annoAttr.typeCall,
-					annoAttr.override,
+					false,
 					0,
 					1,
 					false,
@@ -171,7 +172,7 @@ class RosettaAttributeExtensions {
 			(attr.eContainer as RosettaType).name,
 			attr.typeCall?.type?.toExpandedType,
 			attr.typeCall,
-			attr.override,
+			false,
 			attr.card.inf,
 			attr.card.sup,
 			attr.card.unbounded,

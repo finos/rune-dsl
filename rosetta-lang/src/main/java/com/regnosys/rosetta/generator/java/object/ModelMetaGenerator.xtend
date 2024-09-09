@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -29,34 +28,36 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ModelMetaGenerator {
 
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
+	@Inject extension ModelIdProvider
 	
-	def generate(RootPackage root, IFileSystemAccess2 fsa, Data data, String version) {
-		val className = '''«data.name»Meta'''
+	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
+		val className = '''«t.name»Meta'''
 		
 		val scope = new JavaScope(root.meta)
 		
-		val classBody = data.metaClassBody(root, className, version)
+		val classBody = t.metaClassBody(root, className, version)
 		val javaFileContents = buildClass(root.meta, classBody, scope)
 		fsa.generateFile('''«root.meta.withForwardSlashes»/«className».java''', javaFileContents)
 	}
 	
-	private def StringConcatenationClient metaClassBody(Data c, RootPackage root, String className, String version) {
-		val t = new RDataType(c)
+	private def StringConcatenationClient metaClassBody(RDataType t, RootPackage root, String className, String version) {
 		val dataClass = t.toJavaType
 		val validator = t.toValidatorClass
 		val typeFormatValidator = t.toTypeFormatValidatorClass
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
-		val context = c.eResource.resourceSet
-		val qualifierFuncs = qualifyFuncs(c, context.resources.map[contents.head as RosettaModel].toSet)
-		val conditions = c.allSuperTypes.map[it.conditionRules(it.conditions)].flatten
+		val context = t.EObject.eResource.resourceSet
+		val qualifierFuncs = qualifyFuncs(t.EObject, context.resources.map[contents.head as RosettaModel].toSet)
+		val conditions = t.allSuperTypes.map[conditionRules(it.EObject.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -66,8 +67,8 @@ class ModelMetaGenerator {
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
 						«FOR r : conditions SEPARATOR ','»
-							«val containingClassName = r.containingClassNamespace + '.' + r.className»
-							«val conditionClassName = r.containingClassNamespace.condition + '.' + r.ruleName.toConditionJavaType»
+							«val containingClassName = r.containingClassNamespace.child(r.className)»
+							«val conditionClassName = r.containingClassNamespace.condition.child(r.conditionName.toConditionJavaType)»
 							factory.<«containingClassName»>create(«conditionClassName».class)
 						«ENDFOR»
 					);
@@ -113,15 +114,15 @@ class ModelMetaGenerator {
 		return funcs.filter[funcExt.isQualifierFunctionFor(it,type)].toSet
 	}
 	
-	private def List<ClassRule> conditionRules(Data d, List<Condition> elements) {
-		val dataNamespace = new RootPackage(d.model)
-		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(d), dataNamespace)].toList
+	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
+		val dataNamespace = new RootPackage(t.EObject.model.toDottedPath)
+		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t), dataNamespace)].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data
 	static class ClassRule {
 		String className
-		String ruleName
+		String conditionName
 		RootPackage containingClassNamespace
 	}
 }

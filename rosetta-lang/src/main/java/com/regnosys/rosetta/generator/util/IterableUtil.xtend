@@ -5,7 +5,8 @@ import java.util.Iterator
 import java.util.NoSuchElementException
 import com.regnosys.rosetta.rosetta.RosettaType
 
-class Util {
+@Deprecated
+class IterableUtil {
 	
 	static def <T> Iterable<T> distinct(Iterable<T> parentIterable) {
 		return new DistinctByIterator(parentIterable, [it])
@@ -61,6 +62,8 @@ class Util {
 		}
 	}
 	
+	@Deprecated // Inject ModelIdProvider instead
 	def static String fullname(RosettaType clazz) '''«clazz.model.name».«clazz.name»'''
+	@Deprecated // Inject ModelIdProvider instead
 	def static String packageName(RosettaType clazz)  {clazz.model.name}
 }

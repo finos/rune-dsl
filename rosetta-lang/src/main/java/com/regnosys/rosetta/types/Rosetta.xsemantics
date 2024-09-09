@@ -27,8 +27,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RListType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.TypeFactory
@@ -48,7 +46,6 @@ import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RNumberType
 import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
@@ -67,14 +64,20 @@ import com.regnosys.rosetta.interpreter.RosettaValue
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.RosettaRule
 import java.math.BigInteger
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.RObjectFactory
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
+inject extension ModelIdProvider modelIdProvider
+inject extension RObjectFactory objectFactory
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
+inject TypeSystem typeSystem
 
 
 auxiliary {
@@ -125,7 +128,7 @@ auxiliary symbolListType(ClosureParameter c) {
 }
 
 auxiliary symbolListType(RosettaEnumeration c) {
-	return createListType(new REnumType(c), single)
+	return createListType(c.buildREnumType, single)
 }
 
 auxiliary symbolListType(ShortcutDeclaration c) {
@@ -163,7 +166,7 @@ auxiliary typeOfImplicitVariable(EObject c) {
 	val definingContainer = c.findContainerDefiningImplicitVariable
 	definingContainer.map [
 		if (it instanceof Data) {
-			createListType(new RDataType(it), single)
+			createListType(it.buildRDataType, single)
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
@@ -215,12 +218,12 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
-		Data: new RDataType(t)
+		Data: t.buildRDataType
 		RosettaBuiltinType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			builtinTypes.getType(t.name, argMap).orElse(null)
 		}
-		RosettaEnumeration: new REnumType(t)
+		RosettaEnumeration: t.buildREnumType
 		RosettaMetaType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			val builtinResult = builtinTypes.getType(t.name, argMap)
@@ -252,87 +255,10 @@ auxiliary attributeListType(Attribute a) {
 }
 
 /*** SUBTYPING **/
-rule SData // SA-Refl, SA-Ancestor
-	G |- RDataType t1 <: RDataType t2
-from {
-	{
-		t1 == t2
-	} or
-	{
-		ancestors(t1.^data).contains(t2.^data)
-	}
-}
-
-rule SNumber
-	G |- RNumberType t1 <: RNumberType t2
-from {
-	true
-}
-rule SString
-	G |- RStringType t1 <: RStringType t2
-from {
-	true
-}
-rule SBasic // SA-Refl, SA-Nothing
-	G |- RBasicType t1 <: RBasicType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t1 == NOTHING
-	} or {
-		t2 == ANY
-	}
-}
-rule SNothing // SA-Refl, SA-Nothing
-	G |- RBasicType t1 <: RType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t1 == NOTHING
-	}
-}
-rule SAny // SA-Refl, SA-Nothing
-	G |- RType t1 <: RBasicType t2
-from {
-	{
-		t1 == t2
-	} or {
-		t2 == ANY
-	}
-}
-
-rule SAliasBoth
-	G |- RAliasType t1 <: RAliasType t2
-from {
-	G |- t1.refersTo <: t2.refersTo
-}
-rule SAliasLeft
-	G |- RAliasType t1 <: RType t2
-from {
-	G |- t1.refersTo <: t2
-}
-rule SAliasRight
-	G |- RType t1 <: RAliasType t2
-from {
-	G |- t1 <: t2.refersTo
-}
-rule SAliasBasic
-	G |- RAliasType t1 <: RBasicType t2
-from {
-	G |- t1.refersTo <: t2
-}
-rule SBasicAlias
-	G |- RBasicType t1 <: RAliasType t2
-from {
-	G |- t1 <: t2.refersTo
-}
-
-rule SRefl
+rule SAll
 	G |- RType t1 <: RType t2
 from {
-	t1 == t2
+	typeSystem.isSubtypeOf(t1, t2)
 }
 
 /*** LIST SUBTYPING ***/
