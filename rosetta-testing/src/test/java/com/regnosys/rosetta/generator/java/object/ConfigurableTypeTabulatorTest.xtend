@@ -45,6 +45,7 @@ class ConfigurableTypeTabulatorTest {
 				class Impl implements FooTypeTabulator {
 					private final Field barField;
 			
+			
 					public Impl() {
 						this.barField = new FieldImpl(
 							"bar",
@@ -176,6 +177,7 @@ class ConfigurableTypeTabulatorTest {
 				@Singleton
 				class Impl implements EngineSpecificationTypeTabulator {
 					private final Field fuelField;
+			
 			
 					public Impl() {
 						this.fuelField = new FieldImpl(

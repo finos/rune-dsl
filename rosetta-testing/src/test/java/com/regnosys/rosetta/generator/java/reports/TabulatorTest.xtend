@@ -492,6 +492,7 @@ class TabulatorTest {
 					private final Field basic2Field;
 					private final Field basic3Field;
 			
+			
 					public Impl() {
 						this.basic1Field = new FieldImpl(
 							"basic1",

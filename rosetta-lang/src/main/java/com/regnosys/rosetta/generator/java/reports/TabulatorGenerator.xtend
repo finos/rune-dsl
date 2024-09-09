@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.reports
 
 import com.google.inject.ImplementedBy
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.config.RosettaConfiguration
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -14,7 +15,6 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.regnosys.rosetta.utils.ModelIdProvider
@@ -40,7 +40,6 @@ import javax.inject.Singleton
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.regnosys.rosetta.RosettaEcoreUtil
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -353,11 +352,11 @@ class TabulatorGenerator {
 						private final «Field» «fieldId»;
 					«ENDIF»
 				«ENDFOR»
+		
 				«IF !nestedTabulatorInstances.empty»
-
-				«FOR tabInst : nestedTabulatorInstances»
-					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
-				«ENDFOR»
+					«FOR tabInst : nestedTabulatorInstances»
+						private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
+					«ENDFOR»
 				«ENDIF»
 
 				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
