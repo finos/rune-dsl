@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.generator.java.types;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,9 +29,20 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class RJavaEnum extends JavaClass<Object> {	
 	private final REnumType enumeration;
+	private List<RJavaEnumValue> enumValues = null;
 
 	public RJavaEnum(REnumType enumeration) {
 		this.enumeration = enumeration;
+	}
+	
+	public List<RJavaEnumValue> getEnumValues() {
+		if (enumValues == null) {
+			enumValues = new ArrayList<>();
+			for (REnumType p : enumeration.getParents()) {
+				
+			}
+		}
+		return enumValues;
 	}
 
 	@Override
