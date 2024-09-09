@@ -105,6 +105,7 @@ class ConfigurableTypeTabulatorTest {
 				@Singleton
 				class Impl implements FooTypeTabulator {
 					private final Field barField;
+			
 					private final BarTypeTabulator barTypeTabulator;
 			
 					@Inject

@@ -151,6 +151,7 @@ class TabulatorTest {
 					private final Field basicField;
 					private final Field subreportField;
 					private final Field subreportWithRuleField;
+			
 					private final SubreportTypeTabulator subreportTypeTabulator;
 			
 					@Inject
@@ -292,6 +293,7 @@ class TabulatorTest {
 				class Impl implements ReportTypeTabulator {
 					private final Field basicListField;
 					private final Field subreportListField;
+			
 					private final SubreportTypeTabulator subreportTypeTabulator;
 			
 					@Inject
