@@ -13,14 +13,12 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.RosettaEcoreUtil
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaExtensionsTest {
 	
-	@Inject extension ParseHelper<RosettaModel> 
-	@Inject extension RosettaEcoreUtil
+	@Inject extension ParseHelper<RosettaModel>
 	@Inject extension RObjectFactory
 	
 	@Test
@@ -65,12 +63,13 @@ class RosettaExtensionsTest {
 			enum Baz extends Bar:
 				baz
 		'''.parse
-		val foo = model.elements.filter(RosettaEnumeration).head()
-		val bar = model.elements.filter(RosettaEnumeration).get(1)
-		val baz = model.elements.filter(RosettaEnumeration).last()
-		assertEquals(#{foo, bar, baz}, baz.allSuperEnumerations)
-		assertEquals(#{foo, bar}, bar.allSuperEnumerations)
-		assertEquals(#{foo}, foo.allSuperEnumerations)
+		val elems = model.elements.filter(RosettaEnumeration).map[buildREnumType]
+		val foo = elems.head()
+		val bar = elems.get(1)
+		val baz = elems.last()
+		assertEquals(#{foo, bar, baz}, baz.allParents.toSet)
+		assertEquals(#{foo, bar}, bar.allParents.toSet)
+		assertEquals(#{foo}, foo.allParents.toSet)
 		assertEquals(#['baz', 'bar', 'foo0', 'foo1'], baz.allEnumValues.map[name].toList)
 		assertEquals(#['bar', 'foo0', 'foo1'], bar.allEnumValues.map[name].toList)
 		assertEquals(#['foo0', 'foo1'], foo.allEnumValues.map[name].toList)

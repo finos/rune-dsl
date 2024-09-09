@@ -16,8 +16,14 @@
 
 package com.regnosys.rosetta.types;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -26,14 +32,17 @@ public class REnumType extends RAnnotateType implements RObject {
 	private final RosettaEnumeration enumeration;
 	
 	private ModelSymbolId symbolId = null;
+	private List<REnumType> parents = null;
 	
 	private final ModelIdProvider modelIdProvider;
+	private final RObjectFactory objectFactory;
 
-	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider) {
+	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
 		super();
 		this.enumeration = enumeration;
 		
 		this.modelIdProvider = modelIdProvider;
+		this.objectFactory = objectFactory;
 	}
 	
 	@Override
@@ -47,6 +56,51 @@ public class REnumType extends RAnnotateType implements RObject {
 	@Override
 	public RosettaEnumeration getEObject() {
 		return this.enumeration;
+	}
+	
+	public List<REnumType> getParents() {
+		if (parents == null) {
+			parents = enumeration.getParentEnums().stream().map(e -> objectFactory.buildREnumType(e)).collect(Collectors.toList());
+		}
+		return parents;
+	}
+	/**
+	 * Get a list of all parents of this enum type, including itself.
+	 * 
+	 * The list is ordered from the most top-level enumeration to the least (i.e., itself). In case of multiple parents,
+	 * the order is left-to-right depth-first.
+	 */
+	public List<REnumType> getAllParents() {
+		LinkedHashSet<REnumType> reversedResult = new LinkedHashSet<>();
+		doGetAllParents(this, reversedResult);
+		List<REnumType> result = reversedResult.stream().collect(Collectors.toCollection(ArrayList::new));
+		Collections.reverse(result);
+		return result;
+	}
+	private void doGetAllParents(REnumType current, LinkedHashSet<REnumType> parents) {
+		if (parents.add(current)) {
+			current.getParents().forEach(p -> doGetAllParents(p, parents));
+		}
+	}
+	
+	/**
+	 * Get a list of the enum values defined in this enumeration. This does not include enum values of any parents.
+	 */
+	public List<RosettaEnumValue> getOwnEnumValues() {
+		return enumeration.getEnumValues();
+	}
+	
+	/**
+	 * Get a list of all enum values of this enumeration, including all enum values of its parents.
+	 * 
+	 * The list starts with the enum values of the top-most enumeration, and ends with the enum values of itself. In case of multiple parents,
+	 * the order is left-to-right depth-first.
+	 */
+	public List<RosettaEnumValue> getAllEnumValues() {
+		return getAllParents()
+				.stream()
+				.flatMap(p -> p.getOwnEnumValues().stream())
+				.collect(Collectors.toList());
 	}
 
 	@Override

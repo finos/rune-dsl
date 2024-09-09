@@ -81,6 +81,7 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.RosettaEcoreUtil
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -95,6 +96,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
+	@Inject extension ExpectedTypeProvider
 	
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -291,7 +293,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		} else {
 			val joined = join(ifT, elseT)
 			if (joined == ANY) {
-				new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
+				new RErrorType('''Types `«ifT»` and `«elseT»` do not have a common supertype.''')
+			} else if (joined instanceof RUnionType) {
+				val expected = expr.expectedTypeFromContainer
+				if (expected !== null && joined.isSubtypeOf(expected)) {
+					expected
+				} else {
+					new RErrorType('''Cannot infer common supertype of `«ifT»` and `«elseT»`.''')
+				}
 			} else {
 				joined
 			}
@@ -397,8 +406,17 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	override protected caseListLiteral(ListLiteral expr, Map<EObject, RType> cycleTracker) {
 		val types = expr.elements.map[RType].filter[it !== null]
 		val joined = types.join
+		val unique = newLinkedHashSet(types)
+		val StringConcatenationClient failedList = '''«FOR t: unique.take(unique.size-1) SEPARATOR ", "»`«t»`«ENDFOR» and `«unique.last»`'''
 		if (joined == ANY) {
-			new RErrorType(types.groupBy[name].keySet.join(', '))
+			new RErrorType('''Types «failedList» do not have a common supertype.''')
+		} else if (joined instanceof RUnionType) {
+			val expected = expr.expectedTypeFromContainer
+			if (expected !== null && joined.isSubtypeOf(expected)) {
+				expected
+			} else {
+				new RErrorType('''Cannot infer common supertype of «failedList».''')
+			}
 		} else {
 			joined
 		}

@@ -49,7 +49,6 @@ auxiliary {
 	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
-	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
 	mayBeEmpty(RDataType d)
 	
 	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
@@ -66,8 +65,8 @@ auxiliary ancestors(Data t) {
 }
 auxiliary ancestorEnums(RosettaEnumeration t) {
 	getAll(t,
-		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
-		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_ParentEnums,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_ParentEnums,
 		typeof(RosettaEnumeration)
 	)
 }
@@ -89,13 +88,6 @@ auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 auxiliary listJoin(RListType t1, RListType t2) {
 	val sup = join(t1.itemType, t2.itemType);
 	return createListType(sup, union(t1.constraint, t2.constraint))
-}
-auxiliary allEnumValues(RosettaEnumeration e) {
-	if (e.superType === null) {
-		return e.enumValues;
-	} else {
-		return allEnumValues(e.superType) + e.enumValues;
-	}
 }
 auxiliary mayBeEmpty(RDataType t) {
 	t.allAttributes.forall[
@@ -144,7 +136,7 @@ auxiliary allFeatures(RType t, ResourceSet resourceSet) {
 		RDataType:
 			t.allNonOverridenAttributes.map[EObject]
 		REnumType:
-			t.EObject.allEnumValues
+			t.allEnumValues
 		RRecordType: {
 			if (resourceSet !== null) {
 				builtinTypes.toRosettaType(t, RosettaRecordType, resourceSet).features

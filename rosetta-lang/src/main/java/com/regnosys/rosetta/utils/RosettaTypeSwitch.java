@@ -23,6 +23,7 @@ import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RParametrizedType;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RUnionType;
 import com.regnosys.rosetta.types.builtin.RBasicType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RDateTimeType;
@@ -53,6 +54,8 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 			return doSwitch((RParametrizedType)type, context);
 		} else if (type instanceof RRecordType) {
 			return doSwitch((RRecordType)type, context);
+		} else if (type instanceof RUnionType) {
+			return caseUnionType((RUnionType)type, context);
 		}
 		throw errorMissedCase(type);
 	}
@@ -107,6 +110,8 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 	protected abstract Return caseEnumType(REnumType type, Context context);
 	
 	protected abstract Return caseAliasType(RAliasType type, Context context);
+	
+	protected abstract Return caseUnionType(RUnionType type, Context context);
 	
 	protected abstract Return caseNumberType(RNumberType type, Context context);
 	protected abstract Return caseStringType(RStringType type, Context context);

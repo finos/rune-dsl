@@ -26,6 +26,9 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
@@ -45,6 +48,7 @@ import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.ROperation;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RUnionType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.builtin.RBasicType;
@@ -72,6 +76,8 @@ import com.rosetta.util.types.generated.GeneratedJavaClass;
 import com.rosetta.util.types.generated.GeneratedJavaClassService;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
+	private static Logger LOGGER = LoggerFactory.getLogger(JavaTypeTranslator.class);
+	
 	@Inject
 	public JavaTypeTranslator(RBuiltinTypeService builtins) {
 		super(builtins);
@@ -403,5 +409,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Override
 	protected JavaClass<ZonedDateTime> caseZonedDateTimeType(RZonedDateTimeType type, Void context) {
 		return typeUtil.ZONED_DATE_TIME;
+	}
+	@Override
+	protected JavaClass<Object> caseUnionType(RUnionType type, Void context) {
+		// As union types are purely internal to the Rune type system, this should never happen.
+		LOGGER.error("Trying to convert " + RUnionType.class.getSimpleName() + " `" + type + "` to a Java type");
+		return typeUtil.OBJECT;
 	}
 }

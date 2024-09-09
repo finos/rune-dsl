@@ -213,6 +213,6 @@ public class RObjectFactory {
 		return new RDataType(data, modelIdProvider, this, additionalAttributes);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
-		return new REnumType(enumeration, modelIdProvider);
+		return new REnumType(enumeration, modelIdProvider, this);
 	}
 }

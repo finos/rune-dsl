@@ -16,7 +16,7 @@ public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
-	public boolean isSubtypeOf(RType t1, RType t2) {
+	public boolean isSubtypeOf(RType t1, RType t2) {		
 		if (t1.equals(t2)) {
 			return true;
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
@@ -31,6 +31,12 @@ public class SubtypeRelation {
 				return false;
 			}
 			return isSubtypeOf(st, t2);
+		} else if (t1 instanceof RUnionType) {
+			return ((RUnionType)t1).getTypes().stream().allMatch(t -> isSubtypeOf(t, t2));
+		} else if (t2 instanceof RUnionType) {
+			return ((RUnionType)t2).getTypes().stream().anyMatch(t -> isSubtypeOf(t1, t));
+		} else if (t2 instanceof REnumType) {
+			return ((REnumType)t2).getParents().stream().anyMatch(p -> isSubtypeOf(t1, p));
 		} else if (t1 instanceof RAliasType) {
 			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2);
 		} else if (t2 instanceof RAliasType) {
@@ -50,6 +56,14 @@ public class SubtypeRelation {
 			return join((RStringType)t1, (RStringType)t2);
 		} else if (t1 instanceof RDataType && t2 instanceof RDataType) {
 			return join((RDataType)t1, (RDataType)t2);
+		} else if (t1 instanceof REnumType && t2 instanceof REnumType) {
+			return join((REnumType)t1, (REnumType)t2);
+		} else if (t1 instanceof RUnionType && t2 instanceof RUnionType) {
+			return join((RUnionType)t1, (RUnionType)t2);
+		} else if (t1 instanceof RUnionType) {
+			return join((RUnionType)t1, t2);
+		} else if (t2 instanceof RUnionType) {
+			return join(t1, (RUnionType)t2);
 		} else if (t1 instanceof RAliasType && t2 instanceof RAliasType) {
 			return join((RAliasType)t1, (RAliasType)t2);
 		} else if (t1 instanceof RAliasType) {
@@ -72,6 +86,53 @@ public class SubtypeRelation {
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
+	}
+	public RType join(REnumType t1, REnumType t2) {
+		if (isSubtypeOf(t1, t2)) {
+			return t2;
+		} else if (isSubtypeOf(t2, t1)) {
+			return t1;
+		}
+		return new RUnionType(t1, t2);
+	}
+	public RType join(RUnionType t1, RUnionType t2) {
+		ArrayList<RType> allTypes = new ArrayList<>(t1.getTypes().size() + t2.getTypes().size());
+		allTypes.addAll(t1.getTypes());
+		allTypes.addAll(t2.getTypes());
+		return joinWithUnion(allTypes);
+	}
+	public RType join(RUnionType t1, RType t2) {
+		ArrayList<RType> allTypes = new ArrayList<>(t1.getTypes().size() + 1);
+		allTypes.addAll(t1.getTypes());
+		allTypes.add(t2);
+		return joinWithUnion(allTypes);
+	}
+	public RType join(RType t1, RUnionType t2) {
+		ArrayList<RType> allTypes = new ArrayList<>(t2.getTypes().size() + 1);
+		allTypes.add(t1);
+		allTypes.addAll(t2.getTypes());
+		return joinWithUnion(allTypes);
+	}
+	private RType joinWithUnion(ArrayList<RType> types) {
+		// Trim types which are the subtype of any other type in the union
+		for (int i=types.size()-1; i>=0; i--) {
+			RType toCheck = types.get(i);
+			for (int j=0; j<types.size(); j++) {
+				if (i!=j) {
+					RType other = types.get(j);
+					if (isSubtypeOf(toCheck, other)) {
+						types.set(j, join(other, toCheck));
+						types.remove(i);
+						break;
+					}
+				}
+			}
+		}
+		
+		if (types.size() == 1) {
+			return types.get(0);
+		}
+		return new RUnionType(types);
 	}
 	public RType join(RAliasType t1, RAliasType t2) {
 		if (t1.equals(t2)) {

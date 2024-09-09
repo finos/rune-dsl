@@ -71,7 +71,7 @@ public class RJavaEnum extends JavaClass<Object> {
 
 	@Override
 	public boolean extendsDeclaration(JavaTypeDeclaration<?> other) {
-		return false;
+		return other.equals(JavaClass.OBJECT);
 	}
 
 	@Override

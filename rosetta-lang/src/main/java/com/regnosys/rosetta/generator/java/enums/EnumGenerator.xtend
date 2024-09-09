@@ -4,10 +4,8 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.rosetta.model.lib.annotations.RosettaEnum
 import com.rosetta.model.lib.annotations.RosettaSynonym
-import java.util.ArrayList
 import java.util.Collections
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
@@ -17,34 +15,28 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
+	@Inject extension JavaTypeTranslator
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaEnumeration enumeration, String version) {
+	def generate(RootPackage root, IFileSystemAccess2 fsa, REnumType enumeration, String version) {
 		fsa.generateFile(root.withForwardSlashes + '/' + enumeration.name + '.java', enumeration.toJava(root, version))
 	}
-	
-	private def allEnumsValues(RosettaEnumeration enumeration) {
-		val enumValues = new ArrayList
-		var e = enumeration;
 
-		while (e !== null) {
-			e.enumValues.forEach[enumValues.add(it)]
-			e = e.superType
-		}
-		return enumValues;
-	}
-
-	private def String toJava(RosettaEnumeration e, RootPackage root, String version) {
+	private def String toJava(REnumType e, RootPackage root, String version) {
 		val scope = new JavaScope(root)
 		
-		val StringConcatenationClient classBody = '''
-		«javadoc(e, version)»
-		@«RosettaEnum»("«e.name»")
-		public enum «e.name» {
+		val clazz = e.toJavaReferenceType
 		
-			«FOR value: allEnumsValues(e) SEPARATOR ',\n' AFTER ';'»
+		val StringConcatenationClient classBody = '''
+		«javadoc(e.EObject, version)»
+		@«RosettaEnum»("«e.name»")
+		public enum «clazz» {
+		
+			«FOR value: e.allEnumValues SEPARATOR ',\n' AFTER ';'»
 				«javadoc(value)»
 				«value.contributeAnnotations»
 				@«com.rosetta.model.lib.annotations.RosettaEnumValue»(value = "«value.name»"«IF value.display !== null», displayName = "«value.display»"«ENDIF») «convertValuesWithDisplay(value)»
@@ -78,6 +70,15 @@ class EnumGenerator {
 				}
 				return value;
 			}
+			
+			«FOR p : e.allParents»
+			«val parentClass = p.toJavaReferenceType»
+			«val fromScope = scope.methodScope("from" + parentClass.simpleName)»
+			«val fromParam = fromScope.createUniqueIdentifier(parentClass.simpleName.toFirstLower)»
+			public static «clazz» from«parentClass»(«parentClass» «fromParam») {
+				
+			}
+			«ENDFOR»
 		
 			@Override
 			public «String» toString() {

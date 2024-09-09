@@ -377,35 +377,6 @@ from {
 	}
 }
 
-rule TList
-	G |- ListLiteral e : RListType t
-from {
-	val telems = newArrayList
-	if (e.elements.forall[
-		var RListType telem
-		empty |- it : telem or telem = null
-		if (telem === null) {
-			false
-		} else {
-			telems.add(telem)
-			true
-		}
-	]) {
-		t = telems.fold(emptyNothing, [ RListType acc, RListType telem |
-			if (acc === null) {
-				null
-			} else {
-				val sup = join(telem.itemType, acc.itemType);
-				if ({G |- ANY <: sup}) {
-					null
-				} else {
-					createListType(sup, telem.constraint + acc.constraint)
-				}
-			}
-		])
-	}
-}
-
 rule TProject // TA-Project
 	G |- RosettaFeatureCall e : RListType t
 from { // TODO: support metadata feature calls?

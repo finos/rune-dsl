@@ -624,7 +624,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
 		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
 		
-		// TODO: fix result type (should join both types)
 		condition
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]

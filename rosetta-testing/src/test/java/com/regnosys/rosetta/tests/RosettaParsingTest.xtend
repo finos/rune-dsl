@@ -35,6 +35,30 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testAccessEnumValueOfMultiEnumExtension() {
+		val model = '''
+		enum A:
+			VALUE_A
+		
+		enum B:
+			VALUE_B
+		
+		enum C extends A, B:
+			VALUE_C
+		'''.parseRosettaWithNoIssues
+		
+		"C -> VALUE_C"
+			.parseExpression(#[model])
+			.assertNoIssues
+		"C -> VALUE_A"
+			.parseExpression(#[model])
+			.assertNoIssues
+		"C -> VALUE_B"
+			.parseExpression(#[model])
+			.assertNoIssues
+	}
+	
+	@Test
 	def void testFullyQualifiedNamesCanBeUsedInExpression() {
 		val modelBar = '''
 			namespace test.bar

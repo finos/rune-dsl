@@ -1,7 +1,6 @@
 package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -50,7 +49,7 @@ class RosettaEcoreUtil {
 			RDataType:
 				t.allNonOverridenAttributes.map[EObject]
 			REnumType:
-				t.EObject.allEnumValues
+				t.allEnumValues
 			RRecordType: {
 				if (resourceSet !== null) {
 					builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
@@ -61,23 +60,6 @@ class RosettaEcoreUtil {
 			default:
 				#[]
 		}
-	}
-	
-	@Deprecated // TODO: move to REnumType, similar to RDataType
-	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
-		doGetSuperEnumerations(e, newLinkedHashSet)
-	}
-	
-	@Deprecated
-	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
-		if(e !== null && seenEnums.add(e)) 
-			doGetSuperEnumerations(e.superType, seenEnums)
-		return seenEnums
-	}
-	
-	@Deprecated // TODO: move to REnumType, similar to RDataType
-	def getAllEnumValues(RosettaEnumeration e) {
-		e.allSuperEnumerations.map[enumValues].flatten
 	}
 	
 	def Set<RosettaSynonym> getAllSynonyms(RosettaSynonym s) {

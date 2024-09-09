@@ -533,7 +533,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkEnumValuesAreUnique(RosettaEnumeration enumeration) {
 		val name2attr = HashMultimap.create
-		enumeration.allEnumValues.forEach [
+		enumeration.buildREnumType.allEnumValues.forEach [
 			name2attr.put(name, it)
 		]
 		for (value : enumeration.enumValues) {
@@ -936,7 +936,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (structured.nullOrEmpty)
 			return
 		val mostUsedEnum = structured.max[$0.value.size <=> $1.value.size].key
-		val toImplement = mostUsedEnum.allEnumValues.map[name].toSet
+		val toImplement = mostUsedEnum.buildREnumType.allEnumValues.map[name].toSet
 		enumsUsed.get(mostUsedEnum).forEach [
 			toImplement.remove(it.key)
 		]

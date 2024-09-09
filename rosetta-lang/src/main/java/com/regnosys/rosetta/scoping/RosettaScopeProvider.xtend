@@ -198,7 +198,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
 					if (context instanceof RosettaEnumValueReference) {
-						return Scopes.scopeFor(context.enumeration.allEnumValues)
+						return Scopes.scopeFor(context.enumeration.buildREnumType.allEnumValues)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -214,7 +214,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalEnumValue) {
 						val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
 						if (enumRef instanceof RosettaEnumeration)
-							return Scopes.scopeFor(enumRef.allEnumValues)
+							return Scopes.scopeFor(enumRef.buildREnumType.allEnumValues)
 					}
 					return IScope.NULLSCOPE
 				}
