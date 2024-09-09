@@ -353,7 +353,6 @@ class TabulatorGenerator {
 					«ENDIF»
 				«ENDFOR»
 				«IF !nestedTabulatorInstances.empty»
-				
 				«FOR tabInst : nestedTabulatorInstances»
 					private final «context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»;
 				«ENDFOR»
@@ -366,7 +365,7 @@ class TabulatorGenerator {
 					«ENDFOR»
 					«initializeFields(inputType, context, classScope)»
 				}
-
+		
 				@Override
 				public «List»<«FieldValue»> tabulate(«inputClass» «inputParam») {
 					«computeFieldValues(inputType, inputParam, context, tabulateScope)»
