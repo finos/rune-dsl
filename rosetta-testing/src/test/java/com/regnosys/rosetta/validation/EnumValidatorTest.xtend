@@ -19,6 +19,17 @@ class EnumValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void testDuplicateEnumValue() {
+		val model = '''
+			enum Foo:
+				BAR
+				BAZ
+				BAR
+		'''.parseRosetta
+		model.assertError(ROSETTA_ENUM_VALUE, null, "Duplicate enum value 'BAR'")
+	}
+	
+	@Test
 	def void testCannotHaveEnumValuesWithSameNameAsParentValue() {
 		val model = '''
 		enum A:
@@ -60,7 +71,10 @@ class EnumValidatorTest implements RosettaIssueCodes {
 		enum D extends B, C:
 		'''.parseRosetta
 		
-		model
-			.assertError(ROSETTA_ENUMERATION, null, "AAAAAAAAAA")
+		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: A extends D extends B extends A")
+		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: B extends A extends D extends B")
+		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: C extends A extends D extends C")
+		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: D extends B extends A extends D")
+		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: D extends C extends A extends D")
 	}
 }

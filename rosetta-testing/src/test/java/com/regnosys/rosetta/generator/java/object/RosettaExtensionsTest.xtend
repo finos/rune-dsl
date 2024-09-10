@@ -70,8 +70,8 @@ class RosettaExtensionsTest {
 		assertEquals(#{foo, bar, baz}, baz.allParents.toSet)
 		assertEquals(#{foo, bar}, bar.allParents.toSet)
 		assertEquals(#{foo}, foo.allParents.toSet)
-		assertEquals(#['baz', 'bar', 'foo0', 'foo1'], baz.allEnumValues.map[name].toList)
-		assertEquals(#['bar', 'foo0', 'foo1'], bar.allEnumValues.map[name].toList)
+		assertEquals(#['foo0', 'foo1', 'bar', 'baz'], baz.allEnumValues.map[name].toList)
+		assertEquals(#['foo0', 'foo1', 'bar'], bar.allEnumValues.map[name].toList)
 		assertEquals(#['foo0', 'foo1'], foo.allEnumValues.map[name].toList)
 	}
 }

@@ -68,8 +68,7 @@ class EnumGeneratorTest {
 
         val testEnumCode = code.get(rootPackage + ".TestEnumWithDisplay")
         assertThat(testEnumCode,
-            allOf(containsString('''TestEnumWithDisplay(String rosettaName)'''),
-                containsString('''TestEnumWithDisplay(String rosettaName, String displayName)'''),
+            allOf(containsString('''TestEnumWithDisplay(String rosettaName, String displayName)'''),
                 containsString('''public String toDisplayString()''')))
 
         code.compileToClasses

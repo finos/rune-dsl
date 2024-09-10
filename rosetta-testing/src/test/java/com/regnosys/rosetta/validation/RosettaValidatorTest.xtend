@@ -1480,15 +1480,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
 	}
-		
-	@Test
-	def void testDuplicateEnumLiteral() {
-		val model = '''
-			enum Foo:
-				BAR BAZ BAR
-		'''.parseRosetta
-		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
-	}
 	
 	@Test 
 	def void testDuplicateType() {

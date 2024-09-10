@@ -19,6 +19,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.RJavaEnum
 import java.util.List
 import java.util.Set
+import org.apache.commons.text.StringEscapeUtils
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
@@ -42,7 +43,7 @@ class EnumGenerator {
 				«javadoc(value.EObject)»
 				«value.EObject.contributeAnnotations»
 				@«com.rosetta.model.lib.annotations.RosettaEnumValue»(value = "«value.rosettaName»"«IF value.displayName !== null», displayName = "«value.displayName»"«ENDIF») 
-				«value.name»("«value.rosettaName»", «value.displayName ?: 'null'»)
+				«value.name»("«value.rosettaName»", «IF value.displayName !== null»"«StringEscapeUtils.escapeJava(value.displayName)»"«ELSE»null«ENDIF»)
 			«ENDFOR»
 		
 			private static «Map»<«String», «javaEnum»> values;
