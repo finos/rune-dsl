@@ -36,11 +36,13 @@ class ConfigurableTypeTabulatorTest {
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
+			import javax.inject.Singleton;
 			
 			
 			@ImplementedBy(FooTypeTabulator.Impl.class)
 			public interface FooTypeTabulator extends Tabulator<Foo> {
-				public class Impl implements FooTypeTabulator {
+				@Singleton
+				class Impl implements FooTypeTabulator {
 					private final Field barField;
 			
 					public Impl() {
@@ -94,12 +96,14 @@ class ConfigurableTypeTabulatorTest {
 			import java.util.List;
 			import java.util.Optional;
 			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			import model1.Foo;
 			
 			
 			@ImplementedBy(FooTypeTabulator.Impl.class)
 			public interface FooTypeTabulator extends Tabulator<Foo> {
-				public class Impl implements FooTypeTabulator {
+				@Singleton
+				class Impl implements FooTypeTabulator {
 					private final Field barField;
 			
 					private final BarTypeTabulator barTypeTabulator;
@@ -136,14 +140,12 @@ class ConfigurableTypeTabulatorTest {
 		val model2 = '''
 			namespace model2
 			
-			    metaType scheme string
+			type Root:
+				engineSpecification EngineSpecification (1..1)
 			
-				type Root:
-				   engineSpecification EngineSpecification (1..1)
-				
-				type EngineSpecification:
-				   fuel string (1..*)
-				   [metadata scheme]
+			type EngineSpecification:
+				fuel string (1..*)
+				[metadata scheme]
 		'''
 
 		val model2Code = model2.generateCodeForModel(Model2FileConfigProvider)
@@ -163,12 +165,14 @@ class ConfigurableTypeTabulatorTest {
 			import java.util.Objects;
 			import java.util.Optional;
 			import java.util.stream.Collectors;
+			import javax.inject.Singleton;
 			import model2.EngineSpecification;
 			
 			
 			@ImplementedBy(EngineSpecificationTypeTabulator.Impl.class)
 			public interface EngineSpecificationTypeTabulator extends Tabulator<EngineSpecification> {
-				public class Impl implements EngineSpecificationTypeTabulator {
+				@Singleton
+				class Impl implements EngineSpecificationTypeTabulator {
 					private final Field fuelField;
 			
 					public Impl() {

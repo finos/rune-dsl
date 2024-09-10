@@ -255,7 +255,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<RAttribute> segments = op.getPathTail();
 			attr = segments.get(segments.size() - 1);
 		}
-		return toMetaJavaType(attr);
+		return toJavaType(attr);
 	}
 	public JavaClass<?> operationToReferenceWithMetaType(ROperation op) {
 		RAttribute attr;

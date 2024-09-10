@@ -9,6 +9,7 @@ import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
@@ -30,6 +31,8 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.types.RObjectFactory
+import java.util.LinkedHashSet
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -60,6 +63,48 @@ class RosettaEcoreUtil {
 			default:
 				#[]
 		}
+	}
+	
+	@Deprecated // Use RDataType#getAllSuperTypes instead
+	def List<Data> getAllSuperTypes(Data data) {
+		val reversedResult = newLinkedHashSet
+		doGetAllSuperTypes(data, reversedResult);
+		reversedResult.toList.reverse
+	}
+	private def void doGetAllSuperTypes(Data current, LinkedHashSet<Data> superTypes) {
+		if (superTypes.add(current)) {
+			val s = current.getSuperType();
+			if (s !== null) {
+				doGetAllSuperTypes(s, superTypes);
+			}
+		}
+	}
+	
+	@Deprecated // Use RDataType#getAllAttributes instead
+	def Iterable<Attribute> getAllAttributes(Data data) {
+		return data.allSuperTypes.flatMap[attributes]
+	}
+	
+	@Deprecated // Use RDataType#getAllNonOverridenAttributes instead
+	def Collection<Attribute> getAllNonOverridenAttributes(Data data) {
+		val result = newLinkedHashMap
+		data.allAttributes.forEach[result.put(name, it)]
+		return result.values();
+	}
+	
+	@Deprecated // Use REnumType#getAllParents instead
+	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
+		doGetSuperEnumerations(e, newLinkedHashSet)
+	}
+	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
+		if(seenEnums.add(e)) 
+			e.parentEnums.forEach[doGetSuperEnumerations(it, seenEnums)]
+		return seenEnums
+	}
+	
+	@Deprecated // Use REnumType#getAllEnumValues instead
+	def getAllEnumValues(RosettaEnumeration e) {
+		e.allSuperEnumerations.map[enumValues].flatten
 	}
 	
 	def Set<RosettaSynonym> getAllSynonyms(RosettaSynonym s) {
@@ -129,8 +174,13 @@ class RosettaEcoreUtil {
 	}
 	
 	@Deprecated
-	def String conditionName(Condition cond, RDataType data) {
-		return cond.conditionName(data.name, data.EObject.conditions)
+	def String conditionName(Condition cond, RDataType t) {
+		conditionName(cond, t.EObject)
+	}
+	
+	@Deprecated
+	def String conditionName(Condition cond, Data data) {
+		return cond.conditionName(data.name, data.conditions)
 	}
 
 	@Deprecated
