@@ -13,10 +13,12 @@ import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.RJavaEnum
+import java.util.List
+import java.util.Set
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
@@ -29,23 +31,24 @@ class EnumGenerator {
 	private def String toJava(REnumType e, RootPackage root, String version) {
 		val scope = new JavaScope(root)
 		
-		val clazz = e.toJavaReferenceType
+		val javaEnum = e.toJavaReferenceType as RJavaEnum
 		
 		val StringConcatenationClient classBody = '''
 		«javadoc(e.EObject, version)»
 		@«RosettaEnum»("«e.name»")
-		public enum «clazz» {
+		public enum «javaEnum» {
 		
-			«FOR value: e.allEnumValues SEPARATOR ',\n' AFTER ';'»
-				«javadoc(value)»
-				«value.contributeAnnotations»
-				@«com.rosetta.model.lib.annotations.RosettaEnumValue»(value = "«value.name»"«IF value.display !== null», displayName = "«value.display»"«ENDIF») «convertValuesWithDisplay(value)»
+			«FOR value: javaEnum.enumValues SEPARATOR ',\n' AFTER ';'»
+				«javadoc(value.EObject)»
+				«value.EObject.contributeAnnotations»
+				@«com.rosetta.model.lib.annotations.RosettaEnumValue»(value = "«value.rosettaName»"«IF value.displayName !== null», displayName = "«value.displayName»"«ENDIF») 
+				«value.name»("«value.rosettaName»", «value.displayName ?: 'null'»)
 			«ENDFOR»
 		
-			private static «Map»<«String», «e.name»> values;
+			private static «Map»<«String», «javaEnum»> values;
 			static {
-		        «Map»<«String», «e.name»> map = new «ConcurrentHashMap»<>();
-				for («e.name» instance : «e.name».values()) {
+		        «Map»<«String», «javaEnum»> map = new «ConcurrentHashMap»<>();
+				for («javaEnum» instance : «javaEnum».values()) {
 					map.put(instance.toDisplayString(), instance);
 				}
 				values = «Collections».unmodifiableMap(map);
@@ -53,31 +56,44 @@ class EnumGenerator {
 		
 			private final «String» rosettaName;
 			private final «String» displayName;
-		
-			«e.name»(«String» rosettaName) {
-				this(rosettaName, null);
-			}
 
-			«e.name»(«String» rosettaName, «String» displayName) {
+			«javaEnum»(«String» rosettaName, «String» displayName) {
 				this.rosettaName = rosettaName;
 				this.displayName = displayName;
 			}
 		
-			public static «e.name» fromDisplayName(String name) {
-				«e.name» value = values.get(name);
+			public static «javaEnum» fromDisplayName(String name) {
+				«javaEnum» value = values.get(name);
 				if (value == null) {
 					throw new «IllegalArgumentException»("No enum constant with display name \"" + name + "\".");
 				}
 				return value;
 			}
-			
-			«FOR p : e.allParents»
-			«val parentClass = p.toJavaReferenceType»
-			«val fromScope = scope.methodScope("from" + parentClass.simpleName)»
-			«val fromParam = fromScope.createUniqueIdentifier(parentClass.simpleName.toFirstLower)»
-			public static «clazz» from«parentClass»(«parentClass» «fromParam») {
+			«val visitedAncestors = javaEnum.parents.toSet»
+			«FOR p : javaEnum.parents»
 				
-			}
+				«val fromScope = scope.methodScope("from" + p.simpleName)»
+				«val fromParam = fromScope.createUniqueIdentifier(p.simpleName.toFirstLower)»
+				public static «javaEnum» from«p.simpleName»(«p» «fromParam») {
+					switch («fromParam») {
+						«FOR v : p.enumValues»
+						case «v.name»: return «v.name»;
+						«ENDFOR»
+					}
+					return null;
+				}
+				
+				«val toScope = scope.methodScope("to" + p.simpleName)»
+				«val toParam = toScope.createUniqueIdentifier(javaEnum.simpleName.toFirstLower)»
+				public static «p» to«p.simpleName»(«javaEnum» «toParam») {
+					switch («toParam») {
+						«FOR v : p.enumValues»
+						case «v.name»: return «p».«v.name»;
+						«ENDFOR»
+					}
+					return null;
+				}
+				«ancestorConversions(javaEnum, p, p.parents, visitedAncestors, scope)»
 			«ENDFOR»
 		
 			@Override
@@ -92,6 +108,28 @@ class EnumGenerator {
 		'''
 
 		buildClass(root, classBody, scope)
+	}
+	
+	private def StringConcatenationClient ancestorConversions(RJavaEnum javaEnum, RJavaEnum currentParent, List<RJavaEnum> ancestors, Set<RJavaEnum> visitedAncestors, JavaScope scope) {
+		'''
+		«FOR a : ancestors»
+			«IF visitedAncestors.add(a)»
+			
+			«val fromScope = scope.methodScope("from" + a.simpleName)»
+			«val fromParam = fromScope.createUniqueIdentifier(a.simpleName.toFirstLower)»
+			public static «javaEnum» from«a.simpleName»(«a» «fromParam») {
+				return from«currentParent.simpleName»(«currentParent».from«a.simpleName»(«fromParam»));
+			}
+			
+			«val toScope = scope.methodScope("to" + a.simpleName)»
+			«val toParam = toScope.createUniqueIdentifier(javaEnum.simpleName.toFirstLower)»
+			public static «a» to«a.simpleName»(«javaEnum» «toParam») {
+				return «currentParent».to«a.simpleName»(to«currentParent.simpleName»(«toParam»));
+			}
+			«ancestorConversions(javaEnum, currentParent, a.parents, visitedAncestors, scope)»
+			«ENDIF»
+		«ENDFOR»
+		'''
 	}
 	
 	

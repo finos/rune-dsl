@@ -8,11 +8,7 @@ import java.util.stream.Collectors
 
 class EnumHelper {
 
-	def static convertValuesWithDisplay(RosettaEnumValue enumValue) {
-		formatEnumName(enumValue.name) + '''("«enumValue.name»"«IF enumValue.display !== null», "«enumValue.display»"«ENDIF»)'''
-	}
-
-	def static convertValues(RosettaEnumValue enumValue) {
+	def static convertValue(RosettaEnumValue enumValue) {
 		formatEnumName(enumValue.name)
 	}
 

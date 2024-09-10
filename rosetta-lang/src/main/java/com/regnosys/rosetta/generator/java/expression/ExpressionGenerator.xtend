@@ -97,7 +97,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import com.regnosys.rosetta.types.RObjectFactory
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
@@ -273,7 +273,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	def JavaStatementBuilder enumCall(RosettaEnumValue feature, EObject context) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, context).toJavaReferenceType
-		return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
+		return JavaExpression.from('''«resultItemType».«feature.convertValue»''', resultItemType)
 	}
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
 		if (feature instanceof Attribute) {

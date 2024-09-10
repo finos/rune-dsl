@@ -18,8 +18,13 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.generator.java.enums.EnumHelper;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.types.REnumType;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
@@ -29,17 +34,34 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class RJavaEnum extends JavaClass<Object> {	
 	private final REnumType enumeration;
+	
+	private List<RJavaEnum> parents = null;
 	private List<RJavaEnumValue> enumValues = null;
 
 	public RJavaEnum(REnumType enumeration) {
 		this.enumeration = enumeration;
 	}
 	
+	public List<RJavaEnum> getParents() {
+		if (parents == null) {
+			parents = enumeration.getParents().stream().map(p -> new RJavaEnum(p)).collect(Collectors.toList());
+		}
+		return parents;
+	}
+	
 	public List<RJavaEnumValue> getEnumValues() {
 		if (enumValues == null) {
 			enumValues = new ArrayList<>();
-			for (REnumType p : enumeration.getParents()) {
-				
+			Set<RosettaEnumValue> visited = new HashSet<>();
+			for (RJavaEnum p : getParents()) {
+				for (RJavaEnumValue v : p.getEnumValues()) {
+					if (visited.add(v.getEObject())) {
+						enumValues.add(new RJavaEnumValue(this, v.getName(), v.getEObject(), v));
+					}
+				}
+			}
+			for (RosettaEnumValue v : enumeration.getOwnEnumValues()) {
+				enumValues.add(new RJavaEnumValue(this, EnumHelper.convertValue(v), v, null));
 			}
 		}
 		return enumValues;
