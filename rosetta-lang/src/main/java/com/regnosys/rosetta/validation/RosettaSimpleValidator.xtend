@@ -77,7 +77,6 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBasicType
@@ -89,7 +88,6 @@ import com.regnosys.rosetta.utils.ExternalAnnotationUtil.CollectRuleVisitor
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.time.format.DateTimeFormatter
-import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.Set
@@ -104,7 +102,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
@@ -118,13 +115,14 @@ import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 
 // TODO: split expression validator
 // TODO: type check type call arguments
 class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaEcoreUtil
-	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
@@ -449,24 +447,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	@Check
-	def void checkTypeExpectation(EObject owner) {
-		if (!owner.eResource.errors.filter(XtextSyntaxDiagnostic).empty)
-			return;
-		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(it.EReferenceType)].filter [
-			owner.eIsSet(it)
-		].
-			forEach [ ref |
-				val referenceValue = owner.eGet(ref)
-				if (ref.isMany) {
-					(referenceValue as List<? extends RosettaExpression>).forEach [ it, i |
-						val expectedType = owner.getExpectedType(ref, i)
-						checkType(expectedType, it, owner, ref, i)
-					]
-				} else {
-					val expectedType = owner.getExpectedType(ref)
-					checkType(expectedType, referenceValue as RosettaExpression, owner, ref, INSIGNIFICANT_INDEX)
-				}
-			]
+	def void checkConditionalExpression(RosettaConditionalExpression expr) {
+		checkType(BOOLEAN, expr.^if, expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, INSIGNIFICANT_INDEX)
 	}
 
 	private def checkType(RType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
@@ -684,6 +666,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
 							}
 						}
+					} else if (callable instanceof RosettaExternalFunction) {
+						element.args.indexed.forEach [ indexed |
+							val callerArg = indexed.value
+							val callerIdx = indexed.key
+							val param = callable.parameters.get(callerIdx)
+							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							if(cardinality.isMulti(callerArg)) {
+								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							}
+						]
 					}
 				}
 			} else {
@@ -1467,9 +1460,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			error('''Assign expression contains a list of lists, use flatten to create a list.''', o,
 				OPERATION__EXPRESSION)
 		}
-		val isList = cardinality.isSymbolMulti(o.path !== null
+		val attr = o.path !== null
 				? o.pathAsSegmentList.last.attribute
-				: o.assignRoot)
+				: o.assignRoot
+		checkType(attr.RTypeOfSymbol, expr, expr, null, INSIGNIFICANT_INDEX)
+		val isList = cardinality.isSymbolMulti(attr)
 		if (o.add && !isList) {
 			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
 		}

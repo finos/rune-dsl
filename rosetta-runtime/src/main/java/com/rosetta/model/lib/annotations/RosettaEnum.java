@@ -19,10 +19,11 @@ package com.rosetta.model.lib.annotations;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RosettaEnum {
-	String value()  default "";
-
+	String value() default "";
+	Class<? extends Enum<?>>[] parents() default {};
 }

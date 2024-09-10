@@ -36,7 +36,7 @@ class EnumGenerator {
 		
 		val StringConcatenationClient classBody = '''
 		«javadoc(e.EObject, version)»
-		@«RosettaEnum»("«e.name»")
+		@«RosettaEnum»(value="«e.name»"«IF !javaEnum.parents.empty», parents={«FOR p : javaEnum.parents SEPARATOR ", "»«p».class«ENDFOR»}«ENDIF»)
 		public enum «javaEnum» {
 		
 			«FOR value: javaEnum.enumValues SEPARATOR ',\n' AFTER ';'»
