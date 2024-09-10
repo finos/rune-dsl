@@ -531,20 +531,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	private def cardRepr(RAttribute attr) '''«attr.cardinality.minBound»..«attr.cardinality.max.map[toString].orElse('*')»'''
 
 	@Check
-	def checkEnumValuesAreUnique(RosettaEnumeration enumeration) {
-		val name2attr = HashMultimap.create
-		enumeration.buildREnumType.allEnumValues.forEach [
-			name2attr.put(name, it)
-		]
-		for (value : enumeration.enumValues) {
-			val valuesByName = name2attr.get(value.name)
-			if (valuesByName.size > 1) {
-				error('''Duplicate enum value '«value.name»'«»''', value, ROSETTA_NAMED__NAME, DUPLICATE_ENUM_VALUE)
-			}
-		}
-	}
-
-	@Check
 	def checkFeatureNamesAreUnique(RosettaFeatureOwner ele) {
 		ele.features.groupBy[name].forEach [ k, v |
 			if (v.size > 1) {
