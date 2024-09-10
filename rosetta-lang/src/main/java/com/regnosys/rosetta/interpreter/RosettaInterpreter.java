@@ -587,7 +587,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	@Override
 	protected RosettaValue caseConstructorExpression(RosettaConstructorExpression expr,
 			RosettaInterpreterContext context) {
-		// TODO Auto-generated method stub
+		// TODO
 		throw new RosettaInterpreterException("Constructor expressions are not supported yet.");
 	}
 }

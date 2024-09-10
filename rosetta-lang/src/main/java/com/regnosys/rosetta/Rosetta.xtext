@@ -15,10 +15,10 @@ RosettaModel:
 	
 	('version' version=STRING)? // TODO: could do better than STRING
 	
-	imports += Import*
+	imports+=Import*
 	
-	(configurations += RosettaQualifiableConfiguration)* // TODO think about having only RootElements or only configurations
-	(elements += (RosettaRootElement | RootElement))*
+	configurations+=RosettaQualifiableConfiguration* // TODO think about having only RootElements or only configurations
+	elements+=RosettaRootElement*
 ;
 
 QualifiedName:
@@ -31,17 +31,10 @@ Import:
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
 
-RootElement:
-	Annotation
-	| Data
-	| Choice
-	| Function
-;
-
 Annotation:
 	'annotation' RosettaNamed ':' RosettaDefinable?
 	('[' 'prefix' prefix = ValidID ']')?
-	attributes += Attribute*
+	attributes+=Attribute*
 ;
 
 fragment Annotations returns Annotated:
@@ -76,8 +69,8 @@ AnnotationQualifier:
 Data:
 	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' RosettaDefinable?
 	(References|Annotations|ClassSynonyms)*
-	attributes += Attribute*
-	conditions += Condition*
+	attributes+=Attribute*
+	conditions+=Condition*
 ;
 
 Choice:
@@ -94,8 +87,7 @@ ChoiceOption:
 ;
 
 Attribute:
-	// @Compat remove `override`
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
+	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
 ;
@@ -113,7 +105,7 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	 ':' =>RosettaDefinable?
+	 ':' RosettaDefinable?
 	(References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
 	('output' ':' output = Attribute)?
@@ -125,12 +117,12 @@ Function:
 ;
 
 ShortcutDeclaration:
-	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=RosettaCalcExpression
+	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=RosettaCalcExpression // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
 ;
 
 Condition:
-	'condition' RosettaNamed? ':' =>RosettaDefinable?
-		=>(References|Annotations)* // conflicts with ListLiteral as RosettaCalcExpression
+	'condition' RosettaNamed? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
+		=>(References|Annotations)* // Predicate necessary because of conflict between `[` as the start of an annotation and as the start of a list literal.
 		expression=RosettaCalcExpression
 ;
 
@@ -139,7 +131,7 @@ enum Necessity:
 ;
 
 PostCondition returns Condition:
-	postCondition ?= 'post-condition'  RosettaNamed? ':' =>RosettaDefinable?
+	postCondition ?= 'post-condition'  RosettaNamed? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
 	expression     = RosettaCalcExpression
 ;
 
@@ -162,13 +154,27 @@ EmptyLiteral returns RosettaExpression:
 ListLiteral:
 	{ListLiteral} '[' (elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )*)? ']';
 
-// old stuff
 RosettaRootElement:
-	Enumeration | RosettaBody | RosettaCorpus | RosettaSegment | 
-	RosettaBasicType | RosettaRecordType | RosettaLibraryFunction | RosettaSynonymSource |
-	RosettaRule | RosettaMetaType | RosettaExternalSynonymSource |
-	RosettaExternalRuleSource | RosettaReport | RosettaTypeAlias |
-	RosettaQualifiedType | RosettaCalculationType
+	Enumeration
+	| RosettaBody
+	| RosettaCorpus
+	| RosettaSegment
+	| RosettaBasicType
+	| RosettaRecordType
+	| RosettaLibraryFunction
+	| RosettaSynonymSource
+	| RosettaRule
+	| RosettaMetaType
+	| RosettaExternalSynonymSource
+	| RosettaExternalRuleSource
+	| RosettaReport
+	| RosettaTypeAlias
+	| RosettaQualifiedType
+	| RosettaCalculationType
+	| Annotation
+	| Data
+	| Choice
+	| Function
 ;
 
 
@@ -210,7 +216,7 @@ TypeParameterValidID:
 ;
 
 ValidID:
-	ID | 'condition' | 'source' | 'value' | 'version' // used in CDM model
+	ID | 'condition' | 'source' | 'value' | 'version'
 	| 'pattern'
 ;
 
@@ -442,10 +448,10 @@ RosettaDocReference:
 
 DocumentRationale:
 	  'rationale' rationale=STRING
-	  (->'rationale_author' rationaleAuthor=STRING)?
+	  (->'rationale_author' rationaleAuthor=STRING)? // Predicate necessary because otherwise `rationale_author` can be interpreted as a new `DocumentRationale` instead.
 	  |
 	  'rationale_author' rationaleAuthor=STRING
-	  (->'rationale' rationale=STRING)?
+	  (->'rationale' rationale=STRING)? // Predicate necessary because otherwise `rationale` can be interpreted as a new `DocumentRationale` instead.
 ;
 
 
@@ -535,6 +541,7 @@ ClosureParameter:
 
 InlineFunction:
 	=>((parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[') body=RosettaCalcExpression ']'
+	// Predicate necessary because otherwise a ClosureParameter conflicts with a symbol reference inside an ImplicitInlineFunction.
 ;
 
 ImplicitInlineFunction returns InlineFunction:
@@ -869,7 +876,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)*
+	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)* // Syntactic predicate necessary to remove ambiguity with another corpus
 ;
 
 RosettaSegmentRef:
@@ -896,7 +903,7 @@ RosettaRuleReference:
 ;
 
 RosettaRule:
- 	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable?
+ 	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
  	(
 		References*
 		(expression = RosettaCalcExpression

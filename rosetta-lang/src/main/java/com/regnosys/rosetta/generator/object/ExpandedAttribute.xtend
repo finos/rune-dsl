@@ -9,6 +9,7 @@ import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
 import com.regnosys.rosetta.rosetta.TypeCall
 
+@Deprecated
 @Data
 final class ExpandedAttribute {
 	
@@ -72,15 +73,16 @@ final class ExpandedAttribute {
 	}
 	
 	def javaAnnotation() {
-		if (name === "key" && type.name === "Key" && type.model.name === "com.rosetta.model.lib.meta") {
+		if (name == "key" && type.name == "Key" && type.model.name == "com.rosetta.model.lib.meta") {
 			return 'location'
-		} else if (name === "reference" && type.name === "Reference" && type.model.name === "com.rosetta.model.lib.meta") {
+		} else if (name == "reference" && type.name == "Reference" && type.model.name == "com.rosetta.model.lib.meta") {
 			return 'address'
 		} else
 			return name
 	}
 }
 
+@Deprecated
 @Data
 final class ExpandedType {
 	RosettaModel model
@@ -96,6 +98,7 @@ final class ExpandedType {
 
 }
 
+@Deprecated
 @Data
 final class ExpandedSynonym {
 	List<RosettaSynonymSource> sources
@@ -111,6 +114,7 @@ final class ExpandedSynonym {
 	boolean removeHtml
 }
 
+@Deprecated
 @Data
 final class ExpandedSynonymValue {
 	String name

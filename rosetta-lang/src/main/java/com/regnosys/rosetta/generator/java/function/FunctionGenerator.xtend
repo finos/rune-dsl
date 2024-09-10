@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.ImplementedBy
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -39,7 +38,6 @@ import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.RosettaFunction
-import com.rosetta.util.DottedPath
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaType
@@ -68,6 +66,8 @@ import java.util.Collections
 import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class FunctionGenerator {
 
@@ -75,7 +75,7 @@ class FunctionGenerator {
 	@Inject JavaDependencyProvider dependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality
@@ -85,6 +85,7 @@ class FunctionGenerator {
 	@Inject ImplicitVariableUtil implicitVariableUtil
 	@Inject extension JavaTypeUtil
 	@Inject TypeCoercionService coercionService
+	@Inject extension ModelIdProvider
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -158,7 +159,7 @@ class FunctionGenerator {
 		
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
-		val outputType = output.attributeToJavaType
+		val outputType = output.toMetaJavaType
 		val aliasOut = shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 
 		
@@ -364,7 +365,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					new ModelSymbolId(DottedPath.splitOnDots(function.model.name), function.name + formatEnumName(enumFunc.value.value.name)),
+					new ModelSymbolId(function.model.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),
@@ -381,7 +382,7 @@ class FunctionGenerator {
 	}
 
 	private def JavaClass<?> toDispatchClass(FunctionDispatch ele) {
-		return new GeneratedJavaClass<Object>(DottedPath.splitOnDots(ele.model.name).child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
+		return new GeneratedJavaClass<Object>(ele.model.toDottedPath.child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
 	}
 
 	private def boolean assignAsKey(ROperation op) {
@@ -392,7 +393,7 @@ class FunctionGenerator {
 
 		if (op.pathTail.isEmpty) {
 			// assign function output object
-			val expressionType = attribute.attributeToJavaType
+			val expressionType = attribute.toMetaJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
 			val effectiveExprType = javaExpr.expressionType
 			if (needsBuilder(attribute)) {
@@ -432,7 +433,7 @@ class FunctionGenerator {
 			}
 
 		} else { // assign an attribute of the function output object
-			assignValue(scope, op, op.assignAsKey, op.pathTail.last.multi)
+			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					JavaExpression.from(
@@ -449,7 +450,7 @@ class FunctionGenerator {
 		}
 	}
 
-	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey, boolean isAssigneeMulti) {
+	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
 		if (assignAsKey) {
 			val metaClass = op.operationToReferenceWithMetaType
 			if (cardinality.isMulti(op.expression)) {
@@ -590,7 +591,7 @@ class FunctionGenerator {
 	}
 	
 	private def StringConcatenationClient inputsAsParameters(List<RAttribute> inputs, JavaScope scope) {
-		'''«FOR input : inputs SEPARATOR ', '»«input.attributeToJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : inputs SEPARATOR ', '»«input.toMetaJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	private def JavaReferenceType shortcutJavaType(RShortcut feature) {

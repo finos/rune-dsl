@@ -14,28 +14,37 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import java.util.List
+import java.util.Set
 
 /**
- * A class that helps determine which RosettaFunctions a Rosetta object refers to
+ * A class that helps determine which dependencies a Rosetta expression needs
  */
 class JavaDependencyProvider {
 	@Inject RObjectFactory rTypeBuilderFactory
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension JavaTypeTranslator
 
+	private def void javaDependencies(RosettaExpression expression, Set<JavaClass<?>> result, Set<RosettaExpression> visited) {
+		if (visited.add(expression)) {
+			val rosettaSymbols = EcoreUtil2.eAllOfType(expression, RosettaSymbolReference).map[it.symbol]
+			val deepFeatureCalls = EcoreUtil2.eAllOfType(expression, RosettaDeepFeatureCall)
+
+			result.addAll(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
+			result.addAll(rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
+			result.addAll(deepFeatureCalls.map[typeProvider.getRType(receiver)].filter(RDataType).map[toDeepPathUtilJavaClass])
+		}
+	}
+
 	def List<JavaClass<?>> javaDependencies(RosettaExpression expression) {
-		val rosettaSymbols = EcoreUtil2.eAllOfType(expression, RosettaSymbolReference).map[it.symbol]
-		val deepFeatureCalls = EcoreUtil2.eAllOfType(expression, RosettaDeepFeatureCall)
-		(
-			rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass] +
-			rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass] +
-			deepFeatureCalls.map[typeProvider.getRType(receiver)].filter(RDataType).map[data.toDeepPathUtilJavaClass]
-		).toSet.sortBy[it.simpleName]
+		val result = newHashSet
+		javaDependencies(expression, result, newHashSet)
+		result.sortBy[it.simpleName]
 	}
 
 	def List<JavaClass<?>> javaDependencies(Iterable<? extends RosettaExpression> expressions) {
-		expressions.flatMap [
-			javaDependencies
-		].toSet.sortBy[it.simpleName]
+		val result = newHashSet
+		val visited = newHashSet
+		expressions.forEach[javaDependencies(it, result, visited)]
+		result.sortBy[it.simpleName]
 	}
 }

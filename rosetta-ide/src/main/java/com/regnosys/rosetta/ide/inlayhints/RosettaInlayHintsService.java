@@ -25,7 +25,7 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
-import com.regnosys.rosetta.RosettaExtensions;
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.types.CardinalityProvider;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
@@ -37,7 +37,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider;
 
 public class RosettaInlayHintsService extends AbstractInlayHintsService {
 	@Inject
-	private RosettaExtensions extensions;
+	private RosettaEcoreUtil extensions;
 	@Inject
 	private RosettaTypeProvider types;
 	@Inject

@@ -4,54 +4,38 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
-import com.google.common.collect.Iterables;
-import com.regnosys.rosetta.RosettaExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.types.CardinalityProvider;
+import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
 
-public class DeepFeatureCallUtil {
-	private final RosettaTypeProvider typeProvider;
-	private final CardinalityProvider cardinalityProvider;
-	private final RosettaExtensions ext;
-	
-	@Inject
-	public DeepFeatureCallUtil(RosettaTypeProvider typeProvider, CardinalityProvider cardinalityProvider, RosettaExtensions ext) {
-		this.typeProvider = typeProvider;
-		this.cardinalityProvider = cardinalityProvider;
-		this.ext = ext;
-	}
-	
-	public Collection<Attribute> findDeepFeatures(RDataType type) {
+public class DeepFeatureCallUtil {	
+	public Collection<RAttribute> findDeepFeatures(RDataType type) {
 		return findDeepFeatureMap(type).values();
 	}
 	
-	public Map<String, Attribute> findDeepFeatureMap(RDataType type) {
+	public Map<String, RAttribute> findDeepFeatureMap(RDataType type) {
 		if (!isEligibleForDeepFeatureCall(type)) {
 			return new HashMap<>();
 		}
 		
-		Map<String, Attribute> deepIntersection = null;
-		Map<String, Attribute> result = new HashMap<>();
-		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
+		Map<String, RAttribute> deepIntersection = null;
+		Map<String, RAttribute> result = new HashMap<>();
+		Collection<RAttribute> allNonOverridenAttributes = type.getAllNonOverridenAttributes();
+		for (RAttribute attr : allNonOverridenAttributes) {
 			result.put(attr.getName(), attr);
 		}
-		for (Attribute attr : ext.allNonOverridesAttributes(type.getData())) {
-			RType attrType = typeProvider.getRTypeOfSymbol(attr);
-			Map<String, Attribute> attrDeepFeatureMap;
+		for (RAttribute attr : allNonOverridenAttributes) {
+			RType attrType = attr.getRType();
+			Map<String, RAttribute> attrDeepFeatureMap;
 			if (attrType instanceof RDataType) {
 				RDataType attrDataType = (RDataType)attrType;
 				attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
-				for (Attribute attrFeature : ext.allNonOverridesAttributes(attrDataType.getData())) {
+				for (RAttribute attrFeature : attrDataType.getAllNonOverridenAttributes()) {
 					attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
 				}
 			} else {
@@ -69,17 +53,17 @@ public class DeepFeatureCallUtil {
 		}
 		return result;
 	}
-	private void intersect(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap) {
+	private void intersect(Map<String, RAttribute> featuresMapToModify, Map<String, RAttribute> otherFeatureMap) {
 		intersectButRetainAttribute(featuresMapToModify, otherFeatureMap, null);
 	}
-	private void intersectButRetainAttribute(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap, Attribute attributeToRetain) {
+	private void intersectButRetainAttribute(Map<String, RAttribute> featuresMapToModify, Map<String, RAttribute> otherFeatureMap, RAttribute attributeToRetain) {
 		featuresMapToModify.entrySet().removeIf(entry -> {
 			String attrName = entry.getKey();
-			Attribute attr = entry.getValue();
+			RAttribute attr = entry.getValue();
 			if (attr.equals(attributeToRetain)) {
 				return false;
 			}
-			Attribute otherAttr = otherFeatureMap.get(attrName);
+			RAttribute otherAttr = otherFeatureMap.get(attrName);
 			if (otherAttr != null) {
 				if (match(attr, otherAttr)) {
 					return false;
@@ -88,22 +72,22 @@ public class DeepFeatureCallUtil {
 			return true;
 		});
 		// Make sure we don't give back an attribute with metadata if not all of them have it.
-		for (Map.Entry<String, Attribute> e : featuresMapToModify.entrySet()) {
+		for (Map.Entry<String, RAttribute> e : featuresMapToModify.entrySet()) {
 			String name = e.getKey();
-			Attribute currFeature = e.getValue();
-			Attribute otherFeature = otherFeatureMap.get(name);
-			if (otherFeature != null && !Iterables.isEmpty(ext.metaAnnotations(currFeature)) && Iterables.isEmpty(ext.metaAnnotations(otherFeature))) {
+			RAttribute currFeature = e.getValue();
+			RAttribute otherFeature = otherFeatureMap.get(name);
+			if (otherFeature != null && !currFeature.getMetaAnnotations().isEmpty() && otherFeature.getMetaAnnotations().isEmpty()) {
 				e.setValue(otherFeature);
 			}
 		}
 	}
-	private void merge(Map<String, Attribute> featuresMapToModify, Map<String, Attribute> otherFeatureMap) {
+	private void merge(Map<String, RAttribute> featuresMapToModify, Map<String, RAttribute> otherFeatureMap) {
 		otherFeatureMap.forEach((name, attr) -> {
-			Attribute candidate = featuresMapToModify.get(name);
+			RAttribute candidate = featuresMapToModify.get(name);
 			if (candidate != null) {
 				if (!match(candidate, attr)) {
 					featuresMapToModify.remove(name);
-				} else if (!Iterables.isEmpty(ext.metaAnnotations(candidate)) && Iterables.isEmpty(ext.metaAnnotations(attr))) {
+				} else if (!candidate.getMetaAnnotations().isEmpty() && attr.getMetaAnnotations().isEmpty()) {
 					// Make sure we don't give back an attribute with metadata if not all of them have it.
 					featuresMapToModify.put(name, attr);
 				}
@@ -112,11 +96,11 @@ public class DeepFeatureCallUtil {
 			}
 		});
 	}
-	public boolean match(Attribute a, Attribute b) {
-		if (!typeProvider.getRTypeOfFeature(a).equals(typeProvider.getRTypeOfFeature(b))) {
+	public boolean match(RAttribute a, RAttribute b) {
+		if (!a.getRType().equals(b.getRType())) {
 			return false;
 		}
-		if (cardinalityProvider.isFeatureMulti(a) != cardinalityProvider.isFeatureMulti(b)) {
+		if (a.isMulti() != b.isMulti()) {
 			return false;
 		}
 		return true;
@@ -127,7 +111,7 @@ public class DeepFeatureCallUtil {
 		// 1. The data type has a `one-of` condition.
 		// 2. All attributes have a cardinality of the form `(0..1)`.
 		// 3. Type has at least one attribute.
-		Data data = type.getData();
+		Data data = type.getEObject();
 		if (data.getConditions().stream().anyMatch(cond -> isOneOfItem(cond.getExpression()))) {
 			if (data.getAttributes().stream().allMatch(a -> isSingularOptional(a.getCard()))) {
 				if (!data.getAttributes().isEmpty()) {

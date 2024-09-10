@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.condition
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -16,11 +15,12 @@ import com.rosetta.model.lib.validation.Validator
 import java.util.Map
 import java.util.Optional
 import javax.inject.Inject
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ConditionTestHelper {
 	
 	@Inject extension ModelHelper
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension CodeGeneratorTestHelper
 	
 	final Injector injector

@@ -44,7 +44,6 @@ class RosettaParsingTest {
 				B
 				C
 				D
-			
 		'''
 		
 		val modelFoo = '''

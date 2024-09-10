@@ -55,32 +55,21 @@ class TypeCoercionService {
 	@Inject extension JavaTypeUtil typeUtil
 	
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
-		val actual = expr.expressionType
-		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
-			return expected.empty
+		val simpleCoercion = coerceSimple(expr, expected)
+		if (simpleCoercion !== null) {
+			return simpleCoercion
 		}
-		if (actual == expected) {
-			return expr
-		}
-		if (actual == JavaPrimitiveType.VOID) {
-			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
-		}
-		
+
 		expr.mapExpression[addCoercions(expected, scope)]
 	}
-	
+
 	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaScope scope) {
+		val simpleCoercion = coerceSimple(expr, expected)
+		if (simpleCoercion !== null) {
+			return simpleCoercion
+		}
+
 		val actual = expr.expressionType
-		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
-			return expected.empty
-		}
-		if (actual == expected) {
-			return expr
-		}
-		if (actual == JavaPrimitiveType.VOID) {
-			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
-		}
-		
 		if (actual.isWrapper && expected.isWrapper) {
 			wrapperToWrapper(expr, expected, scope)
 		} else if (actual.isWrapper) {
@@ -90,6 +79,19 @@ class TypeCoercionService {
 		} else {
 			itemToItem(expr, expected, scope)
 		}
+	}
+	private def JavaStatementBuilder coerceSimple(JavaStatementBuilder expr, JavaType expected) {
+		val actual = expr.expressionType
+		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
+			return expected.empty
+		}
+		if (actual == expected) {
+			return expr
+		}
+		if (actual == JavaPrimitiveType.VOID) {
+			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
+		}
+		return null
 	}
 	
 	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, JavaScope scope) {

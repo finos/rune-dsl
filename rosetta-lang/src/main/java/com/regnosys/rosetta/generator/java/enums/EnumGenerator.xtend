@@ -5,12 +5,10 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.rosetta.model.lib.annotations.RosettaEnum
 import com.rosetta.model.lib.annotations.RosettaSynonym
 import java.util.ArrayList
 import java.util.Collections
-import java.util.List
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -23,10 +21,8 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, List<RosettaRootElement> elements, String version) {
-		elements.filter(RosettaEnumeration).forEach [
-			fsa.generateFile(root.withForwardSlashes + '/' + name + '.java', toJava(root, version))
-		]
+	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaEnumeration enumeration, String version) {
+		fsa.generateFile(root.withForwardSlashes + '/' + enumeration.name + '.java', enumeration.toJava(root, version))
 	}
 	
 	private def allEnumsValues(RosettaEnumeration enumeration) {

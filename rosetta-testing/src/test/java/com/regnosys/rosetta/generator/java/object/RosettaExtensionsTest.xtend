@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -13,13 +12,16 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class RosettaExtensionsTest {
 	
 	@Inject extension ParseHelper<RosettaModel> 
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
+	@Inject extension RObjectFactory
 	
 	@Test
 	def testSuperClasses() {
@@ -29,10 +31,10 @@ class RosettaExtensionsTest {
 			type Foo extends Bar:
 			type Bar extends Baz:
 			type Baz:
-		'''.parse.elements.filter(Data)
-		assertEquals(classes.toSet, classes.head.allSuperTypes)
-		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes)
-		assertEquals(#{classes.last}, classes.get(2).allSuperTypes)
+		'''.parse.elements.filter(Data).map[buildRDataType]
+		assertEquals(classes.toSet, classes.head.allSuperTypes.toSet)
+		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes.toSet)
+		assertEquals(#{classes.last}, classes.get(2).allSuperTypes.toSet)
 	}
 	
 	@Test
@@ -43,10 +45,10 @@ class RosettaExtensionsTest {
 			type Foo extends Bar:
 			type Bar extends Baz:
 			type Baz extends Foo:
-		'''.parse.elements.filter(Data)
-		assertEquals(classes.toSet, classes.head.allSuperTypes)
-		assertEquals(classes.toSet, classes.get(1).allSuperTypes)
-		assertEquals(classes.toSet, classes.get(2).allSuperTypes)
+		'''.parse.elements.filter(Data).map[buildRDataType]
+		assertEquals(classes.toSet, classes.head.allSuperTypes.toSet)
+		assertEquals(classes.toSet, classes.get(1).allSuperTypes.toSet)
+		assertEquals(classes.toSet, classes.get(2).allSuperTypes.toSet)
 	}
 	
 	@Test 

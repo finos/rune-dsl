@@ -51,6 +51,12 @@ public abstract class Interval<T extends Number & Comparable<? super T>> {
 	public boolean isUnbounded() {
 		return min.isEmpty() && max.isEmpty();
 	}
+	public boolean isUnboundedLeft() {
+		return min.isEmpty();
+	}
+	public boolean isUnboundedRight() {
+		return max.isEmpty();
+	}
 	
 	public boolean includes(T x) {
 		if (min.map(b -> b.compareTo(x) >= 0).orElse(false)) {
