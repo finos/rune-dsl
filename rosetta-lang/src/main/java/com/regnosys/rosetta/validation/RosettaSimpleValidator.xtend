@@ -117,6 +117,7 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -1055,7 +1056,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (cardinality.isMulti(arg)) {
 				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
-			if (!arg.RType.isSubtypeOf(UNCONSTRAINED_STRING)) {
+			val argType = arg.RType.stripFromTypeAliases
+			if (ele instanceof ToEnumOperation && argType instanceof REnumType) {
+				// `to-enum` can also be used to convert an enum value to a parent enum
+				val resultType = (ele as ToEnumOperation).enumeration.buildREnumType
+				if (!resultType.isSubtypeOf(argType)) {
+					error('''«argType» does not extend «resultType».''', ele, TO_ENUM_OPERATION__ENUMERATION)
+				}
+			} else if (!argType.isSubtypeOf(UNCONSTRAINED_STRING)) {
 				error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 		}

@@ -1039,8 +1039,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = expr.enumeration.buildREnumType.toJavaType
-		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+		val javaEnum = expr.enumeration.buildREnumType.toJavaReferenceType
+		val argType = typeProvider.getRType(expr.argument)
+		if (argType instanceof REnumType) {
+			val javaArgType = argType.toJavaReferenceType
+			expr.argument.javaCode(MAPPER_S.wrapExtends(javaArgType), context.scope)
+				.collapseToSingleExpression(context.scope)
+				.mapExpression[JavaExpression.from('''«it».map("«expr.operator»", «javaArgType»::to«javaEnum.simpleName»)''', MAPPER_S.wrap(javaEnum))]
+		} else {
+			conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+		}
 	}
 
 	override protected caseToIntOperation(ToIntOperation expr, Context context) {

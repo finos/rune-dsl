@@ -32,6 +32,21 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCannotConvertEnumToNonParentEnum() {
+		val model = '''
+		enum A:
+			VALUE_A
+		
+		enum B extends A:
+			VALUE_B
+		'''.parseRosettaWithNoIssues
+		
+		"a to-enum B"
+			.parseExpression(#[model], #["a A (1..1)"])
+			.assertError(TO_ENUM_OPERATION, null, "A does not extend B.")
+	}
+	
+	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''
 		type A:
