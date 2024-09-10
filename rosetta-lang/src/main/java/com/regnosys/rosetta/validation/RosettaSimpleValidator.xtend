@@ -1463,7 +1463,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		val attr = o.path !== null
 				? o.pathAsSegmentList.last.attribute
 				: o.assignRoot
-		checkType(attr.RTypeOfSymbol, expr, expr, null, INSIGNIFICANT_INDEX)
+		checkType(attr.RTypeOfSymbol, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
 		val isList = cardinality.isSymbolMulti(attr)
 		if (o.add && !isList) {
 			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)

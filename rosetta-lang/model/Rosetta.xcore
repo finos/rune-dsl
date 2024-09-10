@@ -39,10 +39,6 @@ interface RosettaNamed {
 
 interface RosettaTyped {
 	contains TypeCall typeCall
-		
-	derived boolean isTypeInferred get {
-		return typeCall === null
-	}
 }
 
 interface RosettaFeature extends RosettaNamed {

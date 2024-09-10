@@ -16,7 +16,7 @@ public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
-	public boolean isSubtypeOf(RType t1, RType t2) {		
+	public boolean isSubtypeOf(RType t1, RType t2) {
 		if (t1.equals(t2)) {
 			return true;
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
