@@ -443,6 +443,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseNumberLiteral(RosettaNumberLiteral expr, Map<EObject, RType> cycleTracker) {
+		if (expr.value === null) { // In case of a parse error
+			return NOTHING
+		}
 		constrainedNumber(expr.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expr.value.scale), expr.value, expr.value)
 	}
 	
