@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import java.util.List
@@ -13,13 +12,14 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.google.common.collect.ImmutableMap.*
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class ChoiceRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension ConditionTestHelper
 	
 	@Test

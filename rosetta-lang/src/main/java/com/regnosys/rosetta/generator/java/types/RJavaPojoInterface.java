@@ -32,18 +32,18 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 	private static JavaClass<RosettaModelObject> ROSETTA_MODEL_OBJECT = JavaClass.from(RosettaModelObject.class);
 	
-	private final RDataType data;
+	private final RDataType type;
 	
 	private final TypeSystem typeSystem;
 
-	public RJavaPojoInterface(RDataType data, TypeSystem typeSystem) {
-		this.data = data;
+	public RJavaPojoInterface(RDataType type, TypeSystem typeSystem) {
+		this.type = type;
 		
 		this.typeSystem = typeSystem;
 	}
-	
+
 	public RDataType getRType() {
-		return data;
+		return type;
 	}
 
 	@Override
@@ -55,14 +55,14 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 			return true;
 		}
 		if (other instanceof RJavaPojoInterface) {
-			return typeSystem.isSubtypeOf(data, ((RJavaPojoInterface)other).data);
+			return typeSystem.isSubtypeOf(type, ((RJavaPojoInterface)other).type);
 		}
 		return false;
 	}
 
 	@Override
 	public String getSimpleName() {
-		return data.getName();
+		return type.getName();
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 
 	@Override
 	public List<JavaClass<?>> getInterfaceDeclarations() {
-		RType superType = typeSystem.stripFromTypeAliases(data.getSuperType());
+		RType superType = typeSystem.stripFromTypeAliases(type.getSuperType());
 		if (superType != null && superType instanceof RDataType) {
 			return Collections.singletonList(new RJavaPojoInterface((RDataType) superType, typeSystem));
 		}
@@ -109,7 +109,7 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 
 	@Override
 	public DottedPath getPackageName() {
-		return data.getNamespace();
+		return type.getNamespace();
 	}
 
 }

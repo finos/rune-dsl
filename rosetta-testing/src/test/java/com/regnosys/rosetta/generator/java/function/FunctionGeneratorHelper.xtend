@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaNamespace
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.utils.ModelIdProvider
 
 class FunctionGeneratorHelper {
 

@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -30,16 +29,17 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ModelMetaGenerator {
 
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelIdProvider
-	
+
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		val className = '''«t.name»Meta'''
 		
@@ -55,10 +55,10 @@ class ModelMetaGenerator {
 		val validator = t.toValidatorClass
 		val typeFormatValidator = t.toTypeFormatValidatorClass
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
-		val context = t.data.eResource.resourceSet
-		val qualifierFuncs = qualifyFuncs(t.data, context.resources.map[contents.head as RosettaModel].toSet)
-		// TODO: add condition to check type format of basic super type
-		val conditions = t.allSuperDataTypes.map[conditionRules(it.data.conditions)].flatten
+		val context = t.EObject.eResource.resourceSet
+		val qualifierFuncs = qualifyFuncs(t.EObject, context.resources.map[contents.head as RosettaModel].toSet)
+    // TODO: add condition to check type format of basic super type
+		val conditions = t.allSuperTypes.map[conditionRules(it.EObject.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -116,8 +116,8 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
-		val dataNamespace = new RootPackage(t.data.namespace.toDottedPath)
-		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t.data), dataNamespace)].toList
+		val dataNamespace = new RootPackage(t.namespace)
+		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t), dataNamespace)].toList
 	}
 
 	@org.eclipse.xtend.lib.annotations.Data

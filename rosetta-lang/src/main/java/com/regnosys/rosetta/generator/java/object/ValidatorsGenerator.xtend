@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -21,12 +20,10 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RStringType
 import com.regnosys.rosetta.types.builtin.RNumberType
@@ -38,13 +35,12 @@ import java.math.BigDecimal
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.List
+import com.regnosys.rosetta.types.RAttribute
 
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaExtensions
 	@Inject extension JavaTypeTranslator
-	@Inject extension RosettaTypeProvider
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService
 	@Inject extension JavaTypeUtil
@@ -60,25 +56,25 @@ class ValidatorsGenerator {
 
 	private def generateClass(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, t.classBody(version, t.allNonOverridesAttributes), scope)
+		buildClass(root.typeValidation, t.classBody(version, t.allNonOverridenAttributes), scope)
 	}
 	
 	private def generateTypeFormatValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.allNonOverridesAttributes), scope)
+		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.allNonOverridenAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.allNonOverridesAttributes), scope)
+		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.allNonOverridenAttributes), scope)
 	}
 
-	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<Attribute> attributes) '''
+	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<RAttribute> attributes) '''
 		public class «t.toValidatorClass» implements «Validator»<«t.toJavaType»> {
 		
 			private «List»<«ComparisonResult»> getComparisonResults(«t.toJavaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
-						«FOR attrCheck : attributes.map[checkCardinality(toExpandedAttribute)].filter[it !== null] SEPARATOR ", "»
+						«FOR attrCheck : attributes.map[checkCardinality(it)].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
 					);
@@ -114,7 +110,7 @@ class ValidatorsGenerator {
 		}
 	'''
 	
-	def private StringConcatenationClient typeFormatClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
+	def private StringConcatenationClient typeFormatClassBody(RDataType t, String version, Iterable<RAttribute> attributes) '''
 		public class «t.toTypeFormatValidatorClass» implements «Validator»<«t.toJavaType»> {
 		
 			private «List»<«ComparisonResult»> getComparisonResults(«t.toJavaType» o) {
@@ -155,7 +151,7 @@ class ValidatorsGenerator {
 		}
 	'''
 
-	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<Attribute> attributes) '''
+	def private StringConcatenationClient onlyExistsClassBody(RDataType t, String version, Iterable<RAttribute> attributes) '''
 		public class «t.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«t.toJavaType», «Set»<String>> {
 
 			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
@@ -163,7 +159,7 @@ class ValidatorsGenerator {
 			public <T2 extends «t.toJavaType»> «ValidationResult»<«t.toJavaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
 				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
 						«FOR attr : attributes»
-							.put("«attr.name»", «ExistenceChecker».isSet((«attr.toExpandedAttribute.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()))
+							.put("«attr.name»", «ExistenceChecker».isSet((«attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»()))
 						«ENDFOR»
 						.build();
 				
@@ -182,23 +178,23 @@ class ValidatorsGenerator {
 		}
 	'''
 
-	private def StringConcatenationClient checkCardinality(ExpandedAttribute attr) {
-		if (attr.inf === 0 && attr.isUnbound) {
+	private def StringConcatenationClient checkCardinality(RAttribute attr) {
+		if (attr.cardinality.minBound === 0 && attr.cardinality.unboundedRight) {
 			null
 		} else {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
-			«IF attr.isMultiple»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.inf», «attr.sup»)
+			«IF attr.isMulti»
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.cardinality.minBound», «attr.cardinality.max.orElse(0)»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMultiMetaOrRegularJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.inf», «attr.sup»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.cardinality.minBound», «attr.cardinality.max.orElse(0)»)
 			«ENDIF»
 			'''
 		}
 	}
 		
-	private def StringConcatenationClient checkTypeFormat(Attribute attr) {
-		val t = attr.RTypeOfSymbol.stripFromTypeAliases
+	private def StringConcatenationClient checkTypeFormat(RAttribute attr) {
+		val t = attr.RType.stripFromTypeAliases
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
 				val min = t.interval.minBound
@@ -220,11 +216,11 @@ class ValidatorsGenerator {
 		return null
 	}
 	
-	private def StringConcatenationClient getAttributeValue(Attribute attr) {
+	private def StringConcatenationClient getAttributeValue(RAttribute attr) {
 		if (attr.metaAnnotations.empty) {
 			'''o.get«attr.name?.toFirstUpper»()'''
 		} else {
-			val jt = attr.toExpandedAttribute.toMultiMetaOrRegularJavaType
+			val jt = attr.toMetaJavaType
 			if (jt.isList) {
 				val itemType = jt.itemType
 				'''o.get«attr.name?.toFirstUpper»().stream().map(«itemType»::getValue).collect(«Collectors».toList())'''

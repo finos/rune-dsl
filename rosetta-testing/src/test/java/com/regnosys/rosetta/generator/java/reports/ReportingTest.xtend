@@ -28,6 +28,59 @@ class ReportingTest {
 	@Inject extension TabulatorTestUtil
 	
 	@Test
+	def void generateTabulatorWithOverlappingAttributeNamesInSubreports() {
+		val model = '''
+		body Authority Body
+		corpus Act Corpus	
+		
+		report Body Corpus in real-time
+		    from string
+		    when Foo
+		    with type Report
+		
+		eligibility rule Foo from string:
+			True
+		
+		type Report:
+			subreport1 Subreport1 (1..1)
+			subreport2 Subreport2 (1..1)
+		
+		type Subreport1:
+			value string (1..1)
+				[ruleReference Bar]
+		
+		type Subreport2:
+			value string (1..1)
+				[ruleReference Bar]
+		
+		reporting rule Bar from string:
+			item
+		'''
+		val code = model.generateCode
+		
+		val reportId = new ModelReportId(DottedPath.splitOnDots("com.rosetta.test.model"), "Body", "Corpus")
+		val reportFunctionClass = reportId.toJavaReportFunction
+		val tabulatorClass = reportId.toJavaReportTabulator
+		
+		val classes = code.compileToClasses
+		val reportFunction = classes.<ReportFunction<Object, RosettaModelObject>>createInstance(reportFunctionClass)
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		
+		val report = reportFunction.evaluate("input")
+		
+		val flatReport = tabulator.tabulate(report)
+		val expectedValues =
+		'''
+		subreport1:
+			value: input
+		
+		subreport2:
+			value: input
+		'''
+		assertFieldValuesEqual(expectedValues, flatReport)
+	}
+	
+	@Test
 	def void generateTabulatorForHeroModel() {
 		val model = '''
 			namespace "test.reg"

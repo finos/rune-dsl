@@ -58,7 +58,6 @@ interface AssignPathRoot extends RosettaSymbol {
 
 
 class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, AssignPathRoot, References {
-	boolean override
 	contains RosettaCardinality card
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference

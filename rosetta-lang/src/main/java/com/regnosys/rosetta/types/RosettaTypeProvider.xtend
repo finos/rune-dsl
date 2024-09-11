@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
@@ -86,6 +85,11 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
+import com.regnosys.rosetta.cache.IRequestScopedCache
+import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -93,15 +97,15 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 
 	@Inject extension RosettaOperators
 	@Inject IQualifiedNameProvider qNames
-	@Inject RosettaExtensions extensions
+	@Inject RosettaEcoreUtil extensions
 	@Inject extension ImplicitVariableUtil
 	@Inject extension TypeSystem typeSystem
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
-	@Inject ModelIdProvider modelIdProvider
 	@Inject IRequestScopedCache cache
+	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
-	
+
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
@@ -125,7 +129,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
 			RosettaDataReference: {
 				if (extensions.isResolved(seg.data)) {
-					return new RDataType(seg.data, typeSystem, modelIdProvider)
+					return seg.data.buildRDataType
 				} else {
 					NOTHING
 				}
@@ -153,7 +157,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 					MISSING
 			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
-				new REnumType(symbol, modelIdProvider)
+				symbol.buildREnumType
 			}
 			Function: {
 				if (symbol.output !== null) {
@@ -178,11 +182,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				cycleTracker.put(symbol, type)
 				type
 			}
-			TranslationParameter: {
-			    symbol.typeCall.typeCallToRType
-			}
 			TypeParameter: {
 				symbol.typeCall.typeCallToRType
+			}
+			TranslationParameter: {
+			    symbol.typeCall.typeCallToRType
 			}
 		}
 	}
@@ -246,7 +250,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		val definingContainer = context.findObjectDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				new RDataType(it, typeSystem, modelIdProvider)
+				buildRDataType
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
@@ -359,7 +363,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Map<EObject, RType> cycleTracker) {
 		val feature = expr.feature
 		if (!extensions.isResolved(feature)) {
-			return null
+			return NOTHING
 		}
 		(feature as RosettaFeature).safeRType(expr, cycleTracker)
 	}
@@ -503,8 +507,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		expr.function?.body?.safeRType(cycleTracker)
 	}
 	
-	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> context) {
-		new REnumType(expr.enumeration, modelIdProvider)
+	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> cycleTracker) {
+		expr.enumeration.buildREnumType
 	}
 	
 	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> cycleTracker) {
@@ -544,13 +548,13 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		.map[it.expression.RType]
 		.join
 	}
-	
+
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Map<EObject, RType> context) {
 		expr.outputType.typeCallToRType
 	}
-	
+
 	override protected caseAsReferenceOperation(AsReferenceOperation expr, Map<EObject, RType> context) {
 		expr.expectedTypeFromContainer ?: NOTHING
 	}
-	
+
 }

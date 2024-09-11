@@ -10,9 +10,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.object.ExpandedAttribute
 import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.TypeSystem
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.annotations.RosettaDataType
 import com.rosetta.model.lib.meta.RosettaMetaData
@@ -29,9 +27,12 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.RosettaEcoreUtil
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.rosetta.RosettaModel
 
@@ -41,7 +42,7 @@ class ModelObjectGenerator {
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
-	@Inject extension TypeSystem
+	@Inject extension RosettaEcoreUtil
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,
@@ -65,8 +66,8 @@ class ModelObjectGenerator {
 		val builderScope = interfaceScope.classScope('''«javaType»Builder''')
 		val implScope = interfaceScope.classScope('''«javaType»Impl''')
 		'''
-			«javadoc(t.data, version)»
-			@«RosettaDataType»(value="«t.name»", builder=«javaType.toBuilderImplType».class, version="«EcoreUtil2.getContainerOfType(t.data, RosettaModel).version»")
+			«javadoc(t.EObject, version)»
+			@«RosettaDataType»(value="«t.name»", builder=«javaType.toBuilderImplType».class, version="«EcoreUtil2.getContainerOfType(t.EObject, RosettaModel).version»")
 			public interface «javaType» extends «superInterface»«implementsClause(t, interfaces)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
@@ -103,9 +104,9 @@ class ModelObjectGenerator {
 	}
 
 	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(RDataType t, JavaClass<?> javaType, JavaScope builderScope) '''
-		«FOR attribute : t.expandedAttributes»
-			«IF attribute.isDataType || attribute.hasMetas»
-				«IF attribute.cardinalityIsSingleValue»
+		«FOR attribute : t.ownAttributes + t.additionalAttributes»
+			«IF attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
+				«IF !attribute.isMulti»
 					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
 					«attribute.toBuilderTypeSingle» get«attribute.name.toFirstUpper»();
 				«ELSE»
@@ -114,21 +115,19 @@ class ModelObjectGenerator {
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
-		«FOR attribute : t.expandedAttributesPlus»
-			«IF attribute.cardinalityIsSingleValue»
-				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«IF attribute.hasMetas»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
+		«FOR attribute : t.allNonOverridenAttributes + t.additionalAttributes»
+			«IF !attribute.isMulti»
+				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF !attribute.metaAnnotations.isEmpty»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 			«ELSE»
-				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaOrRegularJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
-				«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toJavaReferenceType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
-				«IF !attribute.isOverriding»
-				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toListOrSingleMetaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«IF attribute.hasMetas»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.multiple)» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.rosettaType.typeCallToRType.toPolymorphicListOrSingleJavaType(attribute.multiple)» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
-				«ENDIF»
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
+				«IF !attribute.metaAnnotations.isEmpty»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
+				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF !attribute.metaAnnotations.isEmpty»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 			«ENDIF»
 		«ENDFOR»
 		'''
@@ -158,9 +157,9 @@ class ModelObjectGenerator {
 
 
 	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass<?> javaType, RDataType t) '''
-		«FOR attribute : t.expandedAttributes»
+		«FOR attribute : t.ownAttributes + t.additionalAttributes»
 			«javadoc(attribute.definition, attribute.docReferences, null)»
-			«attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»();
+			«attribute.toMetaJavaType» get«attribute.name.toFirstUpper»();
 		«ENDFOR»
 		'''
 
@@ -189,7 +188,7 @@ class ModelObjectGenerator {
 	}
 
 	def boolean globalKeyRecursive(RDataType class1) {
-		if (class1.data.globalKey) {
+		if (class1.EObject.hasKeyedAnnotation) {
 			return true
 		}
 		val s = class1.superType.stripFromTypeAliases
@@ -200,27 +199,27 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient rosettaClass(RDataType t, JavaScope scope) {
-		val expandedAttributes = t.expandedAttributes
+		val attributes = t.ownAttributes + t.additionalAttributes
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		'''
-		«FOR attribute : expandedAttributes»
-			private final «attribute.toMultiMetaOrRegularJavaType» «scope.createIdentifier(attribute, attribute.name.toFirstLower)»;
+		«FOR attribute : attributes»
+			private final «attribute.toMetaJavaType» «scope.createIdentifier(attribute, attribute.name.toFirstLower)»;
 		«ENDFOR»
 
 		protected «javaType»Impl(«javaType.toBuilderType» builder) {
 			«IF superInterface != JavaClass.from(RosettaModelObject)»
 				super(builder);
 			«ENDIF»
-			«FOR attribute : expandedAttributes»
+			«FOR attribute : attributes»
 				this.«scope.getIdentifierOrThrow(attribute)» = «attribute.attributeFromBuilder»;
 			«ENDFOR»
 		}
 
-		«FOR attribute : expandedAttributes»
+		«FOR attribute : attributes»
 			@Override
 			@«RosettaAttribute»("«attribute.javaAnnotation»")
-			public «attribute.toMultiMetaOrRegularJavaType» get«attribute.name.toFirstUpper»() {
+			public «attribute.toMetaJavaType» get«attribute.name.toFirstUpper»() {
 				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 			
@@ -241,29 +240,29 @@ class ModelObjectGenerator {
 			«IF (superInterface != JavaClass.from(RosettaModelObject))»
 				super.setBuilderFields(builder);
 			«ENDIF»
-			«FOR attribute :expandedAttributes»
+			«FOR attribute : attributes»
 				«method(Optional, "ofNullable")»(get«attribute.name.toFirstUpper»()).ifPresent(builder::set«attribute.name.toFirstUpper»);
 			«ENDFOR»
 		}
 		'''
 	}
 
-	private def StringConcatenationClient attributeFromBuilder(ExpandedAttribute attribute) {
-		if(attribute.isDataType || attribute.hasMetas) {
-			if (attribute.cardinalityIsListValue)
+	private def StringConcatenationClient attributeFromBuilder(RAttribute attribute) {
+		if(attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty) {
+			if (attribute.isMulti)
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«attribute.buildRosettaObject»).orElse(null)'''
 			else
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
-			if (attribute.cardinalityIsSingleValue)
+			if (!attribute.isMulti)
 				'''builder.get«attribute.name.toFirstUpper»()«IF attribute.needsBuilder».build()«ENDIF»'''
 			else
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«ImmutableList»::copyOf).orElse(null)'''
 		}
 	}
 
-	private def StringConcatenationClient buildRosettaObject(ExpandedAttribute attribute) {
-		if(attribute.cardinalityIsListValue) {
+	private def StringConcatenationClient buildRosettaObject(RAttribute attribute) {
+		if(attribute.isMulti) {
 			'''list -> list.stream().filter(«Objects»::nonNull).map(f->f.build()).filter(«Objects»::nonNull).collect(«ImmutableList».toImmutableList())'''
 		} else {
 			'''f->f.build()'''

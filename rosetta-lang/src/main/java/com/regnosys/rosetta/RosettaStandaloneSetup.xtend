@@ -8,6 +8,7 @@ import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import org.eclipse.emf.ecore.EPackage
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 import com.google.inject.Injector
+import org.eclipse.emf.ecore.EValidator
 import com.regnosys.rosetta.rosetta.translate.TranslatePackage
 
 /**
@@ -17,6 +18,11 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 
 	def static void doSetup() {
 		new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration()
+	}
+
+	override Injector createInjectorAndDoEMFRegistration() {
+		EValidator.Registry.INSTANCE.clear // This line is to ensure tests don't use the same validator instance.
+		return super.createInjectorAndDoEMFRegistration()
 	}
 
 	/**

@@ -59,22 +59,22 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 class TypeCoercionService {
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject JavaTypeTranslator translator
-	
+
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
 		val simpleCoercion = coerceSimple(expr, expected)
 		if (simpleCoercion !== null) {
 			return simpleCoercion
 		}
-		
+
 		expr.mapExpression[addCoercions(expected, scope)]
 	}
-	
+
 	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaScope scope) {
 		val simpleCoercion = coerceSimple(expr, expected)
 		if (simpleCoercion !== null) {
 			return simpleCoercion
 		}
-		
+
 		val actual = expr.expressionType
 		if (actual.isWrapper && expected.isWrapper) {
 			wrapperToWrapper(expr, expected, scope)
@@ -99,7 +99,7 @@ class TypeCoercionService {
 		}
 		return null
 	}
-	
+
 	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		// Strategy:

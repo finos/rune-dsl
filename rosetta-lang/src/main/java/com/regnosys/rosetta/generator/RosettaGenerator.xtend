@@ -40,6 +40,10 @@ import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.translate.TranslationGenerator
 import com.regnosys.rosetta.rosetta.translate.TranslateSource
@@ -81,9 +85,9 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject
 	RosettaGeneratorsConfiguration config;
-	
+
 	@Inject extension ModelIdProvider
-	@Inject extension TypeSystem
+	@Inject extension RObjectFactory
 
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta', 'basictypes.rosetta', 'annotations.rosetta'}
@@ -175,7 +179,6 @@ class RosettaGenerator implements IGenerator2 {
 						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
 					], lock)
 				]
-
 				metaFieldGenerator.generate(resource, fsa, context)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
@@ -195,7 +198,7 @@ class RosettaGenerator implements IGenerator2 {
 		}
 		switch (elem) {
 			Data: {
-				val t = elem.dataToType
+				val t = elem.buildRDataType
 				dataGenerator.generate(packages, fsa, t, version)
 				metaGenerator.generate(packages, fsa, t, version)
 				// Legacy
@@ -205,28 +208,28 @@ class RosettaGenerator implements IGenerator2 {
 				]
 				// new
 				// validatorGenerator.generate(packages, fsa, it, version)
-				tabulatorGenerator.generate(fsa, t, Optional.empty)
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
-        tabulatorGenerator.generate(fsa, t)
+				tabulatorGenerator.generateTabulatorForReportData(fsa, t, Optional.empty)
+				tabulatorGenerator.generateTabulatorForData(fsa, t)
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {
 					funcGenerator.generate(packages, fsa, elem, version)
 				}
-				tabulatorGenerator.generate(fsa, elem)
+				tabulatorGenerator.generateTabulatorForFunction(fsa, elem)
 			}
 			RosettaRule: {
 				ruleGenerator.generate(packages, fsa, elem, version)
 			}
 			RosettaReport: {
 				reportGenerator.generate(packages, fsa, elem, version)
-				tabulatorGenerator.generate(fsa, elem)
+				tabulatorGenerator.generateTabulatorForReport(fsa, elem)
 			}
 			RosettaExternalRuleSource: {
 				elem.externalClasses.forEach [ externalClass |
-					tabulatorGenerator.generate(fsa, externalClass.data.dataToType, Optional.of(elem))
+					tabulatorGenerator.generateTabulatorForReportData(fsa, externalClass.data.buildRDataType, Optional.of(elem))
 				]
 			}
 			TranslateSource: {

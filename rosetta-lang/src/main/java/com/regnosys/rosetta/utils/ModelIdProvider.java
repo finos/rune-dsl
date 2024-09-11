@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.utils;
 
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.rosetta.RosettaNamed;
@@ -37,7 +38,7 @@ public class ModelIdProvider {
 		String[] corpusList = report.getRegulatoryBody().getCorpusList().stream().map(c -> c.getName()).toArray(String[]::new);
 		return new ModelReportId(namespace, body, corpusList);
 	}
-	
+
 	public ModelTranslationId getTranslationId(Translation translation) {
 		TranslateSource source = translation.getSource();
 		TypeCall resultType = translation.getResultType();

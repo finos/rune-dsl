@@ -18,13 +18,15 @@ package com.regnosys.rosetta.types;
 
 import java.util.Objects;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 
 public class RShortcut implements RAssignedRoot {
-	private String name;
-	private boolean isMulti;
-	private String definition;
-	private RosettaExpression expression;
+	private final String name;
+	private final boolean isMulti;
+	private final String definition;
+	private final RosettaExpression expression;
 	
 	public RShortcut(String name, boolean isMulti, String definition, RosettaExpression expression) {
 		this.name = name;
@@ -37,7 +39,7 @@ public class RShortcut implements RAssignedRoot {
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public boolean isMulti() {
 		return isMulti;
@@ -67,5 +69,10 @@ public class RShortcut implements RAssignedRoot {
 		RShortcut other = (RShortcut) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(expression, other.expression)
 				&& Objects.equals(name, other.name);
+	}
+
+	@Override
+	public EObject getEObject() {
+		return expression.eContainer();
 	}
 }

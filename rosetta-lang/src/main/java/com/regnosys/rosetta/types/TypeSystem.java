@@ -32,22 +32,20 @@ import com.regnosys.rosetta.cache.IRequestScopedCache;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+
 import com.regnosys.rosetta.utils.ModelIdProvider;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
 public class TypeSystem {
 	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
-	
+
 	@Inject
 	private RosettaTyping typing;
 	@Inject
@@ -57,10 +55,8 @@ public class TypeSystem {
 	@Inject
 	private IRequestScopedCache cache;
 	@Inject
-	private ModelIdProvider modelIdProvider;
-	@Inject
 	private SubtypeRelation subtypeRelation;
-	
+
 	public RListType inferType(RosettaExpression expr) {
 		Objects.requireNonNull(expr);
 		
@@ -77,15 +73,15 @@ public class TypeSystem {
                 return builtins.ANY;
             }
 
-            Map<RosettaFeature, RosettaRuleReference> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
+            Map<RAttribute, RosettaRule> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
             RType result = builtins.ANY;
-            for (Attribute attr: data.getData().getAttributes()) {
-                RosettaRuleReference ref = ruleReferences.get(attr);
-                if (ref != null) {
-                    RType inputType = typeCallToRType(ref.getReportingRule().getInput());
+            for (RAttribute attr: data.getOwnAttributes()) {
+                RosettaRule rule = ruleReferences.get(attr);
+                if (rule != null) {
+                    RType inputType = typeCallToRType(rule.getInput());
                     result = meet(result, inputType);
                 } else {
-                    RType attrType = stripFromTypeAliases(typeCallToRType(attr.getTypeCall()));
+                    RType attrType = stripFromTypeAliases(attr.getRType());
                     if (attrType instanceof RDataType) {
                     	RDataType attrData = (RDataType)attrType;
                         RType inputType = getRulesInputType(attrData, source, visited);
@@ -202,19 +198,19 @@ public class TypeSystem {
 		}
 		return t;
 	}
-	
+
 	public RDataType dataToType(Data data) {
 		return new RDataType(data, this, modelIdProvider);
 	}
 	public REnumType enumToType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider);
 	}
-	
+
 	/**
 	 * Returns the first ancestor of the given type which does not extend any data type.
-	 * 
+	 *
 	 * If no such type exists, returns `null`.
-	 * 
+	 *
 	 * If the given type is not a data type and not an alias of a data type, returns null.
 	 */
 	public RType getValueType(RType type) {

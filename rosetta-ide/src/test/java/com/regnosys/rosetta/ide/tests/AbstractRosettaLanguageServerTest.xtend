@@ -25,6 +25,11 @@ import com.google.inject.Module
 import org.eclipse.lsp4j.DiagnosticSeverity
 import com.regnosys.rosetta.RosettaStandaloneSetup
 import java.util.HashMap
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.EValidator
+import com.regnosys.rosetta.rosetta.RosettaPackage
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 
 /**
  * TODO: contribute to Xtext.

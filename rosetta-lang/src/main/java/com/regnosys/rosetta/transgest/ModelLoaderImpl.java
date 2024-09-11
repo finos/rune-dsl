@@ -16,6 +16,8 @@
 
 package com.regnosys.rosetta.transgest;
 
+import static com.regnosys.rosetta.generator.util.IterableUtil.fullname;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,7 +46,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 public class ModelLoaderImpl implements ModelLoader {
 	@Inject Provider<XtextResourceSet> resourceSetProvider;
 	@Inject ModelIdProvider modelIdProvider;
-	
+
 	public List<RosettaModel> loadRosettaModels(Stream<URL> res) {
 		XtextResourceSet resourceSet = resourceSetProvider.get();
 		List<RosettaModel> models = res.map(ModelLoaderImpl::url)

@@ -61,11 +61,12 @@ public class RosettaJavaPackages {
 
 	public static class RootPackage extends DottedPath {
 
-		public RootPackage(String namespace) {
-			this(DottedPath.splitOnDots(namespace));
-		}
 		public RootPackage(DottedPath namespace) {
 			super(namespace);
+		}
+
+		public RootPackage(String namespace) {
+			this(DottedPath.splitOnDots(namespace));
 		}
 
 		public DottedPath metaField() {

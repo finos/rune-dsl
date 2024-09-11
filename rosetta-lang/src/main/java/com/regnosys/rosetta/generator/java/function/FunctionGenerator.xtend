@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.inject.ImplementedBy
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -66,6 +65,8 @@ import java.util.Collections
 import com.fasterxml.jackson.core.type.TypeReference
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.meta.Key
 import com.regnosys.rosetta.utils.ModelIdProvider
@@ -77,7 +78,7 @@ class FunctionGenerator {
 	@Inject JavaDependencyProvider dependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality
@@ -161,7 +162,7 @@ class FunctionGenerator {
 		
 		val defaultClassScope = classScope.classScope(className.desiredName + "Default")
 		val defaultClassName = defaultClassScope.createUniqueIdentifier(className.desiredName + "Default")
-		val outputType = output.attributeToJavaType
+		val outputType = output.toMetaJavaType
 		val aliasOut = shortcuts.toMap([it], [exprHelper.usesOutputParameter(it.expression)])
 
 		
@@ -395,7 +396,7 @@ class FunctionGenerator {
 
 		if (op.pathTail.isEmpty && !op.isMetaOperation) {
 			// assign function output object
-			val expressionType = attribute.attributeToJavaType
+			val expressionType = attribute.toMetaJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
 			val effectiveExprType = javaExpr.expressionType
 			if (needsBuilder(attribute)) {
@@ -463,7 +464,7 @@ class FunctionGenerator {
 				].completeAsExpressionStatement
 		}
 	}
-	
+
 	private def String metaFeatureToJavaField(RAttribute metaFeature) {
 		switch metaFeature.name {
 			case "key": "externalKey"
@@ -626,7 +627,7 @@ class FunctionGenerator {
 	}
 	
 	private def StringConcatenationClient inputsAsParameters(List<RAttribute> inputs, JavaScope scope) {
-		'''«FOR input : inputs SEPARATOR ', '»«input.attributeToJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	private def JavaReferenceType shortcutJavaType(RShortcut feature) {

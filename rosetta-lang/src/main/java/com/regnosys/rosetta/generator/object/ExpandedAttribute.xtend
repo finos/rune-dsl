@@ -9,6 +9,7 @@ import org.eclipse.xtend.lib.annotations.Data
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.TypeCall
 
+@Deprecated
 @Data
 final class ExpandedAttribute {
 	
@@ -81,6 +82,7 @@ final class ExpandedAttribute {
 	}
 }
 
+@Deprecated
 @Data
 final class ExpandedType {
 	DottedPath namespace
@@ -96,6 +98,7 @@ final class ExpandedType {
 
 }
 
+@Deprecated
 @Data
 final class ExpandedSynonym {
 	List<RosettaSynonymSource> sources
@@ -111,6 +114,7 @@ final class ExpandedSynonym {
 	boolean removeHtml
 }
 
+@Deprecated
 @Data
 final class ExpandedSynonymValue {
 	String name

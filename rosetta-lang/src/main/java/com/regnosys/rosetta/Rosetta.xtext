@@ -28,7 +28,7 @@ QualifiedName:
 
 Import:
 	'import' importedNamespace=(QualifiedNameWithWildcard) ('as' namespaceAlias=QualifiedName)?;
-			
+
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
 
@@ -92,8 +92,7 @@ ReferenceKeyAnnotation:
 ;
 
 Attribute:
-	// @Compat remove `override`
-	(override ?= 'override')? RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
+	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
 ;
@@ -188,8 +187,8 @@ RosettaRootElement:
 
 /**********************************************************************
  * Common rules 
- */ 
- 
+ */
+
 fragment RosettaDefinable: // TODO should a definition be able to hold any character? Escape characters? Spaces between '<' and '"'?
 	('<' definition=STRING '>') // TODO rename to documentation?
 ;
@@ -763,7 +762,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({AsReferenceOperation.argument=current} operator='as-reference')
-			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)			
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

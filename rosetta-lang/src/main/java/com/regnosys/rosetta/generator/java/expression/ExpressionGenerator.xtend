@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.RosettaExtensions
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -9,7 +8,6 @@ import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaMetaType
@@ -99,7 +97,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import com.regnosys.rosetta.types.RObjectFactory
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
@@ -128,6 +125,9 @@ import java.time.ZonedDateTime
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import com.regnosys.rosetta.types.RAttribute
+import java.util.Collection
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter
 import com.regnosys.rosetta.rosetta.expression.TranslateDispatchOperation
 import com.regnosys.rosetta.utils.TranslateUtil
@@ -149,7 +149,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject RosettaOperators operators
 	@Inject extension CardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
-	@Inject extension RosettaExtensions
+	@Inject extension RosettaEcoreUtil
 	@Inject extension ImportManagerExtension
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImplicitVariableUtil
@@ -160,10 +160,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject RObjectFactory rObjectFactory;
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
+	@Inject extension RObjectFactory
 	@Inject TranslateUtil translateUtil
-	
+
 	//TODO: implement meta constructor generation
-	
+
 	/**
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
@@ -191,10 +192,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						rObjectFactory.buildRFunction(callable)
 					else
 						rObjectFactory.buildRFunction(callable as RosettaRule)
-				val outputType = rCallable.output.attributeToJavaType
+				val outputType = rCallable.output.toMetaJavaType
 				val args = newArrayList
 				for (var i = 0; i < arguments.size; i++) {
-					args.add(arguments.get(i).javaCode(rCallable.inputs.get(i).attributeToJavaType, scope))
+					args.add(arguments.get(i).javaCode(rCallable.inputs.get(i).toMetaJavaType, scope))
 				}
 				JavaStatementBuilder.invokeMethod(
 					args,
@@ -286,15 +287,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
 	}
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
-		val resultItemType = if (feature instanceof Attribute && !autoValue) {
-			(feature as Attribute).toExpandedAttribute.toMetaOrRegularJavaType
-		} else {
-			typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
+		if (feature instanceof Attribute) {
+			return featureCall(receiverCode, receiverType, feature.buildRAttribute, isDeepFeature, scope, autoValue)
 		}
+		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		val StringConcatenationClient right = switch (feature) {
-			Attribute: {
-				receiverType.buildMapFunc(feature, isDeepFeature, autoValue, scope)
-			}
 			RosettaMetaType: 
 				feature.buildMapFunc(scope)
 			RosettaRecordFeature:
@@ -304,6 +301,24 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
 		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !cardinalityProvider.isFeatureMulti(feature)) {
+			MAPPER_S as JavaGenericTypeDeclaration<?>
+		} else {
+			MAPPER_C as JavaGenericTypeDeclaration<?>
+		}
+		val resultType = resultWrapper.wrap(resultItemType)
+		return mapperReceiverCode
+			.collapseToSingleExpression(scope)
+			.mapExpression[JavaExpression.from('''«it»«right»''', resultType)]
+	}
+	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RAttribute attr, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
+		val resultItemType = if (!autoValue) {
+			attr.toMetaItemJavaType
+		} else {
+			attr.toItemJavaType
+		}
+		val StringConcatenationClient right = receiverType.buildMapFunc(attr, isDeepFeature, autoValue, scope)
+		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
+		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !attr.isMulti) {
 			MAPPER_S as JavaGenericTypeDeclaration<?>
 		} else {
 			MAPPER_C as JavaGenericTypeDeclaration<?>
@@ -419,24 +434,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	private def StringConcatenationClient buildMapFunc(RType itemType, Attribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
+	private def StringConcatenationClient buildMapFunc(RType itemType, RAttribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
 		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
-		val resultType = if (attribute.metaAnnotations.nullOrEmpty) {
-				typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType
-			} else {
-				attribute.toMetaJavaType
-			}
-		if (attribute.card.isIsMany) {
+		val resultType = attribute.toMetaItemJavaType
+		if (attribute.isMulti) {
 			if (attribute.metaAnnotations.nullOrEmpty || !autoValue)
 				'''.<«resultType»>mapC(«mapFunc»)'''
 			else {
-				'''.<«resultType»>mapC(«mapFunc»).<«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType»>map("getValue", _f->_f.getValue())'''
+				'''.<«resultType»>mapC(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
 			}
 		} else {
 			if (attribute.metaAnnotations.nullOrEmpty || !autoValue) {
 				'''.<«resultType»>map(«mapFunc»)'''
 			} else
-				'''.<«resultType»>map(«mapFunc»).<«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType»>map("getValue", _f->_f.getValue())'''
+				'''.<«resultType»>map(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
 		}
 	}
 
@@ -473,7 +484,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		)
 	}
 
-	private def buildConstraint(RosettaExpression arg, Iterable<Attribute> usedAttributes,
+	private def buildConstraint(RosettaExpression arg, Collection<RAttribute> usedAttributes,
 		Necessity validationType, Context context) {
 		val argItemType = typeProvider.getRType(arg).toJavaReferenceType
 		arg.javaCode(MAPPER.wrapExtends(argItemType), context.scope)
@@ -516,13 +527,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			)]
 	}
 
-	private def StringConcatenationClient buildMapFuncAttribute(RType itemType, Attribute attribute, boolean isDeepFeature, JavaScope scope) {
+	private def StringConcatenationClient buildMapFuncAttribute(RType itemType, RAttribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(itemType.name.toFirstLower)
 		if (isDeepFeature) {
-			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((itemType as RDataType).data.toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
+			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((itemType as RDataType).toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
 		} else {
-			'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «IF attribute.override»(«typeProvider.getRTypeOfSymbol(attribute).toJavaReferenceType») «ENDIF»«lambdaParam».get«attribute.name.toFirstUpper»()'''
+			'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «lambdaParam».get«attribute.name.toFirstUpper»()'''
 		}
 	}
 
@@ -616,7 +627,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseChoiceOperation(ChoiceOperation expr, Context context) {
-		buildConstraint(expr.argument, expr.attributes, expr.necessity, context)
+		buildConstraint(expr.argument, expr.attributes.map[buildRAttribute], expr.necessity, context)
 	}
 
 	override protected caseConditionalExpression(RosettaConditionalExpression expr, Context context) {
@@ -902,7 +913,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseOneOfOperation(OneOfOperation expr, Context context) {
 		val type = typeProvider.getRType(expr.argument) as RDataType
-		buildConstraint(expr.argument, type.allAttributes, Necessity.REQUIRED, context)
+		buildConstraint(expr.argument, type.allNonOverridenAttributes, Necessity.REQUIRED, context)
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
@@ -928,7 +939,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			throw new UnsupportedOperationException("Unsupported parent in `only exists` expression of type " + it?.class?.name)
 		]
-		val allAttrs = parentType.allNonOverridesAttributes
+		val allAttrs = parentType.allNonOverridenAttributes
 		parent
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«it», «Arrays».asList(«allAttrs.join(", ")['"' + name + '"']»), «Arrays».asList(«requiredAttributes.join(", ")['"' + name + '"']»))''', COMPARISON_RESULT)]
@@ -991,7 +1002,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					}
 					featureCall(implicitVariable(expr, context.scope), implicitType, s, false, context.scope, autoValue)
 				} else
-					new JavaVariable(context.scope.getIdentifierOrThrow(attribute), attribute.attributeToJavaType)
+					new JavaVariable(context.scope.getIdentifierOrThrow(attribute), attribute.toMetaJavaType)
 			}
 			ShortcutDeclaration: {
 				val isMulti = s.isSymbolMulti
@@ -1004,11 +1015,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					val aliasType = isMulti ? MAPPER_C.wrapExtendsIfNotFinal(itemType) as JavaType : MAPPER_S.wrapExtendsIfNotFinal(itemType)
 					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»)''', aliasType)
 				}
-				
-			}
-			RosettaEnumeration: {
-				val t = s.enumToType.toJavaType
-				JavaExpression.from('''«t»''', t)
+
 			}
 			RosettaEnumValue: {
 				enumCall(s, expr)
@@ -1051,7 +1058,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = expr.enumeration.enumToType.toJavaType
+		val javaEnum = expr.enumeration.buildREnumType.toJavaType
 		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
 	}
 
@@ -1103,7 +1110,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 							.collapseToSingleExpression(context.scope)
 							.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
 					]
-					
+
 					if (expr.valueExpression !== null) {
 						expressions = newArrayList(expressions)
 						val javaStatement = expr.valueExpression.javaCode(type.valueType.toJavaReferenceType, context.scope)
@@ -1113,7 +1120,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 							.mapExpression[JavaExpression.from('''.setValue(«it»)''', null)]
 						)
 					}
-					
+
 					expressions.reduce[acc,attrCode|
 						acc.then(attrCode, [allSetCode,setAttr|
 							JavaExpression.from(
@@ -1148,7 +1155,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						[instanceCode, keyCode|JavaExpression.from('''«context.scope.getIdentifierOrThrow(referenceService)».register(«instanceCode», «keyCode», «clazz».class)''', clazz)],
 						context.scope
 					)
-					
+
 			}
 		} else { // type instanceof RRecordType
 			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(key, value, false, false, context.scope)])
@@ -1200,7 +1207,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
+			val clazz = typeProvider.getRTypeOfFeature(feature, value).toJavaReferenceType
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
@@ -1216,15 +1223,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 		conversionOperation(expr, context, '''«ZonedDateTime»::parse''', DateTimeParseException)
 	}
-	
+
 	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
 		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRType(expr.argument).toJavaReferenceType), context.scope)
 		val caseStatements = expr.values
 		val defaultExpression = expr.^default
-		
+
 		val conditionType = MAPPER.wrap(join(caseStatements.map[typeProvider.getRType(it.condition)])
 								.join(typeProvider.getRType(expr.argument)).toJavaReferenceType)
-		
+
 		val returnType = MAPPER.wrap(join(
 				caseStatements.map[typeProvider.getRType(it.expression)] + (defaultExpression === null
 					? #[]
@@ -1232,15 +1239,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					typeProvider.getRType(defaultExpression)
 				]
 			)
-		).toJavaReferenceType)		
-		
+		).toJavaReferenceType)
+
 		switchArgument
 			.declareAsVariable(true, "switchAgument", context.scope)
 			.mapExpression[
 				createSwitchJavaExpression(conditionType, returnType, it, caseStatements, defaultExpression, context.scope)
 			]
 	}
-	
+
 	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
 		CaseStatement[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
 		val head = caseStatements.head
@@ -1267,21 +1274,21 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				)
 			]
 	}
-	
+
 	override protected caseTranslateDispatchOperation(TranslateDispatchOperation expr, Context context) {
 		val match = translateUtil.findLastMatch(expr)
 		val rCallable = rObjectFactory.buildRFunction(match)
 		val javaOutputType = rCallable.output.attributeToJavaType
 
-		if (expr.inputs.size === 1 && expr.inputs.head.isMulti) {			
+		if (expr.inputs.size === 1 && expr.inputs.head.isMulti) {
 			val argCode = expr.inputs.head.javaCode(MAPPER_C.wrap(rCallable.inputs.head.attributeToJavaType), context.scope)
 				.collapseToSingleExpression(context.scope)
-				
+
 			val lambdaScope = context.scope.lambdaScope
 			val paramId = lambdaScope.createUniqueIdentifier(argCode.expressionType.itemType.simpleName.toFirstLower)
-			
+
 			val StringConcatenationClient body = '''«paramId» -> «MapperS».of(«context.scope.getIdentifierOrThrow(rCallable.toFunctionJavaClass.toDependencyInstance)».evaluate(«paramId».get()))'''
-				
+
 			argCode
 				.mapExpression[JavaExpression.from('''«it».mapItem(«body»)''', MAPPER_C.wrap(javaOutputType))]
 		} else {
@@ -1296,7 +1303,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			)
 		}
 	}
-	
+
 	override protected caseAsReferenceOperation(AsReferenceOperation expr, Context context) {
 		val type = typeProvider.getRType(expr).toJavaReferenceType
 		val referenceService = JavaClass.from(ReferenceService).toDependencyInstance
@@ -1304,5 +1311,5 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«context.scope.getIdentifierOrThrow(referenceService)».getProxy(«it», «type».class)''', type)]
 	}
-	
+
 }

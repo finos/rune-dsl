@@ -250,7 +250,7 @@ class ModelObjectGeneratorTest {
 		'''.generateCode
 		//code.writeClasses("BasicReferenceTest")
 		val classes = code.compileToClasses
-		val generatedClass = classes.get(new RootPackage(namespace) + ".TestObject")
+		val generatedClass = classes.get(new RootPackage(namespace).child("TestObject").withDots)
 
 		val schemeMethod = generatedClass.getMethod("getFieldOne")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())
@@ -302,7 +302,7 @@ class ModelObjectGeneratorTest {
         '''.generateCode
 //        code.writeClasses("TypeWithMetaFieldImport")
         val classes = code.compileToClasses
-		val generatedClass = classes.get(new RootPackage(namespace) + ".Foo")
+		val generatedClass = classes.get(new RootPackage(namespace).child("Foo").withDots)
 
 		val schemeMethod = generatedClass.getMethod("getAttr")
 		assertThat(schemeMethod, CoreMatchers.notNullValue())

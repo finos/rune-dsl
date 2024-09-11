@@ -42,84 +42,110 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void assignToMultiMetaFeature() {
+		val code = '''
+		type A:
+		    a string (0..*)
+		    	[metadata reference]
+
+		func Test:
+			output:
+				result A (1..1)
+
+			add result -> a:
+				"Hello"
+		'''.generateCode
+
+		val classes = code.compileToClasses
+		val a = classes.createInstanceUsingBuilder("A", #{
+    		"a" -> #[classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+    			"value" -> "Hello"
+    		})]
+        })
+
+        val testOnlyExists = classes.createFunc("Test")
+        assertEquals(a, testOnlyExists.invokeFunc(a.class, #[]))
+	}
+
+	@Test
 	def void testMetaConstructorAsReference() {
 		val code = '''
 			type NumberWithScheme extends number:
 					scheme string (1..1)
-			
+
 			func Create:
 			  output:
 			    result NumberWithScheme (1..1)
-			    
+
 			   alias myNewNumber: 10*2
-			  
+
 			  set result:
 			    NumberWithScheme [myNewNumber] {
 			        scheme: "My scheme"
 			    }
 		'''.generateCode
-		
+
 		val classes = code.compileToClasses
-		
+
         val someFunc = classes.createFunc("Create")
-        
+
         val expected = classes.createInstanceUsingBuilder("NumberWithScheme", #{
         	"value" -> BigDecimal.valueOf(20),
         	"scheme" -> "My scheme"
         })
-		
+
 		val output = someFunc.invokeFunc(expected.class)
-		
+
 		assertEquals(expected, output)
-	}	
-	
-		
+	}
+
+
 	@Test
 	def void testMetaConstructor() {
 		val code = '''
 			type StringWithScheme extends string:
 					scheme string (1..1)
-			
+
 			func Create:
 			  output:
 			    result StringWithScheme (1..1)
-			  
+
 			  set result:
 			    StringWithScheme ["My value"] {
 			        scheme: "My scheme"
 			    }
 		'''.generateCode
-		
+
 		val classes = code.compileToClasses
-		
+
         val someFunc = classes.createFunc("Create")
-        
+
         val expected = classes.createInstanceUsingBuilder("StringWithScheme", #{
         	"value" -> "My value",
         	"scheme" -> "My scheme"
         })
-		
+
 		val output = someFunc.invokeFunc(expected.class)
-		
+
 		assertEquals(expected, output)
 	}
-	
+
 	@Test
 	def void testAsReference() {
-		val code = '''			
+		val code = '''
 			type Foo:
 			  [reference-key id + parentId]
 			  attr int (1..1)
 			  id string (1..1)
 			  parentId string (1..1)
-			 
+
 			type Bar:
 			  foo Foo (0..1)
-			
+
 			type Qux:
 			  foos Foo (0..*)
 			  bars Bar (0..*)
-			
+
 			func Create:
 			  output: result Qux (1..1)
 			  set result:
@@ -144,9 +170,9 @@ class FunctionGeneratorTest {
 			      ]
 			    }
 		'''.generateCode
-		
+
 		val classes = code.compileToClasses
-		
+
 		val foo1 = classes.createInstanceUsingBuilder("Foo", #{
 			"attr" -> 42,
 			"id" -> "MyId",
@@ -167,163 +193,163 @@ class FunctionGeneratorTest {
 				})
 			]
 		})
-		 
+
         val someFunc = classes.createFunc("Create")
-        
+
         assertEquals(expectedQux, someFunc.invokeFunc(expectedQux.class))
 	}
-	
+
 	@Test
 	def void switchOperationWithNoMatchesReturnsDefaultWithImplicitEnums() {
-		val code = '''			
+		val code = '''
 			enum SomeEnum:
 				A
 				B
 				C
 				D
-			
+
 			func SomeFunc:
-					
+
 				output:
 					result SomeEnum (1..1)
-					
+
 				alias inString: "noMatch"
-				
-			
-				set result: inString switch 
+
+
+				set result: inString switch
 					"aCondition" then A,
 					"bCondition" then B,
 					"cCondition" then C,
 					default D
 		'''.generateCode
-				
+
 		 val classes = code.compileToClasses
-		 
+
          val someFunc = classes.createFunc("SomeFunc")
          val result = someFunc.invokeFunc(Enum)
 		 assertEquals("D", result.toString)
 	}
-		
+
 	@Test
 	def void switchOperationWithNoMatchesReturnsDefault() {
-		val code = '''			
+		val code = '''
 			enum SomeEnum:
 				A
 				B
 				C
 				D
-			
+
 			func SomeFunc:
-					
+
 				output:
 					result SomeEnum (1..1)
-					
+
 				alias inString: "noMatch"
-				
-			
-				set result: inString switch 
+
+
+				set result: inString switch
 					"aCondition" then SomeEnum -> A,
 					"bCondition" then SomeEnum -> B,
 					"cCondition" then SomeEnum -> C,
 					default SomeEnum -> D
 		'''.generateCode
-				
+
 		 val classes = code.compileToClasses
-		 
+
          val someFunc = classes.createFunc("SomeFunc")
          val result = someFunc.invokeFunc(Enum)
 		 assertEquals("D", result.toString)
 	}
-	
+
 	@Test
 	def void switchOperationMatchingOnString() {
-		val code = '''			
+		val code = '''
 			enum SomeEnum:
 				A
 				B
 				C
 				D
-			
+
 			func SomeFunc:
-					
+
 				output:
 					result SomeEnum (1..1)
-					
+
 				alias inString: "bCondition"
-				
-			
-				set result: inString switch 
+
+
+				set result: inString switch
 					"aCondition" then A,
 					"bCondition" then B,
 					"cCondition" then C,
 					"dCondition" then D
 		'''.generateCode
-				
+
 		 val classes = code.compileToClasses
-		 
+
          val someFunc = classes.createFunc("SomeFunc")
          val result = someFunc.invokeFunc(Enum)
 		 assertEquals("B", result.toString)
 	}
-	
+
 	@Test
 	def void switchOperationMatchingOnEnum() {
-		val code = '''			
+		val code = '''
 			enum SomeEnum:
 				A
 				B
 				C
 				D
-				
+
 
 			func SomeFunc:
-					
+
 				output:
 					result string (1..1)
-					
+
 				alias inEnum: SomeEnum -> B
-				
-			
-				set result: inEnum switch 
+
+
+				set result: inEnum switch
 					SomeEnum -> A then "aValue",
 					SomeEnum -> B then "bValue",
 					SomeEnum -> C then "cValue",
 					SomeEnum -> D then "dValue"
 		'''.generateCode
-				
+
 		 val classes = code.compileToClasses
-		 
+
          val someFunc = classes.createFunc("SomeFunc")
 		 assertEquals("bValue", someFunc.invokeFunc(String))
 	}
-	
+
 	@Test
 	def void typeCoercionFromTypeExtendingBasicType() {
 		val code = '''
 		type IntWithScheme extends int:
 			scheme string (1..1)
-		
+
 		func ExtractNumber:
 			inputs:
 				inp IntWithScheme (1..1)
 			output:
 				result number (1..1)
-			
+
 			set result:
 				inp
 		'''.generateCode
-		
+
 		val classes = code.compileToClasses
-		
+
 		val inp = classes.createInstanceUsingBuilder("IntWithScheme", #{
 			"value" -> 42,
 			"scheme" -> "some scheme"
 		})
-        
+
         val extractNumber = classes.createFunc("ExtractNumber")
         assertEquals(new BigDecimal("42"), extractNumber.invokeFunc(String, #[inp]))
 	}
-	
+
 	@Test
 	def void onlyExistsOnAbsentParent() {
 		val code = '''
