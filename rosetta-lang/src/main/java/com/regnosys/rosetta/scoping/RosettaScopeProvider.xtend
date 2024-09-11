@@ -60,6 +60,7 @@ import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.types.REnumType
 
 /**
  * This class contains custom scoping description.
@@ -311,6 +312,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
+		if (receiverType instanceof REnumType) {
+			if (!(receiver instanceof RosettaSymbolReference) || !((receiver as RosettaSymbolReference).symbol instanceof RosettaEnumeration)) {
+				return IScope.NULLSCOPE
+			}
+		}
+		
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
 			receiverType.allFeatures(receiver)
