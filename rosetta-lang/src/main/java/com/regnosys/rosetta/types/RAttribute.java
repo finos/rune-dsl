@@ -99,7 +99,7 @@ public class RAttribute implements RAssignedRoot {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(definition, cardinality, metaAnnotations, name, rType);
+		return Objects.hash(definition, cardinality, metaAnnotations, name, rType, origin);
 	}
 
 	@Override
@@ -113,7 +113,8 @@ public class RAttribute implements RAssignedRoot {
 		RAttribute other = (RAttribute) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(cardinality, other.cardinality)
 				&& Objects.equals(metaAnnotations, other.metaAnnotations) && Objects.equals(name, other.name)
-				&& Objects.equals(rType, other.rType);
+				&& Objects.equals(rType, other.rType)
+				&& Objects.equals(origin, other.origin);
 	}
 
 	@Override

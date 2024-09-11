@@ -166,6 +166,32 @@ class FunctionGeneratorTest {
  	}
  		
 	@Test
+	def void assignToMultiMetaFeature() {
+		val code = '''
+		type A:
+		    a string (0..*)
+		    	[metadata reference]
+		
+		func Test:
+			output:
+				result A (1..1)
+			
+			add result -> a:
+				"Hello"
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		val a = classes.createInstanceUsingBuilder("A", #{
+    		"a" -> #[classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+    			"value" -> "Hello"
+    		})]
+        })
+        
+        val testOnlyExists = classes.createFunc("Test")
+        assertEquals(a, testOnlyExists.invokeFunc(a.class, #[]))
+	}
+	
+	@Test
 	def void onlyExistsOnAbsentParent() {
 		val code = '''
 		type A:

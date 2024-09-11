@@ -140,14 +140,12 @@ class ConfigurableTypeTabulatorTest {
 		val model2 = '''
 			namespace model2
 			
-			    metaType scheme string
+			type Root:
+				engineSpecification EngineSpecification (1..1)
 			
-				type Root:
-				   engineSpecification EngineSpecification (1..1)
-				
-				type EngineSpecification:
-				   fuel string (1..*)
-				   [metadata scheme]
+			type EngineSpecification:
+				fuel string (1..*)
+				[metadata scheme]
 		'''
 
 		val model2Code = model2.generateCodeForModel(Model2FileConfigProvider)
