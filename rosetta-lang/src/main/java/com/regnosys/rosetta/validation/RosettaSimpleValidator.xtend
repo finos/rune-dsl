@@ -117,6 +117,8 @@ import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import java.util.List
+import org.eclipse.emf.ecore.impl.EClassImpl
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -137,6 +139,36 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 	@Inject extension RObjectFactory objectFactory
+	
+	@Check
+	def void deprecatedWarning(EObject object) {
+		val crossRefs = (object.eClass.EAllStructuralFeatures as EClassImpl.FeatureSubsetSupplier).crossReferences as List<EReference>
+		if (crossRefs !== null) {
+			for (ref : crossRefs) {
+				if (ref.many) {
+					val annotatedList = (object.eGet(ref) as List<EObject>).filter(Annotated)
+					for (var i=0; i<annotatedList.size; i++) {
+						checkDeprecatedAnnotation(annotatedList.get(i), object, ref, i)
+					}
+				} else {
+					val annotated = object.eGet(ref)
+					if (annotated !== null && annotated instanceof Annotated) {
+						checkDeprecatedAnnotation(annotated as Annotated, object, ref, INSIGNIFICANT_INDEX)
+					}
+				}
+			}
+		}
+	}
+	private def void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EReference ref, int index) {
+		if (annotated.annotations.exists[annotation?.name == "deprecated"]) {
+			val msg = if (annotated instanceof RosettaNamed) {
+				'''«annotated.name» is deprecated'''
+			} else {
+				"Deprecated"
+			}
+			warning(msg, owner, ref, index)
+		}
+	}
 
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {

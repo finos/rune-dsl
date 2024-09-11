@@ -77,4 +77,43 @@ class EnumValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: D extends B extends A extends D")
 		model.assertError(ROSETTA_ENUMERATION, null, "Cyclic extension: D extends C extends A extends D")
 	}
+	
+	@Test
+	def void supportDeprecatedAnnotationOnEnum() {
+        val model = '''
+            enum TestEnumDeprecated:
+            	[deprecated]
+            	ONE
+            	TWO
+            
+            func Foo:
+            	output:
+            		result TestEnumDeprecated (1..1)
+            	
+            	set result:
+            		TestEnumDeprecated -> ONE
+        '''.parseRosetta
+
+        model.assertWarning(TYPE_CALL, null, "TestEnumDeprecated is deprecated")
+        model.assertWarning(ROSETTA_SYMBOL_REFERENCE, null, "TestEnumDeprecated is deprecated")
+    }
+    
+    @Test
+    def void supportDeprecatedAnnotationOnEnumValue() {
+        val model = '''
+            enum TestEnumDeprecated:
+            	ONE
+            		[deprecated]
+            	TWO
+            
+            func Foo:
+            	output:
+            		result TestEnumDeprecated (1..1)
+            	
+            	set result:
+            		TestEnumDeprecated -> ONE
+        '''.parseRosetta
+
+        model.assertWarning(ROSETTA_FEATURE_CALL, null, "ONE is deprecated")
+    }
 }
