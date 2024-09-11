@@ -35,7 +35,6 @@ public class RListType {
 	public RosettaCardinality getConstraint() {
 		return this.constraint;
 	}
-	
 	public boolean isEmpty() {
 		return this.constraint.isEmpty();
 	}

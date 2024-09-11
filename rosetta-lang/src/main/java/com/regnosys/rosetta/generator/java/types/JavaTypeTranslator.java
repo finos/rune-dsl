@@ -289,6 +289,14 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return typeUtil.OBJECT;
 	}
+	public JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
+		JavaReferenceType itemType = toJavaReferenceType(rAttribute.getRType());
+		if (rAttribute.isMulti()) {
+			return typeUtil.wrapExtendsIfNotFinal(typeUtil.LIST, itemType);
+		} else {
+			return itemType;
+		}
+	}	
 	public JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}

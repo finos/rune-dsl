@@ -35,6 +35,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
@@ -56,6 +57,10 @@ public class TypeSystem {
 	private IRequestScopedCache cache;
 	@Inject
 	private SubtypeRelation subtypeRelation;
+	@Inject
+	private ModelIdProvider modelIdProvider;
+	@Inject
+	private RObjectFactory rObjectFactory;
 
 	public RListType inferType(RosettaExpression expr) {
 		Objects.requireNonNull(expr);
@@ -200,7 +205,7 @@ public class TypeSystem {
 	}
 
 	public RDataType dataToType(Data data) {
-		return new RDataType(data, this, modelIdProvider);
+		return new RDataType(data, modelIdProvider, rObjectFactory);
 	}
 	public REnumType enumToType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider);

@@ -49,7 +49,7 @@ class RosettaAttributeExtensions {
 	 * Note that these methods will add a "meta" attribute if the data type has annotations
 	 */
 	static def List<ExpandedAttribute> getExpandedAttributes(RDataType data) {
-		(data.valueAttribute + data.data.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
+		(data.valueAttribute + data.EObject.attributes.map[toExpandedAttribute()].toList + data.additionalAttributes).toList
 	}
 	
 	static def List<ExpandedAttribute> expandedAttributesPlus(RDataType data) {

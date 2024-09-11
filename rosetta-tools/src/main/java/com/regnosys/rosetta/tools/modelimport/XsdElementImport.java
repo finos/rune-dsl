@@ -120,9 +120,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 				// In case the element and type name overlap, we only generate the element.
 				// Completed by `XsdTypeImport`
 			} else {
-				TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
-				typeCall.setType(dataType);
-				data.setSuperType(typeCall);
+				data.setSuperType(dataType);
 			}
 		} else {
 			// If the type of this element is not complex, add the type to the dedicated `value` attribute.

@@ -259,9 +259,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 			getBaseComplexType(ct)
 				.ifPresent(base -> {
 					Data superType = xsdMapping.getRosettaTypeFromComplex(base);
-					TypeCall typeCall = RosettaFactory.eINSTANCE.createTypeCall();
-					typeCall.setType(superType);
-					data.setSuperType(typeCall);
+					data.setSuperType(superType);
 				});
 			
 			// If the complex type extends a simple type, add the corresponding type

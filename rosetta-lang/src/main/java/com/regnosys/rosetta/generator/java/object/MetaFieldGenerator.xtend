@@ -97,7 +97,7 @@ class MetaFieldGenerator {
 		}
 		
 		//find all the reference types
-		val namespaceClasses = Multimaps.index(modelClasses, [c|c.model]).asMap
+		val namespaceClasses = Multimaps.index(modelClasses, [c|c.namespace]).asMap
 		for (nsc : namespaceClasses.entrySet) {
 			if (ctx.cancelIndicator.canceled) {
 				return

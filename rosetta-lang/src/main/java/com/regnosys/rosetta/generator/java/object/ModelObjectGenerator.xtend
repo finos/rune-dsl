@@ -191,7 +191,7 @@ class ModelObjectGenerator {
 		if (class1.EObject.hasKeyedAnnotation) {
 			return true
 		}
-		val s = class1.superType.stripFromTypeAliases
+		val s = class1.superType
 		if (s !== null && s instanceof RDataType) {
 			return globalKeyRecursive(s as RDataType)
 		}

@@ -46,13 +46,13 @@ class JavaDependencyProvider {
 			}
 
 			val constructorKeyDependencies = constructorTypes
-				.filter(RDataType).map[data]
+				.filter(RDataType).map[EObject]
 				.filter[referenceKeyAnnotation !== null].map[referenceKeyAnnotation]
 				.map[expression]
 
 			result.addAll(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
 			result.addAll(rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
-			result.addAll(deepFeatureCalls.map[typeProvider.getRType(receiver)].filter(RDataType).map[data.toDeepPathUtilJavaClass])
+			result.addAll(deepFeatureCalls.map[typeProvider.getRType(receiver)].filter(RDataType).map[it.toDeepPathUtilJavaClass])
 			result.addAll(actualDispatches.map[toFunctionJavaClass])
 			if (!asReferenceOperations.empty || !constructorKeyDependencies.empty) {
 				result.add(JavaClass.from(ReferenceService))

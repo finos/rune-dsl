@@ -68,7 +68,7 @@ AnnotationQualifier:
 ;
 
 Data:
-	'type' RosettaNamed ('extends' superType=TypeCall)? ':' RosettaDefinable?
+	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' RosettaDefinable?
 	(References|Annotations|ClassSynonyms|referenceKeyAnnotation=ReferenceKeyAnnotation)*
 	attributes+=Attribute*
 	conditions+=Condition*

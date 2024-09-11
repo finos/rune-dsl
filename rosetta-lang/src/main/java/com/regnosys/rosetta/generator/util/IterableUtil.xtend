@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.util
 import java.util.function.Function
 import java.util.Iterator
 import java.util.NoSuchElementException
+import com.regnosys.rosetta.rosetta.RosettaType
 
 @Deprecated
 class IterableUtil {
@@ -62,7 +63,7 @@ class IterableUtil {
 	}
 	
 	@Deprecated // Inject ModelIdProvider instead
-	def static String fullname(RosettaType clazz) '''«clazz.model.name».«clazz.name»'''
+	def static String fullname(RosettaType clazz) '''«clazz.namespace.name».«clazz.name»'''
 	@Deprecated // Inject ModelIdProvider instead
-	def static String packageName(RosettaType clazz)  {clazz.model.name}
+	def static String packageName(RosettaType clazz)  {clazz.namespace.name}
 }

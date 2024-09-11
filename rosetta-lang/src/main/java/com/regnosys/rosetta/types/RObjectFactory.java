@@ -37,6 +37,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
@@ -177,7 +178,7 @@ public class RObjectFactory {
 	public RFunction buildRFunction(Translation translation) {
 		List<RAttribute> inputs = translation.getParameters().stream().<RAttribute>map(this::buildRAttribute).collect(Collectors.toList());
 		RType outputRType = translateUtil.getResultRType(translation);
-		RAttribute outputAttribute = new RAttribute("output", null, outputRType, List.of(), false);
+		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, false);
 		ROperation operation = new ROperation(ROperationType.SET, outputAttribute, List.of(), translation.getExpression());
 
 		return new RFunction(
@@ -217,7 +218,7 @@ public class RObjectFactory {
 		if (name == null) {
 			name = "item";
 		}
-		return new RAttribute(name, null, rType, Collections.emptyList(), false);
+		return createArtificialAttribute(name, rType, false);
 
 	}
 

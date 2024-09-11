@@ -203,7 +203,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
 						val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(context)
 						if (expectedType instanceof REnumType) {
-							implicitFeatures = implicitFeatures + expectedType.enumeration.allEnumValues
+							implicitFeatures = implicitFeatures + expectedType.EObject.allEnumValues
 						}
 						
 						val inline = EcoreUtil2.getContainerOfType(context, InlineFunction)

@@ -135,16 +135,6 @@ public class RDataType extends RAnnotateType implements RObject {
 		return result.values();
 	}
 
-	public RType getSuperType() {
-		if (data.hasSuperType()) {
-			if (this.superType == null) {
-				this.superType = typeSystem.typeCallToRType(data.getSuperType());
-			}
-			return this.superType;
-		}
-		return null;
-	}
-
 	@Override
 	public int hashCode() {
 		return 31 * 1 + ((this.data == null) ? 0 : this.data.hashCode());

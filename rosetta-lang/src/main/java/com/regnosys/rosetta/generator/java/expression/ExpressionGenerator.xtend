@@ -1140,13 +1140,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						)
 					]
 				}
-			if (type.data.referenceKeyAnnotation === null) {
+			if (type.EObject.referenceKeyAnnotation === null) {
 				buildExpr
 			} else {
 				val referenceService = JavaClass.from(ReferenceService).toDependencyInstance
 				val buildExprAsVariable = buildExpr
 					.declareAsVariable(true, type.name.toFirstLower, context.scope)
-				val keyExpr = type.data.referenceKeyAnnotation.expression
+				val keyExpr = type.EObject.referenceKeyAnnotation.expression
 				val referenceKeyScope = context.scope.childScope("Key computation of " + clazz.simpleName)
 				referenceKeyScope.createKeySynonym(keyExpr.implicitVarInContext, buildExpr)
 				buildExprAsVariable

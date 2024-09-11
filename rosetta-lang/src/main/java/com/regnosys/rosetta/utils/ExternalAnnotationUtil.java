@@ -28,9 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.regnosys.rosetta.RosettaExtensions;
-import com.regnosys.rosetta.generator.object.ExpandedAttribute;
-import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
@@ -42,18 +39,11 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
-import com.rosetta.model.lib.path.RosettaPath;
-import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
-import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.model.lib.path.RosettaPath;
 
 public class ExternalAnnotationUtil {

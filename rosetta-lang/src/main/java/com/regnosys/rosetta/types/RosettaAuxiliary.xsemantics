@@ -29,6 +29,7 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -45,6 +46,7 @@ auxiliary {
 	ancestors(Data t) : List<Data>
 	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
+	join(RType t1, RType t2) : RType
 	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
 	listJoin(RListType t1, RListType t2) : RListType
 	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
@@ -56,14 +58,11 @@ auxiliary {
 
 /****** AUXILIARY DEFINITIONS *******/
 auxiliary ancestors(Data t) {
-	val s = t.superType
-	if (s !== null) {
-		val st = s.type
-		if (st instanceof Data) {
-			return newArrayList(#[st] + ancestors(st))
-		}
-	}
-	return newArrayList()
+	getAll(t,
+		SimplePackage::eINSTANCE.data_SuperType,
+		SimplePackage::eINSTANCE.data_SuperType,
+		typeof(Data)
+	)
 }
 auxiliary ancestorEnums(RosettaEnumeration t) {
 	getAll(t,

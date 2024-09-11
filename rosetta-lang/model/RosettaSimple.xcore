@@ -65,9 +65,9 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Assign
 
 
 class Data extends RosettaType, RootElement, References {
+	refers Data superType
 	contains ReferenceKeyAnnotation referenceKeyAnnotation
 	
-	contains TypeCall superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
 	contains Condition[] conditions

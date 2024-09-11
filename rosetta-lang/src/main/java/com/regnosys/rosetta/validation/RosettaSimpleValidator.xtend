@@ -1165,7 +1165,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			error('''The type of the reference is unknown.''', op, null)
 		} else if (!(strippedExpectedType instanceof RDataType)) {
 			error('''A reference may not be of type «expectedType».''', op, null)
-		} else if ((strippedExpectedType as RDataType).data.referenceKeyAnnotation === null) {
+		} else if ((strippedExpectedType as RDataType).EObject.referenceKeyAnnotation === null) {
 			error('''The type «expectedType» does not have a `reference-key` annotation.''', op, null)
 		}
 	}
