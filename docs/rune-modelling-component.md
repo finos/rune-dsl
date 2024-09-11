@@ -282,6 +282,26 @@ enum DayCountFractionEnum:
   _30_360 displayName "30/360"
 ```
 
+#### Enum extensions
+
+An enumeration can extend one or more other enumerations, which includes all of their values.
+
+```Haskell
+enum ISOCurrencyCodeEnum:
+    AFN
+    EUR
+    GBP
+    USD
+
+enum CurrencyCodeEnum extends ISOCurrencyCodeEnum:
+    CNH
+    JEP
+    KID
+    VAL
+```
+
+In the example above, all values defined in `ISOCurrencyCodeEnum` are also included in `CurrencyCodeEnum`.
+
 #### External Reference Data
 
 In some cases, a model may rely on an enumeration whose values are already defined as a static dataset in some other data model, schema or technical specification. To avoid duplicating that information and risk it becoming stale, it is possible to annotate such enumeration with the source of the reference data, using the [document reference](#document-reference) mechanism. This ensures that the enumeration information in the model is kept up-to-date with information at the source.
@@ -678,6 +698,24 @@ E.g. :
 ```
 DayOfWeekEnum -> SAT
 ```
+
+In case of enum extensions, the name of the enum type can be either that of the actual enum or that of the parent. Consider the following scenario:
+
+```Haskell
+enum ISOCurrencyCodeEnum:
+    AFN
+    EUR
+    GBP
+    USD
+
+enum CurrencyCodeEnum extends ISOCurrencyCodeEnum:
+    CNH
+    JEP
+    KID
+    VAL
+```
+
+In this example, both `ISOCurrencyCodeEnum -> EUR` and `CurrencyCodeEnum -> EUR` refer to the same value, and are considered equal.
 
 #### List Constant
 

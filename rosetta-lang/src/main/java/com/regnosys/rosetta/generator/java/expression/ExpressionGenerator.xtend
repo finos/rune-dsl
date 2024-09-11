@@ -271,9 +271,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
-	def JavaStatementBuilder enumCall(RosettaEnumValue feature, EObject context) {
-		val resultItemType = typeProvider.getRTypeOfFeature(feature, context).toJavaReferenceType
-		return JavaExpression.from('''«resultItemType».«feature.convertValue»''', resultItemType)
+	def JavaStatementBuilder enumCall(RosettaEnumValue feature, JavaType expectedType) {
+		return JavaExpression.from('''«expectedType».«feature.convertValue»''', expectedType)
 	}
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
 		if (feature instanceof Attribute) {
@@ -680,7 +679,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseFeatureCall(RosettaFeatureCall expr, Context context) {
 		if (expr.feature instanceof RosettaEnumValue) {
-			return enumCall(expr.feature as RosettaEnumValue, expr)
+			return enumCall(expr.feature as RosettaEnumValue, context.expectedType)
 		}
 		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 		if (expr.eContainer instanceof RosettaFeatureCall &&
