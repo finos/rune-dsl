@@ -955,7 +955,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def checkAttribute(Attribute ele) {
 		val eleType = ele.RTypeOfSymbol
 		if (eleType instanceof RDataType) {
-			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.exists[EObject.hasKeyedAnnotation])) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.filter(RDataType).exists[EObject.hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
 				warning('''«ele.typeCall.type.name» must be annotated with [metadata key] as reference annotation is used''',
 					ROSETTA_TYPED__TYPE_CALL)

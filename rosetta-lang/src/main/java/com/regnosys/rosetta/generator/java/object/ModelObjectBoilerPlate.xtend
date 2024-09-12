@@ -37,7 +37,7 @@ class ModelObjectBoilerPlate {
 	val identity = [String s|s]
 
 	def StringConcatenationClient builderBoilerPlate(RDataType c, JavaScope scope) {
-		val attrs = c.ownAttributes
+		val attrs = c.javaAttributes
 		'''
 			«c.contributeEquals(attrs, scope)»
 			«c.contributeHashCode(attrs, scope)»
@@ -65,7 +65,7 @@ class ModelObjectBoilerPlate {
 	}
 
 	def StringConcatenationClient boilerPlate(RDataType t, JavaScope scope) {
-		val attributes = t.ownAttributes + t.additionalAttributes
+		val attributes = t.javaAttributes
 		'''
 			«t.contributeEquals(attributes, scope)»
 			«t.contributeHashCode(attributes, scope)»
@@ -109,7 +109,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		public String toString() {
 			return "«classNameFunc.apply(t.name)» {" +
-				«FOR attribute : t.ownAttributes + t.additionalAttributes SEPARATOR ' ", " +'»
+				«FOR attribute : t.javaAttributes SEPARATOR ' ", " +'»
 					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
 				«ENDFOR»
 			'}'«IF t.hasSuperDataType» + " " + super.toString()«ENDIF»;
@@ -151,10 +151,10 @@ class ModelObjectBoilerPlate {
 		if(c.hasSuperDataType) 'super.hashCode()' else '0'
 	}
 	
-	def StringConcatenationClient processMethod(RDataType c) '''
+	def StringConcatenationClient processMethod(RDataType t) '''
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
-			«FOR a : c.allNonOverridenAttributes»
+			«FOR a : t.allJavaAttributes»
 				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
@@ -168,7 +168,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient builderProcessMethod(RDataType t) '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
-			«FOR a : t.allNonOverridenAttributes + t.additionalAttributes»
+			«FOR a : t.allJavaAttributes»
 				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»

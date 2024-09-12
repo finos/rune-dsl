@@ -53,7 +53,7 @@ class RosettaAttributeExtensions {
 	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
 		val atts = data.expandedAttributes;
 		if (data.hasSuperType) {
-			val attsWithSuper = data.superType.expandedAttributesPlus
+			val attsWithSuper = (data.superType.type as Data).expandedAttributesPlus
 			val result = newArrayList
 			attsWithSuper.forEach[
 				val overridenAtt = atts.findFirst[att| att.name == name]

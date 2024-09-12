@@ -73,7 +73,7 @@ public class RObjectFactory {
 				function.getAnnotations());
 	}
 	
-	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
+	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		return new RAttribute(name, null, Collections.emptyList(), type, List.of(), isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {
@@ -238,11 +238,11 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, modelIdProvider, this);
+		return new RDataType(data, modelIdProvider, this, typeSystem);
 	}
 	// TODO: remove this hack
 	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
-		return new RDataType(data, modelIdProvider, this, additionalAttributes);
+		return new RDataType(data, modelIdProvider, this, typeSystem, additionalAttributes);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider);

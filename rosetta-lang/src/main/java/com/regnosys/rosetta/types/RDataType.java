@@ -72,6 +72,10 @@ public class RDataType extends RAnnotateType implements RObject {
 		}
 		return this.symbolId;
 	}
+	
+	public List<RAttribute> getHackyAdditionalAttributes() {
+		return additionalAttributes;
+	}
 
 	public RType getSuperType() {
 		if (data.hasSuperType()) {
