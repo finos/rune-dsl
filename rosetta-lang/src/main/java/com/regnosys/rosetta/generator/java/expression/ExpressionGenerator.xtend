@@ -1205,6 +1205,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
  	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
  		SwitchCase[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
+ 		if (caseStatements.isEmpty) {
+ 			return defaultExpression.javaCode(returnType, javaScope)
+ 		}	
+ 			
  		val head = caseStatements.head
  		val tail = caseStatements.tail
 

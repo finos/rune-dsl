@@ -41,6 +41,33 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void switchOperationWithOnlyDefaultCaseReturnsCorrectResult() {
+ 		val code = '''			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 					
+ 				output:
+ 					result SomeEnum (1..1)
+ 					
+ 				alias inString: "anything"
+ 				
+ 				set result: inString switch 
+ 					default SomeEnum -> B
+ 		'''.generateCode
+
+ 		 val classes = code.compileToClasses
+
+          val someFunc = classes.createFunc("SomeFunc")
+          val result = someFunc.invokeFunc(Enum)
+ 		 assertEquals("B", result.toString)
+	}
 
 	@Test
  	def void switchOperationWithNoMatchesReturnsDefaultWithImplicitEnums() {
