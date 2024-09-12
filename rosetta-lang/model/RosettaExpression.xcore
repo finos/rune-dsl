@@ -409,12 +409,12 @@ class MaxOperation extends ComparingFunctionalOperation, ListOperation {
 
 
 class SwitchOperation extends RosettaUnaryOperation {
-	contains SwitchCase[] values opposite switchOperation
+	contains SwitchCase[] cases opposite switchOperation
 	contains RosettaExpression ^default
 }
 
 class SwitchCase {
-	container SwitchOperation switchOperation opposite values
+	container SwitchOperation switchOperation opposite cases
 	contains RosettaLiteral literalCondition
 	refers RosettaEnumValue enumCondition
 	contains RosettaExpression expression

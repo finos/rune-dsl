@@ -148,7 +148,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void switchStatementMustProvideCaseForAllEnumValues(SwitchOperation op) {
 		val argumentType = op.argument.RType
 		if (op.^default === null && argumentType instanceof REnumType) {
-			val enumConditions = op.values.map[it.enumCondition].toSet
+			val enumConditions = op.cases.map[it.enumCondition].toSet
 
 			val enumeration = (argumentType as REnumType).EObject
 			for (enumValue : enumeration.enumValues) {
@@ -163,7 +163,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
  	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
  		val argumentRType = op.argument.RType
- 		for (SwitchCase caseStatement : op.values) {
+ 		for (SwitchCase caseStatement : op.cases) {
  			if (caseStatement.literalCondition !== null) {
  				val conditionType = caseStatement.literalCondition.RType
 	 			if (!conditionType.isSubtypeOf(argumentRType)) {
