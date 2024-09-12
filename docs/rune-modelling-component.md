@@ -914,16 +914,10 @@ The `default` operator takes two values of matching type. If the value to the le
 
 ### Switch Operator
 
-The `switch` operator takes as it's left had input an input argument which it is intended to switch over. The right side of the operator takes a set of case statements which define a return value for the expression when matching that case to the input.
+The `switch` operator takes as its left hand input an argument on which to perform case analysis. The right side of the operator takes a set of case statements which define a return value for the expression when matching that case to the input.
 
 ```Haskell
-  func MyFunc:
-    inputs:
-      myInput string (1..1)
-    output:
-      myResult string (1..1)
-    
-    set myResult: myInput switch
+   "valueB" switch
       "valueA" then "resultA"
       "valueB" then "resultB"
       default "resultC"
@@ -932,27 +926,15 @@ The `switch` operator takes as it's left had input an input argument which it is
 The `switch` operator can also operate over enumerations and in the case where all enumeration values are not provided as case statements then a syntax validation error will occur until either all enumeration values or a default value is provided.
 
 ```Haskell
-  enum SomeEnum:
-    A
-    B
-    C
-    D
-  
-  func MyFunc:
-    inputs:
-      myInput string (1..1   
-    output:
-      result SomeEnum (1..1)
-                
-    set result: myInput switch 
-      "aCondition" then SomeEnum -> A,
-      "bCondition" then SomeEnum -> B,
-      "cCondition" then SomeEnum -> C,
-      default SomeEnum -> D
+  "aCondition" switch 
+    "aCondition" then SomeEnum -> A,
+    "bCondition" then SomeEnum -> B,
+    "cCondition" then SomeEnum -> C,
+    default SomeEnum -> D
 ```
 
 {{< notice info "Note" >}}
-The `default` case is optional, in the case where there is no match then the `empty` value is returned.
+The `default` case is optional, in case when there is no match then the `empty` value is returned.
 {{< /notice >}}
 
 #### Operator Precedence
@@ -962,7 +944,6 @@ Expressions are evaluated in Rune in the following order, from first to last - s
 1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
 1. Brackets - e.g. `(1+2)`
 1. if-then-else - e.g. `if (1=2) then 3`
-1. Constructor key value pair - e.g `myKey: myValue`
 1. Constructor expressions - e.g `MyType {attr1: "value 1"}`
 1. Unary operators `->`, `->>`, `exists`, `is absent`, `only-element`, `flatten`, `distinct`, `reverse`, `first`, `last`, `sum`, `one-of`, `choice`, `to-string`, `to-number`, `to-int`, `to-time`, `to-enum`, `to-date`, `to-date-time`, `to-zoned-date-time`, `switch`, `sort`, `min`, `max`, `reduce`, `filter`, `map`, `extract` 
 1. Binary operators `contains`, `disjoint`, `default`, `join`
