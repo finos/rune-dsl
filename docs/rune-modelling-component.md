@@ -1166,20 +1166,33 @@ Rune provides five conversion operators: `to-enum`, `to-string`, `to-number`, `t
 
 Given the following enum
 ```
-enum Foo:
+enum FooEnum:
     VALUE1
     VALUE2 displayName "Value 2"
 ```
-- `Foo -> VALUE1 to-string` will result in the string `"VALUE1"`,
-- `Foo -> VALUE2 to-string` will result in the string `"Value 2"`, (note that the display name is used if present)
-- `"VALUE1" to-enum Foo` will result in the enum value `Foo -> VALUE1`,
-- `"Value 2" to-enum Foo` will result in the enum value `Foo -> VALUE2`, (again, the display name is used if present)
+- `FooEnum -> VALUE1 to-string` will result in the string `"VALUE1"`,
+- `FooEnum -> VALUE2 to-string` will result in the string `"Value 2"`, (note that the display name is used if present)
+- `"VALUE1" to-enum FooEnum` will result in the enum value `FooEnum -> VALUE1`,
+- `"Value 2" to-enum FooEnum` will result in the enum value `FooEnum -> VALUE2`, (again, the display name is used if present)
 - `"-3.14" to-number` will result in the number -3.14,
 - `"17:05:33" to-time` will result in a value representing the local time 17 hours, 5 minutes and 33 seconds.
 
 If the conversion fails, the result is an empty value. For example,
-- `"VALUE2" to-enum Foo` results in an empty value, (because `Foo -> VALUE2` has a display name "Value 2", this conversion fails)
+- `"VALUE2" to-enum FooEnum` results in an empty value, (because `FooEnum -> VALUE2` has a display name "Value 2", this conversion fails)
 - `"3.14" to-int` results in an empty value.
+
+In case of extended enums, the `to-enum` operation can also be used to convert an enum value to a parent enum. Consider the following enum:
+```
+enum FooEnum:
+    VALUE1
+
+enum BarEnum extends FooEnum:
+    VALUE2
+```
+- `BarEnum -> VALUE1 to-enum FooEnum` will result in the enum value `FooEnum -> VALUE1`,
+- `BarEnum -> VALUE2 to-enum FooEnum` results in an empty value, since `VALUE2` does not exist in `FooEnum`.
+
+Note that conversion in the other direction - from `FooEnum` to `BarEnum` - is disallowed, since a value of type `FooEnum` can be used directly in any location where a value of type `BarEnum` is expected. 
 
 ### Keyword clashes
 
