@@ -1212,7 +1212,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		val head = caseStatements.head
  		val tail = caseStatements.tail
 
- 		val javaStatment = if (head.literalCondition !== null) {
+ 		val javaStatement = if (head.literalCondition !== null) {
  			head.literalCondition.javaCode(MAPPER_S.wrap(conditionType), javaScope).collapseToSingleExpression(javaScope)
  		} else {
  			val condition = head.enumCondition
@@ -1220,7 +1220,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
  		}
 
- 		javaStatment.
+ 		javaStatement.
  			mapExpression [
  				JavaExpression.
  					from('''«runtimeMethod("areEqual")»(«switchArgument»,«it»,«CardinalityOperator».All)''',
