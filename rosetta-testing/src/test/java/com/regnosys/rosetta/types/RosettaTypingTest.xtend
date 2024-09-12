@@ -10,10 +10,8 @@ import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation
-import com.regnosys.rosetta.rosetta.expression.MapOperation
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import java.util.Optional
 import java.math.BigDecimal
@@ -55,7 +53,6 @@ class RosettaTypingTest {
 		'"Some string"'.assertIsValidWithType(singleString(11, 11))
 		'3.14'.assertIsValidWithType(singleNumber(3, 2, "3.14", "3.14"))
 		'1'.assertIsValidWithType(singleInt(1, "1", "1"))
-		'empty'.assertIsValidWithType(emptyNothing)
 	}
 	
 	@Test
@@ -81,12 +78,6 @@ class RosettaTypingTest {
 			^if.assertHasType(singleBoolean)
 			ifthen.assertHasType(createListType(UNCONSTRAINED_INT, 2, 4))
 			elsethen.assertHasType(singleUnconstrainedNumber)
-		]];
-		
-		model.elements.get(1) as Function => [operations.head.expression as MapOperation => [
-			function.body as ArithmeticOperation => [
-				left.assertHasType(singleInt(1, "1", "3"))
-			]
 		]];
 	}
 	
@@ -158,31 +149,6 @@ class RosettaTypingTest {
 		'1 = True'
 			.parseExpression
 			.assertError(null, "Types `int` and `boolean` are not comparable.")
-		'empty = True'
-			.parseExpression
-			.assertError(null, "Cannot compare an empty value to a single value, as they cannot be of the same length. Perhaps you forgot to write `all` or `any` in front of the operator?")
-		'[1, 2] = [3, 4, 5]'
-			.parseExpression
-			.assertError(null, "Cannot compare a list with 2 items to a list with 3 items, as they cannot be of the same length.")
-		'[1, 2] <> [True, False, False]'
-			.parseExpression
-			.assertError(null, "Types `int` and `boolean` are not comparable.")
-		
-		'[1, 2] all = empty'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
-		'empty any = empty'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
-		'[1, 2] all = [1, 2]'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
-		'5 any <> [1, 2]'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
-		'[3.0] any <> 5'
-			.parseExpression
-			.assertError(null, "The cardinality operator `any` is redundant when comparing two single values.")
 	}
 	
 	// TODO: test arithmetic and comparisons with dates/times/etc
@@ -201,19 +167,10 @@ class RosettaTypingTest {
 		'3.0 * 4'.assertIsValidWithType(singleNumber(Optional.empty, Optional.of(1), Optional.of(new BigDecimal("12")), Optional.of(new BigDecimal("12")), Optional.empty))
 		
 		'3 / 4'.assertIsValidWithType(singleUnconstrainedNumber)
-		
-		// Test loosened version
-        '(if False then 2 else [3, 4]) + 5'.assertIsValidWithType(singleInt(Optional.empty, Optional.of(BigInteger.valueOf(7)), Optional.of(BigInteger.valueOf(9))))
 	}
 	
 	@Test
 	def void testArithemticOperationTypeChecking() {
-		'[1, 2] + 3'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
-		'empty - 3'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 * False'
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
@@ -240,66 +197,13 @@ class RosettaTypingTest {
 	@Test
 	def void testComparisonOperationTypeChecking() {
 		// TODO: support date, zonedDateTime and `time`?
-		'[1, 2] < 3'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
-		'empty > 3'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
 		'1.5 <= False'
 			.parseExpression
 			.assertError(null, "Expected type `number`, but got `boolean` instead.")
-			
-		'[1, 2] all >= empty'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
-		'empty any < empty'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
-		'[1, 2] all > [1, 2]'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
-		'5 any <= [1, 2]'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead. Perhaps you meant to swap the left and right operands?")
+
 		'5 all >= 1'
 			.parseExpression
 			.assertError(null, "The cardinality operator `all` is redundant when comparing two single values.")
-	}
-	
-	@Test
-	def void testConditionalExpressionTypeInference() {
-		 'if True then [1, 2] else [3.0, 4.0, 5.0, 6.0]'.assertIsValidWithType(createListType(constrainedNumber(2, 1, "1", "6"), 2, 4));
-	}
-	
-	@Test
-	def void testConditionalExpressionTypeChecking() {
-		'if [True, False] then 1 else 2'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got a list with 2 items instead.")
-		'if empty then 1 else 2'
-			.parseExpression
-			.assertError(null, "Expected a single value, but got an empty value instead.")
-		'if True then 1 else False'
-			.parseExpression
-			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
-		'if True then [1, 2, 3] else [False, True]'
-			.parseExpression
-			.assertError(null, "Types `int` and `boolean` do not have a common supertype.")
-	}
-	
-	@Test
-	def void testListLiteralTypeInference() {
-		'[]'.assertIsValidWithType(emptyNothing);
-		'[2, 4.5, 7, -3.14]'.assertIsValidWithType(createListType(constrainedNumber(3, 2, "-3.14", "7"), 4, 4));
-		'[2, [1, 2], -3.14]'.assertIsValidWithType(createListType(constrainedNumber(3, 2, "-3.14", "2"), 4, 4));
-	}
-	
-	@Test
-	def void testListLiteralTypeChecking() {
-		'[1, True]'
-			.parseExpression
-			.assertError(null, "Elements do not have a common supertype: `int`, `boolean`.")
 	}
 	
 	@Test
@@ -341,26 +245,10 @@ class RosettaTypingTest {
 			output: result int (1..1)
 			set result:
 				SomeFunc(1, [False, True], True)
-		
-		func TestParamType:
-		    output: result int (1..1)
-		    set result:
-		        SomeFunc(1, [2, 3])
-		
-		func TestParamCardinality:
-		    output: result int (1..1)
-		    set result:
-		        SomeFunc(1, [False, True, False, False, True])
 		'''.parseRosetta
 		
 		val expr1 = (model.elements.get(1) as Function).operations.head.expression;
 		expr1.assertError(null, "Expected 2 arguments, but got 3 instead.");
-		
-		val expr2 = (model.elements.get(2) as Function).operations.head.expression;
-		expr2.assertError(null, "Expected type `boolean`, but got `int` instead.");
-		
-		val expr3 = (model.elements.get(3) as Function).operations.head.expression;
-		expr3.assertError(null, "Expected a list with 2 to 4 items, but got a list with 5 items instead.");
 	}
 	
 	@Test
@@ -461,15 +349,9 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testExistsTypeChecking() {
-		'empty exists'
-			.parseExpression
-			.assertError(null, "Expected an optional value, but got an empty value instead.")
 		'42 exists'
 			.parseExpression
 			.assertError(null, "Expected an optional value, but got a single value instead.")
-		'(if True then 42 else [1, 2, 3, 4, 5]) exists'
-			.parseExpression
-			.assertError(null, "Expected an optional value, but got a list with 1 to 5 items instead.")
 	}
 
 	@Test
@@ -480,15 +362,9 @@ class RosettaTypingTest {
 	
 	@Test
 	def void testAbsentTypeChecking() {
-		'empty is absent'
-			.parseExpression
-			.assertError(null, "Expected an optional value, but got an empty value instead.")
 		'42 is absent'
 			.parseExpression
 			.assertError(null, "Expected an optional value, but got a single value instead.")
-		'(if True then 42 else [1, 2, 3, 4, 5]) is absent'
-			.parseExpression
-			.assertError(null, "Expected an optional value, but got a list with 1 to 5 items instead.")
 	}
 	
 	@Test
@@ -593,26 +469,10 @@ class RosettaTypingTest {
 	}
 	
 	@Test
-	def void testOnlyElementTypeInference() {
-		'(if True then 0 else [1, 2]) only-element'.assertIsValidWithType(createListType(constrainedInt(1, "0", "2"), 0, 1));
-		'(if True then empty else [True, False]) only-element'.assertIsValidWithType(createListType(BOOLEAN, 0, 1));
-		'(if True then 0 else [1, 2, 3, 42.0]) only-element'.assertIsValidWithType(createListType(constrainedNumber(3, 1, "0", "42.0"), 0, 1));
-	}
-	
-	@Test
 	def void testOnlyElementTypeChecking() {
-		'empty only-element'
-			.parseExpression
-			.assertWarning(null, "Expected a list with 1 to 2 items, but got an empty value instead.")
 		'42 only-element'
 			.parseExpression
 			.assertWarning(null, "Expected a list with 1 to 2 items, but got a single value instead.")
-		'[1, 2] only-element'
-			.parseExpression
-			.assertWarning(null, "Expected a list with 1 to 2 items, but got a list with 2 items instead.")
-		'(if True then empty else 42) only-element'
-			.parseExpression
-			.assertWarning(null, "Expected a list with 1 to 2 items, but got an optional value instead.")
 	}
 	
 	@Test

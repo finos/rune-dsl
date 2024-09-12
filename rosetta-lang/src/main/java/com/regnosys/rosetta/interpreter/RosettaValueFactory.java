@@ -30,6 +30,7 @@ import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RUnionType;
 import com.regnosys.rosetta.types.builtin.RBasicType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RDateTimeType;
@@ -136,5 +137,10 @@ public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>
 	@Override
 	protected RosettaValue caseZonedDateTimeType(RZonedDateTimeType type, List<?> context) {
 		return new RosettaZonedDateTimeValue(castList(context, ZonedDateTime.class));
+	}
+
+	@Override
+	protected RosettaValue caseUnionType(RUnionType type, List<?> context) {
+		throw new UnsupportedOperationException("Cannot create a value of a union type");
 	}
 }

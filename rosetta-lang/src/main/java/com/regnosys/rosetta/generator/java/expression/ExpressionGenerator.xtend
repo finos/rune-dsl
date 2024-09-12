@@ -97,7 +97,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import com.regnosys.rosetta.types.RObjectFactory
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
@@ -271,9 +271,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
-	def JavaStatementBuilder enumCall(RosettaEnumValue feature, EObject context) {
-		val resultItemType = typeProvider.getRTypeOfFeature(feature, context).toJavaReferenceType
-		return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
+	def JavaStatementBuilder enumCall(RosettaEnumValue feature, JavaType expectedType) {
+		val itemType = expectedType.itemType
+		return JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)
 	}
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
 		if (feature instanceof Attribute) {
@@ -624,7 +624,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
 		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
 		
-		// TODO: fix result type (should join both types)
 		condition
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]
@@ -681,7 +680,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseFeatureCall(RosettaFeatureCall expr, Context context) {
 		if (expr.feature instanceof RosettaEnumValue) {
-			return enumCall(expr.feature as RosettaEnumValue, expr)
+			return enumCall(expr.feature as RosettaEnumValue, context.expectedType)
 		}
 		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 		if (expr.eContainer instanceof RosettaFeatureCall &&
@@ -1040,8 +1039,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
-		val javaEnum = expr.enumeration.buildREnumType.toJavaType
-		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+		val javaEnum = expr.enumeration.buildREnumType.toJavaReferenceType
+		val argType = typeProvider.getRType(expr.argument)
+		if (argType instanceof REnumType) {
+			val javaArgType = argType.toJavaReferenceType
+			expr.argument.javaCode(MAPPER_S.wrapExtends(javaArgType), context.scope)
+				.collapseToSingleExpression(context.scope)
+				.mapExpression[JavaExpression.from('''«it».map("«expr.operator»", «javaArgType»::to«javaEnum.simpleName»)''', MAPPER_S.wrap(javaEnum))]
+		} else {
+			conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+		}
 	}
 
 	override protected caseToIntOperation(ToIntOperation expr, Context context) {

@@ -43,6 +43,83 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testConvertEnumValueToParentEnum() {
+		val code = '''
+		enum A:
+			VALUE_A
+		
+		enum B extends A:
+			VALUE_B
+		
+		func Test:
+			inputs:
+				b B (1..1)
+			output:
+				result A (1..1)
+			
+			set result:
+				b to-enum A
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val aClass = classes.get("com.rosetta.test.model.A")
+		val valueAOfA = aClass.enumConstants.findFirst[c| c.toString == "VALUE_A"]
+		val bClass = classes.get("com.rosetta.test.model.B")
+		val valueAOfB = bClass.enumConstants.findFirst[c| c.toString == "VALUE_A"]
+		val valueBOfB = bClass.enumConstants.findFirst[c| c.toString == "VALUE_B"]
+        
+        val test = classes.createFunc("Test")
+        assertEquals(valueAOfA, test.invokeFunc(aClass, #[valueAOfB]))
+        assertNull(test.invokeFunc(aClass, #[valueBOfB]))
+        assertNull(test.invokeFunc(aClass, #[null]))
+	}
+	
+	@Test
+	def void testExtendedEnumTypeCoercion() {
+		val code = '''
+		enum A:
+			VALUE_A
+		
+		enum B extends A:
+			VALUE_B
+		
+		enum C extends A:
+			VALUE_C
+		
+		enum D extends B, C:
+			VALUE_D
+		
+		func TestCoercion:
+			inputs:
+				b B (1..1)
+				c C (1..1)
+			output:
+				result D (1..1)
+			
+			set result:
+				if True
+				then b
+				else if True
+				then c
+				else A -> VALUE_A
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val bClass = classes.get("com.rosetta.test.model.B")
+		val valueB = bClass.enumConstants.findFirst[c| c.toString == "VALUE_B"]
+		val cClass = classes.get("com.rosetta.test.model.C")
+		val valueC = cClass.enumConstants.findFirst[c| c.toString == "VALUE_C"]
+		
+		val dClass = classes.get("com.rosetta.test.model.D")
+		val valueBOfDClass = dClass.enumConstants.findFirst[c| c.toString == "VALUE_B"]
+        
+        val testCoercion = classes.createFunc("TestCoercion")
+        assertEquals(valueBOfDClass, testCoercion.invokeFunc(valueBOfDClass.class, #[valueB, valueC]))
+	}
+	
+	@Test
 	def void assignToMultiMetaFeature() {
 		val code = '''
 		type A:

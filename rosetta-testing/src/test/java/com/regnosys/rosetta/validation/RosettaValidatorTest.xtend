@@ -32,6 +32,21 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCannotConvertEnumToNonParentEnum() {
+		val model = '''
+		enum A:
+			VALUE_A
+		
+		enum B extends A:
+			VALUE_B
+		'''.parseRosettaWithNoIssues
+		
+		"a to-enum B"
+			.parseExpression(#[model], #["a A (1..1)"])
+			.assertError(TO_ENUM_OPERATION, null, "A does not extend B.")
+	}
+	
+	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''
 		type A:
@@ -1291,7 +1306,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
 	
 	@Test
@@ -1479,15 +1494,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				i string (1..1)
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
-	}
-		
-	@Test
-	def void testDuplicateEnumLiteral() {
-		val model = '''
-			enum Foo:
-				BAR BAZ BAR
-		'''.parseRosetta
-		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
 	}
 	
 	@Test 
@@ -2773,16 +2779,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x1 boolean (1..1)
 				x2 boolean (1..1)
-				x3 number (1..1)
+				x3 number (0..1)
 				x4 number (1..1)
 				x5 int (1..1)
-				x6 string (1..1)
+				x6 string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(ROSETTA_BINARY_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
-	def void shouldNotGenerateTypeErrorForExpressionInBrackets3() {
+	def void shouldGenerateTypeErrorForExpressionInBrackets3() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2797,7 +2803,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test

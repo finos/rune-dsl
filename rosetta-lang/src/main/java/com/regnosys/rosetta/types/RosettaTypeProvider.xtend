@@ -81,6 +81,7 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.RosettaEcoreUtil
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -95,6 +96,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
+	@Inject extension ExpectedTypeProvider
 	
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -180,8 +182,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 		switch (feature) {
 			RosettaTypedFeature: {
-				val featureType = if (feature.isTypeInferred) {
-						new RErrorType("Cannot infer type of feature.")
+				val featureType = if (feature.typeCall === null) {
+						NOTHING
 					} else {
 						feature.typeCall.typeCallToRType
 					}
@@ -246,13 +248,13 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	private def caseBinaryOperation(RosettaBinaryOperation expr, Map<EObject, RType> cycleTracker) {
 		val left = expr.left
 		var leftType = left.safeRType(cycleTracker)
-		if (leftType === null || leftType instanceof RErrorType) {
-			return leftType
+		if (leftType instanceof RErrorType) {
+			return NOTHING
 		}
 		val right = expr.right
 		var rightType = right.safeRType(cycleTracker)
-		if (rightType === null || rightType instanceof RErrorType) {
-			return rightType
+		if (rightType instanceof RErrorType) {
+			return NOTHING
 		}
 		expr.operator.resultType(leftType, rightType)
 	}
@@ -284,14 +286,21 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	override protected caseConditionalExpression(RosettaConditionalExpression expr, Map<EObject, RType> cycleTracker) {
 		val ifT = expr.ifthen.safeRType(cycleTracker)
 		val elseT = expr.elsethen.safeRType(cycleTracker)
-		if (ifT === null || ifT instanceof RErrorType) {
-			elseT
-		} else if (elseT === null || elseT instanceof RErrorType) {
-			ifT
+		if (ifT instanceof RErrorType) {
+			NOTHING
+		} else if (elseT instanceof RErrorType) {
+			NOTHING
 		} else {
 			val joined = join(ifT, elseT)
 			if (joined == ANY) {
-				new RErrorType("Can not infer common type for '" + ifT.name + "' and " + elseT.name + "'.")
+				new RErrorType('''Types `«ifT»` and `«elseT»` do not have a common supertype.''')
+			} else if (joined instanceof RUnionType) {
+				val expected = expr.expectedTypeFromContainer
+				if (expected !== null && joined.isSubtypeOf(expected)) {
+					expected
+				} else {
+					new RErrorType('''Cannot infer common supertype of `«ifT»` and `«elseT»`.''')
+				}
 			} else {
 				joined
 			}
@@ -397,8 +406,17 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	override protected caseListLiteral(ListLiteral expr, Map<EObject, RType> cycleTracker) {
 		val types = expr.elements.map[RType].filter[it !== null]
 		val joined = types.join
+		val unique = newLinkedHashSet(types)
+		val StringConcatenationClient failedList = '''«FOR t: unique.take(unique.size-1) SEPARATOR ", "»`«t»`«ENDFOR» and `«unique.last»`'''
 		if (joined == ANY) {
-			new RErrorType(types.groupBy[name].keySet.join(', '))
+			new RErrorType('''Types «failedList» do not have a common supertype.''')
+		} else if (joined instanceof RUnionType) {
+			val expected = expr.expectedTypeFromContainer
+			if (expected !== null && joined.isSubtypeOf(expected)) {
+				expected
+			} else {
+				new RErrorType('''Cannot infer common supertype of «failedList».''')
+			}
 		} else {
 			joined
 		}
@@ -425,6 +443,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseNumberLiteral(RosettaNumberLiteral expr, Map<EObject, RType> cycleTracker) {
+		if (expr.value === null) { // In case of a parse error
+			return NOTHING
+		}
 		constrainedNumber(expr.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expr.value.scale), expr.value, expr.value)
 	}
 	

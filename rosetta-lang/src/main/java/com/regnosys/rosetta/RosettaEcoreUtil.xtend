@@ -1,7 +1,6 @@
 package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -33,6 +32,7 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.types.RObjectFactory
 import java.util.LinkedHashSet
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -52,7 +52,7 @@ class RosettaEcoreUtil {
 			RDataType:
 				t.allNonOverridenAttributes.map[EObject]
 			REnumType:
-				t.EObject.allEnumValues
+				t.allEnumValues
 			RRecordType: {
 				if (resourceSet !== null) {
 					builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
@@ -92,19 +92,17 @@ class RosettaEcoreUtil {
 		return result.values();
 	}
 	
-	@Deprecated // TODO: move to REnumType, similar to RDataType
+	@Deprecated // Use REnumType#getAllParents instead
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
 	}
-	
-	@Deprecated
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
-		if(e !== null && seenEnums.add(e)) 
-			doGetSuperEnumerations(e.superType, seenEnums)
+		if(seenEnums.add(e)) 
+			e.parentEnums.forEach[doGetSuperEnumerations(it, seenEnums)]
 		return seenEnums
 	}
 	
-	@Deprecated // TODO: move to REnumType, similar to RDataType
+	@Deprecated // Use REnumType#getAllEnumValues instead
 	def getAllEnumValues(RosettaEnumeration e) {
 		e.allSuperEnumerations.map[enumValues].flatten
 	}

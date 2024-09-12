@@ -385,50 +385,6 @@ checkrule CheckIfConditionalExpression for
 from {
 	looseListSubtypeCheck(e.^if, singleBoolean)
 }
-checkrule CheckBodyConditionalExpression for
-	RosettaConditionalExpression e
-from {
-	var RListType tthen
-	var RListType telse
-	empty |- e.ifthen : tthen or tthen = null
-	empty |- e.elsethen : telse or telse = null
-	if (tthen !== null && telse !== null) {
-		val joined = listJoin(tthen, telse)
-		
-		if ({empty |- ANY <: joined.itemType}) {
-			fail error "Types `" + tthen.itemType.name + "` and `" + telse.itemType.name + "` do not have a common supertype."
-		}
-	}
-}
-
-checkrule CheckListLiteral for
-	ListLiteral e
-from {
-	val telems = newArrayList
-	if (e.elements.forall[
-		var RListType telem
-		empty |- it : telem or telem = null
-		if (telem !== null) {
-			telems.add(telem)
-		}
-		telem !== null
-	]) {
-		telems.fold(emptyNothing, [ RListType acc, RListType telem |
-			if (acc === null) {
-				null
-			} else {
-				val sup = join(telem.itemType, acc.itemType);
-				if ({empty |- ANY <: sup}) {
-					null
-				} else {
-					createListType(sup, telem.constraint + acc.constraint)
-				}
-			}
-		]) !== null
-		or
-		fail error "Elements do not have a common supertype: " + telems.join(', ')["`" + it.itemType.name + "`"] + "."
-	}
-}
  
 checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 	val f = e.symbol

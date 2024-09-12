@@ -35,6 +35,42 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCannotAccessEnumValueThroughAnotherEnumValue() {
+		val model = '''
+		enum A:
+			VALUE_A
+		'''.parseRosettaWithNoIssues
+		
+		"A -> VALUE_A -> VALUE_A"
+			.parseExpression(#[model])
+			.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'VALUE_A'.")
+	}
+	
+	@Test
+	def void testAccessEnumValueOfMultiEnumExtension() {
+		val model = '''
+		enum A:
+			VALUE_A
+		
+		enum B:
+			VALUE_B
+		
+		enum C extends A, B:
+			VALUE_C
+		'''.parseRosettaWithNoIssues
+		
+		"C -> VALUE_C"
+			.parseExpression(#[model])
+			.assertNoIssues
+		"C -> VALUE_A"
+			.parseExpression(#[model])
+			.assertNoIssues
+		"C -> VALUE_B"
+			.parseExpression(#[model])
+			.assertNoIssues
+	}
+	
+	@Test
 	def void testFullyQualifiedNamesCanBeUsedInExpression() {
 		val modelBar = '''
 			namespace test.bar

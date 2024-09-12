@@ -20,6 +20,7 @@ import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import java.util.ArrayList
 import com.rosetta.util.types.JavaReferenceType
+import com.regnosys.rosetta.generator.java.types.RJavaEnum
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -208,7 +209,10 @@ class TypeCoercionService {
 		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
-		}		
+		} else if (actual instanceof RJavaEnum && expected instanceof RJavaEnum) {
+			// Parent enum to child enum
+			return Optional.of([getEnumConversionExpression(it, expected)])
+		}
 		
 		return Optional.empty
 	}
@@ -421,6 +425,10 @@ class TypeCoercionService {
 		} else {
 			throw unexpectedCaseException(actual, expected)
 		}
+	}
+	private def JavaExpression getEnumConversionExpression(JavaExpression expression, JavaType expected) {
+		val actual = expression.expressionType
+		JavaExpression.from('''«expected».from«actual.simpleName»(«expression»)''', expected)
 	}
 	private def JavaExpression getItemToListConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«Collections».singletonList(«expression»)''', LIST.wrap(expression.expressionType))

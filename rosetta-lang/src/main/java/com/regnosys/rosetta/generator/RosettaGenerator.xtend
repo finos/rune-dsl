@@ -226,7 +226,7 @@ class RosettaGenerator implements IGenerator2 {
 				]
 			}
 			RosettaEnumeration: {
-				enumGenerator.generate(packages, fsa, elem, version)
+				enumGenerator.generate(packages, fsa, elem.buildREnumType, version)
 			}
 		}
 	}
