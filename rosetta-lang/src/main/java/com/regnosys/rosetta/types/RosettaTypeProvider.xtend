@@ -131,7 +131,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	private def RType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
 			return NOTHING
- 		}
+		}
 		switch symbol {
 			RosettaFeature: {
 				safeRType(symbol as RosettaFeature, context, cycleTracker)
