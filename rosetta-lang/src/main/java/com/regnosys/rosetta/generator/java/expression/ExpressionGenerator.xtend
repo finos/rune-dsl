@@ -24,7 +24,6 @@ import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
-import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
@@ -131,6 +130,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1204,7 +1204,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	}
 
  	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
- 		CaseStatement[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
+ 		SwitchCase[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
  		val head = caseStatements.head
  		val tail = caseStatements.tail
 

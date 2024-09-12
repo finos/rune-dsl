@@ -4,6 +4,7 @@
 package com.regnosys.rosetta.scoping
 
 import com.google.common.base.Predicate
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
@@ -16,7 +17,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.rosetta.TypeCall
-import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.InlineFunction
@@ -24,6 +24,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -35,6 +37,7 @@ import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
@@ -59,30 +62,6 @@ import org.slf4j.LoggerFactory
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import java.util.List
-import org.eclipse.xtext.scoping.impl.SimpleScope
-import org.eclipse.xtext.resource.EObjectDescription
-import org.eclipse.xtext.naming.QualifiedName
-import com.regnosys.rosetta.utils.RosettaConfigExtension
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
-import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.rosetta.RosettaTypeAlias
-import com.regnosys.rosetta.rosetta.TypeCall
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
-import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
-import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.utils.DeepFeatureCallUtil
-import com.regnosys.rosetta.rosetta.simple.Annotated
-import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.RosettaEcoreUtil
 
 /**
  * This class contains custom scoping description.
@@ -257,8 +236,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
 				}
-				case CASE_STATEMENT__ENUM_CONDITION: {
-					if (context instanceof CaseStatement) {
+				case SWITCH_CASE__ENUM_CONDITION: {
+					if (context instanceof SwitchCase) {
 						val argumentType = typeProvider.getRType(context.switchOperation.argument)
 						if (argumentType instanceof REnumType) {
 						   return Scopes.scopeFor(argumentType.EObject.allEnumValues)

@@ -79,7 +79,6 @@ import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
-import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.RosettaEcoreUtil

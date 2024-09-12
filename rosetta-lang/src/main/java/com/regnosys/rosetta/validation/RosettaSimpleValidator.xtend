@@ -2,6 +2,7 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
@@ -29,7 +30,6 @@ import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
-import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
@@ -57,9 +57,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
-import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
@@ -77,13 +76,16 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.CardinalityProvider
+import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RErrorType
+import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
@@ -101,43 +103,23 @@ import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 import javax.inject.Inject
-import javax.inject.Inject
-import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.Action
-import org.eclipse.xtext.Assignment
 import org.eclipse.xtext.EcoreUtil2
-import org.eclipse.xtext.Keyword
-import org.eclipse.xtext.RuleCall
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
-import org.eclipse.xtext.nodemodel.ICompositeNode
-import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
-import org.eclipse.xtext.validation.EValidatorRegistrar
-import org.eclipse.xtext.validation.FeatureBasedDiagnostic
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
-import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.types.TypeValidationUtil
-
-import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
-import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.RosettaEcoreUtil
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -181,7 +163,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
  	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
  		val argumentRType = op.argument.RType
- 		for (CaseStatement caseStatement : op.values) {
+ 		for (SwitchCase caseStatement : op.values) {
  			if (caseStatement.literalCondition !== null) {
  				val conditionType = caseStatement.literalCondition.RType
 	 			if (!conditionType.isSubtypeOf(argumentRType)) {

@@ -638,7 +638,7 @@ enum ExistsModifier:
 	| MULTIPLE='multiple'
 ;
 
-CaseStatement:
+SwitchCase:
  	(literalCondition=RosettaLiteral | enumCondition=[RosettaEnumValue|ValidID]) 'then' expression=RosettaCalcExpression
  ;
 
@@ -672,7 +672,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
-			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
+			|({SwitchOperation.argument=current} operator='switch' values+=SwitchCase =>(',' values+=SwitchCase)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -709,7 +709,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
-			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
+			|({SwitchOperation} operator='switch' values+=SwitchCase =>(',' values+=SwitchCase)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -747,7 +747,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
-			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
+			|({SwitchOperation.argument=current} operator='switch' values+=SwitchCase =>(',' values+=SwitchCase)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
