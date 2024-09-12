@@ -1206,7 +1206,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
  		SwitchCase[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
  		if (caseStatements.isEmpty) {
- 			return defaultExpression.javaCode(returnType, javaScope)
+ 			return defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(returnType, javaScope)
  		}	
  			
  		val head = caseStatements.head
@@ -1233,10 +1233,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  				new JavaIfThenElseBuilder(
  					it,
  					head.expression.javaCode(returnType, javaScope),
- 					tail.isEmpty
- 						? (defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(
- 						returnType, javaScope))
- 						: createSwitchJavaExpression(conditionType, returnType, switchArgument, tail, defaultExpression, javaScope),
+ 					createSwitchJavaExpression(conditionType, returnType, switchArgument, tail, defaultExpression, javaScope),
  					typeUtil
  				)
  			]
