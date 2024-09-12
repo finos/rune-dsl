@@ -204,13 +204,6 @@ public class TypeSystem {
 		return t;
 	}
 
-	public RDataType dataToType(Data data) {
-		return new RDataType(data, modelIdProvider, rObjectFactory);
-	}
-	public REnumType enumToType(RosettaEnumeration enumeration) {
-		return new REnumType(enumeration, modelIdProvider);
-	}
-
 	/**
 	 * Returns the first ancestor of the given type which does not extend any data type.
 	 *

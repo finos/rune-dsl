@@ -101,14 +101,15 @@ class RosettaEcoreUtil {
 		return seenTypes
 	}
 
-  @Deprecated // Use RDataType#getAllAttributes instead
+  	@Deprecated // Use RDataType#getAllAttributes instead
 	def getAllAttributes(RDataType t) {
-		t.allSuperDataTypes.flatMap[data.attributes]
+		t.allSuperTypes.flatMap[EObject.attributes]
+	}
 
 	@Deprecated // Use RDataType#getAllNonOverridenAttributes instead
 	def Collection<Attribute> getAllNonOverridenAttributes(Data data) {
 		val result = newLinkedHashMap
-		data.allAttributes.forEach[result.put(name, it)]
+		data.attributes.forEach[result.put(name, it)]
 		return result.values();
 	}
 	
@@ -285,7 +286,7 @@ class RosettaEcoreUtil {
 		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE + ".metafields"
 		val name = if (hasTemplateAnnotation(t.EObject)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
 		val data = SimpleFactory.eINSTANCE.createData
-		data.model = rosModel
+		data.namespace = rosModel
 		data.name = name
 		return objectFactory.buildRDataType(data)
 	]

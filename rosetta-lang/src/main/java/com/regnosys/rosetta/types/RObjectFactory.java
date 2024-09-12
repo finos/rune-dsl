@@ -19,7 +19,6 @@ package com.regnosys.rosetta.types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,9 +46,6 @@ import com.regnosys.rosetta.rosetta.translate.Translation;
 import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.regnosys.rosetta.utils.TranslateUtil;
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
-import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RObjectFactory {
@@ -63,8 +59,6 @@ public class RObjectFactory {
 	private ModelIdProvider modelIdProvider;
 	@Inject
 	private ExternalAnnotationUtil externalAnnotationUtil;
-	@Inject
-	private TranslateUtil translateUtil;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
@@ -177,7 +171,7 @@ public class RObjectFactory {
 
 	public RFunction buildRFunction(Translation translation) {
 		List<RAttribute> inputs = translation.getParameters().stream().<RAttribute>map(this::buildRAttribute).collect(Collectors.toList());
-		RType outputRType = translateUtil.getResultRType(translation);
+		RType outputRType = typeProvider.getRTypeOfTranslation(translation);
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, false);
 		ROperation operation = new ROperation(ROperationType.SET, outputAttribute, List.of(), translation.getExpression());
 

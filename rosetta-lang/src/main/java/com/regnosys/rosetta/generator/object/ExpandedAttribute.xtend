@@ -3,10 +3,10 @@ package com.regnosys.rosetta.generator.object
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaMergeSynonymValue
+import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
-import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.TypeCall
 
 @Deprecated
@@ -73,9 +73,9 @@ final class ExpandedAttribute {
 	}
 	
 	def javaAnnotation() {
-		if (name == "key" && type.name == "Key" && type.namespace.toString == "com.rosetta.model.lib.meta") {
+		if (name == "key" && type.name == "Key" && type.model.name == "com.rosetta.model.lib.meta") {
 			return 'location'
-		} else if (name == "reference" && type.name == "Reference" && type.namespace.toString == "com.rosetta.model.lib.meta") {
+		} else if (name == "reference" && type.name == "Reference" && type.model.name == "com.rosetta.model.lib.meta") {
 			return 'address'
 		} else
 			return name
@@ -85,7 +85,7 @@ final class ExpandedAttribute {
 @Deprecated
 @Data
 final class ExpandedType {
-	DottedPath namespace
+	RosettaModel model
 	String name
 
 	boolean type // type is instance of  Data

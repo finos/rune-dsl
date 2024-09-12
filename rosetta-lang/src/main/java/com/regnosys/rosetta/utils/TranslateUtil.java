@@ -94,20 +94,12 @@ public class TranslateUtil {
 		}
 		
 		// Check output matches
-		RType actualResultType = getResultRType(translation);
+		RType actualResultType = typeProvider.getRTypeOfTranslation(translation);
 		if (!typeSystem.stripFromTypeAliases(resultType).equals(typeSystem.stripFromTypeAliases(actualResultType))) {
 			return false;
 		}
 		
 		return true;
-	}
-	
-	public RType getResultRType(Translation translation) {
-		if (translation.getResultType() != null) {
-			return typeSystem.typeCallToRType(translation.getResultType());
-		} else {
-			return typeProvider.getRType(translation.getExpression());
-		}
 	}
 	
 	public TranslateSource getSource(TranslateDispatchOperation op) {

@@ -34,26 +34,29 @@ import com.rosetta.model.lib.ModelSymbolId;
 public class RDataType extends RAnnotateType implements RObject {
 	private final Data data;
 
-	private RDataType superType = null;
+	private RType superType = null;
 	private ModelSymbolId symbolId = null;
 	private List<RAttribute> ownAttributes = null;
 
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
+	private final TypeSystem typeSystem;
 
 	// TODO: remove this hack
 	private List<RAttribute> additionalAttributes = null;
 
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
+
+	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final TypeSystem typeSystem) {
 		super();
 		this.data = data;
 
 		this.modelIdProvider = modelIdProvider;
 		this.objectFactory = objectFactory;
+		this.typeSystem = typeSystem;
 	}
 	// TODO: remove this hack
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
-		this(data, modelIdProvider, objectFactory);
+	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory,  final TypeSystem typeSystem, final List<RAttribute> additionalAttributes) {
+		this(data, modelIdProvider, objectFactory, typeSystem);
 		this.additionalAttributes = additionalAttributes;
 	}
 
@@ -70,10 +73,10 @@ public class RDataType extends RAnnotateType implements RObject {
 		return this.symbolId;
 	}
 
-	public RDataType getSuperType() {
+	public RType getSuperType() {
 		if (data.hasSuperType()) {
 			if (this.superType == null) {
-				this.superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory);
+				this.superType = typeSystem.typeCallToRType(data.getSuperType());
 			}
 			return this.superType;
 		}
@@ -84,16 +87,21 @@ public class RDataType extends RAnnotateType implements RObject {
 	 *
 	 * The list is ordered from the most top-level data type to the least (i.e., itself).
 	 */
-	public List<RDataType> getAllSuperTypes() {
-		LinkedHashSet<RDataType> reversedResult = new LinkedHashSet<>();
+	public List<RType> getAllSuperTypes() {
+		LinkedHashSet<RType> reversedResult = new LinkedHashSet<>();
 		doGetAllSuperTypes(this, reversedResult);
-		List<RDataType> result = reversedResult.stream().collect(Collectors.toCollection(ArrayList::new));
+		List<RType> result = reversedResult.stream().collect(Collectors.toCollection(ArrayList::new));
 		Collections.reverse(result);
 		return result;
 	}
-	private void doGetAllSuperTypes(RDataType current, LinkedHashSet<RDataType> superTypes) {
+	private void doGetAllSuperTypes(RType current, LinkedHashSet<RType> superTypes) {
 		if (superTypes.add(current)) {
-			RDataType s = current.getSuperType();
+			RType s = null;
+			if (current instanceof RDataType) {
+				s = ((RDataType) current).getSuperType();
+			} else if (current instanceof RAliasType) {
+				s = ((RAliasType) current).getRefersTo();
+			}
 			if (s != null) {
 				doGetAllSuperTypes(s, superTypes);
 			}
@@ -120,7 +128,10 @@ public class RDataType extends RAnnotateType implements RObject {
 	 * The list starts with the attributes of the top-most super type, and ends with the attributes of itself.
 	 */
 	public List<RAttribute> getAllAttributes() {
-		return getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).collect(Collectors.toList());
+		return getAllSuperTypes().stream()
+				.filter(s -> s instanceof RDataType)
+				.map(s -> (RDataType) s)
+				.flatMap(s -> s.getOwnAttributes().stream()).collect(Collectors.toList());
 	}
 
 	/**
