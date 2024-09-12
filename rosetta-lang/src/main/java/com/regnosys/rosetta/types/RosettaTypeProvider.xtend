@@ -130,7 +130,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 
 	private def RType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
- 			return NOTHING
+			return NOTHING
  		}
 		switch symbol {
 			RosettaFeature: {
@@ -526,9 +526,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
- 		expr.cases
- 		.map[it.expression.RType]
- 		.join
+		expr.cases
+			.map[it.expression.RType]
+			.join
  	}
 
 }
