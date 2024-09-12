@@ -1187,14 +1187,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
  		val conditionType = switchArgument.expressionType.itemType
 
- 		val returnType = MAPPER.wrap(join(
- 				caseStatements.map[typeProvider.getRType(it.expression)] + (defaultExpression === null
- 					? #[]
- 					: #[
- 					typeProvider.getRType(defaultExpression)
- 				]
- 			)
- 		).toJavaReferenceType)
+ 		val returnType = context.expectedType
 
  		switchArgument
  			.declareAsVariable(true, "switchAgument", context.scope)
