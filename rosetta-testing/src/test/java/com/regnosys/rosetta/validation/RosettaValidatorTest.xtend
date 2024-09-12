@@ -20,6 +20,8 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
+
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
@@ -30,6 +32,409 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
+	
+	@Test
+	def void missingImportedMetaValidatesWithError() {
+		val model = '''
+			func Test:
+			    output:
+			     result string (1..1)
+			
+			    set result: "A" switch
+			            "A" then missingInput -> fieldA
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaSymbol 'missingInput'.")
+		model.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'fieldA'.")		
+	}
+
+	@Test
+	def void metaConstructorValidatesValueType() {
+		val model = '''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			set result:
+			  NumberWithScheme ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_STRING_LITERAL, TYPE_ERROR, "Expected type 'number' but was 'string'")
+
+	}
+	
+	@Test
+	def void metaConstructorOnlySetValueWnenSuperTypeExists() {
+		val model = '''
+			type Foo:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result Foo (1..1)
+			  
+			set result:
+			  Foo ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_STRING_LITERAL, null, "Cannot set a value for type Foo")
+
+	}
+		
+		
+	@Test
+	def void metaConstructorValueAsExpressionVariable() {
+		'''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			  alias someValue: 10*2
+			  
+			set result:
+			  NumberWithScheme [someValue] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void metaConstructorValueAsExpression() {
+		'''
+			type NumberWithScheme extends number:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result NumberWithScheme (1..1)
+			  
+			set result:
+			  NumberWithScheme [10*2] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void metaConstructorSyntaxIsValid() {
+		'''
+			type StringWithScheme extends string:
+			  scheme string (1..1)
+					
+			func DoTheThing:
+			  output:
+			    result StringWithScheme (1..1)
+			  
+			set result:
+			  StringWithScheme ["My value"] {
+			    scheme: "My scheme"
+			  }
+		'''.parseRosettaWithNoIssues
+	}
+	
+	
+	@Test
+	def void testReferenceResolving() {
+		'''
+		type Foo:
+		  [reference-key id + parentId]
+		  attr int (1..1)
+		  id string (1..1)
+		  parentId string (1..1)
+		 
+		type Bar:
+		  foo Foo (0..1)
+		
+		type Qux:
+		  foos Foo (0..*)
+		  bars Bar (0..*)
+		
+		func Create:
+		  output: result Qux (1..1)
+		  set result:
+		    Qux {
+		      foos: [
+		        Foo {
+		          attr: 42,
+		          id: "MyId",
+		          parentId: "ParentId"
+		        }
+		      ],
+		      bars: [
+		        Bar {
+		          foo: "MyIdParentId" as-reference
+		        }
+		      ]
+		    }
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testReferenceTypeChecking() {
+		val model = '''
+		type Foo:
+		  [reference-key attr]
+		  attr int (1..1)
+		'''.parseRosetta
+		
+		model.assertError(ROSETTA_EXPRESSION, TYPE_ERROR, "Expected type 'string' but was 'int'")
+		
+		"42 as-reference"
+			.parseExpression
+			.assertError(AS_REFERENCE_OPERATION, null, "The argument of as-reference should be a string.")
+	}
+	
+	@Test
+	def void testReferenceWithNoTypeContext() {
+		"\"foo\" as-reference"
+			.parseExpression
+			.assertError(AS_REFERENCE_OPERATION, null, "The type of the reference is unknown.")
+	}
+	
+	@Test
+	def void testUseBasicTypeExtensionWithJoin() {
+		'''
+			namespace test
+			
+			type A extends B:
+			type B extends C:
+			type C extends D(foo: 0):
+			
+			type H extends I:
+			typeAlias I: D(foo: 1)
+			
+			typeAlias D(foo int): F
+			type F extends G:
+			typeAlias G: string
+			
+			func Func:
+				inputs:
+					f F (1..1)
+				output:
+					result F (1..1)
+			
+			func DoTheThing:
+				output:
+					result F (1..1)
+				set result:
+					Func(if True then A [""] {} else H [""] {})
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testUseBasicTypeExtensionAsSubtypeOfBasicType() {
+		'''
+			namespace test
+			
+			type StringWithScheme extends string:
+				scheme string (1..1)
+			
+			func DoTheThing:
+				inputs:
+					inp StringWithScheme (1..1)
+				output:
+					result string (1..1)
+				set result:
+					inp
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testSwitchArgumentMatchesCaseStatmentTypes() {
+		val context ='''
+				enum SomeEnum:
+					A
+					B
+					C
+					D
+		'''.parseRosettaWithNoIssues
+		
+		val expression = '''
+			inEnum switch 
+				SomeEnum -> A then "aValue",
+				10 then "bValue",
+				SomeEnum -> C then "cValue",
+				default "defaultValue"
+		'''
+		
+		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+		.assertError(ROSETTA_EXPRESSION, null, '''Mismatched condition type: Expected type `SomeEnum`, but got `int` instead.''')
+	}
+	
+	@Test
+	def void testDataTypesAreInvalidSwitchInputs() {
+		val model = '''
+			namespace test
+			
+			type Foo:
+				fooField string (1..1)
+
+			type SomeType:
+				fieldA string (1..1)
+			
+			func SomeFunc:
+				inputs:
+					inFoo Foo (1..1)
+				output:
+					result string (1..1)
+			
+				set result: inFoo switch 
+					inFoo then "aValue"
+		'''
+		
+		model.parseRosetta
+		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")
+	}
+	
+	@Test
+	def void testValidSwitchSyntaxWithOtherwise() {
+		val context ='''
+				enum SomeEnum:
+					A
+					B
+					C
+					D
+		'''.parseRosettaWithNoIssues
+		
+		val expression = '''
+			inEnum switch 
+				SomeEnum -> A then "aValue",
+				SomeEnum -> B then "bValue",
+				SomeEnum -> C then "cValue",
+				default "defaultValue"
+		'''
+		
+		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+		.assertNoIssues
+	}
+	
+	@Test
+	def void testValidSwitchSyntaxOnSet() {
+		val model = '''
+			namespace test
+			
+			enum SomeEnum:
+				A
+				B
+				C
+				D
+				
+			type SomeType:
+				fieldA string (1..1)
+				
+			
+			func SomeFunc:
+				inputs:
+					inEnum SomeEnum (1..1)
+				output:
+					result string (1..1)
+			
+				set result: inEnum switch 
+					SomeEnum -> A then "aValue",
+					SomeEnum -> B then "bValue",
+					SomeEnum -> C then "cValue",
+					SomeEnum -> D then "dValue"
+		'''
+		
+		model.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testCanUseMixOfImportAliasAnFullyQualified() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+				
+			type D:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			type B:
+				a someAlias.A (1..1)
+				d foo.bar.D (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void testCanUseMixOfImportAliasAndNoAlias() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			
+			type D:
+				id string (1..1)
+			
+			type B:
+				a someAlias.A (1..1)
+				d D (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}	
+	
+	@Test
+	def void testCannotUseImportAliasesWithoutWildcard() {
+		val model = '''
+			import foo.bar.Test as someAlias
+		'''.parseRosetta
+		
+		model.assertError(IMPORT, null,
+			'"as" statement can only be used with wildcard import'
+		)
+	}
+	
+	
+	//TODO: write a validation for when the user forgets the alias
+	@Test
+	def void testCanUserImportAlisesWhenWildcardPresent() {
+		val model1 = '''
+			namespace foo.bar
+			
+			type A:
+				id string (1..1)
+		'''
+		
+		val model2 = '''
+			namespace test
+			
+			import foo.bar.* as someAlias
+			
+			
+			
+			type B:
+				a someAlias.A (1..1)
+		'''
+		
+		#[model1, model2].parseRosettaWithNoIssues
+	}
 	
 	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
@@ -1263,7 +1668,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
+		model.assertError(EQUALITY_OPERATION, null,
 			"Incompatible types: cannot use operator '=' with int and boolean.")
 	}
 	
@@ -1291,7 +1696,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
 	
 	@Test
@@ -2778,7 +3183,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x5 int (1..1)
 				x6 string (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
@@ -2797,7 +3202,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test

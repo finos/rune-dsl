@@ -13,7 +13,7 @@ import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
 
-public class DeepFeatureCallUtil {	
+public class DeepFeatureCallUtil {
 	public Collection<RAttribute> findDeepFeatures(RDataType type) {
 		return findDeepFeatureMap(type).values();
 	}

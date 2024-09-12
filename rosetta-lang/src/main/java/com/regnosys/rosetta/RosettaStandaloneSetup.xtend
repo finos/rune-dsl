@@ -9,6 +9,7 @@ import org.eclipse.emf.ecore.EPackage
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
 import com.google.inject.Injector
 import org.eclipse.emf.ecore.EValidator
+import com.regnosys.rosetta.rosetta.translate.TranslatePackage
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
@@ -18,7 +19,7 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 	def static void doSetup() {
 		new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration()
 	}
-	
+
 	override Injector createInjectorAndDoEMFRegistration() {
 		EValidator.Registry.INSTANCE.clear // This line is to ensure tests don't use the same validator instance.
 		return super.createInjectorAndDoEMFRegistration()
@@ -37,6 +38,9 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 		}
 		if (!EPackage.Registry.INSTANCE.containsKey(ExpressionPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(ExpressionPackage.eNS_URI, ExpressionPackage.eINSTANCE);
+		}
+		if (!EPackage.Registry.INSTANCE.containsKey(TranslatePackage.eNS_URI)) {
+			EPackage.Registry.INSTANCE.put(TranslatePackage.eNS_URI, TranslatePackage.eINSTANCE);
 		}
 		super.register(injector)
 	}

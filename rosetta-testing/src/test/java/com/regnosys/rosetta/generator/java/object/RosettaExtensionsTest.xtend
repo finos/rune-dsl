@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.types.TypeSystem
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)

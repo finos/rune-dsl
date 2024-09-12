@@ -56,6 +56,8 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.TypeCallArgument
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.rosetta.translate.TranslateSource
+import com.regnosys.rosetta.rosetta.translate.Translation
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -514,7 +516,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		if (ele.path !== null) {
 			ele.path.format
 		}
-		ele.formatDefinition(document)
 		
 		ele.regionFor.keyword(colonKeyword_3)
 			.prepend[noSpace]
@@ -755,6 +756,48 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[newLine]
 			format
 		]
+	}
+	
+	def dispatch void format(TranslateSource translateSource, extension IFormattableDocument document) {
+		val extension translateSourceGrammarAccess = translateSourceAccess
+		
+		translateSource.regionFor.keyword(sourceKeyword_1)
+			.surround[oneSpace]
+		translateSource.regionFor.keyword(extendsKeyword_3_0)
+			.surround[oneSpace]
+		translateSource.regionFor.keywords(commaKeyword_3_2_0).forEach[
+			prepend[noSpace]
+			append[oneSpace]
+		]
+		
+		indentedBraces(translateSource, document)
+		
+		translateSource.translations.head
+			.prepend[newLine]
+		translateSource.translations.tail.forEach[
+			prepend[setNewLines(2)]
+		]
+		translateSource.translations.forEach[
+			format
+		]
+	}
+	
+	def dispatch void format(Translation translation, extension IFormattableDocument document) {
+		val extension translationGrammarAccess = translationAccess
+		
+		translation.regionFor.keyword(translateKeyword_0)
+			.append[oneSpace]
+		translation.regionFor.keywords(commaKeyword_2_0).forEach[
+			prepend[noSpace]
+			append[oneSpace]
+		]
+		translation.regionFor.keyword(toKeyword_3)
+			.surround[oneSpace]
+		translation.regionFor.keyword(':').prepend[noSpace]
+		translation.indentInner(document)
+		translation.expression
+			.prepend[newLine]
+			.format
 	}
 
 	def void indentedBraces(EObject eObject, extension IFormattableDocument document) {

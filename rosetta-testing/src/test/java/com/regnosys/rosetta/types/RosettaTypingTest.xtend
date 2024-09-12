@@ -48,7 +48,7 @@ class RosettaTypingTest {
 	
 	@Inject
 	extension RObjectFactory
-	
+
 	@Test
 	def void testLiteralTypeInference() {
 		'False'.assertIsValidWithType(singleBoolean)

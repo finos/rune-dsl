@@ -26,6 +26,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import com.rosetta.util.DottedPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -237,7 +238,7 @@ class ModelObjectGeneratorTest {
 	
 	@Test
 	def void shouldGenerateBasicReferenceField() {
-		val namespace = 'test.ns.basicref'
+		val namespace = DottedPath.splitOnDots('test.ns.basicref')
 		val code = '''
 			namespace "«namespace»"
 			
@@ -286,7 +287,7 @@ class ModelObjectGeneratorTest {
 
 	@Test
     def void shouldGenerateTypeWithMetaFieldImport() {
-    	val namespace = 'test.ns.metafield'
+    	val namespace = DottedPath.splitOnDots('test.ns.metafield')
         val code = '''
             namespace "«namespace»"
             version "test"

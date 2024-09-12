@@ -14,8 +14,11 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.translate.TranslateSource
 import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 
 interface RosettaExpression {
@@ -162,12 +165,19 @@ class RosettaConditionalExpression extends RosettaExpression {
 
 class RosettaConstructorExpression extends RosettaExpression, RosettaTyped {
 	contains ConstructorKeyValuePair[] values
+	contains RosettaExpression valueExpression
 	boolean implicitEmpty
 }
 
 class ConstructorKeyValuePair {
 	refers RosettaFeature key
 	contains RosettaExpression value
+}
+
+class TranslateDispatchOperation extends RosettaExpression {
+	refers TranslateSource source
+	contains RosettaExpression[] inputs
+	contains TypeCall outputType
 }
 
 interface RosettaOperation extends RosettaExpression {
@@ -208,6 +218,10 @@ class DefaultOperation extends RosettaBinaryOperation {
 }
 
 class LogicalOperation extends RosettaBinaryOperation {
+}
+
+class WithMetaOperation extends RosettaBinaryOperation {
+	refers RosettaMetaType metaFeature
 }
 
 enum CardinalityModifier {
@@ -296,6 +310,7 @@ class RosettaOnlyElement extends ListOperation {
 }
 
 class RosettaCountOperation extends RosettaUnaryOperation {
+	
 }
 
 class FlattenOperation extends ListOperation, CanHandleListOfLists {
@@ -357,6 +372,20 @@ class ToDateTimeOperation extends ParseOperation {
 }
 
 class ToZonedDateTimeOperation extends ParseOperation {
+}
+
+class SwitchOperation extends RosettaUnaryOperation {
+	contains CaseStatement[] values opposite switchOperation
+	contains RosettaExpression ^default
+}
+
+class CaseStatement {
+	container SwitchOperation switchOperation opposite values
+	contains RosettaExpression condition
+	contains RosettaExpression expression
+}
+
+class AsReferenceOperation extends RosettaUnaryOperation {
 }
 
 /**

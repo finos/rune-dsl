@@ -327,7 +327,7 @@ class ExpressionGeneratorTest {
 		val mockData = mock(Data)
 		val model = mock(RosettaModel)
 		when(model.name).thenReturn('com.rosetta.test')
-		when(mockData.model).thenReturn(model)
+		when(mockData.namespace).thenReturn(model)
 		when(mockData.name).thenReturn(className)
 		when(mockData.annotations).thenReturn(ECollections.emptyEList)
 		return mockData

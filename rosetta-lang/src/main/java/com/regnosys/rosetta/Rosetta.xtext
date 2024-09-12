@@ -2,6 +2,7 @@ grammar com.regnosys.rosetta.Rosetta with org.eclipse.xtext.common.Terminals
 import "http://www.rosetta-model.com/Rosetta"
 import "http://www.rosetta-model.com/RosettaSimple"
 import "http://www.rosetta-model.com/RosettaExpression"
+import "http://www.rosetta-model.com/RosettaTranslate"
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 // general TODO: naming is inconsistent, e.g., 
@@ -26,7 +27,7 @@ QualifiedName:
 ;
 
 Import:
-	'import' importedNamespace=QualifiedNameWithWildcard;
+	'import' importedNamespace=(QualifiedNameWithWildcard) ('as' namespaceAlias=QualifiedName)?;
 
 QualifiedNameWithWildcard:
 	QualifiedName ('.' '*')?;
@@ -67,8 +68,8 @@ AnnotationQualifier:
 ;
 
 Data:
-	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' RosettaDefinable?
-	(References|Annotations|ClassSynonyms)*
+	'type' RosettaNamed ('extends' superType=TypeCall)? ':' RosettaDefinable?
+	(References|Annotations|ClassSynonyms|referenceKeyAnnotation=ReferenceKeyAnnotation)*
 	attributes+=Attribute*
 	conditions+=Condition*
 ;
@@ -84,6 +85,10 @@ ChoiceOption:
 	RosettaTyped RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
+;
+
+ReferenceKeyAnnotation:
+	'[' 'reference-key' expression=RosettaCalcExpression ']'
 ;
 
 Attribute:
@@ -171,6 +176,7 @@ RosettaRootElement:
 	| RosettaTypeAlias
 	| RosettaQualifiedType
 	| RosettaCalculationType
+	| TranslateSource
 	| Annotation
 	| Data
 	| Choice
@@ -182,6 +188,7 @@ RosettaRootElement:
 /**********************************************************************
  * Common rules 
  */
+
 fragment RosettaDefinable: // TODO should a definition be able to hold any character? Escape characters? Spaces between '<' and '"'?
 	('<' definition=STRING '>') // TODO rename to documentation?
 ;
@@ -290,6 +297,14 @@ RosettaCardinality:
 	'(' (inf=INT '..' sup=INT | inf=INT '..' unbounded?='*') ')'
 ;
 
+
+CaseStatement:
+	condition=RosettaCalcOr 'then' expression=RosettaCalcExpression
+;
+
+CaseDefaultStatement returns RosettaExpression:
+	'default' RosettaCalcExpression
+;
 
 
 /**********************************************************************
@@ -612,20 +627,23 @@ RosettaCalcBinary returns RosettaExpression:
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
 		| {DefaultOperation.left=current} operator='default' right=UnaryOperation
 		| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
+//		| {WithMetaOperation.left=current} operator='with-meta' metaFeature=[RosettaMetaType] 'from' right=UnaryOperation
 	))?
 	| // Without left parameter:
 	(
-		->(
+		(
 			{RosettaContainsExpression} operator='contains' right=UnaryOperation
 			| {RosettaDisjointExpression} operator='disjoint' right=UnaryOperation
 			| {DefaultOperation} operator='default' right=UnaryOperation
 			| {JoinOperation} operator='join' (=>right=UnaryOperation)?
+//			| {WithMetaOperation} operator='with-meta' metaFeature=[RosettaMetaType] 'from' right=UnaryOperation
 		)
 		(=>(
 			{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
 			| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
 			| {DefaultOperation.left=current} operator='default' right=UnaryOperation
 			| {JoinOperation.left=current} operator='join' (=>right=UnaryOperation)?
+//			| {WithMetaOperation.left=current} operator='with-meta' metaFeature=[RosettaMetaType] 'from' right=UnaryOperation
 		))?
 	)
 ;
@@ -665,6 +683,8 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({AsReferenceOperation.argument=current} operator='as-reference')
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -676,7 +696,8 @@ UnaryOperation returns RosettaExpression:
 			|({FilterOperation.argument=current} operator='filter')
 			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator=('map' | 'extract'))
-		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
+		)
+		 (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 	| // Without left parameter:
 	(
@@ -701,6 +722,8 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
+			|({AsReferenceOperation} operator='as-reference')
+			|({SwitchOperation} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -738,6 +761,8 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({AsReferenceOperation.argument=current} operator='as-reference')
+			|({SwitchOperation.argument=current} operator='switch' values+=CaseStatement =>(',' values+=CaseStatement)* =>(',' default=CaseDefaultStatement)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -758,6 +783,7 @@ UnaryOperation returns RosettaExpression:
  */
 RosettaCalcPrimary returns RosettaExpression:
 	RosettaCalcConstructorExpression
+	| RosettaCalcTranslateDispatchOperation
 	| RosettaCalcConditionalExpression
 	| RosettaCalcOnlyExists
 	| RosettaReferenceOrFunctionCall
@@ -768,11 +794,15 @@ RosettaCalcPrimary returns RosettaExpression:
 ;
 
 RosettaCalcConstructorExpression returns RosettaExpression:
-	{RosettaConstructorExpression} typeCall=TypeCall '{' ((values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)* (',' | ',' implicitEmpty?='...')?) | implicitEmpty?='...')? '}'
+	{RosettaConstructorExpression} typeCall=TypeCall ('[' valueExpression=RosettaCalcExpression ']')? '{' ((values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)* (',' | ',' implicitEmpty?='...')?) | implicitEmpty?='...')? '}'
 ;
 
 ConstructorKeyValuePair:
 	key=[RosettaFeature|ValidID] ':' value=RosettaCalcExpressionWithAsKey
+;
+
+RosettaCalcTranslateDispatchOperation returns RosettaExpression:
+	{TranslateDispatchOperation} 'translate' inputs+=RosettaCalcExpression (',' inputs+=RosettaCalcExpression)* 'to' outputType=TypeCall ('using' source=[TranslateSource|QualifiedName])?
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:
@@ -899,4 +929,27 @@ RosettaRule:
 		(expression = RosettaCalcExpression
 		('as' identifier=STRING)?)
  	)
+;
+
+/***********
+ * Translate
+ ************/
+TranslateSource:
+    'translate' 'source' RosettaNamed ('extends' superSources+=[TranslateSource|QualifiedName]  (',' superSources+=[TranslateSource|QualifiedName])* )?
+    '{'
+        (elements+=RosettaRootElement | translations+=Translation)*
+    '}'
+;
+
+Translation:
+	'translate' parameters+=TranslationParameter (',' parameters+=TranslationParameter)* 'to'
+	(
+		resultType=TypeCall hasExplicitOutputType?=':' expression=RosettaCalcExpression
+		|
+		expression=RosettaCalcConstructorExpression
+	)
+;
+
+TranslationParameter:
+    RosettaNamed? RosettaTyped
 ;

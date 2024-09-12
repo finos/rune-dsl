@@ -29,6 +29,7 @@ import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
+import com.regnosys.rosetta.rosetta.expression.CaseStatement
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
@@ -58,6 +59,9 @@ import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
@@ -80,6 +84,11 @@ import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
@@ -112,11 +121,17 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
+import static extension com.regnosys.rosetta.generator.util.RosettaAttributeExtensions.*
+
 import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.RosettaEcoreUtil
+import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import com.regnosys.rosetta.rosetta.simple.ReferenceKeyAnnotation
+import com.regnosys.rosetta.rosetta.expression.AsReferenceOperation
+import com.regnosys.rosetta.types.ExpectedTypeProvider
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -138,6 +153,36 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 	@Inject extension RObjectFactory objectFactory
+
+	@Inject extension TypeValidationUtil
+	@Inject ExpectedTypeProvider expectedTypeProvider
+
+	@Check
+	def void checkReferenceKey(ReferenceKeyAnnotation ann) {
+		checkType(UNCONSTRAINED_STRING, ann.expression, ann.expression, null, INSIGNIFICANT_INDEX)
+		if (ann.expression.isMulti) {
+			error('''A key should be of single cardinality.''', ann.expression, null)
+		}
+	}
+
+	@Check
+	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
+		val argumentRType = op.argument.RType
+		for (CaseStatement caseStatement : op.values) {
+			if (!caseStatement.condition.RType.isSubtypeOf(argumentRType)) {
+				error('''Mismatched condition type: «argumentRType.notASubtypeMessage(caseStatement.condition.RType)»''', caseStatement.condition, null)
+			}
+		}
+	}
+
+	@Check
+	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
+		val inputType = op.argument.RType
+		if (inputType instanceof RDataType && inputType.valueType === null) {
+			val message = "Invalid switch argument type, supported argument types are basic types and enumerations"
+			error(message, op.argument, null)
+		}
+	}
 
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
@@ -322,7 +367,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		final extension RObjectFactory objectFactory
 		new(RObjectFactory objectFactory) {
 			this.objectFactory = objectFactory
-		} 
+		}
 
 		final Map<RAttribute, RosettaRule> ruleMap = newHashMap;
 		final Map<RosettaExternalRegularAttribute, String> errorMap = newHashMap;
@@ -510,7 +555,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				val parentAttrType = parentAttr.RType
 				if (childAttrType != parentAttrType) {
 					error('''Overriding attribute '«name»' with type «childAttrType» must match the type of the attribute it overrides («parentAttrType»)''',
-						childAttr.EObject, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)					
+						childAttr.EObject, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
 				}
 			]
 		]
@@ -910,7 +955,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def checkAttribute(Attribute ele) {
 		val eleType = ele.RTypeOfSymbol
 		if (eleType instanceof RDataType) {
-			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.exists[EObject.hasKeyedAnnotation])) {
+			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.filter(RDataType).exists[EObject.hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
 				warning('''«ele.typeCall.type.name» must be annotated with [metadata key] as reference annotation is used''',
 					ROSETTA_TYPED__TYPE_CALL)
@@ -1006,6 +1051,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
 				}
 			}
+
+			val valueType = rType.valueType
+			if (valueType === null) {
+				if (ele.valueExpression !== null) {
+					error('''Cannot set a value for type «rType»''', ele.valueExpression, null)
+				}
+			} else {
+				if (ele.valueExpression === null) {
+					error('''Missing a value of type «valueType» when constructing «rType»''', ele.typeCall, null)
+				} else {
+					checkType(valueType, ele.valueExpression, ele.valueExpression, null, INSIGNIFICANT_INDEX)
+				}
+			}
+
 			val absentAttributes = rType
 				.allFeatures(ele)
 				.filter[!seenFeatures.contains(it)]
@@ -1086,6 +1145,28 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (!(type instanceof RBasicType || type instanceof RRecordType || type instanceof REnumType)) {
 				error('''The argument of «ele.operator» should be of a builtin type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
+		}
+	}
+
+	@Check
+	def void checkAsReferenceOperation(AsReferenceOperation op) {
+		val arg = op.argument
+		if (arg.isResolved) {
+			if (cardinality.isMulti(arg)) {
+				error('''The argument of «op.operator» should be of singular cardinality.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+			if (!arg.RType.isSubtypeOf(UNCONSTRAINED_STRING)) {
+				error('''The argument of «op.operator» should be a string.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			}
+		}
+		val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(op)
+		val strippedExpectedType = expectedType.stripFromTypeAliases
+		if (strippedExpectedType === null) {
+			error('''The type of the reference is unknown.''', op, null)
+		} else if (!(strippedExpectedType instanceof RDataType)) {
+			error('''A reference may not be of type «expectedType».''', op, null)
+		} else if ((strippedExpectedType as RDataType).EObject.referenceKeyAnnotation === null) {
+			error('''The type «expectedType» does not have a `reference-key` annotation.''', op, null)
 		}
 	}
 
@@ -1398,8 +1479,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (ns.importedNamespace !== null) {
 				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
 				val isWildcard = qn.lastSegment.equals('*');
-				
-				
+				if (!isWildcard && ns.namespaceAlias !== null) {
+					error('''"as" statement can only be used with wildcard imports''', ns, IMPORT__NAMESPACE_ALIAS);
+				}
+
+
 				val isUsed = if (isWildcard) {
 					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
 				} else {

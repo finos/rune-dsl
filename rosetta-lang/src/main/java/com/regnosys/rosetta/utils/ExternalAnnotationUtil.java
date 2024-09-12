@@ -215,31 +215,31 @@ public class ExternalAnnotationUtil {
 			}
 		}
 	}
-	
+
 	/**
 	 * Get all reporting rules for a report
 	 */
 	public Map<PathAttribute, RosettaRule> getAllReportingRules(RosettaReport report) {
 		return getAllReportingRules(objectFactory.buildRDataType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
 	}
-	
+
 	public Map<PathAttribute, RosettaRule> getAllReportingRules(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
 		Map<PathAttribute, RosettaRule> rules = new HashMap<>();
 		RosettaPath path = RosettaPath.valueOf(type.getName());
 		collectReportingRules(type, path, ruleSource, rules, new HashSet<>());
 		return rules;
 	}
-	
+
 	/**
 	 * Recursively collects all reporting rules for all attributes
 	 */
 	private void collectReportingRules(RDataType dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<RDataType> collectedTypes) {
 		Map<RAttribute, RosettaRule> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
-		
+
 		dataType.getAllNonOverridenAttributes().forEach(attr -> {
 			RType attrType = attr.getRType();
 			RosettaRule rule = attrRules.get(attr);
-			
+
 			if (!(attrType instanceof RDataType)) {
 				if (rule != null) {
 					visitor.put(new PathAttribute(path, attr), rule);
@@ -256,13 +256,13 @@ public class ExternalAnnotationUtil {
 					collectReportingRules(attrDataType, subPath, ruleSource, visitor, collectedTypes);
 				}
 			}
-		});	
+		});
 	}
-	
+
 	public static class PathAttribute {
 		private final RosettaPath path;
 		private final RAttribute attr;
-		
+
 		public PathAttribute(RosettaPath path, RAttribute attr) {
 			this.path = path;
 			this.attr = attr;

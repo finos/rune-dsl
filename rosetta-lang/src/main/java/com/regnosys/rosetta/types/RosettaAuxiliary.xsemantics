@@ -6,7 +6,6 @@ import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RListType
@@ -30,6 +29,7 @@ import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.rosetta.simple.SimplePackage
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -87,7 +87,7 @@ auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
 	}
 }
 auxiliary listJoin(RListType t1, RListType t2) {
-	val sup = join(t1.itemType, t2.itemType);
+	val sup = typeSystem.join(t1.itemType, t2.itemType);
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
 auxiliary allEnumValues(RosettaEnumeration e) {

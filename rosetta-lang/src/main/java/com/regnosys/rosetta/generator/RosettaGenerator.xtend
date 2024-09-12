@@ -31,7 +31,6 @@ import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import javax.inject.Inject
@@ -45,6 +44,13 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.generator.java.reports.RuleGenerator
+import com.regnosys.rosetta.generator.java.translate.TranslationGenerator
+import com.regnosys.rosetta.rosetta.translate.TranslateSource
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.types.TypeSystem
 
 /**
  * Generates code from your model files on save.
@@ -62,6 +68,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
 	@Inject RuleGenerator ruleGenerator
+	@Inject TranslationGenerator translationGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
@@ -78,7 +85,7 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject
 	RosettaGeneratorsConfiguration config;
-	
+
 	@Inject extension ModelIdProvider
 	@Inject extension RObjectFactory
 
@@ -223,6 +230,15 @@ class RosettaGenerator implements IGenerator2 {
 			RosettaExternalRuleSource: {
 				elem.externalClasses.forEach [ externalClass |
 					tabulatorGenerator.generateTabulatorForReportData(fsa, externalClass.data.buildRDataType, Optional.of(elem))
+				]
+			}
+			TranslateSource: {
+				elem.translations.forEach [
+					translationGenerator.generate(fsa, it)
+				]
+				elem.elements.forEach[
+					val subpackages = new RootPackage(elem.toDottedPath)
+					doGenerate(fsa, subpackages, version, context)
 				]
 			}
 			RosettaEnumeration: {

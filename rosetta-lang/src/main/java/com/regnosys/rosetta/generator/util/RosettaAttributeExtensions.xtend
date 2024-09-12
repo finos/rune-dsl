@@ -29,6 +29,8 @@ import java.util.Collections
 import java.util.List
 import org.eclipse.xtext.util.SimpleCache
 import com.regnosys.rosetta.RosettaEcoreUtil
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.RosettaModel
 
 @Deprecated // Use RosettaExtensions instead
 class RosettaAttributeExtensions {
@@ -51,7 +53,7 @@ class RosettaAttributeExtensions {
 	static def List<ExpandedAttribute> expandedAttributesPlus(Data data) {
 		val atts = data.expandedAttributes;
 		if (data.hasSuperType) {
-			val attsWithSuper = data.superType.expandedAttributesPlus
+			val attsWithSuper = (data.superType.type as Data).expandedAttributesPlus
 			val result = newArrayList
 			attsWithSuper.forEach[
 				val overridenAtt = atts.findFirst[att| att.name == name]
@@ -185,7 +187,7 @@ class RosettaAttributeExtensions {
 	}
 	
 	static def ExpandedType toExpandedType(RosettaType type) {
-		return new ExpandedType(type.model, type.name,type instanceof Data, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
+		return new ExpandedType(EcoreUtil2.getContainerOfType(type, RosettaModel), type.name,type instanceof Data, type instanceof RosettaEnumeration, type instanceof RosettaMetaType)
 	}
 	
 	static def toRosettaExpandedSynonyms(List<RosettaSynonym> synonyms, int meta) {

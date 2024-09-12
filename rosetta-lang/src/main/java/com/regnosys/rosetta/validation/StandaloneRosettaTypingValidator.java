@@ -73,7 +73,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	
 	@Inject
 	private RObjectFactory objectFactory;
-	
+
 	@Override
 	protected List<EPackage> getEPackages() {
 		List<EPackage> result = new ArrayList<EPackage>();

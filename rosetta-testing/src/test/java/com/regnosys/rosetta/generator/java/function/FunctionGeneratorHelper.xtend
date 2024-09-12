@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.function
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -20,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
+import com.regnosys.rosetta.rosetta.RosettaNamespace
+import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.ModelIdProvider
 
 class FunctionGeneratorHelper {
@@ -67,7 +68,7 @@ class FunctionGeneratorHelper {
 	}
 
 	def protected void assertToGenerated(CharSequence actualModel, CharSequence expected,
-		Consumer<RosettaModel> genCall) throws AssertionError {
+		Consumer<RosettaNamespace> genCall) throws AssertionError {
 		val model = actualModel.parseRosettaWithNoErrors
 		genCall.accept(model)
 		assertEquals(expected.toString, fsa.textFiles.entrySet.head.value)

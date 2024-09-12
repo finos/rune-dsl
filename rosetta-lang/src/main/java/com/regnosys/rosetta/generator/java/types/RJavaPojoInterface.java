@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.util.DottedPath;
@@ -40,7 +41,7 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 		
 		this.typeSystem = typeSystem;
 	}
-	
+
 	public RDataType getRType() {
 		return type;
 	}
@@ -76,11 +77,11 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 
 	@Override
 	public List<JavaClass<?>> getInterfaceDeclarations() {
-		RDataType superType = type.getSuperType();
-		if (superType != null) {
-			return Collections.singletonList(new RJavaPojoInterface(superType, typeSystem));
+		RType superType = typeSystem.stripFromTypeAliases(type.getSuperType());
+		if (superType != null && superType instanceof RDataType) {
+			return Collections.singletonList(new RJavaPojoInterface((RDataType) superType, typeSystem));
 		}
-		return Collections.singletonList(ROSETTA_MODEL_OBJECT);
+		return List.of(ROSETTA_MODEL_OBJECT);
 	}
 	
 	@Override

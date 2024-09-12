@@ -13,6 +13,8 @@ import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
 import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.rosetta.util.types.JavaClass
+import com.rosetta.model.lib.RosettaModelObject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.RosettaEcoreUtil
@@ -28,8 +30,8 @@ class ModelObjectBuilderGenerator {
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
-		val attrs = t.ownAttributes + t.additionalAttributes
-		val allAttrs = t.allNonOverridenAttributes + t.additionalAttributes
+		val attrs = t.javaAttributes
+		val allAttrs = t.allJavaAttributes
 		allAttrs.forEach[
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
@@ -163,7 +165,7 @@ class ModelObjectBuilderGenerator {
 	
 	private def StringConcatenationClient setters(RDataType t, JavaScope scope)
 		'''
-		«FOR attribute : t.allNonOverridenAttributes + t.additionalAttributes»
+		«FOR attribute : t.allJavaAttributes»
 			«doSetter(t, attribute, scope)»
 		«ENDFOR»
 	'''
@@ -197,7 +199,7 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			«ENDIF»
-			@Override 
+			@Override
 			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
 				if («scope.getIdentifierOrThrow(attribute)»s != null) {
 					for («attribute.toMetaItemJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
@@ -206,8 +208,8 @@ class ModelObjectBuilderGenerator {
 				}
 				return this;
 			}
-			
-			@Override 
+
+			@Override
 			@«RosettaAttribute»("«attribute.javaAnnotation»")
 			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
 				if («scope.getIdentifierOrThrow(attribute)»s == null)  {
@@ -221,7 +223,7 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			«IF !attribute.metaAnnotations.isEmpty»
-				
+
 				@Override
 				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
 					if («scope.getIdentifierOrThrow(attribute)»s != null) {
@@ -231,7 +233,7 @@ class ModelObjectBuilderGenerator {
 					}
 					return this;
 				}
-				
+
 				@Override
 				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
 					this.«scope.getIdentifierOrThrow(attribute)».clear();
@@ -259,7 +261,7 @@ class ModelObjectBuilderGenerator {
 		«ENDIF»
 		'''
 	}
-	
+
 	
 	private def hasData(Iterable<RAttribute> attributes, boolean hasSuperType) '''
 		@Override

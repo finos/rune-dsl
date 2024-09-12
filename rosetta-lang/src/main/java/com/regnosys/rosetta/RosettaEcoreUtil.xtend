@@ -17,6 +17,7 @@ import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RType
 import java.util.Collection
+import java.util.List
 import java.util.Set
 import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
@@ -25,7 +26,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import javax.inject.Singleton
-import java.util.List
 import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import org.eclipse.xtext.util.SimpleCache
 import com.regnosys.rosetta.rosetta.RosettaFactory
@@ -33,13 +33,16 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.types.RObjectFactory
 import java.util.LinkedHashSet
+import com.regnosys.rosetta.types.RAliasType
+import com.regnosys.rosetta.types.TypeSystem
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
-	
+
 	@Inject RBuiltinTypeService builtins
 	@Inject RObjectFactory objectFactory
-	
+	@Inject extension TypeSystem
+
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
 	}
@@ -73,22 +76,38 @@ class RosettaEcoreUtil {
 	}
 	private def void doGetAllSuperTypes(Data current, LinkedHashSet<Data> superTypes) {
 		if (superTypes.add(current)) {
-			val s = current.getSuperType();
-			if (s !== null) {
-				doGetAllSuperTypes(s, superTypes);
+			val s = current.superType.type
+			if (s !== null && s instanceof Data) {
+				doGetAllSuperTypes(s as Data, superTypes);
 			}
 		}
 	}
-	
-	@Deprecated // Use RDataType#getAllAttributes instead
-	def Iterable<Attribute> getAllAttributes(Data data) {
-		return data.allSuperTypes.flatMap[attributes]
+
+  @Deprecated // Use RDataType#getAllAttributes instead
+	private def Set<RDataType> doGetSuperTypes(RType t, Set<RDataType> seenTypes) {
+		if(t !== null) {
+			if (t instanceof RDataType) {
+				if (seenTypes.add(t)) {
+					val s = t.superType
+					doGetSuperTypes(s, seenTypes)
+				}
+			} else if (t instanceof RAliasType) {
+				val s = t.refersTo
+				doGetSuperTypes(s, seenTypes)
+			}
+		}
+		return seenTypes
 	}
-	
+
+  	@Deprecated // Use RDataType#getAllAttributes instead
+	def getAllAttributes(RDataType t) {
+		t.allSuperTypes.filter(RDataType).flatMap[EObject.attributes]
+	}
+
 	@Deprecated // Use RDataType#getAllNonOverridenAttributes instead
 	def Collection<Attribute> getAllNonOverridenAttributes(Data data) {
 		val result = newLinkedHashMap
-		data.allAttributes.forEach[result.put(name, it)]
+		data.attributes.forEach[result.put(name, it)]
 		return result.values();
 	}
 	
@@ -96,14 +115,14 @@ class RosettaEcoreUtil {
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
 	}
-	
+
 	@Deprecated
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
 		if(e !== null && seenEnums.add(e)) 
 			doGetSuperEnumerations(e.superType, seenEnums)
 		return seenEnums
 	}
-	
+
 	@Deprecated // TODO: move to REnumType, similar to RDataType
 	def getAllEnumValues(RosettaEnumeration e) {
 		e.allSuperEnumerations.map[enumValues].flatten
@@ -118,7 +137,7 @@ class RosettaEcoreUtil {
 			doGetSynonyms(s, seenSynonyms)
 		return seenSynonyms		
 	}
-	
+
 	def metaAnnotations(Annotated it) {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
@@ -179,7 +198,7 @@ class RosettaEcoreUtil {
 	def String conditionName(Condition cond, RDataType t) {
 		conditionName(cond, t.EObject)
 	}
-	
+
 	@Deprecated
 	def String conditionName(Condition cond, Data data) {
 		return cond.conditionName(data.name, data.conditions)
@@ -237,7 +256,7 @@ class RosettaEcoreUtil {
 	}
 	// Copied over from RosettaAttributeExtensions.
 	@Deprecated
-	def List<RAttribute> additionalAttributes(RDataType t) {
+	private def List<RAttribute> additionalAttributes(RDataType t) {
 		val res = newArrayList
 		if(hasKeyedAnnotation(t.EObject)){
 			res.add(new RAttribute(
@@ -253,19 +272,48 @@ class RosettaEcoreUtil {
 		}
 		return res
 	}
-	
+	private def List<RAttribute> valueAttribute(RDataType t) {
+		val res = newArrayList
+		val valueType = t.superType.stripFromTypeAliases
+		if (valueType !== null && !(valueType instanceof RDataType)) {
+			res.add(objectFactory.createArtificialAttribute("value", valueType, false))
+		}
+		return res
+	}
+	def List<RAttribute> javaAttributes(RDataType t) {
+		(t.valueAttribute + t.ownAttributes + t.additionalAttributes).toList
+	}
+	def List<RAttribute> allJavaAttributes(RDataType t) {
+		val atts = t.javaAttributes
+		if (t.superType !== null && t.superType.stripFromTypeAliases instanceof RDataType) {
+			val attsWithSuper = (t.superType.stripFromTypeAliases as RDataType).allJavaAttributes
+			val result = newArrayList
+			attsWithSuper.forEach[
+				val overridenAtt = atts.findFirst[att| att.name == name]
+				if (overridenAtt !== null) {
+					result.add(overridenAtt)
+				} else {
+					result.add(it)
+				}
+			]
+			result.addAll(atts.filter[att| !result.contains(att)].toList)
+			return result
+		}
+		return atts
+	}
+
 	@Deprecated
 	String METAFIELDS_CLASS_NAME = 'MetaFields'
 	@Deprecated
 	String META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
-	
+
 	@Deprecated
 	SimpleCache<RDataType, RDataType> metaFieldsCache = new SimpleCache[RDataType t|
 		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
 		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE + ".metafields"
 		val name = if (hasTemplateAnnotation(t.EObject)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
 		val data = SimpleFactory.eINSTANCE.createData
-		data.model = rosModel
+		data.namespace = rosModel
 		data.name = name
 		return objectFactory.buildRDataType(data)
 	]

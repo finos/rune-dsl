@@ -24,15 +24,15 @@ import com.rosetta.model.lib.ModelSymbolId;
 
 public class REnumType extends RAnnotateType implements RObject {
 	private final RosettaEnumeration enumeration;
-	
+
 	private ModelSymbolId symbolId = null;
-	
+
 	private final ModelIdProvider modelIdProvider;
 
 	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider) {
 		super();
 		this.enumeration = enumeration;
-		
+
 		this.modelIdProvider = modelIdProvider;
 	}
 	

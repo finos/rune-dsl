@@ -28,6 +28,9 @@ import javax.inject.Inject;
 
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.generator.object.ExpandedAttribute;
+import com.regnosys.rosetta.generator.object.ExpandedType;
+import com.regnosys.rosetta.generator.util.RosettaAttributeExtensions;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
@@ -90,9 +93,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private JavaTypeUtil typeUtil;
 	@Inject
 	private ModelIdProvider modelIdProvider;
-	
+
 	private DottedPath getModelPackage(RosettaRootElement object) {
-		return modelIdProvider.toDottedPath(object.getModel());
+		return modelIdProvider.toDottedPath(object.getNamespace());
 	}
 	
 	public JavaParameterizedType<List<?>> toPolymorphicList(JavaReferenceType t) {
@@ -106,6 +109,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			return generatedJavaClassService.toJavaReportFunction(func.getReportId());
 		case RULE:
 			return generatedJavaClassService.toJavaRule(func.getSymbolId());
+		case TRANSLATION:
+			return generatedJavaClassService.toJavaTranslationFunction(func.getTranslationId());
 		default:
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 
@@ -243,6 +248,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
 		RAttribute attr;
+		if (op.isMetaOperation()) {
+			return attributeToJavaType(op.getMetaFeature());
+		}
 		if (op.getPathTail().isEmpty()) {
 			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
@@ -281,6 +289,14 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return typeUtil.OBJECT;
 	}
+	public JavaReferenceType attributeToJavaType(RAttribute rAttribute) {
+		JavaReferenceType itemType = toJavaReferenceType(rAttribute.getRType());
+		if (rAttribute.isMulti()) {
+			return typeUtil.wrapExtendsIfNotFinal(typeUtil.LIST, itemType);
+		} else {
+			return itemType;
+		}
+	}	
 	public JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
@@ -326,7 +342,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toOnlyExistsValidatorClass(RDataType t) {
 		return new GeneratedJavaClass<>(existsValidation(getModelPackage(t.getEObject())), t.getName() + "OnlyExistsValidator", Object.class);
 	}
-	
+
 	private DottedPath metaField(DottedPath p) {
 		return p.child("metafields");
 	}

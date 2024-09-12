@@ -4,6 +4,8 @@ import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.object.ExpandedAttribute
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath

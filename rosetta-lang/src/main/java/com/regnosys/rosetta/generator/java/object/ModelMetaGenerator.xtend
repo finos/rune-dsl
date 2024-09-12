@@ -39,7 +39,7 @@ class ModelMetaGenerator {
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelIdProvider
-	
+
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		val className = '''«t.name»Meta'''
 		
@@ -57,7 +57,8 @@ class ModelMetaGenerator {
 		val onlyExistsValidator = t.toOnlyExistsValidatorClass
 		val context = t.EObject.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(t.EObject, context.resources.map[contents.head as RosettaModel].toSet)
-		val conditions = t.allSuperTypes.map[conditionRules(it.EObject.conditions)].flatten
+    // TODO: add condition to check type format of basic super type
+		val conditions = t.allSuperTypes.filter(RDataType).map[conditionRules(it.EObject.conditions)].flatten
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -115,7 +116,7 @@ class ModelMetaGenerator {
 	}
 	
 	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
-		val dataNamespace = new RootPackage(t.EObject.model.toDottedPath)
+		val dataNamespace = new RootPackage(t.namespace)
 		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t), dataNamespace)].toList
 	}
 

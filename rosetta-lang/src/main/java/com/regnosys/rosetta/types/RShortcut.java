@@ -39,7 +39,7 @@ public class RShortcut implements RAssignedRoot {
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public boolean isMulti() {
 		return isMulti;

@@ -63,7 +63,7 @@ class IterableUtil {
 	}
 	
 	@Deprecated // Inject ModelIdProvider instead
-	def static String fullname(RosettaType clazz) '''«clazz.model.name».«clazz.name»'''
+	def static String fullname(RosettaType clazz) '''«clazz.namespace.name».«clazz.name»'''
 	@Deprecated // Inject ModelIdProvider instead
-	def static String packageName(RosettaType clazz)  {clazz.model.name}
+	def static String packageName(RosettaType clazz)  {clazz.namespace.name}
 }

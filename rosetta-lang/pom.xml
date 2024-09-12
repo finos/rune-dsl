@@ -90,6 +90,7 @@
                     <include>model/Rosetta.xcore</include>
                     <include>model/RosettaSimple.xcore</include>
                     <include>model/RosettaExpression.xcore</include>
+                    <include>model/RosettaTranslate.xcore</include>
                 </includes>
             </resource>
             <resource>

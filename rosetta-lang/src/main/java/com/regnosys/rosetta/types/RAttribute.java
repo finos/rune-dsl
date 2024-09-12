@@ -54,7 +54,7 @@ public class RAttribute implements RAssignedRoot {
 	public String getName() {		
 		return name;
 	}
-	
+
 	public Attribute getEObject() {
 		return origin;
 	}
@@ -67,7 +67,7 @@ public class RAttribute implements RAssignedRoot {
 	public boolean isMulti() {
 		return cardinality.getMax().map(m -> m > 1).orElse(true);
 	}
-	
+
 	public PositiveIntegerInterval getCardinality() {
 		return cardinality;
 	}
@@ -79,20 +79,20 @@ public class RAttribute implements RAssignedRoot {
 	public List<RosettaDocReference> getDocReferences() {
 		return docReferences;
 	}
-	
+
 	public List<RAttribute> getMetaAnnotations() {
 		return metaAnnotations;
 	}
-	
+
 	@Deprecated
 	public boolean hasReferenceOrAddressMetadata() {
 		return metaAnnotations.stream().anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
 	}
-	
+
 	public RosettaRule getRuleReference() {
 		return ruleReference;
 	}
-	
+
 	public boolean isMeta() {
 		return isMeta;
 	}

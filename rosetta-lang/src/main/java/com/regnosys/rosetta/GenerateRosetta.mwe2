@@ -63,12 +63,20 @@ Workflow {
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore"
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaSimple.xcore"
 			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaExpression.xcore"
+			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaTranslate.xcore"
 			name = "com.regnosys.rosetta.Rosetta"
 			fileExtensions = "rosetta"
 
 			parserGenerator = XtextAntlrGeneratorFragment2 {
 				// set to true to get a debug Grammar
 				debugGrammar = true
+				options = {
+					classSplitting = true
+					casesPerSpecialStateSwitch= "20"
+					fieldsPerClass = "200"
+					methodsPerClass = "200"
+					stripAllComments = true
+				}
 			}
 			serializer = {
 				generateStub = false

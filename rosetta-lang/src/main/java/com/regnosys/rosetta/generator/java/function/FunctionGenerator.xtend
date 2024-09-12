@@ -54,7 +54,6 @@ import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
-import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.util.types.JavaReferenceType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
@@ -68,6 +67,10 @@ import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.rosetta.model.lib.meta.Reference
+import com.rosetta.model.lib.meta.Key
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.rosetta.model.lib.ModelSymbolId
 
 class FunctionGenerator {
 
@@ -365,7 +368,7 @@ class FunctionGenerator {
 			
 			«FOR enumFunc : dispatchingFuncs»
 				«val rFunction = new RFunction(
-					new ModelSymbolId(function.model.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
+					new ModelSymbolId(function.namespace.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
 					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
 					rTypeBuilderFactory.buildRAttribute(function.output),
@@ -382,7 +385,7 @@ class FunctionGenerator {
 	}
 
 	private def JavaClass<?> toDispatchClass(FunctionDispatch ele) {
-		return new GeneratedJavaClass<Object>(ele.model.toDottedPath.child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
+		return new GeneratedJavaClass<Object>(ele.namespace.toDottedPath.child("functions"), ele.name + "." + ele.name + formatEnumName(ele.value.value.name), Object)
 	}
 
 	private def boolean assignAsKey(ROperation op) {
@@ -391,7 +394,7 @@ class FunctionGenerator {
 
 	private def JavaStatement assign(JavaScope scope, ROperation op, RFunction function, Map<RShortcut, Boolean> outs, RAttribute attribute) {
 
-		if (op.pathTail.isEmpty) {
+		if (op.pathTail.isEmpty && !op.isMetaOperation) {
 			// assign function output object
 			val expressionType = attribute.toMetaJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
@@ -433,20 +436,53 @@ class FunctionGenerator {
 			}
 
 		} else { // assign an attribute of the function output object
+			val StringConcatenationClient assignPathCode =
+				'''
+				«op.assignTarget(function, outs, scope)»
+					«FOR seg : op.pathTail.indexed»
+						«IF seg.key < op.pathTail.size - 1 || op.isMetaOperation»
+							.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value) && seg.key < op.pathTail.size - 1».getOrCreateValue()«ENDIF»
+						«ENDIF»
+					«ENDFOR»
+				'''
 			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					JavaExpression.from(
 						'''
-							«op.assignTarget(function, outs, scope)»
-								«FOR seg : op.pathTail.indexed»
-									«IF seg.key < op.pathTail.size - 1»
-									.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF isReference(seg.value)».getOrCreateValue()«ENDIF»
-									«ELSE»
-									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«ENDIF»«ENDFOR»''',
+							«assignPathCode»
+								«IF op.isMetaOperation»
+									«IF op.metaFeature.name != "reference" && op.metaFeature.name != "address"»
+									.getOrCreateMeta()
+									«ENDIF»
+									«op.metaFeature.metaFeatureSetterCode(it)»«
+								ELSE»
+									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«op.pathTail.last.name.toFirstUpper»«IF op.pathTail.last.isReference && !op.assignAsKey»Value«ENDIF»(«it»)«
+								ENDIF»''',
 						JavaPrimitiveType.VOID
 					)
 				].completeAsExpressionStatement
+		}
+	}
+
+	private def String metaFeatureToJavaField(RAttribute metaFeature) {
+		switch metaFeature.name {
+			case "key": "externalKey"
+			case "id": "externalKey"
+			case "reference": "externalReference"
+			case "scheme": "scheme"
+			case "template": "template"
+			case "address": "reference"
+			case "location": "key"
+		}
+	}
+	private def StringConcatenationClient metaFeatureSetterCode(RAttribute metaFeature, JavaExpression v) {
+		if (metaFeature.name == "address") {
+			'''.set«metaFeature.metaFeatureToJavaField.toFirstUpper»(«Reference».builder().setScope("DOCUMENT").setReference(«v»))'''
+		} else if (metaFeature.name == "location") {
+			'''.add«metaFeature.metaFeatureToJavaField.toFirstUpper»(«Key».builder().setScope("DOCUMENT").setKeyValue(«v»))'''
+		} else {
+			'''.set«metaFeature.metaFeatureToJavaField.toFirstUpper»(«v»)'''
 		}
 	}
 

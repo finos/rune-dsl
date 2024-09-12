@@ -42,6 +42,8 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.regnosys.rosetta.rosetta.translate.Translation;
+import com.regnosys.rosetta.rosetta.translate.TranslationParameter;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
@@ -71,10 +73,10 @@ public class RObjectFactory {
 				function.getAnnotations());
 	}
 	
-	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
+	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		return new RAttribute(name, null, Collections.emptyList(), type, List.of(), isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
-	public RFunction buildRFunction(RosettaRule rule) {		
+	public RFunction buildRFunction(RosettaRule rule) {
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
 		RType outputRType = typeProvider.getRType(rule.getExpression());
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
@@ -167,6 +169,26 @@ public class RObjectFactory {
 		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
 
+	public RFunction buildRFunction(Translation translation) {
+		List<RAttribute> inputs = translation.getParameters().stream().<RAttribute>map(this::buildRAttribute).collect(Collectors.toList());
+		RType outputRType = typeProvider.getRTypeOfTranslation(translation);
+		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, false);
+		ROperation operation = new ROperation(ROperationType.SET, outputAttribute, List.of(), translation.getExpression());
+
+		return new RFunction(
+				modelIdProvider.getTranslationId(translation),
+				null,
+				inputs,
+				outputAttribute,
+				RFunctionOrigin.TRANSLATION,
+				List.of(),
+				List.of(),
+				List.of(),
+				List.of(operation),
+				List.of()
+			);
+	}
+
 	public RAttribute buildRAttribute(Attribute attribute) {
 		return buildRAttribute(attribute, false);
 	}
@@ -182,6 +204,16 @@ public class RObjectFactory {
 
 		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rType, metaAnnotations,
 				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
+	}
+
+	public RAttribute buildRAttribute(TranslationParameter parameter) {
+		RType rType = typeProvider.getRTypeOfSymbol(parameter);
+		String name = parameter.getName();
+		if (name == null) {
+			name = "item";
+		}
+		return createArtificialAttribute(name, rType, false);
+
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
@@ -206,11 +238,11 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, modelIdProvider, this);
+		return new RDataType(data, modelIdProvider, this, typeSystem);
 	}
 	// TODO: remove this hack
 	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
-		return new RDataType(data, modelIdProvider, this, additionalAttributes);
+		return new RDataType(data, modelIdProvider, this, typeSystem, additionalAttributes);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider);

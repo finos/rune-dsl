@@ -30,19 +30,23 @@ import org.apache.commons.lang3.Validate;
 
 import com.regnosys.rosetta.cache.IRequestScopedCache;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
+import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+
+import com.regnosys.rosetta.utils.ModelIdProvider;
 
 import org.eclipse.xtext.xbase.lib.Pair;
 
 public class TypeSystem {
 	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
-	
+
 	@Inject
 	private RosettaTyping typing;
 	@Inject
@@ -53,7 +57,11 @@ public class TypeSystem {
 	private IRequestScopedCache cache;
 	@Inject
 	private SubtypeRelation subtypeRelation;
-	
+	@Inject
+	private ModelIdProvider modelIdProvider;
+	@Inject
+	private RObjectFactory rObjectFactory;
+
 	public RListType inferType(RosettaExpression expr) {
 		Objects.requireNonNull(expr);
 		
@@ -194,5 +202,25 @@ public class TypeSystem {
 			t = ((RAliasType)t).getRefersTo();
 		}
 		return t;
+	}
+
+	/**
+	 * Returns the first ancestor of the given type which does not extend any data type.
+	 *
+	 * If no such type exists, returns `null`.
+	 *
+	 * If the given type is not a data type and not an alias of a data type, returns null.
+	 */
+	public RType getValueType(RType type) {
+		RType result = type;
+		RType stripped = stripFromTypeAliases(result);
+		if (!(stripped instanceof RDataType)) {
+			return null;
+		}
+		while(stripped != null && stripped instanceof RDataType) {
+			result = ((RDataType)stripped).getSuperType();
+			stripped = stripFromTypeAliases(result);
+		}
+		return result;
 	}
 }

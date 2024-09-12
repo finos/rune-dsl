@@ -5,6 +5,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
@@ -29,6 +30,7 @@ import java.util.List
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ConditionValidation
 import com.rosetta.util.types.generated.GeneratedJavaClass
+import com.regnosys.rosetta.types.RObjectFactory
 import com.rosetta.model.lib.validation.ElementValidationResult
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.RosettaEcoreUtil
