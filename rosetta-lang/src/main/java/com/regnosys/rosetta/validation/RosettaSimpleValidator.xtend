@@ -161,7 +161,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	@Check
- 	def void switchArgumentTypeMatchesCaseStatmentTypes(SwitchOperation op) {
+ 	def void switchArgumentTypeMatchesCaseStatementTypes(SwitchOperation op) {
  		val argumentRType = op.argument.RType
  		for (SwitchCase caseStatement : op.cases) {
  			if (caseStatement.literalCondition !== null) {
