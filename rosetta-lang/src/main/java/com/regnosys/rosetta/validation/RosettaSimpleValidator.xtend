@@ -149,12 +149,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		val argumentType = op.argument.RType
 		if (op.^default === null && argumentType instanceof REnumType) {
 			val enumConditions = op.cases.map[it.enumCondition].toSet
-
+	
 			val enumeration = (argumentType as REnumType).EObject
+			val missingEnumValues = newArrayList
 			for (enumValue : enumeration.enumValues) {
 				if (!enumConditions.contains(enumValue)) {
-					error("Not all possible values of enumeration provided to switch, either provide all or use default", enumValue, null)
+					missingEnumValues.add(enumValue)
 				}
+			}
+			if (!missingEnumValues.empty) {
+				error('''Missing the following enumeration values from switch: «missingEnumValues.map[it.name].join(", ")» . Either provide all or use default.''', op, null)
 			}
 		}
 

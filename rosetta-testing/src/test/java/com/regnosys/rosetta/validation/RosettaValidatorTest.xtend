@@ -82,7 +82,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		'''
 
  		model.parseRosetta
- 		.assertError(ROSETTA_ENUM_VALUE, null, "Not all possible values of enumeration provided to switch, either provide all or use default")
+ 		.assertError(SWITCH_OPERATION, null, "Missing the following enumeration values from switch: D . Either provide all or use default.")
  	}	
 
 	@Test
