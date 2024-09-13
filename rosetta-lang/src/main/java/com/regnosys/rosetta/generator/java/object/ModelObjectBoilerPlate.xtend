@@ -23,6 +23,7 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.RosettaEcoreUtil
+import java.util.List
 
 class ModelObjectBoilerPlate {
 
@@ -43,8 +44,8 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 	
-	def StringConcatenationClient implementsClause(RDataType d, Collection<Object> extraInterfaces) {
-		val interfaces = newHashSet
+	def StringConcatenationClient implementsClause(RDataType d, List<Object> extraInterfaces) {
+		val interfaces = newLinkedHashSet
 		if(d.EObject.hasKeyedAnnotation)
 			interfaces.add(GlobalKey)
 		if(d.EObject.hasTemplateAnnotation)

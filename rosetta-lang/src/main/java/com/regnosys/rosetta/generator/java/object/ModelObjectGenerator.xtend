@@ -55,7 +55,7 @@ class ModelObjectGenerator {
 		classBody(t, scope, metaType, version, Collections.emptyList)
 	}
 
-	def StringConcatenationClient classBody(RDataType t, JavaScope scope, JavaClass<?> metaType, String version, Collection<Object> interfaces) {
+	def StringConcatenationClient classBody(RDataType t, JavaScope scope, JavaClass<?> metaType, String version, List<Object> interfaces) {
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		val interfaceScope = scope.classScope(javaType.toString)

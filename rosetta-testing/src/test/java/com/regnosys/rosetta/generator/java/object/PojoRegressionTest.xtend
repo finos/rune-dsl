@@ -2034,7 +2034,7 @@ class PojoRegressionTest {
 		 * @version 1
 		 */
 		@RosettaDataType(value="MetaAndTemplateFields", builder=MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl.class, version="0.0.0")
-		public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFields, MetaDataFields, TemplateFields {
+		public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFields, TemplateFields, MetaDataFields {
 		
 			MetaAndTemplateFieldsMeta metaData = new MetaAndTemplateFieldsMeta();
 		
