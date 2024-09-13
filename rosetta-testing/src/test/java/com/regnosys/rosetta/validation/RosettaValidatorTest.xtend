@@ -51,7 +51,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		
  		model
  		.parseRosetta
- 		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")	
+ 		.assertError(ROSETTA_EXPRESSION, null, "Type `date` is not a valid switch argument type, supported argument types are basic types and enumerations")	
  	}
 	
 	@Test
@@ -185,7 +185,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		'''
 
  		model.parseRosetta
- 		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")
+ 		.assertError(ROSETTA_EXPRESSION, null, "Type `Foo` is not a valid switch argument type, supported argument types are basic types and enumerations")
  	}
 
  	@Test
