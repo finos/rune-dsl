@@ -31,6 +31,36 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
 	
+	@Test
+	def void testSwitchWithMultiCardinalityInputIsInvalid() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..*)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue",
+ 					default "someOtherValue"
+ 		'''
+ 		
+ 		model
+ 		.parseRosetta
+ 		.assertError(SWITCH_OPERATION, null, "Inputs to switch must be single cardinality")
+ 				
+	}
+	
  	@Test
  	def void testValidSwitchSyntaxEnumIsValidWhenMissingEnumValuesWithDefault() {
  		val model = '''

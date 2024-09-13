@@ -142,6 +142,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RosettaGrammarAccess
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
+	
+	@Check
+	def void switchInputsMustBeSingleCardinality(SwitchOperation op) {
+		if (op.argument.multi) {
+			error("Inputs to switch must be single cardinality", op, null)
+		}
+	}
 
 
 	@Check
