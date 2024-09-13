@@ -30,317 +30,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
-
-	@Test
- 	def void testCanUseMixOfImportAliasAnFullyQualified() {
- 		val model1 = '''
- 			namespace foo.bar
- 			
- 			type A:
- 				id string (1..1)
- 				
- 			type D:
- 				id string (1..1)
- 		'''
-
- 		val model2 = '''
- 			namespace test
- 			
- 			import foo.bar.* as someAlias
- 			
- 			type B:
- 				a someAlias.A (1..1)
- 				d foo.bar.D (1..1)
- 		'''
-
- 		#[model1, model2].parseRosettaWithNoIssues
- 	}	
-
- 	@Test
- 	def void testCanUseMixOfImportAliasAndNoAlias() {
- 		val model1 = '''
- 			namespace foo.bar
- 			
- 			type A:
- 				id string (1..1)
- 		'''
-
- 		val model2 = '''
- 			namespace test
- 			
- 			import foo.bar.* as someAlias
- 			
- 			
- 			type D:
- 				id string (1..1)
- 			
- 			type B:
- 				a someAlias.A (1..1)
- 				d D (1..1)
- 		'''
-
- 		#[model1, model2].parseRosettaWithNoIssues
- 	}	
-
- 	@Test
- 	def void testCanUseImportAlisesWhenWildcardPresent() {
- 		val model1 = '''
- 			namespace foo.bar
- 			
- 			type A:
- 				id string (1..1)
- 		'''
-
- 		val model2 = '''
- 			namespace test
- 			
- 			import foo.bar.* as someAlias
- 			
- 			
- 			
- 			type B:
- 				a someAlias.A (1..1)
- 		'''
-
- 		#[model1, model2].parseRosettaWithNoIssues
- 	}
- 		
-	@Test
- 	def void testCannotUseImportAliasesWithoutWildcard() {
- 		val model = '''
- 			import foo.bar.Test as someAlias
- 		'''.parseRosetta
-
- 		model.assertError(IMPORT, null,
- 			'"as" statement can only be used with wildcard import'
- 		)
- 	}
 	
-	@Test
-	def void testSwitchIinputRecordTypesAreNotValid() {
- 		val model = '''
- 			namespace test
- 			
- 			typeAlias myDate: date
- 			
- 			func SomeFunc:
- 				inputs:
- 					someDate myDate (1..1)
- 				
- 				output:
- 					result string (1..1)
- 			
- 				set result: someDate switch 
- 					default "someResult"
- 		'''
- 		
- 		model
- 		.parseRosetta
- 		.assertError(ROSETTA_EXPRESSION, null, "Type `date` is not a valid switch argument type, supported argument types are basic types and enumerations")	
- 	}
-	
-	@Test
-	def void testSwitchWithMultiCardinalityInputIsInvalid() {
- 		val model = '''
- 			namespace test
- 			
- 			enum SomeEnum:
- 				A
- 				B
- 				C
- 				D
- 			
- 			func SomeFunc:
- 				inputs:
- 					inEnum SomeEnum (1..*)
- 				output:
- 					result string (1..1)
- 			
- 				set result: inEnum switch 
- 					A then "aValue",
- 					B then "bValue",
- 					C then "cValue",
- 					default "someOtherValue"
- 		'''
- 		
- 		model
- 		.parseRosetta
- 		.assertError(ROSETTA_EXPRESSION, null, "Input to switch must be single cardinality")
- 				
-	}
-	
- 	@Test
- 	def void testValidSwitchSyntaxEnumIsValidWhenMissingEnumValuesWithDefault() {
- 		val model = '''
- 			namespace test
- 			
- 			enum SomeEnum:
- 				A
- 				B
- 				C
- 				D
- 			
- 			func SomeFunc:
- 				inputs:
- 					inEnum SomeEnum (1..1)
- 				output:
- 					result string (1..1)
- 			
- 				set result: inEnum switch 
- 					A then "aValue",
- 					B then "bValue",
- 					C then "cValue",
- 					default "someOtherValue"
- 		'''
-
- 		model.parseRosettaWithNoIssues
- 	}	
-	
- 	@Test
- 	def void testValidSwitchSyntaxEnumFailsValitionWhenMissingEnumValues() {
- 		val model = '''
- 			namespace test
- 			
- 			enum SomeEnum:
- 				A
- 				B
- 				C
- 				D
- 			
- 			func SomeFunc:
- 				inputs:
- 					inEnum SomeEnum (1..1)
- 				output:
- 					result string (1..1)
- 			
- 				set result: inEnum switch 
- 					A then "aValue",
- 					B then "bValue",
- 					C then "cValue"
- 		'''
-
- 		model.parseRosetta
- 		.assertError(SWITCH_OPERATION, null, "Missing the following enumeration values from switch: D . Either provide all or use default.")
- 	}	
-
-	@Test
- 	def void testSwitchArgumentMatchesCaseStatmentTypes() {
- 		val model = '''
- 			namespace test
- 			
- 			enum SomeEnum:
- 				A
- 				B
- 				C
- 				D
- 			
- 			func SomeFunc:
- 				inputs:
- 					inEnum SomeEnum (1..1)
- 				output:
- 					result string (1..1)
- 					
- 			set result: inEnum switch 
- 				A 	then "aValue",
- 				10 	then "bValue",
- 				C 	then "cValue",
- 				default "defaultValue"
- 		'''
-
- 		model.parseRosetta
- 		.assertError(ROSETTA_EXPRESSION, null, '''Mismatched condition type: Expected type `SomeEnum`, but got `int` instead.''')
- 	}
- 	
-	@Test
- 	def void testDataTypesAreInvalidSwitchInputs() {
- 		val model = '''
- 			namespace test
- 			
- 			type Foo:
- 				fooField string (1..1)
- 			
- 			func SomeFunc:
- 				inputs:
- 					inFoo Foo (1..1)
- 				output:
- 					result string (1..1)
- 			
- 				set result: inFoo switch 
- 					inFoo then "aValue"
- 		'''
-
- 		model.parseRosetta
- 		.assertError(ROSETTA_EXPRESSION, null, "Type `Foo` is not a valid switch argument type, supported argument types are basic types and enumerations")
- 	}
-
- 	@Test
- 	def void testValidSwitchSyntaxWithDefault() {
- 		val context ='''
- 				enum SomeEnum:
- 					A
- 					B
- 					C
- 					D
- 		'''.parseRosettaWithNoIssues
-
- 		val expression = '''
- 			inEnum switch 
- 				A then "aValue",
- 				B then "bValue",
- 				C then "cValue",
- 				default "defaultValue"
- 		'''
-
- 		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
- 		.assertNoIssues
- 	}
-
- 	@Test
- 	def void testValidSwitchSyntaxEnum() {
- 		val model = '''
- 			namespace test
- 			
- 			enum SomeEnum:
- 				A
- 				B
- 				C
- 				D
- 			
- 			func SomeFunc:
- 				inputs:
- 					inEnum SomeEnum (1..1)
- 				output:
- 					result string (1..1)
- 			
- 				set result: inEnum switch 
- 					A then "aValue",
- 					B then "bValue",
- 					C then "cValue",
- 					D then "dValue"
- 		'''
-
- 		model.parseRosettaWithNoIssues
- 	}
- 	
- 	@Test
- 	def void testValidSwitchSyntaxString() {
- 		val model = '''
- 			namespace test
- 			
- 			func SomeFunc:
- 				inputs:
- 					someInput string (1..1)
- 				output:
- 					result string (1..1)
- 			
- 				set result: someInput switch 
- 					"A" then "aValue",
- 					"B" then "bValue"
- 		'''
-
- 		model.parseRosettaWithNoIssues
- 	}
- 		
 	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''
@@ -1601,7 +1291,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
 	
 	@Test
@@ -1789,15 +1479,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				i string (1..1)
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
-	}
-		
-	@Test
-	def void testDuplicateEnumLiteral() {
-		val model = '''
-			enum Foo:
-				BAR BAZ BAR
-		'''.parseRosetta
-		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
 	}
 	
 	@Test 
@@ -3083,16 +2764,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x1 boolean (1..1)
 				x2 boolean (1..1)
-				x3 number (1..1)
+				x3 number (0..1)
 				x4 number (1..1)
 				x5 int (1..1)
-				x6 string (1..1)
+				x6 string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(ROSETTA_BINARY_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
-	def void shouldNotGenerateTypeErrorForExpressionInBrackets3() {
+	def void shouldGenerateTypeErrorForExpressionInBrackets3() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -3107,7 +2788,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test

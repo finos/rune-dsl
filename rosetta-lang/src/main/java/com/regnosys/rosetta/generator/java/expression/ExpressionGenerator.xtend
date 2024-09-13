@@ -120,7 +120,6 @@ import java.time.format.DateTimeParseException
 import java.util.Arrays
 import java.util.Collection
 import java.util.List
-import java.util.Objects
 import java.util.Optional
 import java.util.stream.Collectors
 import javax.inject.Inject
@@ -129,7 +128,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
-import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
+import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
@@ -273,9 +272,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
-	def JavaStatementBuilder enumCall(RosettaEnumValue feature, EObject context) {
-		val resultItemType = typeProvider.getRTypeOfFeature(feature, context).toJavaReferenceType
-		return JavaExpression.from('''«resultItemType».«feature.convertValues»''', resultItemType)
+	def JavaStatementBuilder enumCall(RosettaEnumValue feature, JavaType expectedType) {
+		val itemType = expectedType.itemType
+		return JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)
 	}
 	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
 		if (feature instanceof Attribute) {
@@ -626,7 +625,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
 		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
 		
-		// TODO: fix result type (should join both types)
 		condition
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]
@@ -683,7 +681,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseFeatureCall(RosettaFeatureCall expr, Context context) {
 		if (expr.feature instanceof RosettaEnumValue) {
-			return enumCall(expr.feature as RosettaEnumValue, expr)
+			return enumCall(expr.feature as RosettaEnumValue, context.expectedType)
 		}
 		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
 		if (expr.eContainer instanceof RosettaFeatureCall &&
@@ -1209,7 +1207,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  			head.literalGuard.javaCode(MAPPER_S.wrap(conditionType), javaScope).collapseToSingleExpression(javaScope)
  		} else {
  			val condition = head.enumGuard
- 			JavaExpression.from('''«MapperS».of(«conditionType».«condition.convertValues»)''', MAPPER_S.wrap(conditionType))
+ 			JavaExpression.from('''«MapperS».of(«conditionType».«condition.convertValue»)''', MAPPER_S.wrap(conditionType))
 
  		}
 

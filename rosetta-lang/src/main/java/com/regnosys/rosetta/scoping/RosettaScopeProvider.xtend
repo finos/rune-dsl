@@ -226,7 +226,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_ENUM_VALUE_REFERENCE__VALUE: {
 					if (context instanceof RosettaEnumValueReference) {
-						return Scopes.scopeFor(context.enumeration.allEnumValues)
+						return Scopes.scopeFor(context.enumeration.buildREnumType.allEnumValues)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -242,7 +242,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalEnumValue) {
 						val enumRef = (context.eContainer as RosettaExternalEnum).typeRef
 						if (enumRef instanceof RosettaEnumeration)
-							return Scopes.scopeFor(enumRef.allEnumValues)
+							return Scopes.scopeFor(enumRef.buildREnumType.allEnumValues)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -266,7 +266,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof SwitchCase) {
 						val argumentType = typeProvider.getRType(context.switchOperation.argument)
 						if (argumentType instanceof REnumType) {
-						   return Scopes.scopeFor(argumentType.EObject.allEnumValues)
+						   return Scopes.scopeFor(argumentType.allEnumValues)
 						}
 					}
 					return IScope.NULLSCOPE
@@ -386,6 +386,12 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	}
 	
 	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
+		if (receiverType instanceof REnumType) {
+			if (!(receiver instanceof RosettaSymbolReference) || !((receiver as RosettaSymbolReference).symbol instanceof RosettaEnumeration)) {
+				return IScope.NULLSCOPE
+			}
+		}
+		
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
 			receiverType.allFeatures(receiver)

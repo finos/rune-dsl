@@ -105,7 +105,7 @@ public class TypeSystem {
 		
 		RType acc = builtins.NOTHING;
 		for (RType t: types) {
-			acc = join(acc, t);
+			acc = subtypeRelation.join(acc, t);
 			if (acc.equals(builtins.ANY)) {
 				return acc;
 			}

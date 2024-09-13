@@ -82,7 +82,6 @@ import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RErrorType
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.TypeValidationUtil
@@ -110,7 +109,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 import org.eclipse.xtext.validation.Check
 
@@ -120,13 +118,15 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import org.eclipse.emf.ecore.impl.EClassImpl
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 
 // TODO: split expression validator
 // TODO: type check type call arguments
 class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaEcoreUtil
-	@Inject extension RosettaExpectedTypeProvider
 	@Inject extension RosettaTypeProvider
 	@Inject extension IQualifiedNameProvider
 	@Inject extension ResourceDescriptionsProvider
@@ -142,6 +142,36 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RosettaGrammarAccess
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
+	
+	@Check
+	def void deprecatedWarning(EObject object) {
+		val crossRefs = (object.eClass.EAllStructuralFeatures as EClassImpl.FeatureSubsetSupplier).crossReferences as List<EReference>
+		if (crossRefs !== null) {
+			for (ref : crossRefs) {
+				if (ref.many) {
+					val annotatedList = (object.eGet(ref) as List<EObject>).filter(Annotated)
+					for (var i=0; i<annotatedList.size; i++) {
+						checkDeprecatedAnnotation(annotatedList.get(i), object, ref, i)
+					}
+				} else {
+					val annotated = object.eGet(ref)
+					if (annotated !== null && annotated instanceof Annotated) {
+						checkDeprecatedAnnotation(annotated as Annotated, object, ref, INSIGNIFICANT_INDEX)
+					}
+				}
+			}
+		}
+	}
+	private def void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EReference ref, int index) {
+		if (annotated.annotations.exists[annotation?.name == "deprecated"]) {
+			val msg = if (annotated instanceof RosettaNamed) {
+				'''«annotated.name» is deprecated'''
+			} else {
+				"Deprecated"
+			}
+			warning(msg, owner, ref, index)
+		}
+	}
 
 	@Check
 	def void switchInputsMustBeSingleCardinality(SwitchOperation op) {
@@ -502,24 +532,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	@Check
-	def void checkTypeExpectation(EObject owner) {
-		if (!owner.eResource.errors.filter(XtextSyntaxDiagnostic).empty)
-			return;
-		owner.eClass.EAllReferences.filter[ROSETTA_EXPRESSION.isSuperTypeOf(it.EReferenceType)].filter [
-			owner.eIsSet(it)
-		].
-			forEach [ ref |
-				val referenceValue = owner.eGet(ref)
-				if (ref.isMany) {
-					(referenceValue as List<? extends RosettaExpression>).forEach [ it, i |
-						val expectedType = owner.getExpectedType(ref, i)
-						checkType(expectedType, it, owner, ref, i)
-					]
-				} else {
-					val expectedType = owner.getExpectedType(ref)
-					checkType(expectedType, referenceValue as RosettaExpression, owner, ref, INSIGNIFICANT_INDEX)
-				}
-			]
+	def void checkConditionalExpression(RosettaConditionalExpression expr) {
+		checkType(BOOLEAN, expr.^if, expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, INSIGNIFICANT_INDEX)
 	}
 
 	private def checkType(RType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
@@ -583,20 +597,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	private def cardRepr(RAttribute attr) '''«attr.cardinality.minBound»..«attr.cardinality.max.map[toString].orElse('*')»'''
-
-	@Check
-	def checkEnumValuesAreUnique(RosettaEnumeration enumeration) {
-		val name2attr = HashMultimap.create
-		enumeration.allEnumValues.forEach [
-			name2attr.put(name, it)
-		]
-		for (value : enumeration.enumValues) {
-			val valuesByName = name2attr.get(value.name)
-			if (valuesByName.size > 1) {
-				error('''Duplicate enum value '«value.name»'«»''', value, ROSETTA_NAMED__NAME, DUPLICATE_ENUM_VALUE)
-			}
-		}
-	}
 
 	@Check
 	def checkFeatureNamesAreUnique(RosettaFeatureOwner ele) {
@@ -751,6 +751,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
 							}
 						}
+					} else if (callable instanceof RosettaExternalFunction) {
+						element.args.indexed.forEach [ indexed |
+							val callerArg = indexed.value
+							val callerIdx = indexed.key
+							val param = callable.parameters.get(callerIdx)
+							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							if(cardinality.isMulti(callerArg)) {
+								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
+									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							}
+						]
 					}
 				}
 			} else {
@@ -990,7 +1001,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (structured.nullOrEmpty)
 			return
 		val mostUsedEnum = structured.max[$0.value.size <=> $1.value.size].key
-		val toImplement = mostUsedEnum.allEnumValues.map[name].toSet
+		val toImplement = mostUsedEnum.buildREnumType.allEnumValues.map[name].toSet
 		enumsUsed.get(mostUsedEnum).forEach [
 			toImplement.remove(it.key)
 		]
@@ -1530,9 +1541,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			error('''Assign expression contains a list of lists, use flatten to create a list.''', o,
 				OPERATION__EXPRESSION)
 		}
-		val isList = cardinality.isSymbolMulti(o.path !== null
+		val attr = o.path !== null
 				? o.pathAsSegmentList.last.attribute
-				: o.assignRoot)
+				: o.assignRoot
+		checkType(attr.RTypeOfSymbol, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
+		val isList = cardinality.isSymbolMulti(attr)
 		if (o.add && !isList) {
 			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
 		}
