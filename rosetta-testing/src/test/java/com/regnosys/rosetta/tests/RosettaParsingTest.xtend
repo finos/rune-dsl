@@ -52,7 +52,7 @@ class RosettaParsingTest {
 	}	
 
 	@Test
- 	def void testCanUseAlisesWhenImpoting() {
+ 	def void testCanUseAliasesWhenImporting() {
  		val model1 = '''
  			namespace foo.bar
  			

@@ -83,7 +83,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  	}	
 
  	@Test
- 	def void testCanUserImportAlisesWhenWildcardPresent() {
+ 	def void testCanUseImportAlisesWhenWildcardPresent() {
  		val model1 = '''
  			namespace foo.bar
  			
