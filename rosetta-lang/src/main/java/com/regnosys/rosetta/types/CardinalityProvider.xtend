@@ -535,6 +535,14 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	}	
 	
 	override protected caseSwitchOperation(SwitchOperation expr, Boolean breakOnClosureParameter) {
+		if (expr.^default.isMulti) {
+			return true
+		}
+		for (switchCase : expr.cases) {
+			if (switchCase.expression.isMulti) {
+				return true
+			}
+		}
  		false
  	}
 }

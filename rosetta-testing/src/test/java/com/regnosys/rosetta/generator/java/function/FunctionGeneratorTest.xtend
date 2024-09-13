@@ -43,6 +43,30 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void switchCaseCanReturnMultiCardinalityResult() {
+ 		val code = '''			
+ 			func SomeFunc:
+ 					
+ 				output:
+ 					result int (1..*)
+ 					
+ 				alias inString: "b"
+ 				
+ 				set result: inString switch 
+ 					"a" then [1, 2, 3],
+ 					"b" then 9,
+ 					default 10
+ 		'''.generateCode
+ 		
+ 		 val classes = code.compileToClasses
+
+          val someFunc = classes.createFunc("SomeFunc")
+          val result = someFunc.invokeFunc(List)
+ 		 assertEquals(#[9], result)
+	}
+	
+	
+	@Test
 	def void switchOperationWithOnlyDefaultCaseReturnsCorrectResult() {
  		val code = '''			
  			enum SomeEnum:
