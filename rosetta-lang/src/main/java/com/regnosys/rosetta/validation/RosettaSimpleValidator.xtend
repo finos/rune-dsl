@@ -1452,7 +1452,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (ns.importedNamespace !== null) {
 				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
 				val isWildcard = qn.lastSegment.equals('*');
-        if (!isWildcard && ns.namespaceAlias !== null) {
+        		if (!isWildcard && ns.namespaceAlias !== null) {
  					error('''"as" statement can only be used with wildcard imports''', ns, IMPORT__NAMESPACE_ALIAS);
  				}
 
