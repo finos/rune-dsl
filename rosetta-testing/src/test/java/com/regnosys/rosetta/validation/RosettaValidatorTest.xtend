@@ -117,6 +117,231 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  	}
 	
 	@Test
+	def void testSwitchIinputRecordTypesAreNotValid() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			typeAlias myDate: date
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					someDate myDate (1..1)
+ 				
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: someDate switch 
+ 					default "someResult"
+ 		'''
+ 		
+ 		model
+ 		.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, "Type `date` is not a valid switch argument type, supported argument types are basic types and enumerations")	
+ 	}
+	
+	@Test
+	def void testSwitchWithMultiCardinalityInputIsInvalid() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..*)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue",
+ 					default "someOtherValue"
+ 		'''
+ 		
+ 		model
+ 		.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, "Input to switch must be single cardinality")
+ 				
+	}
+	
+ 	@Test
+ 	def void testValidSwitchSyntaxEnumIsValidWhenMissingEnumValuesWithDefault() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue",
+ 					default "someOtherValue"
+ 		'''
+
+ 		model.parseRosettaWithNoIssues
+ 	}	
+	
+ 	@Test
+ 	def void testValidSwitchSyntaxEnumFailsValitionWhenMissingEnumValues() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue"
+ 		'''
+
+ 		model.parseRosetta
+ 		.assertError(SWITCH_OPERATION, null, "Missing the following enumeration values from switch: D . Either provide all or use default.")
+ 	}	
+
+	@Test
+ 	def void testSwitchArgumentMatchesCaseStatmentTypes() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 					
+ 			set result: inEnum switch 
+ 				A 	then "aValue",
+ 				10 	then "bValue",
+ 				C 	then "cValue",
+ 				default "defaultValue"
+ 		'''
+
+ 		model.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, '''Mismatched condition type: Expected type `SomeEnum`, but got `int` instead.''')
+ 	}
+ 	
+	@Test
+ 	def void testDataTypesAreInvalidSwitchInputs() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			type Foo:
+ 				fooField string (1..1)
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inFoo Foo (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inFoo switch 
+ 					inFoo then "aValue"
+ 		'''
+
+ 		model.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, "Type `Foo` is not a valid switch argument type, supported argument types are basic types and enumerations")
+ 	}
+
+ 	@Test
+ 	def void testValidSwitchSyntaxWithDefault() {
+ 		val context ='''
+ 				enum SomeEnum:
+ 					A
+ 					B
+ 					C
+ 					D
+ 		'''.parseRosettaWithNoIssues
+
+ 		val expression = '''
+ 			inEnum switch 
+ 				A then "aValue",
+ 				B then "bValue",
+ 				C then "cValue",
+ 				default "defaultValue"
+ 		'''
+
+ 		expression.parseExpression(#[context], #["inEnum SomeEnum (1..1)"])
+ 		.assertNoIssues
+ 	}
+
+ 	@Test
+ 	def void testValidSwitchSyntaxEnum() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			enum SomeEnum:
+ 				A
+ 				B
+ 				C
+ 				D
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					inEnum SomeEnum (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: inEnum switch 
+ 					A then "aValue",
+ 					B then "bValue",
+ 					C then "cValue",
+ 					D then "dValue"
+ 		'''
+
+ 		model.parseRosettaWithNoIssues
+ 	}
+ 	
+ 	@Test
+ 	def void testValidSwitchSyntaxString() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					someInput string (1..1)
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: someInput switch 
+ 					"A" then "aValue",
+ 					"B" then "bValue"
+ 		'''
+
+ 		model.parseRosettaWithNoIssues
+ 	}
+ 		
+	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''
 		type A:

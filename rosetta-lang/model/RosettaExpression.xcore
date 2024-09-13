@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
 
 interface RosettaExpression {
@@ -404,5 +405,18 @@ class MinOperation extends ComparingFunctionalOperation, ListOperation {
 }
 
 class MaxOperation extends ComparingFunctionalOperation, ListOperation {
+}
+
+
+class SwitchOperation extends RosettaUnaryOperation {
+	contains SwitchCase[] cases opposite switchOperation
+	contains RosettaExpression ^default
+}
+
+class SwitchCase {
+	container SwitchOperation switchOperation opposite cases
+	contains RosettaLiteral literalGuard
+	refers RosettaEnumValue enumGuard
+	contains RosettaExpression expression
 }
 
