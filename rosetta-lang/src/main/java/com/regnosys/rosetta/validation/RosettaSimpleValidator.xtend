@@ -322,7 +322,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		final extension RObjectFactory objectFactory
 		new(RObjectFactory objectFactory) {
 			this.objectFactory = objectFactory
-		} 
+		}
 
 		final Map<RAttribute, RosettaRule> ruleMap = newHashMap;
 		final Map<RosettaExternalRegularAttribute, String> errorMap = newHashMap;
@@ -510,7 +510,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				val parentAttrType = parentAttr.RType
 				if (childAttrType != parentAttrType) {
 					error('''Overriding attribute '«name»' with type «childAttrType» must match the type of the attribute it overrides («parentAttrType»)''',
-						childAttr.EObject, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)					
+						childAttr.EObject, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
 				}
 			]
 		]
@@ -1397,13 +1397,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		for (ns : model.imports) {
 			if (ns.importedNamespace !== null) {
 				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
-				val isWildcard = qn.lastSegment.equals('*');
-				
-				
-				val isUsed = if (isWildcard) {
-					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
-				} else {
-					usedNames.contains(qn)
+ 				val isWildcard = qn.lastSegment.equals('*');
+ 				if (!isWildcard && ns.namespaceAlias !== null) {
+ 					error('''"as" statement can only be used with wildcard imports''', ns, IMPORT__NAMESPACE_ALIAS);
+ 				}
+
+
+ 				val isUsed = if (isWildcard) {
+ 					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
+ 				} else {
+ 					usedNames.contains(qn)
 				}
 				if (!isUsed) {
 					warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
