@@ -33,6 +33,43 @@ class RosettaParsingTest {
 	@Inject extension ModelHelper modelHelper
 	@Inject extension ValidationTestHelper
 	@Inject extension ExpressionParser
+
+	@Test
+	def void testTwoModelsSameNamespaceReferencesEachOther() {
+		val model1 = '''
+			namespace test
+			type A:
+				id string (1..1)
+		'''
+
+		val model2 = '''
+			namespace test
+			type B:
+				a A (1..1)
+		'''
+
+		#[model1, model2].parseRosettaWithNoIssues
+	}	
+
+	@Test
+ 	def void testCanUseAliasesWhenImporting() {
+ 		val model1 = '''
+ 			namespace foo.bar
+ 			
+ 			type A:
+ 				id string (1..1)
+ 		'''
+
+ 		val model2 = '''
+ 			namespace test
+ 			import foo.bar.* as someAlias
+ 			
+ 			type B:
+ 				a someAlias.A (1..1)
+ 		'''
+
+ 		#[model1, model2].parseRosettaWithNoIssues
+ 	}	
 	
 	@Test
 	def void testFullyQualifiedNamesCanBeUsedInExpression() {
