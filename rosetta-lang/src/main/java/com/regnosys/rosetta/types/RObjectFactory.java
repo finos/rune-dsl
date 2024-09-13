@@ -31,6 +31,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -71,7 +72,8 @@ public class RObjectFactory {
 				function.getAnnotations());
 	}
 	
-	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
+	// TODO: should be private
+	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		return new RAttribute(name, null, Collections.emptyList(), type, List.of(), isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
@@ -168,7 +170,7 @@ public class RObjectFactory {
 	}
 
 	public RAttribute buildRAttribute(Attribute attribute) {
-		return buildRAttribute(attribute, false);
+		return buildRAttribute(attribute, attribute.getTypeCall().getType() instanceof RosettaMetaType);
 	}
 	private RAttribute buildRAttribute(Attribute attribute, boolean isMeta) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);

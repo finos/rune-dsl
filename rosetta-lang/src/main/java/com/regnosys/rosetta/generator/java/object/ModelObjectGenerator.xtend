@@ -101,7 +101,7 @@ class ModelObjectGenerator {
 	}
 
 	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(RDataType t, JavaClass<?> javaType, JavaScope builderScope) '''
-		«FOR attribute : t.ownAttributes + t.additionalAttributes»
+		«FOR attribute : t.javaAttributes»
 			«IF attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
 				«IF !attribute.isMulti»
 					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
@@ -112,7 +112,7 @@ class ModelObjectGenerator {
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
-		«FOR attribute : t.allNonOverridenAttributes + t.additionalAttributes»
+		«FOR attribute : t.allJavaAttributes»
 			«IF !attribute.isMulti»
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«IF !attribute.metaAnnotations.isEmpty»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
@@ -154,7 +154,7 @@ class ModelObjectGenerator {
 
 
 	protected def StringConcatenationClient pojoInterfaceGetterMethods(JavaClass<?> javaType, RDataType t) '''
-		«FOR attribute : t.ownAttributes + t.additionalAttributes»
+		«FOR attribute : t.javaAttributes»
 			«javadoc(attribute.definition, attribute.docReferences, null)»
 			«attribute.toMetaJavaType» get«attribute.name.toFirstUpper»();
 		«ENDFOR»
@@ -196,7 +196,7 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient rosettaClass(RDataType t, JavaScope scope) {
-		val attributes = t.ownAttributes + t.additionalAttributes
+		val attributes = t.javaAttributes
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		'''

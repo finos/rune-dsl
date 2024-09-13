@@ -28,8 +28,8 @@ class ModelObjectBuilderGenerator {
 		val javaType = t.toJavaType
 		val superInterface = javaType.interfaces.head
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
-		val attrs = t.ownAttributes + t.additionalAttributes
-		val allAttrs = t.allNonOverridenAttributes + t.additionalAttributes
+		val attrs = t.javaAttributes
+		val allAttrs = t.allJavaAttributes
 		allAttrs.forEach[
 			builderScope.createIdentifier(it, it.name.toFirstLower)
 		]
@@ -163,7 +163,7 @@ class ModelObjectBuilderGenerator {
 	
 	private def StringConcatenationClient setters(RDataType t, JavaScope scope)
 		'''
-		«FOR attribute : t.allNonOverridenAttributes + t.additionalAttributes»
+		«FOR attribute : t.allJavaAttributes»
 			«doSetter(t, attribute, scope)»
 		«ENDFOR»
 	'''
