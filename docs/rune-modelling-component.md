@@ -1689,6 +1689,17 @@ import cdm.base.staticdata.asset.credit.*
 
 In the example above all model components contained within the layers of the `cdm.base` namespace are imported.
 
+Another method of referencing a namespace is by using an `import ... as ...` alias.
+
+``` Haskell
+import cdm.base.staticdata.party.* as cdmParty
+
+type MyContainer:
+  party cdmParty.Party (1..1)
+```
+
+In the above example you can see that all types under the namespace `cdm.base.staticdata.party` have been given an alias `cdmParty`. To reference those types elsewhere in the Rune syntax you must prefix the type with that alias as in the above example. Note that only namespaces that import the entire namespace content using the `*` syntax can be aliased.
+
 ## Mapping Component
 
 ### Purpose

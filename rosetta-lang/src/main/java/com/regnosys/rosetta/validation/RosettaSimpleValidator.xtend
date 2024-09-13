@@ -142,7 +142,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RosettaGrammarAccess
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
-	
+
 	@Check
 	def void switchInputsMustBeSingleCardinality(SwitchOperation op) {
 		if (op.argument.multi) {
@@ -156,7 +156,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		val argumentType = op.argument.RType
 		if (op.^default === null && argumentType instanceof REnumType) {
 			val enumConditions = op.cases.map[it.enumGuard].toSet
-	
+
 			val enumeration = (argumentType as REnumType).EObject
 			val missingEnumValues = newArrayList
 			for (enumValue : enumeration.enumValues) {
@@ -180,7 +180,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	 			if (!conditionType.isSubtypeOf(argumentRType)) {
  					error('''Mismatched condition type: «argumentRType.notASubtypeMessage(conditionType)»''', caseStatement.literalGuard ?: caseStatement.enumGuard, null)
  				}
- 			} 
+ 			}
 
  		}
  	}
@@ -1452,7 +1452,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (ns.importedNamespace !== null) {
 				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
 				val isWildcard = qn.lastSegment.equals('*');
-
+        if (!isWildcard && ns.namespaceAlias !== null) {
+ 					error('''"as" statement can only be used with wildcard imports''', ns, IMPORT__NAMESPACE_ALIAS);
+ 				}
 
 				val isUsed = if (isWildcard) {
 					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
