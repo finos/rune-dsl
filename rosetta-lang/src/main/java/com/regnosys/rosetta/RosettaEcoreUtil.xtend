@@ -102,7 +102,7 @@ class RosettaEcoreUtil {
 	@Deprecated
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
 		if(e !== null && seenEnums.add(e)) 
-			doGetSuperEnumerations(e.superType, seenEnums)
+			doGetSuperEnumerations(e.parent, seenEnums)
 		return seenEnums
 	}
 	

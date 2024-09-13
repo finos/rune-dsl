@@ -43,7 +43,7 @@ public class RJavaEnum extends JavaClass<Object> {
 	}
 	
 	public RJavaEnum getParent() {
-		if (enumeration.getEObject().getSuperType() != null ) {
+		if (enumeration.getParent() != null) {
 			if (parent == null) {
 				parent = new RJavaEnum(enumeration.getParent());
 			}

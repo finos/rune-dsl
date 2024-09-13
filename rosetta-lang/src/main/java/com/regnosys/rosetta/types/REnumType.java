@@ -59,9 +59,9 @@ public class REnumType extends RAnnotateType implements RObject {
 	}
 	
 	public REnumType getParent() {
-		if (enumeration.getSuperType() != null) {
+		if (enumeration.getParent() != null) {
 			if (parent == null) {
-				parent = objectFactory.buildREnumType(enumeration.getSuperType());
+				parent = objectFactory.buildREnumType(enumeration.getParent());
 			}
 		}
 		return parent;
