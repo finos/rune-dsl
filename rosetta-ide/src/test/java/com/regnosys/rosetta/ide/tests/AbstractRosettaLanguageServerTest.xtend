@@ -1,35 +1,30 @@
 package com.regnosys.rosetta.ide.tests
 
-import org.eclipse.xtext.testing.AbstractLanguageServerTest
-import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtext.testing.TextDocumentPositionConfiguration
-import org.eclipse.lsp4j.InlayHint
-import java.util.List
-import org.eclipse.lsp4j.InlayHintParams
-import org.eclipse.lsp4j.TextDocumentIdentifier
-import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.SemanticTokensParams
-import javax.inject.Inject
+import com.google.inject.Module
+import com.regnosys.rosetta.RosettaStandaloneSetup
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken
 import com.regnosys.rosetta.ide.server.RosettaLanguageServerImpl
-import org.eclipse.xtext.testing.TextDocumentConfiguration
-import org.eclipse.xtext.testing.FileInfo
-import java.nio.charset.StandardCharsets
-import com.regnosys.rosetta.ide.util.RangeUtils
-import java.util.stream.Collectors
-import org.junit.jupiter.api.Assertions
-import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import com.regnosys.rosetta.ide.server.RosettaServerModule
-import com.google.inject.Module
-import org.eclipse.lsp4j.DiagnosticSeverity
-import com.regnosys.rosetta.RosettaStandaloneSetup
+import com.regnosys.rosetta.ide.util.RangeUtils
+import java.nio.charset.StandardCharsets
 import java.util.HashMap
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.EValidator
-import com.regnosys.rosetta.rosetta.RosettaPackage
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.rosetta.expression.ExpressionPackage
+import java.util.List
+import java.util.stream.Collectors
+import javax.inject.Inject
+import org.eclipse.lsp4j.DiagnosticSeverity
+import org.eclipse.lsp4j.InlayHint
+import org.eclipse.lsp4j.InlayHintParams
+import org.eclipse.lsp4j.Position
+import org.eclipse.lsp4j.Range
+import org.eclipse.lsp4j.SemanticTokensParams
+import org.eclipse.lsp4j.TextDocumentIdentifier
+import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtext.testing.AbstractLanguageServerTest
+import org.eclipse.xtext.testing.FileInfo
+import org.eclipse.xtext.testing.TextDocumentConfiguration
+import org.eclipse.xtext.testing.TextDocumentPositionConfiguration
+import org.junit.jupiter.api.Assertions
 
 /**
  * TODO: contribute to Xtext.

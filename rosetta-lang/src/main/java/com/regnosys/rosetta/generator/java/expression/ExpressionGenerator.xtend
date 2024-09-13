@@ -1,9 +1,17 @@
 package com.regnosys.rosetta.generator.java.expression
 
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -12,12 +20,14 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaRecordFeature
+import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
+import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.DistinctOperation
 import com.regnosys.rosetta.rosetta.expression.EqualityOperation
 import com.regnosys.rosetta.rosetta.expression.ExistsModifier
@@ -41,8 +51,10 @@ import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
@@ -59,23 +71,32 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SortOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.ToDateOperation
+import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 import com.regnosys.rosetta.rosetta.expression.ToIntOperation
 import com.regnosys.rosetta.rosetta.expression.ToNumberOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
+import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
+import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RFunction
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
@@ -84,51 +105,32 @@ import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
+import com.rosetta.model.lib.records.Date
 import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod
+import com.rosetta.util.types.JavaGenericTypeDeclaration
+import com.rosetta.util.types.JavaPrimitiveType
+import com.rosetta.util.types.JavaType
 import java.math.BigDecimal
+import java.math.BigInteger
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Arrays
+import java.util.Collection
 import java.util.List
+import java.util.Objects
 import java.util.Optional
+import java.util.stream.Collectors
+import javax.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValues
-import com.regnosys.rosetta.types.RObjectFactory
-import javax.inject.Inject
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
-import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
-import com.regnosys.rosetta.types.builtin.RRecordType
-import java.util.stream.Collectors
-import com.regnosys.rosetta.rosetta.RosettaRule
-import com.rosetta.util.types.JavaType
-import com.rosetta.util.types.JavaPrimitiveType
-import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RFunction
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import java.math.BigInteger
-import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
-import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
-import com.rosetta.util.types.JavaGenericTypeDeclaration
-import com.regnosys.rosetta.rosetta.expression.ToDateOperation
-import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
-import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
-import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
-import com.rosetta.model.lib.records.Date
-import java.time.LocalDateTime
-import java.time.ZonedDateTime
-import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import com.regnosys.rosetta.rosetta.expression.DefaultOperation
-import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
-import com.regnosys.rosetta.types.RAttribute
-import java.util.Collection
-import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -153,7 +155,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension RObjectFactory
-	
+
 	/**
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
@@ -1004,7 +1006,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					val aliasType = isMulti ? MAPPER_C.wrapExtendsIfNotFinal(itemType) as JavaType : MAPPER_S.wrapExtendsIfNotFinal(itemType)
 					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»)''', aliasType)
 				}
-				
+
 			}
 			ClosureParameter: {
 				new JavaVariable(context.scope.getIdentifierOrThrow(s), expr.isMulti ? MAPPER_C.wrap(expr) as JavaType : MAPPER_S.wrap(expr))
@@ -1176,4 +1178,57 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 		conversionOperation(expr, context, '''«ZonedDateTime»::parse''', DateTimeParseException)
 	}
+
+	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
+ 		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRType(expr.argument).toJavaReferenceType), context.scope)
+ 		val caseStatements = expr.cases
+ 		val defaultExpression = expr.^default
+
+
+ 		val conditionType = switchArgument.expressionType.itemType
+
+ 		val returnType = context.expectedType
+
+ 		switchArgument
+ 			.declareAsVariable(true, "switchAgument", context.scope)
+ 			.mapExpression[
+ 				createSwitchJavaExpression(conditionType, returnType, it, caseStatements, defaultExpression, context.scope)
+ 			]
+ 	}
+
+ 	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
+ 		SwitchCase[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
+ 		if (caseStatements.isEmpty) {
+ 			return defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(returnType, javaScope)
+ 		}	
+ 			
+ 		val head = caseStatements.head
+ 		val tail = caseStatements.tail
+
+ 		val javaStatement = if (head.literalGuard !== null) {
+ 			head.literalGuard.javaCode(MAPPER_S.wrap(conditionType), javaScope).collapseToSingleExpression(javaScope)
+ 		} else {
+ 			val condition = head.enumGuard
+ 			JavaExpression.from('''«MapperS».of(«conditionType».«condition.convertValues»)''', MAPPER_S.wrap(conditionType))
+
+ 		}
+
+ 		javaStatement.
+ 			mapExpression [
+ 				JavaExpression.
+ 					from('''«runtimeMethod("areEqual")»(«switchArgument»,«it»,«CardinalityOperator».All)''',
+ 						COMPARISON_RESULT)
+ 			]
+			.mapExpression[
+				typeCoercionService.addCoercions(it, JavaPrimitiveType.BOOLEAN, javaScope)
+			]
+ 			.mapExpression [
+ 				new JavaIfThenElseBuilder(
+ 					it,
+ 					head.expression.javaCode(returnType, javaScope),
+ 					createSwitchJavaExpression(conditionType, returnType, switchArgument, tail, defaultExpression, javaScope),
+ 					typeUtil
+ 				)
+ 			]
+ 	}
 }

@@ -78,6 +78,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.RosettaEcoreUtil
@@ -95,7 +96,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
-	
+
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
@@ -123,12 +124,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			}
 		}
 	}
-	
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
 		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
 
-	private def RType safeRType(RosettaSymbol symbol, EObject context, Map<EObject, RType> cycleTracker) {
+	private def RType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
 			return NOTHING
 		}
@@ -525,4 +525,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		ZONED_DATE_TIME
 	}
 	
+	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
+		expr.cases
+			.map[it.expression.RType]
+			.join
+ 	}
+
 }

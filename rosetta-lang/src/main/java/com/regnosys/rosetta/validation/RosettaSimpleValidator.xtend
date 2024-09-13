@@ -2,6 +2,7 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
@@ -56,6 +57,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
@@ -73,13 +76,16 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.services.RosettaGrammarAccess
 import com.regnosys.rosetta.types.CardinalityProvider
+import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RErrorType
+import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaExpectedTypeProvider
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
@@ -111,12 +117,9 @@ import org.eclipse.xtext.validation.Check
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
-import static extension com.regnosys.rosetta.validation.RosettaIssueCodes.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.RosettaEcoreUtil
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -137,7 +140,58 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RBuiltinTypeService
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
+	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
+
+	@Check
+	def void switchInputsMustBeSingleCardinality(SwitchOperation op) {
+		if (op.argument.multi) {
+			error("Input to switch must be single cardinality", op.argument, null)
+		}
+	}
+
+
+	@Check
+	def void switchStatementMustProvideCaseForAllEnumValues(SwitchOperation op) {
+		val argumentType = op.argument.RType
+		if (op.^default === null && argumentType instanceof REnumType) {
+			val enumConditions = op.cases.map[it.enumGuard].toSet
+
+			val enumeration = (argumentType as REnumType).EObject
+			val missingEnumValues = newArrayList
+			for (enumValue : enumeration.enumValues) {
+				if (!enumConditions.contains(enumValue)) {
+					missingEnumValues.add(enumValue)
+				}
+			}
+			if (!missingEnumValues.empty) {
+				error('''Missing the following enumeration values from switch: «missingEnumValues.map[it.name].join(", ")» . Either provide all or use default.''', op, null)
+			}
+		}
+
+	}
+
+	@Check
+ 	def void switchArgumentTypeMatchesCaseStatementTypes(SwitchOperation op) {
+ 		val argumentRType = op.argument.RType
+ 		for (SwitchCase caseStatement : op.cases) {
+ 			if (caseStatement.literalGuard !== null) {
+ 				val conditionType = caseStatement.literalGuard.RType
+	 			if (!conditionType.isSubtypeOf(argumentRType)) {
+ 					error('''Mismatched condition type: «argumentRType.notASubtypeMessage(conditionType)»''', caseStatement.literalGuard ?: caseStatement.enumGuard, null)
+ 				}
+ 			}
+
+ 		}
+ 	}
+
+ 	@Check
+ 	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
+ 		val inputType = op.argument.RType.stripFromTypeAliases
+ 		if (!(inputType instanceof RBasicType) && !(inputType instanceof REnumType)) {
+ 			error('''Type `«inputType.name»` is not a valid switch argument type, supported argument types are basic types and enumerations''', op.argument, null)
+ 		}
+ 	}
 
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {

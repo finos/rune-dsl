@@ -630,14 +630,18 @@ RosettaCalcBinary returns RosettaExpression:
 	)
 ;
 
-
 /**
- * List operations
+ * Unary operations
  */
 enum ExistsModifier:
 	  SINGLE='single'
 	| MULTIPLE='multiple'
 ;
+
+SwitchCase:
+ 	(literalGuard=RosettaLiteral | enumGuard=[RosettaEnumValue|ValidID]) 'then' expression=RosettaCalcExpression
+ ;
+ 
 
 UnaryOperation returns RosettaExpression:
 	RosettaCalcPrimary
@@ -665,6 +669,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({SwitchOperation.argument=current} operator='switch' ((cases+=SwitchCase =>(',' cases+=SwitchCase)* =>(',' 'default' default=RosettaCalcExpression)?) | ('default' default=RosettaCalcExpression)))
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -701,6 +706,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
+			|({SwitchOperation} operator='switch' ((cases+=SwitchCase =>(',' cases+=SwitchCase)* =>(',' 'default' default=RosettaCalcExpression)?) | ('default' default=RosettaCalcExpression)))
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -738,6 +744,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
+			|({SwitchOperation.argument=current} operator='switch' ((cases+=SwitchCase =>(',' cases+=SwitchCase)* =>(',' 'default' default=RosettaCalcExpression)?) | ('default' default=RosettaCalcExpression)))
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')

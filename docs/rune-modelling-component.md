@@ -912,6 +912,31 @@ Rune supports basic arithmetic operators
 
 The `default` operator takes two values of matching type. If the value to the left of the default is empty then the value of to the right of the default will be returned. Note that the type and cardinality of both sides of the operator must match for the syntax to be valid.
 
+### Switch Operator
+
+The `switch` operator takes as its left hand input an argument on which to perform case analysis. The right side of the operator takes a set of case statements which define a return value for the expression when matching that case to the input.
+
+```Haskell
+   "valueB" switch
+      "valueA" then "resultA"
+      "valueB" then "resultB"
+      default "resultC"
+```
+
+The `switch` operator can also operate over enumerations and in the case where all enumeration values are not provided as case statements then a syntax validation error will occur until either all enumeration values or a default value is provided.
+
+```Haskell
+  "aCondition" switch 
+    "aCondition" then SomeEnum -> A,
+    "bCondition" then SomeEnum -> B,
+    "cCondition" then SomeEnum -> C,
+    default SomeEnum -> D
+```
+
+{{< notice info "Note" >}}
+The `default` case is optional, in case when there is no match then the `empty` value is returned.
+{{< /notice >}}
+
 #### Operator Precedence
 
 Expressions are evaluated in Rune in the following order, from first to last - see [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)).
@@ -919,13 +944,13 @@ Expressions are evaluated in Rune in the following order, from first to last - s
 1. RosettaPathExpressions - e.g. `Lineage -> executionReference`
 1. Brackets - e.g. `(1+2)`
 1. if-then-else - e.g. `if (1=2) then 3`
-1. only-element - e.g. `Lineage -> executionReference only-element`
-1. count - e.g. `Lineage -> executionReference count`
-1. Multiplicative operators `*`, `/` - e.g. `3*4`
-1. Additive operators `+`, `-` - e.g. `3-4`
-1. Comparison operators `>=`, `<=`, `>`, `<` - e.g. `3>4`
-1. Existence operators `exists`,`is absent`, `contains`, `disjoint` - e.g. `Lineage -> executionReference exists`
-1. Default operator `a default b`
+1. Constructor expressions - e.g `MyType {attr1: "value 1"}`
+1. Unary operators `->`, `->>`, `exists`, `is absent`, `only-element`, `flatten`, `distinct`, `reverse`, `first`, `last`, `sum`, `one-of`, `choice`, `to-string`, `to-number`, `to-int`, `to-time`, `to-enum`, `to-date`, `to-date-time`, `to-zoned-date-time`, `switch`, `sort`, `min`, `max`, `reduce`, `filter`, `map`, `extract` 
+1. Binary operators `contains`, `disjoint`, `default`, `join`
+1. Multiplicative operators `*`, `/` 
+1. Additive operators `+`, `-`
+1. Comparison operators `>=`, `<=`, `>`, `<`
+1. Equality operators `=`, `<>`
 1. and - e.g. `5>6 and true`
 1. or - e.g. `5>6 or true`
 

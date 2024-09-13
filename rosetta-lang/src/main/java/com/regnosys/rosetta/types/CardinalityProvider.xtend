@@ -70,6 +70,7 @@ import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -532,4 +533,16 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Boolean breakOnClosureParameter) {
 		false
 	}	
+	
+	override protected caseSwitchOperation(SwitchOperation expr, Boolean breakOnClosureParameter) {
+		if (expr.^default.isMulti) {
+			return true
+		}
+		for (switchCase : expr.cases) {
+			if (switchCase.expression.isMulti) {
+				return true
+			}
+		}
+ 		false
+ 	}
 }
