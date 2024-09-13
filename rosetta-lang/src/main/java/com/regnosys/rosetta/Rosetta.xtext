@@ -639,7 +639,7 @@ enum ExistsModifier:
 ;
 
 SwitchCase:
- 	(literalCondition=RosettaLiteral | enumCondition=[RosettaEnumValue|ValidID]) 'then' expression=RosettaCalcExpression
+ 	(literalGuard=RosettaLiteral | enumGuard=[RosettaEnumValue|ValidID]) 'then' expression=RosettaCalcExpression
  ;
  
 

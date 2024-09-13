@@ -415,8 +415,8 @@ class SwitchOperation extends RosettaUnaryOperation {
 
 class SwitchCase {
 	container SwitchOperation switchOperation opposite cases
-	contains RosettaLiteral literalCondition
-	refers RosettaEnumValue enumCondition
+	contains RosettaLiteral literalGuard
+	refers RosettaEnumValue enumGuard
 	contains RosettaExpression expression
 }
 

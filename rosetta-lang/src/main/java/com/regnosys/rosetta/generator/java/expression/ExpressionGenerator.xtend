@@ -1205,10 +1205,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		val head = caseStatements.head
  		val tail = caseStatements.tail
 
- 		val javaStatement = if (head.literalCondition !== null) {
- 			head.literalCondition.javaCode(MAPPER_S.wrap(conditionType), javaScope).collapseToSingleExpression(javaScope)
+ 		val javaStatement = if (head.literalGuard !== null) {
+ 			head.literalGuard.javaCode(MAPPER_S.wrap(conditionType), javaScope).collapseToSingleExpression(javaScope)
  		} else {
- 			val condition = head.enumCondition
+ 			val condition = head.enumGuard
  			JavaExpression.from('''«MapperS».of(«conditionType».«condition.convertValues»)''', MAPPER_S.wrap(conditionType))
 
  		}

@@ -236,7 +236,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
 				}
-				case SWITCH_CASE__ENUM_CONDITION: {
+				case SWITCH_CASE__ENUM_GUARD: {
 					if (context instanceof SwitchCase) {
 						val argumentType = typeProvider.getRType(context.switchOperation.argument)
 						if (argumentType instanceof REnumType) {
