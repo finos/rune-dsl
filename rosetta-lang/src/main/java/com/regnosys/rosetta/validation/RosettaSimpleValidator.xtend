@@ -146,7 +146,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def void switchInputsMustBeSingleCardinality(SwitchOperation op) {
 		if (op.argument.multi) {
-			error("Inputs to switch must be single cardinality", op, null)
+			error("Input to switch must be single cardinality", op.argument, null)
 		}
 	}
 
@@ -187,8 +187,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
  	@Check
  	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
- 		val inputType = op.argument.RType
- 		if (inputType instanceof RDataType) {
+ 		val inputType = op.argument.RType.stripFromTypeAliases
+ 		if (!(inputType instanceof RBasicType) && !(inputType instanceof REnumType)) {
  			val message = "Invalid switch argument type, supported argument types are basic types and enumerations"
  			error(message, op.argument, null)
  		}

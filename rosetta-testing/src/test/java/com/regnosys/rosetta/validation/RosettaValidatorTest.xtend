@@ -32,6 +32,29 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testSwitchIinputRecordTypesAreNotValid() {
+ 		val model = '''
+ 			namespace test
+ 			
+ 			typeAlias myDate: date
+ 			
+ 			func SomeFunc:
+ 				inputs:
+ 					someDate myDate (1..1)
+ 				
+ 				output:
+ 					result string (1..1)
+ 			
+ 				set result: someDate switch 
+ 					default "someResult"
+ 		'''
+ 		
+ 		model
+ 		.parseRosetta
+ 		.assertError(ROSETTA_EXPRESSION, null, "Invalid switch argument type, supported argument types are basic types and enumerations")	
+ 	}
+	
+	@Test
 	def void testSwitchWithMultiCardinalityInputIsInvalid() {
  		val model = '''
  			namespace test
@@ -57,7 +80,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		
  		model
  		.parseRosetta
- 		.assertError(SWITCH_OPERATION, null, "Inputs to switch must be single cardinality")
+ 		.assertError(ROSETTA_EXPRESSION, null, "Input to switch must be single cardinality")
  				
 	}
 	
