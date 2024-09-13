@@ -255,20 +255,12 @@ class RosettaEcoreUtil {
 		}
 		return res
 	}
-	private def List<RAttribute> valueAttribute(RDataType t) {
-		val res = newArrayList
-		val valueType = t.superType.stripFromTypeAliases
-		if (valueType !== null && !(valueType instanceof RDataType)) {
-			res.add(objectFactory.createArtificialAttribute("value", valueType, false))
-		}
-		return res
-	}
 	def List<RAttribute> javaAttributes(RDataType t) {
-		(t.valueAttribute + t.ownAttributes + t.additionalAttributes).toList
+		(t.ownAttributes + t.additionalAttributes).toList
 	}
 	def List<RAttribute> allJavaAttributes(RDataType t) {
 		val atts = t.javaAttributes
-		if (t.superType !== null && t.superType.stripFromTypeAliases instanceof RDataType) {
+		if (t.superType !== null) {
 			val attsWithSuper = (t.superType.stripFromTypeAliases as RDataType).allJavaAttributes
 			val result = newArrayList
 			attsWithSuper.forEach[
