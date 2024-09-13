@@ -142,7 +142,7 @@ class MetaFieldGenerator {
 		cardSingle
 	}
 
-	def List<Attribute> getMetaFieldTypes(Collection<RosettaMetaType> utypes) {
+	def List<Attribute> getMetaFieldTypes(List<RosettaMetaType> utypes) {
 		val cardMult = RosettaFactory.eINSTANCE.createRosettaCardinality
 		cardMult.inf = 0;
 		cardMult.sup = 1000;
@@ -167,7 +167,7 @@ class MetaFieldGenerator {
 		keysAttribute.typeCall = keysType.toTypeCall
 		keysAttribute.card = cardMult
 
-		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].toSet;
+		val filteredTypes = utypes.filter[t|t.name != "key" && t.name != "id" && t.name != "reference"].toSet
 		val result = filteredTypes.map[toAttribute].toList
 		result.addAll(#[globalKeyAttribute, externalKeyAttribute, keysAttribute])
 		return result
@@ -181,7 +181,7 @@ class MetaFieldGenerator {
 		return newAttribute
 	}
 
-	def getMetaAndTemplateFieldTypes(Collection<RosettaMetaType> utypes) {
+	def getMetaAndTemplateFieldTypes(List<RosettaMetaType> utypes) {
 		val templateGlobalReferenceType = RosettaFactoryImpl.eINSTANCE.createRosettaMetaType()
 		templateGlobalReferenceType.name = "templateGlobalReference"
 		templateGlobalReferenceType.typeCall = stringType
@@ -196,7 +196,7 @@ class MetaFieldGenerator {
 		return metaFieldTypes
 	}
 
-	def metaFields(String name, Collection<Object> interfaces, Collection<Attribute> attributes) {
+	def metaFields(String name, List<Object> interfaces, List<Attribute> attributes) {
 		if (attributes.exists[t|t.name == "scheme"]) {
 			interfaces.add(MetaDataFields)
 		}

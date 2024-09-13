@@ -33,12 +33,14 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.types.RObjectFactory
 import java.util.LinkedHashSet
+import com.regnosys.rosetta.types.TypeSystem
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
 	
 	@Inject RBuiltinTypeService builtins
 	@Inject RObjectFactory objectFactory
+	@Inject extension TypeSystem typeSystem
 	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
@@ -237,7 +239,7 @@ class RosettaEcoreUtil {
 	}
 	// Copied over from RosettaAttributeExtensions.
 	@Deprecated
-	def List<RAttribute> additionalAttributes(RDataType t) {
+	private def List<RAttribute> additionalAttributes(RDataType t) {
 		val res = newArrayList
 		if(hasKeyedAnnotation(t.EObject)){
 			res.add(new RAttribute(
@@ -252,6 +254,27 @@ class RosettaEcoreUtil {
 			))
 		}
 		return res
+	}
+	def List<RAttribute> javaAttributes(RDataType t) {
+		(t.ownAttributes + t.additionalAttributes).toList
+	}
+	def List<RAttribute> allJavaAttributes(RDataType t) {
+		val atts = t.javaAttributes
+		if (t.superType !== null) {
+			val attsWithSuper = (t.superType.stripFromTypeAliases as RDataType).allJavaAttributes
+			val result = newArrayList
+			attsWithSuper.forEach[
+				val overridenAtt = atts.findFirst[att| att.name == name]
+				if (overridenAtt !== null) {
+					result.add(overridenAtt)
+				} else {
+					result.add(it)
+				}
+			]
+			result.addAll(atts.filter[att| !result.contains(att)].toList)
+			return result
+		}
+		return atts
 	}
 	
 	@Deprecated
