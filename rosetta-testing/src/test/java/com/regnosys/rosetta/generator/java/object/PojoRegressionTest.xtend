@@ -159,6 +159,7 @@ class PojoRegressionTest {
 				processRosetta(path.newSubPath("multiComplexAttr"), processor, Foo.class, getMultiComplexAttr());
 				processRosetta(path.newSubPath("complexAttrWithRef"), processor, ReferenceWithMetaFoo.class, getComplexAttrWithRef());
 				processRosetta(path.newSubPath("multiComplexAttrWithRef"), processor, ReferenceWithMetaFoo.class, getMultiComplexAttrWithRef());
+				processRosetta(path.newSubPath("meta"), processor, MetaFields.class, getMeta());
 			}
 			
 		
