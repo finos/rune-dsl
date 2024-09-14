@@ -31,6 +31,7 @@ class PojoRegressionTest {
 	def void setup() {
 		code = '''
 			type Pojo:
+				[metadata key]
 				simpleAttr string (1..1)
 				multiSimpleAttr string (0..*)
 				
@@ -72,6 +73,8 @@ class PojoRegressionTest {
 		package com.rosetta.test.model;
 		
 		import com.google.common.collect.ImmutableList;
+		import com.rosetta.model.lib.GlobalKey;
+		import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder;
 		import com.rosetta.model.lib.RosettaModelObject;
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -84,6 +87,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.process.Processor;
 		import com.rosetta.model.metafields.FieldWithMetaString;
 		import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
+		import com.rosetta.model.metafields.MetaFields;
 		import com.rosetta.test.model.Foo;
 		import com.rosetta.test.model.Pojo;
 		import com.rosetta.test.model.Pojo.PojoBuilder;
@@ -105,7 +109,7 @@ class PojoRegressionTest {
 		 * @version test
 		 */
 		@RosettaDataType(value="Pojo", builder=Pojo.PojoBuilderImpl.class, version="test")
-		public interface Pojo extends RosettaModelObject {
+		public interface Pojo extends RosettaModelObject, GlobalKey {
 		
 			PojoMeta metaData = new PojoMeta();
 		
@@ -120,6 +124,7 @@ class PojoRegressionTest {
 			List<? extends Foo> getMultiComplexAttr();
 			ReferenceWithMetaFoo getComplexAttrWithRef();
 			List<? extends ReferenceWithMetaFoo> getMultiComplexAttrWithRef();
+			MetaFields getMeta();
 		
 			/*********************** Build Methods  ***********************/
 			Pojo build();
@@ -175,6 +180,8 @@ class PojoRegressionTest {
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getComplexAttrWithRef();
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateMultiComplexAttrWithRef(int _index);
 				List<? extends ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> getMultiComplexAttrWithRef();
+				MetaFields.MetaFieldsBuilder getOrCreateMeta();
+				MetaFields.MetaFieldsBuilder getMeta();
 				Pojo.PojoBuilder setSimpleAttr(String simpleAttr);
 				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr0);
 				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr1, int _idx);
@@ -215,6 +222,7 @@ class PojoRegressionTest {
 				Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef5);
 				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef6);
 				Pojo.PojoBuilder setMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef7);
+				Pojo.PojoBuilder setMeta(MetaFields meta);
 		
 				@Override
 				default void process(RosettaPath path, BuilderProcessor processor) {
@@ -228,6 +236,7 @@ class PojoRegressionTest {
 					processRosetta(path.newSubPath("multiComplexAttr"), processor, Foo.FooBuilder.class, getMultiComplexAttr());
 					processRosetta(path.newSubPath("complexAttrWithRef"), processor, ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder.class, getComplexAttrWithRef());
 					processRosetta(path.newSubPath("multiComplexAttrWithRef"), processor, ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder.class, getMultiComplexAttrWithRef());
+					processRosetta(path.newSubPath("meta"), processor, MetaFields.MetaFieldsBuilder.class, getMeta());
 				}
 				
 		
@@ -246,6 +255,7 @@ class PojoRegressionTest {
 				private final List<? extends Foo> multiComplexAttr;
 				private final ReferenceWithMetaFoo complexAttrWithRef;
 				private final List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef;
+				private final MetaFields meta;
 				
 				protected PojoImpl(Pojo.PojoBuilder builder) {
 					this.simpleAttr = builder.getSimpleAttr();
@@ -258,6 +268,7 @@ class PojoRegressionTest {
 					this.multiComplexAttr = ofNullable(builder.getMultiComplexAttr()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
 					this.complexAttrWithRef = ofNullable(builder.getComplexAttrWithRef()).map(f->f.build()).orElse(null);
 					this.multiComplexAttrWithRef = ofNullable(builder.getMultiComplexAttrWithRef()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
+					this.meta = ofNullable(builder.getMeta()).map(f->f.build()).orElse(null);
 				}
 				
 				@Override
@@ -321,6 +332,12 @@ class PojoRegressionTest {
 				}
 				
 				@Override
+				@RosettaAttribute("meta")
+				public MetaFields getMeta() {
+					return meta;
+				}
+				
+				@Override
 				public Pojo build() {
 					return this;
 				}
@@ -343,6 +360,7 @@ class PojoRegressionTest {
 					ofNullable(getMultiComplexAttr()).ifPresent(builder::setMultiComplexAttr);
 					ofNullable(getComplexAttrWithRef()).ifPresent(builder::setComplexAttrWithRef);
 					ofNullable(getMultiComplexAttrWithRef()).ifPresent(builder::setMultiComplexAttrWithRef);
+					ofNullable(getMeta()).ifPresent(builder::setMeta);
 				}
 		
 				@Override
@@ -362,6 +380,7 @@ class PojoRegressionTest {
 					if (!ListEquals.listEquals(multiComplexAttr, _that.getMultiComplexAttr())) return false;
 					if (!Objects.equals(complexAttrWithRef, _that.getComplexAttrWithRef())) return false;
 					if (!ListEquals.listEquals(multiComplexAttrWithRef, _that.getMultiComplexAttrWithRef())) return false;
+					if (!Objects.equals(meta, _that.getMeta())) return false;
 					return true;
 				}
 				
@@ -378,6 +397,7 @@ class PojoRegressionTest {
 					_result = 31 * _result + (multiComplexAttr != null ? multiComplexAttr.hashCode() : 0);
 					_result = 31 * _result + (complexAttrWithRef != null ? complexAttrWithRef.hashCode() : 0);
 					_result = 31 * _result + (multiComplexAttrWithRef != null ? multiComplexAttrWithRef.hashCode() : 0);
+					_result = 31 * _result + (meta != null ? meta.hashCode() : 0);
 					return _result;
 				}
 				
@@ -393,13 +413,14 @@ class PojoRegressionTest {
 						"complexAttr=" + this.complexAttr + ", " +
 						"multiComplexAttr=" + this.multiComplexAttr + ", " +
 						"complexAttrWithRef=" + this.complexAttrWithRef + ", " +
-						"multiComplexAttrWithRef=" + this.multiComplexAttrWithRef +
+						"multiComplexAttrWithRef=" + this.multiComplexAttrWithRef + ", " +
+						"meta=" + this.meta +
 					'}';
 				}
 			}
 		
 			/*********************** Builder Implementation of Pojo  ***********************/
-			class PojoBuilderImpl implements Pojo.PojoBuilder {
+			class PojoBuilderImpl implements Pojo.PojoBuilder, GlobalKeyBuilder {
 			
 				protected String simpleAttr;
 				protected List<String> multiSimpleAttr = new ArrayList<>();
@@ -411,6 +432,7 @@ class PojoRegressionTest {
 				protected List<Foo.FooBuilder> multiComplexAttr = new ArrayList<>();
 				protected ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder complexAttrWithRef;
 				protected List<ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> multiComplexAttrWithRef = new ArrayList<>();
+				protected MetaFields.MetaFieldsBuilder meta;
 			
 				public PojoBuilderImpl() {
 				}
@@ -573,6 +595,25 @@ class PojoRegressionTest {
 								ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder newMultiComplexAttrWithRef = ReferenceWithMetaFoo.builder();
 								return newMultiComplexAttrWithRef;
 							});
+				}
+				
+				@Override
+				@RosettaAttribute("meta")
+				public MetaFields.MetaFieldsBuilder getMeta() {
+					return meta;
+				}
+				
+				@Override
+				public MetaFields.MetaFieldsBuilder getOrCreateMeta() {
+					MetaFields.MetaFieldsBuilder result;
+					if (meta!=null) {
+						result = meta;
+					}
+					else {
+						result = meta = MetaFields.builder();
+					}
+					
+					return result;
 				}
 				
 				@Override
@@ -887,6 +928,12 @@ class PojoRegressionTest {
 					return this;
 				}
 				
+				@Override
+				@RosettaAttribute("meta")
+				public Pojo.PojoBuilder setMeta(MetaFields meta) {
+					this.meta = meta==null?null:meta.toBuilder();
+					return this;
+				}
 				
 				@Override
 				public Pojo build() {
@@ -909,6 +956,7 @@ class PojoRegressionTest {
 					multiComplexAttr = multiComplexAttr.stream().filter(b->b!=null).<Foo.FooBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
 					if (complexAttrWithRef!=null && !complexAttrWithRef.prune().hasData()) complexAttrWithRef = null;
 					multiComplexAttrWithRef = multiComplexAttrWithRef.stream().filter(b->b!=null).<ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
+					if (meta!=null && !meta.prune().hasData()) meta = null;
 					return this;
 				}
 				
@@ -940,6 +988,7 @@ class PojoRegressionTest {
 					merger.mergeRosetta(getMultiComplexAttr(), o.getMultiComplexAttr(), this::getOrCreateMultiComplexAttr);
 					merger.mergeRosetta(getComplexAttrWithRef(), o.getComplexAttrWithRef(), this::setComplexAttrWithRef);
 					merger.mergeRosetta(getMultiComplexAttrWithRef(), o.getMultiComplexAttrWithRef(), this::getOrCreateMultiComplexAttrWithRef);
+					merger.mergeRosetta(getMeta(), o.getMeta(), this::setMeta);
 					
 					merger.mergeBasic(getSimpleAttr(), o.getSimpleAttr(), this::setSimpleAttr);
 					merger.mergeBasic(getMultiSimpleAttr(), o.getMultiSimpleAttr(), (Consumer<String>) this::addMultiSimpleAttr);
@@ -963,6 +1012,7 @@ class PojoRegressionTest {
 					if (!ListEquals.listEquals(multiComplexAttr, _that.getMultiComplexAttr())) return false;
 					if (!Objects.equals(complexAttrWithRef, _that.getComplexAttrWithRef())) return false;
 					if (!ListEquals.listEquals(multiComplexAttrWithRef, _that.getMultiComplexAttrWithRef())) return false;
+					if (!Objects.equals(meta, _that.getMeta())) return false;
 					return true;
 				}
 				
@@ -979,6 +1029,7 @@ class PojoRegressionTest {
 					_result = 31 * _result + (multiComplexAttr != null ? multiComplexAttr.hashCode() : 0);
 					_result = 31 * _result + (complexAttrWithRef != null ? complexAttrWithRef.hashCode() : 0);
 					_result = 31 * _result + (multiComplexAttrWithRef != null ? multiComplexAttrWithRef.hashCode() : 0);
+					_result = 31 * _result + (meta != null ? meta.hashCode() : 0);
 					return _result;
 				}
 				
@@ -994,7 +1045,8 @@ class PojoRegressionTest {
 						"complexAttr=" + this.complexAttr + ", " +
 						"multiComplexAttr=" + this.multiComplexAttr + ", " +
 						"complexAttrWithRef=" + this.complexAttrWithRef + ", " +
-						"multiComplexAttrWithRef=" + this.multiComplexAttrWithRef +
+						"multiComplexAttrWithRef=" + this.multiComplexAttrWithRef + ", " +
+						"meta=" + this.meta +
 					'}';
 				}
 			}
