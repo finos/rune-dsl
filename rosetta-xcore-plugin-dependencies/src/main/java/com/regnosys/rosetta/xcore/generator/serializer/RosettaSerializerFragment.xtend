@@ -61,13 +61,17 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 		javaFile.resourceSet = language.resourceSet
 		val methodSignatures = newHashSet()
 		
+		val superConstraintsMap = grammar.superGrammar.grammarConstraints.map[it->it].toMap
+		
 		javaFile.content = '''
 			public «IF isGenerateStub» abstract «ENDIF»class «clazz.simpleName» extends «superClazz» {
 			
 				@«Inject»
 				private «grammar.grammarAccess» grammarAccess;
 				
-				«genMethodCreateSequence»
+				«genMethodCreateSequence(superConstraintsMap)»
+				
+				«genConditionMethods(superConstraintsMap)»
 				
 				«FOR c : newLocalConstraints.sort»
 					«IF methodSignatures.add(c.simpleName -> c.type)»
@@ -152,8 +156,37 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 		// protected void sequence_«c.simpleName»(«ISerializationContext» context, «c.type» semanticObject) { }
 	'''
 		
-	private def StringConcatenationClient genMethodCreateSequence() {
-		val superConstraints = grammar.superGrammar.grammarConstraints.map[it->it].toMap
+	private def StringConcatenationClient[] genConditionMethods(Map<IConstraint, IConstraint> superConstraints)	{
+		val StringConcatenationClient[] methods = newArrayList
+		
+		for (pkg : accessedPackages.indexed) {
+			for (type : pkg.value.accessedClasses) {
+				val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
+				val context2constraint = LinkedHashMultimap.create
+				for (e : contexts)
+					for (ctx : e.value)
+						context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
+				
+				if (contexts.size > 1) {
+					for (ctx : contexts.indexed) {
+						val serializationContext = ctx.value.value
+						val constraint = ctx.value.key
+						
+						methods.add('''
+							private boolean condition_«constraint.name»(«ParserRule» rule, «Action» action) {
+								return («genCondition(serializationContext, constraint, context2constraint)»)
+							}
+						''')
+					}
+
+				}
+			}
+		}
+		
+		methods
+	}
+		
+	private def StringConcatenationClient genMethodCreateSequence(Map<IConstraint, IConstraint> superConstraints) {
 		'''
 			@Override
 			public void sequence(«ISerializationContext» context, «EObject» semanticObject) {
