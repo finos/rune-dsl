@@ -1006,6 +1006,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				}
 
 			}
+			RosettaEnumValue: {
+				enumCall(s, context.expectedType)
+			}
 			ClosureParameter: {
 				new JavaVariable(context.scope.getIdentifierOrThrow(s), expr.isMulti ? MAPPER_C.wrap(expr) as JavaType : MAPPER_S.wrap(expr))
 			}

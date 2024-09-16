@@ -54,7 +54,7 @@ class RosettaEcoreUtil {
 			RDataType:
 				t.allNonOverridenAttributes.map[EObject]
 			REnumType:
-				t.EObject.allEnumValues
+				t.allEnumValues
 			RRecordType: {
 				if (resourceSet !== null) {
 					builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
