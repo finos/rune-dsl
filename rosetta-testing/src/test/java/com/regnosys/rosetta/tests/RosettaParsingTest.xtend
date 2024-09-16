@@ -73,6 +73,18 @@ class RosettaParsingTest {
 	}
 
 	@Test
+	def void testCannotAccessEnumValueThroughAnotherEnumValue() {
+		val model = '''
+		enum A:
+			VALUE_A
+		'''.parseRosettaWithNoIssues
+
+		"A -> VALUE_A -> VALUE_A"
+			.parseExpression(#[model])
+			.assertError(ROSETTA_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'VALUE_A'.")
+	}
+
+	@Test
 	def void testTwoModelsSameNamespaceReferencesEachOther() {
 		val model1 = '''
 			namespace test

@@ -54,7 +54,7 @@ class RosettaEcoreUtil {
 			RDataType:
 				t.allNonOverridenAttributes.map[EObject]
 			REnumType:
-				t.EObject.allEnumValues
+				t.allEnumValues
 			RRecordType: {
 				if (resourceSet !== null) {
 					builtins.toRosettaType(t, RosettaRecordType, resourceSet).features
@@ -94,19 +94,17 @@ class RosettaEcoreUtil {
 		return result.values();
 	}
 	
-	@Deprecated // TODO: move to REnumType, similar to RDataType
+	@Deprecated // Use REnumType#getAllParents instead
 	def Set<RosettaEnumeration> getAllSuperEnumerations(RosettaEnumeration e) {
 		doGetSuperEnumerations(e, newLinkedHashSet)
 	}
-	
-	@Deprecated
 	private def Set<RosettaEnumeration> doGetSuperEnumerations(RosettaEnumeration e, Set<RosettaEnumeration> seenEnums) {
 		if(e !== null && seenEnums.add(e)) 
-			doGetSuperEnumerations(e.superType, seenEnums)
+			doGetSuperEnumerations(e.parent, seenEnums)
 		return seenEnums
 	}
 	
-	@Deprecated // TODO: move to REnumType, similar to RDataType
+	@Deprecated // Use REnumType#getAllEnumValues instead
 	def getAllEnumValues(RosettaEnumeration e) {
 		e.allSuperEnumerations.map[enumValues].flatten
 	}

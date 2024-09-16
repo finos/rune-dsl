@@ -6,6 +6,8 @@ package com.regnosys.rosetta.rosetta
 
 import com.google.common.collect.Iterables
 import java.util.stream.Collectors
+import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.RootElement
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
@@ -40,10 +42,6 @@ interface RosettaNamed {
 
 interface RosettaTyped {
 	contains TypeCall typeCall
-		
-	derived boolean isTypeInferred get {
-		return typeCall === null
-	}
 }
 
 interface RosettaFeature extends RosettaNamed {
@@ -132,13 +130,13 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaTy
 	
 }
 
-class RosettaEnumeration extends RosettaRootElement, RosettaType, RosettaDefinable, References, RosettaSymbol {
-	refers RosettaEnumeration superType
+class RosettaEnumeration extends RootElement, RosettaType, RosettaDefinable, References, RosettaSymbol {
+	refers RosettaEnumeration parent
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References {
+class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated {
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues

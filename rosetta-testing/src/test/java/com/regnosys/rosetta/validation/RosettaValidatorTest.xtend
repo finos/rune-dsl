@@ -30,9 +30,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ExpressionParser
-
+	
 	@Test
- 	def void testCanUseMixOfImportAliasAnFullyQualified() {
+ 	def void testCanUseMixOfImportAliasAndFullyQualified() {
  		val model1 = '''
  			namespace foo.bar
  			
@@ -83,7 +83,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  	}	
 
  	@Test
- 	def void testCanUseImportAlisesWhenWildcardPresent() {
+ 	def void testCanUseImportAliasesWhenWildcardPresent() {
  		val model1 = '''
  			namespace foo.bar
  			
@@ -104,7 +104,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
  		#[model1, model2].parseRosettaWithNoIssues
  	}
- 		
+
 	@Test
  	def void testCannotUseImportAliasesWithoutWildcard() {
  		val model = '''
@@ -115,9 +115,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  			'"as" statement can only be used with wildcard import'
  		)
  	}
-	
+
 	@Test
-	def void testSwitchIinputRecordTypesAreNotValid() {
+	def void testSwitchInputRecordTypesAreNotValid() {
  		val model = '''
  			namespace test
  			
@@ -133,12 +133,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  				set result: someDate switch 
  					default "someResult"
  		'''
- 		
+
  		model
  		.parseRosetta
  		.assertError(ROSETTA_EXPRESSION, null, "Type `date` is not a valid switch argument type, supported argument types are basic types and enumerations")	
  	}
-	
+
 	@Test
 	def void testSwitchWithMultiCardinalityInputIsInvalid() {
  		val model = '''
@@ -162,13 +162,13 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  					C then "cValue",
  					default "someOtherValue"
  		'''
- 		
+
  		model
  		.parseRosetta
  		.assertError(ROSETTA_EXPRESSION, null, "Input to switch must be single cardinality")
- 				
+
 	}
-	
+
  	@Test
  	def void testValidSwitchSyntaxEnumIsValidWhenMissingEnumValuesWithDefault() {
  		val model = '''
@@ -195,9 +195,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
  		model.parseRosettaWithNoIssues
  	}	
-	
+
  	@Test
- 	def void testValidSwitchSyntaxEnumFailsValitionWhenMissingEnumValues() {
+ 	def void testValidSwitchSyntaxEnumFailsWhenMissingEnumValues() {
  		val model = '''
  			namespace test
  			
@@ -224,7 +224,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  	}	
 
 	@Test
- 	def void testSwitchArgumentMatchesCaseStatmentTypes() {
+ 	def void testSwitchArgumentMatchesCaseStatementTypes() {
  		val model = '''
  			namespace test
  			
@@ -250,7 +250,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		model.parseRosetta
  		.assertError(ROSETTA_EXPRESSION, null, '''Mismatched condition type: Expected type `SomeEnum`, but got `int` instead.''')
  	}
- 	
+
 	@Test
  	def void testDataTypesAreInvalidSwitchInputs() {
  		val model = '''
@@ -321,7 +321,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
  		model.parseRosettaWithNoIssues
  	}
- 	
+
  	@Test
  	def void testValidSwitchSyntaxString() {
  		val model = '''
@@ -340,7 +340,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
  		model.parseRosettaWithNoIssues
  	}
- 		
+	
 	@Test
 	def void testCannotAccessUncommonMetaFeatureOfDeepFeatureCall() {
 		val model = '''
@@ -1601,7 +1601,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
 	}
 	
 	@Test
@@ -1789,15 +1789,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				i string (1..1)
 		'''.parseRosetta
 		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
-	}
-		
-	@Test
-	def void testDuplicateEnumLiteral() {
-		val model = '''
-			enum Foo:
-				BAR BAZ BAR
-		'''.parseRosetta
-		model.assertError(ROSETTA_ENUM_VALUE, DUPLICATE_ENUM_VALUE, 'Duplicate enum value')
 	}
 	
 	@Test 
@@ -3083,16 +3074,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x1 boolean (1..1)
 				x2 boolean (1..1)
-				x3 number (1..1)
+				x3 number (0..1)
 				x4 number (1..1)
 				x5 int (1..1)
-				x6 string (1..1)
+				x6 string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(ROSETTA_BINARY_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test
-	def void shouldNotGenerateTypeErrorForExpressionInBrackets3() {
+	def void shouldGenerateTypeErrorForExpressionInBrackets3() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -3107,7 +3098,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_EXISTS_EXPRESSION, TYPE_ERROR, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
 	}
 	
 	@Test

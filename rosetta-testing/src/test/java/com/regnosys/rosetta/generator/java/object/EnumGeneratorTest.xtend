@@ -68,8 +68,7 @@ class EnumGeneratorTest {
 
         val testEnumCode = code.get(rootPackage + ".TestEnumWithDisplay")
         assertThat(testEnumCode,
-            allOf(containsString('''TestEnumWithDisplay(String rosettaName)'''),
-                containsString('''TestEnumWithDisplay(String rosettaName, String displayName)'''),
+            allOf(containsString('''TestEnumWithDisplay(String rosettaName, String displayName)'''),
                 containsString('''public String toDisplayString()''')))
 
         code.compileToClasses
@@ -98,18 +97,5 @@ class EnumGeneratorTest {
         assertThat(EnumHelper.formatEnumName("ALUMINIUM_ALLOY_LME_15_MONTH"), is("ALUMINIUM_ALLOY_LME_15_MONTH"))
         assertThat(EnumHelper.formatEnumName("AggregateClient"), is("AGGREGATE_CLIENT"))
         assertThat(EnumHelper.formatEnumName("Currency1PerCurrency2"), is("CURRENCY_1_PER_CURRENCY_2"))
-    }
-
-    @Test
-    @Disabled
-    def void shouldAllowDeprectedAnnotationForEnum() {
-        val code = '''
-            enum TestEnumDeprecated:
-            	[deprecated]
-            	one
-            	two
-        '''.generateCode
-
-        code.compileToClasses
     }
 }

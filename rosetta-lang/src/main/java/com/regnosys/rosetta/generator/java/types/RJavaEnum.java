@@ -16,10 +16,16 @@
 
 package com.regnosys.rosetta.generator.java.types;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.regnosys.rosetta.generator.java.enums.EnumHelper;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.types.REnumType;
+import com.regnosys.rosetta.types.RObjectFactory;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaPrimitiveType;
@@ -28,9 +34,37 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class RJavaEnum extends JavaClass<Object> {	
 	private final REnumType enumeration;
+	
+	private RJavaEnum parent = null;
+	private List<RJavaEnumValue> enumValues = null;
 
 	public RJavaEnum(REnumType enumeration) {
 		this.enumeration = enumeration;
+	}
+	
+	public RJavaEnum getParent() {
+		if (enumeration.getParent() != null) {
+			if (parent == null) {
+				parent = new RJavaEnum(enumeration.getParent());
+			}
+		}
+		return parent;
+	}
+	
+	public List<RJavaEnumValue> getEnumValues() {
+		if (enumValues == null) {
+			enumValues = new ArrayList<>();
+			RJavaEnum p = getParent();
+			if (p != null) {
+				for (RJavaEnumValue v : p.getEnumValues()) {
+					enumValues.add(new RJavaEnumValue(this, v.getName(), v.getEObject(), v));
+				}
+			}
+			for (RosettaEnumValue v : enumeration.getOwnEnumValues()) {
+				enumValues.add(new RJavaEnumValue(this, EnumHelper.convertValue(v), v, null));
+			}
+		}
+		return enumValues;
 	}
 
 	@Override
@@ -71,7 +105,7 @@ public class RJavaEnum extends JavaClass<Object> {
 
 	@Override
 	public boolean extendsDeclaration(JavaTypeDeclaration<?> other) {
-		return false;
+		return other.equals(JavaClass.OBJECT);
 	}
 
 	@Override
