@@ -9,17 +9,31 @@ import javax.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 
+import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaDefinable;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.types.CardinalityProvider;
+import com.regnosys.rosetta.types.ExpectedTypeProvider;
+import com.regnosys.rosetta.types.RType;
 
 public class RosettaDocumentationProvider implements IEObjectDocumentationProvider {
 
 	@Inject
+	private ExpectedTypeProvider expectedTypeProvider;
+	@Inject
 	private CardinalityProvider cardinalityProvider;
-
+	
 	@Override
 	public String getDocumentation(EObject o) {
+		return Streams.concat(
+				getDocumentationFromReference(o).stream(),
+				getDocumentationFromOwner(o).stream()
+			).collect(Collectors.joining("\n\n"));
+	}
+
+	public List<String> getDocumentationFromReference(EObject o) {
 		List<String> docs = new ArrayList<>();
 		if (o instanceof RosettaSymbol) {
 			RosettaSymbol symbol = (RosettaSymbol)o;
@@ -35,10 +49,18 @@ public class RosettaDocumentationProvider implements IEObjectDocumentationProvid
 				docs.add(objectWithDocs.getDefinition());
 			}
 		}
-		if (docs.isEmpty()) {
-			return null;
-		}
-		return docs.stream().collect(Collectors.joining("\n\n"));
+		return docs;
 	}
 
+	public List<String> getDocumentationFromOwner(EObject o) {
+		List<String> docs = new ArrayList<>();
+		if (o instanceof RosettaSymbolReference) {
+			RosettaSymbol symbol = ((RosettaSymbolReference)o).getSymbol();
+			if (symbol instanceof RosettaEnumValue) {
+				RType t = expectedTypeProvider.getExpectedTypeFromContainer(o);
+				docs.add(t.toString());
+			}
+		}
+		return docs;
+	}
 }
