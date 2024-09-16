@@ -15,7 +15,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.generator.java.types.RJavaEnum
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import org.apache.commons.text.StringEscapeUtils
 
@@ -30,7 +29,7 @@ class EnumGenerator {
 	private def String toJava(REnumType e, RootPackage root, String version) {
 		val scope = new JavaScope(root)
 		
-		val javaEnum = e.toJavaReferenceType as RJavaEnum
+		val javaEnum = e.toJavaReferenceType
 		
 		val StringConcatenationClient classBody = '''
 		«javadoc(e.EObject, version)»

@@ -275,6 +275,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
 		}
 	}
+	public RJavaPojoInterface toJavaReferenceType(RDataType type) {
+		return toJavaType(type);
+	}
+	public RJavaEnum toJavaReferenceType(REnumType type) {
+		return toJavaType(type);
+	}
 	public JavaClass<?> toJavaReferenceType(Optional<RType> type) {
 		if (type.isPresent()) {
 			return toJavaReferenceType(type.orElseThrow());
@@ -284,11 +290,14 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
+	public RJavaPojoInterface toJavaType(RDataType type) {
+		return caseDataType(type, null);
+	}
+	public RJavaEnum toJavaType(REnumType type) {
+		return caseEnumType(type, null);
+	}
 	public JavaType toJavaType(Optional<RType> type) {
 		return type.map(t -> toJavaType(t)).orElse(typeUtil.OBJECT);
-	}
-	public JavaClass<?> toJavaType(RDataType type) {
-		return caseDataType(type, null);
 	}
 	
 	public JavaClass<?> toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
@@ -342,11 +351,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		throw new IllegalArgumentException("Cannot convert an error type to a Java type.");
 	}
 	@Override
-	protected JavaClass<?> caseDataType(RDataType type, Void context) {
+	protected RJavaPojoInterface caseDataType(RDataType type, Void context) {
 		return new RJavaPojoInterface(type, typeSystem);
 	}
 	@Override
-	protected JavaClass<?> caseEnumType(REnumType type, Void context) {
+	protected RJavaEnum caseEnumType(REnumType type, Void context) {
 		return new RJavaEnum(type);
 	}
 	@Override
