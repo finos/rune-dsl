@@ -93,14 +93,13 @@ Attribute:
 ;
 
 Enumeration returns RosettaEnumeration:
-	'enum' RosettaNamed ('extends' superType=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
-		References*
-		(synonyms += RosettaSynonym)*
+	'enum' RosettaNamed ('extends' parent=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
+		(References|Annotations|synonyms+=RosettaSynonym)*
 		enumValues += RosettaEnumValue*
 ;
 
 Function:
-	'func' 
+	'func'
 	(
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
@@ -282,8 +281,8 @@ RosettaMetaType:
 ;
 
 RosettaEnumValue:
-	RosettaNamed ('displayName' display=STRING)? RosettaDefinable? References*
-	(enumSynonyms += RosettaEnumSynonym)*
+	RosettaNamed ('displayName' display=STRING)? RosettaDefinable?
+		(References|Annotations|enumSynonyms+=RosettaEnumSynonym)*
 ;
 
 RosettaCardinality:

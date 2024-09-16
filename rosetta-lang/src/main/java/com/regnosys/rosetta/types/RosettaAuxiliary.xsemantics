@@ -66,8 +66,8 @@ auxiliary ancestors(Data t) {
 }
 auxiliary ancestorEnums(RosettaEnumeration t) {
 	getAll(t,
-		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
-		RosettaPackage::eINSTANCE.rosettaEnumeration_SuperType,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_Parent,
+		RosettaPackage::eINSTANCE.rosettaEnumeration_Parent,
 		typeof(RosettaEnumeration)
 	)
 }
@@ -91,10 +91,10 @@ auxiliary listJoin(RListType t1, RListType t2) {
 	return createListType(sup, union(t1.constraint, t2.constraint))
 }
 auxiliary allEnumValues(RosettaEnumeration e) {
-	if (e.superType === null) {
+	if (e.parent === null) {
 		return e.enumValues;
 	} else {
-		return allEnumValues(e.superType) + e.enumValues;
+		return allEnumValues(e.parent) + e.enumValues;
 	}
 }
 auxiliary mayBeEmpty(RDataType t) {
