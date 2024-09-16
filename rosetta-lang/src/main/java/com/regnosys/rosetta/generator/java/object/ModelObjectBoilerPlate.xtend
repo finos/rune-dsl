@@ -153,7 +153,7 @@ class ModelObjectBoilerPlate {
 	def StringConcatenationClient processMethod(RDataType c) '''
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
-			«FOR a : c.allNonOverridenAttributes»
+			«FOR a : c.allJavaAttributes»
 				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
