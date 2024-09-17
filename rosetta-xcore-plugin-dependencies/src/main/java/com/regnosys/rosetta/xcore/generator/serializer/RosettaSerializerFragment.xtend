@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory
 
 import static extension org.eclipse.xtext.xtext.generator.model.TypeReference.*
 import static extension org.eclipse.xtext.xtext.generator.util.GenModelUtil2.*
+import java.util.ArrayList
 
 class RosettaSerializerFragment extends SerializerFragment2 {
 	static val Logger LOG = LoggerFactory.getLogger(RosettaSerializerFragment)
@@ -71,7 +72,10 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 				
 				«genMethodCreateSequence(superConstraintsMap)»
 				
-				«genConditionMethods(superConstraintsMap)»
+				«FOR conditionMethod : genConditionMethods(superConstraintsMap)»
+					«conditionMethod»
+					
+				«ENDFOR»
 				
 				«FOR c : newLocalConstraints.sort»
 					«IF methodSignatures.add(c.simpleName -> c.type)»
@@ -217,7 +221,7 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 	}
 	
 	private def StringConcatenationClient[] genConditionMethods(Map<IConstraint, IConstraint> superConstraints)	{
-		val StringConcatenationClient[] methods = newArrayList
+		val ArrayList<StringConcatenationClient> methods = newArrayList
 		
 		for (pkg : accessedPackages.indexed) {
 			for (type : pkg.value.accessedClasses) {
@@ -234,7 +238,7 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 						
 						methods.add('''
 							private boolean condition_«constraint.name»(«ParserRule» rule, «Action» action) {
-								return («genCondition(serializationContext, constraint, context2constraint)»)
+								return («genCondition(serializationContext, constraint, context2constraint)»);
 							}
 						''')
 					}
