@@ -156,35 +156,7 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 		// protected void sequence_«c.simpleName»(«ISerializationContext» context, «c.type» semanticObject) { }
 	'''
 		
-	private def StringConcatenationClient[] genConditionMethods(Map<IConstraint, IConstraint> superConstraints)	{
-		val StringConcatenationClient[] methods = newArrayList
-		
-		for (pkg : accessedPackages.indexed) {
-			for (type : pkg.value.accessedClasses) {
-				val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
-				val context2constraint = LinkedHashMultimap.create
-				for (e : contexts)
-					for (ctx : e.value)
-						context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
-				
-				if (contexts.size > 1) {
-					for (ctx : contexts.indexed) {
-						val serializationContext = ctx.value.value
-						val constraint = ctx.value.key
-						
-						methods.add('''
-							private boolean condition_«constraint.name»(«ParserRule» rule, «Action» action) {
-								return («genCondition(serializationContext, constraint, context2constraint)»)
-							}
-						''')
-					}
 
-				}
-			}
-		}
-		
-		methods
-	}
 		
 	private def StringConcatenationClient genMethodCreateSequence(Map<IConstraint, IConstraint> superConstraints) {
 		'''
@@ -218,7 +190,7 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 		'''
 			«IF contexts.size > 1»
 				«FOR ctx : contexts.indexed»
-					«IF ctx.key > 0»else «ENDIF»if («genCondition(ctx.value.value, ctx.value.key, context2constraint)») {
+					«IF ctx.key > 0»else «ENDIF»if («getConditionMethodCall(ctx.value.key)») {
 						«genMethodCreateSequenceCall(superConstraints, type, ctx.value.key)»
 					}
 				«ENDFOR»
@@ -239,6 +211,40 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 			return; 
 		'''
 	}
+	
+	private def StringConcatenationClient getConditionMethodCall(IConstraint constraint) {
+		'''condition_«constraint.name»(rule, action)'''
+	}
+	
+	private def StringConcatenationClient[] genConditionMethods(Map<IConstraint, IConstraint> superConstraints)	{
+		val StringConcatenationClient[] methods = newArrayList
+		
+		for (pkg : accessedPackages.indexed) {
+			for (type : pkg.value.accessedClasses) {
+				val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
+				val context2constraint = LinkedHashMultimap.create
+				for (e : contexts)
+					for (ctx : e.value)
+						context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
+				
+				if (contexts.size > 1) {
+					for (ctx : contexts.indexed) {
+						val serializationContext = ctx.value.value
+						val constraint = ctx.value.key
+						
+						methods.add('''
+							private boolean condition_«constraint.name»(«ParserRule» rule, «Action» action) {
+								return («genCondition(serializationContext, constraint, context2constraint)»)
+							}
+						''')
+					}
+
+				}
+			}
+		}
+		
+		methods
+	}	
 		
 	private def StringConcatenationClient genCondition(List<ISerializationContext> contexts, IConstraint constraint, Multimap<EObject, IConstraint> ctx2ctr) {
 		val sorted = contexts.sort
