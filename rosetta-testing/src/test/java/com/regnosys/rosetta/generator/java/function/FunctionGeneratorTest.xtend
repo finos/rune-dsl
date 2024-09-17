@@ -5033,6 +5033,81 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	def void shouldAddComplexTypeListWithIfStatement() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		newFoos Foo (0..*)
+			 		test boolean (1..1)
+				output:
+					bar Bar (1..1)
+			
+				add bar -> foos:
+					if test
+					then newFoos
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		
+		val res = func.invokeFunc(RosettaModelObject, newArrayList(foo1, foo2), true)
+		
+		// reflective Bar.getFoos()
+		val foos = res.class.getMethod("getFoos").invoke(res) as List<RosettaModelObject>;
+		
+		assertEquals(2, foos.size);
+		assertThat(foos, hasItems(foo1, foo2)); // appends to existing list
+	}
+	
+	@Test
+	@Disabled
+	def void shouldAddComplexTypeListAliasWithIfStatement() {
+		val model = '''
+			type Bar:
+				foos Foo (0..*)
+
+			type Foo:
+				attr string (1..1)
+			
+			func FuncFoo:
+			 	inputs:
+			 		newFoos Foo (0..*)
+			 		test boolean (1..1)
+				output:
+					bar Bar (1..1)
+			
+				alias filteredFoos: newFoos
+			
+				add bar -> foos:
+					if test
+					then filteredFoos
+		'''
+		val code = model.generateCode
+		val classes = code.compileToClasses
+		val func = classes.createFunc("FuncFoo");
+		
+		val foo1 = classes.createFoo("1")
+		val foo2 = classes.createFoo("2")
+		
+		val res = func.invokeFunc(RosettaModelObject, newArrayList(foo1, foo2), true)
+		
+		// reflective Bar.getFoos()
+		val foos = res.class.getMethod("getFoos").invoke(res) as List<RosettaModelObject>;
+		
+		assertEquals(2, foos.size);
+		assertThat(foos, hasItems(foo1, foo2)); // appends to existing list
+	}
+	
+	@Test
 	def void shouldSetComplexTypeList() {
 		val model = '''
 			type Bar:
