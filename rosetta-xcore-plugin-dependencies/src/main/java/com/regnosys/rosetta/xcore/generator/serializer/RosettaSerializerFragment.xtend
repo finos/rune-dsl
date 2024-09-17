@@ -34,6 +34,12 @@ import static extension org.eclipse.xtext.xtext.generator.model.TypeReference.*
 import static extension org.eclipse.xtext.xtext.generator.util.GenModelUtil2.*
 import java.util.ArrayList
 
+/**
+ * This custom serializer is designed to prevent the semantic sequencer from generating overly large
+ * sequence methods in Java, which can cause compiler errors. It achieves this by encapsulating the
+ * conditional logic of each case statement into separate methods, which are then invoked within the
+ * respective case statements.
+ */
 class RosettaSerializerFragment extends SerializerFragment2 {
 	static val Logger LOG = LoggerFactory.getLogger(RosettaSerializerFragment)
 	
@@ -91,7 +97,186 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 		javaFile.annotations += new SuppressWarningsAnnotation
 		javaFile.writeTo(projectConfig.runtime.srcGen)
 	}
+	
+	private def Iterable<EPackage> getAccessedPackages() {
+		grammar.grammarConstraints.filter[type !== null].map[type.EPackage].toSet.sortBy[name]
+	}
+	
+	private def Iterable<EClass> getAccessedClasses(EPackage pkg) {
+		grammar.grammarConstraints.map[type].filter[it !== null && EPackage == pkg].toSet.sortBy[name]
+	}	
 
+	private def StringConcatenationClient genMethodCreateSequence(Map<IConstraint, IConstraint> superConstraints) {
+		'''
+			@Override
+			public void sequence(«ISerializationContext» context, «EObject» semanticObject) {
+				«EPackage» epackage = semanticObject.eClass().getEPackage();
+				«ParserRule» rule = context.getParserRule();
+				«Action» action = context.getAssignedAction();
+				«Set»<«Parameter»> parameters = context.getEnabledBooleanParameters();
+				«FOR pkg : accessedPackages.indexed»
+					«IF pkg.key > 0»else «ENDIF»if (epackage == «pkg.value».«packageLiteral»)
+						switch (semanticObject.eClass().getClassifierID()) {
+						«FOR type : pkg.value.accessedClasses»
+							case «pkg.value».«type.getIntLiteral(language.resourceSet)»:
+								«genMethodCreateSequenceCaseBody(superConstraints, type)»
+						«ENDFOR»
+						}
+				«ENDFOR»
+				if (errorAcceptor != null)
+					errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
+			}
+		'''
+	}
+
+	private def StringConcatenationClient genParameterCondition(ISerializationContext context, IConstraint constraint) {
+		val values = context.enabledBooleanParameters
+		if (!values.isEmpty) {
+			'''«ImmutableSet».of(«values.map["grammarAccess."+gaAccessor].join(", ")»).equals(parameters)'''
+		} else if (constraint.contexts.exists[!(it as SerializationContext).declaredParameters.isEmpty]) {
+			'''parameters.isEmpty()'''
+		} else {
+			''''''
+		}
+	}
+
+	private def StringConcatenationClient genMethodCreateSequenceCaseBody(Map<IConstraint, IConstraint> superConstraints, EClass type) {
+		val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
+			val context2constraint = LinkedHashMultimap.create
+			for (e : contexts)
+				for (ctx : e.value)
+					context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
+		'''
+			«IF contexts.size > 1»
+				«FOR ctx : contexts.indexed»
+					«IF ctx.key > 0»else «ENDIF»if («genConditionMethodCall(ctx.value.key)») {
+						«genMethodCreateSequenceCall(superConstraints, type, ctx.value.key)»
+					}
+				«ENDFOR»
+				else break;
+			«ELSEIF contexts.size == 1»
+				«genMethodCreateSequenceCall(superConstraints, type, contexts.head.key)»
+			«ELSE»
+				// error, no contexts. 
+			«ENDIF»
+		'''
+	}
+	
+	/**
+	 * Instead of placing large conditional logic directly within each case statement, we now call methods
+	 * that encapsulate that logic. See {@link genConditionMethodCall}.
+	 */
+ 	private def StringConcatenationClient genConditionMethodCall(IConstraint constraint) {
+		'''condition_«constraint.name»(rule, action)'''
+	}
+	
+	/**
+	 * This method generates a separate method that encloses the conditional logic for each case statement.
+	 */
+	private def StringConcatenationClient[] genConditionMethods(Map<IConstraint, IConstraint> superConstraints)	{
+		val ArrayList<StringConcatenationClient> methods = newArrayList
+		
+		for (pkg : accessedPackages.indexed) {
+			for (type : pkg.value.accessedClasses) {
+				val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
+				val context2constraint = LinkedHashMultimap.create
+				for (e : contexts)
+					for (ctx : e.value)
+						context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
+				
+				if (contexts.size > 1) {
+					for (ctx : contexts.indexed) {
+						val serializationContext = ctx.value.value
+						val constraint = ctx.value.key
+						
+						methods.add('''
+							private boolean condition_«constraint.name»(«ParserRule» rule, «Action» action) {
+								return («genCondition(serializationContext, constraint, context2constraint)»);
+							}
+						''')
+					}
+
+				}
+			}
+		}
+		
+		methods
+	}
+				
+	private def StringConcatenationClient genCondition(List<ISerializationContext> contexts, IConstraint constraint, Multimap<EObject, IConstraint> ctx2ctr) {
+		val sorted = contexts.sort
+		val index = LinkedHashMultimap.create
+		sorted.forEach [
+			index.put(contextObject, it)
+		]
+		'''«FOR obj : index.keySet SEPARATOR "\n\t\t|| "»«obj.genObjectSelector»«IF ctx2ctr.get(obj).size > 1»«obj.genParameterSelector(index.get(obj), constraint)»«ENDIF»«ENDFOR»'''
+	}	
+	
+	private def StringConcatenationClient genObjectSelector(EObject obj) {
+		switch obj {
+			Action: '''action == grammarAccess.«obj.gaAccessor»'''
+			ParserRule: '''rule == grammarAccess.«obj.gaAccessor»'''
+		}
+	}		
+	
+	private def StringConcatenationClient genParameterSelector(EObject obj, Set<ISerializationContext> contexts, IConstraint constraint) {
+//		val rule = GrammarUtil.containingParserRule(obj)
+//		if (rule.parameters.isEmpty || !constraint.contexts.exists[!(it as SerializationContext).declaredParameters.isEmpty]) {
+//			return ''''''
+//		}
+//		// figure out which scenarios are independent from the parameter values
+//		val withParamsByRule = LinkedHashMultimap.create
+//		contexts.forEach [
+//			val param = enabledBooleanParameters.head
+//			if (param !== null) {
+//				withParamsByRule.put(GrammarUtil.containingParserRule(param), it)
+//			}
+//		]
+//		val copy = newLinkedHashSet
+//		copy.addAll(contexts)
+//
+//		// and remove these
+//		withParamsByRule.keySet.forEach [
+//			val entries = withParamsByRule.get(it)
+//			if (entries.size === (1 << it.parameters.size) - 1) {
+//				copy.removeAll(entries)
+//			} 
+//		]
+//		
+//		if (copy.isEmpty || copy.exists [ !enabledBooleanParameters.isEmpty ]) {
+//			// param configuration doesn't matter
+//			return ''''''
+//		}
+		return ''' && («FOR context : contexts SEPARATOR "\n\t\t\t|| "»«context.genParameterCondition(constraint)»«ENDFOR»)'''		
+	}
+	
+	private def EObject getContextObject(ISerializationContext context) {
+		context.assignedAction ?: context.parserRule
+	}
+
+	private def StringConcatenationClient genMethodCreateSequenceCall(Map<IConstraint, IConstraint> superConstraints, EClass type, IConstraint key) {
+		val superConstraint = superConstraints.get(key)
+		val constraint = superConstraint ?: key
+		'''
+			sequence_«constraint.simpleName»(context, («type») semanticObject); 
+			return; 
+		'''
+	}	
+				
+	private def StringConcatenationClient genMethodSequenceComment(IConstraint c) '''
+		// This method is commented out because it has the same signature as another method in this class.
+		// This is probably a bug in Xtext's serializer, please report it here: 
+		// https://bugs.eclipse.org/bugs/enter_bug.cgi?product=TMF
+		//
+		// Contexts:
+		//     «c.contexts.sort.join("\n").replaceAll("\\n","\n//     ")»
+		//
+		// Constraint:
+		//     «IF c.body === null»{«c.type.name»}«ELSE»«c.body.toString.replaceAll("\\n","\n//     ")»«ENDIF»
+		//
+		// protected void sequence_«c.simpleName»(«ISerializationContext» context, «c.type» semanticObject) { }
+	'''	
+								
 	private def StringConcatenationClient genMethodSequence(IConstraint c) {
 		val rs = language.resourceSet
 		val StringConcatenationClient cast =
@@ -144,179 +329,5 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 		} else {
 			return '''«getGetAccessor(genFeature, resourceSet)»()'''
 		}
-	}
-		
-	private def StringConcatenationClient genMethodSequenceComment(IConstraint c) '''
-		// This method is commented out because it has the same signature as another method in this class.
-		// This is probably a bug in Xtext's serializer, please report it here: 
-		// https://bugs.eclipse.org/bugs/enter_bug.cgi?product=TMF
-		//
-		// Contexts:
-		//     «c.contexts.sort.join("\n").replaceAll("\\n","\n//     ")»
-		//
-		// Constraint:
-		//     «IF c.body === null»{«c.type.name»}«ELSE»«c.body.toString.replaceAll("\\n","\n//     ")»«ENDIF»
-		//
-		// protected void sequence_«c.simpleName»(«ISerializationContext» context, «c.type» semanticObject) { }
-	'''
-		
-
-		
-	private def StringConcatenationClient genMethodCreateSequence(Map<IConstraint, IConstraint> superConstraints) {
-		'''
-			@Override
-			public void sequence(«ISerializationContext» context, «EObject» semanticObject) {
-				«EPackage» epackage = semanticObject.eClass().getEPackage();
-				«ParserRule» rule = context.getParserRule();
-				«Action» action = context.getAssignedAction();
-				«Set»<«Parameter»> parameters = context.getEnabledBooleanParameters();
-				«FOR pkg : accessedPackages.indexed»
-					«IF pkg.key > 0»else «ENDIF»if (epackage == «pkg.value».«packageLiteral»)
-						switch (semanticObject.eClass().getClassifierID()) {
-						«FOR type : pkg.value.accessedClasses»
-							case «pkg.value».«type.getIntLiteral(language.resourceSet)»:
-								«genMethodCreateSequenceCaseBody(superConstraints, type)»
-						«ENDFOR»
-						}
-				«ENDFOR»
-				if (errorAcceptor != null)
-					errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
-			}
-		'''
-	}
-	
-	private def StringConcatenationClient genMethodCreateSequenceCaseBody(Map<IConstraint, IConstraint> superConstraints, EClass type) {
-		val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
-			val context2constraint = LinkedHashMultimap.create
-			for (e : contexts)
-				for (ctx : e.value)
-					context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
-		'''
-			«IF contexts.size > 1»
-				«FOR ctx : contexts.indexed»
-					«IF ctx.key > 0»else «ENDIF»if («getConditionMethodCall(ctx.value.key)») {
-						«genMethodCreateSequenceCall(superConstraints, type, ctx.value.key)»
-					}
-				«ENDFOR»
-				else break;
-			«ELSEIF contexts.size == 1»
-				«genMethodCreateSequenceCall(superConstraints, type, contexts.head.key)»
-			«ELSE»
-				// error, no contexts. 
-			«ENDIF»
-		'''
-	}	
-	
-	private def StringConcatenationClient genMethodCreateSequenceCall(Map<IConstraint, IConstraint> superConstraints, EClass type, IConstraint key) {
-		val superConstraint = superConstraints.get(key)
-		val constraint = superConstraint ?: key
-		'''
-			sequence_«constraint.simpleName»(context, («type») semanticObject); 
-			return; 
-		'''
-	}
-	
-	private def StringConcatenationClient getConditionMethodCall(IConstraint constraint) {
-		'''condition_«constraint.name»(rule, action)'''
-	}
-	
-	private def StringConcatenationClient[] genConditionMethods(Map<IConstraint, IConstraint> superConstraints)	{
-		val ArrayList<StringConcatenationClient> methods = newArrayList
-		
-		for (pkg : accessedPackages.indexed) {
-			for (type : pkg.value.accessedClasses) {
-				val contexts = grammar.getGrammarConstraints(type).entrySet.sortBy[key.name]
-				val context2constraint = LinkedHashMultimap.create
-				for (e : contexts)
-					for (ctx : e.value)
-						context2constraint.put((ctx as SerializationContext).actionOrRule, e.key)
-				
-				if (contexts.size > 1) {
-					for (ctx : contexts.indexed) {
-						val serializationContext = ctx.value.value
-						val constraint = ctx.value.key
-						
-						methods.add('''
-							private boolean condition_«constraint.name»(«ParserRule» rule, «Action» action) {
-								return («genCondition(serializationContext, constraint, context2constraint)»);
-							}
-						''')
-					}
-
-				}
-			}
-		}
-		
-		methods
-	}	
-		
-	private def StringConcatenationClient genCondition(List<ISerializationContext> contexts, IConstraint constraint, Multimap<EObject, IConstraint> ctx2ctr) {
-		val sorted = contexts.sort
-		val index = LinkedHashMultimap.create
-		sorted.forEach [
-			index.put(contextObject, it)
-		]
-		'''«FOR obj : index.keySet SEPARATOR "\n\t\t|| "»«obj.genObjectSelector»«IF ctx2ctr.get(obj).size > 1»«obj.genParameterSelector(index.get(obj), constraint)»«ENDIF»«ENDFOR»'''
-	}	
-	
-	private def StringConcatenationClient genParameterSelector(EObject obj, Set<ISerializationContext> contexts, IConstraint constraint) {
-//		val rule = GrammarUtil.containingParserRule(obj)
-//		if (rule.parameters.isEmpty || !constraint.contexts.exists[!(it as SerializationContext).declaredParameters.isEmpty]) {
-//			return ''''''
-//		}
-//		// figure out which scenarios are independent from the parameter values
-//		val withParamsByRule = LinkedHashMultimap.create
-//		contexts.forEach [
-//			val param = enabledBooleanParameters.head
-//			if (param !== null) {
-//				withParamsByRule.put(GrammarUtil.containingParserRule(param), it)
-//			}
-//		]
-//		val copy = newLinkedHashSet
-//		copy.addAll(contexts)
-//
-//		// and remove these
-//		withParamsByRule.keySet.forEach [
-//			val entries = withParamsByRule.get(it)
-//			if (entries.size === (1 << it.parameters.size) - 1) {
-//				copy.removeAll(entries)
-//			} 
-//		]
-//		
-//		if (copy.isEmpty || copy.exists [ !enabledBooleanParameters.isEmpty ]) {
-//			// param configuration doesn't matter
-//			return ''''''
-//		}
-		return ''' && («FOR context : contexts SEPARATOR "\n\t\t\t|| "»«context.genParameterCondition(constraint)»«ENDFOR»)'''		
-	}
-
-	private def StringConcatenationClient genParameterCondition(ISerializationContext context, IConstraint constraint) {
-		val values = context.enabledBooleanParameters
-		if (!values.isEmpty) {
-			'''«ImmutableSet».of(«values.map["grammarAccess."+gaAccessor].join(", ")»).equals(parameters)'''
-		} else if (constraint.contexts.exists[!(it as SerializationContext).declaredParameters.isEmpty]) {
-			'''parameters.isEmpty()'''
-		} else {
-			''''''
-		}
-	}
-			
-	private def StringConcatenationClient genObjectSelector(EObject obj) {
-		switch obj {
-			Action: '''action == grammarAccess.«obj.gaAccessor»'''
-			ParserRule: '''rule == grammarAccess.«obj.gaAccessor»'''
-		}
-	}	
-	private def EObject getContextObject(ISerializationContext context) {
-		context.assignedAction ?: context.parserRule
-	}
-		
-	private def Iterable<EPackage> getAccessedPackages() {
-		grammar.grammarConstraints.filter[type !== null].map[type.EPackage].toSet.sortBy[name]
-	}
-	
-	private def Iterable<EClass> getAccessedClasses(EPackage pkg) {
-		grammar.grammarConstraints.map[type].filter[it !== null && EPackage == pkg].toSet.sortBy[name]
-	}
-		
+	}																
 }
