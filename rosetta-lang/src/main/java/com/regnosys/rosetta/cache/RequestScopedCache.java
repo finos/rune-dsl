@@ -27,20 +27,20 @@ public class RequestScopedCache implements IRequestScopedCache {
 	
 	@SuppressWarnings("unchecked")
 	public <T> T get(Object key, Provider<T> provider) {
-		Object v = values.get(key);
-		if (v == NULL) {
-			return null;
-		}
-		if (v != null) {
-			return (T)v;
-		}
+//		Object v = values.get(key);
+//		if (v == NULL) {
+//			return null;
+//		}
+//		if (v != null) {
+//			return (T)v;
+//		}
 		
 		T computed = provider.get();
-		if (computed == null) {
-			values.put(key, NULL);
-		} else {
-			values.put(key, computed);
-		}
+//		if (computed == null) {
+//			values.put(key, NULL);
+//		} else {
+//			values.put(key, computed);
+//		}
 		return computed;
 	}
 	
