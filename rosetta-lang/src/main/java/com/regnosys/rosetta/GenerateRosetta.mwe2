@@ -2,6 +2,7 @@ module com.regnosys.rosetta.GenerateRosetta
 
 import com.regnosys.rosetta.xcore.compressor.ParserCompressorFragment
 import com.regnosys.rosetta.xcore.extractor.ParserCaseExtractorFragment
+import com.regnosys.rosetta.xcore.generator.serializer.RosettaSerializerFragment
 
 import org.eclipse.xtext.xtext.generator.XtextGenerator
 import org.eclipse.xtext.xtext.generator.StandardLanguage
@@ -70,7 +71,7 @@ Workflow {
 				// set to true to get a debug Grammar
 				debugGrammar = true
 			}
-			serializer = {
+			serializer = RosettaSerializerFragment {
 				generateStub = false
 			}
 			validator = {
