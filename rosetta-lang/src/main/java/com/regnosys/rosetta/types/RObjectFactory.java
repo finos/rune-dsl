@@ -172,9 +172,6 @@ public class RObjectFactory {
 	public RAttribute buildRAttribute(Attribute attribute) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);
 		boolean isMeta =  attribute.getTypeCall().getType() instanceof RosettaMetaType;
-//		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
-//				.filter(a -> a.getAnnotation().getName().equals("metadata") && a.getAttribute() != null).map(a -> buildRAttribute(a.getAttribute(), true))
-//				.collect(Collectors.toList());
 		PositiveIntegerInterval card = new PositiveIntegerInterval(
 				attribute.getCard().getInf(),
 				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));

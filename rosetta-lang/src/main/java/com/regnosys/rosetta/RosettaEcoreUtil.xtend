@@ -132,7 +132,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def boolean hasMetaDataAnnotations(RAttribute attribute) {
-		attribute.metaAnnotations.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
+		attribute.RType.metaAttributes.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
 	}
 	
 	def boolean hasMetaDataAnnotations(Annotated it) {
@@ -144,7 +144,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def boolean hasMetaDataAddress(RAttribute attribute) {
-		attribute.metaAnnotations.exists[name == "address"]
+		attribute.RType.metaAttributes.exists[name == "address"]
 	}
 	
 	def boolean hasMetaDataAddress(Annotated it) {
@@ -155,7 +155,7 @@ class RosettaEcoreUtil {
 		metaAnnotations.exists[attribute?.name == "id"]
 	}
 	def boolean hasIdAnnotation(RAttribute it) {
-		metaAnnotations.exists[name == "id"]
+		RType.metaAttributes.exists[name == "id"]
 	}
 	def boolean hasReferenceAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference"]
@@ -245,7 +245,6 @@ class RosettaEcoreUtil {
 				null,
 				emptyList,
 				provideMetaFieldsType(t),
-				emptyList,
 				PositiveIntegerInterval.bounded(0, 1),
 				null,
 				null

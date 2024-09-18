@@ -442,7 +442,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.isMulti»
 				.map(«lambdaParam» -> «lambdaParam».stream()
-					«IF !attr.metaAnnotations.empty»
+					«IF attr.RType.hasMeta»
 						.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 						.filter(«Objects»::nonNull)
 					«ENDIF»
@@ -451,14 +451,14 @@ class TabulatorGenerator {
 				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
 				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				«IF !attr.metaAnnotations.empty».map(«lambdaParam» -> «lambdaParam».getValue())«ENDIF»
+				«IF attr.RType.hasMeta».map(«lambdaParam» -> «lambdaParam».getValue())«ENDIF»
 				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»))))
 				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''
 		} else {
 			'''
-			«IF attr.metaAnnotations.empty»
+			«IF !attr.RType.hasMeta»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»()));
 			«ELSEIF attr.isMulti»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())

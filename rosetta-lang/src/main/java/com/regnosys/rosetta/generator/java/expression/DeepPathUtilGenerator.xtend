@@ -93,7 +93,7 @@ class DeepPathUtilGenerator {
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
-		val deepFeatureHasMeta = !deepFeature.metaAnnotations.empty
+		val deepFeatureHasMeta = deepFeature.RType.hasMeta
 		val attrs = choiceType.allNonOverridenAttributes.toList
 		var JavaStatementBuilder acc = JavaExpression.NULL
 		for (a : attrs.reverseView) {

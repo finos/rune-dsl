@@ -154,7 +154,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR a : c.allJavaAttributes»
-				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
+				«IF a.RType instanceof RDataType || a.RType.hasMeta»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -168,7 +168,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR a : t.allJavaAttributes»
-				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
+				«IF a.RType instanceof RDataType || a.RType.hasMeta»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -193,6 +193,6 @@ class ModelObjectBoilerPlate {
 	}
 	
 	def needsBuilder(RAttribute attribute){
-		attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty
+		attribute.RType instanceof RDataType || attribute.RType.hasMeta
 	}
 }

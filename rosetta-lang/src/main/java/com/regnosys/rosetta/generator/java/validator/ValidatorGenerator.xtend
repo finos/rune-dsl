@@ -149,7 +149,7 @@ class ValidatorGenerator {
 	}
 	
 	private def StringConcatenationClient getAttributeValue(RAttribute attr) {
-		if (attr.metaAnnotations.empty) {
+		if (!attr.RType.hasMeta) {
 			'''o.get«attr.name?.toFirstUpper»()'''
 		} else {
 			val jt = attr.toMetaJavaType
