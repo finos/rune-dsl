@@ -133,7 +133,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		if (!extensions.isResolved(symbol)) {
 			return NOTHING
 		}
-		switch symbol {
+		val rType = switch symbol {
 			RosettaFeature: {
 				safeRType(symbol as RosettaFeature, context, cycleTracker)
 			}
@@ -174,12 +174,17 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				symbol.typeCall.typeCallToRType
 			}
 		}
+		
+		if (symbol instanceof Annotated) {
+			rType.metaAttributes = symbol.RMetaAttributes
+		}	
+		rType
 	}
 	private def RType safeRType(RosettaFeature feature, EObject context, Map<EObject, RType> cycleTracker) {
 		if (!extensions.isResolved(feature)) {
 			return NOTHING
 		}
-		switch (feature) {
+		val rType = switch (feature) {
 			RosettaTypedFeature: {
 				val featureType = if (feature.typeCall === null) {
 						NOTHING
@@ -203,7 +208,20 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			default:
 				new RErrorType("Cannot infer type of feature.")
 		}
+		
+		if (feature instanceof Annotated) {
+			rType.metaAttributes = feature.RMetaAttributes
+		}		
+		rType
 	}
+	
+	private def RMetaAttribute[] getRMetaAttributes(Annotated annoted) {
+		annoted.annotations
+			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
+			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
+	}
+	
+	
 	private def RType safeRType(RosettaExpression expression, Map<EObject, RType> cycleTracker) {
 		getRTypeFromCache(EXPRESSION_RTYPE_CACHE_KEY, expression, [
 			if (cycleTracker.containsKey(expression)) {

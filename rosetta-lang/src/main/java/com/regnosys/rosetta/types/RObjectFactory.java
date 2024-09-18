@@ -168,12 +168,10 @@ public class RObjectFactory {
 		
 		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
-
+	
 	public RAttribute buildRAttribute(Attribute attribute) {
-		return buildRAttribute(attribute, attribute.getTypeCall().getType() instanceof RosettaMetaType);
-	}
-	private RAttribute buildRAttribute(Attribute attribute, boolean isMeta) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);
+		boolean isMeta =  attribute.getTypeCall().getType() instanceof RosettaMetaType;
 //		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
 //				.filter(a -> a.getAnnotation().getName().equals("metadata") && a.getAttribute() != null).map(a -> buildRAttribute(a.getAttribute(), true))
 //				.collect(Collectors.toList());
