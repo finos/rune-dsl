@@ -74,7 +74,7 @@ public class RObjectFactory {
 	
 	// TODO: should be private
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		return new RAttribute(name, null, Collections.emptyList(), type, List.of(), isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
+		return new RAttribute(name, null, Collections.emptyList(), type, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
@@ -174,15 +174,15 @@ public class RObjectFactory {
 	}
 	private RAttribute buildRAttribute(Attribute attribute, boolean isMeta) {
 		RType rType = typeProvider.getRTypeOfSymbol(attribute);
-		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
-				.filter(a -> a.getAnnotation().getName().equals("metadata") && a.getAttribute() != null).map(a -> buildRAttribute(a.getAttribute(), true))
-				.collect(Collectors.toList());
+//		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
+//				.filter(a -> a.getAnnotation().getName().equals("metadata") && a.getAttribute() != null).map(a -> buildRAttribute(a.getAttribute(), true))
+//				.collect(Collectors.toList());
 		PositiveIntegerInterval card = new PositiveIntegerInterval(
 				attribute.getCard().getInf(),
 				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));
 		RosettaRuleReference ruleRef = attribute.getRuleReference();
 
-		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rType, metaAnnotations,
+		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rType,
 				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
 	}
 
