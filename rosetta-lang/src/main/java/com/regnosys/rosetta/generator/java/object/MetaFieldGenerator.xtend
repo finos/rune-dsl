@@ -85,9 +85,12 @@ class MetaFieldGenerator {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter [
-				metaAnnotations.exists[name == "reference" || name == "address"]
-			].toSet
+			val refs = nsc.value
+						.filter(Data)
+						.flatMap[buildRDataType.ownAttributes]
+						.filter [
+							RType.metaAttributes.exists[name == "reference" || name == "address"]
+						].toSet
 			
 			for (ref : refs) {
 				val targetModel = ref.RType.namespace
@@ -104,9 +107,12 @@ class MetaFieldGenerator {
 
 
 			//find all the metaed types
-			val metas =  nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter[
-				!metaAnnotations.exists[name=="reference" || name=="address"]
-			].toSet
+			val metas =  nsc.value
+							.filter(Data)
+							.flatMap[buildRDataType.ownAttributes]
+							.filter[
+								!RType.metaAttributes.exists[name=="reference" || name=="address"]
+							].toSet
 
 			for (meta:metas) {
 				val targetModel = meta.RType.namespace
@@ -221,7 +227,7 @@ class MetaFieldGenerator {
 
 	def CharSequence fieldWithMeta(RootPackage root, JavaClass<?> metaJavaType, RType valueType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType, emptyList, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, valueType, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
@@ -280,7 +286,7 @@ class MetaFieldGenerator {
 	
 	def referenceWithMeta(RootPackage root, JavaClass<?> metaJavaType, RType valueType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType, emptyList, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, valueType, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 			
 		val Data d = SimpleFactory.eINSTANCE.createData;
