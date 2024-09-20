@@ -61,9 +61,9 @@ class ModelObjectBuilderGenerator {
 			public «javaType.toBuilderType» prune() {
 				«IF superInterface != ROSETTA_MODEL_OBJECT»super.prune();«ENDIF»
 				«FOR attribute : attrs»
-					«IF !attribute.isMulti && (attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty)»
+					«IF !attribute.isMulti && (attribute.RType instanceof RDataType || attribute.RType.hasMeta)»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
-					«ELSEIF attribute.isMulti && attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
+					«ELSEIF attribute.isMulti && attribute.RType instanceof RDataType || attribute.RType.hasMeta»
 						«builderScope.getIdentifierOrThrow(attribute)» = «builderScope.getIdentifierOrThrow(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
@@ -91,7 +91,7 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 			«builderName» o = («builderName») other;
 			
-			«FOR a : attributes.filter[RType instanceof RDataType || !metaAnnotations.isEmpty]»
+			«FOR a : attributes.filter[RType instanceof RDataType || RType.hasMeta]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.isMulti»
 					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName»);
@@ -100,7 +100,7 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[!(RType instanceof RDataType) && metaAnnotations.isEmpty]»
+			«FOR a : attributes.filter[!(RType instanceof RDataType) && !RType.hasMeta]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.isMulti»
 					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«a.toItemJavaType»>) this::add«attributeName»);
@@ -121,7 +121,7 @@ class ModelObjectBuilderGenerator {
 				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 
-			«IF attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RType instanceof RDataType || attribute.RType.hasMeta»
 				«IF !attribute.isMulti»
 					@Override
 					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»() {
@@ -131,7 +131,7 @@ class ModelObjectBuilderGenerator {
 						}
 						else {
 							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toMetaItemJavaType».builder();
-							«IF !attribute.metaAnnotations.filter[m|m.name=="location"].isEmpty»
+							«IF !attribute.RType.metaAttributes.filter[m|m.name=="location"].isEmpty»
 								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
 						}
@@ -148,7 +148,7 @@ class ModelObjectBuilderGenerator {
 						«attribute.toBuilderTypeSingle» result;
 						return getIndex(«scope.getIdentifierOrThrow(attribute)», _index, () -> {
 									«attribute.toBuilderTypeSingle» new«attribute.name.toFirstUpper» = «attribute.toMetaItemJavaType».builder();
-									«IF !attribute.metaAnnotations.filter[m|m.name=="location"].isEmpty»
+									«IF !attribute.RType.metaAttributes.filter[m|m.name=="location"].isEmpty»
 										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
 									«ENDIF»
 									return new«attribute.name.toFirstUpper»;
@@ -183,7 +183,7 @@ class ModelObjectBuilderGenerator {
 				getIndex(this.«scope.getIdentifierOrThrow(attribute)», _idx, () -> «attribute.toBuilder(scope)»);
 				return this;
 			}
-			«IF !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RType.hasMeta»
 			
 			@Override
 			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «scope.getIdentifierOrThrow(attribute)») {
@@ -220,7 +220,7 @@ class ModelObjectBuilderGenerator {
 				}
 				return this;
 			}
-			«IF !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RType.hasMeta»
 				
 				@Override
 				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
@@ -249,7 +249,7 @@ class ModelObjectBuilderGenerator {
 				this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»==null?null:«attribute.toBuilder(scope)»;
 				return this;
 			}
-			«IF !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RType.hasMeta»
 				@Override
 				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «scope.getIdentifierOrThrow(attribute)») {
 					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«scope.getIdentifierOrThrow(attribute)»);
@@ -288,12 +288,12 @@ class ModelObjectBuilderGenerator {
 	}
 
 	private def StringConcatenationClient toBuilderTypeExt(RAttribute attribute) {
-		if (attribute.isMulti) '''List<«IF attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»? extends «ENDIF»«attribute.toBuilderTypeSingle»>'''
+		if (attribute.isMulti) '''List<«IF attribute.RType instanceof RDataType || attribute.RType.hasMeta»? extends «ENDIF»«attribute.toBuilderTypeSingle»>'''
 		else '''«attribute.toBuilderTypeSingle»'''
 	}
 
 	def StringConcatenationClient toBuilderTypeSingle(RAttribute attribute) {
-		if (!attribute.metaAnnotations.isEmpty) {
+		if (attribute.RType.hasMeta) {
 			'''«attribute.toMetaItemJavaType.toBuilderType»'''
 		} else {
 			'''«attribute.toBuilderTypeUnderlying»'''
