@@ -89,9 +89,9 @@ public class RBuiltinTypeService {
 	public final RNumberType UNCONSTRAINED_NUMBER = new RNumberType(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), List.of());
 	public final RStringType UNCONSTRAINED_STRING = new RStringType(Optional.empty(), Optional.empty(), Optional.empty(), List.of());
 	
-	public final RDateType DATE = registerConstantType(new RDateType());
-	public final RDateTimeType DATE_TIME = registerConstantType(new RDateTimeType());
-	public final RZonedDateTimeType ZONED_DATE_TIME = registerConstantType(new RZonedDateTimeType());
+	public final RDateType DATE = registerConstantType(new RDateType(List.of()));
+	public final RDateTimeType DATE_TIME = registerConstantType(new RDateTimeType(List.of()));
+	public final RZonedDateTimeType ZONED_DATE_TIME = registerConstantType(new RZonedDateTimeType(List.of()));
 	
 	public RBuiltinTypeService() {
 		register("number", (m) -> RNumberType.from(m));
