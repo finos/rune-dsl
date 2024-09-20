@@ -428,13 +428,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
 		val resultType = attribute.toMetaItemJavaType
 		if (attribute.isMulti) {
-			if (attribute.metaAnnotations.nullOrEmpty || !autoValue)
+			if (!attribute.RType.hasMeta || !autoValue)
 				'''.<«resultType»>mapC(«mapFunc»)'''
 			else {
 				'''.<«resultType»>mapC(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
 			}
 		} else {
-			if (attribute.metaAnnotations.nullOrEmpty || !autoValue) {
+			if (!attribute.RType.hasMeta || !autoValue) {
 				'''.<«resultType»>map(«mapFunc»)'''
 			} else
 				'''.<«resultType»>map(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
