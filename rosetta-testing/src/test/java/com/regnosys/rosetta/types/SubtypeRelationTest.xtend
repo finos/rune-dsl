@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -20,12 +21,63 @@ class SubtypeRelationTest {
 	@Inject extension SubtypeRelation
 	@Inject extension ModelHelper
 	@Inject extension RObjectFactory
+	@Inject extension ExpressionParser
+	@Inject extension RosettaTypeProvider
+	
 	
 	private def Data getData(RosettaModel model, String name) {
 		return model.elements.filter(RosettaNamed).findFirst[it.name == name] as Data
 	}
 	private def RosettaEnumeration getEnum(RosettaModel model, String name) {
 		return model.elements.filter(RosettaNamed).findFirst[it.name == name] as RosettaEnumeration
+	}
+	
+	@Test
+	def testStringWithMetaIsSubtypeOfStringWithMeta() {
+				val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertTrue(fieldA.isSubtypeOf(fieldB))
+		assertTrue(fieldB.isSubtypeOf(fieldA))
+	}
+	
+	@Test
+	def testStringWithSchemeIsNotSubtypeOfStringWithSchemeAndReference() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertFalse(fieldB.isSubtypeOf(fieldA))
+	}
+	
+	@Test
+	def testStringWithSchemeAndReferenceIsSubTypeOfStringWithScheme() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertTrue(fieldA.isSubtypeOf(fieldB))
 	}
 	
 	@Test

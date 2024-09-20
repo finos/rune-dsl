@@ -1,12 +1,14 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
@@ -18,6 +20,17 @@ public class SubtypeRelation {
 	
 	public boolean isSubtypeOf(RType t1, RType t2) {
 		if (t1.equals(t2)) {
+			if (t1.hasMeta() || t2.hasMeta()) {
+				HashSet<RMetaAttribute> t1Metas = new HashSet<>(t1.getMetaAttributes());
+				HashSet<RMetaAttribute> t2Metas = new HashSet<>(t2.getMetaAttributes());
+				if (t1Metas.equals(t2Metas)) {
+					return true;
+				}
+				if (!Sets.difference(t1Metas, t2Metas).isEmpty()) {
+					return true;
+				}
+				return false;
+			}
 			return true;
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
 			return true;
