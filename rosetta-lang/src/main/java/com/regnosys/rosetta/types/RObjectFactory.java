@@ -203,13 +203,25 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, modelIdProvider, this);
+		return new RDataType(data, List.of(), modelIdProvider, this);
 	}
 	// TODO: remove this hack
 	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
-		return new RDataType(data, modelIdProvider, this, additionalAttributes);
+		return new RDataType(data, List.of(), modelIdProvider, this, additionalAttributes);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
-		return new REnumType(enumeration, modelIdProvider, this);
+		return new REnumType(enumeration, List.of(),  modelIdProvider, this);
+	}
+
+	public RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
+		if (type instanceof RDataType) {
+			RDataType t = (RDataType) type;
+			return new RDataType(t.getEObject(), metaAttributes, modelIdProvider, this);
+		} else if (type instanceof REnumType) {
+			REnumType t = (REnumType) type;
+			return new REnumType(t.getEObject(), metaAttributes, modelIdProvider, this);
+		} else {
+			return type;
+		}
 	}
 }

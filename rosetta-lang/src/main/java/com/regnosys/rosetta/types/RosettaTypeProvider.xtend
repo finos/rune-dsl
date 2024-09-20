@@ -176,7 +176,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 		
 		if (symbol instanceof Annotated) {
-			rType.metaAttributes = symbol.RMetaAttributes
+			return rType.withMeta(symbol.RMetaAttributes)
 		}	
 		rType
 	}
@@ -210,7 +210,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 		
 		if (feature instanceof Annotated) {
-			rType.metaAttributes = feature.RMetaAttributes
+			return rType.withMeta(feature.RMetaAttributes)
 		}		
 		rType
 	}

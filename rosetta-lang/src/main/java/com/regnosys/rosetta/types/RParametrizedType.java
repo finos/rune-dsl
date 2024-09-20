@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,7 +27,8 @@ import com.regnosys.rosetta.interpreter.RosettaValue;
 public abstract class RParametrizedType extends RType {
 	private final LinkedHashMap<String, RosettaValue> arguments;
 	
-	public RParametrizedType(LinkedHashMap<String, RosettaValue> arguments) {
+	public RParametrizedType(LinkedHashMap<String, RosettaValue> arguments, List<RMetaAttribute> metaAttributes) {
+		super(metaAttributes);
 		this.arguments = arguments;
 	}
 

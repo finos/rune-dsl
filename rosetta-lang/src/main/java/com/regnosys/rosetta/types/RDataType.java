@@ -44,16 +44,16 @@ public class RDataType extends RAnnotateType implements RObject {
 	// TODO: remove this hack
 	private List<RAttribute> additionalAttributes = null;
 
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
-		super();
+	public RDataType(final Data data, List<RMetaAttribute> metaAttributes, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
+		super(metaAttributes);
 		this.data = data;
 		
 		this.modelIdProvider = modelIdProvider;
 		this.objectFactory = objectFactory;
 	}
 	// TODO: remove this hack
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
-		this(data, modelIdProvider, objectFactory);
+	public RDataType(final Data data, List<RMetaAttribute> metaAttributes, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
+		this(data, metaAttributes, modelIdProvider, objectFactory);
 		this.additionalAttributes = additionalAttributes;
 	}
 	
@@ -73,7 +73,7 @@ public class RDataType extends RAnnotateType implements RObject {
 	public RDataType getSuperType() {
 		if (data.hasSuperType()) {
 			if (this.superType == null) {
-				this.superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory);
+				this.superType = new RDataType(data.getSuperType(), List.of(), modelIdProvider, objectFactory);
 			}
 			return this.superType;
 		}

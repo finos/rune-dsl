@@ -18,6 +18,7 @@ package com.regnosys.rosetta.types.builtin;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -72,16 +73,21 @@ public class RBuiltinTypeService {
 		}
 	};
 	
-	public final RBasicType BOOLEAN = registerConstantType(new RBasicType("boolean", true));
-	public final RBasicType TIME = registerConstantType(new RBasicType("time", true));
-	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", false));
+	public final RBasicType BOOLEAN = registerConstantType(new RBasicType("boolean", List.of(), true));
+	public final RBasicType TIME = registerConstantType(new RBasicType("time", List.of(), true));
+	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", List.of(), false));
 	// TODO: remove the MISSING type
-	public final RBasicType MISSING = registerConstantType(new RBasicType("missing", true));
-	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
-	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
-	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()));
-	public final RNumberType UNCONSTRAINED_NUMBER = new RNumberType(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-	public final RStringType UNCONSTRAINED_STRING = new RStringType(Optional.empty(), Optional.empty(), Optional.empty());
+	public final RBasicType MISSING = registerConstantType(new RBasicType("missing", List.of(), true));
+	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", List.of(), true));
+	public final RBasicType ANY = registerConstantType(new RBasicType("any",  List.of(),false));
+	public final RAliasType UNCONSTRAINED_INT = new RAliasType(
+				INT_FUNCTION, 
+				new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), 
+				new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty(), List.of()),
+				List.of()
+			);
+	public final RNumberType UNCONSTRAINED_NUMBER = new RNumberType(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), List.of());
+	public final RStringType UNCONSTRAINED_STRING = new RStringType(Optional.empty(), Optional.empty(), Optional.empty(), List.of());
 	
 	public final RDateType DATE = registerConstantType(new RDateType());
 	public final RDateTimeType DATE_TIME = registerConstantType(new RDateTimeType());

@@ -21,7 +21,11 @@ import java.util.List;
 import com.rosetta.model.lib.ModelSymbol;
 
 public abstract class RType implements ModelSymbol {
-	private List<RMetaAttribute> metaAttributes = List.of();
+	private final List<RMetaAttribute> metaAttributes;
+	
+	protected RType(List<RMetaAttribute> metaAttributes) {
+		this.metaAttributes = metaAttributes;
+	}
 	
 	public boolean hasMeta() {
 		return !metaAttributes.isEmpty();
@@ -39,9 +43,9 @@ public abstract class RType implements ModelSymbol {
 		return metaAttributes;
 	}
 	
-	public void setMetaAttributes(List<RMetaAttribute> metaAttributes) {
-		this.metaAttributes = metaAttributes == null ? List.of() : metaAttributes;
-	}
+//	public void setMetaAttributes(List<RMetaAttribute> metaAttributes) {
+//		this.metaAttributes = metaAttributes == null ? List.of() : metaAttributes;
+//	}
 
 	@Deprecated
 	public boolean hasReferenceOrAddressMetadata() {

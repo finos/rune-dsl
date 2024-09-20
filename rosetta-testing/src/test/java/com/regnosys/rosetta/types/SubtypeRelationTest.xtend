@@ -14,6 +14,10 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.tests.util.ExpressionParser
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RStringType
+import java.util.Optional
+import com.regnosys.rosetta.utils.PositiveIntegerInterval
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -23,6 +27,7 @@ class SubtypeRelationTest {
 	@Inject extension RObjectFactory
 	@Inject extension ExpressionParser
 	@Inject extension RosettaTypeProvider
+	@Inject extension RBuiltinTypeService
 	
 	
 	private def Data getData(RosettaModel model, String name) {
@@ -33,8 +38,28 @@ class SubtypeRelationTest {
 	}
 	
 	@Test
+	def testJoinOnSameBaseTypeWithMetaIsCorrect() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+				[metadata scheme]
+				[metadata address]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val expected = new RStringType(Optional.empty(), Optional.empty(), Optional.empty());
+		expected.addMetaToType("scheme")
+		
+		assertEquals(expected, fieldA.join(fieldB))
+	}
+	
+	@Test
 	def testStringWithMetaIsSubtypeOfStringWithMeta() {
-				val fieldA = '''
+		val fieldA = '''
 			fieldA string (1..1)
 				[metadata scheme]
 		'''.parseAttribute.RTypeOfSymbol
@@ -120,5 +145,11 @@ class SubtypeRelationTest {
 		val b = model.getEnum('B').buildREnumType
 		
 		assertFalse(a.isSubtypeOf(b))
+	}
+	
+	private def RType addMetaToType(RType type, String metaName) {
+		val metas = type.metaAttributes + #[new RMetaAttribute(metaName, UNCONSTRAINED_STRING)]
+		type.metaAttributes = metas.toList
+		type
 	}
 }

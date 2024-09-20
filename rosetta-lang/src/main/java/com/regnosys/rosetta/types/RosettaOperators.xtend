@@ -33,7 +33,7 @@ class RosettaOperators {
 					val s1 = l as RStringType
 					val s2 = r as RStringType
 					val newInterval = s1.interval.add(s2.interval)
-					new RStringType(newInterval, Optional.empty())
+					new RStringType(newInterval, Optional.empty(), #[])
 				])
 			} else if (left.isSubtypeOf(UNCONSTRAINED_NUMBER) && right.isSubtypeOf(UNCONSTRAINED_NUMBER)) {
 				keepTypeAliasIfPossible(left, right, [l,r|
@@ -41,7 +41,7 @@ class RosettaOperators {
 					val n2 = r as RNumberType
 					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
 					val newInterval = n1.interval.add(n2.interval)
-					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty(), #[])
 				])
 			}
 		} else if (op == '-') {
@@ -53,7 +53,7 @@ class RosettaOperators {
 					val n2 = r as RNumberType
 					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
 					val newInterval = n1.interval.subtract(n2.interval)
-					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty(), #[])
 				])
 			}
 		} else if (op == '*') {
@@ -63,7 +63,7 @@ class RosettaOperators {
 					val n2 = r as RNumberType
 					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|a+b])
 					val newInterval = n1.interval.multiply(n2.interval)
-					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty())
+					new RNumberType(Optional.empty(), newFractionalDigits, newInterval, Optional.empty(), #[])
 				])
 			}
 		} else if (op == '/') {

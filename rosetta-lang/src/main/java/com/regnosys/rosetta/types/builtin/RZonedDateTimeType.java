@@ -19,13 +19,15 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.Collection;
 import java.util.List;
 
+import com.regnosys.rosetta.types.RMetaAttribute;
+
 public class RZonedDateTimeType extends RRecordType {
 	private final RRecordFeature dateFeature;
 	private final RRecordFeature timeFeature;
 	private final RRecordFeature timezoneFeature;
 
-	public RZonedDateTimeType() {
-		super("zonedDateTime");
+	public RZonedDateTimeType(List<RMetaAttribute> metaAttributes) {
+		super("zonedDateTime", metaAttributes);
 		this.dateFeature = new RRecordFeature("date");
 		this.timeFeature = new RRecordFeature("time");
 		this.timezoneFeature = new RRecordFeature("timezone");

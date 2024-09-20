@@ -37,8 +37,8 @@ public class REnumType extends RAnnotateType implements RObject {
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
 
-	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
-		super();
+	public REnumType(final RosettaEnumeration enumeration, List<RMetaAttribute> metaAttributes, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
+		super(metaAttributes);
 		this.enumeration = enumeration;
 		
 		this.modelIdProvider = modelIdProvider;
