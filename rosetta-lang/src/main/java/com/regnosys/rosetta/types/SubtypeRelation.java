@@ -1,17 +1,15 @@
 package com.regnosys.rosetta.types;
 
-import static com.regnosys.rosetta.utils.MetaUtil.intersectMeta;
+import static com.regnosys.rosetta.utils.MetaUtil.*;
 
 import java.util.ArrayList;
 
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
@@ -101,22 +99,6 @@ public class SubtypeRelation {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
-	
-	private boolean hasSupersetOfMetaAttributes(RType t1, RType t2) {
-		if (t1.getMetaAttributes().isEmpty() && t2.getMetaAttributes().isEmpty()) {
-			return true;
-		}
-		HashSet<RMetaAttribute> t1Metas = new HashSet<>(t1.getMetaAttributes());
-		HashSet<RMetaAttribute> t2Metas = new HashSet<>(t2.getMetaAttributes());
-		if (t1Metas.equals(t2Metas)) {
-			return true;
-		}
-		if (!Sets.difference(t1Metas, t2Metas).isEmpty()) {
-			return true;
-		}
-		return false;
-	}
-	
 	
 	private RType joinByTraversingAncestorsAndAliases(RType t1, RType t2) {
 		// Get a list of all Data/Alias ancestors of t1, including t1 itself.

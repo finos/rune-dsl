@@ -15,4 +15,19 @@ public class MetaUtil {
 				.immutableCopy()
 				.asList();
 	}
+	
+	public static boolean hasSupersetOfMetaAttributes(RType t1, RType t2) {
+		if (t1.getMetaAttributes().isEmpty() && t2.getMetaAttributes().isEmpty()) {
+			return true;
+		}
+		HashSet<RMetaAttribute> t1Metas = new HashSet<>(t1.getMetaAttributes());
+		HashSet<RMetaAttribute> t2Metas = new HashSet<>(t2.getMetaAttributes());
+		if (t1Metas.equals(t2Metas)) {
+			return true;
+		}
+		if (!Sets.difference(t1Metas, t2Metas).isEmpty()) {
+			return true;
+		}
+		return false;
+	}
 }
