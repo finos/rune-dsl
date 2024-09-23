@@ -42,10 +42,6 @@ public abstract class RType implements ModelSymbol {
 	public List<RMetaAttribute> getMetaAttributes() {
 		return metaAttributes;
 	}
-	
-//	public void setMetaAttributes(List<RMetaAttribute> metaAttributes) {
-//		this.metaAttributes = metaAttributes == null ? List.of() : metaAttributes;
-//	}
 
 	@Deprecated
 	public boolean hasReferenceOrAddressMetadata() {

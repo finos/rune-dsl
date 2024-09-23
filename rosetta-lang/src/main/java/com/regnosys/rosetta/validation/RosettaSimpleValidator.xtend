@@ -1219,7 +1219,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 											checkForLocation(attrRef.attribute, it)
 											val targetType = attrRef.attribute.typeCall.typeCallToRType
 											val thisType = ele.RTypeOfSymbol
-											if (!targetType.isSubtypeOf(thisType))
+											if (!thisType.isSubtypeOf(targetType))
 												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 										}
 									}

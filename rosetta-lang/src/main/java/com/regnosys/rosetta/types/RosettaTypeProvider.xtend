@@ -230,7 +230,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
 	}
 	
-	public def RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
+	def RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
 		switch (type) {
 			RAliasType: {
 				new RAliasType(type.typeFunction, type.arguments, type.refersTo, metaAttributes)
