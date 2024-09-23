@@ -546,7 +546,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		else if (expectedType instanceof RErrorType)
 			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
 		else if (expectedType !== null && expectedType != MISSING) {
-			if (!actualType.isSubtypeOf(expectedType))
+			if (!expectedType.isSubtypeOf(actualType))
 				error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
 					index, TYPE_ERROR)
 		}
