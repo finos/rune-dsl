@@ -18,6 +18,7 @@ package com.regnosys.rosetta.types.builtin;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
@@ -30,7 +31,7 @@ public class RBasicType extends RParametrizedType {
 	private final ModelSymbolId symbolId;
 	private final boolean hasNaturalOrder;
 	
-	protected RBasicType(String name, LinkedHashMap<String, RosettaValue> parameters, boolean hasNaturalOrder, List<RMetaAttribute> metaAttributes) {
+	public RBasicType(String name, Map<String, RosettaValue> parameters, boolean hasNaturalOrder, List<RMetaAttribute> metaAttributes) {
 		super(parameters, metaAttributes);
 		this.symbolId = new ModelSymbolId(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), name);
 		this.hasNaturalOrder = hasNaturalOrder;

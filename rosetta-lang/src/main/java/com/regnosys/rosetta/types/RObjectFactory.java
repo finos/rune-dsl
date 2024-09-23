@@ -212,16 +212,4 @@ public class RObjectFactory {
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, List.of(),  modelIdProvider, this);
 	}
-
-	public RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
-		if (type instanceof RDataType) {
-			RDataType t = (RDataType) type;
-			return new RDataType(t.getEObject(), metaAttributes, modelIdProvider, this);
-		} else if (type instanceof REnumType) {
-			REnumType t = (REnumType) type;
-			return new REnumType(t.getEObject(), metaAttributes, modelIdProvider, this);
-		} else {
-			return type;
-		}
-	}
 }

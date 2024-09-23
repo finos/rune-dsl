@@ -83,6 +83,14 @@ import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.RosettaEcoreUtil
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.types.builtin.RDateTimeType
+import com.regnosys.rosetta.types.builtin.RDateType
+import com.regnosys.rosetta.types.builtin.RNumberType
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.types.builtin.RZonedDateTimeType
+import com.regnosys.rosetta.types.builtin.RStringType
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -96,7 +104,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
-	@Inject extension RObjectFactory
+	@Inject extension RObjectFactory rObjectFactory
+	@Inject ModelIdProvider modelIdProvider
 
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -219,6 +228,40 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		annoted.annotations
 			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
 			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
+	}
+	
+	private def RType withMeta(RType type, RMetaAttribute[] metaAttributes) {
+		switch (type) {
+			RAliasType: {
+				new RAliasType(type.typeFunction, type.arguments, type.refersTo, metaAttributes)
+			}
+			RDataType: {
+				new RDataType(type.EObject, metaAttributes, modelIdProvider, rObjectFactory)
+			}
+			REnumType: {
+				new REnumType(type.EObject, metaAttributes, modelIdProvider, rObjectFactory)
+			}
+			RNumberType: {
+				new RNumberType(type.digits, type.fractionalDigits, type.interval, type.scale, metaAttributes)
+			}
+			RStringType: {
+				new RStringType(type.interval, type.pattern, metaAttributes)
+			}
+			RBasicType: {
+				new RBasicType(type.name, type.arguments, type.hasNaturalOrder, metaAttributes)
+			}
+			RDateTimeType: {
+				new RDateTimeType(metaAttributes)
+			}
+			RZonedDateTimeType: {
+				new RZonedDateTimeType(metaAttributes)
+			}
+			RDateType: {
+				new RDateType(metaAttributes)
+			}
+			default:
+				type
+		}
 	}
 	
 	

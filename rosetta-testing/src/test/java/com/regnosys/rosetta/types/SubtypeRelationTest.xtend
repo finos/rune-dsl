@@ -16,8 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RStringType
-import java.util.Optional
-import com.regnosys.rosetta.utils.PositiveIntegerInterval
+
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -50,11 +49,10 @@ class SubtypeRelationTest {
 				[metadata scheme]
 				[metadata address]
 		'''.parseAttribute.RTypeOfSymbol
-		
-		val expected = new RStringType(Optional.empty(), Optional.empty(), Optional.empty());
-		expected.addMetaToType("scheme")
-		
-		assertEquals(expected, fieldA.join(fieldB))
+				
+		val result = fieldA.join(fieldB)
+		assertTrue(result instanceof RStringType)
+		assertEquals(#[new RMetaAttribute("scheme", UNCONSTRAINED_STRING)], result.metaAttributes)
 	}
 	
 	@Test
@@ -145,11 +143,5 @@ class SubtypeRelationTest {
 		val b = model.getEnum('B').buildREnumType
 		
 		assertFalse(a.isSubtypeOf(b))
-	}
-	
-	private def RType addMetaToType(RType type, String metaName) {
-		val metas = type.metaAttributes + #[new RMetaAttribute(metaName, UNCONSTRAINED_STRING)]
-		type.metaAttributes = metas.toList
-		type
 	}
 }
