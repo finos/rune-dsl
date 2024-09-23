@@ -25,18 +25,7 @@ public class SubtypeRelation {
 	
 	public boolean isSubtypeOf(RType t1, RType t2) {
 		if (t1.equals(t2)) {
-			if (t1.hasMeta() || t2.hasMeta()) {
-				HashSet<RMetaAttribute> t1Metas = new HashSet<>(t1.getMetaAttributes());
-				HashSet<RMetaAttribute> t2Metas = new HashSet<>(t2.getMetaAttributes());
-				if (t1Metas.equals(t2Metas)) {
-					return true;
-				}
-				if (!Sets.difference(t1Metas, t2Metas).isEmpty()) {
-					return true;
-				}
-				return false;
-			}
-			return true;
+			return hasSupersetOfMetaAttributes(t1, t2);
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
 			return true;
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
@@ -57,13 +46,16 @@ public class SubtypeRelation {
 		return false;
 	}
 	
+
 	public RType join(RType t1, RType t2) {
-		if (t1.equals(t2) || t2.equals(builtins.NOTHING)) {
+		if (t1.equals(t2)) {
 			List<RMetaAttribute> metas = intersectMeta(t1, t2);
 			return rosettaTypeProvider.withMeta(t1, metas);
-		} else if (t1.equals(builtins.NOTHING)) {
-			List<RMetaAttribute> metas = intersectMeta(t1, t2);
-			return rosettaTypeProvider.withMeta(t2, metas);
+		} else if (t2.equals(builtins.NOTHING)) {
+			return t1;
+		}
+		else if (t1.equals(builtins.NOTHING)) {
+			return t2;
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
 			return join((RNumberType)t1, (RNumberType)t2);
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
@@ -109,6 +101,23 @@ public class SubtypeRelation {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
+	
+	private boolean hasSupersetOfMetaAttributes(RType t1, RType t2) {
+		if (t1.getMetaAttributes().isEmpty() && t2.getMetaAttributes().isEmpty()) {
+			return true;
+		}
+		HashSet<RMetaAttribute> t1Metas = new HashSet<>(t1.getMetaAttributes());
+		HashSet<RMetaAttribute> t2Metas = new HashSet<>(t2.getMetaAttributes());
+		if (t1Metas.equals(t2Metas)) {
+			return true;
+		}
+		if (!Sets.difference(t1Metas, t2Metas).isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+	
+	
 	private RType joinByTraversingAncestorsAndAliases(RType t1, RType t2) {
 		// Get a list of all Data/Alias ancestors of t1, including t1 itself.
 		List<RDataType> dataAncestors = new ArrayList<>();
