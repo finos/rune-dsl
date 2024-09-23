@@ -17,14 +17,11 @@
 package com.regnosys.rosetta.types.builtin;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-
 import org.apache.commons.lang3.Validate;
 
 import com.google.common.collect.Sets;
@@ -32,6 +29,7 @@ import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.utils.BigDecimalInterval;
+import com.regnosys.rosetta.utils.MetaUtil;
 import com.regnosys.rosetta.utils.OptionalUtil;
 import com.rosetta.model.lib.RosettaNumber;
 
@@ -143,10 +141,10 @@ public class RNumberType extends RBasicType {
 		} else {
 			joinedScale = other.scale;
 		}
-		Set<RMetaAttribute> intersection = Sets.intersection(new HashSet<>(this.getMetaAttributes()), new HashSet<>(other.getMetaAttributes()));
+		List<RMetaAttribute> intersection = MetaUtil.intersectMeta(this, other);
 
 		return new RNumberType(OptionalUtil.zipWith(digits, other.digits, Math::max),
 				OptionalUtil.zipWith(fractionalDigits, other.fractionalDigits, Math::max),
-				interval.minimalCover(other.interval), joinedScale, new ArrayList<>(intersection));
+				interval.minimalCover(other.interval), joinedScale, intersection);
 	}
 }

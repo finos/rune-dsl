@@ -1,6 +1,9 @@
 package com.regnosys.rosetta.types;
 
+import static com.regnosys.rosetta.utils.MetaUtil.intersectMeta;
+
 import java.util.ArrayList;
+
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +20,8 @@ import com.regnosys.rosetta.types.builtin.RStringType;
 public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
+	@Inject
+	private RosettaTypeProvider rosettaTypeProvider;
 	
 	public boolean isSubtypeOf(RType t1, RType t2) {
 		if (t1.equals(t2)) {
@@ -54,9 +59,11 @@ public class SubtypeRelation {
 	
 	public RType join(RType t1, RType t2) {
 		if (t1.equals(t2) || t2.equals(builtins.NOTHING)) {
-			return t1;
+			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			return rosettaTypeProvider.withMeta(t1, metas);
 		} else if (t1.equals(builtins.NOTHING)) {
-			return t2;
+			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			return rosettaTypeProvider.withMeta(t2, metas);
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
 			return join((RNumberType)t1, (RNumberType)t2);
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
@@ -81,14 +88,16 @@ public class SubtypeRelation {
 	}
 	public RType join(RDataType t1, RDataType t2) {
 		if (t1.equals(t2)) {
-			return t1;
+			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			return rosettaTypeProvider.withMeta(t1, metas);
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
 	public RType join(RAliasType t1, RAliasType t2) {
 		if (t1.equals(t2)) {
-			return t1;
+			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			return rosettaTypeProvider.withMeta(t1, metas);
 		} else if (t1.getTypeFunction().equals(t2.getTypeFunction())) {
 			// Attempt to keep the alias
 			RTypeFunction typeFunc = t1.getTypeFunction();

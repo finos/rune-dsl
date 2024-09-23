@@ -30,6 +30,7 @@ import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaStringValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.RMetaAttribute;
+import com.regnosys.rosetta.utils.MetaUtil;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 import com.rosetta.model.lib.RosettaNumber;
 
@@ -95,7 +96,7 @@ public class RStringType extends RBasicType {
 		} else {
 			joinedPattern = other.pattern;
 		}
-		Set<RMetaAttribute> intersection = Sets.intersection(new HashSet<>(this.getMetaAttributes()), new HashSet<>(other.getMetaAttributes()));
-		return new RStringType(interval.minimalCover(other.interval), joinedPattern, new ArrayList<>(intersection));
+		List<RMetaAttribute> intersection = MetaUtil.intersectMeta(this, other);
+		return new RStringType(interval.minimalCover(other.interval), joinedPattern, intersection);
 	}
 }
