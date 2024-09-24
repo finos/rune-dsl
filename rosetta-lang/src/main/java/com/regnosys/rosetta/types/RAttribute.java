@@ -28,20 +28,20 @@ public class RAttribute implements RAssignedRoot {
 	private final String name;
 	private final String definition;
 	private final List<RosettaDocReference> docReferences;
-	private final RType rType;
+	private final RAnnotatedType rAnnotatedType;
 	private final PositiveIntegerInterval cardinality;
 	private final boolean isMeta;
 	private final RosettaRule ruleReference;
 	private final Attribute origin;
 
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
-		this(name, definition, docReferences, rType, cardinality, false, ruleReference, origin);
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RAnnotatedType rAnnotatedType, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
+		this(name, definition, docReferences, rAnnotatedType, cardinality, false, ruleReference, origin);
 	}
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RAnnotatedType rAnnotatedType, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
-		this.rType = rType;
+		this.rAnnotatedType = rAnnotatedType;
 		this.cardinality = cardinality;
 		this.isMeta = isMeta;
 		this.ruleReference = ruleReference;
@@ -57,10 +57,10 @@ public class RAttribute implements RAssignedRoot {
 		return origin;
 	}
 
-	public RType getRType() {
-		return rType;
+	public RAnnotatedType getrAnnotatedType() {
+		return rAnnotatedType;
 	}
-
+	
 	@Override
 	public boolean isMulti() {
 		return cardinality.getMax().map(m -> m > 1).orElse(true);
@@ -89,7 +89,7 @@ public class RAttribute implements RAssignedRoot {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(definition, cardinality, name, rType, origin);
+		return Objects.hash(definition, cardinality, name, rAnnotatedType, origin);
 	}
 
 	@Override
@@ -103,12 +103,12 @@ public class RAttribute implements RAssignedRoot {
 		RAttribute other = (RAttribute) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(cardinality, other.cardinality)
 				&& Objects.equals(name, other.name)
-				&& Objects.equals(rType, other.rType)
+				&& Objects.equals(rAnnotatedType, other.rAnnotatedType)
 				&& Objects.equals(origin, other.origin);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("RAttribute[name=%s, type=%s, cardinality=%s]", name, rType, cardinality);
+		return String.format("RAttribute[name=%s, type=%s, cardinality=%s]", name, rAnnotatedType, cardinality);
 	}
 }
