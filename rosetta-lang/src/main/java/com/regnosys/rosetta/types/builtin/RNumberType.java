@@ -17,19 +17,15 @@
 package com.regnosys.rosetta.types.builtin;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import org.apache.commons.lang3.Validate;
 
-import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
-import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.utils.BigDecimalInterval;
-import com.regnosys.rosetta.utils.MetaUtil;
 import com.regnosys.rosetta.utils.OptionalUtil;
 import com.rosetta.model.lib.RosettaNumber;
 
@@ -72,8 +68,8 @@ public class RNumberType extends RBasicType {
 	}
 
 	public RNumberType(Optional<Integer> digits, Optional<Integer> fractionalDigits, BigDecimalInterval interval,
-			Optional<BigDecimal> scale, List<RMetaAttribute> metaAttributes) {
-		super("number", createArgumentMap(digits, fractionalDigits, interval, scale), true, metaAttributes);
+			Optional<BigDecimal> scale) {
+		super("number", createArgumentMap(digits, fractionalDigits, interval, scale), true);
 		if (digits.isPresent()) {
 			Validate.isTrue(digits.get() > 0);
 		}
@@ -91,8 +87,8 @@ public class RNumberType extends RBasicType {
 	}
 
 	public RNumberType(Optional<Integer> digits, Optional<Integer> fractionalDigits, Optional<BigDecimal> min,
-			Optional<BigDecimal> max, Optional<BigDecimal> scale, List<RMetaAttribute> metaAttributes) {
-		this(digits, fractionalDigits, new BigDecimalInterval(min, max), scale, metaAttributes);
+			Optional<BigDecimal> max, Optional<BigDecimal> scale) {
+		this(digits, fractionalDigits, new BigDecimalInterval(min, max), scale);
 	}
 
 	public static RNumberType from(Map<String, RosettaValue> values) {
@@ -103,7 +99,7 @@ public class RNumberType extends RBasicType {
 				values.getOrDefault(MAX_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class)
 						.map(RosettaNumber::bigDecimalValue),
 				values.getOrDefault(SCALE_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class)
-						.map(RosettaNumber::bigDecimalValue), List.of());
+						.map(RosettaNumber::bigDecimalValue));
 	}
 
 	public Optional<Integer> getDigits() {
@@ -141,10 +137,8 @@ public class RNumberType extends RBasicType {
 		} else {
 			joinedScale = other.scale;
 		}
-		List<RMetaAttribute> intersection = MetaUtil.intersectMeta(this, other);
-
 		return new RNumberType(OptionalUtil.zipWith(digits, other.digits, Math::max),
 				OptionalUtil.zipWith(fractionalDigits, other.fractionalDigits, Math::max),
-				interval.minimalCover(other.interval), joinedScale, intersection);
+				interval.minimalCover(other.interval), joinedScale);
 	}
 }

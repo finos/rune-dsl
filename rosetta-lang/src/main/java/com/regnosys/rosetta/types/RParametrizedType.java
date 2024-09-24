@@ -16,7 +16,7 @@
 
 package com.regnosys.rosetta.types;
 
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -24,10 +24,9 @@ import java.util.stream.Collectors;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 
 public abstract class RParametrizedType extends RType {
-	private final Map<String, RosettaValue> arguments;
+	private final LinkedHashMap<String, RosettaValue> arguments;
 	
-	public RParametrizedType(Map<String, RosettaValue> arguments, List<RMetaAttribute> metaAttributes) {
-		super(metaAttributes);
+	public RParametrizedType(LinkedHashMap<String, RosettaValue> arguments) {
 		this.arguments = arguments;
 	}
 
@@ -37,7 +36,7 @@ public abstract class RParametrizedType extends RType {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.getName(), arguments, this.getMetaAttributes());
+		return Objects.hash(this.getName(), arguments);
 	}
 	@Override
 	public boolean equals(final Object object) {
@@ -46,18 +45,22 @@ public abstract class RParametrizedType extends RType {
         
         RParametrizedType other = (RParametrizedType) object;
 		return Objects.equals(this.getName(), other.getName())
-				&& Objects.equals(arguments, other.arguments)
-				&& Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
+				&& Objects.equals(arguments, other.arguments);
 	}
-
+	
 	@Override
 	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(getName());
 		String joinedArguments = arguments.entrySet().stream()
 				.filter(e -> e.getValue().getSingle().isPresent())
 				.map(e -> e.getKey() + ": " + e.getValue().getSingle().get())
 				.collect(Collectors.joining(", "));
-
-		return "RParametrizedType [arguments={" + joinedArguments + "}, getMetaAttributes()=" + getMetaAttributes() + "]";
+		if (joinedArguments.length() > 0) {
+			builder.append("(")
+				.append(joinedArguments)
+				.append(")");
+		}
+		return builder.toString();
 	}
-
 }

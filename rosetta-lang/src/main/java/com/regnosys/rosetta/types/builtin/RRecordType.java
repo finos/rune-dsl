@@ -17,11 +17,9 @@
 package com.regnosys.rosetta.types.builtin;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
-import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.types.RType;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
@@ -29,8 +27,8 @@ import com.rosetta.util.DottedPath;
 public abstract class RRecordType extends RType {
 	private final ModelSymbolId symbolId;
 	
-	public RRecordType(String name, List<RMetaAttribute> metaAttributes) {
-		super(metaAttributes);
+	public RRecordType(String name) {
+		super();
 		this.symbolId = new ModelSymbolId(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), name);
 	}
 	
@@ -48,7 +46,7 @@ public abstract class RRecordType extends RType {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(getSymbolId(), getFeatures(), getMetaAttributes());
+		return Objects.hash(getSymbolId(), getFeatures());
 	}
 
 	@Override
@@ -58,7 +56,6 @@ public abstract class RRecordType extends RType {
         
 		RRecordType other = (RRecordType) object;
 		return Objects.equals(getSymbolId(), other.getSymbolId())
-				&& Objects.equals(getFeatures(), other.getFeatures())
-				&& Objects.equals(getMetaAttributes(), other.getMetaAttributes());
+				&& Objects.equals(getFeatures(), other.getFeatures());
 	}
 }

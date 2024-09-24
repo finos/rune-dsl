@@ -37,8 +37,8 @@ public class REnumType extends RAnnotateType implements RObject {
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
 
-	public REnumType(final RosettaEnumeration enumeration, List<RMetaAttribute> metaAttributes, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
-		super(metaAttributes);
+	public REnumType(final RosettaEnumeration enumeration, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
+		super();
 		this.enumeration = enumeration;
 		
 		this.modelIdProvider = modelIdProvider;
@@ -108,7 +108,7 @@ public class REnumType extends RAnnotateType implements RObject {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.enumeration, this.getMetaAttributes());
+		return 31 * 1 + ((this.enumeration == null) ? 0 : this.enumeration.hashCode());
 	}
 
 	@Override
@@ -117,6 +117,6 @@ public class REnumType extends RAnnotateType implements RObject {
         if (this.getClass() != object.getClass()) return false;
         
         REnumType other = (REnumType)object;
-        return Objects.equals(enumeration, other.enumeration) && Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
+        return Objects.equals(enumeration, other.enumeration);
 	}
 }

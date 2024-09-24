@@ -16,19 +16,11 @@
 
 package com.regnosys.rosetta.types;
 
-import java.util.List;
-
 import com.rosetta.model.lib.ModelSymbol;
 
 public abstract class RType implements ModelSymbol {
-	private final List<RMetaAttribute> metaAttributes;
-	
-	protected RType(List<RMetaAttribute> metaAttributes) {
-		this.metaAttributes = metaAttributes;
-	}
-	
 	public boolean hasMeta() {
-		return !metaAttributes.isEmpty();
+		return false;
 	}
 	
 	public boolean hasNaturalOrder() {
@@ -39,20 +31,8 @@ public abstract class RType implements ModelSymbol {
 		return false;
 	}
 	
-	public List<RMetaAttribute> getMetaAttributes() {
-		return metaAttributes;
-	}
-
-	@Deprecated
-	public boolean hasReferenceOrAddressMetadata() {
-		return metaAttributes.stream().anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
-	}
-	
 	@Override
 	public String toString() {
 		return this.getName();
 	}
-	
-
-	
 }

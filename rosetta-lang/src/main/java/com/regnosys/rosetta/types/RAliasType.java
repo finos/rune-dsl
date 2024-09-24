@@ -16,8 +16,7 @@
 
 package com.regnosys.rosetta.types;
 
-import java.util.List;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 
 import com.regnosys.rosetta.interpreter.RosettaValue;
@@ -28,8 +27,8 @@ public class RAliasType extends RParametrizedType {
 	private final RTypeFunction typeFunction;
 	private final RType refersTo;
 
-	public RAliasType(RTypeFunction typeFunction, Map<String, RosettaValue> params, RType refersTo, List<RMetaAttribute> metaAttributes) {
-		super(params, metaAttributes);
+	public RAliasType(RTypeFunction typeFunction, LinkedHashMap<String, RosettaValue> params, RType refersTo) {
+		super(params);
 		this.typeFunction = typeFunction;
 		this.refersTo = refersTo;
 	}
@@ -59,7 +58,7 @@ public class RAliasType extends RParametrizedType {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(typeFunction, getArguments(), refersTo, this.getMetaAttributes());
+		return Objects.hash(typeFunction, getArguments(), refersTo);
 	}
 
 	@Override
@@ -70,7 +69,6 @@ public class RAliasType extends RParametrizedType {
 		RAliasType other = (RAliasType) object;
 		return Objects.equals(typeFunction, other.typeFunction)
 				&& Objects.equals(getArguments(), other.getArguments())
-				&& Objects.equals(refersTo, other.refersTo)
-				&& Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
+				&& Objects.equals(refersTo, other.refersTo);
 	}
 }

@@ -1,16 +1,14 @@
 package com.regnosys.rosetta.types;
 
-import static com.regnosys.rosetta.utils.MetaUtil.*;
+import static com.regnosys.rosetta.utils.MetaUtil.hasSupersetOfMetaAttributes;
+import static com.regnosys.rosetta.utils.MetaUtil.intersectMeta;
 
 import java.util.ArrayList;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
-
-import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl.EObjectOutputStream.Check;
 
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;

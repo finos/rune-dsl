@@ -17,7 +17,6 @@
 package com.regnosys.rosetta.types.builtin;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -25,8 +24,6 @@ import java.util.regex.Pattern;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaStringValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
-import com.regnosys.rosetta.types.RMetaAttribute;
-import com.regnosys.rosetta.utils.MetaUtil;
 import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 import com.rosetta.model.lib.RosettaNumber;
 
@@ -50,23 +47,20 @@ public class RStringType extends RBasicType {
 		return arguments;
 	}
 
-	public RStringType(PositiveIntegerInterval interval, Optional<Pattern> pattern, List<RMetaAttribute> metaAttributes) {
-		super("string", createArgumentMap(interval, pattern),true, metaAttributes);
+	public RStringType(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
+		super("string", createArgumentMap(interval, pattern), true);
 		this.interval = interval;
 		this.pattern = pattern;
 	}
 
-	public RStringType(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern, List<RMetaAttribute> metaAttributes) {
-		this(new PositiveIntegerInterval(minLength.orElse(0), maxLength), pattern, metaAttributes);
+	public RStringType(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
+		this(new PositiveIntegerInterval(minLength.orElse(0), maxLength), pattern);
 	}
 
 	public static RStringType from(Map<String, RosettaValue> values) {
-		return new RStringType(
-				values.getOrDefault(MIN_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
+		return new RStringType(values.getOrDefault(MIN_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
 				values.getOrDefault(MAX_LENGTH_PARAM_NAME, RosettaValue.empty()).getSingle(RosettaNumber.class).map(d -> d.intValue()),
-				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSingle(String.class).map(s -> Pattern.compile(s)),
-				List.of()
-			);
+				values.getOrDefault(PATTERN_PARAM_NAME, RosettaValue.empty()).getSingle(String.class).map(s -> Pattern.compile(s)));
 	}
 
 	public PositiveIntegerInterval getInterval() {
@@ -92,7 +86,6 @@ public class RStringType extends RBasicType {
 		} else {
 			joinedPattern = other.pattern;
 		}
-		List<RMetaAttribute> intersection = MetaUtil.intersectMeta(this, other);
-		return new RStringType(interval.minimalCover(other.interval), joinedPattern, intersection);
+		return new RStringType(interval.minimalCover(other.interval), joinedPattern);
 	}
 }

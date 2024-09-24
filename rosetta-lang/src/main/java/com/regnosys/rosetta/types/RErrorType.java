@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.types;
 
-import java.util.List;
 import java.util.Objects;
 
 import com.rosetta.model.lib.ModelSymbolId;
@@ -27,7 +26,7 @@ public class RErrorType extends RType {
 	private final String message;
 
 	public RErrorType(final String message) {
-		super(List.of());
+		super();
 		this.message = message;
 	}
 	

@@ -16,14 +16,8 @@
 
 package com.regnosys.rosetta.types;
 
-import java.util.List;
-
 public abstract class RAnnotateType extends RType {
   private boolean meta = false;
-  
-  protected RAnnotateType(List<RMetaAttribute> metaAttributes) {
-	  super(metaAttributes);
-  }
   
   public void setWithMeta(final boolean meta) {
     this.meta = meta;
