@@ -74,7 +74,8 @@ public class RObjectFactory {
 	
 	// TODO: should be private
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		return new RAttribute(name, null, Collections.emptyList(), type, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
+		RAnnotatedType rAnnotatedType = new RAnnotatedType(type, List.of());
+		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
@@ -145,8 +146,8 @@ public class RObjectFactory {
 				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
 				continue;
 			}
-			if (attribute.getRType() instanceof RDataType) {
-				RDataType rData = (RDataType) attribute.getRType();
+			if (attribute.getRAnnotatedType().getRType() instanceof RDataType) {
+				RDataType rData = (RDataType) attribute.getRAnnotatedType().getRType();
 				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
 			}
 		}
@@ -176,8 +177,11 @@ public class RObjectFactory {
 				attribute.getCard().getInf(),
 				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));
 		RosettaRuleReference ruleRef = attribute.getRuleReference();
+		
+		List<RMetaAttribute> rMettributesOfSymbol = typeProvider.getRMettributesOfSymbol(attribute);
+		RAnnotatedType rAnnotatedType = new RAnnotatedType(rType, rMettributesOfSymbol);
 
-		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rType,
+		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rAnnotatedType,
 				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
 	}
 
@@ -201,15 +205,20 @@ public class RObjectFactory {
 
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
 	}
+	
+	public RAnnotatedType buildRAnnotatedType(Data data) {
+		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(data);
+		return new RAnnotatedType(buildRDataType(data), rMettributesOfType);
+	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, List.of(), modelIdProvider, this);
+		return new RDataType(data, modelIdProvider, this);
 	}
 	// TODO: remove this hack
 	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
-		return new RDataType(data, List.of(), modelIdProvider, this, additionalAttributes);
+		return new RDataType(data, modelIdProvider, this, additionalAttributes);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
-		return new REnumType(enumeration, List.of(),  modelIdProvider, this);
+		return new REnumType(enumeration, modelIdProvider, this);
 	}
 }

@@ -72,17 +72,11 @@ import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import com.regnosys.rosetta.types.builtin.RDateTimeType
-import com.regnosys.rosetta.types.builtin.RDateType
-import com.regnosys.rosetta.types.builtin.RNumberType
-import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.types.builtin.RZonedDateTimeType
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import java.math.BigInteger
+import java.util.List
 import java.util.Map
 import java.util.Optional
 import javax.inject.Inject
@@ -90,7 +84,8 @@ import javax.inject.Provider
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import java.util.List
+import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -105,7 +100,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory rObjectFactory
-	@Inject ModelIdProvider modelIdProvider
 	@Inject extension ExpectedTypeProvider
 
 	def RType getRType(RosettaExpression expression) {
@@ -139,11 +133,44 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
 
+	def List<RMetaAttribute> getRMettributesOfType(Data data) {
+		data.annotations.RMetaAttributes
+	}
+	
+	def List<RMetaAttribute> getRMettributesOfSymbol(AssignPathRoot symbol) {
+		if (symbol instanceof Annotated) {
+			return symbol.annotations.RMetaAttributes
+		}
+		#[]
+	}
+	
+	def List<RMetaAttribute> getRMettributesOfSymbol(RosettaSymbol symbol) {
+		if (symbol instanceof Annotated) {
+			return symbol.annotations.RMetaAttributes
+		}
+		#[]
+	}
+	
+	def List<RMetaAttribute> getRMettributesOfFeature(RosettaFeature feature) {
+		if (feature instanceof Annotated) {
+			return feature.annotations.RMetaAttributes
+		}
+		#[]
+	} 
+
+	private def List<RMetaAttribute> getRMetaAttributes(AnnotationRef[] annotations) {
+		annotations
+			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
+			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
+			.toList
+	}
+	
+	
 	private def RType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
 			return NOTHING
 		}
-		val rType = switch symbol {
+		switch symbol {
 			RosettaFeature: {
 				safeRType(symbol as RosettaFeature, context, cycleTracker)
 			}
@@ -184,17 +211,12 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				symbol.typeCall.typeCallToRType
 			}
 		}
-		
-		if (symbol instanceof Annotated) {
-			return rType.withMeta(symbol.RMetaAttributes)
-		}	
-		rType
 	}
 	private def RType safeRType(RosettaFeature feature, EObject context, Map<EObject, RType> cycleTracker) {
 		if (!extensions.isResolved(feature)) {
 			return NOTHING
 		}
-		val rType = switch (feature) {
+		switch (feature) {
 			RosettaTypedFeature: {
 				val featureType = if (feature.typeCall === null) {
 						NOTHING
@@ -218,54 +240,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			default:
 				new RErrorType("Cannot infer type of feature.")
 		}
-		
-		if (feature instanceof Annotated) {
-			return rType.withMeta(feature.RMetaAttributes)
-		}		
-		rType
 	}
-	
-	private def RMetaAttribute[] getRMetaAttributes(Annotated annoted) {
-		annoted.annotations
-			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
-			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
-	}
-	
-	// see if we can get rid of this by passing the meta to xsematics
-	private def RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
-		switch (type) {
-			RAliasType: {
-				new RAliasType(type.typeFunction, type.arguments, type.refersTo, metaAttributes)
-			}
-			RDataType: {
-				new RDataType(type.EObject, metaAttributes, modelIdProvider, rObjectFactory)
-			}
-			REnumType: {
-				new REnumType(type.EObject, metaAttributes, modelIdProvider, rObjectFactory)
-			}
-			RNumberType: {
-				new RNumberType(type.digits, type.fractionalDigits, type.interval, type.scale, metaAttributes)
-			}
-			RStringType: {
-				new RStringType(type.interval, type.pattern, metaAttributes)
-			}
-			RBasicType: {
-				new RBasicType(type.name, type.arguments, type.hasNaturalOrder, metaAttributes)
-			}
-			RDateTimeType: {
-				new RDateTimeType(metaAttributes)
-			}
-			RZonedDateTimeType: {
-				new RZonedDateTimeType(metaAttributes)
-			}
-			RDateType: {
-				new RDateType(metaAttributes)
-			}
-			default:
-				type
-		}
-	}
-	
 	
 	private def RType safeRType(RosettaExpression expression, Map<EObject, RType> cycleTracker) {
 		getRTypeFromCache(EXPRESSION_RTYPE_CACHE_KEY, expression, [
@@ -601,3 +576,4 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
  	}
 
 }
+ 

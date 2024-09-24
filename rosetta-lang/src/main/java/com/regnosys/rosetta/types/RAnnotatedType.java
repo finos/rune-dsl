@@ -10,7 +10,7 @@ public class RAnnotatedType {
 	public RAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
 		super();
 		this.rType = rType;
-		this.metaAttributes = metaAttributes;
+		this.metaAttributes = metaAttributes == null ? List.of() : metaAttributes;
 	}
 
 	public RType getRType() {
