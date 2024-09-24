@@ -57,7 +57,7 @@ public class RAttribute implements RAssignedRoot {
 		return origin;
 	}
 
-	public RAnnotatedType getrAnnotatedType() {
+	public RAnnotatedType getRAnnotatedType() {
 		return rAnnotatedType;
 	}
 	

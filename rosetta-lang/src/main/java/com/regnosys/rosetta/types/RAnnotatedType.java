@@ -4,17 +4,17 @@ import java.util.List;
 import java.util.Objects;
 
 public class RAnnotatedType {
-	private final RType baseType;
+	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
 	
-	public RAnnotatedType(RType baseType, List<RMetaAttribute> metaAttributes) {
+	public RAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
 		super();
-		this.baseType = baseType;
+		this.rType = rType;
 		this.metaAttributes = metaAttributes;
 	}
 
-	public RType getBaseType() {
-		return baseType;
+	public RType getRType() {
+		return rType;
 	}
 
 	public boolean hasMeta() {
@@ -32,7 +32,7 @@ public class RAnnotatedType {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(baseType, metaAttributes);
+		return Objects.hash(rType, metaAttributes);
 	}
 
 	@Override
@@ -44,12 +44,12 @@ public class RAnnotatedType {
 		if (getClass() != obj.getClass())
 			return false;
 		RAnnotatedType other = (RAnnotatedType) obj;
-		return Objects.equals(baseType, other.baseType) && Objects.equals(metaAttributes, other.metaAttributes);
+		return Objects.equals(rType, other.rType) && Objects.equals(metaAttributes, other.metaAttributes);
 	}
 
 	@Override
 	public String toString() {
-		return "RAnnotatedType [baseType=" + baseType.getName() + ", metaAttributes=" + metaAttributes + "]";
+		return "RAnnotatedType [baseType=" + rType.getName() + ", metaAttributes=" + metaAttributes + "]";
 	}
 
 }

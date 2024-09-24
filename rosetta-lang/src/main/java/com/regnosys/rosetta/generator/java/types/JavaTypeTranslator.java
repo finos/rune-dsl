@@ -181,25 +181,25 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return toMetaJavaType(attrType, extensions.hasMetaFieldAnnotations(attribute), namespace);
 	}
 	public JavaClass<?> toItemJavaType(RAttribute attr) {
-		return toJavaReferenceType(attr.getRType());
+		return toJavaReferenceType(attr.getRAnnotatedType().getRType());
 	}
 	public JavaClass<?> toMetaItemJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
-		if (!attr.getRType().hasMeta()) {
+		if (!attr.getRAnnotatedType().getRType().hasMeta()) {
 			return itemType;
 		}
-		DottedPath namespace = attr.getRType().getNamespace();
-		return toMetaJavaType(itemType, !attr.getRType().hasReferenceOrAddressMetadata(), namespace);
+		DottedPath namespace = attr.getRAnnotatedType().getRType().getNamespace();
+		return toMetaJavaType(itemType, !attr.getRAnnotatedType().hasReferenceOrAddressMetadata(), namespace);
 	}
 	public JavaClass<?> toForcedMetaItemJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
-		DottedPath namespace = attr.getRType().getNamespace();
-		return toMetaJavaType(itemType, !attr.getRType().hasReferenceOrAddressMetadata(), namespace);
+		DottedPath namespace = attr.getRAnnotatedType().getRType().getNamespace();
+		return toMetaJavaType(itemType, !attr.getRAnnotatedType().hasReferenceOrAddressMetadata(), namespace);
 	}
 	public JavaClass<?> toMetaJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toMetaItemJavaType(attr);
 		if (attr.isMulti()) {
-			if (attr.getRType() instanceof RDataType || attr.getRType().hasMeta()) {
+			if (attr.getRAnnotatedType().getRType() instanceof RDataType || attr.getRAnnotatedType().getRType().hasMeta()) {
 				return toPolymorphicList(itemType);
 			} else {
 				return typeUtil.wrap(typeUtil.LIST, itemType);
@@ -210,7 +210,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
 		if (attr.isMulti()) {
-			if (attr.getRType() instanceof RDataType || attr.getRType().hasMeta()) {
+			if (attr.getRAnnotatedType().getRType() instanceof RDataType || attr.getRAnnotatedType().getRType().hasMeta()) {
 				return toPolymorphicList(itemType);
 			} else {
 				return typeUtil.wrap(typeUtil.LIST, itemType);
@@ -259,7 +259,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<RAttribute> segments = op.getPathTail();
 			attr = segments.get(segments.size() - 1);
 		}
-		return toMetaJavaType(toJavaReferenceType(attr.getRType()), false, attr.getRType().getNamespace());
+		return toMetaJavaType(toJavaReferenceType(attr.getRAnnotatedType().getRType()), false, attr.getRAnnotatedType().getRType().getNamespace());
 	}
 	
 	private String getTypeDebugInfo(RType type) {
