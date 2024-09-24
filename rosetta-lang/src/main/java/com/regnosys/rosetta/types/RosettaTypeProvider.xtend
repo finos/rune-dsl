@@ -106,6 +106,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory rObjectFactory
 	@Inject ModelIdProvider modelIdProvider
+	@Inject extension ExpectedTypeProvider
 
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -211,7 +212,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				if (context instanceof RosettaFeatureCall) {
 					context.receiver.safeRType(cycleTracker)
 				} else {
-					NOTHING
+					context.expectedTypeFromContainer ?: NOTHING
 				}
 			}
 			default:
@@ -230,6 +231,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
 	}
 	
+	// see if we can get rid of this by passing the meta to xsematics
 	def RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
 		switch (type) {
 			RAliasType: {

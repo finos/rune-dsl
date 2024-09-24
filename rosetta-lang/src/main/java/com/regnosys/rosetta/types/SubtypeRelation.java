@@ -22,24 +22,25 @@ public class SubtypeRelation {
 	private RosettaTypeProvider rosettaTypeProvider;
 	
 	public boolean isSubtypeOf(RType t1, RType t2) {
-		if (t1.equals(t2)) {
-			return hasSupersetOfMetaAttributes(t1, t2);
+		if (t1.equals(t2)) {  // update all RType equals methods to handle meta
+			return hasSupersetOfMetaAttributes(t1, t2);  // get rid of superset check
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
 			return true;
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
-			return true;
+			return true;  //needs superset meta
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
-			return true;
+			return true; //needs superset meta
 		} else if (t1 instanceof RDataType) {
+			//check both have meta, check that they both have the same eobject and then return the result of hasSupersetOfMetaAttributes else carry on 
 			RType st = ((RDataType)t1).getSuperType();
 			if (st == null) {
 				return false;
 			}
 			return isSubtypeOf(st, t2);
 		} else if (t1 instanceof RAliasType) {
-			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2);
+			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2); // same check process as RDataType
 		} else if (t2 instanceof RAliasType) {
-			return isSubtypeOf(t1, ((RAliasType)t2).getRefersTo());
+			return isSubtypeOf(t1, ((RAliasType)t2).getRefersTo());  // same check process as RDataType
 		}
 		return false;
 	}
@@ -47,7 +48,7 @@ public class SubtypeRelation {
 
 	public RType join(RType t1, RType t2) {
 		if (t1.equals(t2)) {
-			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			List<RMetaAttribute> metas = intersectMeta(t1, t2); // get rid of this intersect
 			return rosettaTypeProvider.withMeta(t1, metas);
 		} else if (t2.equals(builtins.NOTHING)) {
 			return t1;
@@ -86,7 +87,7 @@ public class SubtypeRelation {
 	}
 	public RType join(RAliasType t1, RAliasType t2) {
 		if (t1.equals(t2)) {
-			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			List<RMetaAttribute> metas = intersectMeta(t1, t2); // get rid of this intersect
 			return rosettaTypeProvider.withMeta(t1, metas);
 		} else if (t1.getTypeFunction().equals(t2.getTypeFunction())) {
 			// Attempt to keep the alias
