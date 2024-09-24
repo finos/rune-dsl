@@ -108,7 +108,7 @@ public class REnumType extends RAnnotateType implements RObject {
 
 	@Override
 	public int hashCode() {
-		return 31 * 1 + ((this.enumeration == null) ? 0 : this.enumeration.hashCode());
+		return Objects.hash(this.enumeration, this.getMetaAttributes());
 	}
 
 	@Override
@@ -117,6 +117,6 @@ public class REnumType extends RAnnotateType implements RObject {
         if (this.getClass() != object.getClass()) return false;
         
         REnumType other = (REnumType)object;
-        return Objects.equals(enumeration, other.enumeration);
+        return Objects.equals(enumeration, other.enumeration) && Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
 	}
 }

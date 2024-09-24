@@ -232,7 +232,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	// see if we can get rid of this by passing the meta to xsematics
-	def RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
+	private def RType withMeta(RType type, List<RMetaAttribute> metaAttributes) {
 		switch (type) {
 			RAliasType: {
 				new RAliasType(type.typeFunction, type.arguments, type.refersTo, metaAttributes)

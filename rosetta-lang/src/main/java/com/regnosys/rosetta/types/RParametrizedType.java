@@ -37,7 +37,7 @@ public abstract class RParametrizedType extends RType {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.getName(), arguments);
+		return Objects.hash(this.getName(), arguments, this.getMetaAttributes());
 	}
 	@Override
 	public boolean equals(final Object object) {
@@ -46,22 +46,18 @@ public abstract class RParametrizedType extends RType {
         
         RParametrizedType other = (RParametrizedType) object;
 		return Objects.equals(this.getName(), other.getName())
-				&& Objects.equals(arguments, other.arguments);
+				&& Objects.equals(arguments, other.arguments)
+				&& Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
 	}
-	
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(getName());
 		String joinedArguments = arguments.entrySet().stream()
 				.filter(e -> e.getValue().getSingle().isPresent())
 				.map(e -> e.getKey() + ": " + e.getValue().getSingle().get())
 				.collect(Collectors.joining(", "));
-		if (joinedArguments.length() > 0) {
-			builder.append("(")
-				.append(joinedArguments)
-				.append(")");
-		}
-		return builder.toString();
+
+		return "RParametrizedType [arguments={" + joinedArguments + "}, getMetaAttributes()=" + getMetaAttributes() + "]";
 	}
+
 }

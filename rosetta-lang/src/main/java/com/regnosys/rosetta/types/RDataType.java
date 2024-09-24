@@ -137,7 +137,7 @@ public class RDataType extends RAnnotateType implements RObject {
 
 	@Override
 	public int hashCode() {
-		return 31 * 1 + ((this.data == null) ? 0 : this.data.hashCode());
+		return Objects.hash(this.data, this.getMetaAttributes());
 	}
 
 	@Override
@@ -146,6 +146,6 @@ public class RDataType extends RAnnotateType implements RObject {
         if (this.getClass() != object.getClass()) return false;
         
 		RDataType other = (RDataType) object;
-		return Objects.equals(this.data, other.data);
+		return Objects.equals(this.data, other.data) && Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
 	}
 }

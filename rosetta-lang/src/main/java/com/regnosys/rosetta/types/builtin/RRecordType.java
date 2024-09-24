@@ -48,7 +48,7 @@ public abstract class RRecordType extends RType {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(getSymbolId(), getFeatures());
+		return Objects.hash(getSymbolId(), getFeatures(), getMetaAttributes());
 	}
 
 	@Override
@@ -58,6 +58,7 @@ public abstract class RRecordType extends RType {
         
 		RRecordType other = (RRecordType) object;
 		return Objects.equals(getSymbolId(), other.getSymbolId())
-				&& Objects.equals(getFeatures(), other.getFeatures());
+				&& Objects.equals(getFeatures(), other.getFeatures())
+				&& Objects.equals(getMetaAttributes(), other.getMetaAttributes());
 	}
 }

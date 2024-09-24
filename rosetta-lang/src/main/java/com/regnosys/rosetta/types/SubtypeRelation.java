@@ -10,6 +10,8 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl.EObjectOutputStream.Check;
+
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
@@ -18,19 +20,22 @@ import com.regnosys.rosetta.types.builtin.RStringType;
 public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
-	@Inject
-	private RosettaTypeProvider rosettaTypeProvider;
 	
 	public boolean isSubtypeOf(RType t1, RType t2) {
 		if (t1.equals(t2)) {  // update all RType equals methods to handle meta
-			return hasSupersetOfMetaAttributes(t1, t2);  // get rid of superset check
+			return true;
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
 			return true;
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
-			return true;  //needs superset meta
+			return hasSupersetOfMetaAttributes(t1, t2); 
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
-			return true; //needs superset meta
+			return hasSupersetOfMetaAttributes(t1, t2); 
 		} else if (t1 instanceof RDataType) {
+			if (t2 instanceof RDataType && hasMeta(t1, t2)) {
+				if (((RDataType) t1).getEObject().equals(((RDataType) t2).getEObject())) {
+					return hasSupersetOfMetaAttributes(t1, t2);
+				}
+			}
 			//check both have meta, check that they both have the same eobject and then return the result of hasSupersetOfMetaAttributes else carry on 
 			RType st = ((RDataType)t1).getSuperType();
 			if (st == null) {
@@ -38,22 +43,18 @@ public class SubtypeRelation {
 			}
 			return isSubtypeOf(st, t2);
 		} else if (t1 instanceof RAliasType) {
-			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2); // same check process as RDataType
+			//how to get the underlying eobject of the alias reference
+			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2); // same check process as RDataType 
 		} else if (t2 instanceof RAliasType) {
 			return isSubtypeOf(t1, ((RAliasType)t2).getRefersTo());  // same check process as RDataType
 		}
 		return false;
 	}
 	
-
 	public RType join(RType t1, RType t2) {
-		if (t1.equals(t2)) {
-			List<RMetaAttribute> metas = intersectMeta(t1, t2); // get rid of this intersect
-			return rosettaTypeProvider.withMeta(t1, metas);
-		} else if (t2.equals(builtins.NOTHING)) {
+		if (t1.equals(t2) || t2.equals(builtins.NOTHING)) {
 			return t1;
-		}
-		else if (t1.equals(builtins.NOTHING)) {
+		} else if (t1.equals(builtins.NOTHING)) {
 			return t2;
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
 			return join((RNumberType)t1, (RNumberType)t2);
@@ -79,28 +80,29 @@ public class SubtypeRelation {
 	}
 	public RType join(RDataType t1, RDataType t2) {
 		if (t1.equals(t2)) {
-			List<RMetaAttribute> metas = intersectMeta(t1, t2);
-			return rosettaTypeProvider.withMeta(t1, metas);
+			return t1;
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
 	public RType join(RAliasType t1, RAliasType t2) {
 		if (t1.equals(t2)) {
-			List<RMetaAttribute> metas = intersectMeta(t1, t2); // get rid of this intersect
-			return rosettaTypeProvider.withMeta(t1, metas);
+			return t1;
 		} else if (t1.getTypeFunction().equals(t2.getTypeFunction())) {
 			// Attempt to keep the alias
 			RTypeFunction typeFunc = t1.getTypeFunction();
 			RType underlyingJoin = join(t1.getRefersTo(), t2.getRefersTo());
 			Optional<LinkedHashMap<String, RosettaValue>> aliasParams = typeFunc.reverse(underlyingJoin);
-			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, List.of()))
+			List<RMetaAttribute> metas = intersectMeta(t1, t2);
+			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, metas))
 				.orElse(underlyingJoin);
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
 	}
-	
+	private boolean hasMeta(RType t1, RType t2) {
+		return t1.hasMeta() || t2.hasMeta();
+	}
 	private RType joinByTraversingAncestorsAndAliases(RType t1, RType t2) {
 		// Get a list of all Data/Alias ancestors of t1, including t1 itself.
 		List<RDataType> dataAncestors = new ArrayList<>();

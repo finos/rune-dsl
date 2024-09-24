@@ -59,7 +59,7 @@ public class RAliasType extends RParametrizedType {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(typeFunction, getArguments(), refersTo);
+		return Objects.hash(typeFunction, getArguments(), refersTo, this.getMetaAttributes());
 	}
 
 	@Override
@@ -70,6 +70,7 @@ public class RAliasType extends RParametrizedType {
 		RAliasType other = (RAliasType) object;
 		return Objects.equals(typeFunction, other.typeFunction)
 				&& Objects.equals(getArguments(), other.getArguments())
-				&& Objects.equals(refersTo, other.refersTo);
+				&& Objects.equals(refersTo, other.refersTo)
+				&& Objects.equals(this.getMetaAttributes(), other.getMetaAttributes());
 	}
 }

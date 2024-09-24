@@ -16,16 +16,12 @@
 
 package com.regnosys.rosetta.types.builtin;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaNumberValue;
 import com.regnosys.rosetta.interpreter.RosettaStringValue;
 import com.regnosys.rosetta.interpreter.RosettaValue;
