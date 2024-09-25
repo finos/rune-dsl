@@ -71,12 +71,10 @@ public class XsdUtil {
 	}
 
     public String toTypeName(String xsdName) {
-        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        String[] parts = xsdName.split("[^a-zA-Z0-9_]");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
-        	if (part.isEmpty()) {
-                continue;
-            } else if (Character.isUpperCase(part.charAt(0))) {
+            if (Character.isUpperCase(part.charAt(0))) {
                 builder.append(part);
             } else {
                 builder.append(Character.toUpperCase(part.charAt(0)));
