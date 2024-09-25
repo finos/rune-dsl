@@ -1,8 +1,5 @@
 package com.regnosys.rosetta.types;
 
-import static com.regnosys.rosetta.utils.MetaUtil.hasSupersetOfMetaAttributes;
-import static com.regnosys.rosetta.utils.MetaUtil.intersectMeta;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,38 +12,52 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 
+import static com.regnosys.rosetta.utils.MetaUtil.*;
+
 public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
+	public boolean isSubtypeOf(RAnnotatedType t1, RAnnotatedType t2) {
+		RType t1RType = t1.getRType();
+		RType t2RType = t2.getRType();
+		if ((t1.hasMeta() || t2.hasMeta()) && (t1RType.equals(t2RType))) {
+			return hasSupersetOfMetaAttributes(t1, t2);
+		}
+		return isSubtypeOf(t1RType, t2RType);
+	}
+	
+	
 	public boolean isSubtypeOf(RType t1, RType t2) {
-		if (t1.equals(t2)) {  // update all RType equals methods to handle meta
+		if (t1.equals(t2)) {
 			return true;
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
 			return true;
 		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
-			return hasSupersetOfMetaAttributes(t1, t2); 
+			return true;
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
-			return hasSupersetOfMetaAttributes(t1, t2); 
+			return true;
 		} else if (t1 instanceof RDataType) {
-			if (t2 instanceof RDataType && hasMeta(t1, t2)) {
-				if (((RDataType) t1).getEObject().equals(((RDataType) t2).getEObject())) {
-					return hasSupersetOfMetaAttributes(t1, t2);
-				}
-			}
-			//check both have meta, check that they both have the same eobject and then return the result of hasSupersetOfMetaAttributes else carry on 
 			RType st = ((RDataType)t1).getSuperType();
 			if (st == null) {
 				return false;
 			}
 			return isSubtypeOf(st, t2);
 		} else if (t1 instanceof RAliasType) {
-			//how to get the underlying eobject of the alias reference
-			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2); // same check process as RDataType 
+			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2);
 		} else if (t2 instanceof RAliasType) {
-			return isSubtypeOf(t1, ((RAliasType)t2).getRefersTo());  // same check process as RDataType
+			return isSubtypeOf(t1, ((RAliasType)t2).getRefersTo());
 		}
 		return false;
+	}
+	
+	public RAnnotatedType join(RAnnotatedType t1, RAnnotatedType t2) {
+		RType t1RType = t1.getRType();
+		RType t2RType = t2.getRType();
+		if (t1RType.equals(t2RType)) {
+			return new RAnnotatedType(t1RType, intersectMeta(t1, t2));
+		}
+		return new RAnnotatedType(join(t1RType, t2RType), List.of());
 	}
 	
 	public RType join(RType t1, RType t2) {
@@ -91,15 +102,11 @@ public class SubtypeRelation {
 			RTypeFunction typeFunc = t1.getTypeFunction();
 			RType underlyingJoin = join(t1.getRefersTo(), t2.getRefersTo());
 			Optional<LinkedHashMap<String, RosettaValue>> aliasParams = typeFunc.reverse(underlyingJoin);
-			List<RMetaAttribute> metas = intersectMeta(t1, t2);
-			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, metas))
+			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin))
 				.orElse(underlyingJoin);
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);
 		}
-	}
-	private boolean hasMeta(RType t1, RType t2) {
-		return t1.hasMeta() || t2.hasMeta();
 	}
 	private RType joinByTraversingAncestorsAndAliases(RType t1, RType t2) {
 		// Get a list of all Data/Alias ancestors of t1, including t1 itself.
