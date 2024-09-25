@@ -74,6 +74,9 @@ public class XsdUtil {
         String[] parts = xsdName.split("[^a-zA-Z0-9]");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
+        	if (part.isEmpty()) {
+                continue;
+            }
             if (Character.isUpperCase(part.charAt(0))) {
                 builder.append(part);
             } else {
