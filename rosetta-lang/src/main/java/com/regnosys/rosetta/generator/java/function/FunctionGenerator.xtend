@@ -117,7 +117,7 @@ class FunctionGenerator {
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
-		val parameterVariable = inputs.head.RType.toListOrSingleJavaType(inputs.head.multi)
+		val parameterVariable = inputs.head.RMetaAnnotatedType.RType.toListOrSingleJavaType(inputs.head.multi)
 		JavaParameterizedType.from(new TypeReference<IQualifyFunctionExtension<?>>() {}, parameterVariable)
 	}
 
@@ -245,8 +245,8 @@ class FunctionGenerator {
 						if («outputBuilderId» == null) {
 							«evaluateScope.getIdentifierOrThrow(output)» = null;
 						} else {
-							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
-							«objectValidatorId».validate(«output.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
+							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RMetaAnnotatedType.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
+							«objectValidatorId».validate(«output.RMetaAnnotatedType.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
 						}
 						
 					«ENDIF»
@@ -284,7 +284,7 @@ class FunctionGenerator {
 							«doEvaluateScope.getIdentifierOrThrow(input)» = «Collections».emptyList();
 						}
 						«ENDFOR»
-						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
+						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RMetaAnnotatedType.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
 						return assignOutput(«doEvaluateScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsArguments(doEvaluateScope)»);
 					}
 					
@@ -571,9 +571,9 @@ class FunctionGenerator {
 			JavaPrimitiveType.VOID
 		} else {
 			if (out.typeCall.type.needsBuilder) {
-				typeProvider.getRTypeOfSymbol(out).toPolymorphicListOrSingleJavaType(out.card.isMany)
+				typeProvider.getRTypeOfSymbol(out).RType.toPolymorphicListOrSingleJavaType(out.card.isMany)
 			} else {
-				typeProvider.getRTypeOfSymbol(out).toListOrSingleJavaType(out.card.isMany)
+				typeProvider.getRTypeOfSymbol(out).RType.toListOrSingleJavaType(out.card.isMany)
 			}
 		}
 	}	
@@ -587,7 +587,7 @@ class FunctionGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, JavaScope scope) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF input.typeCall.type.needsBuilder»«typeProvider.getRTypeOfSymbol(input).toPolymorphicListOrSingleJavaType(input.card.isMany)»«ELSE»«typeProvider.getRTypeOfSymbol(input).toListOrSingleJavaType(input.card.isMany)»«ENDIF» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF input.typeCall.type.needsBuilder»«typeProvider.getRTypeOfSymbol(input).RType.toPolymorphicListOrSingleJavaType(input.card.isMany)»«ELSE»«typeProvider.getRTypeOfSymbol(input).RType.toListOrSingleJavaType(input.card.isMany)»«ENDIF» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 	
 	private def StringConcatenationClient inputsAsParameters(List<RAttribute> inputs, JavaScope scope) {
@@ -607,7 +607,7 @@ class FunctionGenerator {
 	}
 	
 	private def JavaType toBuilderItemType(RAttribute rAttribute) {
-		var javaType = rAttribute.RType.toJavaReferenceType as JavaClass<?>
+		var javaType = rAttribute.RMetaAnnotatedType.RType.toJavaReferenceType as JavaClass<?>
 		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
 		javaType
 	}
