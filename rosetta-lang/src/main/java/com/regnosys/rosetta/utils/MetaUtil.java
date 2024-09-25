@@ -4,19 +4,20 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.google.common.collect.Sets;
+import com.regnosys.rosetta.types.RAnnotatedType;
 import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.types.RType;
 
 public class MetaUtil {
 
-	public static List<RMetaAttribute> intersectMeta(RType t1, RType t2) {
+	public static List<RMetaAttribute> intersectMeta(RAnnotatedType t1, RAnnotatedType t2) {
 		return Sets
 				.intersection(new HashSet<>(t1.getMetaAttributes()), new HashSet<>(t2.getMetaAttributes()))
 				.immutableCopy()
 				.asList();
 	}
 	
-	public static boolean hasSupersetOfMetaAttributes(RType t1, RType t2) {
+	public static boolean hasSupersetOfMetaAttributes(RAnnotatedType t1, RAnnotatedType t2) {
 		if (t1.getMetaAttributes().isEmpty() && t2.getMetaAttributes().isEmpty()) {
 			return true;
 		}
