@@ -132,7 +132,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def boolean hasMetaDataAnnotations(RAttribute attribute) {
-		attribute.RAnnotatedType.getMetaAttributes.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
+		attribute.RMetaAnnotatedType.getMetaAttributes.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
 	}
 	
 	def boolean hasMetaDataAnnotations(Annotated it) {
@@ -144,7 +144,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def boolean hasMetaDataAddress(RAttribute attribute) {
-		attribute.RAnnotatedType.getMetaAttributes.exists[name == "address"]
+		attribute.RMetaAnnotatedType.getMetaAttributes.exists[name == "address"]
 	}
 	
 	def boolean hasMetaDataAddress(Annotated it) {
@@ -155,7 +155,7 @@ class RosettaEcoreUtil {
 		metaAnnotations.exists[attribute?.name == "id"]
 	}
 	def boolean hasIdAnnotation(RAttribute it) {
-		RAnnotatedType.getMetaAttributes.exists[name == "id"]
+		RMetaAnnotatedType.getMetaAttributes.exists[name == "id"]
 	}
 	def boolean hasReferenceAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference"]
@@ -228,9 +228,9 @@ class RosettaEcoreUtil {
 	
 	@Deprecated
 	def String javaAnnotation(RAttribute attr) {
-		if (attr.name == "key" && attr.RAnnotatedType.RType.name == "Key" && attr.RAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
+		if (attr.name == "key" && attr.RMetaAnnotatedType.RType.name == "Key" && attr.RMetaAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
 			return 'location'
-		} else if (attr.name == "reference" && attr.RAnnotatedType.RType.name == "Reference" && attr.RAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
+		} else if (attr.name == "reference" && attr.RMetaAnnotatedType.RType.name == "Reference" && attr.RMetaAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
 			return 'address'
 		} else
 			return attr.name

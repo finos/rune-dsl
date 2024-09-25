@@ -91,7 +91,7 @@ class RosettaFunctionExtensions {
 	}
 	
 	dispatch def boolean needsBuilder(RAttribute rAttribute) {
-		needsBuilder(rAttribute.RAnnotatedType.RType)
+		needsBuilder(rAttribute.RMetaAnnotatedType.RType)
 	}
 
 	dispatch def boolean needsBuilder(RosettaTyped ele) {
@@ -112,7 +112,7 @@ class RosettaFunctionExtensions {
 	
 	dispatch def boolean needsBuilder(RAssignedRoot root) {
 		switch (root) {
-			RAttribute: root.RAnnotatedType.RType.needsBuilder
+			RAttribute: root.RMetaAnnotatedType.RType.needsBuilder
 			RShortcut: root.expression.needsBuilder
 			default: false
 		}

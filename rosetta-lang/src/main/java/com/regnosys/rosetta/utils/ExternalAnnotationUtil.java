@@ -237,7 +237,7 @@ public class ExternalAnnotationUtil {
 		Map<RAttribute, RosettaRule> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
 		
 		dataType.getAllNonOverridenAttributes().forEach(attr -> {
-			RType attrType = attr.getRAnnotatedType().getRType();
+			RType attrType = attr.getRMetaAnnotatedType().getRType();
 			RosettaRule rule = attrRules.get(attr);
 			
 			if (!(attrType instanceof RDataType)) {

@@ -146,8 +146,8 @@ public class RObjectFactory {
 				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
 				continue;
 			}
-			if (attribute.getRAnnotatedType().getRType() instanceof RDataType) {
-				RDataType rData = (RDataType) attribute.getRAnnotatedType().getRType();
+			if (attribute.getRMetaAnnotatedType().getRType() instanceof RDataType) {
+				RDataType rData = (RDataType) attribute.getRMetaAnnotatedType().getRType();
 				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
 			}
 		}
