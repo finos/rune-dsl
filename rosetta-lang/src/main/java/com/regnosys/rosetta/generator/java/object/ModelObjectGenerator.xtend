@@ -102,7 +102,7 @@ class ModelObjectGenerator {
 
 	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(RDataType t, JavaClass<?> javaType, JavaScope builderScope) '''
 		«FOR attribute : t.javaAttributes»
-			«IF attribute.RType instanceof RDataType || attribute.RType.hasMeta»
+			«IF attribute.RMetaAnnotatedType.RType instanceof RDataType || attribute.RMetaAnnotatedType.hasMeta»
 				«IF !attribute.isMulti»
 					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
 					«attribute.toBuilderTypeSingle» get«attribute.name.toFirstUpper»();
@@ -115,15 +115,15 @@ class ModelObjectGenerator {
 		«FOR attribute : t.allJavaAttributes»
 			«IF !attribute.isMulti»
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«IF attribute.RType.hasMeta»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
+				«IF attribute.RMetaAnnotatedType.hasMeta»«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 			«ELSE»
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);
-				«IF attribute.RType.hasMeta»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF attribute.RMetaAnnotatedType.hasMeta»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «builderScope.createUniqueIdentifier(attribute.name)», int _idx);«ENDIF»
 				«javaType.toBuilderType» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
-				«IF attribute.RType.hasMeta»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
+				«IF attribute.RMetaAnnotatedType.hasMeta»«javaType.toBuilderType» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);
 				«javaType.toBuilderType» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «builderScope.createUniqueIdentifier(attribute.name)»);«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -245,7 +245,7 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient attributeFromBuilder(RAttribute attribute) {
-		if(attribute.RType instanceof RDataType || attribute.RType.hasMeta) {
+		if(attribute.RMetaAnnotatedType.RType instanceof RDataType || attribute.RMetaAnnotatedType.hasMeta) {
 			if (attribute.isMulti)
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«attribute.buildRosettaObject»).orElse(null)'''
 			else
