@@ -127,13 +127,13 @@ public interface ExpectedTypeProvider {
 				if (OPERATION__EXPRESSION.equals(reference) && owner instanceof Operation) {
 					Operation op = (Operation)owner;
 					if(op.getPath() == null) {
-						return typeProvider.getRTypeOfSymbol(op.getAssignRoot());
+						return typeProvider.getRTypeOfSymbol(op.getAssignRoot()).getRType();
 					}
 					List<Segment> path = op.pathAsSegmentList();
-					return typeProvider.getRTypeOfSymbol(path.get(path.size() - 1).getAttribute());
+					return typeProvider.getRTypeOfSymbol(path.get(path.size() - 1).getAttribute()).getRType();
 				} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
 					ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
-					return typeProvider.getRTypeOfFeature(pair.getKey(), null);
+					return typeProvider.getRTypeOfFeature(pair.getKey(), null).getRType();
 				} else if (owner instanceof RosettaExpression) {
 					return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
 				} else if (INLINE_FUNCTION__BODY.equals(reference)) {
@@ -302,7 +302,7 @@ public interface ExpectedTypeProvider {
 					RosettaSymbol symbol = expr.getSymbol();
 					if (symbol instanceof Function) {
 						Function fun = (Function)symbol;
-						return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index));
+						return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index)).getRType();
 					} else if (symbol instanceof RosettaRule) {
 						RosettaRule rule = (RosettaRule)symbol;
 						return typeSystem.typeCallToRType(rule.getInput());
