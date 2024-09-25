@@ -104,16 +104,18 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
-	def RType getRTypeOfFeature(RosettaFeature feature, EObject context) {
-		feature.safeRType(context, newHashMap)
+	def RAnnotatedType getRTypeOfFeature(RosettaFeature feature, EObject context) {
+		val rType = feature.safeRType(context, newHashMap)
+		new RAnnotatedType(rType, feature.RMettributesOfFeature)
 	}
-	def RType getRTypeOfSymbol(RosettaSymbol feature, EObject context) {
-		feature.safeRType(context, newHashMap)
+	def RAnnotatedType getRTypeOfSymbol(RosettaSymbol feature, EObject context) {
+		val rType = feature.safeRType(context, newHashMap)
+		new RAnnotatedType(rType, feature.RMettributesOfSymbol)
 	}
-	def RType getRTypeOfSymbol(AssignPathRoot feature) {
+	def RAnnotatedType getRTypeOfSymbol(AssignPathRoot feature) {
 		feature.getRTypeOfSymbol(null)
 	}
-	def RType getRTypeOfSymbol(RosettaCallableWithArgs feature) {
+	def RAnnotatedType getRTypeOfSymbol(RosettaCallableWithArgs feature) {
 		feature.getRTypeOfSymbol(null)
 	}
 	def RType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
@@ -160,7 +162,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	private def List<RMetaAttribute> getRMetaAttributes(AnnotationRef[] annotations) {
 		annotations
 			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
-			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol)]
+			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType)]
 			.toList
 	}
 	
