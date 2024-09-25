@@ -39,7 +39,7 @@ import com.regnosys.rosetta.types.TypeSystem
 class RosettaEcoreUtil {
 	
 	@Inject RBuiltinTypeService builtins
-	@Inject RObjectFactory objectFactory
+	@Inject extension RObjectFactory objectFactory
 	@Inject extension TypeSystem typeSystem
 	
 	def boolean isResolved(EObject obj) {
@@ -132,7 +132,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def boolean hasMetaDataAnnotations(RAttribute attribute) {
-		attribute.RType.metaAttributes.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
+		attribute.RAnnotatedType.metaAttributes.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
 	}
 	
 	def boolean hasMetaDataAnnotations(Annotated it) {
@@ -144,7 +144,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def boolean hasMetaDataAddress(RAttribute attribute) {
-		attribute.RType.metaAttributes.exists[name == "address"]
+		attribute.RAnnotatedType.metaAttributes.exists[name == "address"]
 	}
 	
 	def boolean hasMetaDataAddress(Annotated it) {
@@ -155,7 +155,7 @@ class RosettaEcoreUtil {
 		metaAnnotations.exists[attribute?.name == "id"]
 	}
 	def boolean hasIdAnnotation(RAttribute it) {
-		RType.metaAttributes.exists[name == "id"]
+		RAnnotatedType.metaAttributes.exists[name == "id"]
 	}
 	def boolean hasReferenceAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference"]
@@ -228,9 +228,9 @@ class RosettaEcoreUtil {
 	
 	@Deprecated
 	def String javaAnnotation(RAttribute attr) {
-		if (attr.name == "key" && attr.RType.name == "Key" && attr.RType.namespace.toString == "com.rosetta.model.lib.meta") {
+		if (attr.name == "key" && attr.RAnnotatedType.RType.name == "Key" && attr.RAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
 			return 'location'
-		} else if (attr.name == "reference" && attr.RType.name == "Reference" && attr.RType.namespace.toString == "com.rosetta.model.lib.meta") {
+		} else if (attr.name == "reference" && attr.RAnnotatedType.RType.name == "Reference" && attr.RAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
 			return 'address'
 		} else
 			return attr.name
@@ -244,7 +244,7 @@ class RosettaEcoreUtil {
 				'meta',
 				null,
 				emptyList,
-				provideMetaFieldsType(t),
+				provideMetaFieldsType(t).withMeta(#[]),
 				PositiveIntegerInterval.bounded(0, 1),
 				null,
 				null

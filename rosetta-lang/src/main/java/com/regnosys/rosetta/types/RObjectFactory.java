@@ -171,15 +171,12 @@ public class RObjectFactory {
 	}
 	
 	public RAttribute buildRAttribute(Attribute attribute) {
-		RType rType = typeProvider.getRTypeOfSymbol(attribute);
+		RAnnotatedType rAnnotatedType = typeProvider.getRTypeOfSymbol(attribute);
 		boolean isMeta =  attribute.getTypeCall().getType() instanceof RosettaMetaType;
 		PositiveIntegerInterval card = new PositiveIntegerInterval(
 				attribute.getCard().getInf(),
 				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));
 		RosettaRuleReference ruleRef = attribute.getRuleReference();
-		
-		List<RMetaAttribute> rMettributesOfSymbol = typeProvider.getRMettributesOfSymbol(attribute);
-		RAnnotatedType rAnnotatedType = new RAnnotatedType(rType, rMettributesOfSymbol);
 
 		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rAnnotatedType,
 				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
@@ -220,5 +217,8 @@ public class RObjectFactory {
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider, this);
+	}
+	public RAnnotatedType withMeta(RType rtype, List<RMetaAttribute> metaAttributes) {
+		return new RAnnotatedType(rtype, metaAttributes);
 	}
 }
