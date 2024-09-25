@@ -19,7 +19,6 @@ package com.regnosys.rosetta.types;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -85,7 +84,7 @@ public class TypeFactory {
 		LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(refersTo.getArguments());
 		args.remove(RNumberType.FRACTIONAL_DIGITS_PARAM_NAME);
 		args.remove(RNumberType.SCALE_PARAM_NAME);
-		return new RAliasType(builtinTypes.INT_FUNCTION, args, refersTo, List.of());
+		return new RAliasType(builtinTypes.INT_FUNCTION, args, refersTo);
 	}
 	public RAliasType constrainedInt(int digits, BigInteger min, BigInteger max) {
 		return constrainedInt(Optional.of(digits), Optional.of(min), Optional.of(max));
@@ -110,11 +109,11 @@ public class TypeFactory {
 	}
 	public RNumberType constrainedNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			Optional<BigDecimal> min, Optional<BigDecimal> max, Optional<BigDecimal> scale) {
-		return new RNumberType(digits, fractionalDigits, min, max, scale, List.of());
+		return new RNumberType(digits, fractionalDigits, min, max, scale);
 	}
 	public RNumberType constrainedNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			BigDecimalInterval interval, Optional<BigDecimal> scale) {
-		return new RNumberType(digits, fractionalDigits, interval, scale, List.of());
+		return new RNumberType(digits, fractionalDigits, interval, scale);
 	}
 	public RNumberType constrainedNumber(int digits, int fractionalDigits, BigDecimal min, BigDecimal max) {
 		return constrainedNumber(Optional.of(digits), Optional.of(fractionalDigits), Optional.of(min), Optional.of(max), Optional.empty());
@@ -133,13 +132,13 @@ public class TypeFactory {
 		return createListType(constrainedString(minLength, maxLength), single);
 	}
 	public RStringType constrainedString(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
-		return new RStringType(minLength, maxLength, pattern, List.of());
+		return new RStringType(minLength, maxLength, pattern);
 	}
 	public RStringType constrainedString(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
-		return new RStringType(interval, pattern, List.of());
+		return new RStringType(interval, pattern);
 	}
 	public RStringType constrainedString(int minLength, int maxLength) {
-		return new RStringType(Optional.of(minLength), Optional.of(maxLength), Optional.empty(), List.of());
+		return new RStringType(Optional.of(minLength), Optional.of(maxLength), Optional.empty());
 	}
 	
 	public RosettaCardinality createConstraint(int inf, int sup) {
