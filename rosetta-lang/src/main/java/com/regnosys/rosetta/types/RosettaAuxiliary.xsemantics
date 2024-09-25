@@ -108,7 +108,7 @@ auxiliary keepTypeAliasIfPossible(RAliasType t1, RAliasType t2, BiFunction<RType
 		val typeFunc = t1.typeFunction
 		val underlier = keepTypeAliasIfPossible(t1.refersTo, t2.refersTo, combineUnderlyingTypes)
 		return typeFunc.reverse(underlier)
-			.<RType>map[args| new RAliasType(typeFunc, args, underlier, #[])]
+			.<RType>map[args| new RAliasType(typeFunc, args, underlier)]
 			.orElse(underlier)
 	} else {
 		val superAliases = newArrayList
