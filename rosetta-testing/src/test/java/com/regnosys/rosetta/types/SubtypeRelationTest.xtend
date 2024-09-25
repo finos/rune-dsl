@@ -51,7 +51,7 @@ class SubtypeRelationTest {
 		'''.parseAttribute.RTypeOfSymbol
 				
 		val result = fieldA.join(fieldB)
-		assertTrue(result instanceof RStringType)
+		assertTrue(result.RType instanceof RStringType)
 		assertEquals(#[new RMetaAttribute("scheme", UNCONSTRAINED_STRING)], result.metaAttributes)
 	}
 	
