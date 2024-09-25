@@ -78,7 +78,7 @@ public class TypeSystem {
                     RType inputType = typeCallToRType(rule.getInput());
                     result = meet(result, inputType);
                 } else {
-                    RType attrType = stripFromTypeAliases(attr.getRType());
+                    RType attrType = stripFromTypeAliases(attr.getRAnnotatedType().getRType());
                     if (attrType instanceof RDataType) {
                     	RDataType attrData = (RDataType)attrType;
                         RType inputType = getRulesInputType(attrData, source, visited);
