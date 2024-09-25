@@ -76,8 +76,7 @@ public class XsdUtil {
         for (String part : parts) {
         	if (part.isEmpty()) {
                 continue;
-            }
-            if (Character.isUpperCase(part.charAt(0))) {
+            } else if (Character.isUpperCase(part.charAt(0))) {
                 builder.append(part);
             } else {
                 builder.append(Character.toUpperCase(part.charAt(0)));
