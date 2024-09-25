@@ -391,7 +391,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
 
 		type.allAttributes.forEach[attr |
-			val attrType = attr.RType
+			val attrType = attr.RMetaAnnotatedType.RType
 
 			if (attrType instanceof RDataType) {
 				if (!visitor.collectedTypes.contains(attrType)) {
@@ -573,9 +573,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	protected def void checkTypeAttributeMustHaveSameTypeAsParent(Iterable<RAttribute> attrFromClazzes,
 		Iterable<RAttribute> attrFromSuperClasses, String name) {
 		attrFromClazzes.forEach [ childAttr |
-			val childAttrType = childAttr.RType
+			val childAttrType = childAttr.RMetaAnnotatedType.RType
 			attrFromSuperClasses.forEach [ parentAttr |
-				val parentAttrType = parentAttr.RType
+				val parentAttrType = parentAttr.RMetaAnnotatedType.RType
 				if (childAttrType != parentAttrType) {
 					error('''Overriding attribute '«name»' with type «childAttrType» must match the type of the attribute it overrides («parentAttrType»)''',
 						childAttr.EObject, ROSETTA_NAMED__NAME, DUPLICATE_ATTRIBUTE)
@@ -816,7 +816,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkPatternAndFormat(RosettaExternalRegularAttribute attribute) {
-		if (!isDateTime(attribute.attributeRef.getRTypeOfFeature(attribute))){
+		if (!isDateTime(attribute.attributeRef.getRTypeOfFeature(attribute).RType)){
 			for(s:attribute.externalSynonyms) {
 				checkFormatNull(s.body)
 				checkPatternValid(s.body)
@@ -831,7 +831,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkPatternAndFormat(Attribute attribute) {
-		if (!isDateTime(attribute.RTypeOfSymbol)){
+		if (!isDateTime(attribute.RTypeOfSymbol.RType)){
 			for(s:attribute.synonyms) {
 				checkFormatNull(s.body)
 				checkPatternValid(s.body)
@@ -904,7 +904,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			
 			val attrExt = attr.buildRAttribute
 			val attrSingle = !attrExt.isMulti
-			val attrType = attrExt.RType
+			val attrType = attrExt.RMetaAnnotatedType.RType
 
 			// check cardinality
 			val ruleSingle = !rule.expression.isMulti
@@ -973,7 +973,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkAttribute(Attribute ele) {
-		val eleType = ele.RTypeOfSymbol
+		val eleType = ele.RTypeOfSymbol.RType
 		if (eleType instanceof RDataType) {
 			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.exists[EObject.hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
@@ -1065,7 +1065,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				if (!seenFeatures.add(feature)) {
 					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
 				}
-				checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+				checkType(feature.getRTypeOfFeature(null).RType, expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
 				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
 					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
@@ -1218,7 +1218,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 										if (attrRef.attribute.isResolved) {
 											checkForLocation(attrRef.attribute, it)
 											val targetType = attrRef.attribute.typeCall.typeCallToRType
-											val thisType = ele.RTypeOfSymbol
+											val thisType = ele.RTypeOfSymbol.RType
 											if (!thisType.isSubtypeOf(targetType))
 												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 										}
@@ -1262,8 +1262,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 		val func = ele as Function
 		
-		val annotationType = annotations.head.attribute.RTypeOfSymbol
-		val funcOutputType = func.RTypeOfSymbol
+		val annotationType = annotations.head.attribute.RTypeOfSymbol.RType
+		val funcOutputType = func.RTypeOfSymbol.RType
 		
 		if (annotationType instanceof RDataType && funcOutputType instanceof RDataType) {
 			val annotationDataType = annotationType as RDataType
@@ -1544,7 +1544,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		val attr = o.path !== null
 				? o.pathAsSegmentList.last.attribute
 				: o.assignRoot
-		checkType(attr.RTypeOfSymbol, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
+		checkType(attr.RTypeOfSymbol.RType, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
 		val isList = cardinality.isSymbolMulti(attr)
 		if (o.add && !isList) {
 			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
