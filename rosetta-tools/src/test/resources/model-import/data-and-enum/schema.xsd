@@ -62,7 +62,7 @@
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
-    <xs:complexType name="Bar">
+    <xs:complexType name="Bar__1">
         <xs:annotation>
             <xs:documentation source="Name" xml:lang="EN">BarName</xs:documentation>
             <xs:documentation source="Definition" xml:lang="EN">Bar definition.</xs:documentation>
@@ -124,7 +124,7 @@
                     <xs:documentation source="Definition" xml:lang="EN">FooStrListAttr definition.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="FooBarListAttr" type="Bar" minOccurs="1" maxOccurs="2">
+            <xs:element name="FooBarListAttr" type="Bar__1" minOccurs="1" maxOccurs="2">
                 <xs:annotation>
                     <xs:documentation source="Name" xml:lang="EN">FooBarListAttrName</xs:documentation>
                     <xs:documentation source="Definition" xml:lang="EN">FooBarListAttr definition.</xs:documentation>
