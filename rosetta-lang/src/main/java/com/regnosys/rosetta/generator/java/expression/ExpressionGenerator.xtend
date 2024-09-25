@@ -196,12 +196,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			RosettaExternalFunction: {
 				val returnRType = typeProvider.getRTypeOfSymbol(callable)
 				if (arguments.empty) {
-					JavaExpression.from('''new «callable.toFunctionJavaClass»().execute()''', returnRType.toJavaReferenceType)
+					JavaExpression.from('''new «callable.toFunctionJavaClass»().execute()''', returnRType.RType.toJavaReferenceType)
 				} else {
 					// First evaluate all arguments
 					var JavaStatementBuilder argCode
 					val argRTypes = arguments.map[typeProvider.getRType(it)]
-					if (argRTypes.forall[isSubtypeOf(returnRType)]) {
+					if (argRTypes.forall[isSubtypeOf(returnRType.RType)]) {
 						// TODO: this is a hack
 						// Generic return type for number type e.g. Min(1,2) or Max(2,6)
 						val argAndReturnType = argRTypes.join.toJavaReferenceType
@@ -225,7 +225,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 							)
 						}
 						argCode
-							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', returnRType.toJavaReferenceType)]
+							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', returnRType.RType.toJavaReferenceType)]
 					}
 				}
 			}
@@ -280,7 +280,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		if (feature instanceof Attribute) {
 			return featureCall(receiverCode, receiverType, feature.buildRAttribute, isDeepFeature, scope, autoValue)
 		}
-		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
+		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).RType.toJavaReferenceType
 		val StringConcatenationClient right = switch (feature) {
 			RosettaMetaType: 
 				feature.buildMapFunc(scope)
@@ -428,13 +428,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
 		val resultType = attribute.toMetaItemJavaType
 		if (attribute.isMulti) {
-			if (!attribute.RType.hasMeta || !autoValue)
+			if (!attribute.RMetaAnnotatedType.hasMeta || !autoValue)
 				'''.<«resultType»>mapC(«mapFunc»)'''
 			else {
 				'''.<«resultType»>mapC(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
 			}
 		} else {
-			if (!attribute.RType.hasMeta || !autoValue) {
+			if (!attribute.RMetaAnnotatedType.hasMeta || !autoValue) {
 				'''.<«resultType»>map(«mapFunc»)'''
 			} else
 				'''.<«resultType»>map(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
@@ -996,7 +996,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			ShortcutDeclaration: {
 				val isMulti = s.isSymbolMulti
 				val shortcut = rObjectFactory.buildRShortcut(s)
-				val itemType = typeProvider.getRTypeOfSymbol(s).toJavaReferenceType
+				val itemType = typeProvider.getRTypeOfSymbol(s).RType.toJavaReferenceType
 				if (exprHelper.usesOutputParameter(s.expression)) {
 					val aliasType = isMulti ? LIST.wrap(itemType) : itemType
 					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»).build()''', aliasType)
@@ -1163,7 +1163,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature, value).toJavaReferenceType
+			val clazz = typeProvider.getRTypeOfFeature(feature, value).RType.toJavaReferenceType
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
