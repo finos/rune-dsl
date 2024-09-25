@@ -176,7 +176,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return new GeneratedJavaClass<>(packageName, simpleName, Object.class);
 	}
 	public JavaClass<?> toMetaJavaType(Attribute attribute) {
-		JavaClass<?> attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute));
+		JavaClass<?> attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute).getRType());
 		DottedPath namespace = getModelPackage(attribute.getTypeCall().getType());
 		return toMetaJavaType(attrType, extensions.hasMetaFieldAnnotations(attribute), namespace);
 	}
@@ -238,7 +238,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			attr = segments.get(segments.size() - 1).getAttribute();
 		}
 		DottedPath namespace = getModelPackage(attr.getTypeCall().getType());
-		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr)), false, namespace);
+		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr).getRType()), false, namespace);
 	}
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
