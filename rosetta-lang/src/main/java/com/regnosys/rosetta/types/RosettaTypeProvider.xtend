@@ -104,18 +104,18 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
-	def RAnnotatedType getRTypeOfFeature(RosettaFeature feature, EObject context) {
+	def RMetaAnnotatedType getRTypeOfFeature(RosettaFeature feature, EObject context) {
 		val rType = feature.safeRType(context, newHashMap)
-		new RAnnotatedType(rType, feature.RMettributesOfFeature)
+		new RMetaAnnotatedType(rType, feature.RMettributesOfFeature)
 	}
-	def RAnnotatedType getRTypeOfSymbol(RosettaSymbol feature, EObject context) {
+	def RMetaAnnotatedType getRTypeOfSymbol(RosettaSymbol feature, EObject context) {
 		val rType = feature.safeRType(context, newHashMap)
-		new RAnnotatedType(rType, feature.RMettributesOfSymbol)
+		new RMetaAnnotatedType(rType, feature.RMettributesOfSymbol)
 	}
-	def RAnnotatedType getRTypeOfSymbol(AssignPathRoot feature) {
+	def RMetaAnnotatedType getRTypeOfSymbol(AssignPathRoot feature) {
 		feature.getRTypeOfSymbol(null)
 	}
-	def RAnnotatedType getRTypeOfSymbol(RosettaCallableWithArgs feature) {
+	def RMetaAnnotatedType getRTypeOfSymbol(RosettaCallableWithArgs feature) {
 		feature.getRTypeOfSymbol(null)
 	}
 	def RType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {

@@ -18,7 +18,7 @@ public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
-	public boolean isSubtypeOf(RAnnotatedType t1, RAnnotatedType t2) {
+	public boolean isSubtypeOf(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
 		RType t1RType = t1.getRType();
 		RType t2RType = t2.getRType();
 		if ((t1.hasMeta() || t2.hasMeta()) && (t1RType.equals(t2RType))) {
@@ -51,13 +51,13 @@ public class SubtypeRelation {
 		return false;
 	}
 	
-	public RAnnotatedType join(RAnnotatedType t1, RAnnotatedType t2) {
+	public RMetaAnnotatedType join(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
 		RType t1RType = t1.getRType();
 		RType t2RType = t2.getRType();
 		if (t1RType.equals(t2RType)) {
-			return new RAnnotatedType(t1RType, intersectMeta(t1, t2));
+			return new RMetaAnnotatedType(t1RType, intersectMeta(t1, t2));
 		}
-		return new RAnnotatedType(join(t1RType, t2RType), List.of());
+		return new RMetaAnnotatedType(join(t1RType, t2RType), List.of());
 	}
 	
 	public RType join(RType t1, RType t2) {

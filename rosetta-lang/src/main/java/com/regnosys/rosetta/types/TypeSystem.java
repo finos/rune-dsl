@@ -144,7 +144,7 @@ public class TypeSystem {
 		return acc;
 	}
 	
-	public boolean isSubtypeOf(RAnnotatedType sub, RAnnotatedType sup) {
+	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		

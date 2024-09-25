@@ -74,7 +74,7 @@ public class RObjectFactory {
 	
 	// TODO: should be private
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		RAnnotatedType rAnnotatedType = new RAnnotatedType(type, List.of());
+		RMetaAnnotatedType rAnnotatedType = new RMetaAnnotatedType(type, List.of());
 		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
@@ -171,7 +171,7 @@ public class RObjectFactory {
 	}
 	
 	public RAttribute buildRAttribute(Attribute attribute) {
-		RAnnotatedType rAnnotatedType = typeProvider.getRTypeOfSymbol(attribute);
+		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfSymbol(attribute);
 		boolean isMeta =  attribute.getTypeCall().getType() instanceof RosettaMetaType;
 		PositiveIntegerInterval card = new PositiveIntegerInterval(
 				attribute.getCard().getInf(),
@@ -203,9 +203,9 @@ public class RObjectFactory {
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
 	}
 	
-	public RAnnotatedType buildRAnnotatedType(Data data) {
+	public RMetaAnnotatedType buildRAnnotatedType(Data data) {
 		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(data);
-		return new RAnnotatedType(buildRDataType(data), rMettributesOfType);
+		return new RMetaAnnotatedType(buildRDataType(data), rMettributesOfType);
 	}
 
 	public RDataType buildRDataType(Data data) {
@@ -218,7 +218,7 @@ public class RObjectFactory {
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider, this);
 	}
-	public RAnnotatedType withMeta(RType rtype, List<RMetaAttribute> metaAttributes) {
-		return new RAnnotatedType(rtype, metaAttributes);
+	public RMetaAnnotatedType withMeta(RType rtype, List<RMetaAttribute> metaAttributes) {
+		return new RMetaAnnotatedType(rtype, metaAttributes);
 	}
 }

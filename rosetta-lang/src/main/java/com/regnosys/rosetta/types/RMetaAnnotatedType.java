@@ -3,11 +3,11 @@ package com.regnosys.rosetta.types;
 import java.util.List;
 import java.util.Objects;
 
-public class RAnnotatedType {
+public class RMetaAnnotatedType {
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
 	
-	public RAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
+	public RMetaAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
 		super();
 		this.rType = rType;
 		this.metaAttributes = metaAttributes == null ? List.of() : metaAttributes;
@@ -43,7 +43,7 @@ public class RAnnotatedType {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RAnnotatedType other = (RAnnotatedType) obj;
+		RMetaAnnotatedType other = (RMetaAnnotatedType) obj;
 		return Objects.equals(rType, other.rType) && Objects.equals(metaAttributes, other.metaAttributes);
 	}
 

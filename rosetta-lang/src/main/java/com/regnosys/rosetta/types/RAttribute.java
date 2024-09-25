@@ -28,16 +28,16 @@ public class RAttribute implements RAssignedRoot {
 	private final String name;
 	private final String definition;
 	private final List<RosettaDocReference> docReferences;
-	private final RAnnotatedType rAnnotatedType;
+	private final RMetaAnnotatedType rAnnotatedType;
 	private final PositiveIntegerInterval cardinality;
 	private final boolean isMeta;
 	private final RosettaRule ruleReference;
 	private final Attribute origin;
 
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RAnnotatedType rAnnotatedType, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RMetaAnnotatedType rAnnotatedType, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
 		this(name, definition, docReferences, rAnnotatedType, cardinality, false, ruleReference, origin);
 	}
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RAnnotatedType rAnnotatedType, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RMetaAnnotatedType rAnnotatedType, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
@@ -57,7 +57,7 @@ public class RAttribute implements RAssignedRoot {
 		return origin;
 	}
 
-	public RAnnotatedType getRAnnotatedType() {
+	public RMetaAnnotatedType getRAnnotatedType() {
 		return rAnnotatedType;
 	}
 	
