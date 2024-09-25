@@ -144,6 +144,13 @@ public class TypeSystem {
 		return acc;
 	}
 	
+	public boolean isSubtypeOf(RAnnotatedType sub, RAnnotatedType sup) {
+		Objects.requireNonNull(sub);
+		Objects.requireNonNull(sup);
+		
+		return subtypeRelation.isSubtypeOf(sub, sup);
+	}
+	
 	public boolean isSubtypeOf(RType sub, RType sup) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
