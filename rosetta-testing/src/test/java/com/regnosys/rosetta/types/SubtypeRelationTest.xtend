@@ -16,7 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RStringType
-
+import com.regnosys.rosetta.types.builtin.RNumberType
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -34,6 +34,42 @@ class SubtypeRelationTest {
 	}
 	private def RosettaEnumeration getEnum(RosettaModel model, String name) {
 		return model.elements.filter(RosettaNamed).findFirst[it.name == name] as RosettaEnumeration
+	}
+	
+	@Test
+	def testJoinOnMetaSubTypesReturnsParent() {
+		val model = '''
+			type A:
+			
+			type B extends A:
+			
+			type C extends A:
+		'''.parseRosetta
+				
+		val fieldA = model.getData("A").buildRAnnotatedType
+		
+		val fieldB = model.getData("B").buildRAnnotatedType
+		
+		val fieldC = model.getData("C").buildRAnnotatedType
+		
+		assertEquals(fieldA, fieldB.join(fieldC))
+	}
+	
+	@Test
+	def testJoinMetaTypeWithNonMetaTypeIsCorrect() {
+		val fieldA = '''
+			fieldA number (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB number (1..1)
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val result = fieldA.join(fieldB)
+		assertTrue(result.RType instanceof RNumberType)
+		assertFalse(result.hasMeta)
 	}
 	
 	@Test
@@ -98,6 +134,34 @@ class SubtypeRelationTest {
 		val fieldB = '''
 			fieldB string (1..1)
 				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertTrue(fieldA.isSubtypeOf(fieldB))
+	}
+	
+	@Test
+	def testStringIsNotSubTypeOfStringWithScheme() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertFalse(fieldB.isSubtypeOf(fieldA))
+	}
+	
+	@Test
+	def testStringWithSchemeIsSubTypeOfString() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
 		'''.parseAttribute.RTypeOfSymbol
 		
 		assertTrue(fieldA.isSubtypeOf(fieldB))
