@@ -263,7 +263,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	
 	private SemanticToken markSymbol(EObject objectToMark, EStructuralFeature featureToMark, RosettaSymbol symbol) {
 		if (symbol instanceof Attribute) {
-			RType implicitType = typeProvider.typeOfImplicitVariable(objectToMark);
+			RType implicitType = typeProvider.typeOfImplicitVariable(objectToMark).getRType();
 			if (implicitType != null) {
 				Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeatures(implicitType, objectToMark));
 				if (implicitFeatures.contains(symbol)) {

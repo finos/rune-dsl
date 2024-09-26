@@ -441,7 +441,7 @@ checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 			}
 			(0..<e.args.size).forall[idx |
 				val param = f.parameters.get(idx)
-				val paramType = if (param.isArray) createListType(typeCallToRType(param.typeCall, new RosettaInterpreterContext), 0) else createListType(typeCallToRType(param.typeCall, new RosettaInterpreterContext), 1, 1)
+				val paramType = if (param.isArray) createListType(typeCallToRType(param.typeCall, new RosettaInterpreterContext).RType, 0) else createListType(typeCallToRType(param.typeCall, new RosettaInterpreterContext).RType, 1, 1)
 				looseListSubtypeCheck(e.args.get(idx), paramType)
 			]
         }
@@ -461,7 +461,7 @@ checkrule CheckRosettaSymbolReference for RosettaSymbolReference e from {
 				or
 				fail error "Expected 1 argument, but got " + e.args.size() + " instead."
 			}
-			val paramType = f.input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
+			val paramType = f.input?.typeCallToRType(new RosettaInterpreterContext)?.RType.createListType(single)
 			if (paramType !== null) {
 				looseListSubtypeCheck(e.args.head, paramType)
 			}

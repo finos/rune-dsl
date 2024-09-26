@@ -183,7 +183,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void switchStatementMustProvideCaseForAllEnumValues(SwitchOperation op) {
-		val argumentType = op.argument.RType
+		val argumentMetaType = op.argument.RType
+		val argumentType = argumentMetaType.RType
 		if (op.^default === null && argumentType instanceof REnumType) {
 			val enumConditions = op.cases.map[it.enumGuard].toSet
 
@@ -208,7 +209,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  			if (caseStatement.literalGuard !== null) {
  				val conditionType = caseStatement.literalGuard.RType
 	 			if (!conditionType.isSubtypeOf(argumentRType)) {
- 					error('''Mismatched condition type: «argumentRType.notASubtypeMessage(conditionType)»''', caseStatement.literalGuard ?: caseStatement.enumGuard, null)
+ 					error('''Mismatched condition type: «argumentRType.RType.notASubtypeMessage(conditionType.RType)»''', caseStatement.literalGuard ?: caseStatement.enumGuard, null)
  				}
  			}
 
@@ -217,7 +218,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
  	@Check
  	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
- 		val inputType = op.argument.RType.stripFromTypeAliases
+ 		val inputType = op.argument.RType.RType.stripFromTypeAliases
  		if (!(inputType instanceof RBasicType) && !(inputType instanceof REnumType)) {
  			error('''Type `«inputType.name»` is not a valid switch argument type, supported argument types are basic types and enumerations''', op.argument, null)
  		}
@@ -537,7 +538,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	private def checkType(RType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
-		val actualType = expression.RType
+		val actualMetaType = expression.RType
+		val actualType = actualMetaType.RType
 		if (actualType === null) {
 			return
 		}
@@ -737,7 +739,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.inputs.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							checkType(param.typeCall.typeCallToRType.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
 							if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
@@ -745,7 +747,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						]
 					} else if (callable instanceof RosettaRule) {
 						if (callable.input !== null) {
-							checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
+							checkType(callable.input.typeCallToRType.RType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
 							if (cardinality.isMulti(element.args.head)) {
 								error('''Expecting single cardinality for input to rule.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
@@ -756,7 +758,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.parameters.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							checkType(param.typeCall.typeCallToRType.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
 							if(cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
@@ -768,7 +770,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				if (callable instanceof Attribute) {
 					if (callable.isOutput) {
 						val implicitType = element.typeOfImplicitVariable
-						val implicitFeatures = implicitType.allFeatures(callable)
+						val implicitFeatures = implicitType.RType.allFeatures(callable)
 						if (implicitFeatures.exists[name == callable.name]) {
 							error(
 								'''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
@@ -945,7 +947,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkBinaryParamsRightTypes(RosettaBinaryOperation binOp) {
-		val resultType = binOp.RType
+		val resultMetaType = binOp.RType
+		val resultType = resultMetaType.RType
 		if (resultType instanceof RErrorType) {
 			error(resultType.message, binOp, ROSETTA_OPERATION__OPERATOR)
 		}
@@ -1051,11 +1054,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	def checkConstructorExpression(RosettaConstructorExpression ele) {
-		val rType = ele.RType
-		if (rType !== null) {
-			val baseRType = rType.stripFromTypeAliases
+		val rMetaAnnotatedType = ele.RType
+		if (rMetaAnnotatedType !== null) {
+			val baseRType = rMetaAnnotatedType.RType.stripFromTypeAliases
 			if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
-				error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
+				error('''Cannot construct an instance of type `«rMetaAnnotatedType.RType.name»`.''', ele.typeCall, null)
 			}
 			
 			val seenFeatures = newHashSet
@@ -1071,7 +1074,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
 				}
 			}
-			val absentAttributes = rType
+			val absentAttributes = rMetaAnnotatedType.RType
 				.allFeatures(ele)
 				.filter[!seenFeatures.contains(it)]
 			val requiredAbsentAttributes = absentAttributes
@@ -1093,7 +1096,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkListLiteral(ListLiteral ele) {
-		val type = ele.RType
+		val metaType = ele.RType
+		val type = metaType.RType
 		if (type instanceof RErrorType) {
 			error('''All collection elements must have the same super type but types were «type.message»''', ele, null)
 		}
@@ -1147,7 +1151,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (cardinality.isMulti(arg)) {
 				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
-			val type = arg.RType.stripFromTypeAliases
+			val type = arg.RType.RType.stripFromTypeAliases
 			if (!(type instanceof RBasicType || type instanceof RRecordType || type instanceof REnumType)) {
 				error('''The argument of «ele.operator» should be of a builtin type or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
@@ -1220,7 +1224,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 											val targetType = attrRef.attribute.typeCall.typeCallToRType
 											val thisType = ele.RTypeOfSymbol.RType
 											if (!thisType.isSubtypeOf(targetType))
-												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+												error('''Expected address target type of '«thisType.name»' but was '«targetType?.RType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 										}
 									}
 									default:
@@ -1506,8 +1510,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	private def void checkInputIsComparable(RosettaUnaryOperation o) {
 		val inputRType = o.argument.getRType
-		if (!inputRType.hasNaturalOrder) {
-			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.name».''', o, ROSETTA_OPERATION__OPERATOR)
+		if (!inputRType.RType.hasNaturalOrder) {
+			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.RType.name».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 
@@ -1528,8 +1532,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		val ref = op.function
 		if (ref !== null) {
 			val bodyRType = ref.body.getRType
-			if (!bodyRType.hasNaturalOrder) {
-				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.name».''', ref, null)
+			if (!bodyRType.RType.hasNaturalOrder) {
+				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.RType.name».''', ref, null)
 			}			
 		}
 	}

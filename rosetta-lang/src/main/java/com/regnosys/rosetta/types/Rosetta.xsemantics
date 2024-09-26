@@ -67,6 +67,7 @@ import java.math.BigInteger
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.types.RMetaAnnotatedType
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -90,7 +91,7 @@ auxiliary {
 	
 	// The methods below could be moved to RosettaAuxiliary were it not for issue https://github.com/eclipse/xsemantics/issues/178
 	typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias): RTypeFunction cached
-	typeCallToRType(TypeCall rt, RosettaInterpreterContext context): RType
+	typeCallToRType(TypeCall rt, RosettaInterpreterContext context): RMetaAnnotatedType
 	attributeListType(Attribute a): RListType
 }
 
@@ -137,11 +138,11 @@ auxiliary symbolListType(ShortcutDeclaration c) {
 }
 
 auxiliary symbolListType(RosettaExternalFunction c) {
-	return createListType(typeCallToRType(c.typeCall, new RosettaInterpreterContext), 1, 1)
+	return createListType(typeCallToRType(c.typeCall, new RosettaInterpreterContext).RType, 1, 1)
 }
 
 auxiliary symbolListType(Function c) {
-	return createListType(typeCallToRType(c.^output.typeCall, new RosettaInterpreterContext), c.^output.card)
+	return createListType(typeCallToRType(c.^output.typeCall, new RosettaInterpreterContext).RType, c.^output.card)
 }
 
 auxiliary symbolListType(RosettaRule c) {
@@ -170,7 +171,7 @@ auxiliary typeOfImplicitVariable(EObject c) {
 		} else if (it instanceof RosettaFunctionalOperation) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
-			input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
+			input?.typeCallToRType(new RosettaInterpreterContext)?.RType.createListType(single)
 		}
 	]
 }
@@ -191,7 +192,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 	return systemSolver.solve(equations, parameters.toSet).map[solutionSet|
 		RTypeFunction.create(namespace, typeAlias.name,
 			[arguments|
-				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
+				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments)).RType
 			],
 			[type|
 				if (!(type instanceof RParametrizedType)) {
@@ -208,7 +209,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 	].orElseGet[
 		RTypeFunction.create(namespace, typeAlias.name,
 			[arguments|
-				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments))
+				typeCallToRType(typeAlias.typeCall, RosettaInterpreterContext.of(arguments)).RType
 			],
 			[Optional.^empty]
 		)
@@ -218,17 +219,17 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
-		Data: t.buildRDataType
+		Data: t.buildRMetaAnnotatedType
 		RosettaBuiltinType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
-			builtinTypes.getType(t.name, argMap).orElse(null)
+			builtinTypes.getType(t.name, argMap).orElse(null).withEmptyMeta
 		}
-		RosettaEnumeration: t.buildREnumType
+		RosettaEnumeration: t.buildRMetaAnnotatedType
 		RosettaMetaType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])
 			val builtinResult = builtinTypes.getType(t.name, argMap)
 			if (builtinResult.present) {
-				builtinResult.get
+				builtinResult.get.withEmptyMeta
 			} else {
 				t.typeCall.typeCallToRType(context)
 			}
@@ -245,13 +246,13 @@ auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 				args.put(name, RosettaValue.^empty)
 			]
 			val refersTo = t.typeCall.typeCallToRType(RosettaInterpreterContext.of(args))
-			new RAliasType(t.typeFunctionOfTypeAlias, args, refersTo)
+			new RAliasType(t.typeFunctionOfTypeAlias, args, refersTo.RType).withMeta(refersTo.metaAttributes)
 		}
 	}
 }
 
 auxiliary attributeListType(Attribute a) {
-	return createListType(typeCallToRType(a.typeCall, new RosettaInterpreterContext), a.card)
+	return createListType(typeCallToRType(a.typeCall, new RosettaInterpreterContext).RType, a.card)
 }
 
 /*** SUBTYPING **/
@@ -421,7 +422,7 @@ from { // TODO: support metadata feature calls?
 				if (a.typeCall === null) {
 					fail error "Unsupported by the type system."
 				} else {
-					t = createListType(a.typeCall.typeCallToRType(new RosettaInterpreterContext), dt.constraint)
+					t = createListType(a.typeCall.typeCallToRType(new RosettaInterpreterContext).RType, dt.constraint)
 				}
 			}
 			RosettaEnumValue: { // projections on enums

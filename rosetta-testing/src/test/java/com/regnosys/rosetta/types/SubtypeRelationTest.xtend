@@ -46,11 +46,11 @@ class SubtypeRelationTest {
 			type C extends A:
 		'''.parseRosetta
 				
-		val fieldA = model.getData("A").buildRAnnotatedType
+		val fieldA = model.getData("A").buildRMetaAnnotatedType
 		
-		val fieldB = model.getData("B").buildRAnnotatedType
+		val fieldB = model.getData("B").buildRMetaAnnotatedType
 		
-		val fieldC = model.getData("C").buildRAnnotatedType
+		val fieldC = model.getData("C").buildRMetaAnnotatedType
 		
 		assertEquals(fieldA, fieldB.join(fieldC))
 	}

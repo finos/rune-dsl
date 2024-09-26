@@ -100,32 +100,32 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRType(context.receiver))
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRType(context.receiver).RType)
 					}
 					return IScope.NULLSCOPE
 				}
 				case ROSETTA_DEEP_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaDeepFeatureCall) {
-						return createDeepFeatureScope(typeProvider.getRType(context.receiver))
+						return createDeepFeatureScope(typeProvider.getRType(context.receiver).RType)
 					}
 					return IScope.NULLSCOPE
 				}
 				case CHOICE_OPERATION__ATTRIBUTES: {
 					if (context instanceof ChoiceOperation) {
-						return createExtendedFeatureScope(context.argument, typeProvider.getRType(context.argument))
+						return createExtendedFeatureScope(context.argument, typeProvider.getRType(context.argument).RType)
 					}
 					return IScope.NULLSCOPE
 				}
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver))
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).RType)
 					}
 					return IScope.NULLSCOPE
 				}
 				case CONSTRUCTOR_KEY_VALUE_PAIR__KEY: {
 					if (context instanceof ConstructorKeyValuePair) {
 						val constructor = context.eContainer as RosettaConstructorExpression
-						return Scopes.scopeFor(typeProvider.getRType(constructor).allFeatures(context))
+						return Scopes.scopeFor(typeProvider.getRType(constructor).RType.allFeatures(context))
 					}
 					return IScope.NULLSCOPE
 				}
@@ -248,8 +248,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case SWITCH_CASE__ENUM_GUARD: {
 					if (context instanceof SwitchCase) {
 						val argumentType = typeProvider.getRType(context.switchOperation.argument)
-						if (argumentType instanceof REnumType) {
-						   return Scopes.scopeFor(argumentType.allEnumValues)
+						val argumentRType = argumentType.RType
+						if (argumentRType instanceof REnumType) {
+						   return Scopes.scopeFor(argumentRType.allEnumValues)
 						}
 					}
 					return IScope.NULLSCOPE

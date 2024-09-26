@@ -58,7 +58,7 @@ public class RosettaInlayHintsService extends AbstractInlayHintsService {
 		if (op.getFunction() != null && operationHasBrackets(op.getFunction())) {
 			if (op instanceof ReduceOperation || op instanceof MapOperation) {
 				if (extensions.isResolved(op.getFunction())) {
-					RType outputType = types.getRType(op);
+					RType outputType = types.getRType(op).getRType();
 					boolean outputMulti = card.isMulti(op);
 		
 					if (outputType != null) {

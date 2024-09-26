@@ -86,7 +86,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
-class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
+class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<EObject, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
 
 
@@ -101,16 +101,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
 
-	def RType getRType(RosettaExpression expression) {
+	def RMetaAnnotatedType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
 	def RMetaAnnotatedType getRTypeOfFeature(RosettaFeature feature, EObject context) {
-		val rType = feature.safeRType(context, newHashMap)
-		new RMetaAnnotatedType(rType, feature.RMettributesOfFeature)
+		feature.safeRType(context, newHashMap)
 	}
 	def RMetaAnnotatedType getRTypeOfSymbol(RosettaSymbol feature, EObject context) {
-		val rType = feature.safeRType(context, newHashMap)
-		new RMetaAnnotatedType(rType, feature.RMettributesOfSymbol)
+		feature.safeRType(context, newHashMap)
 	}
 	def RMetaAnnotatedType getRTypeOfSymbol(AssignPathRoot feature) {
 		feature.getRTypeOfSymbol(null)
@@ -118,23 +116,27 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	def RMetaAnnotatedType getRTypeOfSymbol(RosettaCallableWithArgs feature) {
 		feature.getRTypeOfSymbol(null)
 	}
-	def RType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
+	def RMetaAnnotatedType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
 		switch seg {
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
 			RosettaDataReference: {
 				if (extensions.isResolved(seg.data)) {
-					return seg.data.buildRDataType
+					return seg.data.buildRMetaAnnotatedType
 				} else {
-					NOTHING
+					NOTHING.withEmptyMeta
 				}
 			}
 		}
 	}
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-		return extensions.allFeatures(typeOfImplicitVariable(context), context)
+		return extensions.allFeatures(typeOfImplicitVariable(context).RType, context)
 	}
 
 	def List<RMetaAttribute> getRMettributesOfType(Data data) {
+		data.annotations.RMetaAttributes
+	}
+	
+	def List<RMetaAttribute> getRMettributesOfType(RosettaEnumeration data) {
 		data.annotations.RMetaAttributes
 	}
 	
@@ -167,9 +169,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	}
 	
 	
-	private def RType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RType> cycleTracker) {
+	private def RMetaAnnotatedType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
-			return NOTHING
+			return NOTHING.withEmptyMeta
 		}
 		switch symbol {
 			RosettaFeature: {
@@ -180,23 +182,23 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				if(setOp !== null) {
 					setOp.argument.safeRType(cycleTracker)
 				} else
-					MISSING
+					MISSING.withEmptyMeta
 			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
-				symbol.buildREnumType
+				symbol.buildREnumType.withMeta(symbol.RMettributesOfSymbol)
 			}
 			Function: {
 				if (symbol.output !== null) {
 					safeRType(symbol.output as RosettaFeature, context, cycleTracker)
 				} else {
-					MISSING
+					MISSING.withEmptyMeta
 				}
 			}
 			RosettaRule: {
 				if (symbol.expression !== null) {
 					safeRType(symbol.expression, cycleTracker)
 				} else {
-					MISSING
+					MISSING.withEmptyMeta
 				}
 			}
 			RosettaExternalFunction: {
@@ -213,20 +215,21 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			}
 		}
 	}
-	private def RType safeRType(RosettaFeature feature, EObject context, Map<EObject, RType> cycleTracker) {
+	private def RMetaAnnotatedType safeRType(RosettaFeature feature, EObject context, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		if (!extensions.isResolved(feature)) {
-			return NOTHING
+			return NOTHING.withEmptyMeta
 		}
 		switch (feature) {
 			RosettaTypedFeature: {
 				val featureType = if (feature.typeCall === null) {
-						NOTHING
+						NOTHING.withEmptyMeta
 					} else {
 						feature.typeCall.typeCallToRType
 					}
 				if (feature instanceof Annotated) {
-					if (featureType instanceof RAnnotateType) {
-						featureType.withMeta = extensions.hasMetaDataAnnotations(feature)
+					val featureRType = featureType.RType
+					if (featureRType instanceof RAnnotateType) {
+						featureRType.withMeta = extensions.hasMetaDataAnnotations(feature)
 					}
 				}
 				featureType
@@ -235,31 +238,32 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				if (context instanceof RosettaFeatureCall) {
 					context.receiver.safeRType(cycleTracker)
 				} else {
-					context.expectedTypeFromContainer ?: NOTHING
+					context.expectedTypeFromContainer.withMeta(feature.RMettributesOfFeature) ?: NOTHING.withEmptyMeta
 				}
 			}
 			default:
-				new RErrorType("Cannot infer type of feature.")
+				new RErrorType("Cannot infer type of feature.").withEmptyMeta
 		}
 	}
 	
-	private def RType safeRType(RosettaExpression expression, Map<EObject, RType> cycleTracker) {
+	private def RMetaAnnotatedType safeRType(RosettaExpression expression, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		getRTypeFromCache(EXPRESSION_RTYPE_CACHE_KEY, expression, [
 			if (cycleTracker.containsKey(expression)) {
 				val computed = cycleTracker.get(expression)
 				if (computed === null) {
-					return new RErrorType('''Can't infer type due to a cyclic reference of «qNames.getFullyQualifiedName(expression)»''')
+					return new RErrorType('''Can't infer type due to a cyclic reference of «qNames.getFullyQualifiedName(expression)»''').withEmptyMeta
 				} else {
 					return computed
 				}
 			}
 			if (!extensions.isResolved(expression)) {
-				return NOTHING
+				return NOTHING.withEmptyMeta
 			}
 			doSwitch(expression, cycleTracker)
 		])
 	}
-	private def RType getRTypeFromCache(String cacheKey, EObject object, Provider<RType> typeProvider) {
+	
+	private def RMetaAnnotatedType getRTypeFromCache(String cacheKey, EObject object, Provider<RMetaAnnotatedType> typeProvider) {
 		if (object === null) {
 			return typeProvider.get()
 		}
@@ -270,110 +274,110 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		safeTypeOfImplicitVariable(context, newHashMap)
 	}
 	
-	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RType> cycleTracker) {
+	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RMetaAnnotatedType> cycleTracker) {
 		val definingContainer = context.findContainerDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				buildRDataType
+				buildRMetaAnnotatedType
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType ?: MISSING
+				input?.typeCallToRType ?: MISSING.withEmptyMeta
 			}
-		].orElse(MISSING)
+		].orElse(MISSING.withEmptyMeta)
 	}
 	
-	private def caseBinaryOperation(RosettaBinaryOperation expr, Map<EObject, RType> cycleTracker) {
+	private def caseBinaryOperation(RosettaBinaryOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		val left = expr.left
 		var leftType = left.safeRType(cycleTracker)
-		if (leftType instanceof RErrorType) {
-			return NOTHING
+		if (leftType.RType instanceof RErrorType) {
+			return NOTHING.withEmptyMeta
 		}
 		val right = expr.right
 		var rightType = right.safeRType(cycleTracker)
-		if (rightType instanceof RErrorType) {
-			return NOTHING
+		if (rightType.RType instanceof RErrorType) {
+			return NOTHING.withEmptyMeta
 		}
-		expr.operator.resultType(leftType, rightType)
+		expr.operator.resultType(leftType.RType, rightType.RType).withEmptyMeta
 	}
 	
-	override protected caseAbsentOperation(RosettaAbsentExpression expr, Map<EObject, RType> cycleTracker) {
-		BOOLEAN
+	override protected caseAbsentOperation(RosettaAbsentExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		BOOLEAN.withEmptyMeta
 	}
 	
-	override protected caseAddOperation(ArithmeticOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseAddOperation(ArithmeticOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseAndOperation(LogicalOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseAndOperation(LogicalOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseAsKeyOperation(AsKeyOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseAsKeyOperation(AsKeyOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Map<EObject, RType> cycleTracker) {
-		BOOLEAN
+	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		BOOLEAN.withEmptyMeta
 	}
 	
-	override protected caseChoiceOperation(ChoiceOperation expr, Map<EObject, RType> cycleTracker) {
-		BOOLEAN
+	override protected caseChoiceOperation(ChoiceOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		BOOLEAN.withEmptyMeta
 	}
 	
-	override protected caseConditionalExpression(RosettaConditionalExpression expr, Map<EObject, RType> cycleTracker) {
+	override protected caseConditionalExpression(RosettaConditionalExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		val ifT = expr.ifthen.safeRType(cycleTracker)
-		if (ifT instanceof RErrorType) {
-			return NOTHING
+		if (ifT.RType instanceof RErrorType) {
+			return NOTHING.withEmptyMeta
 		}
 		val elseT = expr.elsethen.safeRType(cycleTracker)
-		if (elseT instanceof RErrorType) {
-			return NOTHING
+		if (elseT.RType instanceof RErrorType) {
+			return NOTHING.withEmptyMeta
 		}
 		val joined = join(ifT, elseT)
 		if (joined == ANY) {
-			new RErrorType('''Types `«ifT»` and `«elseT»` do not have a common supertype.''')
+			new RErrorType('''Types `«ifT»` and `«elseT»` do not have a common supertype.''').withEmptyMeta
 		} else {
 			joined
 		}
 	}
 	
-	override protected caseContainsOperation(RosettaContainsExpression expr, Map<EObject, RType> cycleTracker) {
+	override protected caseContainsOperation(RosettaContainsExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseDefaultOperation(DefaultOperation expr,  Map<EObject, RType> cycleTracker) {
+	override protected caseDefaultOperation(DefaultOperation expr,  Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseCountOperation(RosettaCountOperation expr, Map<EObject, RType> cycleTracker) {
-		constrainedInt(Optional.empty(), Optional.of(BigInteger.ZERO), Optional.empty())
+	override protected caseCountOperation(RosettaCountOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		constrainedInt(Optional.empty(), Optional.of(BigInteger.ZERO), Optional.empty()).withEmptyMeta
 	}
 	
-	override protected caseDisjointOperation(RosettaDisjointExpression expr, Map<EObject, RType> cycleTracker) {
+	override protected caseDisjointOperation(RosettaDisjointExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseDistinctOperation(DistinctOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseDistinctOperation(DistinctOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseDivideOperation(ArithmeticOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseDivideOperation(ArithmeticOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseEqualsOperation(EqualityOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseEqualsOperation(EqualityOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseExistsOperation(RosettaExistsExpression expr, Map<EObject, RType> cycleTracker) {
-		BOOLEAN
+	override protected caseExistsOperation(RosettaExistsExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		BOOLEAN.withEmptyMeta
 	}
 	
-	override protected caseFeatureCall(RosettaFeatureCall expr, Map<EObject, RType> cycleTracker) {
+	override protected caseFeatureCall(RosettaFeatureCall expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		val feature = expr.feature
 		if (!extensions.isResolved(feature)) {
-			return NOTHING
+			return NOTHING.withEmptyMeta
 		}
 		if (feature instanceof RosettaEnumValue) {
 			expr.receiver.safeRType(cycleTracker)
@@ -382,138 +386,138 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 	}
 	
-	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Map<EObject, RType> cycleTracker) {
+	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		val feature = expr.feature
 		if (!extensions.isResolved(feature)) {
-			return NOTHING
+			return NOTHING.withEmptyMeta
 		}
 		(feature as RosettaFeature).safeRType(expr, cycleTracker)
 	}
 	
-	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseFilterOperation(FilterOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseFirstOperation(FirstOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseFirstOperation(FirstOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseFlattenOperation(FlattenOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseFlattenOperation(FlattenOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseGreaterThanOperation(ComparisonOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseGreaterThanOperation(ComparisonOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseGreaterThanOrEqualOperation(ComparisonOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseGreaterThanOrEqualOperation(ComparisonOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseImplicitVariable(RosettaImplicitVariable expr, Map<EObject, RType> cycleTracker) {
+	override protected caseImplicitVariable(RosettaImplicitVariable expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		safeTypeOfImplicitVariable(expr, cycleTracker)
 	}
 	
-	override protected caseIntLiteral(RosettaIntLiteral expr, Map<EObject, RType> cycleTracker) {
-		constrainedInt(if (expr.value.signum >= 0) expr.value.toString.length else expr.value.toString.length - 1, expr.value, expr.value)
+	override protected caseIntLiteral(RosettaIntLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		constrainedInt(if (expr.value.signum >= 0) expr.value.toString.length else expr.value.toString.length - 1, expr.value, expr.value).withEmptyMeta
 	}
 	
-	override protected caseJoinOperation(JoinOperation expr, Map<EObject, RType> cycleTracker) {
-		UNCONSTRAINED_STRING
+	override protected caseJoinOperation(JoinOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		UNCONSTRAINED_STRING.withEmptyMeta
 	}
 	
-	override protected caseLastOperation(LastOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseLastOperation(LastOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseLessThanOperation(ComparisonOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseLessThanOperation(ComparisonOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseLessThanOrEqualOperation(ComparisonOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseLessThanOrEqualOperation(ComparisonOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseListLiteral(ListLiteral expr, Map<EObject, RType> cycleTracker) {
+	override protected caseListLiteral(ListLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		val types = expr.elements.map[RType].filter[it !== null]
-		val joined = types.join
+		val joined = types.joinMetaAnnotatedType
 		val unique = newLinkedHashSet(types)
 		val StringConcatenationClient failedList = '''«FOR t: unique.take(unique.size-1) SEPARATOR ", "»`«t»`«ENDFOR» and `«unique.last»`'''
 		if (joined == ANY) {
-			new RErrorType('''Types «failedList» do not have a common supertype.''')
+			new RErrorType('''Types «failedList» do not have a common supertype.''').withEmptyMeta
 		} else {
 			joined
 		}
 	}
 	
-	override protected caseMapOperation(MapOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseMapOperation(MapOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.function?.body?.safeRType(cycleTracker)
 	}
 	
-	override protected caseMaxOperation(MaxOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseMaxOperation(MaxOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseMinOperation(MinOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseMinOperation(MinOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseMultiplyOperation(ArithmeticOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseMultiplyOperation(ArithmeticOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseNotEqualsOperation(EqualityOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseNotEqualsOperation(EqualityOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseNumberLiteral(RosettaNumberLiteral expr, Map<EObject, RType> cycleTracker) {
+	override protected caseNumberLiteral(RosettaNumberLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		if (expr.value === null) { // In case of a parse error
-			return NOTHING
+			return NOTHING.withEmptyMeta
 		}
-		constrainedNumber(expr.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expr.value.scale), expr.value, expr.value)
+		constrainedNumber(expr.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expr.value.scale), expr.value, expr.value).withEmptyMeta
 	}
 	
-	override protected caseOneOfOperation(OneOfOperation expr, Map<EObject, RType> cycleTracker) {
-		BOOLEAN
+	override protected caseOneOfOperation(OneOfOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		BOOLEAN.withEmptyMeta
 	}
 	
-	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Map<EObject, RType> cycleTracker) {
+	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, Map<EObject, RType> cycleTracker) {
-		BOOLEAN
+	override protected caseOnlyExists(RosettaOnlyExistsExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		BOOLEAN.withEmptyMeta
 	}
 	
-	override protected caseOrOperation(LogicalOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseOrOperation(LogicalOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseReduceOperation(ReduceOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseReduceOperation(ReduceOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.function?.body?.safeRType(cycleTracker)
 	}
 	
-	override protected caseReverseOperation(ReverseOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseReverseOperation(ReverseOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseSortOperation(SortOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseSortOperation(SortOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseStringLiteral(RosettaStringLiteral expr, Map<EObject, RType> cycleTracker) {
-		constrainedString(expr.value.length, expr.value.length)
+	override protected caseStringLiteral(RosettaStringLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		constrainedString(expr.value.length, expr.value.length).withEmptyMeta
 	}
 	
-	override protected caseSubtractOperation(ArithmeticOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseSubtractOperation(ArithmeticOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		caseBinaryOperation(expr, cycleTracker)
 	}
 	
-	override protected caseSumOperation(SumOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseSumOperation(SumOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.argument.safeRType(cycleTracker)
 	}
 	
-	override protected caseSymbolReference(RosettaSymbolReference expr, Map<EObject, RType> cycleTracker) {
+	override protected caseSymbolReference(RosettaSymbolReference expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		if (expr.symbol instanceof RosettaExternalFunction) {
 			val fun = expr.symbol as RosettaExternalFunction
 			val returnType = fun.safeRType(expr, cycleTracker)
@@ -521,7 +525,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 			// Generic return type for number type e.g. Min(1,2) or Max(2,6)
 			val argTypes = expr.args.map[safeRType(cycleTracker)]
 			if (argTypes.forall[isSubtypeOf(returnType)]) {
-				argTypes.join
+				argTypes.joinMetaAnnotatedType
 			} else {
 				returnType
 			}
@@ -530,50 +534,50 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 		}
 	}
 	
-	override protected caseThenOperation(ThenOperation expr, Map<EObject, RType> cycleTracker) {
+	override protected caseThenOperation(ThenOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.function?.body?.safeRType(cycleTracker)
 	}
 	
-	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RType> cycleTracker) {
-		expr.enumeration.buildREnumType
+	override protected caseToEnumOperation(ToEnumOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		expr.enumeration.buildREnumType.withEmptyMeta
 	}
 	
-	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RType> cycleTracker) {
-		UNCONSTRAINED_INT
+	override protected caseToIntOperation(ToIntOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		UNCONSTRAINED_INT.withEmptyMeta
 	}
 	
-	override protected caseToNumberOperation(ToNumberOperation expr, Map<EObject, RType> cycleTracker) {
-		UNCONSTRAINED_NUMBER
+	override protected caseToNumberOperation(ToNumberOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		UNCONSTRAINED_NUMBER.withEmptyMeta
 	}
 	
-	override protected caseToStringOperation(ToStringOperation expr, Map<EObject, RType> cycleTracker) {
-		UNCONSTRAINED_STRING
+	override protected caseToStringOperation(ToStringOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		UNCONSTRAINED_STRING.withEmptyMeta
 	}
 	
-	override protected caseToTimeOperation(ToTimeOperation expr, Map<EObject, RType> cycleTracker) {
-		TIME
+	override protected caseToTimeOperation(ToTimeOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		TIME.withEmptyMeta
 	}
 	
-	override protected caseConstructorExpression(RosettaConstructorExpression expr, Map<EObject, RType> cycleTracker) {
+	override protected caseConstructorExpression(RosettaConstructorExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		expr.typeCall.typeCallToRType
 	}
 	
-	override protected caseToDateOperation(ToDateOperation expr, Map<EObject, RType> cycleTracker) {
-		DATE
+	override protected caseToDateOperation(ToDateOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		DATE.withEmptyMeta
 	}
 	
-	override protected caseToDateTimeOperation(ToDateTimeOperation expr, Map<EObject, RType> cycleTracker) {
-		DATE_TIME
+	override protected caseToDateTimeOperation(ToDateTimeOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		DATE_TIME.withEmptyMeta
 	}
 	
-	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RType> cycleTracker) {
-		ZONED_DATE_TIME
+	override protected caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
+		ZONED_DATE_TIME.withEmptyMeta
 	}
 	
-	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RType> context) {
+	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RMetaAnnotatedType> context) {
 		expr.cases
 			.map[it.expression.RType]
-			.join
+			.joinMetaAnnotatedType
  	}
 
 }

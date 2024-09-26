@@ -635,8 +635,8 @@ class RosettaTypingTest {
 			add result: if True then s2 else s3
 		'''.parseRosettaWithNoIssues
 		model.elements.last as Function => [
-			val max4String = createListType(inputs.get(1).typeCall.typeCallToRType, single)
-			val maxNString = createListType(inputs.get(2).typeCall.typeCallToRType, single)
+			val max4String = createListType(inputs.get(1).typeCall.typeCallToRType.RType, single)
+			val maxNString = createListType(inputs.get(2).typeCall.typeCallToRType.RType, single)
 			
 			operations => [
 				get(0).expression.assertHasType(maxNString)

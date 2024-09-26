@@ -251,7 +251,7 @@ public interface ExpectedTypeProvider {
 					if (expectedType != null) {
 						return expectedType;
 					}
-					return typeProvider.getRType(expr.getIfthen());
+					return typeProvider.getRType(expr.getIfthen()).getRType();
 				}
 				return null;
 			}
@@ -305,7 +305,7 @@ public interface ExpectedTypeProvider {
 						return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index)).getRType();
 					} else if (symbol instanceof RosettaRule) {
 						RosettaRule rule = (RosettaRule)symbol;
-						return typeSystem.typeCallToRType(rule.getInput());
+						return typeSystem.typeCallToRType(rule.getInput()).getRType();
 					}
 				}
 				return null;
@@ -369,7 +369,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RType caseEqualsOperation(EqualityOperation expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRType(expr.getLeft()).getRType();
 				}
 				return null;
 			}
@@ -377,7 +377,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RType caseNotEqualsOperation(EqualityOperation expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRType(expr.getLeft()).getRType();
 				}
 				return null;
 			}
@@ -385,7 +385,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RType caseContainsOperation(RosettaContainsExpression expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRType(expr.getLeft()).getRType();
 				}
 				return null;
 			}
@@ -393,7 +393,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RType caseDisjointOperation(RosettaDisjointExpression expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRType(expr.getLeft()).getRType();
 				}
 				return null;
 			}
@@ -401,7 +401,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RType caseDefaultOperation(DefaultOperation expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRType(expr.getLeft()).getRType();
 				}
 				return null;
 			}

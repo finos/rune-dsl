@@ -476,7 +476,7 @@ class FunctionGenerator {
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRType(op.expression).toJavaReferenceType, scope)
+				expressionGenerator.javaCode(op.expression, typeProvider.getRType(op.expression).RType.toJavaReferenceType, scope)
 					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -602,8 +602,8 @@ class FunctionGenerator {
 			javaType
 	}
 	private def JavaReferenceType shortcutExpressionJavaType(RShortcut feature) {
-		val rType = typeProvider.getRType(feature.expression)
-		rType.toJavaReferenceType
+		val metaRType = typeProvider.getRType(feature.expression)
+		metaRType.RType.toJavaReferenceType
 	}
 	
 	private def JavaType toBuilderItemType(RAttribute rAttribute) {

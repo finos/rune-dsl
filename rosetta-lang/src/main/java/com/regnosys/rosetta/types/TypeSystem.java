@@ -76,7 +76,7 @@ public class TypeSystem {
             for (RAttribute attr: data.getOwnAttributes()) {
                 RosettaRule rule = ruleReferences.get(attr);
                 if (rule != null) {
-                    RType inputType = typeCallToRType(rule.getInput());
+                    RType inputType = typeCallToRType(rule.getInput()).getRType();
                     result = meet(result, inputType);
                 } else {
                     RType attrType = stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
@@ -101,7 +101,7 @@ public class TypeSystem {
 		return subtypeRelation.join(t1, t2);
     }
     
-    public RMetaAnnotatedType metaAnnotatedTypeJoin(Iterable<RMetaAnnotatedType> types) {
+    public RMetaAnnotatedType joinMetaAnnotatedType(Iterable<RMetaAnnotatedType> types) {
 		Objects.requireNonNull(types);
 		Validate.noNullElements(types);
 		
@@ -167,6 +167,22 @@ public class TypeSystem {
 		return acc;
 	}
 	
+	public boolean isSubtypeOf(RType sub, RMetaAnnotatedType sup) {
+		Objects.requireNonNull(sub);
+		Objects.requireNonNull(sup);
+		
+		return subtypeRelation.isSubtypeOf(new RMetaAnnotatedType(sub, List.of()), sup);
+	}
+	
+	
+	public boolean isSubtypeOf(RMetaAnnotatedType sub, RType sup) {
+		Objects.requireNonNull(sub);
+		Objects.requireNonNull(sup);
+		
+		return subtypeRelation.isSubtypeOf(sub, new RMetaAnnotatedType(sup, List.of()));
+	}
+	
+	
 	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
@@ -200,11 +216,11 @@ public class TypeSystem {
 		return typing.listComparable(t1, t2);
 	}
 	
-	public RType typeCallToRType(TypeCall typeCall) {
+	public RMetaAnnotatedType typeCallToRType(TypeCall typeCall) {
 		return typeCallToRType(typeCall, new RosettaInterpreterContext());
 	}
 	
-	public RType typeCallToRType(TypeCall typeCall, RosettaInterpreterContext context) {
+	public RMetaAnnotatedType typeCallToRType(TypeCall typeCall, RosettaInterpreterContext context) {
 		Objects.requireNonNull(typeCall);
 		Objects.requireNonNull(context);
 		

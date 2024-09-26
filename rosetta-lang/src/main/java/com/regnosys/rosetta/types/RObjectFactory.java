@@ -78,15 +78,15 @@ public class RObjectFactory {
 		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
-		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
-		RType outputRType = typeProvider.getRType(rule.getExpression());
+		RMetaAnnotatedType inputRType = typeSystem.typeCallToRType(rule.getInput());
+		RType outputRType = typeProvider.getRType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
 				modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
-				List.of(createArtificialAttribute("input", inputRType, false)),
+				List.of(createArtificialAttribute("input", inputRType.getRType(), false)),
 				outputAttribute,
 				RFunctionOrigin.RULE,
 				List.of(),
@@ -203,11 +203,16 @@ public class RObjectFactory {
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
 	}
 	
-	public RMetaAnnotatedType buildRAnnotatedType(Data data) {
+	public RMetaAnnotatedType buildRMetaAnnotatedType(Data data) {
 		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(data);
 		return new RMetaAnnotatedType(buildRDataType(data), rMettributesOfType);
 	}
 
+	public RMetaAnnotatedType buildRMetaAnnotatedType(RosettaEnumeration enumeration) {
+		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(enumeration);
+		return new RMetaAnnotatedType(buildREnumType(enumeration), rMettributesOfType);
+	} 
+	
 	public RDataType buildRDataType(Data data) {
 		return new RDataType(data, modelIdProvider, this);
 	}
