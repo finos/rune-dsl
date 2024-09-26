@@ -6,7 +6,6 @@ import java.util.List;
 import com.google.common.collect.Sets;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RMetaAttribute;
-import com.regnosys.rosetta.types.RType;
 
 public class MetaUtil {
 
