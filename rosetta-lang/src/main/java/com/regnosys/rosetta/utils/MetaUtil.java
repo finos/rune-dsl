@@ -26,9 +26,7 @@ public class MetaUtil {
 		if (t1Metas.equals(t2Metas)) {
 			return true;
 		}
-		if (!Sets.difference(t1Metas, t2Metas).isEmpty()) {
-			return true;
-		}
-		return false;
+		
+		return t1Metas.containsAll(t2Metas);
 	}
 }

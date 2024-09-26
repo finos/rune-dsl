@@ -92,7 +92,25 @@ class SubtypeRelationTest {
 	}
 	
 	@Test
-	def testStringWithMetaIsSubtypeOfStringWithMeta() {
+	def testStringWithSchemeAndReferenceHasNoSubtypeRelationWithStringWithAddressAndLocation() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+				[metadata address]
+				[metadata location]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertFalse(fieldA.isSubtypeOf(fieldB))
+		assertFalse(fieldB.isSubtypeOf(fieldA))
+	}
+	
+	@Test
+	def testStringWithShemeIsSubtypeOfStringWithScheme() {
 		val fieldA = '''
 			fieldA string (1..1)
 				[metadata scheme]
