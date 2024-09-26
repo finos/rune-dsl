@@ -22,10 +22,6 @@ public class MetaUtil {
 		}
 		HashSet<RMetaAttribute> t1Metas = new HashSet<>(t1.getMetaAttributes());
 		HashSet<RMetaAttribute> t2Metas = new HashSet<>(t2.getMetaAttributes());
-		if (t1Metas.equals(t2Metas)) {
-			return true;
-		}
-		
 		return t1Metas.containsAll(t2Metas);
 	}
 }
