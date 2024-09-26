@@ -539,7 +539,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	private def checkType(RType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
 		val actualMetaType = expression.RMetaAnnotatedType
-		val actualType = actualMetaType.RType
+		val actualType = actualMetaType?.RType
 		if (actualType === null) {
 			return
 		}
@@ -921,7 +921,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			}
 			
 			// check type
-			val ruleType = rule.expression.RMetaAnnotatedType
+			val ruleType = rule.expression.RMetaAnnotatedType.RType
 			if (ruleType !== null && ruleType != MISSING && attrType !== null && attrType != MISSING && !ruleType.isSubtypeOf(attrType)) {
 				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
 					'''whereas the reporting rule «rule.name» has type «ruleType».'''
@@ -1408,8 +1408,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkReduceOperation(ReduceOperation o) {
 		checkNumberOfMandatoryNamedParameters(o.function, 2)
-		if (o.argument.RMetaAnnotatedType != o.function.body.RMetaAnnotatedType) {
-			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RMetaAnnotatedType» and «o.function.body.RMetaAnnotatedType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
+		if (o.argument.RMetaAnnotatedType.RType != o.function.body.RMetaAnnotatedType.RType) {
+			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RMetaAnnotatedType.RType» and «o.function.body.RMetaAnnotatedType.RType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
 		}
 		checkBodyIsSingleCardinality(o.function)
 	}
@@ -1522,7 +1522,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	private def void checkBodyType(InlineFunction ref, RType type) {
-		val bodyType = ref?.body?.getRMetaAnnotatedType
+		val bodyType = ref?.body?.getRMetaAnnotatedType?.RType
 		if (ref !== null && bodyType !== null && bodyType != MISSING && bodyType != type) {
 			error('''Expression must evaluate to a «type.name».''', ref, null)
 		}

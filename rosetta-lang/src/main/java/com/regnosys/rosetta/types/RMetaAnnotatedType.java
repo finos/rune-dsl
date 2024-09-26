@@ -49,7 +49,7 @@ public class RMetaAnnotatedType {
 
 	@Override
 	public String toString() {
-		return "RAnnotatedType [baseType=" + rType.getName() + ", metaAttributes=" + metaAttributes + "]";
+		return "RMetaAnnotatedType [baseType=" + rType.getName() + ", metaAttributes=" + metaAttributes + "]";
 	}
 
 }
