@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -91,6 +92,28 @@ public class TypeSystem {
 	}
     private RType getRulesInputTypeFromCache(RDataType data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
     	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
+    }
+    
+    public RMetaAnnotatedType join(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
+		
+		return subtypeRelation.join(t1, t2);
+    }
+    
+    public RMetaAnnotatedType metaAnnotatedTypeJoin(Iterable<RMetaAnnotatedType> types) {
+		Objects.requireNonNull(types);
+		Validate.noNullElements(types);
+		
+		RMetaAnnotatedType any = new RMetaAnnotatedType(builtins.ANY, List.of());
+		RMetaAnnotatedType acc = new RMetaAnnotatedType(builtins.NOTHING, List.of());
+		for (RMetaAnnotatedType t: types) {
+			acc = subtypeRelation.join(acc, t);
+			if (acc.equals(any)) {
+				return acc;
+			}
+		}
+		return acc;
     }
 
 	public RType join(RType t1, RType t2) {

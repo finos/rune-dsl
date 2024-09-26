@@ -221,4 +221,7 @@ public class RObjectFactory {
 	public RMetaAnnotatedType withMeta(RType rtype, List<RMetaAttribute> metaAttributes) {
 		return new RMetaAnnotatedType(rtype, metaAttributes);
 	}
+	public RMetaAnnotatedType withEmptyMeta(RType rtype) {
+		return new RMetaAnnotatedType(rtype, List.of());
+	}
 }
