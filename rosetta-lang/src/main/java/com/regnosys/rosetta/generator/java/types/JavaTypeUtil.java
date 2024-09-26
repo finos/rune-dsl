@@ -84,7 +84,7 @@ public class JavaTypeUtil {
 		return wrap(wrapperType, JavaType.from(itemType));
 	}
 	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
-		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item).getRType()));
+		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item).getRType()));
 	}
 	
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
@@ -94,7 +94,7 @@ public class JavaTypeUtil {
 		return wrapExtends(wrapperType, JavaType.from(itemType));
 	}
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
-		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item).getRType()));
+		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item).getRType()));
 	}
 	
 	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
@@ -114,7 +114,7 @@ public class JavaTypeUtil {
 		return wrapExtendsIfNotFinal(wrapperType, JavaType.from(itemType));
 	}
 	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
-		return wrapExtendsIfNotFinal(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item).getRType()));
+		return wrapExtendsIfNotFinal(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item).getRType()));
 	}
 	
 	public boolean hasWildcardArgument(JavaType t) {

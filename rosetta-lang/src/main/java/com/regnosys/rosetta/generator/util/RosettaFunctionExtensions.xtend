@@ -99,7 +99,7 @@ class RosettaFunctionExtensions {
 	}
 
 	dispatch def boolean needsBuilder(RosettaExpression expr) {
-		needsBuilder(typeProvider.getRType(expr))
+		needsBuilder(typeProvider.getRMetaAnnotatedType(expr))
 	}
 
 	dispatch def boolean needsBuilder(AssignPathRoot root) {

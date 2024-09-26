@@ -79,7 +79,7 @@ public class RObjectFactory {
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RMetaAnnotatedType inputRType = typeSystem.typeCallToRType(rule.getInput());
-		RType outputRType = typeProvider.getRType(rule.getExpression()).getRType();
+		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		

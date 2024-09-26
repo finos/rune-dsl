@@ -101,7 +101,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
 
-	def RMetaAnnotatedType getRType(RosettaExpression expression) {
+	def RMetaAnnotatedType getRMetaAnnotatedType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
 	}
 	def RMetaAnnotatedType getRTypeOfFeature(RosettaFeature feature, EObject context) {
@@ -439,7 +439,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	
 	override protected caseListLiteral(ListLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
-		val types = expr.elements.map[RType].filter[it !== null]
+		val types = expr.elements.map[RMetaAnnotatedType].filter[it !== null]
 		val joined = types.joinMetaAnnotatedType
 		val unique = newLinkedHashSet(types)
 		val StringConcatenationClient failedList = '''«FOR t: unique.take(unique.size-1) SEPARATOR ", "»`«t»`«ENDFOR» and `«unique.last»`'''
@@ -576,7 +576,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	
 	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RMetaAnnotatedType> context) {
 		expr.cases
-			.map[it.expression.RType]
+			.map[it.expression.RMetaAnnotatedType]
 			.joinMetaAnnotatedType
  	}
 

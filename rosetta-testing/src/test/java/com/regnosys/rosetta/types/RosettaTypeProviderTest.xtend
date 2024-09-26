@@ -70,10 +70,10 @@ class RosettaTypeProviderTest {
 		'''.parseRosettaWithNoErrors.elements.filter(Function)
 		
 		val allNumber = funcs.filter[name == "Qualify_AllNumber"].head
-		assertEquals('number', (allNumber.operations.head.expression as RosettaContainsExpression).left.RType.RType.name)
+		assertEquals('number', (allNumber.operations.head.expression as RosettaContainsExpression).left.RMetaAnnotatedType.RType.name)
 		val mixed = funcs.filter[name == "Qualify_MixedNumber"].head
-		assertEquals('number', (mixed.operations.head.expression as RosettaContainsExpression).left.RType.RType.name)
+		assertEquals('number', (mixed.operations.head.expression as RosettaContainsExpression).left.RMetaAnnotatedType.RType.name)
 		val intOnly = funcs.filter[name == "Qualify_IntOnly"].head
-		assertEquals('int', (intOnly.operations.head.expression as RosettaBinaryOperation).left.RType.RType.name)
+		assertEquals('int', (intOnly.operations.head.expression as RosettaBinaryOperation).left.RMetaAnnotatedType.RType.name)
 	}
 }
