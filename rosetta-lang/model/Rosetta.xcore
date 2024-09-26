@@ -125,6 +125,7 @@ class RosettaParameter extends RosettaTyped, RosettaNamed {
 class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
 }
 
+
 class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType {
 	
 }
