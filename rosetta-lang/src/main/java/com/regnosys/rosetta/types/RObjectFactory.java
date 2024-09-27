@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
@@ -34,8 +35,10 @@ import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
+import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
@@ -78,7 +81,8 @@ public class RObjectFactory {
 		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
-		RMetaAnnotatedType inputRType = typeSystem.typeCallToRType(rule.getInput());
+		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
+		//TODO: check if this should be an RMeta for the output???
 		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
@@ -86,7 +90,7 @@ public class RObjectFactory {
 		return new RFunction(
 				modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
-				List.of(createArtificialAttribute("input", inputRType.getRType(), false)),
+				List.of(createArtificialAttribute("input", inputRType, false)),
 				outputAttribute,
 				RFunctionOrigin.RULE,
 				List.of(),
@@ -203,15 +207,15 @@ public class RObjectFactory {
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
 	}
 	
-	public RMetaAnnotatedType buildRMetaAnnotatedType(Data data) {
-		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(data);
-		return new RMetaAnnotatedType(buildRDataType(data), rMettributesOfType);
-	}
-
-	public RMetaAnnotatedType buildRMetaAnnotatedType(RosettaEnumeration enumeration) {
-		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(enumeration);
-		return new RMetaAnnotatedType(buildREnumType(enumeration), rMettributesOfType);
-	} 
+//	public RMetaAnnotatedType buildRMetaAnnotatedType(Data data) {
+//		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(data);
+//		return new RMetaAnnotatedType(buildRDataType(data), rMettributesOfType);
+//	}
+//
+//	public RMetaAnnotatedType buildRMetaAnnotatedType(RosettaEnumeration enumeration) {
+//		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(enumeration);
+//		return new RMetaAnnotatedType(buildREnumType(enumeration), rMettributesOfType);
+//	} 
 	
 	public RDataType buildRDataType(Data data) {
 		return new RDataType(data, modelIdProvider, this);

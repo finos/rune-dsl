@@ -216,10 +216,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						argCode
 							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', argAndReturnType)]
 					} else {
-						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.RType.toJavaReferenceType, scope)
+						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.toJavaReferenceType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
-								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.RType.toJavaReferenceType, scope),
+								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.toJavaReferenceType, scope),
 								[argList, newArg|JavaExpression.from('''«argList», «newArg»''', null)],
 								scope
 							)

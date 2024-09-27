@@ -44,15 +44,26 @@ class SubtypeRelationTest {
 			type B extends A:
 			
 			type C extends A:
-		'''.parseRosetta
 				
-		val fieldA = model.getData("A").buildRMetaAnnotatedType
+		'''.parseRosetta
 		
-		val fieldB = model.getData("B").buildRMetaAnnotatedType
+		val fieldB = '''
+			fieldB B (1..1)
+				[metadata reference]
+		'''.parseAttribute(#[model]).RTypeOfSymbol
 		
-		val fieldC = model.getData("C").buildRMetaAnnotatedType
+		val fieldC = '''
+			fieldC C (1..1)
+				[metadata reference]
+		'''.parseAttribute(#[model]).RTypeOfSymbol
 		
-		assertEquals(fieldA, fieldB.join(fieldC))
+		
+		val fieldA = model.getData("A").buildRDataType
+		
+		val joined = fieldB.join(fieldC)
+		
+		assertEquals(joined.RType, fieldA)
+		assertFalse(joined.hasMeta)
 	}
 	
 	@Test

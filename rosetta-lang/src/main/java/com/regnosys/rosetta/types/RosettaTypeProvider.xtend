@@ -116,14 +116,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	def RMetaAnnotatedType getRTypeOfSymbol(RosettaCallableWithArgs feature) {
 		feature.getRTypeOfSymbol(null)
 	}
-	def RMetaAnnotatedType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
+	def RType getRTypeOfAttributeReference(RosettaAttributeReferenceSegment seg) {
 		switch seg {
 			RosettaAttributeReference: seg.attribute.typeCall.typeCallToRType
 			RosettaDataReference: {
 				if (extensions.isResolved(seg.data)) {
-					return seg.data.buildRMetaAnnotatedType
+					return seg.data.buildRDataType
 				} else {
-					NOTHING.withEmptyMeta
+					NOTHING
 				}
 			}
 		}
@@ -161,7 +161,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		#[]
 	} 
 
-	private def List<RMetaAttribute> getRMetaAttributes(AnnotationRef[] annotations) {
+	def List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {
 		annotations
 			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
 			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType)]
@@ -202,7 +202,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				}
 			}
 			RosettaExternalFunction: {
-				symbol.typeCall.typeCallToRType
+				symbol.typeCall.typeCallToRType.withEmptyMeta
 			}
 			ShortcutDeclaration: {
 				cycleTracker.put(symbol, null)
@@ -211,7 +211,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				type
 			}
 			TypeParameter: {
-				symbol.typeCall.typeCallToRType
+				symbol.typeCall.typeCallToRType.withEmptyMeta
 			}
 		}
 	}
@@ -224,7 +224,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				val featureType = if (feature.typeCall === null) {
 						NOTHING.withEmptyMeta
 					} else {
-						feature.typeCall.typeCallToRType
+						feature.typeCall.typeCallToRType.withMeta(feature.RMettributesOfFeature)
 					}
 				if (feature instanceof Annotated) {
 					val featureRType = featureType.RType
@@ -238,7 +238,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				if (context instanceof RosettaFeatureCall) {
 					context.receiver.safeRType(cycleTracker)
 				} else {
-					context.expectedTypeFromContainer.withMeta(feature.RMettributesOfFeature) ?: NOTHING.withEmptyMeta
+					context.expectedTypeFromContainer ?: NOTHING.withEmptyMeta
 				}
 			}
 			default:
@@ -274,15 +274,15 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		safeTypeOfImplicitVariable(context, newHashMap)
 	}
 	
-	private def safeTypeOfImplicitVariable(EObject context, Map<EObject,RMetaAnnotatedType> cycleTracker) {
+	private def RMetaAnnotatedType safeTypeOfImplicitVariable(EObject context, Map<EObject,RMetaAnnotatedType> cycleTracker) {
 		val definingContainer = context.findContainerDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				buildRMetaAnnotatedType
+				buildRDataType.withMeta(it.annotations.RMetaAttributes)
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType ?: MISSING.withEmptyMeta
+				input?.typeCallToRType.withEmptyMeta ?: MISSING.withEmptyMeta
 			}
 		].orElse(MISSING.withEmptyMeta)
 	}
@@ -559,7 +559,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	
 	override protected caseConstructorExpression(RosettaConstructorExpression expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
-		expr.typeCall.typeCallToRType
+		expr.typeCall.typeCallToRType.withEmptyMeta
 	}
 	
 	override protected caseToDateOperation(ToDateOperation expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {

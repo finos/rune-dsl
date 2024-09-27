@@ -76,7 +76,7 @@ public class TypeSystem {
             for (RAttribute attr: data.getOwnAttributes()) {
                 RosettaRule rule = ruleReferences.get(attr);
                 if (rule != null) {
-                    RType inputType = typeCallToRType(rule.getInput()).getRType();
+                    RType inputType = typeCallToRType(rule.getInput());
                     result = meet(result, inputType);
                 } else {
                     RType attrType = stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
@@ -216,11 +216,11 @@ public class TypeSystem {
 		return typing.listComparable(t1, t2);
 	}
 	
-	public RMetaAnnotatedType typeCallToRType(TypeCall typeCall) {
+	public RType typeCallToRType(TypeCall typeCall) {
 		return typeCallToRType(typeCall, new RosettaInterpreterContext());
 	}
 	
-	public RMetaAnnotatedType typeCallToRType(TypeCall typeCall, RosettaInterpreterContext context) {
+	public RType typeCallToRType(TypeCall typeCall, RosettaInterpreterContext context) {
 		Objects.requireNonNull(typeCall);
 		Objects.requireNonNull(context);
 		

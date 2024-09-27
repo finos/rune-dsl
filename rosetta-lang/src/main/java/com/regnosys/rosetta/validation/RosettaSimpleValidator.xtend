@@ -739,7 +739,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.inputs.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
 							if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
@@ -747,7 +747,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						]
 					} else if (callable instanceof RosettaRule) {
 						if (callable.input !== null) {
-							checkType(callable.input.typeCallToRType.RType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
+							checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
 							if (cardinality.isMulti(element.args.head)) {
 								error('''Expecting single cardinality for input to rule.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
@@ -758,7 +758,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.parameters.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType.RType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
 							if(cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
@@ -1224,7 +1224,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 											val targetType = attrRef.attribute.typeCall.typeCallToRType
 											val thisType = ele.RTypeOfSymbol.RType
 											if (!thisType.isSubtypeOf(targetType))
-												error('''Expected address target type of '«thisType.name»' but was '«targetType?.RType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
+												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 										}
 									}
 									default:

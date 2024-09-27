@@ -57,7 +57,7 @@ public class RosettaDocumentationProvider implements IEObjectDocumentationProvid
 		if (o instanceof RosettaSymbolReference) {
 			RosettaSymbol symbol = ((RosettaSymbolReference)o).getSymbol();
 			if (symbol instanceof RosettaEnumValue) {
-				RType t = expectedTypeProvider.getExpectedTypeFromContainer(o);
+				RType t = expectedTypeProvider.getExpectedTypeFromContainer(o).getRType();
 				docs.add(t.toString());
 			}
 		}

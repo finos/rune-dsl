@@ -120,14 +120,14 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	
 	@Check
 	public void checkReport(RosettaReport report) {
-		RType inputType = ts.typeCallToRType(report.getInputType()).getRType();
+		RType inputType = ts.typeCallToRType(report.getInputType());
 		List<RosettaRule> eligibilityRules = report.getEligibilityRules();
 		for (var i = 0; i < eligibilityRules.size(); i++) {
 			RosettaRule eligibilityRule = eligibilityRules.get(i);
 			if (!eligibilityRule.isEligibility()) {
 				error("Rule " + eligibilityRule.getName() + " is not an eligibility rule.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);
 			}
-			RType ruleInputType = ts.typeCallToRType(eligibilityRule.getInput()).getRType();
+			RType ruleInputType = ts.typeCallToRType(eligibilityRule.getInput());
 			if (!ts.isSubtypeOf(ruleInputType, inputType)) {
 				error("Eligibility rule " + eligibilityRule.getName() + " expects a `" + ruleInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);
 			}
@@ -162,7 +162,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 			RosettaRuleReference ref = attr.getRuleReference();
 			if (ref != null) {
 				RosettaRule rule = ref.getReportingRule();
-				RType inputType = ts.typeCallToRType(rule.getInput()).getRType();
+				RType inputType = ts.typeCallToRType(rule.getInput());
 				RType newCurrent = ts.meet(current, inputType);
 				if (newCurrent.equals(builtins.NOTHING)) {
 					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", ref, ROSETTA_RULE_REFERENCE__REPORTING_RULE);
@@ -170,7 +170,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 					current = newCurrent;
 				}
 			} else {
-				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()).getRType());
+				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
 				if (attrType instanceof RDataType) {
 					RDataType attrData = (RDataType)attrType;
 					RType inputType = ts.getRulesInputType(attrData, Optional.empty());
@@ -201,7 +201,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 						.findAny();
 				RosettaRule rule = ruleReferences.get(attr);
 				if (rule != null) {
-					RType inputType = ts.typeCallToRType(rule.getInput()).getRType();
+					RType inputType = ts.typeCallToRType(rule.getInput());
 					RType newCurrent = ts.meet(current, inputType);
 					if (newCurrent.equals(builtins.NOTHING)) {
 						if (maybeExtAttr.isPresent()) {

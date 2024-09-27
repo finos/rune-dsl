@@ -118,7 +118,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).RType)
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver))
 					}
 					return IScope.NULLSCOPE
 				}
@@ -176,7 +176,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					} else {
 						var implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(context)
 
-						val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(context)
+						val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(context).RType
 						if (expectedType instanceof REnumType) {
 							implicitFeatures = implicitFeatures + expectedType.allEnumValues
 						}
