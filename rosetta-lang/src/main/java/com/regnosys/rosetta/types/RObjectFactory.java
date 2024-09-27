@@ -206,17 +206,7 @@ public class RObjectFactory {
 
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
 	}
-	
-//	public RMetaAnnotatedType buildRMetaAnnotatedType(Data data) {
-//		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(data);
-//		return new RMetaAnnotatedType(buildRDataType(data), rMettributesOfType);
-//	}
-//
-//	public RMetaAnnotatedType buildRMetaAnnotatedType(RosettaEnumeration enumeration) {
-//		List<RMetaAttribute> rMettributesOfType = typeProvider.getRMettributesOfType(enumeration);
-//		return new RMetaAnnotatedType(buildREnumType(enumeration), rMettributesOfType);
-//	} 
-	
+
 	public RDataType buildRDataType(Data data) {
 		return new RDataType(data, modelIdProvider, this);
 	}
