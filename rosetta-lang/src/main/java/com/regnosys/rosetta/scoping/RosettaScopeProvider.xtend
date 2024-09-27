@@ -176,7 +176,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					} else {
 						var implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(context)
 
-						val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(context).RType
+						val expectedType = expectedTypeProvider.getExpectedTypeFromContainer(context)?.RType
 						if (expectedType instanceof REnumType) {
 							implicitFeatures = implicitFeatures + expectedType.allEnumValues
 						}
