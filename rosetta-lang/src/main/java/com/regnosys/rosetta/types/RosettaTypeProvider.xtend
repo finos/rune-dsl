@@ -226,12 +226,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 					} else {
 						feature.typeCall.typeCallToRType.withMeta(feature.RMettributesOfFeature)
 					}
-				if (feature instanceof Annotated) {
-					val featureRType = featureType.RType
-					if (featureRType instanceof RAnnotateType) {
-						featureRType.withMeta = extensions.hasMetaDataAnnotations(feature)
-					}
-				}
 				featureType
 			}
 			RosettaEnumValue: {

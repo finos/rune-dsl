@@ -42,6 +42,21 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	@Disabled  //TODO: work out why this is failing
+	@Test
+	def void canPassMetadataToFunctions() {
+		val model = '''
+			func MyFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata reference]
+			    output:
+			        myResult string (1..1)
+			
+			    set myResult: myInput -> reference
+		'''.generateCode
+	}
+	
 	@Test
 	def void switchCaseCanReturnMultiCardinalityResult() {
  		val code = '''			
