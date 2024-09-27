@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
@@ -35,10 +34,8 @@ import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
-import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
@@ -82,7 +79,6 @@ public class RObjectFactory {
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
-		//TODO: check if this should be an RMeta for the output???
 		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
