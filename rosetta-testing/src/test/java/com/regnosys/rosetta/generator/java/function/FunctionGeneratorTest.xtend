@@ -42,11 +42,11 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled  //TODO: write a full generation test here
+	@Disabled  //TODO: write code gen and remove disable
 	@Test
 	def void canPassMetadataToFunctions() {
-		val model = '''
-			func MyFunc:
+		val code = '''
+			func SomeFunc:
 			    inputs:
 			        myInput string (1..1)
 			        [metadata scheme]
@@ -56,8 +56,19 @@ class FunctionGeneratorTest {
 			    set myResult: myInput -> scheme
 		'''.generateCode
 		
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
 		
 		
+		val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+    			"value" -> "myInputValue", 
+    			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    				"scheme" -> "myScheme"
+    			})
+    		})
+		
+		val result = someFunc.invokeFunc(String, myInput)
+		assertEquals("myScheme", result)
 	}
 	
 	@Test
