@@ -2,17 +2,27 @@ package com.regnosys.rosetta.types;
 
 import java.util.Objects;
 
-public class RMetaAttribute {
+import org.eclipse.emf.ecore.EObject;
+
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+
+public class RMetaAttribute implements RObject {
 	private final String name;
 	private final RType type;
+	private Attribute attribute;
 
-	public RMetaAttribute(String name, RType type) {
+	public RMetaAttribute(String name, RType type, Attribute attribute) {
 		this.name = name;
 		this.type = type;
+		this.attribute = attribute;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public RType getRType() {
+		return type;
 	}
 
 	@Override
@@ -35,6 +45,11 @@ public class RMetaAttribute {
 	@Override
 	public String toString() {
 		return "RMetaAttribute [name=" + name + ", type=" + type + "]";
+	}
+
+	@Override
+	public EObject getEObject() {
+		return attribute;
 	}
 	
 	

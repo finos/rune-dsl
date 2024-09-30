@@ -99,7 +99,9 @@ class SubtypeRelationTest {
 				
 		val result = fieldA.join(fieldB)
 		assertTrue(result.RType instanceof RStringType)
-		assertEquals(#[new RMetaAttribute("scheme", UNCONSTRAINED_STRING)], result.getMetaAttributes)
+		val resultMetaAttribute = result.getMetaAttributes.get(0)
+		assertEquals("scheme", resultMetaAttribute.name)
+		assertEquals(UNCONSTRAINED_STRING, resultMetaAttribute.RType)
 	}
 	
 	@Test

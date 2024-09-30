@@ -164,7 +164,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	def List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {
 		annotations
 			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
-			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType)]
+			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType, it.attribute)]
 			.toList
 	}
 	

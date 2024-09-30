@@ -34,6 +34,7 @@ import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.types.RObjectFactory
 import java.util.LinkedHashSet
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.RMetaAnnotatedType
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -44,6 +45,11 @@ class RosettaEcoreUtil {
 	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
+	}
+	
+	def Iterable<? extends RosettaFeature> allFeatures(RMetaAnnotatedType t, EObject context) {
+		val List<Attribute>  metas = t.metaAttributes.map[EObject].filter(Attribute).toList
+		allFeatures(t.RType, context?.eResource?.resourceSet) + metas
 	}
 	
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context) {

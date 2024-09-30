@@ -54,7 +54,7 @@ import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.types.CardinalityProvider;
-import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -263,7 +263,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	
 	private SemanticToken markSymbol(EObject objectToMark, EStructuralFeature featureToMark, RosettaSymbol symbol) {
 		if (symbol instanceof Attribute) {
-			RType implicitType = typeProvider.typeOfImplicitVariable(objectToMark).getRType();
+			RMetaAnnotatedType implicitType = typeProvider.typeOfImplicitVariable(objectToMark);
 			if (implicitType != null) {
 				Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeatures(implicitType, objectToMark));
 				if (implicitFeatures.contains(symbol)) {
