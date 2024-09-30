@@ -65,6 +65,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import org.eclipse.xtext.scoping.impl.ImportNormalizer
 import org.eclipse.xtext.util.Strings
 import com.regnosys.rosetta.types.ExpectedTypeProvider
+import com.regnosys.rosetta.types.RMetaAnnotatedType
 
 /**
  * This class contains custom scoping description.
@@ -100,7 +101,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case ROSETTA_FEATURE_CALL__FEATURE: {
 					if (context instanceof RosettaFeatureCall) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRMetaAnnotatedType(context.receiver).RType)
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRMetaAnnotatedType(context.receiver))
 					}
 					return IScope.NULLSCOPE
 				}
@@ -112,13 +113,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case CHOICE_OPERATION__ATTRIBUTES: {
 					if (context instanceof ChoiceOperation) {
-						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument).RType)
+						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument))
 					}
 					return IScope.NULLSCOPE
 				}
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver))
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).withEmptyMeta)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -369,7 +370,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		new FilteringScope(scope,filter)
 	}
 	
-	private def IScope createExtendedFeatureScope(EObject receiver, RType receiverType) {
+	private def IScope createExtendedFeatureScope(EObject receiver, RMetaAnnotatedType metaReceiverType) {
+		val receiverType = metaReceiverType.RType
 		if (receiverType instanceof REnumType) {
 			if (!(receiver instanceof RosettaSymbolReference) || !((receiver as RosettaSymbolReference).symbol instanceof RosettaEnumeration)) {
 				return IScope.NULLSCOPE
@@ -380,34 +382,24 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		allPosibilities.addAll(
 			receiverType.allFeatures(receiver)
 				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
-			
 		)
 
-		//if an attribute has metafields then the meta names are valid in a feature call e.g. -> currency -> scheme
-		val feature = if (receiver instanceof RosettaFeatureCall) {
-			receiver.feature
-		} else if (receiver instanceof RosettaDeepFeatureCall) {
-			receiver.feature
-		} else if (receiver instanceof RosettaSymbolReference) {
-			receiver.symbol
-		}
-		if (feature instanceof Attribute) {
-			allPosibilities.addAll(getMetaDescriptions(feature))
-		}
-		
+		//if an RMetaAnnotatedType has metaAttributes then the meta names are valid in a feature call e.g. -> currency -> scheme
+		allPosibilities.addAll(getMetaDescriptions(metaReceiverType, receiver))
 		return new SimpleScope(allPosibilities)
 	}
 	
-	private def Iterable<IEObjectDescription> getMetaDescriptions(Annotated obj) {
-		val metas = obj.metaAnnotations.map[it.attribute?.name].filterNull.toList
+	private def Iterable<IEObjectDescription> getMetaDescriptions(RMetaAnnotatedType rMetaAnnotatedType, EObject context) {
+		val metas = rMetaAnnotatedType.metaAttributes.map[name]
 		if (!metas.isEmpty) {
-			configs.findMetaTypes(obj).filter[
+			configs.findMetaTypes(context).filter[
 				metas.contains(it.name.lastSegment.toString)
 			].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)]
 		} else {
 			emptyList
 		}
 	}
+	
 
 	private def IScope createDeepFeatureScope(RType receiverType) {
 		if (receiverType instanceof RDataType) {

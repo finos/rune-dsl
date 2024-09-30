@@ -42,19 +42,22 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled  //TODO: work out why this is failing
+	@Disabled  //TODO: write a full generation test here
 	@Test
 	def void canPassMetadataToFunctions() {
 		val model = '''
 			func MyFunc:
 			    inputs:
 			        myInput string (1..1)
-			        [metadata reference]
+			        [metadata scheme]
 			    output:
 			        myResult string (1..1)
 			
-			    set myResult: myInput -> reference
+			    set myResult: myInput -> scheme
 		'''.generateCode
+		
+		
+		
 	}
 	
 	@Test
