@@ -98,6 +98,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
+	@Inject extension ExpectedTypeProvider
 
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -198,7 +199,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				if (context instanceof RosettaFeatureCall) {
 					context.receiver.safeRType(cycleTracker)
 				} else {
-					NOTHING
+					context.expectedTypeFromContainer
 				}
 			}
 			default:
