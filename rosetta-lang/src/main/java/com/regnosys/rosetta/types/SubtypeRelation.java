@@ -1,11 +1,10 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.Stack;
 
 import javax.inject.Inject;
 
@@ -37,7 +36,7 @@ public class SubtypeRelation {
 	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes) {
 		return isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, null);
 	}
-	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, Set<RType> visited) {
+	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, Stack<RType> visited) {
 		if (treatChoiceTypesAsDataTypes) {
 			if (t1 instanceof RChoiceType) {
 				t1 = ((RChoiceType) t1).asRDataType();
@@ -76,15 +75,18 @@ public class SubtypeRelation {
 		}
 		return false;
 	}
-	private boolean safeIsSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, RType currentlyVisited, Set<RType> visited) {
+	private boolean safeIsSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, RType currentlyVisited, Stack<RType> visited) {
 		if (visited == null) {
-			visited = new HashSet<>();
+			visited = new Stack<>();
 		}
-		if (visited.add(currentlyVisited)) {
-			return isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, visited);
+		if (visited.contains(currentlyVisited)) {
+			// If the type is already visited, return true.
+			return true;
 		}
-		// If the type is already visited, return true.
-		return true;
+		visited.add(currentlyVisited);
+		boolean result = isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, visited);
+		visited.pop();
+		return result;
 	}
 	
 	public RType join(RType t1, RType t2) {
