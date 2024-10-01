@@ -918,8 +918,8 @@ The `switch` operator takes as its left hand input an argument on which to perfo
 
 ```Haskell
    "valueB" switch
-      "valueA" then "resultA"
-      "valueB" then "resultB"
+      "valueA" then "resultA",
+      "valueB" then "resultB",
       default "resultC"
 ```
 
@@ -943,11 +943,37 @@ Consider the following model for a `Vehicle`.
 
 ``` Haskell
 choice Vehicle:
-  [metadata key]
+  CombustibleVehicle
+  ElectricCar
+
+choice CombustibleVehicle:
   Car
   Bicycle
   Motorcycle
+
+type Car:
+  fuelCapacity number (1..1)
+
+type ElectricCar:
+  batteryCapacity number (1..1)
+
+// similar for Bicycle and Motorcycle
 ```
+
+The `switch` operator supports case analysis such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a vehicle:
+
+``` Haskell
+vehicle switch
+  ElectricCar        then 5 * batteryCapacity // assume 5 kilometres per kWh of battery
+  Car                then 15 * fuelCapacity   // assume 15 kilometres per litre of fuel
+  CombustibleVehicle then 80                  // for any other combustible vehicle, assume a mileage of 80 kilometres
+```
+
+Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
+
+As can be seen from the `Car` case in the example, case analysis may be *nested* - even though the `Vehicle` choice type does not include `Car` directly, it is included indirectly through the `CombustibleVehicle` type.
+
+Note that, similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end.
 
 #### Operator Precedence
 
