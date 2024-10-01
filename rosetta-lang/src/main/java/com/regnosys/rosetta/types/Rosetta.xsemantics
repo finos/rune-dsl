@@ -67,6 +67,9 @@ import java.math.BigInteger
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.rosetta.simple.Choice
+import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -75,6 +78,7 @@ inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
 inject extension ModelIdProvider modelIdProvider
 inject extension RObjectFactory objectFactory
+inject extension RosettaEcoreUtil ecoreUtil
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
 inject TypeSystem typeSystem
@@ -171,6 +175,8 @@ auxiliary typeOfImplicitVariable(EObject c) {
 			functionalOperationItemType
 		} else if (it instanceof RosettaRule) {
 			input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
+		} else if (it instanceof SwitchCase) {
+			guard.choiceOptionGuard.symbolListType
 		}
 	]
 }
@@ -218,6 +224,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
 	switch t {
+		Choice: t.buildRChoiceType
 		Data: t.buildRDataType
 		RosettaBuiltinType: {
 			val argMap = call.arguments.toMap([parameter.name], [interpreter.interpret(value, context)])

@@ -35,7 +35,6 @@ public class EnumValidator extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 	}
-	
 	private boolean hasCyclicExtension(RosettaEnumeration current, List<RosettaEnumeration> path, Set<RosettaEnumeration> visited) {
 		path.add(current);
 		if (visited.add(current) && current.getParent() != null) {

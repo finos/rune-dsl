@@ -38,7 +38,7 @@ class SubtypeRelationTest {
 		val a = model.getData('A').buildRDataType
 		val b = model.getData('B').buildRDataType
 		
-		assertTrue(b.isSubtypeOf(a))
+		assertTrue(b.isSubtypeOf(a, true))
 	}
 	
 	@Test
@@ -67,6 +67,6 @@ class SubtypeRelationTest {
 		val a = model.getEnum('A').buildREnumType
 		val b = model.getEnum('B').buildREnumType
 		
-		assertFalse(a.isSubtypeOf(b))
+		assertFalse(a.isSubtypeOf(b, true))
 	}
 }

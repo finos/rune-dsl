@@ -11,7 +11,6 @@ import com.rosetta.model.lib.process.AttributeMeta
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
-import java.util.Collection
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
@@ -24,6 +23,7 @@ import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.RosettaEcoreUtil
 import java.util.List
+import com.regnosys.rosetta.types.RChoiceType
 
 class ModelObjectBoilerPlate {
 
@@ -154,7 +154,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR a : c.allJavaAttributes»
-				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
+				«IF a.isRosettaModelObject»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -168,7 +168,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR a : t.allJavaAttributes»
-				«IF a.RType instanceof RDataType || !a.metaAnnotations.isEmpty»
+				«IF a.isRosettaModelObject»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -190,9 +190,5 @@ class ModelObjectBoilerPlate {
 	private def boolean hasSuperDataType(RDataType c) {
 		val s = c.superType
 		return s !== null && s.stripFromTypeAliases instanceof RDataType
-	}
-	
-	def needsBuilder(RAttribute attribute){
-		attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty
 	}
 }

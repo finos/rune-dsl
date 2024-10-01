@@ -40,6 +40,7 @@ import javax.inject.Singleton
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.regnosys.rosetta.types.RChoiceType
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -72,7 +73,11 @@ class TabulatorGenerator {
 			isTabulated(attr, newHashSet)
 		}
 		private def boolean isTabulated(RAttribute attr, Set<Data> visited) {
-			val attrType = attr.RType
+			val attrType = if (attr.RType instanceof RChoiceType) {
+				(attr.RType as RChoiceType).asRDataType
+			} else {
+				attr.RType
+			}
 			if (attrType instanceof RDataType) {
 				needsTabulator(attrType, visited)
 			} else {
@@ -214,7 +219,12 @@ class TabulatorGenerator {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 
-			val functionOutputType = typeProvider.getRTypeOfSymbol(func.output)
+			val t = typeProvider.getRTypeOfSymbol(func.output)
+			val functionOutputType = if (t instanceof RChoiceType) {
+				t.asRDataType
+			} else {
+				t
+			}
 			if (functionOutputType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
@@ -240,6 +250,7 @@ class TabulatorGenerator {
 			type
 				.allNonOverridenAttributes
 				.map[RType]
+				.map[it instanceof RChoiceType ? asRDataType : it]
 				.filter(RDataType)
 				.forEach[recursivelyGenerateTabulators(fsa, it, context, visited)]
 		}
@@ -408,6 +419,7 @@ class TabulatorGenerator {
 		val result = type.allNonOverridenAttributes
 			.filter[context.isTabulated(it)]
 			.map[RType]
+			.map[it instanceof RChoiceType ? asRDataType : it]
 			.filter(RDataType)
 			.map[toNestedTabulatorInstance]
 			.toSet
@@ -426,7 +438,11 @@ class TabulatorGenerator {
 	}
 
 	private def StringConcatenationClient fieldValue(RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
-		val rType = attr.RType
+		val rType = if (attr.RType instanceof RChoiceType) {
+			(attr.RType as RChoiceType).asRDataType
+		} else {
+			attr.RType
+		}
 			
 		val resultId = scope.createIdentifier(attr.toComputedField, attr.name)
 		

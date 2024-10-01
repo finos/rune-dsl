@@ -43,14 +43,178 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void switchOnChoiceType() {
+		val code = '''
+		type Bar:
+			barAttr int (1..1)
+		
+		type Qux:
+			quxAttr int (1..1)
+		
+		choice Foo:
+			Bar
+			Qux
+		
+		func DoSwitch:
+			inputs:
+				foo Foo (0..1)
+			output:
+				result int (1..1)
+			
+			set result:
+				foo switch
+					Bar then barAttr,
+					Qux then quxAttr
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val fooBar = classes.createInstanceUsingBuilder("Foo", #{
+			"Bar" -> classes.createInstanceUsingBuilder("Bar", #{
+				"barAttr" -> 42
+			})
+		})
+		val fooQux = classes.createInstanceUsingBuilder("Foo", #{
+			"Qux" -> classes.createInstanceUsingBuilder("Qux", #{
+				"quxAttr" -> 12
+			})
+		})
+		
+		val doSwitch = classes.createFunc("DoSwitch")
+		assertEquals(42, doSwitch.invokeFunc(Integer, #[fooBar]))
+		assertEquals(12, doSwitch.invokeFunc(Integer, #[fooQux]))
+		assertEquals(null, doSwitch.invokeFunc(Integer, #[null]))
+	}
+	
+	@Test
+	def void switchOnNestedType() {
+		val code = '''
+		choice Foo:
+			Opt1
+			Bar
+		
+		choice Bar:
+			Opt2
+			Opt3
+			Opt4
+		
+		type Opt1:
+			opt1Attr int (1..1)
+		
+		type Opt2:
+			barAttr string (1..1)
+			opt2Attr boolean (1..1)
+		
+		type Opt3:
+			barAttr string (1..1)
+			opt3Attr string (1..1)
+		
+		type Opt4:
+			barAttr string (1..1)
+			opt4Attr string (1..1)
+		
+		func DoSwitch:
+			inputs:
+				foo Foo (1..1)
+			output:
+				result int (1..1)
+			
+			set result:
+				foo switch
+					Opt1 then opt1Attr,
+					Opt2 then if opt2Attr then 2 else 0,
+					Bar then item ->> barAttr to-int
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val opt1 = classes.createInstanceUsingBuilder("Foo", #{
+			"Opt1" -> classes.createInstanceUsingBuilder("Opt1", #{
+				"opt1Attr" -> 1
+			})
+		})
+		val opt2 = classes.createInstanceUsingBuilder("Foo", #{
+			"Bar" -> classes.createInstanceUsingBuilder("Bar", #{
+				"Opt2" -> classes.createInstanceUsingBuilder("Opt2", #{
+					"barAttr" -> "-1",
+					"opt2Attr" -> true
+				})
+			})
+		})
+		val opt3 = classes.createInstanceUsingBuilder("Foo", #{
+			"Bar" -> classes.createInstanceUsingBuilder("Bar", #{
+				"Opt3" -> classes.createInstanceUsingBuilder("Opt3", #{
+					"barAttr" -> "3",
+					"opt3Attr" -> "Blabla"
+				})
+			})
+		})
+		val opt4 = classes.createInstanceUsingBuilder("Foo", #{
+			"Bar" -> classes.createInstanceUsingBuilder("Bar", #{
+				"Opt4" -> classes.createInstanceUsingBuilder("Opt4", #{
+					"barAttr" -> "4",
+					"opt4Attr" -> "Hello"
+				})
+			})
+		})
+		
+		val doSwitch = classes.createFunc("DoSwitch")
+		assertEquals(1, doSwitch.invokeFunc(Integer, #[opt1]))
+		assertEquals(2, doSwitch.invokeFunc(Integer, #[opt2]))
+		assertEquals(3, doSwitch.invokeFunc(Integer, #[opt3]))
+		assertEquals(4, doSwitch.invokeFunc(Integer, #[opt4]))
+	}
+	
+	@Test
+	@Disabled // Enable as part of https://github.com/finos/rune-dsl/pull/845
+	def void switchOnChoiceOptionWithMetadata() {
+		val code = '''
+		typeAlias MyString: string(maxLength: 42)
+		
+		choice Foo:
+			number
+			MyString
+				[metadata scheme]
+		
+		func DoSwitch:
+			inputs:
+				foo Foo (0..1)
+			output:
+				result string (1..1)
+			
+			set result:
+				foo switch
+					number then to-string,
+					MyString then scheme
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val fooNum = classes.createInstanceUsingBuilder("Foo", #{
+			"number" -> BigDecimal.valueOf(42)
+		})
+		val fooStrWithScheme = classes.createInstanceUsingBuilder("Foo", #{
+			"string" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				}),
+				"value" -> "abc123"
+			})
+		})
+		
+		val doSwitch = classes.createFunc("DoSwitch")
+		assertEquals("42", doSwitch.invokeFunc(String, #[fooNum]))
+		assertEquals("myScheme", doSwitch.invokeFunc(String, #[fooStrWithScheme]))
+	}
+	
+	@Test
 	def void switchCaseCanReturnMultiCardinalityResult() {
  		val code = '''			
  			func SomeFunc:
- 					
+ 				inputs:
+ 					inString string (0..1)
  				output:
  					result int (1..*)
- 					
- 				alias inString: "b"
  				
  				set result: inString switch 
  					"a" then [1, 2, 3],
@@ -60,9 +224,9 @@ class FunctionGeneratorTest {
  		
  		 val classes = code.compileToClasses
 
-          val someFunc = classes.createFunc("SomeFunc")
-          val result = someFunc.invokeFunc(List)
- 		 assertEquals(#[9], result)
+         val someFunc = classes.createFunc("SomeFunc")
+ 		 assertEquals(#[9], someFunc.invokeFunc(List, #["b"]))
+ 		 assertEquals(#[], someFunc.invokeFunc(List, #[null]))
 	}
 	
 	

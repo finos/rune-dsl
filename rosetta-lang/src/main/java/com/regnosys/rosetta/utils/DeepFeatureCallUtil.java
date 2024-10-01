@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
 
@@ -31,6 +32,9 @@ public class DeepFeatureCallUtil {
 		}
 		for (RAttribute attr : allNonOverridenAttributes) {
 			RType attrType = attr.getRType();
+			if (attrType instanceof RChoiceType) {
+				attrType = ((RChoiceType) attrType).asRDataType();
+			}
 			Map<String, RAttribute> attrDeepFeatureMap;
 			if (attrType instanceof RDataType) {
 				RDataType attrDataType = (RDataType)attrType;

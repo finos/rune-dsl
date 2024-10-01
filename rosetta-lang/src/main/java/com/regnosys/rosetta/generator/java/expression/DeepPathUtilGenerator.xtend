@@ -23,6 +23,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.HashSet
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RChoiceType
 
 class DeepPathUtilGenerator {
 	@Inject extension ImportManagerExtension
@@ -55,9 +56,13 @@ class DeepPathUtilGenerator {
 		val recursiveDeepFeaturesMap = choiceType.allNonOverridenAttributes.toMap([it], [
 			val attrType = it.RType
 			deepFeatures.toMap([it], [
-				if (attrType instanceof RDataType) {
-					if (attrType.findDeepFeatureMap.containsKey(it.name)) {
-						dependencies.add(attrType.toDeepPathUtilJavaClass)
+				var t = attrType
+				if (t instanceof RChoiceType) {
+					t = t.asRDataType
+				}
+				if (t instanceof RDataType) {
+					if (t.findDeepFeatureMap.containsKey(it.name)) {
+						dependencies.add(t.toDeepPathUtilJavaClass)
 						return true
 					}
 				}
@@ -109,7 +114,10 @@ class DeepPathUtilGenerator {
 								val deepFeatureExpr = if (deepFeature.match(a)) {
 									attrVar
 								} else {
-									val attrType = a.RType
+									var attrType = a.RType
+									if (attrType instanceof RChoiceType) {
+										attrType = attrType.asRDataType
+									}
 									val needsToGoDownDeeper = recursiveDeepFeaturesMap.get(a).get(deepFeature)
 									val actualFeature = if (needsToGoDownDeeper || !(attrType instanceof RDataType)) {
 										deepFeature

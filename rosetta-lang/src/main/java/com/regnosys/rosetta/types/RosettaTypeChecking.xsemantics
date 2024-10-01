@@ -35,6 +35,7 @@ import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.types.RChoiceType
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -516,9 +517,9 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 		}
 	}
 	if (parentType !== null) {
-		val parentData = parentType.itemType as RDataType
+		val parentData = parentType.itemType
 		if (parentData !== null) {
-			mayBeEmpty(parentData)
+			parentData instanceof RDataType && mayBeEmpty(parentData as RDataType)
 			or
 			fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
 				source parent
@@ -530,7 +531,7 @@ checkrule CheckOneOfOperation for OneOfOperation e from {
 	empty |- e.argument : var RListType pt
 	if (pt !== null) {
 		val itemType = pt.itemType
-		if (!(itemType instanceof RDataType)) {
+		if (!(itemType instanceof RDataType) && !(itemType instanceof RChoiceType)) {
 			fail error "The `" + e.operator + "` operator is not applicable to instances of `" + itemType + "`."
 				source e.argument
 		}

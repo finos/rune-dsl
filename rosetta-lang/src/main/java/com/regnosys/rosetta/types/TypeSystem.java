@@ -79,6 +79,9 @@ public class TypeSystem {
                     result = meet(result, inputType);
                 } else {
                     RType attrType = stripFromTypeAliases(attr.getRType());
+                    if (attrType instanceof RChoiceType) {
+                    	attrType = ((RChoiceType) attrType).asRDataType();
+                    }
                     if (attrType instanceof RDataType) {
                     	RDataType attrData = (RDataType)attrType;
                         RType inputType = getRulesInputType(attrData, source, visited);
@@ -145,10 +148,13 @@ public class TypeSystem {
 	}
 	
 	public boolean isSubtypeOf(RType sub, RType sup) {
+		return isSubtypeOf(sub, sup, true);
+	}
+	public boolean isSubtypeOf(RType sub, RType sup, boolean treatChoiceTypeAsData) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return subtypeRelation.isSubtypeOf(sub, sup);
+		return subtypeRelation.isSubtypeOf(sub, sup, treatChoiceTypeAsData);
 	}
 	public boolean isListSubtypeOf(RListType sub, RListType sup) {
 		Objects.requireNonNull(sub);
