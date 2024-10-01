@@ -8,6 +8,7 @@ import com.regnosys.rosetta.rosetta.RosettaPackage
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RListType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.TypeFactory
@@ -22,9 +23,14 @@ import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
 import java.util.function.BiFunction
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
+import org.eclipse.emf.ecore.resource.ResourceSet
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.RChoiceType
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -48,6 +54,7 @@ auxiliary {
 	mayBeEmpty(RDataType d)
 	
 	keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes): RType
+	allFeatures(RType t, ResourceSet resourceSet) : Iterable<? extends RosettaFeature>
 }
 
 /****** AUXILIARY DEFINITIONS *******/
@@ -131,4 +138,24 @@ auxiliary keepTypeAliasIfPossible(RType t1, RAliasType t2, BiFunction<RType, RTy
 }
 auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
 	combineUnderlyingTypes.apply(t1, t2)
+}
+
+auxiliary allFeatures(RType t, ResourceSet resourceSet) {
+	switch t {
+		RDataType:
+			t.allNonOverridenAttributes.map[EObject]
+		RChoiceType:
+			t.asRDataType.allFeatures(resourceSet)
+		REnumType:
+			t.EObject.allEnumValues
+		RRecordType: {
+			if (resourceSet !== null) {
+				builtinTypes.toRosettaType(t, RosettaRecordType, resourceSet).features
+			} else {
+				#[]
+			}
+		}
+		default:
+			#[]
+	}
 }

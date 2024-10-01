@@ -68,7 +68,6 @@ import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.rosetta.simple.Choice
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 inject extension TypeFactory typeFactory
@@ -78,7 +77,6 @@ inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
 inject extension ModelIdProvider modelIdProvider
 inject extension RObjectFactory objectFactory
-inject extension RosettaEcoreUtil ecoreUtil
 inject RosettaInterpreter interpreter
 inject RosettaSimpleSystemSolver systemSolver
 inject TypeSystem typeSystem

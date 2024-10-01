@@ -960,7 +960,7 @@ type ElectricCar:
 // similar for Bicycle and Motorcycle
 ```
 
-The `switch` operator supports case analysis such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a vehicle:
+The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a vehicle:
 
 ``` Haskell
 vehicle switch
@@ -971,9 +971,9 @@ vehicle switch
 
 Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
 
-As can be seen from the `Car` case in the example, case analysis may be *nested* - even though the `Vehicle` choice type does not include `Car` directly, it is included indirectly through the `CombustibleVehicle` type.
+As can be seen from the `Car` case in the example, case analysis may be *nested*: even though the `Vehicle` choice type does not include `Car` directly, it is included indirectly through the `CombustibleVehicle` choice type.
 
-Note that, similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end.
+Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end.
 
 #### Operator Precedence
 
