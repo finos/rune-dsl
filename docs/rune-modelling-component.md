@@ -965,16 +965,16 @@ The `switch` operator supports case analysis on such a choice type as well. For 
 
 ``` Haskell
 vehicle switch
-  ElectricCar        then 5 * batteryCapacity // assume 5 kilometres per kWh of battery
-  Car                then 15 * fuelCapacity   // assume 15 kilometres per litre of fuel
-  CombustibleVehicle then 80                  // for any other combustible vehicle, assume a mileage of 80 kilometres
+  ElectricCar        then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+  Car                then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+  CombustibleVehicle then 80                   // for any other combustible vehicle, assume a mileage of 80 kilometres
 ```
 
 Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
 
 As can be seen from the `Car` case in the example, case analysis may be *nested*: even though the `Vehicle` choice type does not include `Car` directly, it is included indirectly through the `CombustibleVehicle` choice type.
 
-Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. In the example above, `Bicycle` is missing, so the switch operation will be highlighted in red.
+Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. In the example above, `Bicycle` is missing, so the `switch` operation will be highlighted in red.
 
 #### Operator Precedence
 
