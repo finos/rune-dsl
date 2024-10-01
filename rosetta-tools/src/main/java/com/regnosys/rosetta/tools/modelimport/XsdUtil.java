@@ -29,6 +29,9 @@ import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 public class XsdUtil {
+	
+	private static final String XSD_NAME_PARTS_REGEX = "[^a-zA-Z0-9_]";
+
 	private final Set<String> documentationSources = Set.of("Definition");
 	
 	public final String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
@@ -71,7 +74,7 @@ public class XsdUtil {
 	}
 
     public String toTypeName(String xsdName) {
-        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
             if (Character.isUpperCase(part.charAt(0))) {
@@ -85,7 +88,7 @@ public class XsdUtil {
     }
 
     public String toAttributeName(String xsdName) {
-        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
         StringBuilder builder = new StringBuilder();
         builder.append(allFirstLowerIfNotAbbrevation(parts[0]));
         Arrays.stream(parts).skip(1).forEach(part -> {
@@ -100,7 +103,7 @@ public class XsdUtil {
     }
     
     public String toEnumValueName(String xsdName) {
-        String[] parts = xsdName.split("[^a-zA-Z0-9]");
+        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
         String joined = String.join("_", parts).toUpperCase();
         if (joined.matches("^[0-9].*")) {
         	return "_" + joined;
