@@ -943,8 +943,9 @@ Consider the following model for a `Vehicle`.
 
 ``` Haskell
 choice Vehicle:
-  CombustibleVehicle
   ElectricCar
+  CombustibleVehicle
+  Bicycle
 
 choice CombustibleVehicle:
   Car
@@ -973,7 +974,7 @@ Note that within each case, you can access attributes specific to that case dire
 
 As can be seen from the `Car` case in the example, case analysis may be *nested*: even though the `Vehicle` choice type does not include `Car` directly, it is included indirectly through the `CombustibleVehicle` choice type.
 
-Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end.
+Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. In the example above, `Bicycle` is missing, so the switch operation will be highlighted in red.
 
 #### Operator Precedence
 
