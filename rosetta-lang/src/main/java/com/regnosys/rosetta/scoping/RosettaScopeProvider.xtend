@@ -380,26 +380,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 		
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
-			receiverType.allFeatures(receiver)
+			metaReceiverType.allFeatures(receiver)
 				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
 		)
 
-		//if an RMetaAnnotatedType has metaAttributes then the meta names are valid in a feature call e.g. -> currency -> scheme
-		allPosibilities.addAll(getMetaDescriptions(metaReceiverType, receiver))
 		return new SimpleScope(allPosibilities)
 	}
-	
-	private def Iterable<IEObjectDescription> getMetaDescriptions(RMetaAnnotatedType rMetaAnnotatedType, EObject context) {
-		val metas = rMetaAnnotatedType.metaAttributes.map[name]
-		if (!metas.isEmpty) {
-			configs.findMetaTypes(context).filter[
-				metas.contains(it.name.lastSegment.toString)
-			].map[new AliasedEObjectDescription(QualifiedName.create(it.name.lastSegment), it)]
-		} else {
-			emptyList
-		}
-	}
-	
+
 
 	private def IScope createDeepFeatureScope(RType receiverType) {
 		if (receiverType instanceof RDataType) {
