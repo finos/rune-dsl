@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.types.RAliasType;
+import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RErrorType;
@@ -68,6 +69,11 @@ public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>
 	@Override
 	protected RosettaValue caseDataType(RDataType type, List<?> context) {
 		throw new UnsupportedOperationException("Data type is unsupported");
+	}
+	
+	@Override
+	protected RosettaValue caseChoiceType(RChoiceType type, List<?> context) {
+		throw new UnsupportedOperationException("Choice type is unsupported");
 	}
 
 	@Override

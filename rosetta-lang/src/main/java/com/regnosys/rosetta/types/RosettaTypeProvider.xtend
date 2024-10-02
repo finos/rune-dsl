@@ -83,6 +83,7 @@ import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.RosettaEcoreUtil
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -97,6 +98,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 	@Inject extension RBuiltinTypeService
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
+	@Inject extension ExpectedTypeProvider
 
 	def RType getRType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -197,7 +199,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				if (context instanceof RosettaFeatureCall) {
 					context.receiver.safeRType(cycleTracker)
 				} else {
-					NOTHING
+					context.expectedTypeFromContainer
 				}
 			}
 			default:
@@ -240,6 +242,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RType, Map<EObject, RT
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
 				input?.typeCallToRType ?: MISSING
+			} else if (it instanceof SwitchCase) {
+				guard.choiceOptionGuard.RTypeOfSymbol
 			}
 		].orElse(MISSING)
 	}

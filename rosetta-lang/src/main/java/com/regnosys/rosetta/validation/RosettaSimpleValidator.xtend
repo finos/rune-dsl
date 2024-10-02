@@ -57,7 +57,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
@@ -121,6 +120,9 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 import org.eclipse.emf.ecore.impl.EClassImpl
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
+import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.interpreter.RosettaInterpreter
+import com.google.common.collect.Lists
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -142,6 +144,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RosettaGrammarAccess
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
+	@Inject extension RosettaInterpreter
 	
 	@Check
 	def void deprecatedWarning(EObject object) {
@@ -172,56 +175,111 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			warning(msg, owner, ref, index)
 		}
 	}
-
+	
 	@Check
-	def void switchInputsMustBeSingleCardinality(SwitchOperation op) {
+	def void checkSwitch(SwitchOperation op) {
 		if (op.argument.multi) {
 			error("Input to switch must be single cardinality", op.argument, null)
 		}
-	}
-
-
-	@Check
-	def void switchStatementMustProvideCaseForAllEnumValues(SwitchOperation op) {
-		val argumentType = op.argument.RType
-		if (op.^default === null && argumentType instanceof REnumType) {
-			val enumConditions = op.cases.map[it.enumGuard].toSet
-
-			val enumeration = (argumentType as REnumType).EObject
-			val missingEnumValues = newArrayList
-			for (enumValue : enumeration.enumValues) {
-				if (!enumConditions.contains(enumValue)) {
-					missingEnumValues.add(enumValue)
-				}
-			}
-			if (!missingEnumValues.empty) {
-				error('''Missing the following enumeration values from switch: «missingEnumValues.map[it.name].join(", ")» . Either provide all or use default.''', op, null)
-			}
+		
+		val argumentType = op.argument.RType.stripFromTypeAliases
+		if (argumentType instanceof REnumType) {
+			checkEnumSwitch(argumentType, op)
+		} else if (argumentType instanceof RBasicType) {
+			checkBasicTypeSwitch(argumentType, op)
+		} else if (argumentType instanceof RChoiceType) {
+			checkChoiceSwitch(argumentType, op)
+		} else {
+ 			error('''Type `«argumentType»` is not a valid switch argument type. Supported argument types are basic types, enumerations, and choice types.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
 		}
-
 	}
-
-	@Check
- 	def void switchArgumentTypeMatchesCaseStatementTypes(SwitchOperation op) {
- 		val argumentRType = op.argument.RType
- 		for (SwitchCase caseStatement : op.cases) {
- 			if (caseStatement.literalGuard !== null) {
- 				val conditionType = caseStatement.literalGuard.RType
-	 			if (!conditionType.isSubtypeOf(argumentRType)) {
- 					error('''Mismatched condition type: «argumentRType.notASubtypeMessage(conditionType)»''', caseStatement.literalGuard ?: caseStatement.enumGuard, null)
+	private def void checkEnumSwitch(REnumType argumentType, SwitchOperation op) {
+		// When the argument is an enum:
+		// - all guards should be enum guards,
+		// - there are no duplicate cases,
+		// - all enum values must be covered.
+		val seenValues = newHashSet
+		for (caseStatement : op.cases) {
+ 			if (caseStatement.guard.enumGuard === null) {
+ 				error('''Case should match an enum value of «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 			} else {
+ 				if (!seenValues.add(caseStatement.guard.enumGuard)) {
+ 					error('''Duplicate case «caseStatement.guard.enumGuard.name»''', caseStatement, SWITCH_CASE__GUARD)
  				}
  			}
-
  		}
- 	}
-
- 	@Check
- 	def void switchArgumentsAreCorrectTypes(SwitchOperation op) {
- 		val inputType = op.argument.RType.stripFromTypeAliases
- 		if (!(inputType instanceof RBasicType) && !(inputType instanceof REnumType)) {
- 			error('''Type `«inputType.name»` is not a valid switch argument type, supported argument types are basic types and enumerations''', op.argument, null)
+		if (op.^default === null) {
+			val missingEnumValues = argumentType.allEnumValues.filter[!seenValues.contains(it)]
+			if (!missingEnumValues.empty) {
+				error('''Missing the following cases: «missingEnumValues.map[it.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
+			}
+		}
+	}
+	private def void checkBasicTypeSwitch(RBasicType argumentType, SwitchOperation op) {
+		// When the argument is a basic type:
+		// - all guards should be literal guards,
+		// - there are no duplicate cases,
+		// - all guards should be comparable to the input.
+		val seenValues = newHashSet
+ 		for (caseStatement : op.cases) {
+ 			if (caseStatement.guard.literalGuard === null) {
+ 				error('''Case should match a literal of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 			} else {
+ 				if (!seenValues.add(caseStatement.guard.literalGuard.interpret)) {
+ 					error('''Duplicate case''', caseStatement, SWITCH_CASE__GUARD)
+ 				}
+ 				val conditionType = caseStatement.guard.literalGuard.RType
+	 			if (!conditionType.isComparable(argumentType)) {
+ 					error('''Invalid case: «argumentType.notComparableMessage(conditionType)»''', caseStatement, SWITCH_CASE__GUARD)
+ 				}
+ 			}
  		}
- 	}
+	}
+	private def void checkChoiceSwitch(RChoiceType argumentType, SwitchOperation op) {
+		// When the argument is a choice type:
+		// - all guards should be choice option guards,
+		// - all cases should be reachable,
+		// - all choice options should be covered.
+		val Map<ChoiceOption, RType> includedOptions = newHashMap
+		for (caseStatement : op.cases) {
+ 			if (caseStatement.guard.choiceOptionGuard === null) {
+ 				error('''Case should match a choice option of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 			} else {
+ 				val guard = caseStatement.guard.choiceOptionGuard
+ 				val alreadyCovered = includedOptions.get(guard)
+ 				if (alreadyCovered !== null) {
+ 					error('''Case already covered by «alreadyCovered»''', caseStatement, SWITCH_CASE__GUARD)
+ 				} else {
+ 					val guardType = guard.RTypeOfSymbol
+ 					includedOptions.put(guard, guardType)
+ 					if (guardType instanceof RChoiceType) {
+ 						guardType.allOptions.forEach[includedOptions.put(it.EObject, guardType)]
+ 					}
+ 				}
+ 			}
+ 		}
+		if (op.^default === null) {
+ 			val missingOptions = Lists.newArrayList(argumentType.ownOptions.map[type])
+ 			for (guard : includedOptions.values.toSet) {
+ 				for (var i=0; i<missingOptions.size; i++) {
+ 					val opt = missingOptions.get(i)
+ 					if (opt.isSubtypeOf(guard, false)) {
+ 						missingOptions.remove(i)
+ 						i--
+ 					} else if (opt instanceof RChoiceType) {
+ 						if (guard.isSubtypeOf(opt, false)) {
+ 							missingOptions.remove(i)
+ 							i--
+ 							missingOptions.addAll(opt.ownOptions.map[type])
+ 						}
+ 					}
+ 				}
+ 			}
+			if (!missingOptions.empty) {
+				error('''Missing the following cases: «missingOptions.map[it.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
+			}
+		}
+	}
 
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
@@ -391,7 +449,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
 
 		type.allAttributes.forEach[attr |
-			val attrType = attr.RType
+			var attrType = attr.RType
+			if (attrType instanceof RChoiceType) {
+				attrType = attrType.asRDataType
+			}
 
 			if (attrType instanceof RDataType) {
 				if (!visitor.collectedTypes.contains(attrType)) {
@@ -973,7 +1034,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkAttribute(Attribute ele) {
-		val eleType = ele.RTypeOfSymbol
+		var eleType = ele.RTypeOfSymbol
+		if (eleType instanceof RChoiceType) {
+			eleType = eleType.asRDataType
+		}
 		if (eleType instanceof RDataType) {
 			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.exists[EObject.hasKeyedAnnotation])) {
 				//TODO turn to error if it's okay
@@ -1053,7 +1117,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def checkConstructorExpression(RosettaConstructorExpression ele) {
 		val rType = ele.RType
 		if (rType !== null) {
-			val baseRType = rType.stripFromTypeAliases
+			var baseRType = rType.stripFromTypeAliases
+			if (baseRType instanceof RChoiceType) {
+				baseRType = baseRType.asRDataType
+			}
 			if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
 				error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
 			}
@@ -1262,8 +1329,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 		val func = ele as Function
 		
-		val annotationType = annotations.head.attribute.RTypeOfSymbol
-		val funcOutputType = func.RTypeOfSymbol
+		var annotationType = annotations.head.attribute.RTypeOfSymbol
+		if (annotationType instanceof RChoiceType) {
+			annotationType = annotationType.asRDataType
+		}
+		var funcOutputType = func.RTypeOfSymbol
+		if (funcOutputType instanceof RChoiceType) {
+			funcOutputType = funcOutputType.asRDataType
+		}
 		
 		if (annotationType instanceof RDataType && funcOutputType instanceof RDataType) {
 			val annotationDataType = annotationType as RDataType

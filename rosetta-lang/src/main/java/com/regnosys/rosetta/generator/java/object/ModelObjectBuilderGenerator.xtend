@@ -61,9 +61,9 @@ class ModelObjectBuilderGenerator {
 			public «javaType.toBuilderType» prune() {
 				«IF superInterface != ROSETTA_MODEL_OBJECT»super.prune();«ENDIF»
 				«FOR attribute : attrs»
-					«IF !attribute.isMulti && (attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty)»
+					«IF !attribute.isMulti && attribute.isRosettaModelObject»
 						if («builderScope.getIdentifierOrThrow(attribute)»!=null && !«builderScope.getIdentifierOrThrow(attribute)».prune().hasData()) «builderScope.getIdentifierOrThrow(attribute)» = null;
-					«ELSEIF attribute.isMulti && attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
+					«ELSEIF attribute.isMulti && attribute.isRosettaModelObject»
 						«builderScope.getIdentifierOrThrow(attribute)» = «builderScope.getIdentifierOrThrow(attribute)».stream().filter(b->b!=null).<«attribute.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
@@ -91,7 +91,7 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 			«builderName» o = («builderName») other;
 			
-			«FOR a : attributes.filter[RType instanceof RDataType || !metaAnnotations.isEmpty]»
+			«FOR a : attributes.filter[isRosettaModelObject]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.isMulti»
 					merger.mergeRosetta(get«attributeName»(), o.get«attributeName»(), this::getOrCreate«attributeName»);
@@ -100,7 +100,7 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 			«ENDFOR»
 			
-			«FOR a : attributes.filter[!(RType instanceof RDataType) && metaAnnotations.isEmpty]»
+			«FOR a : attributes.filter[!isRosettaModelObject]»
 				«val attributeName = a.name.toFirstUpper»
 				«IF a.isMulti»
 					merger.mergeBasic(get«attributeName»(), o.get«attributeName»(), («Consumer»<«a.toItemJavaType»>) this::add«attributeName»);
@@ -121,7 +121,7 @@ class ModelObjectBuilderGenerator {
 				return «scope.getIdentifierOrThrow(attribute)»;
 			}
 
-			«IF attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»
+			«IF attribute.isRosettaModelObject»
 				«IF !attribute.isMulti»
 					@Override
 					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»() {
@@ -187,13 +187,13 @@ class ModelObjectBuilderGenerator {
 			
 			@Override
 			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «scope.getIdentifierOrThrow(attribute)») {
-				this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.RType instanceof RDataType».toBuilder()«ENDIF»);
+				this.getOrCreate«attribute.name.toFirstUpper»(-1).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isValueRosettaModelObject».toBuilder()«ENDIF»);
 				return this;
 			}
 
 			@Override
 			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «scope.getIdentifierOrThrow(attribute)», int _idx) {
-				this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.RType instanceof RDataType».toBuilder()«ENDIF»);
+				this.getOrCreate«attribute.name.toFirstUpper»(_idx).setValue(«scope.getIdentifierOrThrow(attribute)»«IF attribute.isValueRosettaModelObject».toBuilder()«ENDIF»);
 				return this;
 			}
 			«ENDIF»
@@ -201,7 +201,7 @@ class ModelObjectBuilderGenerator {
 			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
 				if («scope.getIdentifierOrThrow(attribute)»s != null) {
 					for («attribute.toMetaItemJavaType» toAdd : «scope.getIdentifierOrThrow(attribute)»s) {
-						this.«scope.getIdentifierOrThrow(attribute)».add(toAdd«IF needsBuilder(attribute)».toBuilder()«ENDIF»);
+						this.«scope.getIdentifierOrThrow(attribute)».add(toAdd«IF attribute.isRosettaModelObject».toBuilder()«ENDIF»);
 					}
 				}
 				return this;
@@ -215,7 +215,7 @@ class ModelObjectBuilderGenerator {
 				}
 				else {
 					this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»s.stream()
-						«IF needsBuilder(attribute)».map(_a->_a.toBuilder())«ENDIF»
+						«IF attribute.isRosettaModelObject».map(_a->_a.toBuilder())«ENDIF»
 						.collect(«Collectors».toCollection(()->new ArrayList<>()));
 				}
 				return this;
@@ -267,12 +267,12 @@ class ModelObjectBuilderGenerator {
 			«IF hasSuperType»if (super.hasData()) return true;«ENDIF»
 			«FOR attribute:attributes.filter[name!="meta"]»
 				«IF attribute.isMulti»
-					«IF attribute.RType instanceof RDataType»
+					«IF attribute.isValueRosettaModelObject»
 						if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 					«ELSE»
 						if (get«attribute.name.toFirstUpper»()!=null && !get«attribute.name.toFirstUpper»().isEmpty()) return true;
 					«ENDIF»
-				«ELSEIF attribute.RType instanceof RDataType»
+				«ELSEIF attribute.isValueRosettaModelObject»
 					if (get«attribute.name.toFirstUpper»()!=null && get«attribute.name.toFirstUpper»().hasData()) return true;
 				«ELSE»
 					if (get«attribute.name.toFirstUpper»()!=null) return true;
@@ -288,7 +288,7 @@ class ModelObjectBuilderGenerator {
 	}
 
 	private def StringConcatenationClient toBuilderTypeExt(RAttribute attribute) {
-		if (attribute.isMulti) '''List<«IF attribute.RType instanceof RDataType || !attribute.metaAnnotations.isEmpty»? extends «ENDIF»«attribute.toBuilderTypeSingle»>'''
+		if (attribute.isMulti) '''List<«IF attribute.isRosettaModelObject»? extends «ENDIF»«attribute.toBuilderTypeSingle»>'''
 		else '''«attribute.toBuilderTypeSingle»'''
 	}
 
@@ -301,13 +301,13 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	private def StringConcatenationClient toBuilderTypeUnderlying(RAttribute attribute) {
-		if (attribute.RType instanceof RDataType) '''«attribute.RType.name».«attribute.RType.name»Builder'''
+		if (attribute.isRosettaModelObject) '''«attribute.RType.name».«attribute.RType.name»Builder'''
 		else '''«attribute.toMetaItemJavaType»'''
 	}
 	
 		
 	private def StringConcatenationClient toBuilder(RAttribute attribute, JavaScope scope) {
-		if(needsBuilder(attribute)) {
+		if(attribute.isRosettaModelObject) {
 			'''«scope.getIdentifierOrThrow(attribute)».toBuilder()'''
 		} else {
 			'''«scope.getIdentifierOrThrow(attribute)»'''

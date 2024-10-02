@@ -41,6 +41,7 @@ import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
@@ -238,6 +239,9 @@ public class ExternalAnnotationUtil {
 		
 		dataType.getAllNonOverridenAttributes().forEach(attr -> {
 			RType attrType = attr.getRType();
+			if (attrType instanceof RChoiceType) {
+				attrType = ((RChoiceType) attrType).asRDataType();
+			}
 			RosettaRule rule = attrRules.get(attr);
 			
 			if (!(attrType instanceof RDataType)) {

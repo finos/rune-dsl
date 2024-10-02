@@ -27,7 +27,6 @@ import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.ArrayList
-import java.util.Collection
 import java.util.List
 import javax.inject.Inject
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl

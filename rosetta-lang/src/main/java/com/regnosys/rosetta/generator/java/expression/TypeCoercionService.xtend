@@ -55,33 +55,17 @@ class TypeCoercionService {
 	@Inject extension JavaTypeUtil typeUtil
 	
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
-		val simpleCoercion = coerceSimple(expr, expected)
-		if (simpleCoercion !== null) {
-			return simpleCoercion
+		val actual = expr.expressionType
+		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
+			return expected.empty
 		}
 
 		expr.mapExpression[addCoercions(expected, scope)]
 	}
 
 	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaScope scope) {
-		val simpleCoercion = coerceSimple(expr, expected)
-		if (simpleCoercion !== null) {
-			return simpleCoercion
-		}
-
 		val actual = expr.expressionType
-		if (actual.isWrapper && expected.isWrapper) {
-			wrapperToWrapper(expr, expected, scope)
-		} else if (actual.isWrapper) {
-			wrapperToItem(expr, expected, scope)
-		} else if (expected.isWrapper) {
-			itemToWrapper(expr, expected, scope)
-		} else {
-			itemToItem(expr, expected, scope)
-		}
-	}
-	private def JavaStatementBuilder coerceSimple(JavaStatementBuilder expr, JavaType expected) {
-		val actual = expr.expressionType
+		// Simple coercions
 		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
 			return expected.empty
 		}
@@ -91,7 +75,17 @@ class TypeCoercionService {
 		if (actual == JavaPrimitiveType.VOID) {
 			throw new IllegalArgumentException("Cannot coerce from primitive type `void`.")
 		}
-		return null
+
+		// Complex coercions
+		if (actual.isWrapper && expected.isWrapper) {
+			wrapperToWrapper(expr, expected, scope)
+		} else if (actual.isWrapper) {
+			wrapperToItem(expr, expected, scope)
+		} else if (expected.isWrapper) {
+			itemToWrapper(expr, expected, scope)
+		} else {
+			itemToItem(expr, expected, scope)
+		}
 	}
 	
 	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, JavaScope scope) {

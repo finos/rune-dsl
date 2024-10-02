@@ -28,7 +28,6 @@ public abstract class AbstractRosettaValue<T> implements RosettaValue {
 	private List<T> items;
 	
 	public AbstractRosettaValue(List<T> items) {
-		Objects.requireNonNull(items);
 		Validate.noNullElements(items);
 		this.items = items;
 	}

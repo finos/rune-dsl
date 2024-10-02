@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
 
 import javax.inject.Inject;
 
@@ -12,11 +13,39 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 
+/**
+ * An implementation of Rune's subtype relation. This class
+ * allows you to check whether one type is a subtype of the other,
+ * and also allows you to compute the least common supertype of two
+ * types - also called the "join".
+ * 
+ * Subtyping rules:
+ * 1. [Identity]    A type is a subtype of itself.
+ * 2. [Bottom type] The builtin type `nothing` is a subtype of everything.
+ * 3. [Top type]    Everything is a subtype of the builtin type `any`.
+ * 4. [Number]      A `number` type is a subtype of any other `number` type - no matter the type parameters.
+ * 5. [String]      A `string` type is a subtype of any other `string` type - no matter the type parameters.
+ * 6. [Data]        A data type `S` is a subtype of a type `T` if `S` extends a type which is a subtype of `T`.
+ * 7. [Choice]      Choice types are treated as data wrapper types.
+ * 8. [Alias]       Aliases are treated as the type they refer to. They are effectively ignored.
+ */
 public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
-	public boolean isSubtypeOf(RType t1, RType t2) {
+	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes) {
+		return isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, null);
+	}
+	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, Stack<RType> visited) {
+		if (treatChoiceTypesAsDataTypes) {
+			if (t1 instanceof RChoiceType) {
+				t1 = ((RChoiceType) t1).asRDataType();
+			}
+			if (t2 instanceof RChoiceType) {
+				t2 = ((RChoiceType) t2).asRDataType();
+			}
+		}
+		
 		if (t1.equals(t2)) {
 			return true;
 		} else if (t1.equals(builtins.NOTHING) || t2.equals(builtins.ANY)) {
@@ -25,21 +54,49 @@ public class SubtypeRelation {
 			return true;
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
 			return true;
+		} else if (t1 instanceof RChoiceType) {
+			RType t1_ = t1;
+			RType t2_ = t2;
+			return ((RChoiceType)t1).getOwnOptions().stream().allMatch(t -> safeIsSubtypeOf(t.getType(), t2_, false, t1_, visited));
+		} else if (t2 instanceof RChoiceType) {
+			RType t1_ = t1;
+			RType t2_ = t2;
+			return ((RChoiceType)t2).getOwnOptions().stream().anyMatch(t -> safeIsSubtypeOf(t1_, t.getType(), false, t2_, visited));
 		} else if (t1 instanceof RDataType) {
 			RType st = ((RDataType)t1).getSuperType();
 			if (st == null) {
 				return false;
 			}
-			return isSubtypeOf(st, t2);
+			return safeIsSubtypeOf(st, t2, treatChoiceTypesAsDataTypes, t1, visited);
 		} else if (t1 instanceof RAliasType) {
-			return isSubtypeOf(((RAliasType)t1).getRefersTo(), t2);
+			return safeIsSubtypeOf(((RAliasType)t1).getRefersTo(), t2, treatChoiceTypesAsDataTypes, t1, visited);
 		} else if (t2 instanceof RAliasType) {
-			return isSubtypeOf(t1, ((RAliasType)t2).getRefersTo());
+			return safeIsSubtypeOf(t1, ((RAliasType)t2).getRefersTo(), treatChoiceTypesAsDataTypes, t2, visited);
 		}
 		return false;
 	}
+	private boolean safeIsSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, RType currentlyVisited, Stack<RType> visited) {
+		if (visited == null) {
+			visited = new Stack<>();
+		}
+		if (visited.contains(currentlyVisited)) {
+			// If the type is already visited, return true.
+			return true;
+		}
+		visited.add(currentlyVisited);
+		boolean result = isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, visited);
+		visited.pop();
+		return result;
+	}
 	
 	public RType join(RType t1, RType t2) {
+		if (t1 instanceof RChoiceType) {
+			t1 = ((RChoiceType) t1).asRDataType();
+		}
+		if (t2 instanceof RChoiceType) {
+			t2 = ((RChoiceType) t2).asRDataType();
+		}
+		
 		if (t1.equals(t2) || t2.equals(builtins.NOTHING)) {
 			return t1;
 		} else if (t1.equals(builtins.NOTHING)) {
