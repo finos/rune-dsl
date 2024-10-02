@@ -1209,7 +1209,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (cardinality.isMulti(arg)) {
 				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
-			if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING)) {
+			if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META)) {
 				error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
 		}
