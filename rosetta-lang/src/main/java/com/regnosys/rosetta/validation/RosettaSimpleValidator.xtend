@@ -1588,7 +1588,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	private def void checkInputIsComparable(RosettaUnaryOperation o) {
 		val inputRType = o.argument.getRMetaAnnotatedType
 		if (!inputRType.RType.hasNaturalOrder) {
-			error('''Operation «o.operator» only supports comparable types (string, int, string, date). Found type «inputRType.RType.name».''', o, ROSETTA_OPERATION__OPERATOR)
+			error('''Operation «o.operator» only supports comparable types (string, int, number, boolean, date). Found type «inputRType.RType.name».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
 	}
 
@@ -1610,7 +1610,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (ref !== null) {
 			val bodyRType = ref.body.getRMetaAnnotatedType
 			if (!bodyRType.RType.hasNaturalOrder) {
-				error('''Operation «op.operator» only supports comparable types (string, int, string, date). Found type «bodyRType.RType.name».''', ref, null)
+				error('''Operation «op.operator» only supports comparable types (string, int, number, boolean, date). Found type «bodyRType.RType.name».''', ref, null)
 			}			
 		}
 	}
