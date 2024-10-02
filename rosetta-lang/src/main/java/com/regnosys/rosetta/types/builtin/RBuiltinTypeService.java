@@ -18,6 +18,7 @@ package com.regnosys.rosetta.types.builtin;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -28,6 +29,7 @@ import javax.inject.Singleton;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.regnosys.rosetta.types.RAliasType;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RTypeFunction;
 import com.rosetta.model.lib.RosettaNumber;
@@ -80,12 +82,18 @@ public class RBuiltinTypeService {
 	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
 	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
 	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()));
+	public final RMetaAnnotatedType UNCONSTRAINED_INT_WITH_NO_META = new RMetaAnnotatedType(UNCONSTRAINED_INT, List.of());
 	public final RNumberType UNCONSTRAINED_NUMBER = new RNumberType(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+	public final RMetaAnnotatedType UNCONSTRAINED_NUMBER_WITH_NO_META = new RMetaAnnotatedType(UNCONSTRAINED_NUMBER, List.of());
 	public final RStringType UNCONSTRAINED_STRING = new RStringType(Optional.empty(), Optional.empty(), Optional.empty());
+	public final RMetaAnnotatedType UNCONSTRAINED_STRING_WITH_NO_META = new RMetaAnnotatedType(UNCONSTRAINED_STRING, List.of());
 	
 	public final RDateType DATE = registerConstantType(new RDateType());
+	public final RMetaAnnotatedType DATE_WITH_NO_META = new RMetaAnnotatedType(DATE, List.of());
 	public final RDateTimeType DATE_TIME = registerConstantType(new RDateTimeType());
+	public final RMetaAnnotatedType DATE_TIME_WITH_NO_META = new RMetaAnnotatedType(DATE_TIME, List.of());
 	public final RZonedDateTimeType ZONED_DATE_TIME = registerConstantType(new RZonedDateTimeType());
+	public final RMetaAnnotatedType ZONED_DATE_TIME_NO_META = new RMetaAnnotatedType(ZONED_DATE_TIME, List.of());
 	
 	public RBuiltinTypeService() {
 		register("number", (m) -> RNumberType.from(m));
