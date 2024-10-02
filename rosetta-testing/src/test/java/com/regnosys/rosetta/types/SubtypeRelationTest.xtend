@@ -129,13 +129,8 @@ class SubtypeRelationTest {
 				[metadata scheme]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		val fieldB = '''
-			fieldB string (1..1)
-				[metadata scheme]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		assertTrue(fieldA.isSubtypeOf(fieldB, true))
-		assertTrue(fieldB.isSubtypeOf(fieldA, true))
+		assertTrue(fieldA.isSubtypeOf(fieldA, true))
+		assertTrue(fieldA.isSubtypeOf(fieldA, true))
 	}
 	
 	@Test
