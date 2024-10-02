@@ -939,7 +939,7 @@ The `default` case is optional. In case when there is no match then the `empty` 
 
 ##### `switch` for `choice` types
 
-Consider the following model for a powered vehicle.
+Consider the following model of a powered vehicle.
 
 ``` Haskell
 choice PoweredVehicle:
@@ -957,7 +957,7 @@ type Motorcycle:
   fuelCapacity number (1..1)
 ```
 
-The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a car:
+The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a powered vehicle:
 
 ``` Haskell
 func ComputeMileage:
