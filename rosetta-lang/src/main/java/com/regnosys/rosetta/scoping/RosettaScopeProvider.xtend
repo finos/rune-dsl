@@ -25,9 +25,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
-import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -35,13 +33,14 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.types.ExpectedTypeProvider
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
-import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.util.List
 import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
@@ -50,22 +49,19 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.QualifiedName
 import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
-import org.eclipse.xtext.resource.impl.AliasedEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
+import org.eclipse.xtext.scoping.impl.ImportNormalizer
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
 import org.eclipse.xtext.scoping.impl.SimpleScope
+import org.eclipse.xtext.util.Strings
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import org.eclipse.xtext.scoping.impl.ImportNormalizer
-import org.eclipse.xtext.util.Strings
-import com.regnosys.rosetta.types.ExpectedTypeProvider
-import com.regnosys.rosetta.types.RMetaAnnotatedType
 
 /**
  * This class contains custom scoping description.
@@ -82,7 +78,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject ExpectedTypeProvider expectedTypeProvider
 	@Inject extension RosettaEcoreUtil
-	@Inject extension RosettaConfigExtension configs
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension DeepFeatureCallUtil
 	@Inject extension RObjectFactory
