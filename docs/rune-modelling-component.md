@@ -939,29 +939,54 @@ The `default` case is optional. In case when there is no match then the `empty` 
 
 ##### `switch` for `choice` types
 
-Consider the following model for a `Vehicle`.
+Consider the following model for a powered vehicle.
 
 ``` Haskell
-choice Vehicle:
+choice PoweredVehicle:
+  PetrolCar
   ElectricCar
-  CombustibleVehicle
-  Bicycle
-
-choice CombustibleVehicle:
-  Car
-  Bicycle
   Motorcycle
 
-type Car:
+type PetrolCar:
   fuelCapacity number (1..1)
 
 type ElectricCar:
   batteryCapacity number (1..1)
 
-// similar for Bicycle and Motorcycle
+type Motorcycle:
+  fuelCapacity number (1..1)
 ```
 
-The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a vehicle:
+The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a car:
+
+``` Haskell
+func ComputeMileage:
+  inputs:
+    vehicle PoweredVehicle (1..1)
+  output:
+    mileage number (1..1)
+  
+  set mileage:
+    vehicle switch
+      PetrolCar   then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      ElectricCar then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      default          80                   // for any other powered vehicle, assume a mileage of 80 kilometres
+```
+
+Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
+
+Performing case analysis on nested choice types is supported as well. As an illustration, consider the following extension of previous example.
+
+``` Haskell
+choice Vehicle:
+  PoweredVehicle // as defined above
+  Bicycle
+
+type Bicycle:
+  weight number (1..1)
+```
+
+We could then extend our mileage computation to support all possible `Vehicle`s.
 
 ``` Haskell
 func ComputeMileage:
@@ -972,16 +997,15 @@ func ComputeMileage:
         
   set mileage:
     vehicle switch
-      ElectricCar        then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
-      Car                then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
-      CombustibleVehicle then 80                   // for any other combustible vehicle, assume a mileage of 80 kilometres
+      PetrolCar      then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      ElectricCar    then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      PoweredVehicle then 80,                  // for any other powered vehicle, assume a mileage of 80 kilometres
+      Bicycle        then 30                   // assume a mileage of 30 kilometres for a bicycle
 ```
 
-Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
+Even though the `Vehicle` choice type does not include `PetrolCar` directly, it is included indirectly through the `PoweredVehicle` choice type, and thus can be used as a case.
 
-As can be seen from the `Car` case in the example, case analysis may be *nested*: even though the `Vehicle` choice type does not include `Car` directly, it is included indirectly through the `CombustibleVehicle` choice type.
-
-Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. In the example above, `Bicycle` is missing, so the `switch` operation will be highlighted in red.
+Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. For example, leaving out the `Bicycle` case in the example above will result in the `switch` operation being highlighted in red.
 
 #### Operator Precedence
 
