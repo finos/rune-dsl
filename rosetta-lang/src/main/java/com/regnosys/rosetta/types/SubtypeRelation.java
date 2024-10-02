@@ -19,12 +19,7 @@ public class SubtypeRelation {
 	private RBuiltinTypeService builtins;
 	
 	public boolean isSubtypeOf(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
-		RType t1RType = t1.getRType();
-		RType t2RType = t2.getRType();
-		if ((t1.hasMeta() || t2.hasMeta()) && (t1RType.equals(t2RType))) {
-			return hasSupersetOfMetaAttributes(t1, t2);
-		}
-		return isSubtypeOf(t1RType, t2RType);
+		return isSubtypeOf(t1.getRType(), t2.getRType());
 	}
 	
 	
