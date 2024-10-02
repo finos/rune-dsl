@@ -170,27 +170,6 @@ public class TypeSystem {
 		return acc;
 	}
 	
-	public boolean isSubtypeOf(RType sub, RMetaAnnotatedType sup) {
-		return isSubtypeOf(sub, sup, true);
-	}
-	public boolean isSubtypeOf(RType sub, RMetaAnnotatedType sup, boolean treatChoiceTypeAsData) {
-		Objects.requireNonNull(sub);
-		Objects.requireNonNull(sup);
-		
-		return subtypeRelation.isSubtypeOf(new RMetaAnnotatedType(sub, List.of()), sup, treatChoiceTypeAsData);
-	}
-	
-	
-	public boolean isSubtypeOf(RMetaAnnotatedType sub, RType sup) {
-		return isSubtypeOf(sub, sup, true);
-	}
-	public boolean isSubtypeOf(RMetaAnnotatedType sub, RType sup, boolean treatChoiceTypeAsData) {
-		Objects.requireNonNull(sub);
-		Objects.requireNonNull(sup);
-		
-		return subtypeRelation.isSubtypeOf(sub, new RMetaAnnotatedType(sup, List.of()), treatChoiceTypeAsData);
-	}
-	
 	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup) {
 		return isSubtypeOf(sub, sup, true);
 	}

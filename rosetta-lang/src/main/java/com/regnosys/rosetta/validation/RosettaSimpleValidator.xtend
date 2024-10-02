@@ -1493,7 +1493,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkNumberReducerOperation(SumOperation o) {
-		checkInputType(o, UNCONSTRAINED_NUMBER)
+		checkInputType(o, UNCONSTRAINED_NUMBER_WITH_NO_META)
 	}
 
 	@Check
@@ -1579,7 +1579,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 	}
 	
-	private def void checkInputType(RosettaUnaryOperation o, RType type) {
+	private def void checkInputType(RosettaUnaryOperation o, RMetaAnnotatedType type) {
 		if (!o.argument.getRMetaAnnotatedType.isSubtypeOf(type)) {
 			error('''Input type must be a «type».''', o, ROSETTA_OPERATION__OPERATOR)
 		}
