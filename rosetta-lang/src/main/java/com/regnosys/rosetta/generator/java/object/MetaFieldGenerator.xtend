@@ -39,6 +39,7 @@ import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import com.regnosys.rosetta.types.RType
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension

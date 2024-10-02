@@ -36,6 +36,7 @@ import java.util.LinkedHashSet
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RChoiceType
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {

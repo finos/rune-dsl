@@ -24,8 +24,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
-import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -35,6 +34,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation
 import com.regnosys.rosetta.rosetta.simple.Segment
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.ExpectedTypeProvider
+import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RMetaAnnotatedType
@@ -64,11 +64,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
-import org.eclipse.xtext.scoping.impl.ImportNormalizer
-import org.eclipse.xtext.util.Strings
-import com.regnosys.rosetta.types.ExpectedTypeProvider
-import com.regnosys.rosetta.types.RChoiceType
-import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 
 /**
  * This class contains custom scoping description.

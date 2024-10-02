@@ -218,10 +218,4 @@ public class RObjectFactory {
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider, this);
 	}
-	public RMetaAnnotatedType withMeta(RType rtype, List<RMetaAttribute> metaAttributes) {
-		return new RMetaAnnotatedType(rtype, metaAttributes);
-	}
-	public RMetaAnnotatedType withEmptyMeta(RType rtype) {
-		return new RMetaAnnotatedType(rtype, List.of());
-	}
 }

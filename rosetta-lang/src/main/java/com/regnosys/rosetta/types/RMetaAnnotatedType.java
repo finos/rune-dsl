@@ -18,6 +18,10 @@ public class RMetaAnnotatedType {
 	public static RMetaAnnotatedType withEmptyMeta(RType rType) {
 		return new RMetaAnnotatedType(rType, List.of());
 	}
+	
+	public static RMetaAnnotatedType withMeta(RType rType, List<RMetaAttribute> metaAttributes) {
+		return new RMetaAnnotatedType(rType, metaAttributes);
+	}
 
 	public RType getRType() {
 		return rType;
