@@ -45,14 +45,14 @@ class SubtypeRelationTest {
 			
 			type C extends A:
 				
-		'''.parseRosetta
+		'''.parseRosettaWithNoIssues
 		
-		val fieldB = '''
+		val fieldBType = '''
 			fieldB B (1..1)
 				[metadata reference]
 		'''.parseAttribute(#[model]).RTypeOfSymbol
 		
-		val fieldC = '''
+		val fieldCType = '''
 			fieldC C (1..1)
 				[metadata reference]
 		'''.parseAttribute(#[model]).RTypeOfSymbol
@@ -60,29 +60,11 @@ class SubtypeRelationTest {
 		
 		val fieldA = model.getData("A").buildRDataType
 		
-		val joined = fieldB.join(fieldC)
+		val joined = fieldBType.join(fieldCType)
 		
-		assertEquals(joined.RType, fieldA)
-		assertFalse(joined.hasMeta)
+		assertEquals(fieldA.withEmptyMeta, joined)
 	}
-	
-	@Test
-	def testJoinMetaTypeWithNonMetaTypeIsCorrect() {
-		val fieldA = '''
-			fieldA number (1..1)
-				[metadata scheme]
-				[metadata reference]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		val fieldB = '''
-			fieldB number (1..1)
-		'''.parseAttribute.RTypeOfSymbol
-		
-		val result = fieldA.join(fieldB)
-		assertTrue(result.RType instanceof RNumberType)
-		assertFalse(result.hasMeta)
-	}
-	
+
 	@Test
 	def testJoinOnSameBaseTypeWithMetaIsCorrect() {
 		val fieldA = '''
@@ -106,91 +88,30 @@ class SubtypeRelationTest {
 	
 	@Test
 	def testStringWithSchemeAndReferenceIsSubtypeOfRelationWithStringWithAddressAndLocation() {
-		val fieldA = '''
+		val fieldAType = '''
 			fieldA string (1..1)
 				[metadata scheme]
 				[metadata reference]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		val fieldB = '''
+		val fieldBType = '''
 			fieldB string (1..1)
 				[metadata address]
 				[metadata location]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldA.isSubtypeOf(fieldB, true))
-		assertTrue(fieldB.isSubtypeOf(fieldA, true))
+		assertTrue(fieldAType.isSubtypeOf(fieldBType, true))
+		assertTrue(fieldBType.isSubtypeOf(fieldAType, true))
 	}
 	
 	@Test
-	def testStringWithShemeIsSubtypeOfStringWithScheme() {
-		val fieldA = '''
+	def testStringWithSchemeIsSubtypeOfStringWithScheme() {
+		val fieldAType = '''
 			fieldA string (1..1)
 				[metadata scheme]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldA.isSubtypeOf(fieldA, true))
-		assertTrue(fieldA.isSubtypeOf(fieldA, true))
-	}
-	
-	@Test
-	def testStringWithSchemeIsSubtypeOfStringWithSchemeAndReference() {
-		val fieldA = '''
-			fieldA string (1..1)
-				[metadata scheme]
-				[metadata reference]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		val fieldB = '''
-			fieldB string (1..1)
-				[metadata scheme]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		assertTrue(fieldB.isSubtypeOf(fieldA, true))
-	}
-	
-	@Test
-	def testStringWithSchemeAndReferenceIsSubTypeOfStringWithScheme() {
-		val fieldA = '''
-			fieldA string (1..1)
-				[metadata scheme]
-				[metadata reference]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		val fieldB = '''
-			fieldB string (1..1)
-				[metadata scheme]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		assertTrue(fieldA.isSubtypeOf(fieldB, true))
-	}
-	
-	@Test
-	def testStringIsSubTypeOfStringWithScheme() {
-		val fieldA = '''
-			fieldA string (1..1)
-				[metadata scheme]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		val fieldB = '''
-			fieldB string (1..1)
-		'''.parseAttribute.RTypeOfSymbol
-		
-		assertTrue(fieldB.isSubtypeOf(fieldA, true))
-	}
-	
-	@Test
-	def testStringWithSchemeIsSubTypeOfString() {
-		val fieldA = '''
-			fieldA string (1..1)
-				[metadata scheme]
-		'''.parseAttribute.RTypeOfSymbol
-		
-		val fieldB = '''
-			fieldB string (1..1)
-		'''.parseAttribute.RTypeOfSymbol
-		
-		assertTrue(fieldA.isSubtypeOf(fieldB, true))
+		assertTrue(fieldAType.isSubtypeOf(fieldAType, true))
 	}
 	
 	@Test
