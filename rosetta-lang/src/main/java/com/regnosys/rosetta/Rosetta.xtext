@@ -638,9 +638,12 @@ enum ExistsModifier:
 ;
 
 SwitchCase:
- 	(literalGuard=RosettaLiteral | enumGuard=[RosettaEnumValue|ValidID]) 'then' expression=RosettaCalcExpression
- ;
- 
+ 	guard=SwitchCaseGuard 'then' expression=RosettaCalcExpression
+;
+
+SwitchCaseGuard:
+	literalGuard=RosettaLiteral | symbolGuard=[RosettaSymbol|ValidID]
+;
 
 UnaryOperation returns RosettaExpression:
 	RosettaCalcPrimary

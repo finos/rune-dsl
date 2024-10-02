@@ -41,6 +41,7 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.RObjectFactory;
@@ -150,7 +151,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		RDataType rData = objectFactory.buildRDataType(data);
 		RType superType = ts.stripFromTypeAliases(rData.getSuperType());
 		RType current;
-		if (superType != null && superType instanceof RDataType) {
+		if (superType != null) {
 			current = ts.getRulesInputType((RDataType)superType, Optional.empty());
 			if (current.equals(builtins.NOTHING)) {
 				return;
@@ -171,6 +172,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 				}
 			} else {
 				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
+				if (attrType instanceof RChoiceType) {
+					attrType = ((RChoiceType) attrType).asRDataType();
+				}
 				if (attrType instanceof RDataType) {
 					RDataType attrData = (RDataType)attrType;
 					RType inputType = ts.getRulesInputType(attrData, Optional.empty());
@@ -213,6 +217,9 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 					}
 				} else {
 					RType attrType = ts.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
+					if (attrType instanceof RChoiceType) {
+						attrType = ((RChoiceType) attrType).asRDataType();
+					}
 					if (attrType instanceof RDataType) {
 						RDataType attrData = (RDataType)attrType;
 						RType inputType = ts.getRulesInputType(attrData, Optional.of(source));

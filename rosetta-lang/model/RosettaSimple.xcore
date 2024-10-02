@@ -25,6 +25,7 @@ import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
 
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.eclipse.emf.common.util.EList
 import com.regnosys.rosetta.rosetta.RosettaPackage.Literals
 
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
@@ -77,6 +78,10 @@ class Data extends RosettaType, RootElement, References {
 
 class Choice extends Data {
 	contains Condition[] _hardcodedConditions
+	
+	contains derived ChoiceOption[] options get {
+		attributes as EList
+	}
 	
 	op Condition[] getConditions() {
 		if (_hardcodedConditions.empty) {			

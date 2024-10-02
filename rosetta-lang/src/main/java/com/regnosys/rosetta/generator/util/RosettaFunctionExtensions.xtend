@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import java.util.List
 import com.regnosys.rosetta.types.RFunction
 import javax.inject.Inject
+import com.regnosys.rosetta.types.RChoiceType
 
 class RosettaFunctionExtensions {
 
@@ -131,7 +132,7 @@ class RosettaFunctionExtensions {
 
 	dispatch def boolean needsBuilder(RType type) {
 		switch (type) {
-			RDataType: true
+			RDataType, RChoiceType: true
 			default: false
 		}
 	}

@@ -2,6 +2,7 @@ package com.regnosys.rosetta.types;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class RMetaAnnotatedType {
 	private final RType rType;
@@ -49,7 +50,10 @@ public class RMetaAnnotatedType {
 
 	@Override
 	public String toString() {
-		return "RMetaAnnotatedType [baseType=" + rType.getName() + ", metaAttributes=" + metaAttributes + "]";
+		if (metaAttributes.isEmpty()) {
+			return rType.toString();
+		}
+		return rType.toString() + " with " + metaAttributes.stream().map(RMetaAttribute::getName).collect(Collectors.joining(", "));
 	}
 
 }

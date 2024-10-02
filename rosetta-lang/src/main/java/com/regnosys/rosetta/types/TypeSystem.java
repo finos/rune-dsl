@@ -80,6 +80,9 @@ public class TypeSystem {
                     result = meet(result, inputType);
                 } else {
                     RType attrType = stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
+                    if (attrType instanceof RChoiceType) {
+                    	attrType = ((RChoiceType) attrType).asRDataType();
+                    }
                     if (attrType instanceof RDataType) {
                     	RDataType attrData = (RDataType)attrType;
                         RType inputType = getRulesInputType(attrData, source, visited);
@@ -168,33 +171,44 @@ public class TypeSystem {
 	}
 	
 	public boolean isSubtypeOf(RType sub, RMetaAnnotatedType sup) {
+		return isSubtypeOf(sub, sup, true);
+	}
+	public boolean isSubtypeOf(RType sub, RMetaAnnotatedType sup, boolean treatChoiceTypeAsData) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return subtypeRelation.isSubtypeOf(new RMetaAnnotatedType(sub, List.of()), sup);
+		return subtypeRelation.isSubtypeOf(new RMetaAnnotatedType(sub, List.of()), sup, treatChoiceTypeAsData);
 	}
 	
 	
 	public boolean isSubtypeOf(RMetaAnnotatedType sub, RType sup) {
+		return isSubtypeOf(sub, sup, true);
+	}
+	public boolean isSubtypeOf(RMetaAnnotatedType sub, RType sup, boolean treatChoiceTypeAsData) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return subtypeRelation.isSubtypeOf(sub, new RMetaAnnotatedType(sup, List.of()));
+		return subtypeRelation.isSubtypeOf(sub, new RMetaAnnotatedType(sup, List.of()), treatChoiceTypeAsData);
 	}
 	
-	
 	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup) {
+		return isSubtypeOf(sub, sup, true);
+	}
+	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup, boolean treatChoiceTypeAsData) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return subtypeRelation.isSubtypeOf(sub, sup);
+		return subtypeRelation.isSubtypeOf(sub, sup, treatChoiceTypeAsData);
 	}
 	
 	public boolean isSubtypeOf(RType sub, RType sup) {
+		return isSubtypeOf(sub, sup, true);
+	}
+	public boolean isSubtypeOf(RType sub, RType sup, boolean treatChoiceTypeAsData) {
 		Objects.requireNonNull(sub);
 		Objects.requireNonNull(sup);
 		
-		return subtypeRelation.isSubtypeOf(sub, sup);
+		return subtypeRelation.isSubtypeOf(sub, sup, treatChoiceTypeAsData);
 	}
 	public boolean isListSubtypeOf(RListType sub, RListType sup) {
 		Objects.requireNonNull(sub);

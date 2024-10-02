@@ -83,6 +83,18 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 			);
 		}
 	}
+	protected void errorKeyword(String message, EObject o, String keyword) {
+		INode k = findDirectKeyword(o, keyword);
+		if (k != null) {
+			getMessageAcceptor().acceptError(
+				message,
+				o,
+				k.getOffset(),
+				k.getLength(),
+				null
+			);
+		}
+	}
 	protected INode findDirectKeyword(EObject o, Keyword keyword) {
 		return findDirectKeyword(o, keyword.getValue());
 	}

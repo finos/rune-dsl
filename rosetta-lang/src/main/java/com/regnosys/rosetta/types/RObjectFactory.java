@@ -37,6 +37,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
@@ -146,8 +147,9 @@ public class RObjectFactory {
 				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
 				continue;
 			}
-			if (attribute.getRMetaAnnotatedType().getRType() instanceof RDataType) {
-				RDataType rData = (RDataType) attribute.getRMetaAnnotatedType().getRType();
+			RType attrType = attribute.getRMetaAnnotatedType().getRType() instanceof RChoiceType ? ((RChoiceType)attribute.getRMetaAnnotatedType().getRType()).asRDataType() : attribute.getRMetaAnnotatedType().getRType();
+			if (attrType instanceof RDataType) {
+				RDataType rData = (RDataType) attrType;
 				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
 			}
 		}
@@ -209,6 +211,9 @@ public class RObjectFactory {
 	// TODO: remove this hack
 	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
 		return new RDataType(data, modelIdProvider, this, additionalAttributes);
+	}
+	public RChoiceType buildRChoiceType(Choice choice) {
+		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider, this);

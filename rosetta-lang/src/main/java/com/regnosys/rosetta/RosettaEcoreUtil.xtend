@@ -35,6 +35,7 @@ import com.regnosys.rosetta.types.RObjectFactory
 import java.util.LinkedHashSet
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RMetaAnnotatedType
+import com.regnosys.rosetta.types.RChoiceType
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -59,6 +60,8 @@ class RosettaEcoreUtil {
 		switch t {
 			RDataType:
 				t.allNonOverridenAttributes.map[EObject]
+			RChoiceType:
+				t.asRDataType.allFeatures(resourceSet)
 			REnumType:
 				t.allEnumValues
 			RRecordType: {
@@ -264,7 +267,7 @@ class RosettaEcoreUtil {
 	def List<RAttribute> allJavaAttributes(RDataType t) {
 		val atts = t.javaAttributes
 		if (t.superType !== null) {
-			val attsWithSuper = (t.superType.stripFromTypeAliases as RDataType).allJavaAttributes
+			val attsWithSuper = t.superType.allJavaAttributes
 			val result = newArrayList
 			attsWithSuper.forEach[
 				val overridenAtt = atts.findFirst[att| att.name == name]

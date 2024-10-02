@@ -15,6 +15,7 @@ import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
@@ -360,6 +361,37 @@ class ToDateTimeOperation extends ParseOperation {
 class ToZonedDateTimeOperation extends ParseOperation {
 }
 
+class SwitchOperation extends RosettaUnaryOperation {
+	contains SwitchCase[] cases opposite switchOperation
+	contains RosettaExpression ^default
+}
+class SwitchCase {
+	container SwitchOperation switchOperation opposite cases
+	contains SwitchCaseGuard guard opposite ^case
+	contains RosettaExpression expression
+}
+class SwitchCaseGuard {
+	container SwitchCase ^case opposite guard
+	
+	contains RosettaLiteral literalGuard
+	
+	refers RosettaSymbol symbolGuard
+	refers derived RosettaEnumValue enumGuard get {
+		val s = symbolGuard
+		if (s instanceof RosettaEnumValue) {
+			return s
+		}
+		return null
+	}
+	refers derived ChoiceOption choiceOptionGuard get {
+		val s = symbolGuard
+		if (s instanceof ChoiceOption) {
+			return s
+		}
+		return null
+	}
+}
+
 /**
  * Functional operations
  */
@@ -406,17 +438,3 @@ class MinOperation extends ComparingFunctionalOperation, ListOperation {
 
 class MaxOperation extends ComparingFunctionalOperation, ListOperation {
 }
-
-
-class SwitchOperation extends RosettaUnaryOperation {
-	contains SwitchCase[] cases opposite switchOperation
-	contains RosettaExpression ^default
-}
-
-class SwitchCase {
-	container SwitchOperation switchOperation opposite cases
-	contains RosettaLiteral literalGuard
-	refers RosettaEnumValue enumGuard
-	contains RosettaExpression expression
-}
-

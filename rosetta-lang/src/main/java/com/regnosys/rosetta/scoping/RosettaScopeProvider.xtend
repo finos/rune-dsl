@@ -25,6 +25,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -62,6 +63,12 @@ import org.slf4j.LoggerFactory
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
+
+import org.eclipse.xtext.scoping.impl.ImportNormalizer
+import org.eclipse.xtext.util.Strings
+import com.regnosys.rosetta.types.ExpectedTypeProvider
+import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
 
 /**
  * This class contains custom scoping description.
@@ -241,12 +248,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				case ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES: {
 					return defaultScope(context, reference).filteredScope[it.EClass == ROSETTA_EXTERNAL_RULE_SOURCE]
 				}
-				case SWITCH_CASE__ENUM_GUARD: {
-					if (context instanceof SwitchCase) {
-						val argumentType = typeProvider.getRMetaAnnotatedType(context.switchOperation.argument)
-						val argumentRType = argumentType.RType
-						if (argumentRType instanceof REnumType) {
-						   return Scopes.scopeFor(argumentRType.allEnumValues)
+				case SWITCH_CASE_GUARD__SYMBOL_GUARD: {
+					if (context instanceof SwitchCaseGuard) {
+						val argumentType = typeProvider.getRMetaAnnotatedType(context.^case.switchOperation.argument).RType
+						if (argumentType instanceof REnumType) {
+						   return Scopes.scopeFor(argumentType.allEnumValues)
+						} else if (argumentType instanceof RChoiceType) {
+							return Scopes.scopeFor(argumentType.allOptions.map[EObject])
 						}
 					}
 					return IScope.NULLSCOPE
@@ -384,8 +392,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
 
 	private def IScope createDeepFeatureScope(RType receiverType) {
-		if (receiverType instanceof RDataType) {
-			return Scopes.scopeFor(receiverType.findDeepFeatures.filter[EObject !== null].map[EObject])
+		val t = if (receiverType instanceof RChoiceType) {
+			receiverType.asRDataType
+		} else {
+			receiverType
+		}
+		if (t instanceof RDataType) {
+			return Scopes.scopeFor(t.findDeepFeatures.filter[EObject !== null].map[EObject])
 		}
 		return IScope.NULLSCOPE
 	}

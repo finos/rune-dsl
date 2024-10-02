@@ -40,6 +40,7 @@ import javax.inject.Singleton
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.regnosys.rosetta.types.RChoiceType
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -72,7 +73,12 @@ class TabulatorGenerator {
 			isTabulated(attr, newHashSet)
 		}
 		private def boolean isTabulated(RAttribute attr, Set<Data> visited) {
-			val attrType = attr.RMetaAnnotatedType.RType
+			val rawAttrType = attr.RMetaAnnotatedType.RType
+			val attrType = if (rawAttrType instanceof RChoiceType) {
+				rawAttrType.asRDataType
+			} else {
+				rawAttrType
+			}
 			if (attrType instanceof RDataType) {
 				needsTabulator(attrType, visited)
 			} else {
@@ -214,11 +220,16 @@ class TabulatorGenerator {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 
-			val functionOutputType = typeProvider.getRTypeOfSymbol(func.output)
-			if (functionOutputType.RType instanceof RDataType) {
+			val t = typeProvider.getRTypeOfSymbol(func.output).RType
+			val functionOutputType = if (t instanceof RChoiceType) {
+				t.asRDataType
+			} else {
+				t
+			}
+			if (functionOutputType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
-				val type = functionOutputType.RType as RDataType
+				val type = functionOutputType as RDataType
 				val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
@@ -241,6 +252,7 @@ class TabulatorGenerator {
 				.allNonOverridenAttributes
 				.map[RMetaAnnotatedType]
 				.map[RType]
+				.map[it instanceof RChoiceType ? asRDataType : it]
 				.filter(RDataType)
 				.forEach[recursivelyGenerateTabulators(fsa, it, context, visited)]
 		}
@@ -410,6 +422,7 @@ class TabulatorGenerator {
 			.filter[context.isTabulated(it)]
 			.map[RMetaAnnotatedType]
 			.map[RType]
+			.map[it instanceof RChoiceType ? asRDataType : it]
 			.filter(RDataType)
 			.map[toNestedTabulatorInstance]
 			.toSet
@@ -428,7 +441,12 @@ class TabulatorGenerator {
 	}
 
 	private def StringConcatenationClient fieldValue(RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
-		val rType = attr.RMetaAnnotatedType.RType
+		val rawAttr = attr.RMetaAnnotatedType.RType
+		val rType = if (rawAttr instanceof RChoiceType) {
+			rawAttr.asRDataType
+		} else {
+			rawAttr
+		}
 			
 		val resultId = scope.createIdentifier(attr.toComputedField, attr.name)
 		

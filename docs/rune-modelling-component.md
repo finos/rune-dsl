@@ -912,30 +912,100 @@ Rune supports basic arithmetic operators
 
 The `default` operator takes two values of matching type. If the value to the left of the default is empty then the value of to the right of the default will be returned. Note that the type and cardinality of both sides of the operator must match for the syntax to be valid.
 
-### Switch Operator
+#### Switch Operator
 
 The `switch` operator takes as its left hand input an argument on which to perform case analysis. The right side of the operator takes a set of case statements which define a return value for the expression when matching that case to the input.
 
 ```Haskell
    "valueB" switch
-      "valueA" then "resultA"
-      "valueB" then "resultB"
+      "valueA" then "resultA",
+      "valueB" then "resultB",
       default "resultC"
 ```
 
 The `switch` operator can also operate over enumerations and in the case where all enumeration values are not provided as case statements then a syntax validation error will occur until either all enumeration values or a default value is provided.
 
 ```Haskell
-  "aCondition" switch 
-    "aCondition" then SomeEnum -> A,
-    "bCondition" then SomeEnum -> B,
-    "cCondition" then SomeEnum -> C,
-    default SomeEnum -> D
+  enumInput switch 
+    A then "result A",
+    B then "result B",
+    C then "result C",
+    default "other"
 ```
 
 {{< notice info "Note" >}}
-The `default` case is optional, in case when there is no match then the `empty` value is returned.
+The `default` case is optional. In case when there is no match then the `empty` value is returned.
 {{< /notice >}}
+
+##### `switch` for `choice` types
+
+Consider the following model of a powered vehicle.
+
+``` Haskell
+choice PoweredVehicle:
+  PetrolCar
+  ElectricCar
+  Motorcycle
+
+type PetrolCar:
+  fuelCapacity number (1..1)
+
+type ElectricCar:
+  batteryCapacity number (1..1)
+
+type Motorcycle:
+  fuelCapacity number (1..1)
+```
+
+The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a powered vehicle:
+
+``` Haskell
+func ComputeMileage:
+  inputs:
+    vehicle PoweredVehicle (1..1)
+  output:
+    mileage number (1..1)
+  
+  set mileage:
+    vehicle switch
+      PetrolCar   then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      ElectricCar then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      default          80                   // for any other powered vehicle, assume a mileage of 80 kilometres
+```
+
+Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
+
+Performing case analysis on nested choice types is supported as well. As an illustration, consider the following extension of previous example.
+
+``` Haskell
+choice Vehicle:
+  PoweredVehicle // as defined above
+  Bicycle
+
+type Bicycle:
+  weight number (1..1)
+```
+
+We could then extend our mileage computation to support all possible `Vehicle`s.
+
+``` Haskell
+func ComputeMileage:
+  inputs:
+    vehicle Vehicle (1..1)
+  output:
+    mileage number (1..1)
+        
+  set mileage:
+    vehicle switch
+      PetrolCar      then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      ElectricCar    then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      PoweredVehicle then 80,                  // for any other powered vehicle, assume a mileage of 80 kilometres
+      Bicycle        then 30                   // assume a mileage of 30 kilometres for a bicycle
+```
+
+Even though the `Vehicle` choice type does not include `PetrolCar` directly, it is included indirectly through the `PoweredVehicle` choice type, and thus can be used as a case.
+
+Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. For example, leaving out the `Bicycle` case in the example above will result in the `switch` operation being highlighted in red.
 
 #### Operator Precedence
 
@@ -954,7 +1024,7 @@ Expressions are evaluated in Rune in the following order, from first to last - s
 1. and - e.g. `5>6 and true`
 1. or - e.g. `5>6 or true`
 
-### List
+#### List
 
 A list is an ordered collection of items of the same data type (basic, complex or enumeration). A path expression that refers to an attribute with multiple [cardinality](#cardinality) will result in a list of values.
 

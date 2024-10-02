@@ -130,6 +130,16 @@ import org.eclipse.xtext.EcoreUtil2
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.types.builtin.RBasicType
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
+import java.util.function.BiFunction
+import com.regnosys.rosetta.generator.java.statement.JavaAssignment
+import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
+import com.regnosys.rosetta.types.RChoiceOption
+import org.eclipse.xtext.xbase.lib.Functions.Function2
+import org.eclipse.xtext.xbase.lib.Functions.Function3
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -241,6 +251,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val JavaType actualType = if (definingContainer instanceof Data || definingContainer instanceof RosettaRule) {
 			// For conditions and rules
 			itemType
+		} else if (definingContainer instanceof SwitchCase) {
+			// For choice switch cases
+			MAPPER_S.wrap(itemType)
 		} else {
 			// For inline functions
 			val f = definingContainer as RosettaFunctionalOperation
@@ -520,8 +533,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def StringConcatenationClient buildMapFuncAttribute(RType itemType, RAttribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(itemType.name.toFirstLower)
+		val t = if (itemType instanceof RChoiceType) {
+			itemType.asRDataType
+		} else {
+			itemType
+		}
 		if (isDeepFeature) {
-			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((itemType as RDataType).toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
+			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((t as RDataType).toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
 		} else {
 			'''"get«attribute.name.toFirstUpper»", «lambdaParam» -> «lambdaParam».get«attribute.name.toFirstUpper»()'''
 		}
@@ -901,8 +919,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseOneOfOperation(OneOfOperation expr, Context context) {
-		val type = typeProvider.getRMetaAnnotatedType(expr.argument).RType as RDataType
-		buildConstraint(expr.argument, type.allNonOverridenAttributes, Necessity.REQUIRED, context)
+		val type = typeProvider.getRMetaAnnotatedType(expr.argument).RType
+		val t = if (type instanceof RChoiceType) {
+			type.asRDataType
+		} else {
+			type as RDataType
+		}
+		buildConstraint(expr.argument, t.allNonOverridenAttributes, Necessity.REQUIRED, context)
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
@@ -914,10 +937,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val first = expr.args.head
 		var RDataType parentType
 		val parent = if (first instanceof RosettaFeatureCall) {
-			parentType = typeProvider.getRMetaAnnotatedType(first.receiver).RType as RDataType
+			val t = typeProvider.getRMetaAnnotatedType(first.receiver).RType
+			parentType = if (t instanceof RChoiceType) {
+				t.asRDataType
+			} else {
+				t as RDataType
+			}
 			first.receiver.javaCode(MAPPER.wrapExtends(parentType.toJavaReferenceType), context.scope)
 		} else {
-			parentType = typeProvider.typeOfImplicitVariable(expr).RType as RDataType
+			val t = typeProvider.typeOfImplicitVariable(expr).RType
+			parentType = if (t instanceof RChoiceType) {
+				t.asRDataType
+			} else {
+				t as RDataType
+			}
 			typeCoercionService.addCoercions(implicitVariable(expr, context.scope), MAPPER.wrapExtends(parentType.toJavaReferenceType), context.scope)
 		}
 		val requiredAttributes = expr.args.map[
@@ -1076,7 +1109,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseConstructorExpression(RosettaConstructorExpression expr, Context context) {
-		val type = typeProvider.getRMetaAnnotatedType(expr).RType.stripFromTypeAliases
+		val t = typeProvider.getRMetaAnnotatedType(expr).RType.stripFromTypeAliases
+		val type = if (t instanceof RChoiceType) {
+			t.asRDataType
+		} else {
+			t
+		}
 		val clazz = type.toJavaReferenceType
 		if (type instanceof RDataType) {
 			if (expr.values.empty) {
@@ -1181,55 +1219,93 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
- 		val switchArgument = expr.argument.javaCode(MAPPER.wrap(typeProvider.getRMetaAnnotatedType(expr.argument).RType.toJavaReferenceType), context.scope)
- 		val caseStatements = expr.cases
- 		val defaultExpression = expr.^default
-
-
- 		val conditionType = switchArgument.expressionType.itemType
-
- 		val returnType = context.expectedType
-
- 		switchArgument
- 			.declareAsVariable(true, "switchAgument", context.scope)
- 			.mapExpression[
- 				createSwitchJavaExpression(conditionType, returnType, it, caseStatements, defaultExpression, context.scope)
- 			]
+		val inputRType = typeProvider.getRMetaAnnotatedType(expr.argument).RType
+		if (inputRType instanceof RChoiceType) {
+			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputRType.toJavaReferenceType), context.scope)
+			
+			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
+				val choiceOption = new RChoiceOption(switchCase.guard.choiceOptionGuard, inputRType, typeProvider)
+				val optionPath = findOptionPath(inputRType, choiceOption)
+				
+				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, choiceOption.type.RType.name.toFirstLower)
+				val guardType = choiceOption.type.RType.toJavaReferenceType
+				val optionExpr = optionPath.fold(switchArg as JavaStatementBuilder, [pathAcc,opt|
+					pathAcc.featureCall(opt.choiceType, opt.EObject, false, context.scope, true)
+				])
+				optionExpr
+					.collapseToSingleExpression(context.scope)
+					.mapExpression[
+						new JavaIfThenElseBuilder(
+							JavaExpression.from('''«it».get() != null''', JavaPrimitiveType.BOOLEAN),
+							new JavaLocalVariableDeclarationStatement(true, it.expressionType, itemVar, it)
+								.append(switchCase.expression.javaCode(context.expectedType, context.scope)),
+		 					acc,
+		 					typeUtil
+		 				)
+					]
+			], context)
+		} else if (inputRType instanceof REnumType) {
+			val switchArgument = expr.argument.javaCode(inputRType.toJavaReferenceType, context.scope)
+			
+			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
+				val enumCaseToCheck = enumCall(switchCase.guard.enumGuard, switchArgument.expressionType)
+				new JavaIfThenElseBuilder(
+						JavaExpression.from('''«switchArg» == «enumCaseToCheck»''', JavaPrimitiveType.BOOLEAN),
+						switchCase.expression.javaCode(context.expectedType, context.scope),
+	 					acc,
+	 					typeUtil
+	 				)
+			], context)
+		} else if (inputRType instanceof RBasicType) {
+			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputRType.toJavaReferenceType), context.scope)
+			val mapperSConditionType = MAPPER_S.wrap(switchArgument.expressionType.itemType)
+			
+			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
+				val literalCaseToCheck = switchCase.guard.literalGuard.javaCode(mapperSConditionType, context.scope)
+				new JavaIfThenElseBuilder(
+						JavaExpression.from('''«runtimeMethod("areEqual")»(«switchArg», «literalCaseToCheck», «CardinalityOperator».All).get()''', JavaPrimitiveType.BOOLEAN),
+						switchCase.expression.javaCode(context.expectedType, context.scope),
+	 					acc,
+	 					typeUtil
+	 				)
+			], context)
+		}
+ 	}
+ 	private def List<RChoiceOption> findOptionPath(RChoiceType from, RChoiceOption goal) {
+ 		val result = newArrayList
+ 		
+ 		var currentChoice = from
+ 		var currentOption = currentChoice.ownOptions.findFirst[goal.type.isSubtypeOf(it.type, false)]
+ 		result.add(currentOption)
+ 		while (currentOption != goal) {
+ 			if (currentOption === null || !(currentOption.type.RType instanceof RChoiceType)) {
+				throw new IllegalStateException("Did not find an option path from " + from + " to " + goal + ". " + currentOption)
+			}
+ 			currentChoice = currentOption.type.RType as RChoiceType
+ 			currentOption = currentChoice.ownOptions.findFirst[goal.type.isSubtypeOf(it.type, false)]
+ 			result.add(currentOption)
+ 		}
+ 		
+ 		result
  	}
 
- 	private def JavaStatementBuilder createSwitchJavaExpression(JavaType conditionType, JavaType returnType, JavaExpression switchArgument,
- 		SwitchCase[] caseStatements, RosettaExpression defaultExpression, JavaScope javaScope) {
- 		if (caseStatements.isEmpty) {
- 			return defaultExpression === null ? JavaExpression.NULL : defaultExpression.javaCode(returnType, javaScope)
- 		}	
- 			
- 		val head = caseStatements.head
- 		val tail = caseStatements.tail
-
- 		val javaStatement = if (head.literalGuard !== null) {
- 			head.literalGuard.javaCode(MAPPER_S.wrap(conditionType), javaScope).collapseToSingleExpression(javaScope)
- 		} else {
- 			val condition = head.enumGuard
- 			JavaExpression.from('''«MapperS».of(«conditionType».«condition.convertValue»)''', MAPPER_S.wrap(conditionType))
-
- 		}
-
- 		javaStatement.
- 			mapExpression [
- 				JavaExpression.
- 					from('''«runtimeMethod("areEqual")»(«switchArgument»,«it»,«CardinalityOperator».All)''',
- 						COMPARISON_RESULT)
- 			]
-			.mapExpression[
-				typeCoercionService.addCoercions(it, JavaPrimitiveType.BOOLEAN, javaScope)
-			]
- 			.mapExpression [
- 				new JavaIfThenElseBuilder(
- 					it,
- 					head.expression.javaCode(returnType, javaScope),
- 					createSwitchJavaExpression(conditionType, returnType, switchArgument, tail, defaultExpression, javaScope),
- 					typeUtil
- 				)
- 			]
+ 	private def JavaStatementBuilder createSwitchJavaExpression(SwitchOperation expr, JavaStatementBuilder switchArgument, Function3<JavaStatementBuilder, SwitchCase, JavaExpression, JavaStatementBuilder> fold, Context context) {
+ 		val defaultExpr = expr.^default === null ? JavaExpression.NULL : expr.^default.javaCode(context.expectedType, context.scope)
+ 		switchArgument
+				.declareAsVariable(true, "switchArgument", context.scope)
+				.mapExpression[switchArg|
+					val javaSwitchExpr = expr.cases.reverseView
+						.fold(defaultExpr, [acc,^case|fold.apply(acc, ^case, switchArg)])
+					typeCoercionService.addCoercions(switchArg, switchArg.expressionType.itemType, context.scope)
+						.mapExpression[JavaExpression.from('''«it» == null''', JavaPrimitiveType.BOOLEAN)]
+						.mapExpression[
+							new JavaIfThenElseBuilder(
+								it,
+								JavaExpression.NULL,
+								javaSwitchExpr,
+								typeUtil
+							)
+						]
+				]
  	}
 }

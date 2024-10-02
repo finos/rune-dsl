@@ -15,6 +15,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import java.util.List
 import java.util.Set
+import com.regnosys.rosetta.types.RChoiceType
 
 /**
  * A class that helps determine which dependencies a Rosetta expression needs
@@ -31,7 +32,7 @@ class JavaDependencyProvider {
 
 			result.addAll(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
 			result.addAll(rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
-			result.addAll(deepFeatureCalls.map[typeProvider.getRMetaAnnotatedType(receiver)].map[RType].filter(RDataType).map[toDeepPathUtilJavaClass])
+			result.addAll(deepFeatureCalls.map[typeProvider.getRMetaAnnotatedType(receiver).RType].map[it instanceof RChoiceType ? asRDataType : it].filter(RDataType).map[toDeepPathUtilJavaClass])
 		}
 	}
 

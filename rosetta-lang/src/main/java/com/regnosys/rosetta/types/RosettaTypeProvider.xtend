@@ -85,6 +85,7 @@ import javax.inject.Provider
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<EObject, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -277,6 +278,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
 				input?.typeCallToRType.withEmptyMeta ?: MISSING.withEmptyMeta
+			} else if (it instanceof SwitchCase) {
+				guard.choiceOptionGuard.RTypeOfSymbol
 			}
 		].orElse(MISSING.withEmptyMeta)
 	}

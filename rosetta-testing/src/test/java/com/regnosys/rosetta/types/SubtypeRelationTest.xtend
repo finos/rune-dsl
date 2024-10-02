@@ -118,8 +118,8 @@ class SubtypeRelationTest {
 				[metadata location]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldA.isSubtypeOf(fieldB))
-		assertTrue(fieldB.isSubtypeOf(fieldA))
+		assertTrue(fieldA.isSubtypeOf(fieldB, true))
+		assertTrue(fieldB.isSubtypeOf(fieldA, true))
 	}
 	
 	@Test
@@ -134,8 +134,8 @@ class SubtypeRelationTest {
 				[metadata scheme]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldA.isSubtypeOf(fieldB))
-		assertTrue(fieldB.isSubtypeOf(fieldA))
+		assertTrue(fieldA.isSubtypeOf(fieldB, true))
+		assertTrue(fieldB.isSubtypeOf(fieldA, true))
 	}
 	
 	@Test
@@ -151,7 +151,7 @@ class SubtypeRelationTest {
 				[metadata scheme]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldB.isSubtypeOf(fieldA))
+		assertTrue(fieldB.isSubtypeOf(fieldA, true))
 	}
 	
 	@Test
@@ -167,7 +167,7 @@ class SubtypeRelationTest {
 				[metadata scheme]
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldA.isSubtypeOf(fieldB))
+		assertTrue(fieldA.isSubtypeOf(fieldB, true))
 	}
 	
 	@Test
@@ -181,7 +181,7 @@ class SubtypeRelationTest {
 			fieldB string (1..1)
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldB.isSubtypeOf(fieldA))
+		assertTrue(fieldB.isSubtypeOf(fieldA, true))
 	}
 	
 	@Test
@@ -195,7 +195,7 @@ class SubtypeRelationTest {
 			fieldB string (1..1)
 		'''.parseAttribute.RTypeOfSymbol
 		
-		assertTrue(fieldA.isSubtypeOf(fieldB))
+		assertTrue(fieldA.isSubtypeOf(fieldB, true))
 	}
 	
 	@Test
@@ -208,7 +208,7 @@ class SubtypeRelationTest {
 		val a = model.getData('A').buildRDataType
 		val b = model.getData('B').buildRDataType
 		
-		assertTrue(b.isSubtypeOf(a))
+		assertTrue(b.isSubtypeOf(a, true))
 	}
 	
 	@Test
@@ -237,6 +237,6 @@ class SubtypeRelationTest {
 		val a = model.getEnum('A').buildREnumType
 		val b = model.getEnum('B').buildREnumType
 		
-		assertFalse(a.isSubtypeOf(b))
+		assertFalse(a.isSubtypeOf(b, true))
 	}
 }

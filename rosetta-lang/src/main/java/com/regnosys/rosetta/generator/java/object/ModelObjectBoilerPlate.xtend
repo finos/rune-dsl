@@ -1,6 +1,13 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.TypeSystem
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder
 import com.rosetta.model.lib.RosettaModelObject
@@ -11,19 +18,10 @@ import com.rosetta.model.lib.process.AttributeMeta
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
-import java.util.Collection
-import java.util.Objects
-import org.eclipse.xtend2.lib.StringConcatenationClient
-
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import javax.inject.Inject
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.RosettaEcoreUtil
 import java.util.List
+import java.util.Objects
+import javax.inject.Inject
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ModelObjectBoilerPlate {
 
@@ -154,7 +152,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR a : c.allJavaAttributes»
-				«IF a.RMetaAnnotatedType.RType instanceof RDataType || a.RMetaAnnotatedType.hasMeta»
+				«IF a.isRosettaModelObject»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -168,7 +166,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR a : t.allJavaAttributes»
-				«IF a.RMetaAnnotatedType.RType instanceof RDataType || a.RMetaAnnotatedType.hasMeta»
+				«IF a.isRosettaModelObject»
 					processRosetta(path.newSubPath("«a.name»"), processor, «a.toBuilderTypeSingle».class, get«a.name.toFirstUpper»()«a.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«a.name»"), «a.toMetaItemJavaType».class, get«a.name.toFirstUpper»(), this«a.metaFlags»);
@@ -190,9 +188,5 @@ class ModelObjectBoilerPlate {
 	private def boolean hasSuperDataType(RDataType c) {
 		val s = c.superType
 		return s !== null && s.stripFromTypeAliases instanceof RDataType
-	}
-	
-	def needsBuilder(RAttribute attribute){
-		attribute.RMetaAnnotatedType.RType instanceof RDataType || attribute.RMetaAnnotatedType.hasMeta
 	}
 }

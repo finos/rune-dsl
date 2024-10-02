@@ -102,7 +102,7 @@ class ModelObjectGenerator {
 
 	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(RDataType t, JavaClass<?> javaType, JavaScope builderScope) '''
 		«FOR attribute : t.javaAttributes»
-			«IF attribute.RMetaAnnotatedType.RType instanceof RDataType || attribute.RMetaAnnotatedType.hasMeta»
+			«IF attribute.isRosettaModelObject»
 				«IF !attribute.isMulti»
 					«attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»();
 					«attribute.toBuilderTypeSingle» get«attribute.name.toFirstUpper»();
@@ -190,7 +190,7 @@ class ModelObjectGenerator {
 		}
 		val s = class1.superType
 		if (s !== null) {
-			return globalKeyRecursive(s as RDataType)
+			return globalKeyRecursive(s)
 		}
 		return false
 	}
@@ -245,14 +245,14 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient attributeFromBuilder(RAttribute attribute) {
-		if(attribute.RMetaAnnotatedType.RType instanceof RDataType || attribute.RMetaAnnotatedType.hasMeta) {
+		if(attribute.isRosettaModelObject) {
 			if (attribute.isMulti)
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«attribute.buildRosettaObject»).orElse(null)'''
 			else
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).map(«attribute.buildRosettaObject»).orElse(null)'''
 		} else {
 			if (!attribute.isMulti)
-				'''builder.get«attribute.name.toFirstUpper»()«IF attribute.needsBuilder».build()«ENDIF»'''
+				'''builder.get«attribute.name.toFirstUpper»()'''
 			else
 				'''ofNullable(builder.get«attribute.name.toFirstUpper»()).filter(_l->!_l.isEmpty()).map(«ImmutableList»::copyOf).orElse(null)'''
 		}

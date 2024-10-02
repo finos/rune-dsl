@@ -39,10 +39,12 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RFunction;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.ROperation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
@@ -93,6 +95,15 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	private DottedPath getModelPackage(RosettaRootElement object) {
 		return modelIdProvider.toDottedPath(object.getModel());
+	}
+	
+	public boolean isRosettaModelObject(RAttribute attr) {
+		RMetaAnnotatedType rMetaAnnotatedType = attr.getRMetaAnnotatedType();
+		return isValueRosettaModelObject(attr) || rMetaAnnotatedType.hasMeta();
+	}
+	public boolean isValueRosettaModelObject(RAttribute attr) {
+		RType t = attr.getRMetaAnnotatedType().getRType();
+		return t instanceof RDataType || t instanceof RChoiceType;
 	}
 	
 	public JavaParameterizedType<List<?>> toPolymorphicList(JavaReferenceType t) {
@@ -199,7 +210,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toMetaJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toMetaItemJavaType(attr);
 		if (attr.isMulti()) {
-			if (attr.getRMetaAnnotatedType().getRType() instanceof RDataType || attr.getRMetaAnnotatedType().hasMeta()) {
+			if (isRosettaModelObject(attr)) {
 				return toPolymorphicList(itemType);
 			} else {
 				return typeUtil.wrap(typeUtil.LIST, itemType);
@@ -210,7 +221,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
 		if (attr.isMulti()) {
-			if (attr.getRMetaAnnotatedType().getRType() instanceof RDataType || attr.getRMetaAnnotatedType().hasMeta()) {
+			if (isRosettaModelObject(attr)) {
 				return toPolymorphicList(itemType);
 			} else {
 				return typeUtil.wrap(typeUtil.LIST, itemType);
@@ -353,6 +364,10 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Override
 	protected RJavaPojoInterface caseDataType(RDataType type, Void context) {
 		return new RJavaPojoInterface(type, typeSystem);
+	}
+	@Override
+	protected RJavaPojoInterface caseChoiceType(RChoiceType type, Void context) {
+		return caseDataType(type.asRDataType(), context);
 	}
 	@Override
 	protected RJavaEnum caseEnumType(REnumType type, Void context) {
