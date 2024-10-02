@@ -14,6 +14,10 @@ public class RMetaAnnotatedType {
 		this.rType = rType;
 		this.metaAttributes = Validate.noNullElements(metaAttributes);
 	}
+	
+	public static RMetaAnnotatedType withEmptyMeta(RType rType) {
+		return new RMetaAnnotatedType(rType, List.of());
+	}
 
 	public RType getRType() {
 		return rType;

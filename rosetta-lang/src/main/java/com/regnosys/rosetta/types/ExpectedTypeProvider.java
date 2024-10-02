@@ -78,6 +78,7 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.inject.Inject;
+import static com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta;
 
 
 @ImplementedBy(ExpectedTypeProvider.Impl.class)
@@ -89,10 +90,6 @@ public interface ExpectedTypeProvider {
 		return getExpectedType(owner, reference, INSIGNIFICANT_INDEX);
 	}
 	RMetaAnnotatedType getExpectedType(EObject owner, EReference reference, int index);
-	
-	private static RMetaAnnotatedType withEmptyMeta(RType rType) {
-		return new RMetaAnnotatedType(rType, List.of());
-	}
 	
 	public static class Impl implements ExpectedTypeProvider {
 		private static Logger LOGGER = LoggerFactory.getLogger(Impl.class);
