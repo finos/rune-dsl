@@ -84,38 +84,21 @@ class MetaFieldGenerator {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val refs = nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter [
-				metaAnnotations.exists[name == "reference" || name == "address"]
-			].toSet
+			val attributesWithMeta = nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter[!metaAnnotations.empty]
 			
-			for (ref : refs) {
-				val targetModel = ref.RType.namespace
+			for (attr : attributesWithMeta) {
+				val targetModel = attr.RType.namespace
 				val targetPackage = new RootPackage(targetModel)
-				val metaJt = ref.toForcedMetaItemJavaType
+				val metaJt = attr.toForcedMetaItemJavaType
 
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
-				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''',
-					referenceWithMeta(targetPackage, metaJt, ref.RType))
-			}
-
-
-
-			//find all the metaed types
-			val metas =  nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter[
-				!metaAnnotations.exists[name=="reference" || name=="address"]
-			].toSet
-
-			for (meta:metas) {
-				val targetModel = meta.RType.namespace
-				val targetPackage = new RootPackage(targetModel)
-				val metaJt = meta.toForcedMetaItemJavaType
-				
-				if (ctx.cancelIndicator.canceled) {
-					return
+				if (attr.hasReferenceOrAddressMetadata) {
+					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RType))
+				} else {
+					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RType))
 				}
-				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, meta.RType))
 			}
 		}
 	}
