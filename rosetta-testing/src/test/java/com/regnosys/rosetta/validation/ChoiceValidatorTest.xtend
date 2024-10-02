@@ -23,14 +23,18 @@ class ChoiceValidatorTest implements RosettaIssueCodes {
  		'''
 			choice Foo:
 				Opt1
-				Opt2
+				Nested
 			
 			type Opt1:
 			
-			type Opt2 extends Opt1:
+			choice Nested:
+				Opt1
+				Opt2
+			
+			type Opt2:
  		'''
  			.parseRosetta
- 			.assertError(CHOICE_OPTION, null, "Option is already included by option 'Opt1'")
+ 			.assertError(CHOICE_OPTION, null, "Option 'Opt1' is already included by option 'Nested'")
 	}
 	
 	@Test

@@ -1,7 +1,10 @@
 package com.regnosys.rosetta.types;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,28 +70,19 @@ public class RChoiceType extends RAnnotateType implements RObject {
 	 * The list starts with the options of this choice type, recursively including nested options after their containing option.
 	 */
 	public List<RChoiceOption> getAllOptions() {
-		return getOwnOptions().stream().flatMap(o -> {
-			if (o.getType() instanceof RChoiceType) {
-				RChoiceType nested = (RChoiceType) o.getType();
-				return Streams.concat(Stream.of(o), nested.getAllOptions().stream());
-			}
-			return Stream.of(o);
-		}).collect(Collectors.toList());
+		return doGetAllOptions(new HashSet<>()).collect(Collectors.toList());
 	}
-	
-	/**
-	 * Get a list of all leaf options of this choice type by recursively expanding nested choices.
-	 * 
-	 * The list starts with the options of this choice type, recursively replacing options with their nested options.
-	 */
-	public List<RChoiceOption> getLeafOptions() {
-		return getOwnOptions().stream().flatMap(o -> {
-			if (o.getType() instanceof RChoiceType) {
-				RChoiceType nested = (RChoiceType) o.getType();
-				return nested.getAllOptions().stream();
-			}
-			return Stream.of(o);
-		}).collect(Collectors.toList());
+	private Stream<RChoiceOption> doGetAllOptions(Set<RChoiceType> visited) {
+		if (visited.add(this)) {
+			return getOwnOptions().stream().flatMap(o -> {
+				if (o.getType() instanceof RChoiceType) {
+					RChoiceType nested = (RChoiceType) o.getType();
+					return Streams.concat(Stream.of(o), nested.doGetAllOptions(visited));
+				}
+				return Stream.of(o);
+			});
+		}
+		return Stream.empty();
 	}
 
 	@Override

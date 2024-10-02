@@ -57,7 +57,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
@@ -185,87 +184,100 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		
 		val argumentType = op.argument.RType.stripFromTypeAliases
 		if (argumentType instanceof REnumType) {
-			// When the argument is an enum:
-			// - all guards should be enum guards,
-			// - there are no duplicate cases,
-			// - all enum values must be covered.
-			val seenValues = newHashSet
-			for (caseStatement : op.cases) {
-	 			if (caseStatement.guard.enumGuard === null) {
-	 				error('''Case should match an enum value of «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
-	 			} else {
-	 				if (!seenValues.add(caseStatement.guard.enumGuard)) {
-	 					error('''Duplicate case «caseStatement.guard.enumGuard.name»''', caseStatement, SWITCH_CASE__GUARD)
-	 				}
-	 			}
-	 		}
-			if (op.^default === null) {
-				val missingEnumValues = argumentType.allEnumValues.filter[!seenValues.contains(it)]
-				if (!missingEnumValues.empty) {
-					error('''Missing the following cases: «missingEnumValues.map[it.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
-				}
-			}
+			checkEnumSwitch(argumentType, op)
 		} else if (argumentType instanceof RBasicType) {
-			// When the argument is a basic type:
-			// - all guards should be literal guards,
-			// - there are no duplicate cases,
-			// - all guards should be comparable to the input.
-			val seenValues = newHashSet
-	 		for (caseStatement : op.cases) {
-	 			if (caseStatement.guard.literalGuard === null) {
-	 				error('''Case should match a literal of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
-	 			} else {
-	 				if (!seenValues.add(caseStatement.guard.literalGuard.interpret)) {
-	 					error('''Duplicate case''', caseStatement, SWITCH_CASE__GUARD)
-	 				}
-	 				val conditionType = caseStatement.guard.literalGuard.RType
-		 			if (!conditionType.isComparable(argumentType)) {
-	 					error('''Invalid case: «argumentType.notComparableMessage(conditionType)»''', caseStatement, SWITCH_CASE__GUARD)
-	 				}
-	 			}
-	 		}
+			checkBasicTypeSwitch(argumentType, op)
 		} else if (argumentType instanceof RChoiceType) {
-			// When the argument is a choice type:
-			// - all guards should be choice option guards,
-			// - all cases should be reachable,
-			// - all choice options should be covered.
-			val coverage = newLinkedHashSet
-			for (caseStatement : op.cases) {
-	 			if (caseStatement.guard.choiceOptionGuard === null) {
-	 				error('''Case should match a choice option of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
-	 			} else {
-	 				val guard = caseStatement.guard.choiceOptionGuard.RTypeOfSymbol
-	 				val alreadyCovered = coverage.findFirst[guard.isSubtypeOf(it, false)]
-	 				if (alreadyCovered !== null) {
-	 					error('''Case already covered by «alreadyCovered»''', caseStatement, SWITCH_CASE__GUARD)
-	 				} else {
-	 					coverage.add(guard)
-	 				}
-	 			}
-	 		}
-	 		if (op.^default === null) {
-	 			val missingOptions = Lists.newArrayList(argumentType.ownOptions.map[type])
-	 			for (guard : coverage) {
-	 				for (var i=0; i<missingOptions.size; i++) {
-	 					val opt = missingOptions.get(i)
-	 					if (opt.isSubtypeOf(guard, false)) {
-	 						missingOptions.remove(i)
-	 						i--
-	 					} else if (opt instanceof RChoiceType) {
-	 						if (guard.isSubtypeOf(opt, false)) {
-	 							missingOptions.remove(i)
-	 							i--
-	 							missingOptions.addAll(opt.ownOptions.map[type])
-	 						}
-	 					}
-	 				}
-	 			}
-				if (!missingOptions.empty) {
-					error('''Missing the following cases: «missingOptions.map[it.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
-				}
-			}
+			checkChoiceSwitch(argumentType, op)
 		} else {
  			error('''Type `«argumentType»` is not a valid switch argument type. Supported argument types are basic types, enumerations, and choice types.''', op, ROSETTA_UNARY_OPERATION__ARGUMENT)
+		}
+	}
+	private def void checkEnumSwitch(REnumType argumentType, SwitchOperation op) {
+		// When the argument is an enum:
+		// - all guards should be enum guards,
+		// - there are no duplicate cases,
+		// - all enum values must be covered.
+		val seenValues = newHashSet
+		for (caseStatement : op.cases) {
+ 			if (caseStatement.guard.enumGuard === null) {
+ 				error('''Case should match an enum value of «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 			} else {
+ 				if (!seenValues.add(caseStatement.guard.enumGuard)) {
+ 					error('''Duplicate case «caseStatement.guard.enumGuard.name»''', caseStatement, SWITCH_CASE__GUARD)
+ 				}
+ 			}
+ 		}
+		if (op.^default === null) {
+			val missingEnumValues = argumentType.allEnumValues.filter[!seenValues.contains(it)]
+			if (!missingEnumValues.empty) {
+				error('''Missing the following cases: «missingEnumValues.map[it.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
+			}
+		}
+	}
+	private def void checkBasicTypeSwitch(RBasicType argumentType, SwitchOperation op) {
+		// When the argument is a basic type:
+		// - all guards should be literal guards,
+		// - there are no duplicate cases,
+		// - all guards should be comparable to the input.
+		val seenValues = newHashSet
+ 		for (caseStatement : op.cases) {
+ 			if (caseStatement.guard.literalGuard === null) {
+ 				error('''Case should match a literal of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 			} else {
+ 				if (!seenValues.add(caseStatement.guard.literalGuard.interpret)) {
+ 					error('''Duplicate case''', caseStatement, SWITCH_CASE__GUARD)
+ 				}
+ 				val conditionType = caseStatement.guard.literalGuard.RType
+	 			if (!conditionType.isComparable(argumentType)) {
+ 					error('''Invalid case: «argumentType.notComparableMessage(conditionType)»''', caseStatement, SWITCH_CASE__GUARD)
+ 				}
+ 			}
+ 		}
+	}
+	private def void checkChoiceSwitch(RChoiceType argumentType, SwitchOperation op) {
+		// When the argument is a choice type:
+		// - all guards should be choice option guards,
+		// - all cases should be reachable,
+		// - all choice options should be covered.
+		val Map<ChoiceOption, RType> includedOptions = newHashMap
+		for (caseStatement : op.cases) {
+ 			if (caseStatement.guard.choiceOptionGuard === null) {
+ 				error('''Case should match a choice option of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 			} else {
+ 				val guard = caseStatement.guard.choiceOptionGuard
+ 				val alreadyCovered = includedOptions.get(guard)
+ 				if (alreadyCovered !== null) {
+ 					error('''Case already covered by «alreadyCovered»''', caseStatement, SWITCH_CASE__GUARD)
+ 				} else {
+ 					val guardType = guard.RTypeOfSymbol
+ 					includedOptions.put(guard, guardType)
+ 					if (guardType instanceof RChoiceType) {
+ 						guardType.allOptions.forEach[includedOptions.put(it.EObject, guardType)]
+ 					}
+ 				}
+ 			}
+ 		}
+		if (op.^default === null) {
+ 			val missingOptions = Lists.newArrayList(argumentType.ownOptions.map[type])
+ 			for (guard : includedOptions.values.toSet) {
+ 				for (var i=0; i<missingOptions.size; i++) {
+ 					val opt = missingOptions.get(i)
+ 					if (opt.isSubtypeOf(guard, false)) {
+ 						missingOptions.remove(i)
+ 						i--
+ 					} else if (opt instanceof RChoiceType) {
+ 						if (guard.isSubtypeOf(opt, false)) {
+ 							missingOptions.remove(i)
+ 							i--
+ 							missingOptions.addAll(opt.ownOptions.map[type])
+ 						}
+ 					}
+ 				}
+ 			}
+			if (!missingOptions.empty) {
+				error('''Missing the following cases: «missingOptions.map[it.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
+			}
 		}
 	}
 

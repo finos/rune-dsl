@@ -519,7 +519,7 @@ checkrule CheckOnlyExistsExpression for RosettaOnlyExistsExpression e from {
 	if (parentType !== null) {
 		val parentData = parentType.itemType
 		if (parentData !== null) {
-			parentData instanceof RDataType && mayBeEmpty(parentData as RDataType)
+			parentData instanceof RDataType && mayBeEmpty(parentData as RDataType) || parentData instanceof RChoiceType
 			or
 			fail error "The `only exists` operator is not applicable to instances of `" + parentData.name + "`."
 				source parent

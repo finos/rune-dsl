@@ -964,10 +964,17 @@ type ElectricCar:
 The `switch` operator supports case analysis on such a choice type as well. For example, consider the following simplified computation to estimate the mileage of a vehicle:
 
 ``` Haskell
-vehicle switch
-  ElectricCar        then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
-  Car                then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
-  CombustibleVehicle then 80                   // for any other combustible vehicle, assume a mileage of 80 kilometres
+func ComputeMileage:
+  inputs:
+    vehicle Vehicle (1..1)
+  output:
+    mileage number (1..1)
+        
+  set mileage:
+    vehicle switch
+      ElectricCar        then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      Car                then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      CombustibleVehicle then 80                   // for any other combustible vehicle, assume a mileage of 80 kilometres
 ```
 
 Note that within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific vehicle inside each case.
