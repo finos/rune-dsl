@@ -4,14 +4,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
+
 public class RMetaAnnotatedType {
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
 	
 	public RMetaAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
-		super();
 		this.rType = rType;
-		this.metaAttributes = metaAttributes == null ? List.of() : metaAttributes;
+		this.metaAttributes = Validate.noNullElements(metaAttributes);
 	}
 
 	public RType getRType() {
