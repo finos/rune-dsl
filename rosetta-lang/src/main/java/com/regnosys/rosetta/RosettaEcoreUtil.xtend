@@ -142,10 +142,6 @@ class RosettaEcoreUtil {
 		metaAnnotations.exists[attribute?.name == "template"]
 	}
 	
-	def boolean hasMetaDataAnnotations(RAttribute attribute) {
-		attribute.RMetaAnnotatedType.getMetaAttributes.exists[name == "reference" || name == "location" || name == "scheme" || name == "id"]
-	}
-	
 	def boolean hasMetaDataAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference" || attribute?.name == "location" || attribute?.name == "scheme" || attribute?.name == "id"]
 	}
@@ -179,7 +175,7 @@ class RosettaEcoreUtil {
 		return attribute.hasMetaDataAnnotations || attribute.hasMetaDataAddress
 	}
 	def boolean isReference(RAttribute attribute) {
-		return attribute.hasMetaDataAnnotations || attribute.hasMetaDataAddress
+		return attribute.RMetaAnnotatedType.hasMeta || attribute.hasMetaDataAddress
 	}
 	
 	def private allAnnotations(Annotated withAnnotations) {
