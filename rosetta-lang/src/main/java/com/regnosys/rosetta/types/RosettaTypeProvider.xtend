@@ -135,29 +135,29 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		return extensions.allFeatures(typeOfImplicitVariable(context).RType, context)
 	}
 
-	def List<RMetaAttribute> getRMettributesOfType(Data data) {
+	def List<RMetaAttribute> getRMetaAttributesOfType(Data data) {
 		data.annotations.RMetaAttributes
 	}
 	
-	def List<RMetaAttribute> getRMettributesOfType(RosettaEnumeration data) {
+	def List<RMetaAttribute> getRMetaAttributesOfType(RosettaEnumeration data) {
 		data.annotations.RMetaAttributes
 	}
 	
-	def List<RMetaAttribute> getRMettributesOfSymbol(AssignPathRoot symbol) {
+	def List<RMetaAttribute> getRMetaAttributesOfSymbol(AssignPathRoot symbol) {
 		if (symbol instanceof Annotated) {
 			return symbol.annotations.RMetaAttributes
 		}
 		#[]
 	}
 	
-	def List<RMetaAttribute> getRMettributesOfSymbol(RosettaSymbol symbol) {
+	def List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
 		if (symbol instanceof Annotated) {
 			return symbol.annotations.RMetaAttributes
 		}
 		#[]
 	}
 	
-	def List<RMetaAttribute> getRMettributesOfFeature(RosettaFeature feature) {
+	def List<RMetaAttribute> getRMetaAttributesOfFeature(RosettaFeature feature) {
 		if (feature instanceof Annotated) {
 			return feature.annotations.RMetaAttributes
 		}
@@ -188,7 +188,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 					MISSING.withEmptyMeta
 			}
 			RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
-				symbol.buildREnumType.withMeta(symbol.RMettributesOfSymbol)
+				symbol.buildREnumType.withMeta(symbol.RMetaAttributesOfSymbol)
 			}
 			Function: {
 				if (symbol.output !== null) {
@@ -227,7 +227,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				val featureType = if (feature.typeCall === null) {
 						NOTHING.withEmptyMeta
 					} else {
-						feature.typeCall.typeCallToRType.withMeta(feature.RMettributesOfFeature)
+						feature.typeCall.typeCallToRType.withMeta(feature.RMetaAttributesOfFeature)
 					}
 				featureType
 			}
