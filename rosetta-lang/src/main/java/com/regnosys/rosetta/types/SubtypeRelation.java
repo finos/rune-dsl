@@ -36,6 +36,9 @@ public class SubtypeRelation {
 	private RBuiltinTypeService builtins;
 	
 	public boolean isSubtypeOf(RMetaAnnotatedType t1, RMetaAnnotatedType t2, boolean treatChoiceTypesAsDataTypes) {
+		if (t1.equals(t2)) {
+			return true;
+		}
 		return isSubtypeOf(t1.getRType(), t2.getRType(), treatChoiceTypesAsDataTypes);
 	}
 	
