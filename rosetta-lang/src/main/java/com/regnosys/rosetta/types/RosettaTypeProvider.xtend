@@ -134,21 +134,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
 		return extensions.allFeatures(typeOfImplicitVariable(context).RType, context)
 	}
-
-	def List<RMetaAttribute> getRMetaAttributesOfType(Data data) {
-		data.annotations.RMetaAttributes
-	}
-	
-	def List<RMetaAttribute> getRMetaAttributesOfType(RosettaEnumeration data) {
-		data.annotations.RMetaAttributes
-	}
-	
-	def List<RMetaAttribute> getRMetaAttributesOfSymbol(AssignPathRoot symbol) {
-		if (symbol instanceof Annotated) {
-			return symbol.annotations.RMetaAttributes
-		}
-		#[]
-	}
 	
 	def List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
 		if (symbol instanceof Annotated) {
