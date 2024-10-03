@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -8,12 +9,11 @@ import java.util.Stack;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
-
-import static com.regnosys.rosetta.utils.MetaUtil.*;
 
 /**
  * An implementation of Rune's subtype relation. This class
@@ -204,4 +204,12 @@ public class SubtypeRelation {
 		}
 		return join(curr1, curr2);
 	}
+	
+	private List<RMetaAttribute> intersectMeta(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+		return Sets
+				.intersection(new HashSet<>(t1.getMetaAttributes()), new HashSet<>(t2.getMetaAttributes()))
+				.immutableCopy()
+				.asList();
+	}
+	
 }
