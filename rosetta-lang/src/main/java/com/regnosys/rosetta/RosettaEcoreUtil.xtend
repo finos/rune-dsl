@@ -2,6 +2,7 @@ package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
@@ -12,45 +13,45 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.simple.SimpleFactory
+import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.RMetaAnnotatedType
+import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RRecordType
+import com.regnosys.rosetta.utils.PositiveIntegerInterval
+import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.util.Collection
+import java.util.LinkedHashSet
+import java.util.List
 import java.util.Set
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
-
-import com.regnosys.rosetta.types.builtin.RRecordType
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import javax.inject.Singleton
-import java.util.List
-import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import org.eclipse.xtext.util.SimpleCache
-import com.regnosys.rosetta.rosetta.RosettaFactory
-import com.regnosys.rosetta.scoping.RosettaScopeProvider
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory
-import com.regnosys.rosetta.types.RObjectFactory
-import java.util.LinkedHashSet
-import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.RMetaAnnotatedType
-import com.regnosys.rosetta.types.RChoiceType
+
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
 	
 	@Inject RBuiltinTypeService builtins
 	@Inject extension RObjectFactory objectFactory
-	@Inject extension TypeSystem typeSystem
+	@Inject extension RosettaConfigExtension configs
 	
 	def boolean isResolved(EObject obj) {
 		obj !== null && !obj.eIsProxy
 	}
 	
 	def Iterable<? extends RosettaFeature> allFeatures(RMetaAnnotatedType t, EObject context) {
-		val List<Attribute>  metas = t.metaAttributes.map[EObject].filter(Attribute).toList
+		val List<RosettaFeature>  metas = getMetaDescriptions(t, context)
 		allFeatures(t.RType, context?.eResource?.resourceSet) + metas
 	}
 	
@@ -228,6 +229,22 @@ class RosettaEcoreUtil {
 			}
 		return '''«containerName»«name»'''
 	}
+	
+	
+ 	private def List<RosettaFeature> getMetaDescriptions(RMetaAnnotatedType type, EObject context) {
+ 		val metas = type.metaAttributes.map[it.name].toList
+ 		if (!metas.isEmpty) {
+ 			configs.findMetaTypes(context).filter[
+ 				metas.contains(it.name.lastSegment.toString)
+ 			]
+ 			.map[it.EObjectOrProxy]
+			.map[EcoreUtil.resolve(it, context)]
+ 			.filter(RosettaFeature)
+ 			.toList
+ 		} else {
+ 			emptyList
+ 		}
+ 	}
 	
 	@Deprecated
 	def String toConditionJavaType(String conditionName) {

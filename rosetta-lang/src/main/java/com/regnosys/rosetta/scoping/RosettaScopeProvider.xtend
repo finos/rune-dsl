@@ -65,6 +65,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import com.regnosys.rosetta.rosetta.RosettaFeature
 
 /**
  * This class contains custom scoping description.
@@ -377,9 +378,11 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			}
 		}
 		
+		val List<? extends RosettaFeature> foo = metaReceiverType.allFeatures(receiver).toList
+		
 		val List<IEObjectDescription> allPosibilities = newArrayList
 		allPosibilities.addAll(
-			metaReceiverType.allFeatures(receiver)
+			foo
 				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
 		)
 
