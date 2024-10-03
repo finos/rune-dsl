@@ -1485,7 +1485,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkReduceOperation(ReduceOperation o) {
 		checkNumberOfMandatoryNamedParameters(o.function, 2)
-		if (o.argument.RMetaAnnotatedType.RType != o.function.body.RMetaAnnotatedType.RType) {
+		if (!o.argument.RMetaAnnotatedType.isSubtypeOf(o.function.body.RMetaAnnotatedType)) {
 			error('''List reduce expression must evaluate to the same type as the input. Found types «o.argument.RMetaAnnotatedType.RType» and «o.function.body.RMetaAnnotatedType.RType».''', o, ROSETTA_FUNCTIONAL_OPERATION__FUNCTION)
 		}
 		checkBodyIsSingleCardinality(o.function)
