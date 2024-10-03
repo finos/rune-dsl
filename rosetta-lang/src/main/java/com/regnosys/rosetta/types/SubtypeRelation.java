@@ -43,6 +43,9 @@ public class SubtypeRelation {
 	}
 	
 	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes) {
+		if (t1.equals(t2)) {
+			return true;
+		}
 		return isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, null);
 	}
 	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, Stack<RType> visited) {
