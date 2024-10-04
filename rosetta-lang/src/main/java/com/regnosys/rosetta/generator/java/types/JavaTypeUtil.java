@@ -37,6 +37,7 @@ import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.MapperListOfLists;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.FieldWithMeta;
+import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaGenericTypeDeclaration;
 import com.rosetta.util.types.JavaParameterizedType;
@@ -72,6 +73,7 @@ public class JavaTypeUtil {
 	public final JavaClass<Serializable> SERIALIZABLE = JavaClass.SERIALIZABLE;
 	
 	public final JavaGenericTypeDeclaration<FieldWithMeta<?>> FIELD_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<ReferenceWithMeta<?>> REFERENCE_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});	
 	public final JavaGenericTypeDeclaration<List<?>> LIST = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<Mapper<?>> MAPPER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<MapperS<?>> MAPPER_S = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
