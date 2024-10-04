@@ -277,8 +277,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return type.toString() + " (" + type.getClass().getSimpleName() + ")";
 	}
 	public JavaClass<?> toJavaReferenceType(RMetaAnnotatedType type) {
-		//TODO: wrap type in meta
-		return toJavaReferenceType(type.getRType());
+		JavaClass<?> javaReferenceType = toJavaReferenceType(type.getRType());
+		if (type.hasMeta()) {
+			return new RJavaReferenceWithMeta(javaReferenceType, type.getRType().getNamespace(), typeUtil);
+		}
+		return javaReferenceType;
 	}
 	private JavaClass<?> toJavaReferenceType(RType type) {
 		JavaType jt = toJavaType(type);
@@ -303,8 +306,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return typeUtil.OBJECT;
 	}
 	public JavaType toJavaType(RMetaAnnotatedType type) {
-		//TODO: wrap type in meta
-		return toJavaType(type.getRType());
+		JavaType javaType = toJavaType(type.getRType());
+		if (type.hasMeta()) {
+			return new RJavaFieldWithMeta(javaType, type.getRType().getNamespace(), typeUtil);
+		}
+		return javaType;
 	}
 	private JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
