@@ -34,11 +34,6 @@ public class RMetaAnnotatedType {
 	public List<RMetaAttribute> getMetaAttributes() {
 		return metaAttributes;
 	}
-	
-	@Deprecated
-	public boolean hasReferenceOrAddressMetadata() {
-		return metaAttributes.stream().anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
-	}
 
 	@Override
 	public int hashCode() {

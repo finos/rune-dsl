@@ -38,6 +38,8 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -94,7 +96,7 @@ class MetaFieldGenerator {
 					return
 				}
 				
-				if (attr.RMetaAnnotatedType.hasReferenceOrAddressMetadata) {
+				if (metaJt instanceof RJavaFieldWithMeta || metaJt instanceof RJavaReferenceWithMeta) {
 					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
 				} else {
 					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))

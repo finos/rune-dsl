@@ -35,6 +35,9 @@ import com.rosetta.util.types.JavaReferenceType
  * - `MapperC<Boolean>` to `ComparisonResult`
  * - `Void` to `LocalDate`
  * - `Void` to `MapperC<LocalDate>`
+ * - `FieldWithMetaString` to `String`
+ * - `String` to `FieldWithMetaString` 
+ * 
  * Item to item coercions and item to wrapper coercions are performed null-safe.
  * 
  * This service is auto-boxing aware. If the expected type is a wrapper class of a primitive type
@@ -203,7 +206,7 @@ class TypeCoercionService {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
 		}		
-		
+		//TODO: add a case for each of the meta containers
 		return Optional.empty
 	}
 	private def Function<JavaExpression, JavaExpression> getWrapConversion(JavaType wrapperType) {

@@ -200,12 +200,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			return itemType;
 		}
 		DottedPath namespace = attr.getRMetaAnnotatedType().getRType().getNamespace();
-		return toMetaJavaType(itemType, !attr.getRMetaAnnotatedType().hasReferenceOrAddressMetadata(), namespace);
+		return toMetaJavaType(itemType, !hasReferenceOrAddressMetadata(attr.getRMetaAnnotatedType()), namespace);
 	}
 	public JavaClass<?> toForcedMetaItemJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toItemJavaType(attr);
 		DottedPath namespace = attr.getRMetaAnnotatedType().getRType().getNamespace();
-		return toMetaJavaType(itemType, !attr.getRMetaAnnotatedType().hasReferenceOrAddressMetadata(), namespace);
+		return toMetaJavaType(itemType, !hasReferenceOrAddressMetadata(attr.getRMetaAnnotatedType()), namespace);
 	}
 	public JavaClass<?> toMetaJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toMetaItemJavaType(attr);
@@ -279,7 +279,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toJavaReferenceType(RMetaAnnotatedType type) {
 		JavaClass<?> javaReferenceType = toJavaReferenceType(type.getRType());
 		if (type.hasMeta()) {
-			return new RJavaReferenceWithMeta(javaReferenceType, type.getRType().getNamespace(), typeUtil);
+			return hasReferenceOrAddressMetadata(type) ? 
+					new RJavaReferenceWithMeta(javaReferenceType, type.getRType().getNamespace(), typeUtil):
+						new RJavaFieldWithMeta(javaReferenceType, type.getRType().getNamespace(), typeUtil);
 		}
 		return javaReferenceType;
 	}
@@ -308,7 +310,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaType toJavaType(RMetaAnnotatedType type) {
 		JavaType javaType = toJavaType(type.getRType());
 		if (type.hasMeta()) {
-			return new RJavaFieldWithMeta(javaType, type.getRType().getNamespace(), typeUtil);
+			return hasReferenceOrAddressMetadata(type) ? 
+					new RJavaReferenceWithMeta(javaType, type.getRType().getNamespace(), typeUtil):
+						new RJavaFieldWithMeta(javaType, type.getRType().getNamespace(), typeUtil);
 		}
 		return javaType;
 	}
@@ -441,5 +445,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Override
 	protected JavaClass<ZonedDateTime> caseZonedDateTimeType(RZonedDateTimeType type, Void context) {
 		return typeUtil.ZONED_DATE_TIME;
+	}
+	
+	private boolean hasReferenceOrAddressMetadata(RMetaAnnotatedType rMetaAnnotatedType) {
+		return rMetaAnnotatedType.getMetaAttributes()
+				.stream()
+				.anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
 	}
 }
