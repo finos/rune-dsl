@@ -42,7 +42,6 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled  //TODO: write code gen and remove disable
 	@Test
 	def void canPassMetadataToFunctions() {
 		val code = '''

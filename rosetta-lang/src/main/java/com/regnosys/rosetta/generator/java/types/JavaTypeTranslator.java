@@ -276,7 +276,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private String getTypeDebugInfo(RType type) {
 		return type.toString() + " (" + type.getClass().getSimpleName() + ")";
 	}
-	public JavaClass<?> toJavaReferenceType(RType type) {
+	public JavaClass<?> toJavaReferenceType(RMetaAnnotatedType type) {
+		//TODO: wrap type in meta
+		return toJavaReferenceType(type.getRType());
+	}
+	private JavaClass<?> toJavaReferenceType(RType type) {
 		JavaType jt = toJavaType(type);
 		if (jt instanceof JavaPrimitiveType) {
 			return ((JavaPrimitiveType)jt).toReferenceType();
@@ -298,7 +302,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return typeUtil.OBJECT;
 	}
-	public JavaType toJavaType(RType type) {
+	public JavaType toJavaType(RMetaAnnotatedType type) {
+		//TODO: wrap type in meta
+		return toJavaType(type.getRType());
+	}
+	private JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
 	public RJavaPojoInterface toJavaType(RDataType type) {

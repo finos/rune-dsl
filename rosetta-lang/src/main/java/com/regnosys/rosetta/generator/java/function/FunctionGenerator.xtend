@@ -245,8 +245,8 @@ class FunctionGenerator {
 						if («outputBuilderId» == null) {
 							«evaluateScope.getIdentifierOrThrow(output)» = null;
 						} else {
-							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RMetaAnnotatedType.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
-							«objectValidatorId».validate(«output.RMetaAnnotatedType.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
+							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RMetaAnnotatedType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
+							«objectValidatorId».validate(«output.RMetaAnnotatedType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
 						}
 						
 					«ENDIF»
@@ -476,7 +476,7 @@ class FunctionGenerator {
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.toJavaReferenceType, scope)
+				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).toJavaReferenceType, scope)
 					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -603,11 +603,11 @@ class FunctionGenerator {
 	}
 	private def JavaReferenceType shortcutExpressionJavaType(RShortcut feature) {
 		val metaRType = typeProvider.getRMetaAnnotatedType(feature.expression)
-		metaRType.RType.toJavaReferenceType
+		metaRType.toJavaReferenceType
 	}
 	
 	private def JavaType toBuilderItemType(RAttribute rAttribute) {
-		var javaType = rAttribute.RMetaAnnotatedType.RType.toJavaReferenceType as JavaClass<?>
+		var javaType = rAttribute.RMetaAnnotatedType.toJavaReferenceType as JavaClass<?>
 		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
 		javaType
 	}
