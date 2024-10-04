@@ -43,6 +43,62 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void canHandleMetaCoecrion() {
+		val code = '''
+			fun SomeFunc:
+				intputs:
+					myInput int (0..*)
+					[metadata reference]
+			
+				output:
+					myResult number (0..*)
+					[metadata scheme]
+					
+				set myResult: myInput	
+		'''.generateCode
+		
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+			
+		val myInput = #[
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+			"value" -> 5,
+			"reference" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.lib.meta"), "Reference", #{
+    				"reference" -> "myRef"
+    			})
+			}),
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+			"value" -> 10,
+			"reference" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.lib.meta"), "Reference", #{
+    				"reference" -> "myRef2"
+    			})
+			}), 
+			 classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+			"value" -> 15,
+			"reference" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.lib.meta"), "Reference", #{
+    				"reference" -> "myRef3"
+    			})
+			})
+		]
+			
+		val expected = #[
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+				"value" -> 5
+    		}),
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+				"value" -> 10
+    		}),
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+				"value" -> 15
+    		})
+		]
+			
+		val result = someFunc.invokeFunc(List, myInput)
+		
+		assertEquals(expected, result)
+	}
+	
+	@Test
 	def void canPassMetadataToFunctions() {
 		val code = '''
 			func SomeFunc:
