@@ -48,8 +48,6 @@ class GlobalKeyGeneratorTest {
 	}
 	
 	// TODO fails when the metaType is moved to annotations.rosetta or basictypes.rosetta (and removed from the code here).
-	//TODO: fix this when do code gen
-	@Disabled
 	@Test
 	def void shouldGenerateGlobalReferenceField() {
 		val code = '''

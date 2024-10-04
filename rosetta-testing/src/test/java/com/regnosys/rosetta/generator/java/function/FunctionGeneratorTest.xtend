@@ -598,8 +598,7 @@ class FunctionGeneratorTest {
         assertFalse(testOnlyExists.invokeFunc(Boolean, #[List.of(a1, a2, a3)]))
 	}
 	
-	//TODO: fix this when do code gen
-	@Disabled
+
 	@Test
 	def void testDeepPathOperatorWithMeta() {
 		val code = '''

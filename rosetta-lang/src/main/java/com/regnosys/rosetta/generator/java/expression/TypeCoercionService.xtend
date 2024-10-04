@@ -1,25 +1,25 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.rosetta.util.types.JavaType
-import java.math.BigInteger
-import java.math.BigDecimal
 import com.regnosys.rosetta.generator.java.JavaScope
-import java.util.Optional
-import java.util.Collections
-import java.util.stream.Collectors
-import com.rosetta.model.lib.mapper.MapperS
-import com.rosetta.model.lib.mapper.MapperC
-import com.rosetta.model.lib.expression.ComparisonResult
-import java.util.function.Function
-import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
-import javax.inject.Inject
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
-import java.util.ArrayList
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.model.lib.expression.ComparisonResult
+import com.rosetta.model.lib.mapper.MapperC
+import com.rosetta.model.lib.mapper.MapperS
+import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaReferenceType
+import com.rosetta.util.types.JavaType
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Optional
+import java.util.function.Function
+import java.util.stream.Collectors
+import javax.inject.Inject
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
