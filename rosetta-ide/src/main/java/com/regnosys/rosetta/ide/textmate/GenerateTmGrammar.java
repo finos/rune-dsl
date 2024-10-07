@@ -23,10 +23,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -49,7 +53,7 @@ import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
 public class GenerateTmGrammar {
-	private static List<String> ignoredRosettaKeywords = List.of("..", "namespace", "condition", /* @Compat */"qualifiedType", "calculationType");
+	private static List<String> ignoredRosettaKeywords = List.of("..", "namespace", "condition", "required", "optional", /* @Compat */"qualifiedType", "calculationType");
 	
 	/**
 	 * param 0: path to input yaml file
@@ -76,11 +80,86 @@ public class GenerateTmGrammar {
 		Map<String, String> variables = readVariables(input);
 		input.remove("variables");
 		applyVariablesRecursively(input, variables);
-		validateTm(input);
+		inlineParameterizedIncludes(input);
 		writeJson(input, outputPath);
+		validateTm(input);
+	}
+	
+	private void inlineParameterizedIncludes(Map<Object, Object> input) {
+		Map<String, Set<Map<String, String>>> argumentMapPerInclude = new HashMap<>();
+		gatherIncludeArguments(input, argumentMapPerInclude);
+		inlineParameterizedIncludesRecursively(input, argumentMapPerInclude);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void gatherIncludeArguments(Object input, Map<String, Set<Map<String, String>>> argumentMapPerInclude) {
+		if (input instanceof Map) {
+			Map<Object, Object> inputMap = (Map<Object, Object>)input;
+			Object rawInclude = inputMap.get("include");
+			if (rawInclude != null && rawInclude instanceof String && inputMap.containsKey("arguments")) {
+				Map<String, String> argumentMap = readStringMap(inputMap.get("arguments"), "argument");
+				String include = ((String)rawInclude).substring(1);
+				argumentMapPerInclude.computeIfAbsent(include, a -> new LinkedHashSet<>()).add(argumentMap);
+				
+				String inlineName = toInlineName(include, argumentMap);
+				inputMap.put("include", "#" + inlineName);
+				inputMap.remove("arguments");
+			}
+			for (Entry<?, ?> node : inputMap.entrySet()) {
+				gatherIncludeArguments(node.getValue(), argumentMapPerInclude);
+			}
+		} else if (input instanceof List) {
+			for (Object item : (List<?>)input) {
+				gatherIncludeArguments(item, argumentMapPerInclude);
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void inlineParameterizedIncludesRecursively(Object input, Map<String, Set<Map<String, String>>> argumentMapPerInclude) {
+		if (input instanceof Map) {
+			Map<?, ?> inputMap = (Map<?, ?>)input;
+			Object rawRepo = inputMap.get("repository");
+			if (rawRepo != null && rawRepo instanceof Map<?, ?>) {
+				Map<Object, Object> repo = (Map<Object, Object>)rawRepo;
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+				Map<Object, Object> inlinedDefinitions = new LinkedHashMap<>();
+				for (Entry<Object, Object> definitionEntry : repo.entrySet()) {
+					Object definitionName = definitionEntry.getKey();
+					Object rawDefinition = definitionEntry.getValue();
+					if (rawDefinition instanceof Map<?, ?>) {
+						Map<?, ?> definition = (Map<?, ?>) rawDefinition;
+						if (definition.containsKey("parameters")) {
+							for (Map<String, String> argumentMap : argumentMapPerInclude.getOrDefault(definitionName, Collections.emptySet())) {
+								String inlineName = toInlineName((String)definitionName, argumentMap);
+								
+								Map<?, ?> inlinedDefinition = gson.fromJson(gson.toJson(definition), Map.class);
+								inlinedDefinition.remove("parameters");
+								argumentMap.put("this", inlineName);
+								applyVariablesRecursively(inlinedDefinition, argumentMap);
+								inlinedDefinitions.put(inlineName, inlinedDefinition);
+							}
+						}
+					}
+				}
+				repo.putAll(inlinedDefinitions);
+				repo.entrySet().removeIf(e -> e.getValue() instanceof Map<?, ?> && ((Map<?, ?>)e.getValue()).containsKey("parameters"));
+			}
+			for (Entry<?, ?> node : inputMap.entrySet()) {
+				inlineParameterizedIncludesRecursively(node.getValue(), argumentMapPerInclude);
+			}
+		} else if (input instanceof List) {
+			for (Object item : (List<?>)input) {
+				inlineParameterizedIncludesRecursively(item, argumentMapPerInclude);
+			}
+		}
+	}
+	private String toInlineName(String include, Map<String, String> arguments) {
+		return include + new TreeMap<>(arguments).entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(",", "(", ")"));
 	}
 	
 	private void validateTm(Map<Object, Object> input) throws ConfigurationException {
+		ensureNoUnknownVariables(input);
 		Map<Object, Object> namedPatterns = findNamedPatterns(input);
 		List<TmValue<Object>> allPatterns = findAllPatterns(input, new ArrayList<>());
 		for (TmValue<Object> pattern: allPatterns) {
@@ -88,6 +167,27 @@ public class GenerateTmGrammar {
 		}
 		
 		ensureAllRosettaKeywordsAreSupported(input);
+	}
+	
+	private void ensureNoUnknownVariables(Object input) throws ConfigurationException {
+		if (input instanceof Map) {
+			Map<?, ?> inputMap = (Map<?, ?>)input;
+			for (Entry<?, ?> node : inputMap.entrySet()) {
+				if (node.getValue() instanceof String) {
+					Matcher unknownVariableMatcher = variablePattern.matcher((String)node.getValue());
+					List<MatchResult> unknownVariables = unknownVariableMatcher.results().collect(Collectors.toList());
+					if (unknownVariables.size() > 0) {
+						throw new ConfigurationException("At " + node.getKey() + ": Unknown variable(s): " + unknownVariables.stream().map(v -> v.group(1)).collect(Collectors.joining(", ")));
+					}
+			    } else {
+			    	ensureNoUnknownVariables(node.getValue());
+			    }
+			}
+		} else if (input instanceof List) {
+			for (Object item : (List<?>)input) {
+				ensureNoUnknownVariables(item);
+			}
+		}
 	}
 	
 	private void ensureAllRosettaKeywordsAreSupported(Map<Object, Object> input) throws ConfigurationException {
@@ -297,35 +397,28 @@ public class GenerateTmGrammar {
 		}
 	}
 
-	private Map<String, String> readVariables(Map<Object, Object> yaml) throws ConfigurationException {
-		LinkedHashMap<String, String> result = new LinkedHashMap<>(yaml.size());
-		
+	private Map<String, String> readVariables(Map<Object, Object> yaml) throws ConfigurationException {		
 		Object rawVariables = yaml.get("variables");
-		if (!(rawVariables instanceof Map)) {
-			return result;
+		return readStringMap(rawVariables, "variable");
+	}
+	private Map<String, String> readStringMap(Object raw, String errorVarName) {
+		if (!(raw instanceof Map)) {
+			return Collections.emptyMap();
 		}
-		Map<?, ?> variables = (Map<?, ?>)rawVariables;
+		Map<?, ?> variables = (Map<?, ?>)raw;
+		LinkedHashMap<String, String> result = new LinkedHashMap<>(variables.size());
 		for (Entry<?, ?> variable : variables.entrySet()) {
 		    if (variable.getValue() instanceof String) {
 		    	String rawValue = (String)variable.getValue();
-		    	try {
-					result.put((String)variable.getKey(), applyVariables(rawValue, result));
-				} catch (ConfigurationException e) {
-					throw new ConfigurationException("While parsing variable `" + variable.getKey() + "`: " + e.getExplanation());
-				}
+				result.put((String)variable.getKey(), applyVariables(rawValue, result));
 		    }
 		}
 		return result;
 	}
 	
-	private String applyVariables(String input, Map<String, String> variables) throws ConfigurationException {
+	private String applyVariables(String input, Map<String, String> variables) {
 		for (Entry<String, String> variable : variables.entrySet()) {
 		    input = applyVariable(input, variable);
-		}
-		Matcher unknownVariableMatcher = variablePattern.matcher(input);
-		List<MatchResult> unknownVariables = unknownVariableMatcher.results().collect(Collectors.toList());
-		if (unknownVariables.size() > 0) {
-			throw new ConfigurationException("Unknown variable(s): " + unknownVariables.stream().map(v -> v.group(1)).collect(Collectors.joining(", ")));
 		}
 		return input;
 	}
@@ -335,15 +428,12 @@ public class GenerateTmGrammar {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void applyVariablesRecursively(Object input, Map<String, String> variables) throws ConfigurationException {
+	private void applyVariablesRecursively(Object input, Map<String, String> variables) {
 		if (input instanceof Map) {
-			for (Entry<?, ?> node : ((Map<?, ?>)input).entrySet()) {
-			    if (node.getValue() instanceof String) {
-			    	try {
-						((Entry<?, String>)node).setValue(applyVariables((String)node.getValue(), variables));
-					} catch (ConfigurationException e) {
-						throw new ConfigurationException("At " + node.getKey() + ": " + e.getExplanation());
-					}
+			Map<?, ?> inputMap = (Map<?, ?>)input;
+			for (Entry<?, ?> node : inputMap.entrySet()) {
+				if (node.getValue() instanceof String) {
+					((Entry<?, String>)node).setValue(applyVariables((String)node.getValue(), variables));
 			    } else {
 			    	applyVariablesRecursively(node.getValue(), variables);
 			    }
