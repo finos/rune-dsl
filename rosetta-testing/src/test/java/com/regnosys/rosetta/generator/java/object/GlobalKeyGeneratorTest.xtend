@@ -51,7 +51,7 @@ class GlobalKeyGeneratorTest {
 	@Test
 	def void shouldGenerateGlobalReferenceField() {
 		val code = '''
-			//metaType reference string
+			metaType reference string
 			
 			type Foo:
 				[metadata key]

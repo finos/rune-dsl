@@ -99,6 +99,9 @@ class FunctionGeneratorTest {
 		assertEquals(expected, result)
 	}
 	
+	//TODO: add test for setting and output type that has meta
+	//TODO: add test for concat value + meta
+	
 	@Test
 	def void canPassMetadataToFunctions() {
 		val code = '''			
