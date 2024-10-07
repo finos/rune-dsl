@@ -263,7 +263,7 @@ class MetaFieldGenerator {
 	
 	def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, metaAnnotatedType, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, metaAnnotatedType.RType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 			
 		val Data d = SimpleFactory.eINSTANCE.createData;
@@ -271,7 +271,7 @@ class MetaFieldGenerator {
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
 		d.attributes.addAll(referenceAttributes())
-		val refInterface = JavaParameterizedType.from(new TypeReference<ReferenceWithMeta<?>>() {}, metaAnnotatedType.toJavaReferenceType)
+		val refInterface = JavaParameterizedType.from(new TypeReference<ReferenceWithMeta<?>>() {}, metaAnnotatedType.RType.toJavaReferenceType)
 		
 		val scope = new JavaScope(root.metaField)
 		
