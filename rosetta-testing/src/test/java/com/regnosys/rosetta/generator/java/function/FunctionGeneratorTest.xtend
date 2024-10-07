@@ -99,8 +99,62 @@ class FunctionGeneratorTest {
 		assertEquals(expected, result)
 	}
 	
-	//TODO: add test for setting and output type that has meta
-	//TODO: add test for concat value + meta
+	@Disabled
+	@Test
+	def void canPassMetadataToFunctionAndUseInExpression() {
+		val code = '''			
+			func SomeFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata scheme]
+			    output:
+			        myResult string (1..1)
+			
+			    set myResult: myInput + myInput -> scheme
+		'''.generateCode
+		
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+		
+		
+		val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+    			"value" -> "myInputValue", 
+    			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    				"scheme" -> "myScheme"
+    			})
+    		})
+		
+		val result = someFunc.invokeFunc(String, myInput)
+		assertEquals("myInputValuemyScheme", result)
+	}
+	
+	@Test
+	def void canSetFunctionWithMetaOutput() {
+		val code = '''			
+			func SomeFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata scheme]
+			    output:
+			        myResult string (1..1)
+			        [metadata scheme]	
+			
+			    set myResult: myInput
+		'''.generateCode
+				
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+		
+		val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+    			"value" -> "myInputValue", 
+    			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    				"scheme" -> "myScheme"
+    			})
+    		})
+		
+		val result = someFunc.invokeFunc(RosettaModelObject, myInput)
+		assertEquals(myInput, result)
+	}
 	
 	@Test
 	def void canPassMetadataToFunctions() {
