@@ -591,7 +591,7 @@ class FunctionGenerator {
 	}
 	
 	private def StringConcatenationClient inputsAsParameters(List<RAttribute> inputs, JavaScope scope) {
-		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : inputs SEPARATOR ', '»«input.toMetaJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	private def JavaReferenceType shortcutJavaType(RShortcut feature) {

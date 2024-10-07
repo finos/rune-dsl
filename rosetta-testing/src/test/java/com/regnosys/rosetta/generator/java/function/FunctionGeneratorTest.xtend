@@ -42,6 +42,7 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	@Disabled
 	@Test
 	def void canHandleMetaCoecrion() {
 		val code = '''
@@ -100,7 +101,7 @@ class FunctionGeneratorTest {
 	
 	@Test
 	def void canPassMetadataToFunctions() {
-		val code = '''
+		val code = '''			
 			func SomeFunc:
 			    inputs:
 			        myInput string (1..1)

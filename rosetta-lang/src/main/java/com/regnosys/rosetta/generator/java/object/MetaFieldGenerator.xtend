@@ -27,7 +27,6 @@ import com.rosetta.model.lib.meta.GlobalKeyFields
 import com.rosetta.model.lib.meta.MetaDataFields
 import com.rosetta.model.lib.meta.ReferenceWithMeta
 import com.rosetta.model.lib.meta.TemplateFields
-import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.ArrayList
@@ -40,6 +39,8 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -72,20 +73,15 @@ class MetaFieldGenerator {
 //			}
 //		}
 		
-		val modelClasses = model.elements.filter [
-			it instanceof Data
-		]
-		if (modelClasses.empty) {
-			return
-		}
 		
 		//find all the reference types
-		val namespaceClasses = Multimaps.index(modelClasses, [c|c.model]).asMap
+		val namespaceClasses = Multimaps.index(model.elements, [c|c.model]).asMap
 		for (nsc : namespaceClasses.entrySet) {
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val attributesWithMeta = nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter[RMetaAnnotatedType.hasMeta]
+						
+			val attributesWithMeta = nsc.value.flatMap[eAllOfType(Attribute)].map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]
 			
 			for (attr : attributesWithMeta) {
 				val targetModel = attr.RMetaAnnotatedType.RType.namespace
@@ -95,12 +91,15 @@ class MetaFieldGenerator {
 				if (ctx.cancelIndicator.canceled) {
 					return
 				}
-				
-				if (metaJt instanceof RJavaFieldWithMeta || metaJt instanceof RJavaReferenceWithMeta) {
+			
+				if (metaJt instanceof RJavaReferenceWithMeta) {
 					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
-				} else {
+				} else if (metaJt instanceof RJavaFieldWithMeta) {
 					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
+				} else {
+					throw new UnsupportedOperationException("Invalid JavaType: " + metaJt)
 				}
+				
 			}
 		}
 	}
@@ -203,9 +202,9 @@ class MetaFieldGenerator {
 		buildClass(packages.basicMetafields, body, scope)
 	}
 
-	def CharSequence fieldWithMeta(RootPackage root, JavaClass<?> metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
+	def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, metaAnnotatedType, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, metaAnnotatedType.RType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
@@ -225,7 +224,7 @@ class MetaFieldGenerator {
 			metaAttribute
 		])
 		
-		val FWMType = JavaParameterizedType.from(new TypeReference<FieldWithMeta<?>>() {}, metaAnnotatedType.toJavaReferenceType)
+		val FWMType = JavaParameterizedType.from(new TypeReference<FieldWithMeta<?>>() {}, metaAnnotatedType.RType.toJavaReferenceType)
 		
 		val scope = new JavaScope(metaJavaType.packageName)
 		
@@ -262,7 +261,7 @@ class MetaFieldGenerator {
 		 #[globalRefAttribute, externalRefAttribute, refAttribute]
 	}
 	
-	def referenceWithMeta(RootPackage root, JavaClass<?> metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
+	def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
 		val valueAttribute = new RAttribute(
 			"value", null, emptyList, metaAnnotatedType, PositiveIntegerInterval.bounded(0, 1), null, null
 		)

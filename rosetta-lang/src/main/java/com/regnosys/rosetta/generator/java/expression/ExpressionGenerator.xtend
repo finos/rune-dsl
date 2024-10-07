@@ -1160,7 +1160,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	private def JavaStatementBuilder evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaScope scope) {
 		if (assignAsKey) {
-			val metaClass = (feature as Attribute).toMetaJavaType
+			val metaClass = (feature as Attribute).buildRAttribute.toMetaJavaType
 			if (isMulti) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")

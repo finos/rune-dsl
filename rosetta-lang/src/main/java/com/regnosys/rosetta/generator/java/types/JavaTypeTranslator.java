@@ -81,8 +81,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
 	private RosettaJavaPackages packages;
 	@Inject
-	private RosettaEcoreUtil extensions;
-	@Inject
 	private RosettaTypeProvider typeProvider;
 	@Inject
 	private TypeSystem typeSystem;
@@ -186,26 +184,19 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = typeId.getName() + "DeepPathUtil";
 		return new GeneratedJavaClass<>(packageName, simpleName, Object.class);
 	}
-	public JavaClass<?> toMetaJavaType(Attribute attribute) {
-		JavaClass<?> attrType = toJavaReferenceType(typeProvider.getRTypeOfSymbol(attribute).getRType());
-		DottedPath namespace = getModelPackage(attribute.getTypeCall().getType());
-		return toMetaJavaType(attrType, extensions.hasMetaFieldAnnotations(attribute), namespace);
-	}
 	public JavaClass<?> toItemJavaType(RAttribute attr) {
 		return toJavaReferenceType(attr.getRMetaAnnotatedType().getRType());
 	}
 	public JavaClass<?> toMetaItemJavaType(RAttribute attr) {
-		JavaClass<?> itemType = toItemJavaType(attr);
-		if (!attr.getRMetaAnnotatedType().hasMeta()) {
-			return itemType;
-		}
-		DottedPath namespace = attr.getRMetaAnnotatedType().getRType().getNamespace();
-		return toMetaJavaType(itemType, !hasReferenceOrAddressMetadata(attr.getRMetaAnnotatedType()), namespace);
+		return toJavaReferenceType(attr.getRMetaAnnotatedType());
 	}
 	public JavaClass<?> toForcedMetaItemJavaType(RAttribute attr) {
-		JavaClass<?> itemType = toItemJavaType(attr);
-		DottedPath namespace = attr.getRMetaAnnotatedType().getRType().getNamespace();
-		return toMetaJavaType(itemType, !hasReferenceOrAddressMetadata(attr.getRMetaAnnotatedType()), namespace);
+		JavaClass<?> metaItemJavaType = toMetaItemJavaType(attr);
+		if (!attr.getRMetaAnnotatedType().hasMeta()) {
+			DottedPath namespace = metaField(attr.getRMetaAnnotatedType().getRType().getNamespace());
+			return new RJavaFieldWithMeta(metaItemJavaType, namespace, typeUtil);
+		}
+		return metaItemJavaType;
 	}
 	public JavaClass<?> toMetaJavaType(RAttribute attr) {
 		JavaClass<?> itemType = toMetaItemJavaType(attr);
@@ -229,17 +220,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
-	private JavaClass<?> toMetaJavaType(JavaReferenceType base, boolean hasMetaFieldAnnotations, DottedPath namespace) {
-		String attributeTypeName = base.getSimpleName();
-		String name;
-		if (hasMetaFieldAnnotations) {
-			name = "FieldWithMeta" + attributeTypeName;
-		} else {
-			name = "ReferenceWithMeta" + attributeTypeName;
-		}
-		DottedPath pkg = metaField(namespace);
-		return new GeneratedJavaClass<>(pkg, name, Object.class);
-	}
 	public JavaClass<?> operationToReferenceWithMetaType(Operation op) {
 		Attribute attr;
 		if (op.getPath() == null) {
@@ -248,8 +228,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<Segment> segments = op.pathAsSegmentList();
 			attr = segments.get(segments.size() - 1).getAttribute();
 		}
-		DottedPath namespace = getModelPackage(attr.getTypeCall().getType());
-		return toMetaJavaType(toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr).getRType()), false, namespace);
+		return toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr));
 	}
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
@@ -270,22 +249,26 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<RAttribute> segments = op.getPathTail();
 			attr = segments.get(segments.size() - 1);
 		}
-		return toMetaJavaType(toJavaReferenceType(attr.getRMetaAnnotatedType().getRType()), false, attr.getRMetaAnnotatedType().getRType().getNamespace());
+		return toJavaReferenceType(attr.getRMetaAnnotatedType());
 	}
 	
 	private String getTypeDebugInfo(RType type) {
 		return type.toString() + " (" + type.getClass().getSimpleName() + ")";
 	}
-	public JavaClass<?> toJavaReferenceType(RMetaAnnotatedType type) {
-		JavaClass<?> javaReferenceType = toJavaReferenceType(type.getRType());
-		if (type.hasMeta()) {
-			return hasReferenceOrAddressMetadata(type) ? 
-					new RJavaReferenceWithMeta(javaReferenceType, type.getRType().getNamespace(), typeUtil):
-						new RJavaFieldWithMeta(javaReferenceType, type.getRType().getNamespace(), typeUtil);
-		}
-		return javaReferenceType;
+	private String getTypeDebugInfo(RMetaAnnotatedType type) {
+		return type.toString() + " (" + type.getClass().getSimpleName() + ")";
 	}
-	private JavaClass<?> toJavaReferenceType(RType type) {
+	public JavaClass<?> toJavaReferenceType(RMetaAnnotatedType type) {
+		JavaType jt = toJavaType(type);
+		if (jt instanceof JavaPrimitiveType) {
+			return ((JavaPrimitiveType)jt).toReferenceType();
+		} else if (jt instanceof JavaClass<?>) {
+			return (JavaClass<?>)jt;
+		} else {
+			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
+		}
+	}
+	public JavaClass<?> toJavaReferenceType(RType type) {
 		JavaType jt = toJavaType(type);
 		if (jt instanceof JavaPrimitiveType) {
 			return ((JavaPrimitiveType)jt).toReferenceType();
@@ -308,11 +291,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return typeUtil.OBJECT;
 	}
 	public JavaType toJavaType(RMetaAnnotatedType type) {
-		JavaType javaType = toJavaType(type.getRType());
+		JavaReferenceType javaType = toJavaReferenceType(type.getRType());
 		if (type.hasMeta()) {
+			DottedPath namespace = metaField(type.getRType().getNamespace());
 			return hasReferenceOrAddressMetadata(type) ? 
-					new RJavaReferenceWithMeta(javaType, type.getRType().getNamespace(), typeUtil):
-						new RJavaFieldWithMeta(javaType, type.getRType().getNamespace(), typeUtil);
+					new RJavaReferenceWithMeta(javaType, namespace, typeUtil):
+						new RJavaFieldWithMeta(javaType, namespace, typeUtil);
 		}
 		return javaType;
 	}
