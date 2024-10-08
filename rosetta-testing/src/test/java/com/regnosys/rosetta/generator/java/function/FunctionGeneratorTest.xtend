@@ -42,6 +42,16 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	/*
+	 * TODO: equality tests that require coercion
+	 * 
+	 * Add unit tests for checking equality between things with/without metadata: (metadata should be ignored)
+
+		string with scheme and string with scheme
+		string with scheme and string without scheme
+		string with scheme and string with template
+	 */
+	
 	@Disabled
 	@Test
 	def void canHandleMetaCoecrion() {

@@ -152,7 +152,6 @@ public class JavaTypeUtil {
 		}
 		return newItemType;
 	}
-	
 	public boolean extendsNumber(JavaType t) {
 		return t.isSubtypeOf(NUMBER);
 	}

@@ -21,13 +21,15 @@ import java.util.Arrays
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
 class TypeCoercionTest {
 	@Inject TypeCoercionService coercionService
 	@Inject extension ImportManagerExtension
-	@Inject extension JavaTypeUtil
+	@Inject extension JavaTypeUtil typeUtil
 	
 	private def void assertCoercion(String expectedCode, StringConcatenationClient expr, Class<?> actual, JavaType expected) {
 		assertCoercion(expectedCode, expr, JavaType.from(actual), expected)
@@ -44,6 +46,48 @@ class TypeCoercionTest {
 		
 		val coercedExpr = coercionService.addCoercions(JavaExpression.from(expr, actual), expected, scope)
 		assertEquals(expectedCode, buildClass(pkg, '''«coercedExpr.completeAsReturn»''', scope).replace("package test.ns;", "").trim + System.lineSeparator)
+	}
+	
+	// actual: FieldWithMetaString to expected: String
+	// actual: ReferenceWithMetaString to expected: String
+			
+	// actual: String to expected: FieldWithMetaString
+	// actual: String to expected: ReferenceWithMetaString
+	
+	// actual: FieldWithMetaString to expected: ReferenceWithMetaString
+	// actual: ReferenceWithMetaString to expected: FieldWithMetaString
+	
+	// actual: FieldWithMetaInteger to expected: BigDecimal
+	// actual: BigDecimal to expected: FieldWithMetaInteger
+	@Test
+	def void testConvertMetaToString() {
+		val String expected = '''
+		import test.FieldWithMetaString;
+		
+		
+		{
+			final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
+			return fieldWithMetaString == null ? null : fieldWithMetaString.getValue();
+		}
+		'''
+		
+		val actual = new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil)
+				
+		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', actual, String)	
+		
+		val expected2 = '''
+		import test.ReferenceWithMetaString;
+		
+		
+		{
+			final ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();;
+			return referenceWithMetaString == null ? null : referenceWithMetaString.getValue();
+		}
+		'''	
+		
+		val actual2 = new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		
+		assertCoercion(expected2, '''ReferenceWithMetaString.builder().setValue("foo").build();''', actual2, String)
 	}
 	
 	@Test
