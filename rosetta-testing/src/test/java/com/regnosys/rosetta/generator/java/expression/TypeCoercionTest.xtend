@@ -61,6 +61,25 @@ class TypeCoercionTest {
 	// actual: BigDecimal to expected: FieldWithMetaInteger
 	
 	@Test
+	def void testConvertMetaFieldToMetaReference() {
+		val expected = '''
+		import test.FieldWithMetaString;
+		
+		
+		{
+			final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
+			return fieldWithMetaString == null ? null : ReferenceWithMetaString.builder().setValue(fieldWithMetaString.getValue()).build();
+		}
+		'''
+		
+		val actualType = new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		val expectedType = new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		
+		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', actualType, expectedType)	
+	}
+	
+	
+	@Test
 	def void testConvertStringToMeta() {
 		val expected = '''
 		{

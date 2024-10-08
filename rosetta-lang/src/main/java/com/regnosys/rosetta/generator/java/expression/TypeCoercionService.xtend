@@ -23,7 +23,6 @@ import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.rosetta.util.types.RJavaWithMetaValue
-import com.regnosys.rosetta.generator.java.statement.JavaStatement
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -210,6 +209,8 @@ class TypeCoercionService {
 		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
+		} else if (actual instanceof RJavaWithMetaValue && expected instanceof RJavaWithMetaValue) {
+			return Optional.of([metaToMetaConversionExpression(it, expected as RJavaWithMetaValue, scope)])
 		} else if (actual instanceof RJavaWithMetaValue) {
 			return Optional.of([metaToItemConversionExpression(it, expected, scope)])
 		} else if (expected instanceof RJavaFieldWithMeta || expected instanceof RJavaReferenceWithMeta) {
@@ -359,6 +360,16 @@ class TypeCoercionService {
 			JavaExpression.from('''false''', JavaPrimitiveType.BOOLEAN)
 		} else if (expected instanceof JavaPrimitiveType) {
 			throw new IllegalArgumentException("No empty representation for primitive type `" + expected + "`.")
+		} else {
+			JavaExpression.NULL
+		}
+	}
+	
+	private def JavaStatementBuilder metaToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) {
+		val actual = expression.expressionType
+			if (actual instanceof RJavaWithMetaValue) {
+			val valueExpr = JavaExpression.from('''«expression».getValue()''', actual.valueType)
+			itemToMetaConversionExpression(valueExpr, expected, scope)
 		} else {
 			JavaExpression.NULL
 		}
