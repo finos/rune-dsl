@@ -213,7 +213,7 @@ class TypeCoercionService {
 		} else if (actual instanceof RJavaWithMetaValue) {
 			return Optional.of([metaToItemConversionExpression(it, expected, scope)])
 		} else if (expected instanceof RJavaFieldWithMeta || expected instanceof RJavaReferenceWithMeta) {
-			return Optional.of([itemToMetaConversionExpression(it, expected)])
+			return Optional.of([itemToMetaConversionExpression(it, expected as RJavaWithMetaValue, scope)])
 		} 
 		//TODO: add a case for each of the meta containers
 		return Optional.empty
@@ -372,8 +372,8 @@ class TypeCoercionService {
 	private def JavaStatementBuilder metaToItemConversionExpression(JavaExpression expression, JavaType expected, JavaScope scope) {
 		val actual = expression.expressionType
 		if (actual instanceof RJavaWithMetaValue) {
-			val expr = JavaExpression.from('''«expression».getValue()''', actual.valueType)
-			itemToItem(expr, expected, scope)
+			val valueExpr = JavaExpression.from('''«expression».getValue()''', actual.valueType)
+			itemToItem(valueExpr, expected, scope)
 		} else {
 			JavaExpression.NULL
 		}
@@ -385,9 +385,20 @@ class TypeCoercionService {
 	 * 3. Depending on the expected meta type create expression with a ReferenceWithMetaXXXX or FieldWithMetaXXX setting its value 
 	 * to the previous expression
 	 */
-	private def JavaExpression itemToMetaConversionExpression(JavaExpression expression, JavaType expected) { 
+	private def JavaStatementBuilder itemToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) { 
+		val expectedValueType = expected.valueType
+		val itemExpr = itemToItem(expression, expectedValueType, scope)
 		
-		null
+		if (expected instanceof RJavaFieldWithMeta) {
+			val exprReturnType = FIELD_WITH_META.wrap(expectedValueType)
+			JavaExpression.from('''FieldWithMeta«expectedValueType».builder().setValue(«itemExpr»).build()''', exprReturnType)
+		} else if (expected instanceof RJavaReferenceWithMeta) {
+			val exprReturnType = REFERENCE_WITH_META.wrap(expectedValueType)
+			JavaExpression.from('''ReferenceWithMeta«expectedValueType».builder().setValue(«itemExpr»).build()''', exprReturnType)
+		} else {
+			JavaExpression.NULL
+		}
+		
 	}
 	
 	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType expected) {

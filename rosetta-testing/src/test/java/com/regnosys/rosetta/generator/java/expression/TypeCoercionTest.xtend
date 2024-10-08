@@ -59,6 +59,26 @@ class TypeCoercionTest {
 	
 	// actual: FieldWithMetaInteger to expected: BigDecimal
 	// actual: BigDecimal to expected: FieldWithMetaInteger
+	
+	@Test
+	def void testConvertStringToMeta() {
+		val expected = '''
+		{
+			final String string = "foo";
+			return string == null ? null : FieldWithMetaString.builder().setValue(string).build();
+		}
+		'''		
+		assertCoercion(expected, '''"foo"''', String, new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil))
+		
+		val expected2 = '''
+		{
+			final String string = "foo";
+			return string == null ? null : ReferenceWithMetaString.builder().setValue(string).build();
+		}
+		'''
+		assertCoercion(expected2, '''"foo"''', String, new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil))		
+	}
+	
 	@Test
 	def void testConvertMetaToString() {
 		val String expected = '''
@@ -70,10 +90,8 @@ class TypeCoercionTest {
 			return fieldWithMetaString == null ? null : fieldWithMetaString.getValue();
 		}
 		'''
-		
-		val actual = new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil)
-				
-		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', actual, String)	
+						
+		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil), String)	
 		
 		val expected2 = '''
 		import test.ReferenceWithMetaString;
@@ -84,10 +102,8 @@ class TypeCoercionTest {
 			return referenceWithMetaString == null ? null : referenceWithMetaString.getValue();
 		}
 		'''	
-		
-		val actual2 = new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil)
-		
-		assertCoercion(expected2, '''ReferenceWithMetaString.builder().setValue("foo").build();''', actual2, String)
+				
+		assertCoercion(expected2, '''ReferenceWithMetaString.builder().setValue("foo").build();''', new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil), String)
 	}
 	
 	@Test
