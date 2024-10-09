@@ -48,27 +48,87 @@ class TypeCoercionTest {
 		assertEquals(expectedCode, buildClass(pkg, '''«coercedExpr.completeAsReturn»''', scope).replace("package test.ns;", "").trim + System.lineSeparator)
 	}
 	
-	// actual: FieldWithMetaString to expected: String
-	// actual: ReferenceWithMetaString to expected: String
-			
-	// actual: String to expected: FieldWithMetaString
-	// actual: String to expected: ReferenceWithMetaString
+
 	
-	// actual: FieldWithMetaString to expected: ReferenceWithMetaString
-	// actual: ReferenceWithMetaString to expected: FieldWithMetaString
+	@Test
+	def void testConvertBigDecimalToFieldWithMetaInteger() {
+		val expected = '''
+		import java.math.BigDecimal;
+		import test.FieldWithMetaInteger;
+		
+		
+		{
+			final BigDecimal bigDecimal = BigDecimal.valueOf(10);
+			return bigDecimal == null ? null : FieldWithMetaInteger.builder().setValue(bigDecimal.intValueExact()).build();
+		}
+		'''
+		
+		val expectedType = new RJavaFieldWithMeta(INTEGER, DottedPath.of("test"), typeUtil)
+		
+		assertCoercion(expected, '''BigDecimal.valueOf(10)''', BigDecimal, expectedType)	
+		
+	}
 	
-	// actual: FieldWithMetaInteger to expected: BigDecimal
-	// actual: BigDecimal to expected: FieldWithMetaInteger
+	
+	@Test
+	def void testConvertFieldWithMetaIntegerToBigDecimal() {
+		val expected = '''
+		import java.math.BigDecimal;
+		import test.FieldWithMetaInteger;
+		
+		
+		{
+			final FieldWithMetaInteger fieldWithMetaInteger = FieldWithMetaInteger.builder().setValue(10).build();
+			if (fieldWithMetaInteger == null) {
+				return null;
+			}
+			final Integer integer = fieldWithMetaInteger.getValue();
+			return integer == null ? null : BigDecimal.valueOf(integer);
+		}
+		'''
+		
+		val actualType = new RJavaFieldWithMeta(INTEGER, DottedPath.of("test"), typeUtil)
+		
+		assertCoercion(expected, '''FieldWithMetaInteger.builder().setValue(10).build()''', actualType, BigDecimal)	
+	}
+	
+	@Test
+	def void testConvertMetaReferenceToMetaField() {
+		val expected = '''
+		import test.FieldWithMetaString;
+		import test.ReferenceWithMetaString;
+		
+		
+		{
+			final ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();
+			if (referenceWithMetaString == null) {
+				return null;
+			}
+			final String string = referenceWithMetaString.getValue();
+			return string == null ? null : FieldWithMetaString.builder().setValue(string).build();
+		}
+		'''
+		
+		val actualType = new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		val expectedType = new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		
+		assertCoercion(expected, '''ReferenceWithMetaString.builder().setValue("foo").build()''', actualType, expectedType)	
+	}
 	
 	@Test
 	def void testConvertMetaFieldToMetaReference() {
 		val expected = '''
 		import test.FieldWithMetaString;
+		import test.ReferenceWithMetaString;
 		
 		
 		{
 			final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
-			return fieldWithMetaString == null ? null : ReferenceWithMetaString.builder().setValue(fieldWithMetaString.getValue()).build();
+			if (fieldWithMetaString == null) {
+				return null;
+			}
+			final String string = fieldWithMetaString.getValue();
+			return string == null ? null : ReferenceWithMetaString.builder().setValue(string).build();
 		}
 		'''
 		
@@ -82,6 +142,9 @@ class TypeCoercionTest {
 	@Test
 	def void testConvertStringToMeta() {
 		val expected = '''
+		import test.FieldWithMetaString;
+		
+		
 		{
 			final String string = "foo";
 			return string == null ? null : FieldWithMetaString.builder().setValue(string).build();
@@ -90,6 +153,9 @@ class TypeCoercionTest {
 		assertCoercion(expected, '''"foo"''', String, new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil))
 		
 		val expected2 = '''
+		import test.ReferenceWithMetaString;
+		
+		
 		{
 			final String string = "foo";
 			return string == null ? null : ReferenceWithMetaString.builder().setValue(string).build();

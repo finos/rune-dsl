@@ -52,7 +52,7 @@ class FunctionGeneratorTest {
 		string with scheme and string with template
 	 */
 	
-	@Disabled
+ 	@Disabled
 	@Test
 	def void canHandleMetaCoecrion() {
 		val code = '''

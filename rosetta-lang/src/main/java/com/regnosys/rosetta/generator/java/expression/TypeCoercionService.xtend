@@ -23,6 +23,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.rosetta.util.types.RJavaWithMetaValue
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -209,9 +210,8 @@ class TypeCoercionService {
 		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
-		} else if (actual instanceof RJavaWithMetaValue && expected instanceof RJavaWithMetaValue) {
-			return Optional.of([metaToMetaConversionExpression(it, expected as RJavaWithMetaValue, scope)])
-		} else if (actual instanceof RJavaWithMetaValue) {
+		} 
+		else if (actual instanceof RJavaWithMetaValue) {
 			return Optional.of([metaToItemConversionExpression(it, expected, scope)])
 		} else if (expected instanceof RJavaFieldWithMeta || expected instanceof RJavaReferenceWithMeta) {
 			return Optional.of([itemToMetaConversionExpression(it, expected as RJavaWithMetaValue, scope)])
@@ -331,18 +331,26 @@ class TypeCoercionService {
 			return expr.mapExpression(conversion)
 		}
 		
-		return expr
-				.declareAsVariable(true, actual.simpleName.toFirstLower, scope)
-				.mapExpression[varExpr|
-					conversion.apply(varExpr)
-						.mapExpression[
-							new JavaConditionalExpression(
-							JavaExpression.from('''«varExpr» == null''', JavaPrimitiveType.BOOLEAN),
-							expected.empty,
-							it,
-							typeUtil
-						)]
-				]
+		expr
+			.declareAsVariable(true, actual.simpleName.toFirstLower, scope)
+			.mapExpression[varExpr|
+				val conditionExpr = JavaExpression.from('''«varExpr» == null''', JavaPrimitiveType.BOOLEAN)
+				val converted = conversion.apply(varExpr)
+				if (converted instanceof JavaExpression) {
+					return new JavaConditionalExpression(
+						conditionExpr,
+						expected.empty,
+						converted,
+						typeUtil
+					)
+				}
+				return new JavaIfThenElseBuilder(
+					conditionExpr,
+					expected.empty,
+					converted,
+					typeUtil
+				)
+			]
 	}
 	
 	private def JavaExpression empty(JavaType expected) {
@@ -359,16 +367,6 @@ class TypeCoercionService {
 			JavaExpression.from('''false''', JavaPrimitiveType.BOOLEAN)
 		} else if (expected instanceof JavaPrimitiveType) {
 			throw new IllegalArgumentException("No empty representation for primitive type `" + expected + "`.")
-		} else {
-			JavaExpression.NULL
-		}
-	}
-	
-	private def JavaStatementBuilder metaToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) {
-		val actual = expression.expressionType
-			if (actual instanceof RJavaWithMetaValue) {
-			JavaExpression.from('''«expression».getValue()''', actual.valueType)
-				.mapExpression[itemToMetaConversionExpression(it, expected, scope)]
 		} else {
 			JavaExpression.NULL
 		}
@@ -396,18 +394,12 @@ class TypeCoercionService {
 	 */
 	private def JavaStatementBuilder itemToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) { 
 		val expectedValueType = expected.valueType
-		val itemExpr = itemToItem(expression, expectedValueType, scope)
-		
-		if (expected instanceof RJavaFieldWithMeta) {
-			val exprReturnType = FIELD_WITH_META.wrap(expectedValueType)
-			JavaExpression.from('''FieldWithMeta«expectedValueType».builder().setValue(«itemExpr»).build()''', exprReturnType)
-		} else if (expected instanceof RJavaReferenceWithMeta) {
-			val exprReturnType = REFERENCE_WITH_META.wrap(expectedValueType)
-			JavaExpression.from('''ReferenceWithMeta«expectedValueType».builder().setValue(«itemExpr»).build()''', exprReturnType)
-		} else {
-			JavaExpression.NULL
-		}
-		
+		getItemConversion(expression.expressionType, expectedValueType, scope)
+			.map[itemConversion|
+				itemConversion.apply(expression)
+					.mapExpression[JavaExpression.from('''«expected».builder().setValue(«it»).build()''', expected)]
+			]
+			.orElseGet[JavaExpression.from('''«expected».builder().setValue(«expression»).build()''', expected)]
 	}
 	
 	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType expected) {

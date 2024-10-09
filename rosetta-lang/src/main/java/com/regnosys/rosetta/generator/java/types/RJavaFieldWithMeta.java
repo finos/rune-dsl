@@ -12,15 +12,14 @@ import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeDeclaration;
 import com.rosetta.util.types.RJavaWithMetaValue;
 
-public class RJavaFieldWithMeta extends JavaClass<RosettaModelObject> implements RJavaWithMetaValue {
-	private final JavaReferenceType valueType;
+public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 	private final DottedPath namespace;
 	private final JavaTypeUtil javaTypeUtil;
 	private final JavaParameterizedType<FieldWithMeta<?>> fieldWithMetaParameterisedType;
 
 	
 	public RJavaFieldWithMeta(JavaReferenceType valueType, DottedPath namespace, JavaTypeUtil javaTypeUtil) {
-		this.valueType = valueType;
+		super(valueType);
 		this.namespace = namespace;
 		this.javaTypeUtil = javaTypeUtil;
 		fieldWithMetaParameterisedType = javaTypeUtil.wrap(javaTypeUtil.FIELD_WITH_META, valueType);
@@ -78,20 +77,10 @@ public class RJavaFieldWithMeta extends JavaClass<RosettaModelObject> implements
 		return namespace;
 	}
 
-	@Override
-	public JavaClass<? super RosettaModelObject> getSuperclass() {
-		return JavaClass.OBJECT;
-	}
 
 	@Override
 	public List<JavaClass<?>> getInterfaces() {
 		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT,fieldWithMetaParameterisedType, javaTypeUtil.GLOBAL_KEY);
-	}
-
-	@Override
-	public JavaReferenceType getValueType() {
-		return valueType;
-	}
-	
+	}	
 	
 }
