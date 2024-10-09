@@ -105,7 +105,6 @@ class FunctionGeneratorTest {
 		assertEquals(expected, result)
 	}
 	
-	@Disabled
 	@Test
 	def void canPassMetadataToFunctionAndUseInExpression() {
 		val code = '''			
