@@ -216,7 +216,6 @@ class TypeCoercionService {
 		} else if (expected instanceof RJavaFieldWithMeta || expected instanceof RJavaReferenceWithMeta) {
 			return Optional.of([itemToMetaConversionExpression(it, expected as RJavaWithMetaValue, scope)])
 		} 
-		//TODO: add a case for each of the meta containers
 		return Optional.empty
 	}
 	private def Function<JavaExpression, JavaExpression> getWrapConversion(JavaType wrapperType) {
@@ -368,8 +367,8 @@ class TypeCoercionService {
 	private def JavaStatementBuilder metaToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) {
 		val actual = expression.expressionType
 			if (actual instanceof RJavaWithMetaValue) {
-			val valueExpr = JavaExpression.from('''«expression».getValue()''', actual.valueType)
-			itemToMetaConversionExpression(valueExpr, expected, scope)
+			JavaExpression.from('''«expression».getValue()''', actual.valueType)
+				.mapExpression[itemToMetaConversionExpression(it, expected, scope)]
 		} else {
 			JavaExpression.NULL
 		}
@@ -379,12 +378,11 @@ class TypeCoercionService {
 	 * 1. Unwrap the meta by calling getValue() on the expression
 	 * 2. Map expression to a call to itemToItem(it, expected)
 	 */
-	
 	private def JavaStatementBuilder metaToItemConversionExpression(JavaExpression expression, JavaType expected, JavaScope scope) {
 		val actual = expression.expressionType
 		if (actual instanceof RJavaWithMetaValue) {
-			val valueExpr = JavaExpression.from('''«expression».getValue()''', actual.valueType)
-			itemToItem(valueExpr, expected, scope)
+			JavaExpression.from('''«expression».getValue()''', actual.valueType)
+				.mapExpression[itemToItem(it, expected, scope)]
 		} else {
 			JavaExpression.NULL
 		}
