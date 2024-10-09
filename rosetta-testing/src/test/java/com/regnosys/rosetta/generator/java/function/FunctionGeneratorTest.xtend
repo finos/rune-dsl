@@ -81,8 +81,8 @@ class FunctionGeneratorTest {
         val test = classes.createFunc("Test");
 
 		val fooWithReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
-			"value" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model"), "Foo", #{
-				"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model"), "A", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+				"a" -> classes.createInstanceUsingBuilder("A", #{
 					"attr" -> 99
 				})
 			}),
