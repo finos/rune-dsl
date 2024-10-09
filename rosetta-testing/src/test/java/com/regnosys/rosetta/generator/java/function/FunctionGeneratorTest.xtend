@@ -32,6 +32,7 @@ import javax.inject.Inject
 import java.time.LocalDateTime
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.rosetta.model.lib.meta.Key
+import com.rosetta.model.lib.meta.Reference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -52,12 +53,13 @@ class FunctionGeneratorTest {
 		string with scheme and string with template
 	 */
 	
- 	@Disabled
 	@Test
 	def void canHandleMetaCoecrion() {
 		val code = '''
-			fun SomeFunc:
-				intputs:
+			metaType reference string
+			
+			func SomeFunc:
+				inputs:
 					myInput int (0..*)
 					[metadata reference]
 			
@@ -73,34 +75,28 @@ class FunctionGeneratorTest {
 			
 		val myInput = #[
 			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
-			"value" -> 5,
-			"reference" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.lib.meta"), "Reference", #{
-    				"reference" -> "myRef"
-    			})
+				"value" -> 5,
+				"reference" -> (Reference.builder.reference = "myRef").build
 			}),
 			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
-			"value" -> 10,
-			"reference" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.lib.meta"), "Reference", #{
-    				"reference" -> "myRef2"
-    			})
+				"value" -> 10,
+				"reference" ->  (Reference.builder.reference = "myRef2").build
 			}), 
-			 classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
-			"value" -> 15,
-			"reference" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.lib.meta"), "Reference", #{
-    				"reference" -> "myRef3"
-    			})
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+				"value" -> 15,
+				"reference" ->  (Reference.builder.reference = "myRef3").build
 			})
 		]
 			
 		val expected = #[
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
-				"value" -> 5
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+				"value" -> BigDecimal.valueOf(5)
     		}),
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
-				"value" -> 10
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+				"value" -> BigDecimal.valueOf(10)
     		}),
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
-				"value" -> 15
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+				"value" -> BigDecimal.valueOf(15)
     		})
 		]
 			
