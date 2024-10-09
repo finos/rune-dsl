@@ -52,6 +52,45 @@ class FunctionGeneratorTest {
 		string with scheme and string without scheme
 		string with scheme and string with template
 	 */
+	 
+ 	@Test
+	def void testDeepFeatureCallWithMeta() {
+		val code = '''
+			choice Foo:
+			    A
+			    B
+			
+			type A:
+			    attr int (1..1)
+			
+			type B:
+			    attr int (1..1)
+			
+			func Test:
+			    inputs:
+			        fooWithReference Foo (1..1)
+			            [metadata reference]
+			    output:
+			        result int (1..1)
+			    set result:
+			        fooWithReference ->> attr
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test");
+
+		val fooWithReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model"), "Foo", #{
+				"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model"), "A", #{
+					"attr" -> 99
+				})
+			}),
+			"reference" -> (Reference.builder.reference = "myRef").build
+		})
+        
+        assertEquals(99, test.invokeFunc(Integer, fooWithReference))
+	}
 	
 	@Test
 	def void canHandleMetaCoecrion() {

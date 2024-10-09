@@ -99,6 +99,10 @@ public class JavaTypeUtil {
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, Class<?> itemType) {
 		return wrapExtends(wrapperType, JavaType.from(itemType));
 	}
+	public <T> JavaParameterizedType<T> wrapExtendsWithoutMeta(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
+		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item).getRType()));
+	}
+	
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
 		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item)));
 	}

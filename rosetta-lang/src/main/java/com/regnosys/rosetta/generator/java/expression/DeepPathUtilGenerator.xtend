@@ -104,7 +104,7 @@ class DeepPathUtilGenerator {
 		for (a : attrs.reverseView) {
 			val currAcc = acc
 			acc = inputParameter
-					.featureCall(choiceType.withEmptyMeta, a, false, scope)
+					.attributeCall(choiceType.withEmptyMeta, a, false, scope)
 					.declareAsVariable(true, a.name.toFirstLower, scope)
 					.mapExpression[attrVar|
 						attrVar.exists(ExistsModifier.NONE, scope)
@@ -125,7 +125,7 @@ class DeepPathUtilGenerator {
 									} else {
 										(attrType as RDataType).allNonOverridenAttributes.findFirst[name.equals(deepFeature.name)]
 									}
-									attrVar.featureCall(metaRType, actualFeature, needsToGoDownDeeper, scope)
+									attrVar.attributeCall(metaRType, actualFeature, needsToGoDownDeeper, scope)
 								}
 								new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)
 							]
