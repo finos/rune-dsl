@@ -260,7 +260,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		val definingContainer = context.findContainerDefiningImplicitVariable
 		definingContainer.map [
 			if (it instanceof Data) {
-				buildRDataType.withMeta(it.annotations.RMetaAttributes)
+				buildRDataType.withEmptyMeta
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
