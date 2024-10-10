@@ -436,7 +436,6 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	@Disabled // Enable as part of https://github.com/finos/rune-dsl/pull/845
 	def void switchOnChoiceOptionWithMetadata() {
 		val code = '''
 		typeAlias MyString: string(maxLength: 42)
@@ -464,7 +463,7 @@ class FunctionGeneratorTest {
 			"number" -> BigDecimal.valueOf(42)
 		})
 		val fooStrWithScheme = classes.createInstanceUsingBuilder("Foo", #{
-			"string" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"MyString" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
 					"scheme" -> "myScheme"
 				}),

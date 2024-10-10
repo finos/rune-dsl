@@ -1036,6 +1036,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			RosettaCallableWithArgs: {
 				callableWithArgsCall(s, expr.args, context.scope)
 			}
+			RosettaMetaType: {
+				val implicitType = typeProvider.typeOfImplicitVariable(expr)
+				metaCall(implicitVariable(expr, context.scope), implicitType, s, context.scope)
+			}
 			default:
 				throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
 		}

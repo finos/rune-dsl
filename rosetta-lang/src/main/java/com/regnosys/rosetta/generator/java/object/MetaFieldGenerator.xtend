@@ -195,7 +195,7 @@ class MetaFieldGenerator {
 		buildClass(packages.basicMetafields, body, scope)
 	}
 
-	def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
+	private def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
 		val valueAttribute = new RAttribute(
 			"value", null, emptyList, metaAnnotatedType.RType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
@@ -254,7 +254,7 @@ class MetaFieldGenerator {
 		 #[globalRefAttribute, externalRefAttribute, refAttribute]
 	}
 	
-	def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
+	private def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RMetaAnnotatedType metaAnnotatedType) {
 		val valueAttribute = new RAttribute(
 			"value", null, emptyList, metaAnnotatedType.RType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)

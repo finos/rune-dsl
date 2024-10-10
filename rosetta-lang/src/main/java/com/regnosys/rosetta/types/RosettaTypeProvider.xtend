@@ -132,7 +132,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		}
 	}
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-		return extensions.allFeatures(typeOfImplicitVariable(context).RType, context)
+		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
 	
 	def List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
