@@ -784,7 +784,6 @@ class FunctionGeneratorTest {
         assertFalse(testOnlyExists.invokeFunc(Boolean, #[List.of(a1, a2, a3)]))
 	}
 	
-
 	@Test
 	def void testDeepPathOperatorWithMeta() {
 		val code = '''
@@ -814,9 +813,7 @@ class FunctionGeneratorTest {
 				a ->> id -> scheme
 		'''.generateCode
 		
-		//code.writeClasses("testDeepPathOperatorWithMeta2")
 		val classes = code.compileToClasses
-		
         
         val test = classes.createFunc("Test");
         val aB = classes.createInstanceUsingBuilder("A", #{
