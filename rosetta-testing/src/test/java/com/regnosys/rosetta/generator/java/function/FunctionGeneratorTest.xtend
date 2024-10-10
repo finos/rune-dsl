@@ -730,7 +730,9 @@ class FunctionGeneratorTest {
 				a ->> id -> scheme
 		'''.generateCode
 		
+		//code.writeClasses("testDeepPathOperatorWithMeta2")
 		val classes = code.compileToClasses
+		
         
         val test = classes.createFunc("Test");
         val aB = classes.createInstanceUsingBuilder("A", #{

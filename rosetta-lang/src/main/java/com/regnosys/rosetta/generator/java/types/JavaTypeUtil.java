@@ -45,6 +45,7 @@ import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeArgument;
 import com.rosetta.util.types.JavaWildcardTypeArgument;
+import com.rosetta.util.types.RJavaWithMetaValue;
 
 public class JavaTypeUtil {
 	@Inject
@@ -92,7 +93,13 @@ public class JavaTypeUtil {
 	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
 		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item)));
 	}
-	
+	public <T> JavaParameterizedType<T> wrapExtendsWithoutMeta(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
+		if (itemType instanceof RJavaWithMetaValue) {
+			RJavaWithMetaValue metaItemType = (RJavaWithMetaValue) itemType;
+			return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(metaItemType.getValueType()));
+		}
+		return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
+	}
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
 	}
