@@ -705,8 +705,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		} else {
 			throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
-		//TODO: create seperate methods for expr.feature instanceOf Attribute, MetaType and RecordFeature
-//		return featureCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRMetaAnnotatedType(expr.receiver), expr.feature, context.scope)
 	}
 	
 	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {

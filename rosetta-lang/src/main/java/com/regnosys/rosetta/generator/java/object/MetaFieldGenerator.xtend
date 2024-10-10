@@ -75,15 +75,10 @@ class MetaFieldGenerator {
 		
 		
 		//find all the reference types
-		val namespaceClasses = Multimaps.index(model.elements, [c|c.model]).asMap
-		for (nsc : namespaceClasses.entrySet) {
-			if (ctx.cancelIndicator.canceled) {
+		if (ctx.cancelIndicator.canceled) {
 				return
-			}
-						
-			val attributesWithMeta = nsc.value.flatMap[eAllOfType(Attribute)].map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]
-			
-			for (attr : attributesWithMeta) {
+		}
+		for (attr : model.eAllOfType(Attribute).map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]) {
 				val targetModel = attr.RMetaAnnotatedType.RType.namespace
 				val targetPackage = new RootPackage(targetModel)
 				val metaJt = attr.toForcedMetaItemJavaType
@@ -99,8 +94,6 @@ class MetaFieldGenerator {
 				} else {
 					throw new UnsupportedOperationException("Invalid JavaType: " + metaJt)
 				}
-				
-			}
 		}
 	}
 	
