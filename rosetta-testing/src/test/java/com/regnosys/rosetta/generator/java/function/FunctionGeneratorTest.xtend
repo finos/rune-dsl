@@ -43,15 +43,99 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	/*
-	 * TODO: equality tests that require coercion
-	 * 
-	 * Add unit tests for checking equality between things with/without metadata: (metadata should be ignored)
-
-		string with scheme and string with scheme
-		string with scheme and string without scheme
-		string with scheme and string with template
-	 */
+	@Test
+	def void testCompareItemWithMetaToItemWithMeta() {
+		val code = '''
+			func Test:
+				inputs:
+					a string (1..1)
+					[metadata scheme]
+					b string (1..1)
+					[metadata scheme]
+				output:
+					result boolean (1..1)
+				set result: a = b
+			'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+		val a = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		
+		assertTrue(test.invokeFunc(Boolean, a, b))
+	}
+	 
+	@Test
+	def void testCompareItemToItemWithMeta() {
+		val code = '''
+			func Test:
+				inputs:
+					a string (1..1)
+					b string (1..1)
+					[metadata scheme]
+				output:
+					result boolean (1..1)
+				set result: a = b
+			'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+		val a = "foo"
+		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		
+		assertTrue(test.invokeFunc(Boolean, a, b))
+	}
+	
+	@Test
+	def void testCompareItemWithMetaToItemWithReference() {
+		val code = '''
+			func Test:
+				inputs:
+					a string (1..1)
+					[metadata scheme]
+					b string (1..1)
+					[metadata reference]
+				output:
+					result boolean (1..1)
+				set result: a = b
+			'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+		val a = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+			"value" -> "foo",
+			"reference" -> (Reference.builder.reference = "myRef").build
+		})
+		
+		assertTrue(test.invokeFunc(Boolean, a, b))
+	}	
 	 
  	@Test
 	def void testDeepFeatureCallWithMeta() {
@@ -78,7 +162,7 @@ class FunctionGeneratorTest {
 		
 		val classes = code.compileToClasses
         
-        val test = classes.createFunc("Test");
+        val test = classes.createFunc("Test")
 
 		val fooWithReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
