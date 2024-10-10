@@ -44,6 +44,50 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testPassingMetaItemToConstructor() {
+		val code = '''
+			type Foo:
+				a string (1..1)
+				[metadata scheme]
+				
+			func Test:
+				inputs:
+					myInput string (1..1)
+					[metadata scheme]
+				output:
+					result Foo (1..1)
+				
+				set result: Foo {
+					a: myInput
+				}
+		'''.generateCode
+				
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+        val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "someInput",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		
+		val expected = classes.createInstanceUsingBuilder("Foo", #{
+			"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "someInput",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			})
+		})
+		
+		val result = test.invokeFunc(RosettaModelObject, myInput)
+		
+		assertEquals(expected, result)
+	}
+	
+	@Test
 	def void testCompareItemWithMetaToItemWithMeta() {
 		val code = '''
 			func Test:
