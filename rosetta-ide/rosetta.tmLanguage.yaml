@@ -1038,19 +1038,22 @@ repository:
         - include: '#documentationFollowedByExpression'
       
       expression:
-        include: '#parameterizedExpression'
-        arguments:
-          extraEnd: ''
+        patterns:
+        - include: '#parameterizedExpression'
+          arguments:
+            extraEnd: ''
       
       expressionWithoutThenOperation:
-        include: '#parameterizedExpression'
-        arguments:
-          extraEnd: '(?={{wordStart}}then{{wordEnd}})|'
+        patterns:
+        - include: '#parameterizedExpression'
+          arguments:
+            extraEnd: '(?={{wordStart}}then{{wordEnd}})|'
       
       expressionWithoutThenAndDefaultOperation:
-        include: '#parameterizedExpression'
-        arguments:
-          extraEnd: '(?={{wordStart}}then|default{{wordEnd}})|'
+        patterns:
+        - include: '#parameterizedExpression'
+          arguments:
+            extraEnd: '(?={{wordStart}}then|default{{wordEnd}})|'
 
       parameterizedExpression:
         parameters: ['extraEnd']
@@ -1167,7 +1170,7 @@ repository:
         - name: meta.switch-operation.rosetta
           begin: '{{wordStart}}switch{{wordEnd}}'
           beginCaptures:
-            0: { name: keyword.operator.word.rosetta }
+            0: { name: keyword.control.conditional.switch.rosetta }
           end: '{{extraEnd}}{{expressionEndIgnoringComma}}'
           patterns:
           - include: '#comment'
