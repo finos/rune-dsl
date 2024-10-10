@@ -75,11 +75,12 @@ public class RObjectFactory {
 	
 	// TODO: should be private
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		return new RAttribute(name, null, Collections.emptyList(), type, List.of(), isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
+		RMetaAnnotatedType rAnnotatedType = new RMetaAnnotatedType(type, List.of());
+		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
-		RType outputRType = typeProvider.getRType(rule.getExpression());
+		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
@@ -146,7 +147,7 @@ public class RObjectFactory {
 				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
 				continue;
 			}
-			RType attrType = attribute.getRType() instanceof RChoiceType ? ((RChoiceType)attribute.getRType()).asRDataType() : attribute.getRType();
+			RType attrType = attribute.getRMetaAnnotatedType().getRType() instanceof RChoiceType ? ((RChoiceType)attribute.getRMetaAnnotatedType().getRType()).asRDataType() : attribute.getRMetaAnnotatedType().getRType();
 			if (attrType instanceof RDataType) {
 				RDataType rData = (RDataType) attrType;
 				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
@@ -170,21 +171,16 @@ public class RObjectFactory {
 		
 		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
-
+	
 	public RAttribute buildRAttribute(Attribute attribute) {
-		return buildRAttribute(attribute, attribute.getTypeCall().getType() instanceof RosettaMetaType);
-	}
-	private RAttribute buildRAttribute(Attribute attribute, boolean isMeta) {
-		RType rType = typeProvider.getRTypeOfSymbol(attribute);
-		List<RAttribute> metaAnnotations = attribute.getAnnotations().stream()
-				.filter(a -> a.getAnnotation().getName().equals("metadata") && a.getAttribute() != null).map(a -> buildRAttribute(a.getAttribute(), true))
-				.collect(Collectors.toList());
+		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfSymbol(attribute);
+		boolean isMeta =  attribute.getTypeCall().getType() instanceof RosettaMetaType;
 		PositiveIntegerInterval card = new PositiveIntegerInterval(
 				attribute.getCard().getInf(),
 				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));
 		RosettaRuleReference ruleRef = attribute.getRuleReference();
 
-		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rType, metaAnnotations,
+		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rAnnotatedType,
 				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
 	}
 

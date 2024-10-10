@@ -117,7 +117,7 @@ class FunctionGenerator {
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
-		val parameterVariable = inputs.head.RType.toListOrSingleJavaType(inputs.head.multi)
+		val parameterVariable = inputs.head.RMetaAnnotatedType.RType.toListOrSingleJavaType(inputs.head.multi)
 		JavaParameterizedType.from(new TypeReference<IQualifyFunctionExtension<?>>() {}, parameterVariable)
 	}
 
@@ -245,8 +245,8 @@ class FunctionGenerator {
 						if («outputBuilderId» == null) {
 							«evaluateScope.getIdentifierOrThrow(output)» = null;
 						} else {
-							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
-							«objectValidatorId».validate(«output.RType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
+							«evaluateScope.getIdentifierOrThrow(output)» = «outputBuilderId»«IF output.isMulti».stream().map(«output.RMetaAnnotatedType.toJavaReferenceType»::build).collect(«Collectors».toList())«ELSE».build()«ENDIF»;
+							«objectValidatorId».validate(«output.RMetaAnnotatedType.toJavaReferenceType».class, «evaluateScope.getIdentifierOrThrow(output)»);
 						}
 						
 					«ENDIF»
@@ -284,7 +284,7 @@ class FunctionGenerator {
 							«doEvaluateScope.getIdentifierOrThrow(input)» = «Collections».emptyList();
 						}
 						«ENDFOR»
-						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
+						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RMetaAnnotatedType.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
 						return assignOutput(«doEvaluateScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsArguments(doEvaluateScope)»);
 					}
 					
@@ -476,7 +476,7 @@ class FunctionGenerator {
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRType(op.expression).toJavaReferenceType, scope)
+				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).toJavaReferenceType, scope)
 					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -571,9 +571,9 @@ class FunctionGenerator {
 			JavaPrimitiveType.VOID
 		} else {
 			if (out.typeCall.type.needsBuilder) {
-				typeProvider.getRTypeOfSymbol(out).toPolymorphicListOrSingleJavaType(out.card.isMany)
+				typeProvider.getRTypeOfSymbol(out).RType.toPolymorphicListOrSingleJavaType(out.card.isMany)
 			} else {
-				typeProvider.getRTypeOfSymbol(out).toListOrSingleJavaType(out.card.isMany)
+				typeProvider.getRTypeOfSymbol(out).RType.toListOrSingleJavaType(out.card.isMany)
 			}
 		}
 	}	
@@ -587,11 +587,11 @@ class FunctionGenerator {
 	}
 
 	private def StringConcatenationClient inputsAsParameters(extension Function function, JavaScope scope) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF input.typeCall.type.needsBuilder»«typeProvider.getRTypeOfSymbol(input).toPolymorphicListOrSingleJavaType(input.card.isMany)»«ELSE»«typeProvider.getRTypeOfSymbol(input).toListOrSingleJavaType(input.card.isMany)»«ENDIF» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF input.typeCall.type.needsBuilder»«typeProvider.getRTypeOfSymbol(input).RType.toPolymorphicListOrSingleJavaType(input.card.isMany)»«ELSE»«typeProvider.getRTypeOfSymbol(input).RType.toListOrSingleJavaType(input.card.isMany)»«ENDIF» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 	
 	private def StringConcatenationClient inputsAsParameters(List<RAttribute> inputs, JavaScope scope) {
-		'''«FOR input : inputs SEPARATOR ', '»«input.toJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+		'''«FOR input : inputs SEPARATOR ', '»«input.toMetaJavaType» «scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
 	private def JavaReferenceType shortcutJavaType(RShortcut feature) {
@@ -602,12 +602,12 @@ class FunctionGenerator {
 			javaType
 	}
 	private def JavaReferenceType shortcutExpressionJavaType(RShortcut feature) {
-		val rType = typeProvider.getRType(feature.expression)
-		rType.toJavaReferenceType
+		val metaRType = typeProvider.getRMetaAnnotatedType(feature.expression)
+		metaRType.toJavaReferenceType
 	}
 	
 	private def JavaType toBuilderItemType(RAttribute rAttribute) {
-		var javaType = rAttribute.RType.toJavaReferenceType as JavaClass<?>
+		var javaType = rAttribute.RMetaAnnotatedType.toJavaReferenceType as JavaClass<?>
 		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
 		javaType
 	}

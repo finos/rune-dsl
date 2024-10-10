@@ -32,6 +32,7 @@ import javax.inject.Inject
 import java.time.LocalDateTime
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.rosetta.model.lib.meta.Key
+import com.rosetta.model.lib.meta.Reference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -41,6 +42,319 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testPassingMetaItemToConstructor() {
+		val code = '''
+			type Foo:
+				a string (1..1)
+				[metadata scheme]
+				
+			func Test:
+				inputs:
+					myInput string (1..1)
+					[metadata scheme]
+				output:
+					result Foo (1..1)
+				
+				set result: Foo {
+					a: myInput
+				}
+		'''.generateCode
+				
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+        val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "someInput",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		
+		val expected = classes.createInstanceUsingBuilder("Foo", #{
+			"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "someInput",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			})
+		})
+		
+		val result = test.invokeFunc(RosettaModelObject, myInput)
+		
+		assertEquals(expected, result)
+	}
+	
+	@Test
+	def void testCompareItemWithMetaToItemWithMeta() {
+		val code = '''
+			func Test:
+				inputs:
+					a string (1..1)
+					[metadata scheme]
+					b string (1..1)
+					[metadata scheme]
+				output:
+					result boolean (1..1)
+				set result: a = b
+			'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+		val a = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		
+		assertTrue(test.invokeFunc(Boolean, a, b))
+	}
+	 
+	@Test
+	def void testCompareItemToItemWithMeta() {
+		val code = '''
+			func Test:
+				inputs:
+					a string (1..1)
+					b string (1..1)
+					[metadata scheme]
+				output:
+					result boolean (1..1)
+				set result: a = b
+			'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+		val a = "foo"
+		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		
+		assertTrue(test.invokeFunc(Boolean, a, b))
+	}
+	
+	@Test
+	def void testCompareItemWithMetaToItemWithReference() {
+		val code = '''
+			func Test:
+				inputs:
+					a string (1..1)
+					[metadata scheme]
+					b string (1..1)
+					[metadata reference]
+				output:
+					result boolean (1..1)
+				set result: a = b
+			'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+		val a = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "foo",
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+			"value" -> "foo",
+			"reference" -> (Reference.builder.reference = "myRef").build
+		})
+		
+		assertTrue(test.invokeFunc(Boolean, a, b))
+	}	
+	 
+ 	@Test
+	def void testDeepFeatureCallWithMeta() {
+		val code = '''
+			choice Foo:
+			    A
+			    B
+			
+			type A:
+			    attr int (1..1)
+			
+			type B:
+			    attr int (1..1)
+			
+			func Test:
+			    inputs:
+			        fooWithReference Foo (1..1)
+			            [metadata reference]
+			    output:
+			        result int (1..1)
+			    set result:
+			        fooWithReference ->> attr
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+
+		val fooWithReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+				"a" -> classes.createInstanceUsingBuilder("A", #{
+					"attr" -> 99
+				})
+			}),
+			"reference" -> (Reference.builder.reference = "myRef").build
+		})
+        
+        assertEquals(99, test.invokeFunc(Integer, fooWithReference))
+	}
+	
+	@Test
+	def void canHandleMetaCoecrion() {
+		val code = '''
+			metaType reference string
+			
+			func SomeFunc:
+				inputs:
+					myInput int (0..*)
+					[metadata reference]
+			
+				output:
+					myResult number (0..*)
+					[metadata scheme]
+					
+				set myResult: myInput	
+		'''.generateCode
+		
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+			
+		val myInput = #[
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+				"value" -> 5,
+				"reference" -> (Reference.builder.reference = "myRef").build
+			}),
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+				"value" -> 10,
+				"reference" ->  (Reference.builder.reference = "myRef2").build
+			}), 
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+				"value" -> 15,
+				"reference" ->  (Reference.builder.reference = "myRef3").build
+			})
+		]
+			
+		val expected = #[
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+				"value" -> BigDecimal.valueOf(5)
+    		}),
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+				"value" -> BigDecimal.valueOf(10)
+    		}),
+			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+				"value" -> BigDecimal.valueOf(15)
+    		})
+		]
+			
+		val result = someFunc.invokeFunc(List, myInput)
+		
+		assertEquals(expected, result)
+	}
+	
+	@Test
+	def void canPassMetadataToFunctionAndUseInExpression() {
+		val code = '''			
+			func SomeFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata scheme]
+			    output:
+			        myResult string (1..1)
+			
+			    set myResult: myInput + myInput -> scheme
+		'''.generateCode
+		
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+		
+		
+		val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+    			"value" -> "myInputValue", 
+    			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    				"scheme" -> "myScheme"
+    			})
+    		})
+		
+		val result = someFunc.invokeFunc(String, myInput)
+		assertEquals("myInputValuemyScheme", result)
+	}
+	
+	@Test
+	def void canSetFunctionWithMetaOutput() {
+		val code = '''			
+			func SomeFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata scheme]
+			    output:
+			        myResult string (1..1)
+			        [metadata scheme]	
+			
+			    set myResult: myInput
+		'''.generateCode
+				
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+		
+		val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+    			"value" -> "myInputValue", 
+    			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    				"scheme" -> "myScheme"
+    			})
+    		})
+		
+		val result = someFunc.invokeFunc(RosettaModelObject, myInput)
+		assertEquals(myInput, result)
+	}
+	
+	@Test
+	def void canPassMetadataToFunctions() {
+		val code = '''			
+			func SomeFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata scheme]
+			    output:
+			        myResult string (1..1)
+			
+			    set myResult: myInput -> scheme
+		'''.generateCode
+		
+		val classes = code.compileToClasses		
+		val someFunc = classes.createFunc("SomeFunc")
+		
+		
+		val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+    			"value" -> "myInputValue", 
+    			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+    				"scheme" -> "myScheme"
+    			})
+    		})
+		
+		val result = someFunc.invokeFunc(String, myInput)
+		assertEquals("myScheme", result)
+	}
 	
 	@Test
 	def void switchOnChoiceType() {
@@ -166,7 +480,6 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	@Disabled // Enable as part of https://github.com/finos/rune-dsl/pull/845
 	def void switchOnChoiceOptionWithMetadata() {
 		val code = '''
 		typeAlias MyString: string(maxLength: 42)
@@ -194,7 +507,7 @@ class FunctionGeneratorTest {
 			"number" -> BigDecimal.valueOf(42)
 		})
 		val fooStrWithScheme = classes.createInstanceUsingBuilder("Foo", #{
-			"string" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"MyString" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
 					"scheme" -> "myScheme"
 				}),

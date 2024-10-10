@@ -13,7 +13,7 @@ import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 
-public class RChoiceType extends RAnnotateType implements RObject {
+public class RChoiceType extends RType implements RObject {
 	private final Choice choice;
 	
 	private ModelSymbolId symbolId = null;
@@ -75,8 +75,8 @@ public class RChoiceType extends RAnnotateType implements RObject {
 	private Stream<RChoiceOption> doGetAllOptions(Set<RChoiceType> visited) {
 		if (visited.add(this)) {
 			return getOwnOptions().stream().flatMap(o -> {
-				if (o.getType() instanceof RChoiceType) {
-					RChoiceType nested = (RChoiceType) o.getType();
+				if (o.getType().getRType() instanceof RChoiceType) {
+					RChoiceType nested = (RChoiceType) o.getType().getRType();
 					return Streams.concat(Stream.of(o), nested.doGetAllOptions(visited));
 				}
 				return Stream.of(o);

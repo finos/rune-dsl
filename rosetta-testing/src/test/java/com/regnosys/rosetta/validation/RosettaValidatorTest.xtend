@@ -3217,7 +3217,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				add sortedFoos:
 					foos sort // sort based on Foo
 		'''.parseRosetta
-		model.assertError(SORT_OPERATION, null, "Operation sort only supports comparable types (string, int, string, date). Found type Foo.")
+		model.assertError(SORT_OPERATION, null, "Operation sort only supports comparable types (string, int, number, boolean, date). Found type Foo.")
 	}
 	
 	@Test
@@ -3239,7 +3239,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					bars 
 						sort x [ x -> foo ] // sort based on Foo
 		'''.parseRosetta
-		model.assertError(INLINE_FUNCTION, null, "Operation sort only supports comparable types (string, int, string, date). Found type Foo.")
+		model.assertError(INLINE_FUNCTION, null, "Operation sort only supports comparable types (string, int, number, boolean, date). Found type Foo.")
 	}
 	
 	@Test

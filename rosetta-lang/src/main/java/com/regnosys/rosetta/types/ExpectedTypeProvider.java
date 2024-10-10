@@ -78,17 +78,18 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.inject.Inject;
+import static com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta;
 
 
 @ImplementedBy(ExpectedTypeProvider.Impl.class)
 public interface ExpectedTypeProvider {	
 	static final int INSIGNIFICANT_INDEX = -1;
 	
-	RType getExpectedTypeFromContainer(EObject owner);
-	default RType getExpectedType(EObject owner, EReference reference) {
+	RMetaAnnotatedType getExpectedTypeFromContainer(EObject owner);
+	default RMetaAnnotatedType getExpectedType(EObject owner, EReference reference) {
 		return getExpectedType(owner, reference, INSIGNIFICANT_INDEX);
 	}
-	RType getExpectedType(EObject owner, EReference reference, int index);
+	RMetaAnnotatedType getExpectedType(EObject owner, EReference reference, int index);
 	
 	public static class Impl implements ExpectedTypeProvider {
 		private static Logger LOGGER = LoggerFactory.getLogger(Impl.class);
@@ -109,7 +110,7 @@ public interface ExpectedTypeProvider {
 		}
 		
 		@Override
-		public RType getExpectedTypeFromContainer(EObject owner) {
+		public RMetaAnnotatedType getExpectedTypeFromContainer(EObject owner) {
 			EObject container = owner.eContainer();
 			EReference reference = owner.eContainmentFeature();
 			if (container == null || reference == null) {
@@ -122,8 +123,8 @@ public interface ExpectedTypeProvider {
 			return getExpectedType(container, reference);
 		}
 		@Override
-		public RType getExpectedType(EObject owner, EReference reference, int index) {
-			return cache.<RType>get(new CacheKey(owner, reference, index), () -> {
+		public RMetaAnnotatedType getExpectedType(EObject owner, EReference reference, int index) {
+			return cache.<RMetaAnnotatedType>get(new CacheKey(owner, reference, index), () -> {
 				if (OPERATION__EXPRESSION.equals(reference) && owner instanceof Operation) {
 					Operation op = (Operation)owner;
 					if(op.getPath() == null) {
@@ -141,13 +142,13 @@ public interface ExpectedTypeProvider {
 					if (operation instanceof ReduceOperation) {
 						return getExpectedTypeFromContainer(operation);
 					} else if (operation instanceof FilterOperation) {
-						return builtins.BOOLEAN;
+						return withEmptyMeta(builtins.BOOLEAN);
 					} else if (operation instanceof MapOperation) {
 						return getExpectedTypeFromContainer(operation);
 					} else if (operation instanceof ThenOperation) {
 						return getExpectedTypeFromContainer(operation);
 					} else if (operation instanceof ComparingFunctionalOperation) {
-						return builtins.BOOLEAN;
+						return withEmptyMeta(builtins.BOOLEAN);
 					} else {
 						LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
 					}
@@ -198,8 +199,8 @@ public interface ExpectedTypeProvider {
 				this.index = index;
 			}
 		}
-		private class ExpectedTypeSwitch extends RosettaExpressionSwitch<RType, Context> {
-			public RType doSwitch(RosettaExpression expr, EReference reference, int index) {
+		private class ExpectedTypeSwitch extends RosettaExpressionSwitch<RMetaAnnotatedType, Context> {
+			public RMetaAnnotatedType doSwitch(RosettaExpression expr, EReference reference, int index) {
 				return doSwitch(expr, new Context(reference, index));
 			}
 			
@@ -228,12 +229,12 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseConstructorExpression(RosettaConstructorExpression expr, Context context) {
+			protected RMetaAnnotatedType caseConstructorExpression(RosettaConstructorExpression expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseListLiteral(ListLiteral expr, Context context) {
+			protected RMetaAnnotatedType caseListLiteral(ListLiteral expr, Context context) {
 				if (LIST_LITERAL__ELEMENTS.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -241,63 +242,63 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseConditionalExpression(RosettaConditionalExpression expr, Context context) {
+			protected RMetaAnnotatedType caseConditionalExpression(RosettaConditionalExpression expr, Context context) {
 				if (ROSETTA_CONDITIONAL_EXPRESSION__IF.equals(context.reference)) {
-					return builtins.BOOLEAN;
+					return withEmptyMeta(builtins.BOOLEAN);
 				} else if (ROSETTA_CONDITIONAL_EXPRESSION__IFTHEN.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				} else if (ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN.equals(context.reference)) {
-					RType expectedType = getExpectedTypeFromContainer(expr);
+					RMetaAnnotatedType expectedType = getExpectedTypeFromContainer(expr);
 					if (expectedType != null) {
 						return expectedType;
 					}
-					return typeProvider.getRType(expr.getIfthen());
+					return typeProvider.getRMetaAnnotatedType(expr.getIfthen());
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseFeatureCall(RosettaFeatureCall expr, Context context) {
+			protected RMetaAnnotatedType caseFeatureCall(RosettaFeatureCall expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {
+			protected RMetaAnnotatedType caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseBooleanLiteral(RosettaBooleanLiteral expr, Context context) {
+			protected RMetaAnnotatedType caseBooleanLiteral(RosettaBooleanLiteral expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseIntLiteral(RosettaIntLiteral expr, Context context) {
+			protected RMetaAnnotatedType caseIntLiteral(RosettaIntLiteral expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseNumberLiteral(RosettaNumberLiteral expr, Context context) {
+			protected RMetaAnnotatedType caseNumberLiteral(RosettaNumberLiteral expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseStringLiteral(RosettaStringLiteral expr, Context context) {
+			protected RMetaAnnotatedType caseStringLiteral(RosettaStringLiteral expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseOnlyExists(RosettaOnlyExistsExpression expr, Context context) {
+			protected RMetaAnnotatedType caseOnlyExists(RosettaOnlyExistsExpression expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseImplicitVariable(RosettaImplicitVariable expr, Context context) {
+			protected RMetaAnnotatedType caseImplicitVariable(RosettaImplicitVariable expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseSymbolReference(RosettaSymbolReference expr, Context context) {
+			protected RMetaAnnotatedType caseSymbolReference(RosettaSymbolReference expr, Context context) {
 				if (ROSETTA_SYMBOL_REFERENCE__RAW_ARGS.equals(context.reference)) {
 					RosettaSymbol symbol = expr.getSymbol();
 					if (symbol instanceof Function) {
@@ -305,109 +306,109 @@ public interface ExpectedTypeProvider {
 						return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index));
 					} else if (symbol instanceof RosettaRule) {
 						RosettaRule rule = (RosettaRule)symbol;
-						return typeSystem.typeCallToRType(rule.getInput());
+						return withEmptyMeta(typeSystem.typeCallToRType(rule.getInput()));
 					}
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseAddOperation(ArithmeticOperation expr, Context context) {
+			protected RMetaAnnotatedType caseAddOperation(ArithmeticOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseSubtractOperation(ArithmeticOperation expr, Context context) {
+			protected RMetaAnnotatedType caseSubtractOperation(ArithmeticOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseMultiplyOperation(ArithmeticOperation expr, Context context) {
-				return builtins.UNCONSTRAINED_NUMBER;
+			protected RMetaAnnotatedType caseMultiplyOperation(ArithmeticOperation expr, Context context) {
+				return withEmptyMeta(builtins.UNCONSTRAINED_NUMBER);
 			}
 
 			@Override
-			protected RType caseDivideOperation(ArithmeticOperation expr, Context context) {
-				return builtins.UNCONSTRAINED_NUMBER;
+			protected RMetaAnnotatedType caseDivideOperation(ArithmeticOperation expr, Context context) {
+				return withEmptyMeta(builtins.UNCONSTRAINED_NUMBER);
 			}
 
 			@Override
-			protected RType caseJoinOperation(JoinOperation expr, Context context) {
-				return builtins.UNCONSTRAINED_STRING;
+			protected RMetaAnnotatedType caseJoinOperation(JoinOperation expr, Context context) {
+				return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 			}
 
 			@Override
-			protected RType caseAndOperation(LogicalOperation expr, Context context) {
-				return builtins.BOOLEAN;
+			protected RMetaAnnotatedType caseAndOperation(LogicalOperation expr, Context context) {
+				return withEmptyMeta(builtins.BOOLEAN);
 			}
 
 			@Override
-			protected RType caseOrOperation(LogicalOperation expr, Context context) {
-				return builtins.BOOLEAN;
+			protected RMetaAnnotatedType caseOrOperation(LogicalOperation expr, Context context) {
+				return withEmptyMeta(builtins.BOOLEAN);
 			}
 
 			@Override
-			protected RType caseLessThanOperation(ComparisonOperation expr, Context context) {
+			protected RMetaAnnotatedType caseLessThanOperation(ComparisonOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseLessThanOrEqualOperation(ComparisonOperation expr, Context context) {
+			protected RMetaAnnotatedType caseLessThanOrEqualOperation(ComparisonOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseGreaterThanOperation(ComparisonOperation expr, Context context) {
+			protected RMetaAnnotatedType caseGreaterThanOperation(ComparisonOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseGreaterThanOrEqualOperation(ComparisonOperation expr, Context context) {
+			protected RMetaAnnotatedType caseGreaterThanOrEqualOperation(ComparisonOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseEqualsOperation(EqualityOperation expr, Context context) {
+			protected RMetaAnnotatedType caseEqualsOperation(EqualityOperation expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRMetaAnnotatedType(expr.getLeft());
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseNotEqualsOperation(EqualityOperation expr, Context context) {
+			protected RMetaAnnotatedType caseNotEqualsOperation(EqualityOperation expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRMetaAnnotatedType(expr.getLeft());
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseContainsOperation(RosettaContainsExpression expr, Context context) {
+			protected RMetaAnnotatedType caseContainsOperation(RosettaContainsExpression expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRMetaAnnotatedType(expr.getLeft());
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseDisjointOperation(RosettaDisjointExpression expr, Context context) {
+			protected RMetaAnnotatedType caseDisjointOperation(RosettaDisjointExpression expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRMetaAnnotatedType(expr.getLeft());
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseDefaultOperation(DefaultOperation expr, Context context) {
+			protected RMetaAnnotatedType caseDefaultOperation(DefaultOperation expr, Context context) {
 				if (ROSETTA_BINARY_OPERATION__RIGHT.equals(context.reference)) {
-					return typeProvider.getRType(expr.getLeft());
+					return typeProvider.getRMetaAnnotatedType(expr.getLeft());
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseAsKeyOperation(AsKeyOperation expr, Context context) {
+			protected RMetaAnnotatedType caseAsKeyOperation(AsKeyOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -415,32 +416,32 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseChoiceOperation(ChoiceOperation expr, Context context) {
+			protected RMetaAnnotatedType caseChoiceOperation(ChoiceOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseOneOfOperation(OneOfOperation expr, Context context) {
+			protected RMetaAnnotatedType caseOneOfOperation(OneOfOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseAbsentOperation(RosettaAbsentExpression expr, Context context) {
+			protected RMetaAnnotatedType caseAbsentOperation(RosettaAbsentExpression expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseCountOperation(RosettaCountOperation expr, Context context) {
+			protected RMetaAnnotatedType caseCountOperation(RosettaCountOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseExistsOperation(RosettaExistsExpression expr, Context context) {
+			protected RMetaAnnotatedType caseExistsOperation(RosettaExistsExpression expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseDistinctOperation(DistinctOperation expr, Context context) {
+			protected RMetaAnnotatedType caseDistinctOperation(DistinctOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -448,7 +449,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseFirstOperation(FirstOperation expr, Context context) {
+			protected RMetaAnnotatedType caseFirstOperation(FirstOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -456,7 +457,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseFlattenOperation(FlattenOperation expr, Context context) {
+			protected RMetaAnnotatedType caseFlattenOperation(FlattenOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -464,7 +465,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseLastOperation(LastOperation expr, Context context) {
+			protected RMetaAnnotatedType caseLastOperation(LastOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -472,7 +473,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseReverseOperation(ReverseOperation expr, Context context) {
+			protected RMetaAnnotatedType caseReverseOperation(ReverseOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -480,7 +481,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
+			protected RMetaAnnotatedType caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -488,73 +489,73 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseSumOperation(SumOperation expr, Context context) {
+			protected RMetaAnnotatedType caseSumOperation(SumOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseToStringOperation(ToStringOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToStringOperation(ToStringOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseToNumberOperation(ToNumberOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToNumberOperation(ToNumberOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseToIntOperation(ToIntOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToIntOperation(ToIntOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseToTimeOperation(ToTimeOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToTimeOperation(ToTimeOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseToEnumOperation(ToEnumOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToEnumOperation(ToEnumOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseToDateOperation(ToDateOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToDateOperation(ToDateOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseToDateTimeOperation(ToDateTimeOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToDateTimeOperation(ToDateTimeOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
+			protected RMetaAnnotatedType caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return builtins.UNCONSTRAINED_STRING;
+					return withEmptyMeta(builtins.UNCONSTRAINED_STRING);
 				}
 				return null;
 			}
 
 			@Override
-			protected RType caseFilterOperation(FilterOperation expr, Context context) {
+			protected RMetaAnnotatedType caseFilterOperation(FilterOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -562,7 +563,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseMapOperation(MapOperation expr, Context context) {
+			protected RMetaAnnotatedType caseMapOperation(MapOperation expr, Context context) {
 				InlineFunction f = expr.getFunction();
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference) && f != null && leavesItemTypeUnchanged(f.getBody())) {
 					return getExpectedTypeFromContainer(expr);
@@ -571,7 +572,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseMaxOperation(MaxOperation expr, Context context) {
+			protected RMetaAnnotatedType caseMaxOperation(MaxOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -579,7 +580,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseMinOperation(MinOperation expr, Context context) {
+			protected RMetaAnnotatedType caseMinOperation(MinOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -587,12 +588,12 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseReduceOperation(ReduceOperation expr, Context context) {
+			protected RMetaAnnotatedType caseReduceOperation(ReduceOperation expr, Context context) {
 				return null;
 			}
 
 			@Override
-			protected RType caseSortOperation(SortOperation expr, Context context) {
+			protected RMetaAnnotatedType caseSortOperation(SortOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -600,7 +601,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseThenOperation(ThenOperation expr, Context context) {
+			protected RMetaAnnotatedType caseThenOperation(ThenOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference) && leavesItemTypeUnchanged(expr.getFunction().getBody())) {
 					return getExpectedTypeFromContainer(expr);
 				}
@@ -608,7 +609,7 @@ public interface ExpectedTypeProvider {
 			}
 
 			@Override
-			protected RType caseSwitchOperation(SwitchOperation expr, Context context) {
+			protected RMetaAnnotatedType caseSwitchOperation(SwitchOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
 					if (expr.getCases().stream().allMatch(c -> leavesItemTypeUnchanged(c.getExpression())) && (expr.getDefault() == null || leavesItemTypeUnchanged(expr.getDefault()))) {
 						return getExpectedTypeFromContainer(expr);
