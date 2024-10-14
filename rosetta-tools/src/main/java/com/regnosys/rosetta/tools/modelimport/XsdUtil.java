@@ -30,7 +30,7 @@ import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 public class XsdUtil {
 	
-	private static final String XSD_NAME_PARTS_REGEX = "[^a-zA-Z0-9_]";
+	private static final String XSD_NAME_PARTS_REGEX = "[^a-zA-Z0-9_]+";
 
 	private final Set<String> documentationSources = Set.of("Definition");
 	
@@ -73,7 +73,11 @@ public class XsdUtil {
 				.anyMatch(e -> !e.getEnumeration().isEmpty());
 	}
 
-    public String toTypeName(String xsdName) {
+    public String toTypeName(String xsdName, ImportTargetConfig config) {
+    	String overridenName = config.getNameOverrides().get(xsdName);
+    	if (overridenName != null) {
+    		return overridenName;
+    	}
         String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
@@ -103,14 +107,25 @@ public class XsdUtil {
     }
     
     public String toEnumValueName(String xsdName) {
-        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
-        String joined = String.join("_", parts).toUpperCase();
-        if (joined.matches("^[0-9].*")) {
-        	return "_" + joined;
-        }
-    	return joined;
+    	String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
+        String result = Arrays.stream(parts).map(part -> toUpperSnakeCase(part)).collect(Collectors.joining("_"));
+        if (result == null || result.isEmpty())
+			return result;
+        if (!Character.isLetter(result.charAt(0)))
+        	return "_" + result;
+        return result;
     }
 	
+    /**
+     * Transforms a PascalCase string to camelCase, considering abbrevations.
+     * It leaves camelCase strings unchanged.
+     * 
+     * Examples of transformation:
+     * - XSDGenerator -> xsdGenerator
+     * - Generator -> generator
+     * - XSD -> xsd
+     * - myGenerator -> myGenerator
+     */
 	private String allFirstLowerIfNotAbbrevation(String s) {
 		if (s == null || s.isEmpty())
 			return s;
@@ -126,6 +141,23 @@ public class XsdUtil {
 			return s.substring(0, 1).toLowerCase() + s.substring(1);
 		}
 		return s.substring(0, upperCased - 1).toLowerCase() + s.substring(upperCased - 1);
+	}
+	
+	private String toUpperSnakeCase(String s) {
+		if (s == null || s.isEmpty())
+			return s;
+		boolean previousWasLowerCase = false;
+		StringBuilder builder = new StringBuilder();
+		for (int i=0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			boolean isUpper = Character.isUpperCase(c);
+			if (isUpper && previousWasLowerCase) {
+				builder.append('_');
+			}
+			builder.append(Character.toUpperCase(c));
+			previousWasLowerCase = !isUpper;
+		}
+		return builder.toString();
 	}
 
 	public void makeNamesUnique(List<? extends RosettaNamed> objects) {

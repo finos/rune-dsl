@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+== Copyright (c) 2018-2019 All rights reserved. 
+== Financial Products Markup Language is subject to the FpML public license. 
+== A copy of this license is available at http://www.fpml.org/license/license.html
+-->
+<xsd:schema xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:fpml-annotation="http://www.fpml.org/annotation" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.fpml.org/FpML-5/recordkeeping" ecore:documentRoot="FpML" ecore:nsPrefix="" ecore:package="org.fpml.recordkeeping" version="$Revision: 7629 $" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:include schemaLocation="fpml-msg-5-11.xsd" />
+  <xsd:include schemaLocation="fpml-repo-5-11.xsd" />
+  <xsd:complexType name="ApplicableRegulations">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">Speccifies the list ofregulations the trade is subject to reporting.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="regulatorApplicability" type="RegulatorApplicability" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CollateralPortfolio">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">The CollateralPortfolio component provides the ability to specify the collateral in support of the transaction reporting as of a particular value date. It includes unbounded choice of cash or nonCash collateral. This model would allow mixing cash and non-cash collateral without any regards to order. In real life transaction, you almost always see some cash or a collection of non-cash collateral blocs.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="valueDate" type="xsd:date" />
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="cash" type="PositiveMoney">
+          <xsd:annotation>
+            <xsd:documentation xml:lang="en">Represents the amount of cash posted as collateral. The cash collateral component is simple, just an instance of PositiveMoney type.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="nonCash" type="CollateralPosition">
+          <xsd:annotation>
+            <xsd:documentation xml:lang="en">Represents the type and the amount of security (non-cash) posted as collateral. The nonCash collateral component uses SecurityValuation.model to state what security it is, how much and the current dirty price. It also includes optional ability to specify the margin or haircut that applies to this piece of collateral.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="totalValuationAmount" type="PositiveMoney" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Represents aggregated Market / Fair Value amount.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CollateralPortfolioId">
+    <xsd:simpleContent>
+      <xsd:extension base="Scheme">
+        <xsd:attribute name="collateralPortfolioIdScheme" type="NonEmptyURI" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="CollateralPosition">
+    <xsd:complexContent>
+      <xsd:extension base="SecurityValuation">
+        <xsd:sequence>
+          <xsd:annotation>
+            <xsd:documentation>Pricing model</xsd:documentation>
+          </xsd:annotation>
+          <xsd:choice minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation xml:lang="en">A choice between margin ratio and haircut.</xsd:documentation>
+            </xsd:annotation>
+            <xsd:element name="marginRatio" type="DecimalFraction">
+              <xsd:annotation>
+                <xsd:documentation xml:lang="en">An element defining an initial margin expressed as a ratio of the Market Value of the collateral to the Purchase Price. A default value of initial margin ratio of 1.00 means there is no margin and thus no risk related with the collateral. See GMRA 2000 paragraph 2(z) and GMRA 2011 paragraph 2(bb).</xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="haircut" type="DecimalFraction">
+              <xsd:annotation>
+                <xsd:documentation xml:lang="en">An element defining a haircut expressed as the percentage difference between the Market Value of the collateral and the Purchase Price of the repo and calculated as 100 multiplied by a ratio of the difference between the Market Value of the collateral and the Purchase Price of the repo to the Market Value of the collateral. Haircut is alternative way to adjust the value of collateral sold in a repurchase agreement to initial margin ratio. Because an initial margin is a percentage of the Purchase Price, while a haircut is a percentage of the Market Value of collateral, the arithmetic of initial margins and haircuts is slightly different. For example, an initial margin of 102% is not equivalent to a haircut of 2%, but to 1.961% (ie 100/102%). See GMRA 2011 paragraph 2(aa).</xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
+          </xsd:choice>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="DisseminationId">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">The data type used for dissemination identifiers.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleContent>
+      <xsd:extension base="NonEmptyScheme">
+        <xsd:attribute name="id" type="xsd:ID" />
+        <xsd:attribute name="disseminationIdScheme" type="NonEmptyURI" use="optional" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="PublicDissemination">
+    <xsd:annotation>
+      <xsd:documentation>Information related to the public dissemination.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="disseminationId" type="DisseminationId" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Specifies the disseminationId used for public reporting.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice>
+        <xsd:element name="publicationTime" type="xsd:dateTime" minOccurs="0">
+          <xsd:annotation>
+            <xsd:documentation xml:lang="en">The date and time the public report was disseminated.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="projectedTime" type="xsd:dateTime" minOccurs="0">
+          <xsd:annotation>
+            <xsd:documentation xml:lang="en">The date and time the public report is projected to be disseminated.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="withdrawn" type="xsd:dateTime" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">The date and time the public report was withdrawn from the public tape.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulationName">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">An identifier of an reporting regime or format used for regulatory reporting, for example DoddFrankAct, MiFID, HongKongOTCDRepository, etc.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleContent>
+      <xsd:extension base="Scheme">
+        <xsd:attribute name="reportingRegimeNameScheme" type="NonEmptyURI" default="http://www.fpml.org/coding-scheme/reporting-regime" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatorApplicability">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">Speccifies the trade is subject to this regulation.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="supervisoryBody" type="xsd:token" minOccurs="0" />
+      <xsd:element name="regulation" type="xsd:token" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:group ref="ReportingAndCounterParty.model" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Use the reportingParty, counterParty references at the root of the message to identify the reporting party and counterparty. If the same message is going to multiple regulators and they will have different roles, the roles can be overridden at the regulator-level (if they differ from the roles specified at the root of the message)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingCollateralization">
+    <xsd:annotation>
+      <xsd:documentation>A type defining collateral information to be reported.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:sequence>
+        <xsd:element name="postingPartyReference" type="PartyReference">
+          <xsd:annotation>
+            <xsd:documentation xml:lang="en">A party that can post the collateral.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="beneficiaryPartyReference" type="PartyReference" minOccurs="0" />
+        <xsd:element name="holdingPartyReference" type="PartyReference" minOccurs="0" />
+      </xsd:sequence>
+      <xsd:group ref="RegulatorReportCollateralInfo.model" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">A group that includes information about activities related to credit support and collateral related to a trade.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+      <xsd:element name="postedCollateral" type="CollateralPortfolio" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Information about the amount of collateral actually posted by the posting party as of a particular value date.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatorReportingStatusCode">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">A type that can be used to identify the reporting status of a transaction. Examples include FullyReported, ReportedWithWarnings, NotReported, etc.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleContent>
+      <xsd:extension base="Scheme">
+        <xsd:attribute name="reportingStatusScheme" type="NonEmptyURI" default="http://www.fpml.org/coding-scheme/reporting-status" />
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingStatusMessage">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">A type defining message that can be used for returning the regulatory reporting status of a trade.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Message">
+        <xsd:sequence>
+          <xsd:element name="header" type="ResponseMessageHeader" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation xml:lang="en">Standard FpML message header</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="tradeIdentifier" type="PartyTradeIdentifier" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>identifies the affected trade</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="reportingStatus" type="ReportingStatus" minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation xml:lang="en">Information about how the position is being reported to regulators.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="party" type="Party" minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation xml:lang="en">Reference information about parties, business units, and persons involed in the trade.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="ReportingStatus">
+    <xsd:annotation></xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="regimeName" type="ReportingRegimeName" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Identifies the reporting regime under which this data is reported. For example, Dodd-Frank, EMIR, MiFID, HongKongOTCDRepository, ODRF</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="supervisoryBody" type="SupervisoryBody">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Identifies the specific regulator or other supervisory body for which this data is produced. For example, CFTC, SEC, UKFSA, ODRF, SFC, ESMA.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="regulation" type="RegulationName" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Identifies the reporting regime under which this data is reported. For example, Dodd-Frank, EMIR, MiFID, HongKongOTCDRepository, ODRF</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="reportingRole" type="ReportingRole" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">&gt;Identifies the role of this party in reporting this trade for this regulator; roles could include ReportingParty and Voluntary reporting.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="reportingPurpose" type="ReportingPurpose" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">The reason this message is being sent, for example Snapshot, PET, Confirmation, RealTimePublic.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="status" type="RegulatorReportingStatusCode">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Describes the extent to which this trade is being reported to the regime (e.g. Not reported, reported with warnings, fully reported).</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="publicDissemination" type="PublicDissemination" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Describes the extent to which this trade is being reported to the regime (e.g. Not reported, reported with warnings, fully reported).</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="reason" type="Reason" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Used to describe and validation errors or warnings associated with the message for the regime.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RequestRegulatoryReportingStatusMessage">
+    <xsd:annotation></xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="AddressedMessage">
+        <xsd:sequence>
+          <xsd:element name="onBehalfOf" type="OnBehalfOf" minOccurs="0" maxOccurs="4">
+            <xsd:annotation>
+              <xsd:documentation xml:lang="en">Indicates which party (or parties) (and accounts) a trade or event is being processed for. Normally there will only be a maximum of 2 parties, but in the case of a novation there could be a transferor, transferee, remaining party, and other remaining party. Also, in the context of a trade package there could be several parties for which limit check is requested, necessitating multiple onBehalfOf elements. Except for these cases, there should be no more than two onBehalfOf references in a message.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="tradeIdentifier" type="PartyTradeIdentifier" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>identifies the affected trade</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="primaryAssetClass" type="AssetClass" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>The asset class of the underlying product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="relatedParty" type="RelatedParty" minOccurs="0" maxOccurs="unbounded" />
+          <xsd:element name="party" type="Party" minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>The supporting party definitions.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="regulatoryReportingStatus" type="RegulatoryReportingStatusMessage">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">Used to report the status of reporting on a trade to any regulators.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="requestRegulatoryReportingStatus" type="RequestRegulatoryReportingStatusMessage">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">Used to request the status of reporting on a trade to any regulators.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:group name="RegulatorReportCollateralInfo.model">
+    <xsd:annotation>
+      <xsd:documentation />
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="collateralizedExposureGrouping" type="CollateralizedExposureGrouping" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Whether the trade collateralized exposure is calculated at the individual (single) trade aggregation level or the net (multiple trades) aggregation level.</xsd:documentation>
+          <xsd:documentation xml:lang="en">SFTR description of the field: Collateralization of net exposure - Indicates whether the collateral has been provided for a net exposure, rather than for a single transaction ('true' or 'false').</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="collateralizationType" type="CollateralizationType" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Specifies how the transaction is collateralized by this party, fully or partially, or uncollateralized. For Transparency view, the options include Full, Partial, Uncollateralized, and One-Way. For Recordkeeping, the collateralization type refers to collateral that is posted by this firm, and One-Way option is not meaningful. In other words, if the collateralization type is Full, this trade is fully collateralized by this party.</xsd:documentation>
+          <xsd:documentation xml:lang="en">SFTR description of the field: Uncollateralised SL flag - Indicates whether the securities lending transaction is uncollateralised ('true' or 'false'). Uncollateralised SL will be 'true', if collateralizationType = 'Uncollateralized'.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="portfolioId" type="CollateralPortfolioId" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">Provides code, or other identifier for the collateral portfolio to which this belongs. The collateral portfolio describes how trades are aggregated for collateral calculation purposes. All trades that are aggregated together for collateral calculation purposes will share the same collateral portfolio code. This code may come from different sources depending on the level of aggregation defined in the CSA (e.g. it may be the LEI of a counterparty or a desk identifier).</xsd:documentation>
+          <xsd:documentation xml:lang="en">SFTR description of this field: Portfolio code - If the transaction is cleared and is included in a portfolio of transactions for which margins are exchanged, this portfolio should be identified by a unique code determined by the reporting counterparty. 52 alphanumeric character code including four special characters: .- _. Special characters are not allowed at the beginning and at the end of the code. No space allowed.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:group name="ReportingAndCounterParty.model">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">Model group that references the reporting party and counterparty.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="reportingPartyReference" type="PartyReference">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">A reference to the reporting party.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="counterPartyReference" type="PartyReference">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">A reference to the reporting party.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+</xsd:schema>
+

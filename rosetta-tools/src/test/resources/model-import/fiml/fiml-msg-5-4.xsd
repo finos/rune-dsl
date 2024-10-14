@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: 1657 $" fiml:tag="5-4-9">
+	<xsd:include schemaLocation="common-types-1-0.xsd"/>
+	<xsd:include schemaLocation="fiml-enum-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-core-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-regulatory-reporting-5-4.xsd"/>
+	<xsd:simpleType name="MessageInstanceNotificationEnum">
+		<xsd:annotation>
+			<xsd:documentation>Message instances (structures) used in asynchronous notifications.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="reportableIdentifierNotification"/>
+			<xsd:enumeration value="reportStatusNotification"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MessageInstanceResponseEnum">
+		<xsd:annotation>
+			<xsd:documentation>Message instances (structures) used in synchronus responses.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="reportableEventAcceptance"/>
+			<xsd:enumeration value="reportableEventException"/>
+			<xsd:enumeration value="reportablelEventAcceptance">
+				<xsd:annotation>
+					<xsd:documentation>*DEPRECATED*
+(Typo, value retained for backward compatibility)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="reportablelEventException">
+				<xsd:annotation>
+					<xsd:documentation>*DEPRECATED*
+(Typo, value retained for backward compatibility)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="">
+				<xsd:annotation>
+					<xsd:documentation>Retained for backward compatibility.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="CorrelationId">
+		<xsd:annotation>
+			<xsd:documentation>A type defining a correlation identifier and qualifying scheme</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="correlationIdScheme" type="xsd:anyURI" use="optional" default="http://www.bnpparibas.com/fixed-income/xmlframework/correlation-id"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="MessageHeader">
+		<xsd:annotation>
+			<xsd:documentation>A standard message header structure</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="messageId" type="MessageIdentifier">
+				<xsd:annotation>
+					<xsd:documentation>Unique identifer for the message constituted by the context document. At a minimum, the identifier must be unique on the scope of the interface in which the message is exchanged i.e. no other message exchanged in the interface at any point in time can have the same identifier,</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="inReplyTo" type="MessageIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Identifier of a preceding message, in response to which the context message is produced.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="MessageHeader.model"/>
+			<xsd:element name="messageInformation" type="MessageInformation" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Optional additional information relating to how the context message is interpreted or processed.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="MessageIdentifier">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="messageIdentifierScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="MessageInformation">
+		<xsd:annotation>
+			<xsd:documentation>Additional information relating to how the context message is interpreted or processed.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="relatedMessage" type="RelatedMessage" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Identification of related message(s) associated with the context message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="messageInteraction" type="MessageInteraction" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Specification of required messaging interactions with the messaging target. 
+
+This block allows the message producer to specify in granular fashion which messages (responses, notifications) are expected, and/or to be suppressed, in the interaction initiated by the context message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="MessageInteraction">
+		<xsd:annotation>
+			<xsd:documentation>Specification of required message interactions with the messaging target (expected, suppressed).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="suppress" type="MessageInteractionMode">
+				<xsd:annotation>
+					<xsd:documentation>Messages (normally expected) which are to be suppressed in the interaction initiated by the context message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="expected" type="MessageInteractionMode">
+					<xsd:annotation>
+						<xsd:documentation>Messages which are expected (required) in the interaction initiated by the context message.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="suppress" type="MessageInteractionMode" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Messages (normally expected) which are to be suppressed in the interaction initiated by the context message.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="MessageInteractionMode">
+		<xsd:annotation>
+			<xsd:documentation>Information concerning the expected interaction with the messaging target (responses, notifications).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice maxOccurs="unbounded">
+			<xsd:annotation>
+				<xsd:documentation>Non-empty oollection of notification|response mesage name(s).</xsd:documentation>
+			</xsd:annotation>
+			<xsd:element name="notification" type="MessageInstanceNotificationEnum" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Notification message name.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="response" type="MessageInstanceResponseEnum" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Response message name.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="MessageParticipant">
+		<xsd:choice>
+			<xsd:sequence>
+				<xsd:element name="systemId" type="SystemIdentifier">
+					<xsd:annotation>
+						<xsd:documentation>A unique identifier for an application or  service which participates in an automated message exchange.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="instanceId" type="SystemIdentifier" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Instance identifier, where required to identify an instance of an application or service which is deployed e.g. at multiple locations.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:element name="address" type="xsd:token">
+				<xsd:annotation>
+					<xsd:documentation>Network address (e.g. URI) for an application or service which particpates in an automated message exchange</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="MessageRejected">
+		<xsd:sequence>
+			<xsd:element name="reason" type="Reason" maxOccurs="unbounded"/>
+			<xsd:element name="additionalData" type="AdditionalData" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RelatedMessage">
+		<xsd:sequence>
+			<xsd:element name="messageId" type="MessageIdentifier"/>
+			<xsd:group ref="MessageHeader.model" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--
+================
+    groups    
+================
+-->
+	<xsd:group name="Correlation.model">
+		<xsd:annotation>
+			<xsd:documentation>Message correlation and sequencing mechanism. The correlation id is used to link messages whcih relate to a common business object, typically a business event. The correlated collection of messages may constitute a series of notifications, or a conversational exchange (request-response or advice-acknowledgment pattern); for example, an initial advice followed by subsequent corrections and/or retraction.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="correlationId" type="CorrelationId">
+				<xsd:annotation>
+					<xsd:documentation>An identifier used to associate messages which relate to a common business object e.g. a business event. </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sequenceNumber" type="xsd:positiveInteger" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>A number used to establish relative ordering between messages carrying a common correlation id. Sequence number values must be strictly ascending, but are not necessarily contiguous.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="MessageHeader.model">
+		<xsd:sequence>
+			<xsd:element name="sentBy" type="MessageParticipant">
+				<xsd:annotation>
+					<xsd:documentation>The message sender (application or service).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sendTo" type="MessageParticipant">
+				<xsd:annotation>
+					<xsd:documentation>The designated recipient to which the message is sent (application or service).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="copyTo" type="MessageParticipant" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Secondary recipient(s) to which the message is copied (application or service instance(s)).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="creationTimestamp" type="xsd:dateTime">
+				<xsd:annotation>
+					<xsd:documentation>Technical timestamp for creation of the context message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+</xsd:schema>

@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
-
 public abstract class AbstractXsdImport<XsdType extends XsdAbstractElement, Result> {
 	private final Class<XsdType> xsdType;
 	public AbstractXsdImport(Class<XsdType> xsdType) {
@@ -35,12 +33,12 @@ public abstract class AbstractXsdImport<XsdType extends XsdAbstractElement, Resu
 				.map(xsdType::cast)
 				.collect(Collectors.toList());
 	}
-	public abstract Result registerType(XsdType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties);
+	public abstract Result registerType(XsdType xsdType, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig);
 	public abstract void completeType(XsdType xsdType, RosettaXsdMapping typeMappings);
-	public List<? extends Result> registerTypes(List<XsdAbstractElement> xsdElements, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public List<? extends Result> registerTypes(List<XsdAbstractElement> xsdElements, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
 		List<XsdType> xsdTypes = filterTypes(xsdElements);
 		return xsdTypes.stream()
-			.map(t -> registerType(t, typeMappings, properties))
+			.map(t -> registerType(t, typeMappings, targetConfig))
 			.collect(Collectors.toList());
 	}
 	public void completeTypes(List<XsdAbstractElement> xsdElements, RosettaXsdMapping typeMappings) {

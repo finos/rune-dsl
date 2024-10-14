@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?><!-- edited with XMLSpy v2012 sp1 (x64) (http://www.altova.com) by Harry McAllister (BNP Paribas UK) --><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: 1657 $" fiml:tag="5-4-9">
+	<xsd:include schemaLocation="common-types-1-0.xsd"/>
+	<xsd:include schemaLocation="fiml-enum-5-4.xsd"/>
+	<!--
+================
+    simpleTypes    
+================
+-->
+	<xsd:simpleType name="FiMLVersionEnum">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Indicate which version of the FiML Schema an FiML message adheres to.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="5-0"/>
+			<xsd:enumeration value="5-1"/>
+			<xsd:enumeration value="5-2"/>
+			<xsd:enumeration value="5-3"/>
+			<xsd:enumeration value="5-4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FpMLVersionEnum">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Indicate which version of the FpML Schema an FpML message adheres to.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="5-(0|[1-9][0-9]{0,2})"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="Reference">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Reference element, an intra-document pointer.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="href" type="xsd:IDREF" use="required"/>
+	</xsd:complexType>
+	<!--
+================
+    attributeGroups    
+================
+-->
+	<xsd:attributeGroup name="VersionAttributes.atts">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Set of attributes that define FiML versioning information.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="version" type="FiMLVersionEnum" use="required"/>
+		<xsd:attribute name="fpmlVersion" type="FpMLVersionEnum" use="required"/>
+	</xsd:attributeGroup>
+</xsd:schema>

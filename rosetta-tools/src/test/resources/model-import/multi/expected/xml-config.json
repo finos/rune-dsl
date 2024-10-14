@@ -1,0 +1,3937 @@
+{
+  "fpml.confirmation.AccountId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AccountName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AccountType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AccrualOptionChangeNotification" : {
+    "xmlRootElementName" : "accrualOptionChangeNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AccrualTypeId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AccruingFeeChange" : {
+    "xmlRootElementName" : "accruingFeeChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AccruingFeeChangeGroup" : {
+    "xmlRootElementName" : "accruingFeeChangeGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AccruingFeeChangeNotification" : {
+    "xmlRootElementName" : "accruingFeeChangeNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AccruingFeeExpiry" : {
+    "xmlRootElementName" : "accruingFeeExpiry",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AccruingFeePaymentNotification" : {
+    "xmlRootElementName" : "accruingFeePaymentNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AccruingFeeType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AccruingPikPaymentNotification" : {
+    "xmlRootElementName" : "accruingPikPaymentNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ActionType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AdditionalEvent" : {
+    "xmlRootElementName" : "additionalEvent",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AdditionalTerm" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Adjustment" : {
+    "xmlRootElementName" : "adjustment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AlgorithmRole" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AllocationAcknowledgement" : {
+    "xmlRootElementName" : "allocationAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AllocationApproved" : {
+    "xmlRootElementName" : "allocationApproved",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AllocationException" : {
+    "xmlRootElementName" : "allocationException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AllocationRefused" : {
+    "xmlRootElementName" : "allocationRefused",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AllocationReportingStatus" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AmendmentFeePayment" : {
+    "xmlRootElementName" : "amendmentFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.AmericanExercise" : {
+    "xmlRootElementName" : "americanExercise",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ApplicablePurpose" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ApplicableTransactionType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ApprovalId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ApprovalStatusNotification" : {
+    "xmlRootElementName" : "approvalStatusNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ApprovalType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AssetClass" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AssetMeasureType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.AssociationToAssetId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Bankruptcy" : {
+    "xmlRootElementName" : "bankruptcy",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BaseRateSet" : {
+    "xmlRootElementName" : "baseRateSet",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Basket" : {
+    "xmlRootElementName" : "basket",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BasketChange" : {
+    "xmlRootElementName" : "basketChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BasketId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.BasketName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.BermudaExercise" : {
+    "xmlRootElementName" : "bermudaExercise",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Bond" : {
+    "xmlRootElementName" : "bond",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BondOption" : {
+    "xmlRootElementName" : "bondOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Borrowing" : {
+    "xmlRootElementName" : "borrowing",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BreakageFeePayment" : {
+    "xmlRootElementName" : "breakageFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BrokerConfirmationType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.BrokerEquityOption" : {
+    "xmlRootElementName" : "brokerEquityOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BulletPayment" : {
+    "xmlRootElementName" : "bulletPayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BullionDeliveryLocation" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.BullionPhysicalLeg" : {
+    "xmlRootElementName" : "bullionPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.BusinessCenter" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.BusinessProcess" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.BusinessUnitRole" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CalculationAgentDetermination" : {
+    "xmlRootElementName" : "calculationAgentDetermination",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CanonicalizationMethod" : {
+    "xmlRootElementName" : "CanonicalizationMethod",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CapFloor" : {
+    "xmlRootElementName" : "capFloor",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Cash" : {
+    "xmlRootElementName" : "cash",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CashflowId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CashflowType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ChangeEvent" : {
+    "xmlRootElementName" : "changeEvent",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearanceSystem" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ClearingAcknowledgement" : {
+    "xmlRootElementName" : "clearingAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingConfirmed" : {
+    "xmlRootElementName" : "clearingConfirmed",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingEligibility" : {
+    "xmlRootElementName" : "clearingEligibility",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingEligibilityAcknowledgement" : {
+    "xmlRootElementName" : "clearingEligibilityAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingEligibilityException" : {
+    "xmlRootElementName" : "clearingEligibilityException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingException" : {
+    "xmlRootElementName" : "clearingException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingExceptionReason" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ClearingRefused" : {
+    "xmlRootElementName" : "clearingRefused",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingStatus" : {
+    "xmlRootElementName" : "clearingStatus",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ClearingStatusValue" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CoalDeliveryPoint" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CoalPhysicalLeg" : {
+    "xmlRootElementName" : "coalPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CoalProductSource" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CoalProductType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CoalQualityAdjustments" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CoalTransportationEquipment" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CollateralAllocationAccepted" : {
+    "xmlRootElementName" : "collateralAllocationAccepted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CollateralAllocationAcknowledgement" : {
+    "xmlRootElementName" : "collateralAllocationAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CollateralAllocationRejected" : {
+    "xmlRootElementName" : "collateralAllocationRejected",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CollateralProfile" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CollateralType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CollateralizationType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommitmentAdjustment" : {
+    "xmlRootElementName" : "commitmentAdjustment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Commodity" : {
+    "xmlRootElementName" : "commodity",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityBase" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityBasketOption" : {
+    "xmlRootElementName" : "commodityBasketOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityBusinessCalendar" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityDeliveryPoint" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityDeliveryRisk" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityDetails" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityDigitalOption" : {
+    "xmlRootElementName" : "commodityDigitalOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityExpireRelativeToEvent" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityForward" : {
+    "xmlRootElementName" : "commodityForward",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityForwardLeg" : {
+    "xmlRootElementName" : "commodityForwardLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityFrequencyType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityFxType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityHubCode" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityInformationProvider" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityInterestLeg" : {
+    "xmlRootElementName" : "commodityInterestLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityMetalBrandManager" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityMetalBrandName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityMetalGrade" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityMetalProducer" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityMetalShape" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityOption" : {
+    "xmlRootElementName" : "commodityOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityPayRelativeToEvent" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityPerformanceSwap" : {
+    "xmlRootElementName" : "commodityPerformanceSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityPerformanceSwapLeg" : {
+    "xmlRootElementName" : "commodityPerformanceSwapLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityPipeline" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityPipelineCycle" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityProductGrade" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityQuantityFrequency" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityReturnLeg" : {
+    "xmlRootElementName" : "commodityReturnLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommoditySwap" : {
+    "xmlRootElementName" : "commoditySwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommoditySwapLeg" : {
+    "xmlRootElementName" : "commoditySwapLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommoditySwaption" : {
+    "xmlRootElementName" : "commoditySwaption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CommodityVarianceLeg" : {
+    "xmlRootElementName" : "commodityVarianceLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CompoundingFrequency" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CompressionType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ConfirmationAcknowledgement" : {
+    "xmlRootElementName" : "confirmationAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConfirmationAgreed" : {
+    "xmlRootElementName" : "confirmationAgreed",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConfirmationDisputed" : {
+    "xmlRootElementName" : "confirmationDisputed",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConfirmationException" : {
+    "xmlRootElementName" : "confirmationException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConfirmationMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ConfirmationStatus" : {
+    "xmlRootElementName" : "confirmationStatus",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConsentAcknowledgement" : {
+    "xmlRootElementName" : "consentAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConsentException" : {
+    "xmlRootElementName" : "consentException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConsentGranted" : {
+    "xmlRootElementName" : "consentGranted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ConsentRefused" : {
+    "xmlRootElementName" : "consentRefused",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ContractId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ContractualDefinitions" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ContractualSupplement" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ConvertibleBond" : {
+    "xmlRootElementName" : "convertibleBond",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CorporateAction" : {
+    "xmlRootElementName" : "corporateAction",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CorporateActionType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CorrelationId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CorrelationSwap" : {
+    "xmlRootElementName" : "correlationSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CountryCode" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CouponType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CreditCurve" : {
+    "xmlRootElementName" : "creditCurve",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditCurveValuation" : {
+    "xmlRootElementName" : "creditCurveValuation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditDefaultSwap" : {
+    "xmlRootElementName" : "creditDefaultSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditDefaultSwapOption" : {
+    "xmlRootElementName" : "creditDefaultSwapOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditDocument" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CreditEvent" : {
+    "xmlRootElementName" : "creditEvent",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditEventAcknowledgement" : {
+    "xmlRootElementName" : "creditEventAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditEventException" : {
+    "xmlRootElementName" : "creditEventException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditEventNotice" : {
+    "xmlRootElementName" : "creditEventNotice",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditEventNotification" : {
+    "xmlRootElementName" : "creditEventNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditEventNotificationRetracted" : {
+    "xmlRootElementName" : "creditEventNotificationRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditRating" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CreditSeniority" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CreditSupportAgreementIdentifier" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CreditSupportAgreementType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Currency" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CurrencyPairClassification" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.CurveInstrument" : {
+    "xmlRootElementName" : "curveInstrument",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CutName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DSAKeyValue" : {
+    "xmlRootElementName" : "DSAKeyValue",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DataDocument" : {
+    "xmlRootElementName" : "dataDocument",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DataProvider" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DayCountFraction" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DealStatement" : {
+    "xmlRootElementName" : "dealStatement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DeclearReason" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DefaultRateChange" : {
+    "xmlRootElementName" : "defaultRateChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DefaultRateExpiry" : {
+    "xmlRootElementName" : "defaultRateExpiry",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DelayedDraw" : {
+    "xmlRootElementName" : "delayedDraw",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DeliveryMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Deposit" : {
+    "xmlRootElementName" : "deposit",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DerivativeCalculationMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DeterminationMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DigestMethod" : {
+    "xmlRootElementName" : "DigestMethod",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DigestValue" : {
+    "xmlRootElementName" : "DigestValue",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DisruptionFallback" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.DividendSwapOptionTransactionSupplement" : {
+    "xmlRootElementName" : "dividendSwapOptionTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DividendSwapTransactionSupplement" : {
+    "xmlRootElementName" : "dividendSwapTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.DualExchangeRate" : {
+    "xmlRootElementName" : "dualExchangeRate",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ElectricityDeliveryPoint" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ElectricityPhysicalLeg" : {
+    "xmlRootElementName" : "electricityPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ElectricityTransmissionContingencyType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EntityClassification" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EntityId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EntityName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EntityType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EnvironmentalPhysicalLeg" : {
+    "xmlRootElementName" : "environmentalPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EnvironmentalProductApplicableLaw" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EnvironmentalTrackingSystem" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Equity" : {
+    "xmlRootElementName" : "equity",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EquityForward" : {
+    "xmlRootElementName" : "equityForward",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EquityOption" : {
+    "xmlRootElementName" : "equityOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EquityOptionTransactionSupplement" : {
+    "xmlRootElementName" : "equityOptionTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EquitySwapTransactionSupplement" : {
+    "xmlRootElementName" : "equitySwapTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EuropeanExercise" : {
+    "xmlRootElementName" : "europeanExercise",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EventId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EventStatus" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.EventStatusException" : {
+    "xmlRootElementName" : "eventStatusException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.EventStatusResponse" : {
+    "xmlRootElementName" : "eventStatusResponse",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExchangeId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ExchangeRestrictions" : {
+    "xmlRootElementName" : "exchangeRestrictions",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExchangeTradedFund" : {
+    "xmlRootElementName" : "exchangeTradedFund",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionAcknowledgement" : {
+    "xmlRootElementName" : "executionAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionAdvice" : {
+    "xmlRootElementName" : "executionAdvice",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionAdviceAcknowledgement" : {
+    "xmlRootElementName" : "executionAdviceAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionAdviceException" : {
+    "xmlRootElementName" : "executionAdviceException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionAdviceRetracted" : {
+    "xmlRootElementName" : "executionAdviceRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionDateTime" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ExecutionException" : {
+    "xmlRootElementName" : "executionException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionNotification" : {
+    "xmlRootElementName" : "executionNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionRetracted" : {
+    "xmlRootElementName" : "executionRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ExecutionType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ExecutionVenueType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Exercise" : {
+    "xmlRootElementName" : "exercise",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityEventGroup" : {
+    "xmlRootElementName" : "facilityEventGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityExtensionFeePayment" : {
+    "xmlRootElementName" : "facilityExtensionFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityFeature" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.FacilityFeePaymentGroup" : {
+    "xmlRootElementName" : "facilityFeePaymentGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityGroup" : {
+    "xmlRootElementName" : "facilityGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityNotification" : {
+    "xmlRootElementName" : "facilityNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityOutstandingsPositionStatement" : {
+    "xmlRootElementName" : "facilityOutstandingsPositionStatement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityPositionStatement" : {
+    "xmlRootElementName" : "facilityPositionStatement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityRateChangeGroup" : {
+    "xmlRootElementName" : "facilityRateChangeGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityRateChangeNotification" : {
+    "xmlRootElementName" : "facilityRateChangeNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityStatement" : {
+    "xmlRootElementName" : "facilityStatement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityTermination" : {
+    "xmlRootElementName" : "facilityTermination",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FacilityType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.FailureToPay" : {
+    "xmlRootElementName" : "failureToPay",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FallbackReferencePrice" : {
+    "xmlRootElementName" : "fallbackReferencePrice",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FirstPeriodStartDate" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.FixedLeg" : {
+    "xmlRootElementName" : "fixedLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FixedRate" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.FloatingLeg" : {
+    "xmlRootElementName" : "floatingLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FloatingRateCalculation" : {
+    "xmlRootElementName" : "floatingRateCalculation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FloatingRateIndex" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.FloatingRateIndexLoan" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Fra" : {
+    "xmlRootElementName" : "fra",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FundingFeePayment" : {
+    "xmlRootElementName" : "fundingFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Future" : {
+    "xmlRootElementName" : "future",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FutureId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Fx" : {
+    "xmlRootElementName" : "fx",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxAccrualDigitalOption" : {
+    "xmlRootElementName" : "fxAccrualDigitalOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxAccrualForward" : {
+    "xmlRootElementName" : "fxAccrualForward",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxAccrualOption" : {
+    "xmlRootElementName" : "fxAccrualOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxCurve" : {
+    "xmlRootElementName" : "fxCurve",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxCurveValuation" : {
+    "xmlRootElementName" : "fxCurveValuation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxDigitalOption" : {
+    "xmlRootElementName" : "fxDigitalOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxDisruptionEvent" : {
+    "xmlRootElementName" : "fxDisruptionEvent",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxDisruptionFallback" : {
+    "xmlRootElementName" : "fxDisruptionFallback",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxFlexibleForward" : {
+    "xmlRootElementName" : "fxFlexibleForward",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxForwardVolatilityAgreement" : {
+    "xmlRootElementName" : "fxForwardVolatilityAgreement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxOption" : {
+    "xmlRootElementName" : "fxOption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxRangeAccrual" : {
+    "xmlRootElementName" : "fxRangeAccrual",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxSingleLeg" : {
+    "xmlRootElementName" : "fxSingleLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxSwap" : {
+    "xmlRootElementName" : "fxSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxTargetKnockoutForward" : {
+    "xmlRootElementName" : "fxTargetKnockoutForward",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxTemplateTerms" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.FxVarianceSwap" : {
+    "xmlRootElementName" : "fxVarianceSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.FxVolatilitySwap" : {
+    "xmlRootElementName" : "fxVolatilitySwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.GasDeliveryPoint" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.GasPhysicalLeg" : {
+    "xmlRootElementName" : "gasPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.GasQuality" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.GenericCommodityGrade" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.GenericDimension" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.GenericExerciseStyle" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.GenericProduct" : {
+    "xmlRootElementName" : "genericProduct",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.GenericProductFeature" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.GoverningLaw" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IdentifiedDate" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IdentifiedPayerReceiver" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IdentifiedRate" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ImplementationSpecificationVersion" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Index" : {
+    "xmlRootElementName" : "index",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.IndexAnnexSource" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IndexChange" : {
+    "xmlRootElementName" : "indexChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.IndexId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IndexName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IndustryClassification" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.InflationRateCalculation" : {
+    "xmlRootElementName" : "inflationRateCalculation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.InformationProvider" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.InstrumentId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.InstrumentTradeDetails" : {
+    "xmlRootElementName" : "instrumentTradeDetails",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.InterconnectionPoint" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.InterestCapitalization" : {
+    "xmlRootElementName" : "interestCapitalization",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.InterestLeg" : {
+    "xmlRootElementName" : "interestLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.InterestPayment" : {
+    "xmlRootElementName" : "interestPayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.InterpolationMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.IssuerId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.KeyInfo" : {
+    "xmlRootElementName" : "KeyInfo",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.KeyName" : {
+    "xmlRootElementName" : "KeyName",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.KeyValue" : {
+    "xmlRootElementName" : "KeyValue",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Language" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LcAdjustment" : {
+    "xmlRootElementName" : "lcAdjustment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcEventGroup" : {
+    "xmlRootElementName" : "lcEventGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcFxRevaluation" : {
+    "xmlRootElementName" : "lcFxRevaluation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcIssuance" : {
+    "xmlRootElementName" : "lcIssuance",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcIssuanceFeePayment" : {
+    "xmlRootElementName" : "lcIssuanceFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcNotification" : {
+    "xmlRootElementName" : "lcNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcPurpose" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LcRateChange" : {
+    "xmlRootElementName" : "lcRateChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcRenewal" : {
+    "xmlRootElementName" : "lcRenewal",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcTermination" : {
+    "xmlRootElementName" : "lcTermination",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LcType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LegId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LenderClassification" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LetterOfCreditFacility" : {
+    "xmlRootElementName" : "letterOfCreditFacility",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Lien" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LimitId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LimitType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LinkId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Loan" : {
+    "xmlRootElementName" : "loan",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationConfirmationNotification" : {
+    "xmlRootElementName" : "loanAllocationConfirmationNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationNoSettlePeriodType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LoanAllocationNotification" : {
+    "xmlRootElementName" : "loanAllocationNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationSettlementDateAvailabilityNotification" : {
+    "xmlRootElementName" : "loanAllocationSettlementDateAvailabilityNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationSettlementDateFinalizationNotification" : {
+    "xmlRootElementName" : "loanAllocationSettlementDateFinalizationNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationSettlementNotification" : {
+    "xmlRootElementName" : "loanAllocationSettlementNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationSettlementTaskNotification" : {
+    "xmlRootElementName" : "loanAllocationSettlementTaskNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationSettlementTaskType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LoanAllocationTransferFeeDueNotification" : {
+    "xmlRootElementName" : "loanAllocationTransferFeeDueNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanAllocationTransferFeeOwedNotification" : {
+    "xmlRootElementName" : "loanAllocationTransferFeeOwedNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanBulkServicingNotification" : {
+    "xmlRootElementName" : "loanBulkServicingNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanContractEventGroup" : {
+    "xmlRootElementName" : "loanContractEventGroup",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanContractNotification" : {
+    "xmlRootElementName" : "loanContractNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanNotificationAcknowledgement" : {
+    "xmlRootElementName" : "loanNotificationAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanNotificationException" : {
+    "xmlRootElementName" : "loanNotificationException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanNotificationRetracted" : {
+    "xmlRootElementName" : "loanNotificationRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanPartyEventInstructionOverrideNotification" : {
+    "xmlRootElementName" : "loanPartyEventInstructionOverrideNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanPartyProfileNotification" : {
+    "xmlRootElementName" : "loanPartyProfileNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanPartyTradingInstructionOverrideNotification" : {
+    "xmlRootElementName" : "loanPartyTradingInstructionOverrideNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanPrepayment" : {
+    "xmlRootElementName" : "prepayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTradeConfirmationNotification" : {
+    "xmlRootElementName" : "loanTradeConfirmationNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTradeNotification" : {
+    "xmlRootElementName" : "loanTradeNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTradeSettlementTaskNotification" : {
+    "xmlRootElementName" : "loanTradeSettlementTaskNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTradeSettlementTaskType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LoanTradeTransferFeeDueNotification" : {
+    "xmlRootElementName" : "loanTradeTransferFeeDueNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTradeTransferFeeOwedNotification" : {
+    "xmlRootElementName" : "loanTradeTransferFeeOwedNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTradingPartyRole" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.LoanTransferNotification" : {
+    "xmlRootElementName" : "loanTransferNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.LoanTransferSettlementNotification" : {
+    "xmlRootElementName" : "loanTransferSettlementNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MainPublication" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MandatoryCostRateChange" : {
+    "xmlRootElementName" : "mandatoryCostRateChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MandatoryCostRateExpiry" : {
+    "xmlRootElementName" : "mandatoryCostRateExpiry",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Manifest" : {
+    "xmlRootElementName" : "Manifest",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Market" : {
+    "xmlRootElementName" : "market",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MarketDisruption" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MarketDisruptionEvent" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MasterAgreementId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MasterAgreementType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MasterAgreementVersion" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MasterConfirmationAnnexType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MasterConfirmationType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MatchId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Material" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MatrixSource" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MatrixTerm" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MatrixType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MaturityAcknowledgement" : {
+    "xmlRootElementName" : "maturityAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MaturityChange" : {
+    "xmlRootElementName" : "maturityChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MaturityException" : {
+    "xmlRootElementName" : "maturityException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MaturityNotification" : {
+    "xmlRootElementName" : "maturityNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MessageAddress" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MessageId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MessageRejected" : {
+    "xmlRootElementName" : "messageRejected",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MetalPhysicalLeg" : {
+    "xmlRootElementName" : "metalPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MgmtData" : {
+    "xmlRootElementName" : "MgmtData",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MimeType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MiscFeePayment" : {
+    "xmlRootElementName" : "miscFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Mortgage" : {
+    "xmlRootElementName" : "mortgage",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.MortgageSector" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.MutualFund" : {
+    "xmlRootElementName" : "mutualFund",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.NoFaultTermination" : {
+    "xmlRootElementName" : "noFaultTermination",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.NonDeliverableSubstitute" : {
+    "xmlRootElementName" : "nonDeliverableSubstitute",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.NonRecurringFeePaymentNotification" : {
+    "xmlRootElementName" : "nonRecurringFeePaymentNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.NonRecurringMiscFeeType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.NotionalReportingType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Object" : {
+    "xmlRootElementName" : "Object",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ObligationAcceleration" : {
+    "xmlRootElementName" : "obligationAcceleration",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ObligationDefault" : {
+    "xmlRootElementName" : "obligationDefault",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.OilPhysicalLeg" : {
+    "xmlRootElementName" : "oilPhysicalLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.OilProductType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OptionElement" : {
+    "xmlRootElementName" : "option",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.OptionExpirationNotification" : {
+    "xmlRootElementName" : "optionExpirationNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.OptionType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OrderId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OrganizationCharacteristic" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OrganizationType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OriginatingEvent" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OtcClassification" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OtherAgreementId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OtherAgreementType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OtherAgreementVersion" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.OutstandingContractsStatement" : {
+    "xmlRootElementName" : "outstandingContractsStatement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.OverrideId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PGPData" : {
+    "xmlRootElementName" : "PGPData",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PackageType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyGroupType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyProfileId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyRelationshipType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyRole" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyRoleType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PaymentType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PenaltyRateChange" : {
+    "xmlRootElementName" : "penaltyRateChange",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PenaltyRateExpiry" : {
+    "xmlRootElementName" : "penaltyRateExpiry",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PersonId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PersonRole" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PerturbationType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PortfolioName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PrepaymentNotification" : {
+    "xmlRootElementName" : "prepaymentNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PriceMateriality" : {
+    "xmlRootElementName" : "priceMateriality",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PriceQuoteUnits" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PriceSourceDisruption" : {
+    "xmlRootElementName" : "priceSourceDisruption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PricingContext" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PricingInputType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PricingModel" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.PricingStructure" : {
+    "xmlRootElementName" : "pricingStructure",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.PricingStructureValuation" : {
+    "xmlRootElementName" : "pricingStructureValuation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ProblemLocation" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Product" : {
+    "xmlRootElementName" : "product",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ProductId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ProductType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.QuantityUnit" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.QuoteTiming" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RSAKeyValue" : {
+    "xmlRootElementName" : "RSAKeyValue",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RateCalculation" : {
+    "xmlRootElementName" : "rateCalculation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RateIndex" : {
+    "xmlRootElementName" : "rateIndex",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RateSourcePage" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReasonCode" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReferenceAmount" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReferenceBankId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReferenceElement" : {
+    "xmlRootElementName" : "Reference",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ReferenceLevelUnit" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Region" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RegulatorId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Repayment" : {
+    "xmlRootElementName" : "repayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Repo" : {
+    "xmlRootElementName" : "repo",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ReportId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReportingBoolean" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReportingCurrencyType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReportingLevel" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReportingPurpose" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReportingRegimeName" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ReportingRole" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RepudiationMoratorium" : {
+    "xmlRootElementName" : "repudiationMoratorium",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestAllocation" : {
+    "xmlRootElementName" : "requestAllocation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestAllocationRetracted" : {
+    "xmlRootElementName" : "requestAllocationRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestClearing" : {
+    "xmlRootElementName" : "requestClearing",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestClearingEligibility" : {
+    "xmlRootElementName" : "requestClearingEligibility",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestClearingRetracted" : {
+    "xmlRootElementName" : "requestClearingRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestCollateralAllocation" : {
+    "xmlRootElementName" : "requestCollateralAllocation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestConfirmation" : {
+    "xmlRootElementName" : "requestConfirmation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestConfirmationRetracted" : {
+    "xmlRootElementName" : "requestConfirmationRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestConsent" : {
+    "xmlRootElementName" : "requestConsent",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestConsentRetracted" : {
+    "xmlRootElementName" : "requestConsentRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestEventStatus" : {
+    "xmlRootElementName" : "requestEventStatus",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestExecution" : {
+    "xmlRootElementName" : "requestExecution",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestExecutionRetracted" : {
+    "xmlRootElementName" : "requestExecutionRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestRetransmission" : {
+    "xmlRootElementName" : "requestRetransmission",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestTradeReferenceInformationUpdate" : {
+    "xmlRootElementName" : "requestTradeReferenceInformationUpdate",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestTradeReferenceInformationUpdateRetracted" : {
+    "xmlRootElementName" : "requestTradeReferenceInformationUpdateRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RequestedAction" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RequestedClearingAction" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RequestedCollateralAllocationAction" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RequestedWithdrawalAction" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RequiredIdentifierDate" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ResourceId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ResourceType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RestructuringElement" : {
+    "xmlRootElementName" : "restructuring",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RestructuringType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.RetrievalMethod" : {
+    "xmlRootElementName" : "RetrievalMethod",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ReturnLeg" : {
+    "xmlRootElementName" : "returnLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ReturnSwap" : {
+    "xmlRootElementName" : "returnSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ReturnSwapLeg" : {
+    "xmlRootElementName" : "returnSwapLeg",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Revolver" : {
+    "xmlRootElementName" : "revolver",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Rollover" : {
+    "xmlRootElementName" : "rollover",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RolloverNotification" : {
+    "xmlRootElementName" : "rolloverNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.RoutingId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SPKIData" : {
+    "xmlRootElementName" : "SPKIData",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Sensitivity" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ServiceAdvisoryCategory" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ServiceNotification" : {
+    "xmlRootElementName" : "serviceNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ServiceNotificationException" : {
+    "xmlRootElementName" : "serviceNotificationException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ServiceProcessingCycle" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ServiceProcessingEvent" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ServiceProcessingStep" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ServiceStatus" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SettlementInstructionId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SettlementMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SettlementPostponement" : {
+    "xmlRootElementName" : "settlementPostponement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SettlementPriceDefaultElection" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SettlementPriceSource" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SettlementRateOption" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ShortSale" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Signature" : {
+    "xmlRootElementName" : "Signature",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SignatureMethod" : {
+    "xmlRootElementName" : "SignatureMethod",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SignatureProperties" : {
+    "xmlRootElementName" : "SignatureProperties",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SignatureProperty" : {
+    "xmlRootElementName" : "SignatureProperty",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SignatureValue" : {
+    "xmlRootElementName" : "SignatureValue",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SignatureValueType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.SignedInfo" : {
+    "xmlRootElementName" : "SignedInfo",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SimpleCreditDefaultSwap" : {
+    "xmlRootElementName" : "simpleCreditDefaultSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SimpleFra" : {
+    "xmlRootElementName" : "simpleFra",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SimpleIRSwap" : {
+    "xmlRootElementName" : "simpleIrSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SpreadScheduleType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.StandardProduct" : {
+    "xmlRootElementName" : "standardProduct",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Strategy" : {
+    "xmlRootElementName" : "strategy",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.SupervisoryBody" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Swap" : {
+    "xmlRootElementName" : "swap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Swaption" : {
+    "xmlRootElementName" : "swaption",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TaskId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TaxFormType" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TermDeposit" : {
+    "xmlRootElementName" : "termDeposit",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TermLoan" : {
+    "xmlRootElementName" : "termLoan",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TerminatingEvent" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TimestampTypeScheme" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TimezoneLocation" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TradeCategory" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TradeChangeAdvice" : {
+    "xmlRootElementName" : "tradeChangeAdvice",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TradeChangeAdviceAcknowledgement" : {
+    "xmlRootElementName" : "tradeChangeAdviceAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TradeChangeAdviceException" : {
+    "xmlRootElementName" : "tradeChangeAdviceException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TradeChangeAdviceRetracted" : {
+    "xmlRootElementName" : "tradeChangeAdviceRetracted",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TradeId" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TradeReferenceInformationUpdateAcknowledgement" : {
+    "xmlRootElementName" : "tradeReferenceInformationUpdateAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.TradeReferenceInformationUpdateException" : {
+    "xmlRootElementName" : "tradeReferenceInformationUpdateException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Trader" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TradingWaiver" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TransactionCharacteristic" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.TransferFeeRule" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Transform" : {
+    "xmlRootElementName" : "Transform",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Transforms" : {
+    "xmlRootElementName" : "Transforms",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.UnderlyingAsset" : {
+    "xmlRootElementName" : "underlyingAsset",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.UnderlyingAssetTranche" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.Unit" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.UpfrontFeePayment" : {
+    "xmlRootElementName" : "upfrontFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Validation" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.ValuationDocument" : {
+    "xmlRootElementName" : "valuationDocument",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ValuationPostponement" : {
+    "xmlRootElementName" : "valuationPostponement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ValuationSet" : {
+    "xmlRootElementName" : "valuationSet",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ValuationSetDetail" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.VarianceOptionTransactionSupplement" : {
+    "xmlRootElementName" : "varianceOptionTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VarianceSwap" : {
+    "xmlRootElementName" : "varianceSwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VarianceSwapTransactionSupplement" : {
+    "xmlRootElementName" : "varianceSwapTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VerificationMethod" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.VerificationStatus" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.VerificationStatusAcknowledgement" : {
+    "xmlRootElementName" : "verificationStatusAcknowledgement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VerificationStatusException" : {
+    "xmlRootElementName" : "verificationStatusException",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VerificationStatusNotification" : {
+    "xmlRootElementName" : "verificationStatusNotification",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VolatilityMatrixValuation" : {
+    "xmlRootElementName" : "volatilityMatrixValuation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VolatilityRepresentation" : {
+    "xmlRootElementName" : "volatilityRepresentation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VolatilitySwap" : {
+    "xmlRootElementName" : "volatilitySwap",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.VolatilitySwapTransactionSupplement" : {
+    "xmlRootElementName" : "volatilitySwapTransactionSupplement",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.WaiverFeePayment" : {
+    "xmlRootElementName" : "waiverFeePayment",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.Warrant" : {
+    "xmlRootElementName" : "warrant",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.WeatherStationAirport" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.WeatherStationWBAN" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.WeatherStationWMO" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.WithdrawalReason" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.WithholdingTaxReason" : {
+    "attributes" : {
+      "value" : {
+        "xmlRepresentation" : "VALUE"
+      }
+    }
+  },
+  "fpml.confirmation.X509Data" : {
+    "xmlRootElementName" : "X509Data",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.YieldCurve" : {
+    "xmlRootElementName" : "yieldCurve",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.YieldCurveValuation" : {
+    "xmlRootElementName" : "yieldCurveValuation",
+    "xmlAttributes" : {
+      "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  }
+}

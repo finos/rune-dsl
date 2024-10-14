@@ -693,20 +693,22 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	// TODO This probably should be made namespace aware
 	@Check(FAST) // switch to NORMAL if it becomes slow
 	def checkTypeNamesAreUnique(RosettaModel model) {
-		val name2attr = HashMultimap.create
-		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
-			name2attr.put(name, it)
+		// NOTE: this check is done case-insensitive!
+		// This is to prevent clashes in generated code (e.g., MyFoo.java and Myfoo.java),
+		// which case-insensitive file systems such as Mac and Windows do not handle well.
+		val upperCaseName2RootElem = HashMultimap.create
+		model.elements.filter(RosettaNamed).filter[name !== null].filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
+			upperCaseName2RootElem.put(name.toUpperCase, it)
 		]
 		val resourceDescription = getResourceDescriptions(model.eResource)
-		for (name : name2attr.keySet) {
-			val valuesByName = name2attr.get(name)
-			if (valuesByName.size > 1) {
-				valuesByName.forEach [
-					if (it.name !== null)
-						error('''Duplicate element named '«name»'«»''', it, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
+		for (upperCaseName : upperCaseName2RootElem.keySet) {
+			val rootElems = upperCaseName2RootElem.get(upperCaseName)
+			if (rootElems.size > 1) {
+				rootElems.forEach [
+					error('''Duplicate element named '«name»'«»''', it, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
 				]
-			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
-				val EObject toCheck = valuesByName.get(0)
+			} else if (rootElems.size == 1 && model.eResource.URI.isPlatformResource) {
+				val EObject toCheck = rootElems.get(0)
 				val qName = toCheck.fullyQualifiedName
 				val sameNamed = resourceDescription.getExportedObjects(toCheck.eClass(), qName, false).filter [
 					confExtensions.isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision$" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<xsd:complexType name="ExchangeTraded">
+		<xsd:annotation>
+			<xsd:documentation>Extends FpML UnderlyingAsset with addition of deliveryType</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:ExchangeTraded">
+				<xsd:sequence>
+					<xsd:element name="deliveryType" type="fpml:SettlementTypeEnum" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="Future">
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Future.core">
+				<xsd:sequence>
+					<xsd:element name="settlementType" type="fpml:SettlementTypeEnum" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Settlement method for the contract (Cash, Physical). This value is used to populate the "Delivery Type" field for regulatory reporting (CFTC, ESMA).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ExchangeTradedOption">
+		<xsd:complexContent>
+			<xsd:extension base="fpml:ExchangeTradedOption.core">
+				<xsd:sequence>
+					<xsd:annotation>
+						<xsd:documentation>Extensions to FpML ExchangeTradedOption content</xsd:documentation>
+					</xsd:annotation>
+					<xsd:element name="exerciseStyle" type="fpml:ExerciseStyleEnum" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Exercise style of the option (American, Bermuda, European)</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="strikeUnits" type="fpml:PriceQuoteUnits" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Units in which the option strike is expressed e.g. currency Amount, BasisPoints, Percentage, Rate.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="underlyer" type="fpml:SingleUnderlyer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Underlyer of the option e.g. a listed future.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="settlementType" type="fpml:SettlementTypeEnum" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Settlement method for the contract (Cash, Physical). This value is used to populate the "Delivery Type" field for regulatory reporting (CFTC, ESMA).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:element name="future" type="Future" substitutionGroup="fpml:underlyingAsset"/>
+	<xsd:element name="option" type="ExchangeTradedOption" substitutionGroup="fpml:underlyingAsset"/>
+</xsd:schema>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: $" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-com-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="GenericProduct">
+		<xsd:annotation>
+			<xsd:documentation>Extends FpML GenericProduct with optional unbounded collection of additionalPayment (deprecated), plus bullion|cash settlement and commodity extension properties.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:GenericProduct">
+				<xsd:sequence>
+					<xsd:element name="additionalPayment" type="fpml:Payment" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Additional payments between the principal parties e.g. upfront fee, periodic premium.
+
+* Deprecated: superseded by addition of additionalPayment in FpML GenericProduct model (FpML-5-10).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:group ref="GenericCommodityExtensions.model" minOccurs="0"/>
+					<xsd:choice minOccurs="0">
+						<xsd:element name="bullionSettlement" type="FxBullionSettlement">
+							<xsd:annotation>
+								<xsd:documentation>Bullion settlement properties. This component may be required where one of the trade currencies is a precious metal (e.g. XAU, XPT), and should not be produced otherwise.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="cashSettlement" type="fpml:FxCashSettlement">
+							<xsd:annotation>
+								<xsd:documentation>Indicates that the settlement will be cash, and specifies the settlement currency, plus provision for fixing details.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--
+================
+    elements    
+================
+-->
+	<xsd:element name="genericProduct" type="GenericProduct" substitutionGroup="fpml:product">
+		<xsd:annotation>
+			<xsd:documentation>Product definition extending FpML GenericProduct with optional unbounded collection of additionalPayment (deprecated), plus bullion|cash settlement properties.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="referenceEntity" type="fpml:LegalEntityAsset" substitutionGroup="fpml:underlyingAsset">
+		<xsd:annotation>
+			<xsd:documentation>Referenceable instance of LegalEntityAsset, capable of being deployed as an underlyingAsset e.g. in the context of a BasketConstituent</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--
+================
+    groups    
+================
+-->
+	<xsd:group name="GenericCommodityExtensions.model">
+		<xsd:annotation>
+			<xsd:documentation>Commodity specifc extensions (commodity schedule)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="schedule" type="CommodityScheduleFloating" minOccurs="0" maxOccurs="2">
+				<xsd:annotation>
+					<xsd:documentation>Commodity floating payment/fixing schedule.
+In the case where multiple schedules exist (up to two), each schedule should reference the commodity swap leg to which it relates by means of the legReference element.
+
+* A single schedule without legReference is construed as applying to the parent commoditySwap as a whole.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+</xsd:schema>

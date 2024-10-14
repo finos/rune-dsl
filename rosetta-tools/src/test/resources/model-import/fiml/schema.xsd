@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:cfg="http://www.bnpparibas.com/fixedincome/xmlframework" xmlns:fpml-recordkeeping="http://www.fpml.org/FpML-5/recordkeeping" xmlns:dec="http://www.fpml.org/declaration" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: 1782 $" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-core-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-bond-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-com-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-fx-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-generic-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-ird-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-listed-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-loandeposit-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-repo-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-sec-lending-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-msg-5-4.xsd"/>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="FiML">
+		<xsd:sequence>
+			<xsd:element name="messageHeader" type="MessageHeader"/>
+			<xsd:group ref="Correlation.model" minOccurs="0"/>
+			<xsd:group ref="Message.model"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="VersionAttributes.atts"/>
+	</xsd:complexType>
+	<!--
+================
+    elements    
+================
+-->
+	<xsd:element name="FiML" type="FiML"/>
+	<!--
+================
+    groups    
+================
+-->
+	<xsd:group name="Message.model">
+		<xsd:choice>
+			<xsd:group ref="RegulatoryReportingMessage.model"/>
+			<xsd:element name="messageRejected" type="MessageRejected"/>
+		</xsd:choice>
+	</xsd:group>
+</xsd:schema>

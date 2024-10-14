@@ -47,7 +47,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	@Override
-	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
 		RosettaEnumeration rosettaEnumeration = RosettaFactory.eINSTANCE.createRosettaEnumeration();
 		rosettaEnumeration.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(rosettaEnumeration::setDefinition);
@@ -56,6 +56,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		List<XsdEnumeration> enumeration = xsdType.getAllRestrictions().stream().flatMap(r -> r.getEnumeration().stream()).toList();
 
 		enumeration.stream()
+			.filter(e -> !e.getValue().isEmpty())
 			.map(e -> this.registerEnumValue(e, typeMappings))
 			.forEach(rosettaEnumeration.getEnumValues()::add);
 		

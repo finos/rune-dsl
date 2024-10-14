@@ -1,4 +1,4 @@
-Copyright © 2017 International Swaps and Derivatives Association. All rights reserved.
+Copyright © 2019 International Swaps and Derivatives Association. All rights reserved.
 --------------------------------------------------------------------------------------
 
 FpML 5.x - Readme file
@@ -14,7 +14,7 @@ There are two sets of documentation for each view published in FpML:
 
 For each of these views, there are schema files and example sub-directories.
 
-The schema files are labelled fpml-XXX-MajorVersion-MinorVersion.xsd (e.g. fpml-main-5-10.xsd), for better readability the version number is omitted from the schema names below.
+The schema files are labelled fpml-XXX-MajorVersion-MinorVersion.xsd (e.g. fpml-main-5-11.xsd), for better readability the version number is omitted from the schema names below.
 
 Confirmation Schemas:
 
@@ -214,6 +214,8 @@ Recordkeeping Schemas:
 * fpml-msg.xsd - High level definitions related to messaging.
 * fpml-option-shared.xsd - Shared option definitions used for defining the common features of options.
 * fpml-recordkeeping-processes.xsd - Recordkeeping process messages.
+* fpml-reg-reporting.xsd - Shared definitions between Recordkeeping and Transparency.
+* fpml-reg-reporting-product.xsd - Definitions for the general reporting product.
 * fpml-repo.xsd - Repo definitions.
 * fpml-return-swaps.xsd - Return Swaps Product Definitions.
 * fpml-riskdef.xsd - Definitions of valuation and sensitivity results. They include detailed definitions of sensitivity calculations and are intended to be used by sophisticated users.
@@ -234,6 +236,8 @@ Recordkeeping Schemas:
 	 * packages
 	 * products
 	 * redesign-samples
+	 * new-events (examples of redesigned regulatoryDisclosure messages introducted in 5.11)
+	 * use-cases  (use cases using regulatoryDisclosure messages)
 
 
 
@@ -261,6 +265,8 @@ Transparency - Schemas:
 * fpml-main.xsd - Root definitions.
 * fpml-msg.xsd - High level definitions related to messaging.
 * fpml-option-shared.xsd - Shared option definitions used for defining the common features of options.
+* fpml-public-reporting-product.xsd - Definitions for the general reporting product
+* fpml-reg-reporting.xsd - Shared definitions between Recordkeeping and Transparency.
 * fpml-return-swaps.xsd - Return Swaps Product Definitions.
 * fpml-shared.xsd - Shared definitions used widely throughout the specification. These include items such as base types, shared financial structures, etc.
 * fpml-standard.xsd - Used in Transparency reporting to define a product that represents a standardized OTC derivative transaction whose economics do not need to be fully described using an FpML schema because they are implied by the product ID. In other views, standard products are present for convenience to support internal messaging and workflows that are cross-product. Standard products are not full trade representations as such they are not intended to be used for confirming trades.
@@ -292,6 +298,7 @@ Transparency - Schemas:
 	 * messages
 	 * package
 	 * products
+	 * use-cases  (use cases using publicDisclosure messages)
 
 
 Legal Schemas:

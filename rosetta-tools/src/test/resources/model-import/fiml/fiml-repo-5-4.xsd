@@ -1,0 +1,1455 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision$" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-bond-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<!--
+================
+    simpleTypes    
+================
+-->
+	<xsd:simpleType name="InterLifeBreakReasonEnum">
+		<xsd:annotation>
+			<xsd:documentation>Reason code for repo interlife break event. In principle, this belongs to the same codelist as the open/close events, however Calypso require to replicate the former convention, appending '-Break' to the interlife reason code.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="InterLifeEventReasonEnum">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:token">
+					<xsd:enumeration value="Extension-Break"/>
+					<xsd:enumeration value="InterestPayout-Break"/>
+					<xsd:enumeration value="Partial-Break"/>
+					<xsd:enumeration value="Reprice-Break"/>
+					<xsd:enumeration value="Rerate-Break"/>
+					<xsd:enumeration value="Rollover-Break"/>
+					<xsd:enumeration value="SpreadChange-Break"/>
+					<xsd:enumeration value="Substitution-Break"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:union>
+	</xsd:simpleType>
+	<xsd:simpleType name="InterLifeEventReasonEnum">
+		<xsd:annotation>
+			<xsd:documentation>Reason code for repo interlife events (open, close)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Extension"/>
+			<xsd:enumeration value="InterestPayout"/>
+			<xsd:enumeration value="Partial"/>
+			<xsd:enumeration value="Reprice"/>
+			<xsd:enumeration value="Rerate"/>
+			<xsd:enumeration value="Rollover"/>
+			<xsd:enumeration value="SpreadChange"/>
+			<xsd:enumeration value="Substitution"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MarginTypeEnum">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">This indicator defines if a margin (also called haircut in repo and sec lending litterature) applies to cash or to the financial instrument(s) being exchanged.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Cash">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">When the margin type is Cash, the margin factor or haircut is applied to the cash value of the transaction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Instrument">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">When the margin type is Instrument, the margin factor or haircut is applied to the instrument value i.e. the collateral security (or securities) for the transaction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="RepoDurationEnum">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A duration code for a Repo transaction. There are many business and market rules that are derived from the duration of the transaction.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Open">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Indicates that a contract is open ended; this means that the end date is unspecified, and will be agreed by the two parties at a later date. Business rule: When the repo is Open, the forward transaction leg must not be present.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Open:Term">
+				<xsd:annotation>
+					<xsd:documentation>Special duration code for a (formerly) Open transaction which has been converted to a Term repo i.e. closed out for a defined forward settlement date. For use in regulatory reporting, to support reporting during the period between conversion to a Term transaction and the final settlement (close) date.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Overnight">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Indicates that a contract is classified as overnight, meaning that there is one business day difference between the start and end date of the contract. Business rule: When the repo is overnight, the number of business days between the spot and forward value dates must be one. Forward leg must be specified.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Term">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Indicates that a contract is a regular term contract, with a start date and an end date. Business rule: When the repo is 'Term', both spot and forward legs must be specified.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+================
+	complexTypes
+================
+-->
+	<xsd:complexType name="AdjustableOffset">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">An adjustable offset can be used to specify a number of days, business or calendar, for example in a notice period.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Offset">
+				<xsd:sequence>
+					<xsd:group ref="fpml:BusinessCentersOrReference.model" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="AtomicSettlementTransfer" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Abstract base class for all transfer of cash or securities</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="suppress" type="xsd:boolean" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Indicate if this transfer should be suppressed. Absence of this flag means that the transfer should not be suppressed.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="Attribution">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">An attribution must specify its type, and an amount. Any of the three amount fields below can be used (and they can all be used at the same time), as long as they are used consistently. You can express an attribution in a maximum of three different currencies (settlement, base, underlying), which are usually the same as the settlement currency on the trade, the base currency used for accounting purposes, and the underlying currency which refers to the currency of an underlying instrument used in a transaction. Note however that these are just guidelines; you can actually specify attributions in any currency that you like, as long as you are consistent. Within an Attributions structure, all attribution/settlementAmounts are expressed in the same currency, defined by the settlementCurrency field (see enclosing Attributions structure). Same holds true for base and underlying amounts.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="type" type="AttributionType">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The attribution type. The cash settlement amount specified in the enclosing transfer will be broken down into several subcomponents (like a PandL explain), and the type of the breakdown is defined here. Typical values are in a scheme.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="settlementAmount" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">An amount expressed in the settlement currency that was indicated in the enclosing Attributions structure. This is done to avoid repeating the currency for every amount when we know that attributions are expressed in a consistent way, with the same currencies.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="baseAmount" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">An amount expressed in the base currency defined in the enclosing Attributions structure (see baseCurrency). If this optional field is present, baseCurrency must be defined in the enclosing structure.	</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="underlyingAmount" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">An amount expressed in the currency of an underlyer ( see underlyingCurrency). If this field is present then the underlyingCurrency field in the enclosing structure must be defined.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Attributions">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A set of attributions, which are a way to break down a cash amount into several components, like the repo interest portion in the final cahflow of the repo, the clean price attribution, etc. An example could be, for a repo worth 1M on a security priced at 100 at maturity with a total interest of 10,000, 1M is attributed to the security 'dirty price', 95,400,000.00 is attributed to the security clean price, ( I am making it up here ); 10,000.00 is attributed to the repo interest, and 200 is attributed to a stamp tax. All attributions are monetary amounts.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="settlementCurrency" type="fpml:Currency">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The currency that is used for all the attributions expressed with settlementAmount. The reason for this is to avoid repeating the currency (for example using FpML:Money) for every attribution amount in the structure. We therefore assume that attributions are expressed in a maximum of three currencies, which we specify here. The settlementCurrency is assumed to be the settlement currency of the trade in general cases.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="baseCurrency" type="fpml:Currency">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The currency that is used for all the attributions expressed with baseAmount. The baseCurrency is usually USD within the firm, but it is in fact driven by the accounting engine expectations.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="underlyingCurrency" type="fpml:Currency" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The currency that is used for all the attributions expressed with underlyingAmount. Underlying currency is the currency of issuance for the underlying instrument. So if you need to express attributions on a Repo settling in EUR but with GBP instruments, you would specify underlyingCurrency to be GBP.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="attribution" type="Attribution" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The attributions go here. There is no limit on the number of attributions.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="AttributionType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">An attribution type. Values are defined in a coding scheme. Typical values are RepoInterest, StampTax, WithholdingTax.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="attributionTypeScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CashRepricingEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A cash repricing event. This type of event is an adjustment of the price of the underlying collateral done to reflect current market conditions. The par amount is preserved constant, which means that the collateral quantity is unchanged. It is the settlement amount that changes after a cash repricing, so a cash repricing will trigger a cash movement.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="collateral" type="CollateralValuation" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">???? description should briefly summarize the meaning/purpose of the element, not just the rules for using it. - In general the collateral element must be used, it may only be omitted in cases where the source system is unable to provide collateral detail.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="combinedInterestPayout" type="xsd:boolean">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">This value should be set to true if we need to pay the accrued interest at the same time. If false, there is no payment attributed to the repo accrued interest, only cash movement linked to collateral re-valuation.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="transfer" type="Transfer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">??? description should briefly summarize the meaning/purpose of the element</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CashTransfer">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">By definition, to specify a cash transfer, we need to say how much we want to transfer, who is the payer ( correspondent ) and who is the receiver ( beneficiary ). Those terms are used in the settlement instruction and allow us to define the direction of the movement.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="AtomicSettlementTransfer">
+				<xsd:sequence>
+					<xsd:element name="transferAmount" type="fpml:Money">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The money to transfer.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:group ref="fpml:PayerReceiver.model">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The parties paying and receiving the money</xsd:documentation>
+						</xsd:annotation>
+					</xsd:group>
+					<xsd:element name="attributions" type="Attributions" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">For accounting, reporting or regulatory reasons, the transfer may have to be explained in a series of individual amounts. It may be possible for example to break down a transfer amount into constituents (gross, tax, net) or into individual amounts (interest, penalty) that would be netted at the transfer level. The attributions structure allows participants to explain their transfer amounts for better traceability. This is strictly optional.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CollateralSubstitutionEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A collateral substitution is an event where two parties, having previously entered into a repurchase agreement, or securities lending, agree that collateral used for the transaction be substituted with equivalent collateral. The new collateral must be deemed acceptable, in grade and quality and have an equivalent valuation compared substituted collateral at the time of the substitution.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="previousCollateral" type="CollateralValuation">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The collateral previously pledged in the transaction, properly valued as of the date of substitution.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="newCollateral" type="CollateralValuation">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The new collateral to use in the transaction, valued as of the date of substitution.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="settlementTransfer" type="SettlementTransfer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The settlement transfer structure may be used by participants that want to explicitly restate who will deliver what, when and how.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CollateralValuation">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">This type is used in Repo trades, to specify the valuation of a specific piece of collateral in the transaction. Note that the structure must be used within a structure that has a date attached to it, because the valuations included (such as prices, accruals and inflation factors) are relative to a date. We do not want to add an href to a date because that would be too much complexity for nothing.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:group ref="BondCollateral.model">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">When the instrument being used in a transaction is a bond, the group above should be used to properly value the instrument, 	in terms of price, accruals and notional.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:group>
+				<xsd:group ref="UnitContract.model">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">When the instrument being used in a transaction is an equity, or any contract traded in units, this group should be used to define the quantity, price and valuation of the instrument.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:group>
+			</xsd:choice>
+			<xsd:element name="assetReference" type="fpml:AssetReference">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">A reference to explicitly identify which asset is being valued.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CouponEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">This structure is used for Buy-Sell Back trades to describe when a coupon is paid and what reinvestment rate will be applied. the amount is in the instrument currency. To be able to represent a buy/sell back with more than one collateral we use an href link to the underlying asset. This enables us to represent multiple coupons during the life of the trade, with different reinvestment rates, and possibly different instruments.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="currency" type="fpml:Currency" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The currency in which an amount is denominated.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="couponAmount" type="fpml:PositiveDecimal">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The cash value of the coupon paid (not the coupon rate). It should be equal to the coupon rate divided by frequency (2	for semi annual) times the notional of the bond.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="reinvestmentRate" type="xsd:decimal">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The reinvestment rate we will use on the coupon. Very often it is equal to the repo rate on the deal, but it does not have to. For very long term repos, the reinvestment rate will be derived from a curve.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="reinvestmentAmount" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The reinvestment interest amount (extension to FpML model).
+
+*** TODO ***
+Consider renaming e.g. to reinvestmentInterest [Amount]</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="assetReference" type="fpml:AssetReference"/>
+					<xsd:element name="transfer" type="Transfer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The transfer structure can be used to explicitly state who will pay the coupon. In buy-sell-back trades, whoever holds the bond will receive the coupon (from the bond issuer) and keep it. If the bond holder passes the coupon on to the counterparty we expect to see a transfer from bond holder to counterparty here.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CouponReinvestment">
+		<xsd:annotation>
+			<xsd:documentation>Coupon reinvestment event: in a buy/sell-back transaction, payment of any coupon amount by the buyer to the seller is deferred until the repurchase date, when it is deducted from the repurchase price. In the interim, the buyer is obliged to reinvest the value of the payment in order to compensate the seller for the delay in reimbursement. </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="principalAmount" type="PositiveDecimal">
+				<xsd:annotation>
+					<xsd:documentation>Aggregate reinvested coupon amount = sum(couponEvent/couponAmount)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="accruedInterest" type="xsd:decimal">
+				<xsd:annotation>
+					<xsd:documentation>Aggregate interest accrued on reinvested coupon amounts = sum(couponEvent/ reinvestmentAmount)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EventReference">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Reference to a Trade Event.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Reference"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="InterestPayoutEvent">
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="payment" type="fpml:Money">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The amount to be paid. Note that we do not specify who is paying the amount. Implicitly, the party that pays the repo Interest at maturity is the only party that can do an interest payout.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="transfer" type="Transfer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">When necessary, it is possible to make the interest payout fully explicit, with parties and settlement instructions. Note that the transfer date *may* differ from the eventDate specified by the event; for example the date the payment is made can be 1 or 2 days after the interest has been calculated. Note that for an interest payout the transfer can only contain a cashTransfer as there are no security movements for an interest payout.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="InterLifeBreak">
+		<xsd:annotation>
+			<xsd:documentation>Break event in an interlife booking chain.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence minOccurs="0">
+					<xsd:element name="reason" type="InterLifeBreakReasonEnum"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="InterLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation>Event in an interlife chain of transaction bookings: open, close.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence minOccurs="0">
+					<xsd:element name="reason" type="InterLifeEventReasonEnum"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="Margin">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Defines the margin, also called haircut in repo and securities lending terminology, that will be applied to a transaction. It is essentially a premium, expressed in percentage, to compensate collateral quality (or lack thereof) and liquidity.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="marginType" type="MarginTypeEnum">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The type of asset (cash or securities) to apply to which margin applies. See GMRA 2011 paragraph 2(h) for "Cash Margin" and GMRA 2011 paragraph 2(cc) for "Margin Securities".</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:element name="marginFactor" type="xsd:decimal">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">An element defining an initial margin expressed as a ratio of the Market Value of the collateral to the Purchase Price. The margin is expressed as a multiplication factor to reflect the quality of the collateral  (default value is 1, signifying that no margin applies).
+
+Also called margin ratio as per Section 2, paragraph (z) of the TBMA/ISMA Global Master Repurchase Agreement (equivalent to the marginRatio element under the FpML Repo model).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="haircut" type="fpml:DecimalFraction">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">An element defining a haircut expressed as the percentage difference between the Market Value of the collateral and the Purchase Price of the repo and calculated as 100 multiplied by a ratio of the difference between the Market Value of the collateral and the Purchase Price of the repo to the Market Value of the collateral. Haircut is alternative way to adjust the value of collateral sold in a repurchase agreement to initial margin ratio. Because an initial margin is a percentage of the Purchase Price, while a haircut is a percentage of the Market Value of collateral, the arithmetic of initial margins and haircuts is slightly different. For example, an initial margin of 102% is not equivalent to a haircut of 2%, but to 1.961% (ie 100/102%). See GMRA 2011 paragraph 2(aa).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="assetReference" type="fpml:AssetReference" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">A reference to the collateral asset to which the margin requirement applies. This element should be produced in the case where margin requirements are specified for multiple pieces of collateral, and may be omitted otherwise.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="MarkToMarketEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A mark to market event. This type of event is an adjustment of the price of the underlying collateral done to reflect current market conditions. Depending on the direction of the collateral valuation, one of the contracting parties will either pledge more/less collateral in the contract, or add/substract cash from the contract value.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="collateral" type="CollateralValuation">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The updated collateral valuation for the contract. The change compared to the previously agreed valuation determines what securities or cash movement will occur.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="combinedInterestPayout" type="xsd:boolean">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Indicates that the parties agree to settle the accrued interest on the contract at the time of the repricing.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="transfer" type="Transfer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Participants may use this structure to explicitly restate who is receiving/delivering cash and securities.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="MidLifeEvent" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A mid life event in a repo or securities lending transaction. Such mid life events are bilateral agreements between contracting parties to alter the financial profile of the transaction. Such examples include interest payments, collateral substitutions, or mark-to-market activity (cash or nominal repricing) to re-balance the valuation of cash and collateral in the transaction.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="EventBase">
+				<xsd:sequence>
+					<xsd:element name="eventDate" type="fpml:IdentifiedDate">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The date the event has been recorded.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="NetTradeIdentifier">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Identification of a net trade and original trades.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:PartyTradeIdentifier">
+				<xsd:sequence>
+					<xsd:element name="originalTradeIdentifier" type="TradeIdentifierList" minOccurs="2" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Identification of original trades.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="PartySettlementTransferInformation">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Additional information about the settlement transfer. We will use this to carry information to drive internal processing.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="partyReference" type="fpml:PartyReference">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Information contained in this structure is relative to the party being referred to.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="processingInformation" type="SettlementTransferProcessingInformation">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Any party specific information that may be required to properly execute a transfer. This can be used as a type substitution point to insert party specific structures.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RateChangeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A rate change is a mid life event where on a given date, the repo rate to apply is changed as a result of a bilateral agreement between the two parties. There is no cash or security movement associated with a rate change. The repo structure allows you to specify repo rates as a schedule, so this type is not strictly required within the repo. We need it for consistency and to allow a discrete event message to declare a rate change on a trade.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="rate" type="xsd:decimal">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The new repo rate, in decimal format that will be applicable at the specified event date.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="RateObservationEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A rate observation is used only when a Repo is done against an index (typically EONIA repos) and we want to record the observed rates during the lifetime of the trade. This is similar in structure to a rate change, but the application context is different. A rate observation has no cash or security movement attached, so there is no transfer structure here. Rate observations are required on floating rate repos to calculate the accrued repo interest.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="MidLifeEvent">
+				<xsd:sequence>
+					<xsd:element name="rate" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The observed rate at the specified event date that will be used to calculate the accrued interest on an index repo contract.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="RelativePrice">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type which represents Pricing relative to a Benchmark.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="spread" type="xsd:decimal">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Basis Point spread over a Benchmark.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="BondEquity.model" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The benchmark being referred to; either a bond or equity product.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Repo">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A Repo, modeled as an FpML:Product.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Product">
+				<xsd:sequence>
+					<xsd:choice>
+						<xsd:element name="fixedRateSchedule" type="fpml:Schedule">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">The fixed repo rate. It is usually fixed for the duration of the agreement but can be changed with mid-life events (rate changes) except for buy SellBack trades.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:sequence>
+							<xsd:element name="floatingRateCalculation" type="fpml:FloatingRateCalculation">
+								<xsd:annotation>
+									<xsd:documentation xml:lang="en">The float index and tenor, with a spread. Use for floating rate repos. Most floatings in Europe are against EONIA.</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="resetFrequency" type="fpml:Frequency" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation xml:lang="en">The floating rate reset frequency.</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:choice>
+					<xsd:element name="dayCountFraction" type="fpml:DayCountFraction">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The day count fraction (calculation basis) applicable to the repo interest calculation.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:sequence minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Fee rate and associated properties are included to support cash + fee and security lending transactions (not strictly repos).</xsd:documentation>
+						</xsd:annotation>
+						<xsd:element name="feeRateSchedule" type="fpml:Schedule">
+							<xsd:annotation>
+								<xsd:documentation>Repo fee rate - the rate value can be negative, and can be changed by midlife events (feeRateChange).</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="feeDayCountFraction" type="fpml:DayCountFraction" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">The day count fraction (calculation basis) applicable to the fee calculation. If this element is omitted, the dayCountFraction element is applicable to both the repo interest and fee amount calculations.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:choice>
+						<xsd:sequence>
+							<xsd:element name="duration" type="RepoDurationEnum">
+								<xsd:annotation>
+									<xsd:documentation xml:lang="en">Duration code for the contract
+{Open, Overnight*, Term}
+*not currently used</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:group ref="ExtensionPeriod.model"/>
+							<xsd:group ref="CallNotice.model">
+								<xsd:annotation>
+									<xsd:documentation>Call/notice provisions.</xsd:documentation>
+								</xsd:annotation>
+							</xsd:group>
+						</xsd:sequence>
+						<xsd:sequence>
+							<xsd:annotation>
+								<xsd:documentation>*DEPRECATED*
+Support for earlier model, where noticePeriod precedes duration.</xsd:documentation>
+							</xsd:annotation>
+							<xsd:element name="noticePeriod" type="AdjustableOffset">
+								<xsd:annotation>
+									<xsd:documentation xml:lang="en">Notice period for open ended or long dated repos in number of days.</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="duration" type="RepoDurationEnum">
+								<xsd:annotation>
+									<xsd:documentation xml:lang="en">A duration code for the contract.</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:group ref="ExtensionPeriod.model"/>
+						</xsd:sequence>
+					</xsd:choice>
+					<xsd:element name="margin" type="Margin" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The margin, or haircut, to be applied. A single margin may be specified for the transaction as a whole; or individual margin requirements may be specified for multiple pieces of collateral, in which case the collateral asset to which the margin applies is referenced by element assetReference, in the same way as under [spot|forward]Leg/collateral.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="spotLeg" type="RepoSpotTransactionLeg">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">A repo contract is modeled  as two purchase/repurchase transactions which are called legs. This is the spot leg, i.e. the transaction that will be executed on the settlement date of the contract.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="forwardLeg" type="RepoForwardTransactionLeg" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The forward leg of the repo contract, i.e. the repurchase transaction.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element ref="midLifeEvent" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Mid life events that occur during the lifetime of the Repo go here.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:group ref="BondEquity.model" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">A non-empty collection of assets (finanical instruments) referenced by the repo contract as collateral.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:group>
+					<xsd:sequence>
+						<xsd:element name="billable" type="CanonicalBoolean">
+							<xsd:annotation>
+								<xsd:documentation>Specify whether any fee is payable on a periodic basis (true)* or at term (false). 
+
+* usually monthly netted on open positions with counterparty
+</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="paymentFrequency" type="fpml:Frequency" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">Time "period" and "periodMultiplier", describing frequency of payments for the floating rebate rate. Usually, the payment frequency is monthly, or daily. Business rule: Floating Rate Payment Frequency may be specified, in case of Floating Rebate Rate. (The assumption is that fee payment and rebate fixed rate payment are term payments, and rebate floating rate payment is periodic payment.)</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="triParty" type="TriPartyInformation" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Tri-party information: agent, set identifiers.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="maximumSubstitutions" type="xsd:nonNegativeInteger" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Maximum number of substitutions (collateral substitution events) permitted during the term of the contract.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="RepoForwardTransactionLeg">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A transaction leg for a repo is equivalent to a single cash transaction. It is augmented here to carry some values that are of interest for the repo. Also note that the BuyerSeller model in this transaction must be the exact opposite of the one found in the spot leg.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="RepoTransactionLeg">
+				<xsd:sequence>
+					<xsd:element name="calculationPeriodDayCount" type="xsd:positiveInteger" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Number of days between spot- and forward- leg settlement (value) dates, for the purpose of calculating interest/fee amounts.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="repoInterest" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The cash interest amount generated intrinsically by the trade i.e. "classic" repo interest. This amount is calculated as the repo cash rate applied to the spot-leg cash settlement amount over the duration of the trade, as per the repo day count fraction (calculation basis).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="couponReinvestment" type="CouponReinvestment" minOccurs="0"/>
+					<xsd:element name="feeAmount" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Fee amount, expressed in the settlement currency.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:choice>
+						<xsd:element name="settledInterestAmount" type="xsd:decimal" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>The total cash interest amount (repo interest + carried interest - total fee amount), settled as a component of the forward leg settlement amount. This value is zero where interest is carried to the following trade in an interlife chain.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="carriedInterestAmount" type="xsd:decimal" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>The total cash interest amount (repo interest + carried interest - total fee amount), carried to the following trade in an interlife chain.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:element name="interestCarried" type="CanonicalBoolean" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Specifies whether interest is carried to the following trade in an interlife chain (boolean).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="RepoLegId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A Repo Leg Identification.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="repoLegIdScheme" type="xsd:anyURI"/>
+				<xsd:attribute name="id" type="xsd:ID"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="RepoSpotTransactionLeg">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A transaction leg for a repo is equivalent to a single cash transaction.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="RepoTransactionLeg">
+				<xsd:sequence>
+					<xsd:element name="carriedRepoInterest" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Repo interest amount carried forward from the preceding trade in an interlife chain, expressed in the settlement currency.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="carriedFeeAmount" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Fee amount carried forward from the preceding trade in an interlife chain, expressed in the settlement currency.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="carriedInterestAmount" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Totla interest amount carried forward from the preceding trade in an interlife chain, expressed in the settlement currency.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="RepoTransactionLeg">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A transaction leg for a repo is equivalent to a single cash transaction.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<!--
+			<xsd:choice minOccurs="0">
+				<xsd:element name="id" type="RepoLegId" maxOccurs="unbounded"/>
+				<xsd:element name="versionedId" type="VersionedRepoLegId" maxOccurs="unbounded"/>
+			</xsd:choice>
+-->
+			<xsd:element name="id" type="RepoLegId" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:group ref="fpml:BuyerSellerStrict.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">References to the buyer and seller of the security or securities (collateral).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:group ref="Settlement.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The date and monetary amounts specified for the settlement of this transaction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:element name="settlementTransfer" type="SettlementTransferSimple" minOccurs="0"/>
+			<xsd:element name="collateral" type="CollateralValuation" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Collateral valuation is used to carry the quantity and price details that are required to ensure that a repo contract is executed at fair value, with the value of the collateral matching the cash amount of the repo. Collateral is declared as optional here, with multiple cardinalities, since we can do a repo "Multi", with multiple instruments specified, or a "Cash Borrow/Loan" and "TriPartyRepo" with no collateral. In general cases, however it should be specified.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+	</xsd:complexType>
+	<xsd:complexType name="RepoTransactionLegReference">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Reference to an Transaction Leg.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Reference"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SecurityTransfer">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">The transfer of a security requires an identifier for the security, and a quantity.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="AtomicSettlementTransfer">
+				<xsd:sequence>
+					<xsd:element name="quantity" type="xsd:decimal">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The quantity of asset being transfered</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="assetReference" type="fpml:AssetReference">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The asset being transfered.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="delivererPartyReference" type="fpml:PartyReference">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Reference to the party delivering the asset.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="receiverPartyReference" type="fpml:PartyReference">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Reference to the party receiving the asset.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="daylightIndicator" type="xsd:boolean" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Standard settlement in Euroclear takes place in a batch on "value date - 1" (at 4 pm), to allow trades which are not included in this batch to be settled on value date, the daylight indicator can be used. The MT 540 instruction will contain an indicator which notifies Euroclear whether a transaction can be put forward for settlement intra-day. This is the "Daylight Indicator" and will be set on all transactions with Euroclear. However, to ensure they are included within intra-day settlement, the counterparty within Euroclear (ie, participant B) must also indicate intra-day settlement can take place.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementInstructionReference">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Settlement Instruction Reference.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Reference"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransfer">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">This is a container to carry 'transfers', i.e. elementary transfers of cash or securities. Transfer instructions are coupled with settlement instructions that are referenced.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group ref="SettlementTransferIdentifier.model" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Settlement Transfer Identifier which is optional in the context of a trade, but should always be used in a transfer message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:element name="transferInformation" type="PartySettlementTransferInformation" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Transfer information which applies to all elementary transfers.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="transfer" type="Transfer" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">An elementary transfer. There can be as many transfers specified in this structure as required.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="settlementInstruction" type="fpml:SettlementInstruction" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Settlement instruction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransferId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Settlement Transfer identification.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="settlementTransferIdScheme" type="xsd:anyURI"/>
+				<xsd:attribute name="id" type="xsd:ID"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransferIdentifier">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Settlement Transfer identification and classification.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group ref="SettlementTransferIdentifier.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">An identifier for an individual settlement transfer. This usually maps to a SWIFT message reference.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransferProcessingInformation">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Type representing settlement transfer processing information.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="owner" type="xsd:boolean" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">If present and true the publisher considers this party to be the owner of the transfer.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransferType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A settlement transfer classification.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="settlementTransferTypeScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="StreamId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Stream identification.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="streamId" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="StreamReference">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Reference to an Stream.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Reference"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="TradeAndComponentIdentifier">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Contains identification of a trade, and references to a trade component or event.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:TradeIdentifier">
+				<xsd:sequence>
+					<xsd:element name="tradeComponentIdentifier" type="TradeComponentIdentifier"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="TradeComponentIdentifier">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Trade Component or Event identification or references.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:choice maxOccurs="unbounded">
+				<xsd:element name="repoLegId" type="RepoLegId">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="versionedRepoLegId" type="VersionedRepoLegId">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="repoLegReference" type="RepoTransactionLegReference">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice maxOccurs="unbounded">
+				<xsd:element name="eventId" type="fpml:EventId">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="versionedEventId" type="VersionedEventId">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="eventReference" type="EventReference">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice maxOccurs="unbounded">
+				<xsd:element name="streamId" type="StreamId">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="versionedStreamId" type="VersionedStreamId">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="streamReference" type="StreamReference">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="TradeIdentifierList">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type containing multiple tradeIdentifier.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="tradeIdentifier" type="fpml:TradeIdentifier" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">A trade identifier.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Transfer">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type used to represent a transfer of cash, or securities, or a simultaneous exchange of securities vs cash.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="id" type="TransferId" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="versionedId" type="VersionedTransferId" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:group ref="TradeComponentOrIdentifierOrNet.model" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:element name="deliveryMethod" type="DeliveryMethodEnum">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Specify the delivery method. There is a business rule associated with this field: if deliveryMethod is DVP then you must specify a cashTransfer and a securityTransfer at the same time. It is incorrect to specify DVP and give only a cash transfer instruction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="transferDate" type="fpml:IdentifiedDate">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The date at which the transfer should occur.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">You can specify either a cash transfer, or a security transfer, or both, but the structure below cannot be empty. Note the semantics of the structure: If we only have a cash transfer it is a pure cash transfer, mapping to a MT202 or MT210; if we have a security transfer only, it maps to a MT540 or 542 (deliver or receive free). If the structure has both cash and security specified it maps to MT541 or MT543 (deliver or receive against payment). The deliveryMethod tag allows us to validate that the transfer is structurally valid.	</xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence>
+					<xsd:element name="cashTransfer" type="CashTransfer">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">A transfer of a cash amount between two parties.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="securityTransfer" type="SecurityTransfer" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">A transfer of securities between two parties.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:element name="securityTransfer" type="SecurityTransfer">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">A transfer of securities between two parties.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="settlementInstructionReference" type="SettlementInstructionReference" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Settlement Instruction Reference.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="TransferId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A Transfer Identification.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="transferIdScheme" type="xsd:anyURI"/>
+				<xsd:attribute name="id" type="xsd:ID"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="TriPartyAgentId">
+		<xsd:annotation>
+			<xsd:documentation>Identifier for the tri-party agent.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="triPartyAgentIdScheme"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="TriPartySetId">
+		<xsd:annotation>
+			<xsd:documentation>Identifier for tri-party netting set.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="triPartySetIdScheme"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="TriPartyInformation">
+		<xsd:annotation>
+			<xsd:documentation>Properties relating to a tri-party repo</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="agentId" type="TriPartyAgentId">
+				<xsd:annotation>
+					<xsd:documentation>Identifier for the tri-party agent (ideally, a CRDS code or LEI).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="setId" type="TriPartySetId" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Internal identifier for tri-party netting set.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VersionedEventId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">EventId with version control elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="id" type="fpml:EventId">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:VersionHistory.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VersionedRepoLegId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Repo Leg Id with version control elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="id" type="RepoLegId">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:VersionHistory.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VersionedSettlementTransferId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Settlement Transfer Id with version control elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="id" type="SettlementTransferId">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:VersionHistory.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VersionedSettlementTransferType">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">SettlementTransfer Type with version control elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="type" type="SettlementTransferType">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:VersionHistory.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VersionedStreamId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">StreamId with version control elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="id" type="StreamId">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:VersionHistory.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="VersionedTransferId">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Transfer Id with version control elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="id" type="TransferId">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:VersionHistory.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--
+================
+	elements
+================
+-->
+	<xsd:element name="break" type="InterLifeBreak" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation>Interlife break</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="cashRepricing" type="CashRepricingEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing cash repricing.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="close" type="InterLifeEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation>Interlife close event</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="collateralSubstitution" type="CollateralSubstitutionEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing a collateral substitution.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="couponEvent" type="CouponEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing a coupon event.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="feeRateChange" type="RateChangeEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing a fee rate change.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="interestPayout" type="InterestPayoutEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing an interest payout.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="markToMarketEvent" type="MarkToMarketEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing a nominal repricing.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="midLifeEvent" type="MidLifeEvent" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Abstract placeholder for repo mid life events.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="open" type="InterLifeEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation>Interlife open event</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="rateChange" type="RateChangeEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing a rate change.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="rateObservation" type="RateObservationEvent" substitutionGroup="midLifeEvent">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing rate observation.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="repo" type="Repo" substitutionGroup="fpml:product">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Global element representing a Repo transaction.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--
+================
+	groups
+================
+-->
+	<xsd:group name="BondCollateral.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A group which has Collateral elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group ref="BondNominal.model"/>
+			<xsd:group ref="BondPriceAndYield.model" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Collateral price.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:group ref="BondValuationAmount.model" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="BondEquity.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A model group that allows us to specify that a repo contract can reference bond or equity
+			instruments.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:annotation>
+				<xsd:documentation xml:lang="en">Most repos are done using Bonds and Bond subclasses as collateral; However it is technically possible to execute a repo on an equity, as long as the mark to market is correctly done during the lifetime of the repo.</xsd:documentation>
+			</xsd:annotation>
+			<xsd:group ref="fpml:BondChoice.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">a bond, or bond subtype referenced by a repo contract.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:element ref="fpml:equity">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">an equity referenced by a repo contract.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="CallNotice.model">
+		<xsd:annotation>
+			<xsd:documentation>Call/notice properties.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="noticePeriod" type="AdjustableOffset" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Notice period for open ended or long dated repos in number of days.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="earliestCallDate" type="xsd:date" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Earliest date that the transaction can be called back/terminated.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="ExtensionPeriod.model">
+		<xsd:annotation>
+			<xsd:documentation>Extension provisions </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="extensionStyle" type="ExtensionStyleEnum" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Type of extension provision: {Evergreen (close by mutual agreement), Extendable (extend by mutual agreement)}</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extensionPeriod" type="AdjustableOffset" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Extension period for evergreen/extendable repos, as number of days.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="SettlementTransferIdentifier.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Settlement transfer identifier elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<!--
+			<xsd:choice>
+				<xsd:element name="id" type="SettlementTransferId" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="versionedId" type="VersionedSettlementTransferId" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="type" type="SettlementTransferType" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="versionedType" type="VersionedSettlementTransferType" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+-->
+			<xsd:element name="id" type="SettlementTransferId" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="type" type="SettlementTransferType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">??? A brief description should be provided</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="TradeComponentOrIdentifierOrNet.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Trade or Trade Identifier.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="tradeComponentIdentifier" type="TradeComponentIdentifier">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Identify the trade component which has caused this transfer to occur within a Trade Settlement.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="tradeAndComponentIdentifier" type="TradeAndComponentIdentifier" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Identify the trade and component which has caused this transfer to occur within a Settlement Message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="netTradeIdentifier" type="NetTradeIdentifier">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Identify the net trade and original trades which have caused this transfer to occur within a Trade or Settlement Message.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="UnitContract.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A group which has unit based trade elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="numberOfUnits" type="xsd:decimal">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The number of units (index or securities).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="unitPrice" type="fpml:Money">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The price of each unit.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+</xsd:schema>

@@ -63,7 +63,7 @@ public class XsdImport {
 		this.modelIdProvider = modelIdProvider;
 	}
 
-	public ResourceSet generateRosetta(XsdParser parsedInstance, GenerationProperties properties) {
+	public ResourceSet generateRosetta(XsdParser parsedInstance, ImportTargetConfig targetConfig) {
 		List<XsdAbstractElement> xsdElements = parsedInstance.getResultXsdSchemas().flatMap(XsdSchema::getXsdElements).toList();
 		
 		// Initialization
@@ -71,10 +71,10 @@ public class XsdImport {
 		
 		// First register all rosetta types and attributes, which makes it possible to support
 		// forward references and self-references.
-		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends Data> elements = xsdElementImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends Data> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, properties)
+		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends Data> elements = xsdElementImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends Data> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, targetConfig)
 				.stream().flatMap(Collection::stream).toList();
 
         // Post process to circumvent name conflicts:
@@ -91,12 +91,12 @@ public class XsdImport {
 
 		// Then write these types to the appropriate resources.
 		if (!enums.isEmpty()) {
-			RosettaModel enumModel = rosettaModelFactory.createRosettaModel(ENUM, properties);
+			RosettaModel enumModel = rosettaModelFactory.createRosettaModel(ENUM, targetConfig);
 			enumModel.getElements().addAll(enums);
 		}
 		
 		if (!aliases.isEmpty() || !elements.isEmpty() || !types.isEmpty()) {
-			RosettaModel typeModel = rosettaModelFactory.createRosettaModel(TYPE, properties);
+			RosettaModel typeModel = rosettaModelFactory.createRosettaModel(TYPE, targetConfig);
 			typeModel.getElements().addAll(aliases);
 			typeModel.getElements().addAll(elements);
 			typeModel.getElements().addAll(types);
@@ -111,7 +111,7 @@ public class XsdImport {
 		return rosettaModelFactory.getResourceSet();
 	}
 	
-	public RosettaXMLConfiguration generateXMLConfiguration(XsdParser parsedInstance, GenerationProperties properties) {
+	public RosettaXMLConfiguration generateXMLConfiguration(XsdParser parsedInstance, ImportTargetConfig targetConfig) {
 		Map<String, List<XsdAbstractElement>> targetNamespaceToXsdElementsMap = 
 				parsedInstance.getResultXsdSchemas()
 					.collect(Collectors.toMap(

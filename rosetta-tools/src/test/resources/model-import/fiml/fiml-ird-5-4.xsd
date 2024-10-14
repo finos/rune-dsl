@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: 2073 $" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-fx-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="AmortisationParameters">
+		<xsd:group ref="AmortisationParameters.model"/>
+	</xsd:complexType>
+	<xsd:complexType name="CalculationPeriod">
+		<xsd:annotation>
+			<xsd:documentation>Extended CalculationPeriod definition.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:CalculationPeriod">
+				<xsd:sequence>
+					<xsd:element name="accruedInterestAmount" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Interest amount accrued for the calculation period, in currency of the stream notional amount. This may be a pre-determined amount in the case of a fixed rate stream, or an amount calculated as the result of a fixing event on a floating rate stream.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CapFloorStream">
+		<xsd:annotation>
+			<xsd:documentation>Extended InterestRateStream definition for cap|floor.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:InterestRateStream">
+				<xsd:sequence>
+					<xsd:element name="annex" type="CapFloorStreamAnnex" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CapFloorStreamAnnex">
+		<xsd:annotation>
+			<xsd:documentation>CapFloorStream extended properties</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="InterestRateStreamAnnex"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="FloatingRateIndexBase">
+		<xsd:complexContent>
+			<xsd:extension base="fpml:FloatingRateBase">
+				<xsd:sequence>
+					<xsd:choice minOccurs="0">
+						<xsd:group ref="fpml:IndexTenor.model"/>
+						<xsd:element name="spreadTenor" type="SpreadTenor" minOccurs="2" maxOccurs="2">
+							<xsd:annotation>
+								<xsd:documentation>Pair of index tenors with multipliers, representing a spread calculation across two tenors.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:group ref="fpml:FloatingRateParameters.model"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="FloatingRate">
+		<xsd:complexContent>
+			<xsd:extension base="FloatingRateIndexBase">
+				<xsd:group ref="fpml:FloatingRate.model"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="FloatingRateCalculation">
+		<xsd:annotation>
+			<xsd:documentation>Extended FloatingRateCalculation definition, supporting index spread calculation (compatible with FpML FloatingRateCalculation)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="FloatingRate">
+				<xsd:group ref="fpml:FloatingRateCalculation.model"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="InflationRateCalculation">
+		<xsd:annotation>
+			<xsd:documentation>Extended InflationRateCalculation definition</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:InflationRateCalculation">
+				<xsd:sequence>
+					<xsd:element name="calculationMethod" type="InflationCalculationMethodEnum" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Indicates how to use the inflation index to calculate the payment (see documentation for InflationCalculationMethodEnum).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:sequence minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>An additional lag can be applied on individual deals to calculate the Daily reference Index (DRI) on top of the typical indexLag. In that case, this sequence can detail the indexLag (static data linked to the inflation index) and the additionalLag. InflationLag element must always be the sum of indexLag and additionalLag.</xsd:documentation>
+						</xsd:annotation>
+						<xsd:element name="indexLag" type="fpml:Offset">
+							<xsd:annotation>
+								<xsd:documentation>Inflation index intrinsic (primary) lag.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="additionalLag" type="fpml:Offset" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Additional (secondary) lag.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:element name="redemptionAmountCalculation" type="InflationRedemptionAmountCalculation" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>To be specified only for inflation products that embed a redemption payment e.g. inflation asset swap.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="InflationRedemptionAmountCalculation">
+		<xsd:annotation>
+			<xsd:documentation>Provides information to calculate the redemption amount.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="floored" type="CanonicalBoolean">
+				<xsd:annotation>
+					<xsd:documentation>Indicates whether the redemption amount is floored at the value of the outstanding notional. Where true, this signifies that the redemption amount is of the form:
+
+Notional Amount x Max[0, ((IndexFinal/IndexInitial) -1)]</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="InterestRateStreamAnnex" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation>InterestRateStream extended properties.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group ref="InterestRateStreamStub.model"/>
+			<xsd:element name="amortisation" type="AmortisationParameters" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PaymentCalculationPeriod">
+		<xsd:annotation>
+			<xsd:documentation>Extended PaymentCalculationPeriod definition.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:PaymentCalculationPeriod">
+				<xsd:sequence>
+					<xsd:element name="paymentAmount" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Payment amount generated by the payment calculation period, in currency of the stream notional amount. This may be a pre-determined amount in the case of a fixed rate stream, or an amount calculated as the result of a fixing event, or series of fixing events, on a floating rate stream.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SpreadTenor">
+		<xsd:sequence>
+			<xsd:group ref="fpml:IndexTenor.model"/>
+			<xsd:element name="multiplier" type="xsd:integer"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SwapStream">
+		<xsd:annotation>
+			<xsd:documentation>Extended InterestRateStream definition for swap.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:InterestRateStream">
+				<xsd:sequence>
+					<xsd:element name="annex" type="SwapStreamAnnex" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Swapstream extended properties.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="bullionSettlement" type="FxBullionSettlement" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SwapStreamAnnex">
+		<xsd:annotation>
+			<xsd:documentation>SwapStream supplementary properties, to assist with interpretation of stream content.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="InterestRateStreamAnnex">
+				<xsd:sequence>
+					<xsd:element name="compounding" type="CanonicalBoolean">
+						<xsd:annotation>
+							<xsd:documentation>Compounding flag: where 'true', multiple calculation periods contribute to each payment period, with interest compounded onto the notional.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="zeroCoupon" type="CanonicalBoolean">
+						<xsd:annotation>
+							<xsd:documentation>Zero coupon flag: where 'true', periodic accrued interest amounts are compounded into a single interest payment at termination.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--
+================
+    elements    
+================
+-->
+	<xsd:element name="floatingRateCalculation" type="FloatingRateCalculation" substitutionGroup="fpml:rateCalculation">
+		<xsd:annotation>
+			<xsd:documentation>Extended floating rate calculation definition, supporting index spread calculation (compatible with FpML FloatingRateCalculation)</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element name="inflationRateCalculation" type="InflationRateCalculation" substitutionGroup="fpml:rateCalculation">
+		<xsd:annotation>
+			<xsd:documentation>Extended inflation rate calculation definition.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--
+================
+    groups    
+================
+-->
+	<xsd:group name="AmortisationParameters.model">
+		<xsd:annotation>
+			<xsd:documentation>Amortisation applies on the referenced swap stream. 
+
+This component is intended to substitute for FpML notionalStepParameters in cases where it is not possible to produce the full FpML parametric representation.
+
+Unless otherwise indicated, amortisation commences from the first regular period start date (the effective date in the absence of an initial stub), and proceeds to the termination date. The opening notional amount is the initialValue of notionalStepSchedule for the stream.
+
+When this component is present, the 'step' values should be omitted from the related notionalStepSchedule (only initialValue is produced) and notionalStepParameters should be absent.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group ref="AmortisationAmount.model">
+				<xsd:annotation>
+					<xsd:documentation>Alternative expressions of notional step size.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:group ref="AmortisationFrequency.model">
+				<xsd:annotation>
+					<xsd:documentation>Alternative expressions of notional step frequency.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:group ref="AmortisationStartDate.model" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Alternative expressions of amortisaton schedule start date.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="AmortisationAmount.model">
+		<xsd:choice>
+			<xsd:element name="notionalTerminationAmount" type="fpml:PositiveDecimal">
+				<xsd:annotation>
+					<xsd:documentation>The target notional amount for linear amortisation through to the termination date.
+
+For example, in the case of linear amortisation to zero, notionalTerminationAmount=0.
+
+Note, this is the "notional" value at the termination date - no interest payment is calculated on this amount.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="constantStepAmount" type="fpml:PositiveDecimal">
+				<xsd:annotation>
+					<xsd:documentation>Constant notional step amount. The notional amount is decremented by this amount at the end of each amortisation period.
+
+Treatment in the case where the decrement would result in a value less than zero is undefined.
+
+Note, the notional decrement is expressed as a positive value, so a negative step amount would imply an accreting (increasing) schedule.
+
+</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="mortgageRate" type="xsd:decimal">
+					<xsd:annotation>
+						<xsd:documentation>Mortage rate for use with Constant K+I amortisation calculation.
+
+The rate is specified as an absolute value(real number), so 2.5% is represented as 0.025.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="dayCountFraction" type="fpml:DayCountFraction" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>The day count basis for the amortisation calculation. Values are as FpML dayCountFraction. 
+
+Bond basis is represented as "30/360", 
+the "Rounded" basis is represented as "30/360.Rounded" (extension to FpML dayCountFractionScheme)</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="AmortisationFrequency.model">
+		<xsd:choice>
+			<xsd:element name="stepFrequency" type="fpml:Frequency">
+				<xsd:annotation>
+					<xsd:documentation>Amortisation frequency, expressed as an interval. This must be an integer multiple of the calculation period frequency of the referenced stream.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="stepFrequencyRatio" type="xsd:positiveInteger">
+					<xsd:annotation>
+						<xsd:documentation>Amortisation frequency, expressed as the integer ratio of the amortisation step frequency to the base frequency for the referenced stream (calculationPeriodFrequency, unless otherwise specified by baseFrequencyReference).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="baseFrequencyReference" type="Reference" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Reference to the base frequency for the amortisation stepFrequencyRatio ([calculationPeriod|payment]Frequency).
+
+In absence of this element, the base frequency is assumed to be the calculationPeriodFrequency for the stream.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="AmortisationStartDate.model">
+		<xsd:choice>
+			<xsd:element name="includeStub" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation>A flag to indicate whether an initial stub period participates in the amortisation schedule.
+
+ Where true, amortisation commences from the stub start date (the effective date), where false, amortisation commences from the stub end date (the first regular period start date).
+
+This element should only be produced in the presence of an initial stub, and has no effect otherwise.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:element name="startDate" type="xsd:date">
+					<xsd:annotation>
+						<xsd:documentation>The start date for amortisation. This date corresponds to an unadjusted period start date, and denotes the start of the initial amortising period.
+
+The first notional step occurs at the end of this amortising period, as defined by the step frequency.
+
+Note, this is not the same date as FpML firstNotionalStepDate, which falls at the end of the amortisation period commencing on startDate</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="startDateReference" type="Reference">
+					<xsd:annotation>
+						<xsd:documentation>A reference to the start date for amortisation defined elsewhere in the document.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="InterestRateStreamStub.model">
+		<xsd:annotation>
+			<xsd:documentation>Flags relating to stub periods: initial|final stub period length + full first coupon (where appropriate).
+
+* Elements are optional to permit omission in the case where no stub exists.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="initialStub" type="StubPeriodLengthEnum">
+					<xsd:annotation>
+						<xsd:documentation>Where an initial (start) stub exists, the stub period length relative to the regular period (Short|Long).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="fullFirstCoupon" type="CanonicalBoolean" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Full fiirst coupon flag: where true in combination with a Short initial stub, indicates that the stub period accrues as for a full (i.e. regular) period.
+
+* This element is only meaningful in the presence of a Short initial stub, and should be omitted otherwise.
+
+* FpML equivalent notation is to set firstPeriodStartDate equal to the effective date which would apply in the case of a full first period (i.e. firstRegularPeriodStartDate - calculationPeriodFrequency)</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:element name="finalStub" type="StubPeriodLengthEnum" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Where a final (end) stub exists, the stub period length relative to the regular period (Short|Long).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+</xsd:schema>

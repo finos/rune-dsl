@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?><!-- edited with XMLSpy v2012 sp1 (x64) (http://www.altova.com) by Harry McAllister (BNP Paribas UK) --><!-- edited with XMLSPY v5 rel. 3 U (http://www.xmlspy.com) by BNP Paribas User (BNP Paribas) --><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0" fiml:tag="5-4-9">
+	<!--
+================
+    simpleTypes    
+================
+-->
+	<!--
+		2008-11-10 AJJ		This file is a chameleon schema (i.e. it has no target namespace) that can be used to introduce
+							 a number of standard definitions for	common utility types into another schema.	 
+	-->
+	<xsd:simpleType name="CanonicalBoolean" final="#all">
+		<xsd:annotation>
+			<xsd:documentation>A restriction of boolean that only accepts 'true' and 'false'</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:boolean">
+			<xsd:pattern value="true"/>
+			<xsd:pattern value="false"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="NonNegativeDecimal">
+		<xsd:annotation>
+			<xsd:documentation>A decimal value greater than or equal to zero * This type is also available in FpML from version 4-3+</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:minInclusive value="0.0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="NullableBoolean">
+		<xsd:annotation>
+			<xsd:documentation>Extension of (canonical) boolean, accepting values 'true', 'false' and 'null' (undefined/undetermined)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="false">
+				<xsd:annotation>
+					<xsd:documentation>boolean false</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+			<xsd:pattern value="null">
+				<xsd:annotation>
+					<xsd:documentation>undefined/undetermined</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+			<xsd:pattern value="true">
+				<xsd:annotation>
+					<xsd:documentation>boolean true</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PositiveDecimal">
+		<xsd:annotation>
+			<xsd:documentation>A decimal value greater than zero * This type is also available in FpML from version 4-3 </xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:minExclusive value="0.0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

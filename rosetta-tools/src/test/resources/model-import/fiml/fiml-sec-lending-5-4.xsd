@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: $" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="SecLendInitiation">
+		<xsd:complexContent>
+			<xsd:extension base="fpml:SecLendInitiation">
+				<xsd:sequence>
+					<xsd:element name="syntheticSettlementDate" type="xsd:date" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Synthetic settlement date: dedicated value to support reporting of Open repo as synthetic transaction under MMSR regime.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SecLendTermination">
+		<xsd:complexContent>
+			<xsd:extension base="fpml:SecLendTermination">
+				<xsd:sequence>
+					<xsd:element name="syntheticSettlementDate" type="xsd:date" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Synthetic settlement date: dedicated value to support reporting of Open repo as synthetic transaction under MMSR regime.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SecurityLending">
+		<xsd:annotation>
+			<xsd:documentation>Product re-definition to support deliveryMethod value "Open:Term", extending content model of FpML SecurityLending with optional collateral instance for use in cash-collateralised transaction.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Product">
+				<xsd:sequence>
+					<xsd:group ref="fpml:LenderBorrower.model"/>
+					<xsd:group ref="fpml:SecLendPrincipal.model"/>
+					<xsd:group ref="fpml:SecLendDuration.model"/>
+					<xsd:group ref="fpml:SecLendFeeRebate.model"/>
+					<xsd:group ref="fpml:DividendsAndPayment.model"/>
+					<xsd:group ref="fpml:SecLendProvisions.model"/>
+					<xsd:element name="collateral" type="fpml:CollateralPortfolio" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--
+================
+    elements    
+================
+-->
+	<xsd:element name="securityLending" type="SecurityLending" substitutionGroup="fpml:product">
+		<xsd:annotation>
+			<xsd:documentation>Product definition extending FpML SecurityLending with optional collateral instance, for use in cash-collateralised transaction.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--
+================
+    groups    
+================
+-->
+</xsd:schema>

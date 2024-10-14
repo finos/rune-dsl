@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: 1643 $" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-fx-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-shared-5-4.xsd"/>
+	<!--
+================
+	simpleTypes
+================
+-->
+	<xsd:simpleType name="TaxLiabilityEnum">
+		<xsd:annotation>
+			<xsd:documentation>A code describing which trade party is liable for tax payments</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Creditor"/>
+			<xsd:enumeration value="Debtor"/>
+			<xsd:enumeration value="NoTax"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+================
+	complexTypes
+================
+-->
+	<xsd:complexType name="BoxSpread">
+		<xsd:sequence>
+			<xsd:element name="currencyPair" type="fpml:QuotedCurrencyPair"/>
+			<xsd:element name="call" type="OptionSpreadCall"/>
+			<xsd:element name="put" type="OptionSpreadPut"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CertificateOfDeposit">
+		<xsd:sequence>
+			<xsd:element name="instrumentId" type="fpml:InstrumentId"/>
+			<xsd:choice>
+				<xsd:element name="issuerName" type="xsd:token"/>
+				<xsd:element name="issuerPartyReference" type="fpml:PartyReference"/>
+			</xsd:choice>
+			<xsd:element name="otherIssuerParty" type="xsd:boolean" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FloatingRateIndexFixingEvent">
+		<xsd:complexContent>
+			<xsd:extension base="EventBase">
+				<xsd:sequence>
+					<xsd:choice>
+						<xsd:element name="calculation" type="LoanDepositFixingCalculationPeriod">
+							<xsd:annotation>
+								<xsd:documentation>Details of the interest calculation period(s) contributing to the payment event.
+
+* The optional paymentAmount element may be omitted, as this value will be reflected in the payment element following.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="calculationPeriodReference" type="Reference">
+							<xsd:annotation>
+								<xsd:documentation>Reference to the calculation period subject to the notified fixing e.g. contained in the related trade/loanDeposit/cashflows schedule.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+					<xsd:sequence minOccurs="0">
+						<xsd:element name="payment" type="fpml:Payment">
+							<xsd:annotation>
+								<xsd:documentation>Explicit details of the cashflow resulting from the interest fixing, including settlement instructions.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="withholdingTax" type="Tax" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="InterestPaymentEvent">
+		<xsd:complexContent>
+			<xsd:extension base="EventBase">
+				<xsd:sequence>
+					<xsd:element name="calculation" type="LoanDepositPaymentCalculationPeriod">
+						<xsd:annotation>
+							<xsd:documentation>Details of the interest calculation period(s) contributing to the payment event.
+
+* The optional paymentAmount element may be omitted, as this value will be reflected in the payment element following.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="payment" type="fpml:Payment">
+						<xsd:annotation>
+							<xsd:documentation>Explicit cashflow details relating to the interest payment.
+
+* The optional adjustedPaymentDate element replicates the mandatory adjustedPaymentDate contained in the preceding interestCalculation, however it is recommended that this element is produced, so the payment can be processed as a self-contained component.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="withholdingTax" type="Tax" minOccurs="0">
+						<xsd:annotation/>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDeposit">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type that describes a Loan Deposit derived from FpML Product.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Product">
+				<xsd:sequence>
+					<xsd:group ref="LoanDeposit.model"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositAnnex">
+		<xsd:annotation>
+			<xsd:documentation>Supplementary properties to assist with interpretation of product content.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="compounding" type="CanonicalBoolean">
+				<xsd:annotation>
+					<xsd:documentation>Compounding flag: where 'true', multiple calculation periods contribute to each payment period, with interest compounded onto the notional.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="zeroCoupon" type="CanonicalBoolean">
+				<xsd:annotation>
+					<xsd:documentation>Zero coupon flag: where 'true', periodic accrued interest amounts are compounded into a single interest payment at termination.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositCalculationPeriod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the parameters used in the calculation of a fixed or floating rate calculation period amount. This type forms part of cashflows representation of a swap stream.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:LoanDepositCalculationPeriod">
+				<xsd:sequence>
+					<xsd:sequence minOccurs="0">
+						<xsd:element name="accruedInterestAmount" type="xsd:decimal">
+							<xsd:annotation>
+								<xsd:documentation>The interest amount accrued for the calculation period.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:sequence minOccurs="0">
+							<xsd:element name="withholdingTax" type="Tax"/>
+							<xsd:element name="netAmount" type="fpml:NonNegativeMoney" minOccurs="0"/>
+						</xsd:sequence>
+					</xsd:sequence>
+					<xsd:element name="principalExchange" type="LoanDepositPrincipalExchange" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositCalculationPeriodDates">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the parameters used to generate the calculation period dates schedule, including the specification of any initial or final stub calculation periods. A calculation perod schedule consists of an optional initial stub calculation period, one or more regular calculation periods and an optional final stub calculation period. In the absence of any initial or final stub calculation periods, the regular part of the calculation period schedule is assumed to be between the effective date and the termination date. No implicit stubs are allowed, i.e. stubs must be explicitly specified using an appropriate combination of firstPeriodStateDate, firstRegularPeriodStartDate and lastRegularPeriodEndDate.
+Relative effective and termination dates are ommitted. </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="effectiveDate" type="fpml:AdjustableDate2">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The first day of the term of the trade. This day may be subject to adjustment in accordance with a business day convention.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:element name="terminationDate" type="fpml:AdjustableDate2">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The last day of the term of the trade. This day may be subject to adjustment in accordance with a business day convention.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="callNoticePeriod" type="fpml:Offset"/>
+			</xsd:choice>
+			<xsd:element name="calculationPeriodFrequency" type="fpml:CalculationPeriodFrequency" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The frequency at which calculation period end dates occur with the regular part of the calculation period schedule and their roll date convention.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositCashflows">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the cashflow representation of a swap trade.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="principalExchange" type="LoanDepositPrincipalExchange" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The initial, intermediate and final principal exchange amounts. Typically required on cross currency interest rate swaps where actual exchanges of principal occur. A list of principal exchange elements may be ordered in the document by ascending adjusted principal exchange date. An FpML document containing an unordered principal exchange list is still regarded as a conformant document.
+
+* This section should be omitted, if using the principalExchange extension content within paymentCalculation/calculationPeriod (following).
+
+* Principal exchange amounts are denominated in the units of the principal. This may differ from the currency of the interest payment(s) e.g. in the case of a bullion loan
+/deposit.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="paymentCalculationPeriod" type="LoanDepositPaymentCalculationPeriod" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The adjusted payment date and associated calculation period parameters required to calculate the actual or projected payment amount. A list of payment calculation period elements may be ordered in the document by ascending adjusted payment date. An FpML document containing an unordered list of payment calculation periods is still regarded as a conformant document.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositCashSettlement">
+		<xsd:sequence>
+			<xsd:element name="settlementRate" type="fpml:ExchangeRate">
+				<xsd:annotation>
+					<xsd:documentation>Describes the rate at which the trade will be cash settled</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="settlementRateOption" type="SettlementRateOption" minOccurs="0"/>
+			<xsd:element name="taxLiability" type="TaxLiabilityEnum" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Indicates who has tax liability for the trade</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositFixingCalculationPeriod">
+		<xsd:sequence>
+			<xsd:element name="unadjustedPaymentDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="adjustedPaymentDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component (all dates the Cashflows type are adjusted payment dates).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="calculationPeriod" type="LoanDepositFixingPeriod">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The parameters used in the calculation of a fixed or floating rate calculation period amount. A list of calculation period elements may be ordered in the document by ascending start date. An FpML document which contains an unordered list of calculation periods is still regarded as a conformant document.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="paymentAmount" type="NonNegativeDecimal" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The payment amount generated for the payment calculation period</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositFixingPeriod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the parameters used in the calculation of a fixed or floating rate calculation period amount. This type forms part of cashflows representation of a swap stream.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:LoanDepositFixingPeriod">
+				<xsd:sequence>
+					<xsd:sequence minOccurs="0">
+						<xsd:element name="accruedInterestAmount" type="NonNegativeDecimal">
+							<xsd:annotation>
+								<xsd:documentation>The interest amount accrued for the calculation period.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:sequence minOccurs="0">
+							<xsd:element name="withholdingTax" type="Tax"/>
+							<xsd:element name="netAmount" type="fpml:NonNegativeMoney" minOccurs="0"/>
+						</xsd:sequence>
+					</xsd:sequence>
+					<xsd:element name="principalExchange" type="LoanDepositPrincipalExchange" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositFloatingRate">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining a floating rate.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:FloatingRateSimple"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositInflation">
+		<xsd:sequence>
+			<xsd:element name="index" type="fpml:FloatingRateIndex"/>
+			<xsd:element name="initialIndexLevel" type="xsd:decimal" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositOptionStrategy">
+		<xsd:sequence>
+			<xsd:element name="box" type="BoxSpread"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositPaymentCalculationPeriod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the adjusted payment date and associated calculation period parameters required to calculate the actual or projected payment amount. This type forms part of the cashflow representation of a swap stream.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="unadjustedPaymentDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="adjustedPaymentDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component (all dates the Cashflows type are adjusted payment dates).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="calculationPeriod" type="LoanDepositCalculationPeriod" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The parameters used in the calculation of a fixed or floating rate calculation period amount. A list of calculation period elements may be ordered in the document by ascending start date. An FpML document which contains an unordered list of calculation periods is still regarded as a conformant document.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="paymentAmount" type="xsd:decimal" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The payment amount generated for the payment calculation period.
+
+* This is a signed amount, as loan/deposit interest payments may flow counter to the natural direction of the interest rate stream (leg).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositPaymentDates">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining parameters used to generate the payment dates schedule, including the specification of early or delayed payments. Payment dates are determined relative to the calculation period dates or the reset dates.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="paymentFrequency" type="LoanDepositPaymentFrequency">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The frequency at which regular payment dates occur. If the payment frequency is equal to the frequency defined in the calculation period dates component then one calculation period contributes to each payment amount. If the payment frequency is less frequent than the frequency defined in the calculation period dates component then more than one calculation period will contribute to the payment amount. A payment frequency more frequent than the calculation period frequency or one that is not a multiple of the calculation period frequency is invalid.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="payRelativeTo" type="fpml:PayRelativeToEnum" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Specifies whether the payments occur relative to each adjusted calculation period start date, adjusted calculation period end date or each reset date. The reset date is applicable in the case of certain euro (former French Franc) floating rate indices. Calculation period start date means relative to the start of the first calculation period contributing to a given payment. Similarly, calculation period end date means the end of the last calculation period contributing to a given payment.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="paymentDaysOffset" type="fpml:Offset" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">If early payment or delayed payment is required, specifies the number of days offset that the payment occurs relative to what would otherwise be the unadjusted payment date. The offset can be specified in terms of either calendar or business days. Even in the case of a calendar days offset, the resulting payment date, adjusted for the specified calendar days offset, will still be adjusted in accordance with the specified payment dates adjustments. This element should only be included if early or delayed payment is applicable, i.e. if the periodMultiplier element value is not equal to zero. An early payment would be indicated by a negative periodMultiplier element value and a delayed payment (or payment lag) would be indicated by a positive periodMultiplier element value.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="paymentDatesAdjustments" type="fpml:BusinessDayAdjustments" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositPaymentFrequency">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining parameters used to generate the payment dates schedule, including the specification of early or delayed payments. Payment dates are determined relative to the calculation period dates or the reset dates.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:LoanDepositFrequency">
+				<xsd:sequence>
+					<xsd:element name="paymentDay" type="fpml:RollConventionEnum" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositPrincipalExchange">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining a principal exchange amount and adjusted exchange date. The type forms part of the cashflow representation of a swap stream.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="unadjustedPrincipalExchangeDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element name="adjustedPrincipalExchangeDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The principal exchange date. This date should already be adjusted for any applicable business day convention.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="principalExchangeAmount" type="xsd:decimal">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The principal exchange amount, in the currency units of the principal. This amount should be positive if the stream payer is paying the exchange amount and signed negative if they are receiving it.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositRateObservation">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining parameters associated with an individual observation or fixing. This type forms part of the cashflow representation of a stream.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="resetDate" type="xsd:date" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The reset date.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="adjustedFixingDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The adjusted fixing date, i.e. the actual date the rate is observed. The date should already be adjusted for any applicable business day convention.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="observedRate" type="xsd:decimal">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The actual observed rate before any required rate treatment is applied, e.g. before converting a rate quoted on a discount basis to an equivalent yield. An observed rate of 5% would be represented as 0.05.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="treatedRate" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The observed rate after any required rate treatment is applied. A treated rate of 5% would be represented as 0.05.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="observationWeight" type="xsd:positiveInteger" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The number of days weighting to be associated with the rate observation, i.e. the number of days such rate is in effect. This is applicable in the case of a weighted average method of calculation where more than one reset date is established for a single calculation period.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositResetDates">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the parameters used to generate the reset dates schedule and associated fixing dates. The reset dates are determined relative to the calculation periods schedules dates.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="resetRelativeTo" type="fpml:ResetRelativeToEnum" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Specifies whether the reset dates are determined with respect to each adjusted calculation period start date or adjusted calculation period end date. If the reset frequency is specified as daily this element must not be included.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="fixingDates" type="fpml:Offset">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Specifies the fixing date relative to the reset date in terms of a business days offset and an associated set of financial business centers. Normally these offset calculation rules will be those specified in the ISDA definition for the relevant floating rate index (ISDA's Floating Rate Option). However, non-standard offset calculation rules may apply for a trade if mutually agreed by the principal parties to the transaction. The href attribute on the dateRelativeTo element should reference the id attribute on the resetDates element.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="resetFrequency" type="fpml:Frequency">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The frequency at which reset dates occur. [In the case of a weekly reset frequency, also specifies the day of the week that the reset occurs.] If the reset frequency is greater than the calculation period frequency then this implies that more than one reset date is established for each calculation period and some form of rate averaging is applicable.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="resetDatesAdjustments" type="fpml:BusinessDayAdjustments" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="LoanDepositStream">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the components specifiying an Loan Deposit stream, including both a parametric and cashflow representation for the stream of payments.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="fpml:Leg">
+				<xsd:sequence>
+					<xsd:group ref="fpml:PayerReceiver.model"/>
+					<xsd:element name="calculationPeriodDates" type="LoanDepositCalculationPeriodDates">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The calculation periods dates schedule, without relative dates.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="paymentDates" type="LoanDepositPaymentDates">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The payment dates schedule.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="resetDates" type="LoanDepositResetDates" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The reset dates schedule. The reset dates schedule only applies for a floating rate stream.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="calculationPeriodAmount" type="fpml:LoanDepositCalculationPeriodAmount">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The calculation period amount parameters.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="principalExchanges" type="fpml:PrincipalExchanges" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The true/false flags indicating whether initial, intermediate or final exchanges of principal should occur.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="cashflows" type="fpml:Cashflows" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The cashflows representation of the swap stream.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="OptionSpreadCall">
+		<xsd:sequence>
+			<xsd:element name="premium" type="fpml:Money"/>
+			<xsd:element name="strikeRate" type="NonNegativeDecimal"/>
+			<xsd:element name="capRate" type="NonNegativeDecimal" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="OptionSpreadPut">
+		<xsd:sequence>
+			<xsd:element name="premium" type="fpml:Money"/>
+			<xsd:element name="strikeRate" type="NonNegativeDecimal"/>
+			<xsd:element name="floorRate" type="NonNegativeDecimal" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="RolloverEvent">
+		<xsd:complexContent>
+			<xsd:extension base="EventBase">
+				<xsd:sequence>
+					<xsd:element name="effectiveDate" type="xsd:date">
+						<xsd:annotation>
+							<xsd:documentation>The effective date of the rollover event i.e. from which the new transaction arrangement takes effect.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="carriedInterest" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Accrued interest amount, as at the rollover date. This amount is denominated in the currency of the loan/deposit principal.
+
+Where the system internal representation of the rollover event results in creation of a new transaction, representing the 'rolled' trade, this amount is carried over from the previous trade version.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="calculation" type="LoanDepositPaymentCalculationPeriod" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Details of the revised interest calculation period resulting from the rollover event.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="payment" type="fpml:Payment" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation>A collection of payments or fees associated with the rollover event.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementRateOption">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A type defining the settlement rate options through a scheme reflecting the terms of the Annex A to the 1998 FX and Currency Option Definitions.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="settlementRateOptionScheme" type="xsd:anyURI" default="http://www.fpml.org/coding-scheme/settlement-rate-option-2-1"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="TerminationEvent">
+		<xsd:complexContent>
+			<xsd:extension base="EventBase">
+				<xsd:sequence>
+					<xsd:element name="terminationDate" type="xsd:date"/>
+					<xsd:element name="payment" type="fpml:Payment" minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--
+================
+	elements
+================
+-->
+	<xsd:element name="loanDeposit" type="LoanDeposit" substitutionGroup="fpml:product">
+		<xsd:annotation>
+			<xsd:documentation>Global element representing a loan or deposit product</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--
+================
+	groups
+================
+-->
+	<xsd:group name="ClientAndTreasuryRateSchedules.model">
+		<xsd:sequence>
+			<xsd:element name="clientRateMultiplierSchedule" type="fpml:Schedule" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>A rate multiplier or multiplier schedule to apply to the floating rate, to calculate the rate paid/recevied by the client.
+
+Note: normally this is the rate multiplier or multiplier schedule produced as the FpML floatingRateMultiplierSchedule, i.e. the externally confirmable value(s).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="treasuryRateMultiplierSchedule" type="fpml:Schedule" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>A rate multiplier or multiplier schedule to apply to the floating rate, to calculate the  funding rate obtained internally.
+
+*** Internal use only ***
+This element must not be produced in any externally visible context </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="LoanDeposit.model">
+		<xsd:sequence>
+			<xsd:sequence>
+				<xsd:element name="initialPayerReference" type="fpml:PartyReference">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">A pointer style reference to a party identifier defined elsewhere in the document. The referenced party is the payer of the initial principal on the start date i.e. the lender.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="initialReceiverReference" type="fpml:PartyReference">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">A pointer style reference to a party identifier defined elsewhere in the document. The referenced party is the receiver of the initial principal on the start date i.e. the borrower.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:element name="startDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The start date of the contract: the date on which the initial exchange of principal occurs, and from which interest calculation commences. This date should already be adjusted for any applicable business day convention.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="noticePeriod" type="fpml:Offset">
+					<xsd:annotation>
+						<xsd:documentation>In the case of a variable term transaction without a stated final maturity date, the contractual notice period for termination of the transaction.
+
+* a "call" transaction permits the counterparty to terminate with no notification period - in this case, this element may be omitted.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="maturityDate" type="xsd:date">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The final maturity date of the term deposit: the date on which the outstanding principal is due for repayment along with all outstanding accrued interest. This date should already be adjusted for any applicable business day convention.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:sequence>
+				<xsd:choice>
+					<xsd:element name="principal" type="fpml:NonNegativeMoney">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The principal amount of the trade.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="principalSchedule" type="fpml:NonNegativeAmountSchedule">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The principal amount or, in the case of an amortising or accreting transaction, schedule of principal amounts (where the step value represents the level of the principal at each step date).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:choice>
+				<xsd:element name="fixedPrice" type="fpml:FixedPrice" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Price of the principal expressed in the interest currency ("basis price"). Produced in the case where the principal is denominated in different units from the interest currency e.g. bullion loan/deposit.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:sequence>
+				<xsd:choice>
+					<xsd:element name="fixedRateSchedule" type="fpml:Schedule">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">The fixed rate or fixed rate schedule expressed as explicit fixed rates and dates. In the case of a schedule, the step dates are assumed to be adjusted dates.
+
+A per annum rate, expressed as an absolute decimal value. A fixed rate of 5% would be represented as 0.05.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:sequence>
+						<xsd:element name="floatingRate" type="LoanDepositFloatingRate">
+							<xsd:annotation>
+								<xsd:documentation>A floating rate index, observed on fixing dates in order to reset the rate applicable for the associated accrual period.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="spreadSchedule" type="fpml:SpreadSchedule" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">Spread, or spread schedule expressed as explicit spreads and dates. In the case of a schedule, the step dates may be subject to adjustment in accordance with any adjustments specified in resetDatesAdjustments and/or paymentDatesAdjustments.
+
+The spread is a per annum rate, expressed as an absolute decimal value. For purposes of determining a calculation period amount, if positive the spread will be added to the floating rate and if negative the spread will be subtracted from the floating rate. A positive 10 basis point spread (0.1%) would be represented as 0.001.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:choice>
+				<xsd:group ref="ClientMargin.model" minOccurs="0"/>
+				<xsd:element name="dayCountFraction" type="fpml:DayCountFraction">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">The day count fraction.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:element name="paymentDates" type="LoanDepositPaymentDates">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The payment dates schedule.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="resetDates" type="LoanDepositResetDates" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Reset dates: only produced in the case of a loan/deposit against a floating rate.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="interest" type="fpml:NonNegativeMoney">
+					<xsd:annotation>
+						<xsd:documentation>Interest amount, payable at maturity. This amount may not be known at trade inception e.g. for loan/deposit against a floating rate.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:sequence minOccurs="0">
+					<xsd:element name="withholdingTax" type="Tax">
+						<xsd:annotation>
+							<xsd:documentation>Withholding tax payable on the interest amount.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="netAmount" type="fpml:NonNegativeMoney" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Interest amount, net of withholding tax.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:sequence>
+			<xsd:element name="payment" type="fpml:Payment" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">A known payment between two parties. This component should be used for additional payments or fees (soultes), which are independent of the interest generated on the loan/deposit principal.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bullionSettlement" type="FxBullionSettlement" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Bullion settlement properties. This component may be required where one of the trade currencies is a precious metal (e.g. XAU, XPT), and should not be produced otherwise.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cashflows" type="LoanDepositCashflows" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The expanded cashflow schedule - in this section the trade is viewed as a classic interest rate stream.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="annex" type="LoanDepositAnnex" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Supplementary properties to assist with interpretation of product content.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="LoanDepositExtended.model">
+		<xsd:sequence>
+			<xsd:element name="earlyCallDate" type="fpml:IdentifiedDate" minOccurs="0"/>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="fxOptionStrategy" type="LoanDepositOptionStrategy"/>
+				<xsd:element name="certificateOfDeposit" type="CertificateOfDeposit"/>
+				<xsd:element name="cashSettlement" type="LoanDepositCashSettlement"/>
+			</xsd:choice>
+			<xsd:element name="inflation" type="LoanDepositInflation" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:group>
+</xsd:schema>

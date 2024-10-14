@@ -98,18 +98,21 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     }
 
 	@Override
-	public List<Data> registerType(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, GenerationProperties properties) {
+	public List<Data> registerType(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, ImportTargetConfig targetConfig) {
         List<Data> result = new ArrayList<>();
 
+        String name = util.toTypeName(xsdType.getRawName(), targetConfig);
+        
 		Optional<Data> elementType =
 			xsdMapping.getElementsWithComplexType(xsdType)
 				.map(xsdMapping::getRosettaTypeFromElement)
-				.filter(t -> t.getName().equals(xsdType.getName()))
+				.filter(t -> t.getName().toUpperCase().equals(name.toUpperCase()))
 				.findAny();
+		elementType.ifPresent(d -> d.setName(name));
 
 		Data data = elementType.orElseGet(() -> {
 			Data newData = SimpleFactory.eINSTANCE.createData();
-			newData.setName(util.toTypeName(xsdType.getRawName()));
+			newData.setName(name);
             result.add(newData);
 			return newData;
 		});
@@ -242,6 +245,9 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 					choice.setExpression(op);
 				}
 				data.getConditions().add(choice);
+			} else if (choiceGroup.attributes.size() == 1 && choiceGroup.required) {
+				Attribute attr = choiceGroup.attributes.get(0);
+				attr.getCard().setInf(1);
 			}
         });
     }
@@ -276,21 +282,25 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 	private void completeXsdElementsRecursively(XsdAbstractElement abstractElement, boolean isChoiceGroup, RosettaXsdMapping xsdMapping) {
         if (abstractElement instanceof XsdElement elem) {
         	Attribute attr = xsdMapping.getAttribute(elem);
-			if (elem.getTypeAsXsd() == null) {
+			if (elem.getTypeAsXsd() != null) {
+				attr.setTypeCall(xsdMapping.getRosettaTypeCall(elem.getTypeAsXsd()));
+			} else {
+				// TODO
 				attr.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));
-				return; // TODO
 			}
-			attr.setTypeCall(xsdMapping.getRosettaTypeCall(elem.getTypeAsXsd()));
         } else if (abstractElement instanceof XsdGroup group) {
         	Attribute attr = xsdMapping.getAttribute(group);
 			attr.setTypeCall(xsdMapping.getRosettaTypeCall(group));
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
         	Attribute attr = xsdMapping.getAttribute(xsdAttr);
-			if (xsdAttr.getXsdSimpleType() == null) {
+			if (xsdAttr.getXsdSimpleType() != null) {
+				attr.setTypeCall(xsdMapping.getRosettaTypeCall(xsdAttr.getXsdSimpleType()));
+			} else if (xsdAttr.getTypeAsBuiltInType() != null) {
+				attr.setTypeCall(xsdMapping.getRosettaTypeCall(xsdAttr.getTypeAsBuiltInType()));
+			} else {
+				// TODO
 				attr.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));
-				return; // TODO
 			}
-			attr.setTypeCall(xsdMapping.getRosettaTypeCall(xsdAttr.getXsdSimpleType()));
         } else if (abstractElement instanceof XsdSequence seq) {
             if (isChoiceGroup || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
             	seq.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, false, xsdMapping));
@@ -315,6 +325,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             } else {
             	choice.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, true, xsdMapping));
             }
+        } else {
+        	return;
         }
     }
 	

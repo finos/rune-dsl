@@ -106,8 +106,8 @@ public class RosettaXsdMapping {
 		registerBuiltinTypeSupplier("gYear", () -> toTypeCall(integer));
 		registerBuiltinTypeSupplier("gYearMonth", () -> toTypeCall(integer));
 		registerBuiltinTypeSupplier("hexBinary", () -> toTypeCall(string));
-		// ID
-		// IDREF
+		registerBuiltinTypeSupplier("ID", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("IDREF", () -> toTypeCall(string));
 		// IDREFS
 		registerBuiltinTypeSupplier("int", () -> toTypeCall(integer));
 		registerBuiltinTypeSupplier("integer", () -> toTypeCall(integer));

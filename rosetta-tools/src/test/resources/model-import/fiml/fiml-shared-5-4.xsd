@@ -1,0 +1,1425 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fpml="http://www.fpml.org/FpML-5/recordkeeping" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" version="$Revision: 1740 $" fiml:tag="5-4-9">
+	<xsd:import namespace="http://www.fpml.org/FpML-5/recordkeeping" schemaLocation="fiml-fpml-5-4.xsd"/>
+	<xsd:include schemaLocation="common-types-1-0.xsd"/>
+	<xsd:include schemaLocation="fiml-enum-5-4.xsd"/>
+	<xsd:include schemaLocation="fiml-core-5-4.xsd"/>
+	<!--
+================
+    simpleTypes    
+================
+-->
+	<xsd:simpleType name="LinkIdentifier">
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="[a-zA-Z0-9]+([_:.-][a-zA-Z0-9]+)*">
+				<xsd:annotation>
+					<xsd:documentation>CFTC USI Data Standard "Transaction Identifier" specification: variable-length mixed-case alphanumeric sequence permitting (but not requiring) multiple single-character internal delimiters (underscore|colon|period|hyphen).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+			<xsd:pattern value="">
+				<xsd:annotation>
+					<xsd:documentation>Empty token: tolerate (i.e. do not invalidate) messages containing empty linkId|blockTradeId|originatingTradeId</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TradeIdentifier">
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="[a-zA-Z0-9]+([_:.-][a-zA-Z0-9]+)*">
+				<xsd:annotation>
+					<xsd:documentation>CFTC USI Data Standard "Transaction Identifier" specification: variable-length mixed-case alphanumeric sequence permitting (but not requiring) multiple single-character internal delimiters (underscore|colon|period|hyphen).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--
+================
+    complexTypes    
+================
+-->
+	<xsd:complexType name="AdditionalData">
+		<xsd:annotation>
+			<xsd:documentation>Supplementary information to assist explanation and/or resolution of a reported exception.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="text" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Additional text data that may help understand and resolve the issue.
+
+If the additional information is formatted as xml, the text must be placed within a CDATA section to prevent its interpretation as xml content.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="originalMessage">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">The xml text of a message which is the subject of the exception report may be included directly within this structure.</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:any processContents="skip"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="AffirmationMode">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="affirmationModeScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/affirmation-mode"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="AffirmationService">
+		<xsd:complexContent>
+			<xsd:extension base="ExternalService">
+				<xsd:sequence>
+					<xsd:element name="affirmationStatus" type="AffirmationStatus" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>The current state of the trade event within the affirmation process.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="affirmationMode" type="AffirmationMode" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>The mode of interaction with the affirmation service e.g. "Double-sided"</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="AffirmationStatus">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="affirmationStatusScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/affirmation-status"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="AuditableBase" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation>Abstract base type for auditable content (system/user identification with timestamp).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:group ref="Audit.model" minOccurs="0"/>
+	</xsd:complexType>
+	<xsd:complexType name="BookingEvent">
+		<xsd:sequence>
+			<xsd:element name="timestamp" type="xsd:dateTime"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="BookingInformation">
+		<xsd:sequence>
+			<xsd:group ref="MarketerBooking.model"/>
+			<xsd:group ref="TraderBooking.model"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="BusinessLocation">
+		<xsd:sequence>
+			<xsd:element name="country" type="fpml:CountryCode"/>
+			<xsd:element name="businessCenter" type="fpml:BusinessCenter" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="Collateral">
+		<xsd:annotation>
+			<xsd:documentation>Collateral information.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:group ref="CreditSupportAnnex.model"/>
+	</xsd:complexType>
+	<xsd:complexType name="ConfirmationService">
+		<xsd:complexContent>
+			<xsd:extension base="ExternalService">
+				<xsd:sequence>
+					<xsd:element name="confirmationStatus" type="ConfirmationStatus"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ConfirmationStatus">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="affirmationStatusScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/affirmation-status"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CreditRating">
+		<xsd:sequence>
+			<xsd:element name="agency" type="CreditRatingAgency"/>
+			<xsd:element name="rating" type="CreditRatingValue"/>
+			<xsd:element name="date" type="xsd:date" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CreditRatingAgency">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="creditRatingAgencyScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/2011/fiml/scheme/credit-rating-agency"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CreditRatingValue">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="creditRatingValueScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/2011/fiml/scheme/credit-rating-value"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CreditSupportAnnexIdentifier">
+		<xsd:annotation>
+			<xsd:documentation>Credit Support Annex Id: legal or front-office (synthetic)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="creditSupportAnnexIdScheme" default="http://www.bnpparibas.com/transversal/algo/csa-id"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CreditSupportAnnexProductType">
+		<xsd:annotation>
+			<xsd:documentation>Credit Support Annex product type: ALGO product code for determination of CSA id</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="creditSupportAnnexProductTypeScheme" default="http://www.bnpparibas.com/cmt/algo/product-type"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CreditSupportAnnexRegulatory">
+		<xsd:annotation>
+			<xsd:documentation>Legal CSA ids and associated properties, required to support Algo feeds in the context of BCBS/IOSCO margin requirements for non-centrally cleared derivatives,</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="lookupDate" type="xsd:date">
+				<xsd:annotation>
+					<xsd:documentation>CSA lookup date</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="productSubType" type="CreditSupportAnnexProductType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Algo product subtype, used to determine exclusions from jurisdiction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="variationMarginId" type="CreditSupportAnnexIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Legal Variation Margin CSA id</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="initialMarginPayId" type="CreditSupportAnnexIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Legal Initial Margin (Pay) CSA id</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="initialMarginReceiveId" type="CreditSupportAnnexIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Legal Initial Margin (Receive) CSA id</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="DeskLocation">
+		<xsd:group ref="PartyLocation.model"/>
+	</xsd:complexType>
+	<xsd:complexType name="ElectronicPlatform">
+		<xsd:sequence>
+			<xsd:element name="gatewayId" type="GatewayId">
+				<xsd:annotation>
+					<xsd:documentation>Standardised identifier for trade processing channel.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EntitySigning">
+		<xsd:annotation>
+			<xsd:documentation>Entity signing properties: produced for a transaction which is a component of an entity signing relationship.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="mode" type="EntitySigningMode">
+				<xsd:annotation>
+					<xsd:documentation>The role of the transaction in the entity signing relationship (Booking Entity vs Signing Entity; Signing Entity vs Booking Entity; Signing Entity vs External Counterparty)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EntitySigningMode">
+		<xsd:annotation>
+			<xsd:documentation>The role of the transaction in the entity signing relationship (Booking Entity vs Signing Entity, Signing Entity vs Booking Entity, Signing Entity vs External Counterparty)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="fpml:Scheme">
+				<xsd:attribute name="entitySigningModeScheme" type="xsd:anyURI" fixed="http://www.bnpparibas.com/fixed-income/xmlframework/entity-signing/mode"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="EventBase" abstract="true">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Abstract type defining the basic structure of FiML business events; it is refined by its derived types.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="eventId" type="EventId" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en"/>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="EventId">
+		<xsd:annotation>
+			<xsd:documentation>Unique identifier for a business event e.g. identifier assigned by the originating system for a business event which is the subject of the containing message.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="eventIdScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="ExceptionReason">
+		<xsd:annotation>
+			<xsd:documentation>Describes reason for a processing exception</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="Reason">
+				<xsd:sequence>
+					<xsd:element name="location" type="ProblemLocation" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>The location in the document where the problem originates, expressed as an XPath expression.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="additionalData" type="AdditionalData" minOccurs="0" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation>Additional text data values that may help understand and resolve the issue.
+
+If the additional information is formatted as xml, the text must be placed within a CDATA section to prevent its interpretation as xml content.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="ExecutionMethod">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A code representing the method by which trade execution is performed (execution model).
+
+* Note: the default FiML scheme URI may be superseded by a FpML scheme, subject to adoption in the public standard.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="fpml:Scheme">
+				<xsd:attribute name="executionMethodScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/execution-method"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="ExecutionVenueId">
+		<xsd:simpleContent>
+			<xsd:extension base="fpml:Scheme">
+				<xsd:attribute name="executionVenueScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/execution-venue-id"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="ExecutionVenueInformation">
+		<xsd:annotation>
+			<xsd:documentation>Properties which identify a trade execution venue (electronic market, SEF, DCM ...).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="partyReference" type="fpml:PartyReference">
+				<xsd:annotation>
+					<xsd:documentation>A reference to the party identified as the execution venue (to support the case where the execution venue is identified as a party in the transaction, as per a broker).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:choice>
+					<xsd:sequence>
+						<xsd:element name="venueId" type="ExecutionVenueId">
+							<xsd:annotation>
+								<xsd:documentation>An identifier for the execution venue.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="venueName" type="xsd:token" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Long-form name of the execution venue.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:element name="venueName" type="xsd:token">
+						<xsd:annotation>
+							<xsd:documentation>Long-form name of the execution venue.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:choice>
+				<xsd:element name="location" type="BusinessLocation" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Location of the execution venue (country of incorporation, business center) for regulatory purposes.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:choice>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalService">
+		<xsd:annotation>
+			<xsd:documentation>Base properties of an external trade processing service.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:group ref="ExternalService.model">
+			<xsd:annotation>
+				<xsd:documentation>Base properties of an external trade processing service.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:group>
+		<xsd:attribute name="id" type="xsd:ID"/>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalServiceName">
+		<xsd:annotation>
+			<xsd:documentation>Name of an external trade processing service (e.g. SwapClear, DSMatch).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="serviceNameScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/external-service-name"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalServiceProvider">
+		<xsd:annotation>
+			<xsd:documentation>Name of the provider of an external trade processing service (e.g. LCH, MarkitServ).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="serviceProviderScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/external-service-provider"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="FxBullionSettlement">
+		<xsd:annotation>
+			<xsd:documentation>Bullion settlement properties: may be required where one of the trade currencies is a precious metal (e.g. XAU, XPT), and should not be produced otherwise.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="currency" type="fpml:Currency">
+				<xsd:annotation>
+					<xsd:documentation>The bullion currency e.g. XAU, XAG, XPT...</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="FxBullionAccount.model" minOccurs="0"/>
+			<xsd:group ref="FxBullionSettlement.model" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="GatewayId">
+		<xsd:annotation>
+			<xsd:documentation>Standardised identifier for an electronic trade processing channel through which transactions are internalised e.g. from an execution venue or electronic market.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="gatewayIdScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/global-markets/e-platform/gateway-id"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="InstitutionalSector">
+		<xsd:annotation>
+			<xsd:documentation>Institutional Sector e.g. ESA 2010 institutional sector code.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="institutionalSectorScheme" type="xsd:anyURI" default="http://ec.europa.eu/eurostat/institutional-sector"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="LinkedTradeInformation">
+		<xsd:annotation>
+			<xsd:documentation>Relevant properties of an associated transaction e.g. ancestor/originating trade.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="identifierReference" type="Reference" minOccurs="0"/>
+			<xsd:group ref="fpml:AgreementAndEffectiveDates.model"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="LocationIdentifier">
+		<xsd:annotation>
+			<xsd:documentation>Code identifying a physical location e.g. business center, place of incorporation.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="locationIdentifierScheme" type="xsd:anyURI" use="optional" default="http://www.bnpparibas.com/crds/location-code">
+					<xsd:annotation>
+						<xsd:documentation>Scheme specifying the value domain of the location code (CRDS location code, by default).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="MatchingService">
+		<xsd:annotation>
+			<xsd:documentation>An external service dedicated to trade matching (e.g. MarkitSERV DSMatch).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="ExternalService">
+				<xsd:sequence>
+					<xsd:element name="matchingStatus" type="MatchingStatus" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>The current state of the trade event within the matching process.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="MatchingStatus">
+		<xsd:annotation>
+			<xsd:documentation>Current state of the transaction record within an external matching process.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="matchingStatusScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/fixed-income/xmlframework/matching-status"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="PartyClientRelationship">
+		<xsd:annotation>
+			<xsd:documentation>A party which acts in an agency capacity on behalf of a client (third party).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="partyReference" type="fpml:PartyReference"/>
+			<xsd:element name="clientPartyReference" type="fpml:PartyReference" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyLocation">
+		<xsd:group ref="PartyLocation.model"/>
+	</xsd:complexType>
+	<xsd:complexType name="PersonIdentification">
+		<xsd:choice>
+			<xsd:element name="personReference" type="fpml:PersonReference">
+				<xsd:annotation>
+					<xsd:documentation>A reference to a person object located elsewhere in the document  (within a fpml:party block)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="personId" type="fpml:PersonId">
+				<xsd:annotation>
+					<xsd:documentation>Identifier code for a person e.g. CRDS employeee code.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="PersonLocation">
+		<xsd:complexContent>
+			<xsd:extension base="PersonIdentification">
+				<xsd:sequence>
+					<xsd:element name="location" type="BusinessLocation"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="PersonLocation0">
+		<xsd:group ref="PersonLocation.model"/>
+	</xsd:complexType>
+	<xsd:complexType name="Portfolio">
+		<xsd:annotation>
+			<xsd:documentation>A structure referencing a portfolio used to record and manage a trade</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="partyReference" type="fpml:PartyReference">
+				<xsd:annotation>
+					<xsd:documentation>A reference to the party (trade side) with which this portfolio is associated.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="portfolioId" type="PortfolioIdentifier">
+				<xsd:annotation>
+					<xsd:documentation>A unique identifier for the portfolio under the specfied scheme e.g. CRDS portfolio number.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PortfolioIdentifier">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="portfolioIdentifierScheme" type="xsd:anyURI" use="optional" default="http://www.bnpparibas.com/crds/ptf-no"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="PostTradeRiskReductionService">
+		<xsd:annotation>
+			<xsd:documentation>An external service providing post-trade risk reduction (PTRR) facilities e.g. OSTTRA (formerly Trioptima) triReduce (multilateral portfolio compression).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="ExternalService">
+				<xsd:sequence>
+					<xsd:element name="riskReductionOperation" type="PostTradeRiskReductionOperation" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Style of post-trade risk reduction operation supported by the service e.g. PortfolioCompression, PortfolioRebalancing</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="PostTradeRiskReductionOperation">
+		<xsd:annotation>
+			<xsd:documentation>Style of post-trade risk reduction operation e.g. PortfolioCompression.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="fpml:Scheme">
+				<xsd:attribute name="riskReductionOperationScheme" type="xsd:anyURI" use="optional" default="http://www.bnpparibas.com/external/esma/ptrr-operation"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="PreTradeControl">
+		<xsd:annotation>
+			<xsd:documentation>Support communication of TRUST pre-trade control results e.g. to ODIN via FIRE</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ruleId" type="PreTradeControlRuleId">
+				<xsd:annotation>
+					<xsd:documentation>Identifier for the pre-trade control rule.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="controlPoint" type="PreTradeControlPoint" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Information relating to the control point (point of application of the rule).
+* This might be modelled as a global property, rather than at the level of the specific rule application (?).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="result" type="PreTradeControlResult" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Outcome of the rule application</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PreTradeControlPoint">
+		<xsd:annotation>
+			<xsd:documentation>Information relating to the control point (point of application of the rule/control).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="timestamp" type="xsd:dateTime"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PreTradeControlResult">
+		<xsd:annotation>
+			<xsd:documentation>Status and user decision with respect to a specific rule/control </xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="status" type="PreTradeControlComplianceEnum">
+				<xsd:annotation>
+					<xsd:documentation>Status with respect to the rule/control {Compliant, NonCompliant}.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="description" type="xsd:token" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Diagnostic text relating to the status.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:annotation>
+					<xsd:documentation>Granular user decision.</xsd:documentation>
+				</xsd:annotation>
+				<xsd:element name="userDecision" type="PreTradeControlResponseEnum">
+					<xsd:annotation>
+						<xsd:documentation>User decision with respect to the specific control {Accept, Reject}.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="userComment" type="UserComment" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Comment text supplied by user in support of acceptance/rejection decision (mandatory in case of rejection).
+* User identity can be specified under the audit content.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PreTradeControlRuleId">
+		<xsd:annotation>
+			<xsd:documentation>Pre-trade control rule identifier</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="fpml:Scheme">
+				<xsd:attribute name="ruleIdScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="PreTradeControlStatus">
+		<xsd:annotation>
+			<xsd:documentation>Compliance status with respect to pre-trade controls.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="globalStatus" type="PreTradeControlComplianceEnum">
+				<xsd:annotation>
+					<xsd:documentation>Overall compliance status with respect to all applicable pre-trade controls {Compliant, NonCompliant}.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="userDecision" type="PreTradeControlResponseEnum">
+					<xsd:annotation>
+						<xsd:documentation>User decision with respect to global status {Accept, Reject}</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="userComment" type="UserComment" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Comment text supplied by user in support of acceptance/rejection decision (mandatory in case of rejection).
+* User identity can be specified under the audit content.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:element name="control" type="PreTradeControl" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Specific pre-trade control(s).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ProblemLocation">
+		<xsd:choice>
+			<xsd:element name="xpath" type="xsd:token">
+				<xsd:annotation>
+					<xsd:documentation>The location of the problem in the source document, represented as an XPath expression.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="LexicalProblemLocation.model"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="ProcessingInformation">
+		<xsd:annotation>
+			<xsd:documentation>Information about processing history of the reported trade e.g. processing status on external electronic platform.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:annotation>
+				<xsd:documentation>Content model enforces existence of at-least-one-of (preTradeControl, electronicPlatform, affirmation, matching, postTradeRiskReduction). </xsd:documentation>
+			</xsd:annotation>
+			<xsd:sequence>
+				<xsd:element name="preTradeControl" type="PreTradeControlStatus"/>
+				<xsd:element name="electronicPlatform" type="ElectronicPlatform" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Standardised reference data for electronic transaction platform (internal or external).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="affirmation" type="AffirmationService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Affirmation platform e.g. MarkitWire</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="matching" type="MatchingService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Confirmation matching platform e.g  DSMatch</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="postTradeRiskReduction" type="PostTradeRiskReductionService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Post-trade risk reduction (PTRR) service e.g. OSTTRA (formerly Trioptima) triReduce (multilateral portfolio compression).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:sequence>
+				<xsd:element name="electronicPlatform" type="ElectronicPlatform">
+					<xsd:annotation>
+						<xsd:documentation>Standardised reference data for electronic transaction platofrm (internal or external).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="affirmation" type="AffirmationService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Affirmation platform e.g. MarkitWire</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="matching" type="MatchingService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Confirmation matching platform e.g. DSMatch</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="postTradeRiskReduction" type="PostTradeRiskReductionService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Post-trade risk reduction (PTRR) operation performed by an external service e.g. OSTTRA (formerly Trioptima) triReduce (multilateral portfolio compression).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:sequence>
+				<xsd:element name="affirmation" type="AffirmationService">
+					<xsd:annotation>
+						<xsd:documentation>Affirmation platform e.g. MarkitWire</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="matching" type="MatchingService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Confirmation matching platform e.g  DSMatch</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="postTradeRiskReduction" type="PostTradeRiskReductionService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Post-trade risk reduction (PTRR) service e.g. OSTTRA (formerly Trioptima) triReduce (multilateral portfolio compression).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:sequence>
+				<xsd:element name="matching" type="MatchingService">
+					<xsd:annotation>
+						<xsd:documentation>Confirmation matching platform e.g  DSMatch</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="postTradeRiskReduction" type="PostTradeRiskReductionService" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Post-trade risk reduction (PTRR) service e.g. OSTTRA (formerly Trioptima) triReduce (multilateral portfolio compression).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:sequence>
+				<xsd:element name="postTradeRiskReduction" type="PostTradeRiskReductionService">
+					<xsd:annotation>
+						<xsd:documentation>Post-trade risk reduction (PTRR) service e.g. OSTTRA (formerly Trioptima) triReduce (multilateral portfolio compression).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="Reason">
+		<xsd:sequence>
+			<xsd:element name="reasonCode" type="ReasonCode">
+				<xsd:annotation>
+					<xsd:documentation>A machine-interpretable code value indicating the reason for the exception.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="description" type="xsd:string" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>A human readable description of the problem. This element MUST NOT contain codified values used to control subsequent processing</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ReasonCode">
+		<xsd:annotation>
+			<xsd:documentation>A machine-interpretable code for a processing exception.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="reasonCodeScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="RegulatoryPartyRole">
+		<xsd:sequence>
+			<xsd:sequence>
+				<xsd:element name="sourcePartyReference" type="fpml:PartyReference">
+					<xsd:annotation>
+						<xsd:documentation>Reference to the party which is identified as the booking party for this trade (i.e. the BNP Paribas entity which manages the trading risk position).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="counterPartyReference" type="fpml:PartyReference" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Reference to the party which is identified as the external counterparty for this trade.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:group ref="RegulatoryPartyRole.model"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SecurityClass">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="securityClassScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="SequencedNormalizedString">
+		<xsd:annotation>
+			<xsd:documentation>Normalized string + optional attribute sequenceNumber [positiveInteger]</xsd:documentation>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="sequenceNumber" type="xsd:positiveInteger" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementInstructionSimple">
+		<xsd:sequence>
+			<xsd:element name="partyReference" type="fpml:PartyReference"/>
+			<xsd:element name="settlementMethod" type="SettlementMethod"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementMethod">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="settlementMethodScheme" type="xsd:anyURI" use="optional" default="http://www.bnpparibas.com/fixed-income/bond/settlement-method"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransferAccount">
+		<xsd:annotation>
+			<xsd:documentation>Provides references to branch customer accounts. </xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:sequence>
+				<xsd:element name="cashAccountReference" type="fpml:AccountReference"/>
+				<xsd:element name="securityAccountReference" type="fpml:AccountReference" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:element name="securityAccountReference" type="fpml:AccountReference"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="SettlementTransferSimple">
+		<xsd:sequence>
+			<xsd:element name="deliveryMethod" type="DeliveryMethodEnum"/>
+			<xsd:element name="safeCustody" type="CanonicalBoolean"/>
+			<xsd:group ref="SettlementInformation.model" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>A simple settlement model for use in the trade capture-to-settlement context. Detailed settllement information for confirmation purposes should be produced in the structures provided in the confirmation advice model (SettlementDetail).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:element name="clientAccount" type="SettlementTransferAccount" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>references to branch customer accounts. </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID" use="optional"/>
+	</xsd:complexType>
+	<xsd:complexType name="SystemIdentifier">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="systemIdentifierScheme" type="xsd:anyURI"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="SystemTradeIdentifier">
+		<xsd:annotation>
+			<xsd:documentation>Describes a source system trade identifier</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="systemId" type="SystemIdentifier">
+				<xsd:annotation>
+					<xsd:documentation>A unique identifier for a system in which a trade is identified.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="tradeId" type="TradeIdentifier">
+					<xsd:annotation>
+						<xsd:documentation>A unique trade identifier within the identified system.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:sequence minOccurs="0">
+					<xsd:element name="versionNumber" type="xsd:nonNegativeInteger" default="0">
+						<xsd:annotation>
+							<xsd:documentation>The integer version number of the trade in the identified system, where defined. Zero is a permitted value, intended for use in the case where version numbering commences at zero. Where no version number is defined, this element (and the corresponding version timestamp) must be omitted.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="versionTimestamp" type="xsd:dateTime" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>The system timestamp for the version number of the trade, where defined,</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:sequence>
+			<xsd:group ref="SystemTradeLink.model"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SystemUserIdentifier">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:token">
+				<xsd:attribute name="systemUserIdentifierScheme" type="xsd:anyURI" default="http://www.bnpparibas.com/global/uid"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Tax">
+		<xsd:sequence>
+			<xsd:element name="rate" type="PositiveDecimal"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="UserComment">
+		<xsd:annotation>
+			<xsd:documentation>User-originated comment, with optional audit properties.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="AuditableBase">
+				<xsd:sequence>
+					<xsd:element name="text" type="SequencedNormalizedString" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation>User-originated comment.
+Comments spanning multiple lines may optionally be represented as an ordered collection of 'text' elements.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--
+================
+    groups    
+================
+-->
+	<xsd:group name="Audit.model">
+		<xsd:annotation>
+			<xsd:documentation>Properties relating to a audited action or event performed by a system service or user.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="systemId" type="SystemIdentifier">
+						<xsd:annotation>
+							<xsd:documentation>A unique identifier for the system in which the audited event occurred.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="instanceId" type="SystemIdentifier" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Instance of the identified system in which the audited event occurred (e.g. a location code).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="user" type="PersonIdentification" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>The system user who performed the audited action/event in the system.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:element name="user" type="PersonIdentification">
+					<xsd:annotation>
+						<xsd:documentation>The system user who initiated or performed the audited action/event in the system.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="locationId" type="LocationIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Location of the system instance or user for the event.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="timestamp" type="xsd:dateTime">
+				<xsd:annotation>
+					<xsd:documentation>Audit timestamp for the event.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="BondNominal.model">
+		<xsd:sequence>
+			<xsd:element name="nominalAmount" type="fpml:Money">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Collateral nominal amount.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="quantity" type="xsd:positiveInteger" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>The number of bonds bought or sold</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="denomination" type="PositiveDecimal" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="BondPriceAndYield.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">Bond price and related properties.
+
+Adapted from BondPriceAndYield.model as published in the NonDerivative and Repo proposals to public FpML (originally from  JPMorgan/IBML).
+
+Added: accruedCapitalisation, assetFactor*
+
+Removed: relativePrice, interestStartDate, pool (AssetPool).
+
+*substitutes for pool/initialFactor in FpML/IBML model
+
+
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<!-- HMcA 2005-10-17 -->
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="cleanPrice" type="xsd:decimal">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Bond clean price, expressed in percentage points, 100 is the initial value of the bond</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="accruals" type="xsd:decimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Accruals: relationship is clean price plus accruals equals dirty price. All prices are expressed in percentage points, 100 is the initial value of the bond.
+
+* This value can be negative e.g. when the value date falls between the ex-dividend date and coupon date.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="dirtyPrice" type="NonNegativeDecimal" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="en">Bond dirty price, expressed in percentage points, 100 is the initial value of the bond</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:element name="dirtyPrice" type="NonNegativeDecimal">
+					<xsd:annotation>
+						<xsd:documentation xml:lang="en">Bond dirty price, expressed in percentage points, 100 is the initial value of the bond</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="yieldToMaturity" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Yield to maturity</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="accruedCapitalisation" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Accrued capitalisation, expressed as a rate value.
+
+Note: value can be negative in an ex-dividend period.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="inflationFactor" type="NonNegativeDecimal" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>The inflation factor is specified for inflation-linked products which require some additional elements to calculate prices correctly.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="inflationCleanPrice" type="NonNegativeDecimal" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Product of inflation factor and clean price.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:element name="assetFactor" type="PositiveDecimal" minOccurs="0"/>
+			<xsd:sequence minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Extension content</xsd:documentation>
+				</xsd:annotation>
+				<xsd:sequence minOccurs="0">
+					<xsd:element name="accrualDayCount" type="xsd:integer">
+						<xsd:annotation>
+							<xsd:documentation>Days elapsed since start of current coupon period, for purposes of accrued interest calculation (day count fraction nominator).
+
+* This value can be negative e.g. when the value date falls between the ex-dividend date and coupon date.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="basisDaysInYear" type="xsd:positiveInteger" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Interest calculation basis days (day count fraction denominator).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+				<xsd:element name="dividendStatus" type="BondDividendStatusEnum" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Specifies whether the bond is traded cum- or ex-dividend, or on a special dividend basis</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:sequence minOccurs="0">
+					<xsd:annotation/>
+					<xsd:element name="previousCouponDate" type="xsd:date" minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Date of the coupon payment following the bond contract settlement date (value date).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="nextCouponDate" type="xsd:date">
+						<xsd:annotation>
+							<xsd:documentation>Date of the coupon payment following the bond contract settlement date (value date).</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:sequence>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="BondSettlementAmount.model">
+		<xsd:sequence>
+			<xsd:element name="settlementAmount" type="fpml:Money"/>
+			<xsd:element name="underlyingAmount" type="NonNegativeDecimal" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="BondValuationAmount.model">
+		<xsd:sequence>
+			<xsd:element name="accruedCouponAmount" type="xsd:decimal">
+				<xsd:annotation>
+					<xsd:documentation>The accrued interest amount for the current coupon period as at the value date, denominated in the native currency of the security (the currency of nominalAmount).
+
+* This value can be negative e.g. when the value date falls between the ex-dividend date and coupon date.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="accruedCapitalisationAmount" type="xsd:decimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Coupon re-investment amount at the value date, denominated in the native currency of the security (the currency of nominalAmount).
+					
+Note: value can be negative in an ex-dividend period.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="principalAmount" type="NonNegativeDecimal" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Nominal amount multiplied by the clean price, denominated in the native currency of the security (the currency of nominalAmount).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="ClientMargin.model">
+		<xsd:annotation>
+			<xsd:documentation>A model group used to define client margin schedule</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="clientMarginSchedule" type="fpml:Schedule">
+				<xsd:annotation>
+					<xsd:documentation>The client margin associated with the spread on a fixed or floating rate.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="CreditSupportAnnex.model">
+		<xsd:sequence>
+			<xsd:annotation>
+				<xsd:documentation>Trade properties required to support the use of collateral information for pricing and risk, revaluation, PnL explain, treasury reporting and LVA calculation purposes.</xsd:documentation>
+			</xsd:annotation>
+			<xsd:element name="csaId" type="CreditSupportAnnexIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Identifier for the applicable Credit Support Annex. By default, this is the "Front Office CSA id" allocated by the Falcon system (possibly a synthetic value).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="csaProductType" type="CreditSupportAnnexProductType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Product categorisation for the trade under the relevant CSA. By default, this is the product type used by ALGO (collateteral management system). This value is required in order to obtain the CSA id in the first instance (as a parameter to Westminster function call GetCollCSA[FromBranch]).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="regulatoryCSA" type="CreditSupportAnnexRegulatory" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Legal CSA ids and associated properties, to support Algo feeds in the context of BCBS/IOSCO margin requirements for non-centrally cleared deriviatives,</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="ExternalService.model">
+		<xsd:annotation>
+			<xsd:documentation>Base properties of an external trade processing servce.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:sequence>
+				<xsd:element name="serviceName" type="ExternalServiceName">
+					<xsd:annotation>
+						<xsd:documentation>The name of the service.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:choice minOccurs="0">
+					<xsd:element name="serviceProvider" type="ExternalServiceProvider">
+						<xsd:annotation>
+							<xsd:documentation>The commercial entity which supplies the service.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:element name="serviceProviderPartyReference" type="fpml:PartyReference">
+						<xsd:annotation>
+							<xsd:documentation>Reference to the party which is the  commercial entity supplying the service.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:sequence>
+			<xsd:element name="serviceProvider" type="ExternalServiceProvider">
+				<xsd:annotation>
+					<xsd:documentation>The commercial entity which supplies the service.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="serviceProviderPartyReference" type="fpml:PartyReference">
+				<xsd:annotation>
+					<xsd:documentation>Reference to the party which is the  commercial entity supplying the service.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="FxBullionAccount.model">
+		<xsd:sequence>
+			<xsd:element name="correspondentPartyReference" type="Reference">
+				<xsd:annotation>
+					<xsd:documentation>Reference to the party acting as our correspondent for bullion delivery.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="accountType" type="FxBullionAccountTypeEnum">
+				<xsd:annotation>
+					<xsd:documentation>Account type for bulllion = {Allocated, Pooled, Unallocated}
+
+* Pooled is construed as allocated pooled account; the unallocated pooled case is subsumed under Unallocated.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="FxBullionDelivery.model">
+		<xsd:sequence>
+			<xsd:element name="deliveryLocation" type="fpml:BusinessCenter"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="FxBullionSettlement.model">
+		<xsd:annotation>
+			<xsd:documentation>For bullion currencies, indicates whether the settlement will be cash or physical.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element name="cashSettlement" type="fpml:FxCashSettlement">
+				<xsd:annotation>
+					<xsd:documentation>Indicates that the settlement will be cash, and specifies the settlement currency, plus provision for fixing details.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="deliveryLocation" type="fpml:BullionDeliveryLocation">
+				<xsd:annotation>
+					<xsd:documentation>Indicates that the settlement will be physical and provides the delivery location. The scheme http://www.fpml.org/coding-scheme/bullion-delivery-location allows values  such as London, Zurich or TBA if the delivery location needs to be agreed by the parties.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="LexicalProblemLocation.model">
+		<xsd:sequence>
+			<xsd:element name="line" type="xsd:positiveInteger">
+				<xsd:annotation>
+					<xsd:documentation>The line number in the source document where the problem is located.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="column" type="xsd:positiveInteger" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The column number in the line where the problem data commences.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="MarketerBooking.model">
+		<xsd:annotation>
+			<xsd:documentation>Actions/events performed by the marketer/sales person in a marketer-led trade capture workflow.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="marketerOpened" type="BookingEvent" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Marketer opened the trade/event ticket.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="marketerSaved" type="BookingEvent" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Marketer saved the trade/event ticket.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="marketerSent" type="BookingEvent" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Marketer sent the trade/event ticket to trading desk (risk manager).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="PartyLocation.model">
+		<xsd:sequence>
+			<xsd:element name="businessUnitReference" type="fpml:BusinessUnitReference"/>
+			<xsd:element name="location" type="BusinessLocation"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="PartyPortfolio.model">
+		<xsd:sequence>
+			<xsd:element ref="fpml:party" maxOccurs="unbounded"/>
+			<xsd:element name="portfolio" type="Portfolio" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="PersonLocation.model">
+		<xsd:sequence>
+			<xsd:element name="personReference" type="fpml:PersonReference"/>
+			<xsd:element name="location" type="BusinessLocation"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="RegulatoryPartyRole.model">
+		<xsd:annotation>
+			<xsd:documentation>Identifiable party roles relevant to determination of reporting party and/or purpose(s).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="brokerPartyReference" type="fpml:PartyReference" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Reference to the party which is identified as the broker for this trade.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="clearerPartyReference" type="fpml:PartyReference">
+					<xsd:annotation>
+						<xsd:documentation>Reference to the party which is identified as the clearer (central counterparty/derivative clearing organisation) for this trade.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="clearingBroker" type="PartyClientRelationship" minOccurs="0"/>
+				<xsd:element name="originalPartyReference" type="fpml:PartyReference" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Reference to the original counterparty to the pre-cleared trade (i.e. the Client party, in the case of client clearing).</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:choice minOccurs="0">
+				<xsd:sequence>
+					<xsd:annotation>
+						<xsd:documentation>*** DEPRECATED ***
+
+The PartyClientRelationship model should be used in preference to the reference elements in this choice branch,</xsd:documentation>
+					</xsd:annotation>
+					<xsd:element name="primeBrokerPartyReference" type="fpml:PartyReference">
+						<xsd:annotation>
+							<xsd:documentation>Reference to a party which is identified as prime broker, in a prime-brokerage context.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:choice minOccurs="0">
+						<xsd:element name="executingBrokerPartyReference" type="fpml:PartyReference">
+							<xsd:annotation>
+								<xsd:documentation>Reference to a party which is identified as executing broker, in a prime-brokerage context.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="primeBrokerPartyReference" type="fpml:PartyReference">
+							<xsd:annotation>
+								<xsd:documentation>Reference to a party which is identified as prime broker, in a prime-brokerage context.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:sequence>
+				<xsd:sequence>
+					<xsd:element name="primeBroker" type="PartyClientRelationship">
+						<xsd:annotation>
+							<xsd:documentation>Reference to a party which is identified as prime broker, in a prime-brokerage context.</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+					<xsd:choice minOccurs="0">
+						<xsd:element name="executingBroker" type="PartyClientRelationship">
+							<xsd:annotation>
+								<xsd:documentation>Reference to a party which is identified as executing broker, in a prime-brokerage context.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="primeBroker" type="PartyClientRelationship">
+							<xsd:annotation>
+								<xsd:documentation>Reference to a party which is identified as prime broker, in a prime-brokerage context.</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:sequence>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="Settlement.model">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">A group which has cash settlement elements.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="settlementDate" type="fpml:AdjustableOrRelativeDate">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Settlement Date.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="syntheticSettlementDate" type="xsd:date" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Synthetic settlement date: dedicated value to support reporting of Open repo as synthetic transaction under MMSR regime.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="fpml:SettlementAmountOrCurrency.model">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">When the exact financial amount to trade is not known, this structure allows participants to state the currency of the transaction.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:group>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="settlementFxRate" type="fpml:FxRateSimple"/>
+				<xsd:element name="underlyingAmount" type="NonNegativeDecimal" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:element name="withholdingTax" type="fpml:Money" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="SettlementInformation.model">
+		<xsd:choice>
+			<xsd:element name="standardSettlementStyle" type="fpml:StandardSettlementStyleEnum"/>
+			<xsd:element name="settlementInstruction" type="SettlementInstructionSimple" minOccurs="2" maxOccurs="2"/>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:group name="SystemTradeLink.model">
+		<xsd:sequence>
+			<xsd:element name="linkId" type="LinkIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>A link identifier allowing the trade to be associated with other related trades within the identified system.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="blockTradeId" type="LinkIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Identifier of a related block trade within the identified system; use is reserved for the case where the trade identified by the tradeId element results from an allocation operation on the parent block.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="originatingTradeId" type="LinkIdentifier" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Identifier of the parent trade within the identified system; for use in the case where the trade identified by the tradeId element results from an operation (allocation. clearing, novation ...) on the parent trade.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="TraderBooking.model">
+		<xsd:annotation>
+			<xsd:documentation>Actions/events performed by the trader in a trade capture workflow.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="traderAccepted" type="BookingEvent" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Trader accepted the trade/event ticket from markter/sales person.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="traderAffirmed" type="BookingEvent" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Trader accepted trade into position for risk management.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+</xsd:schema>

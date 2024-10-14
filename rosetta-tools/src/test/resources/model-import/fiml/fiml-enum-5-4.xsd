@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bnpparibas.com/2012/FiML-5" xmlns:fiml="http://www.bnpparibas.com/2012/FiML-5" targetNamespace="http://www.bnpparibas.com/2012/FiML-5" elementFormDefault="qualified" attributeFormDefault="unqualified" fiml:tag="5-4-9">
+	<!--
+================
+    simpleTypes    
+================
+-->
+	<xsd:simpleType name="AuctionTypeEnum">
+		<xsd:annotation>
+			<xsd:documentation>Code values for bond auction types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="PrimaryOffer"/>
+			<xsd:enumeration value="SecondaryOffer"/>
+			<xsd:enumeration value="FinalDeal"/>
+			<xsd:enumeration value="ExchangeAuction"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="BondDividendStatusEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Cum"/>
+			<xsd:enumeration value="Ex"/>
+			<xsd:enumeration value="Special"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="BondInstrumentTypeEnum">
+		<xsd:annotation>
+			<xsd:documentation>Categorisation of "bond" instrument (which may be an equity or warrant in disguise).</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Debt"/>
+			<xsd:enumeration value="Equity"/>
+			<xsd:enumeration value="MoneyMarket"/>
+			<xsd:enumeration value="Warrant"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="BondMarketTypeEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Primary"/>
+			<xsd:enumeration value="Secondary"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="BondStaticPriceBasisEnum">
+		<xsd:annotation>
+			<xsd:documentation>Permitted values of Bond/priceBasis</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Cash">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Price</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Percentage">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Yield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="BondTradePriceBasisEnum">
+		<xsd:annotation>
+			<xsd:documentation>Permitted values of BondContract/tradePriceBasis</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Clean">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Clean price (exclusive of accruals)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Dirty">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Dirty price (inclusive of accruals)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Margin">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Margin (* might need a more precise definition for this)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Price">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Price: should be distinguished as Clean or Dirty, where possible (this value retained for backward compatibility)
+</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Yield">
+				<xsd:annotation>
+					<xsd:documentation>Traded on Yield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DeliveryMethodEnum">
+		<xsd:annotation>
+			<xsd:documentation xml:lang="en">This enumeration defines the possible delivery methods for securities.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="DeliveryVersusPayment">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Indicates that a securities delivery must be made against payment in a single transaction</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FreeOfPayment">
+				<xsd:annotation>
+					<xsd:documentation xml:lang="en">Indicates that a securities delivery can be made without a simultaneous cash payment in exchange.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ExtensionStyleEnum">
+		<xsd:annotation>
+			<xsd:documentation>Extension style for repo {Evergreen, Extendable}</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Evergreen">
+				<xsd:annotation>
+					<xsd:documentation>Close by mutual agreement.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Extendable">
+				<xsd:annotation>
+					<xsd:documentation>Extend by mutual agreement.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FxBullionAccountTypeEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Allocated"/>
+			<xsd:enumeration value="Pooled"/>
+			<xsd:enumeration value="Unallocated"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="InflationCalculationMethodEnum">
+		<xsd:annotation>
+			<xsd:documentation>Code values for different ways of using inflation indexes in formulas</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Ratio">
+				<xsd:annotation>
+					<xsd:documentation>Inflation Index(End of the period) / Inflation Index(Begining of the period).  Used in inflation asset swaps to calculate the coupons</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Return">
+				<xsd:annotation>
+					<xsd:documentation>Inflation Index ( End of the period )  /  ( Begining of the period ) - 1. Typically used in the zero coupon or period on period formula.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Spread">
+				<xsd:annotation>
+					<xsd:documentation>Inflation Index ( End of the period ) - Inflation Index ( Begining of the period ). Typically used for fixing locks</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PreTradeControlComplianceEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Compliant"/>
+			<xsd:enumeration value="NonCompliant"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PreTradeControlResponseEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Accept"/>
+			<xsd:enumeration value="Reject"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ReportingStyleEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Confirmation"/>
+			<xsd:enumeration value="PrimaryEconomicTerms"/>
+			<xsd:enumeration value="RealTime"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="StubPeriodLengthEnum">
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="Long">
+				<xsd:annotation>
+					<xsd:documentation>Denotes a stub period longer than the regular period for the stream (calculationPeriodFrequency).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="None">
+				<xsd:annotation>
+					<xsd:documentation>No stub period of the specified type (initial|final) applies.
+</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Short">
+				<xsd:annotation>
+					<xsd:documentation>Denotes a stub period shorter than the regular period for the stream (calculationPeriodFrequency).</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

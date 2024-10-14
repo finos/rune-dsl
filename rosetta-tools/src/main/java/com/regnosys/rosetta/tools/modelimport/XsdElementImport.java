@@ -37,18 +37,18 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 	}
 
 	@Override
-	public Data registerType(XsdElement xsdElement, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public Data registerType(XsdElement xsdElement, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
 		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
-        return getData(xsdElement, typeMappings, xsdType);
+        return getData(xsdElement, typeMappings, xsdType, targetConfig);
 	}
 
-	private Data getData(XsdElement xsdElement, RosettaXsdMapping typeMappings, XsdNamedElements xsdType) {
+	private Data getData(XsdElement xsdElement, RosettaXsdMapping typeMappings, XsdNamedElements xsdType, ImportTargetConfig targetConfig) {
+		String name = util.toTypeName(xsdElement.getName(), targetConfig);
 		if (xsdType != null /* TODO */ && typeMappings.hasType(xsdType)) {
 			if (xsdType instanceof XsdComplexType) {
 				Data dataType = typeMappings.getRosettaTypeFromComplex((XsdComplexType) xsdType);
 
-				String name = StringUtils.capitalize(xsdElement.getName());
-				if (name.equals(dataType.getName())) {
+				if (name.toUpperCase().equals(dataType.getName().toUpperCase())) {
 					// In case the element and type name overlap, we only generate the element.
 					// Join the documentation.
 					util.extractDocs(xsdElement).ifPresent(elemDocs -> {
@@ -63,7 +63,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 					return dataType;
 				} else {
 					Data data = SimpleFactory.eINSTANCE.createData();
-					data.setName(xsdElement.getName());
+					data.setName(name);
 					util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 					typeMappings.registerElement(xsdElement, data);
 
@@ -71,7 +71,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 				}
 			} else {
 				Data data = SimpleFactory.eINSTANCE.createData();
-				data.setName(xsdElement.getName());
+				data.setName(name);
 				util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 				typeMappings.registerElement(xsdElement, data);
 
@@ -83,7 +83,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			}
 		} else {
 			Data data = SimpleFactory.eINSTANCE.createData();
-			data.setName(StringUtils.capitalize(xsdElement.getName()));
+			data.setName(name);
 			util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 			typeMappings.registerElement(xsdElement, data);
 
