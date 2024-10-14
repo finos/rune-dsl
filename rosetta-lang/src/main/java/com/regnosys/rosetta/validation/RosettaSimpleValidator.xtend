@@ -123,6 +123,8 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.google.common.collect.Lists
+import java.util.Collection
+import org.eclipse.xtext.resource.IResourceDescriptions
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -696,26 +698,37 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		// NOTE: this check is done case-insensitive!
 		// This is to prevent clashes in generated code (e.g., MyFoo.java and Myfoo.java),
 		// which case-insensitive file systems such as Mac and Windows do not handle well.
-		val upperCaseName2RootElem = HashMultimap.create
-		model.elements.filter(RosettaNamed).filter[name !== null].filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
-			upperCaseName2RootElem.put(name.toUpperCase, it)
+		val namedRootElems = model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)]
+		val descr = getResourceDescriptions(model.eResource)
+		
+		val nonAnnotations = namedRootElems.filter[!(it instanceof Annotation)]
+		checkNamesInGroupAreUnique(nonAnnotations.toList, true, descr)
+		
+		val annotations = namedRootElems.filter[it instanceof Annotation]
+		checkNamesInGroupAreUnique(annotations.toList, true, descr)
+	}
+	private def checkNamesInGroupAreUnique(Collection<RosettaNamed> namedElems, boolean ignoreCase, IResourceDescriptions descr) {
+		val groupedElems = HashMultimap.create
+		namedElems.filter[name !== null].forEach [
+			groupedElems.put(ignoreCase ? name.toUpperCase : name, it)
 		]
-		val resourceDescription = getResourceDescriptions(model.eResource)
-		for (upperCaseName : upperCaseName2RootElem.keySet) {
-			val rootElems = upperCaseName2RootElem.get(upperCaseName)
-			if (rootElems.size > 1) {
-				rootElems.forEach [
+		for (key : groupedElems.keySet) {
+			val group = groupedElems.get(key)
+			if (group.size > 1) {
+				group.forEach [
 					error('''Duplicate element named '«name»'«»''', it, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
 				]
-			} else if (rootElems.size == 1 && model.eResource.URI.isPlatformResource) {
-				val EObject toCheck = rootElems.get(0)
-				val qName = toCheck.fullyQualifiedName
-				val sameNamed = resourceDescription.getExportedObjects(toCheck.eClass(), qName, false).filter [
-					confExtensions.isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
-				].map[EObjectURI]
-				if (sameNamed.size > 1) {
-					error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
-						toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
+			} else if (group.size == 1 && group.head.eResource.URI.isPlatformResource) {
+				val toCheck = group.head
+				if (toCheck instanceof RosettaRootElement) {
+					val qName = toCheck.fullyQualifiedName
+					val sameNamed = descr.getExportedObjects(toCheck.eClass(), qName, false).filter [
+						confExtensions.isProjectLocal(toCheck.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
+					].map[EObjectURI]
+					if (sameNamed.size > 1) {
+						error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
+							toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
+					}
 				}
 			}
 		}
