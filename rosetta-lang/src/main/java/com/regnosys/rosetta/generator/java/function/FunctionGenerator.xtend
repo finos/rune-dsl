@@ -51,6 +51,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.rosetta.util.types.JavaParameterizedType
 import javax.inject.Inject
@@ -456,7 +457,7 @@ class FunctionGenerator {
 			if (cardinality.isMulti(op.expression)) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
-				expressionGenerator.javaCode(op.expression, MAPPER_C.wrap(op.expression), scope)
+				expressionGenerator.javaCode(op.expression, MAPPER_C.wrapExtendsWithoutMeta(op.expression), scope)
 					.collapseToSingleExpression(scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -476,7 +477,7 @@ class FunctionGenerator {
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).toJavaReferenceType, scope)
+				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withEmptyMeta.toJavaReferenceType, scope)
 					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 					.mapExpression[
 						JavaExpression.from(

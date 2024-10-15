@@ -44,6 +44,52 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testSettingMetaOnOutputWithReferenceAsKey() {
+		val code = '''
+			type Foo:
+				[metadata key]
+
+			type Bar:
+				b Foo (1..1)
+				[metadata reference]
+				
+			func Test:
+				inputs:
+					myInput Foo (1..1)
+					[metadata reference]
+				output:
+					result Bar (1..1)
+				
+				set result -> b: myInput as-key
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+        val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"externalKey" -> "myExternalKey",
+					"globalKey" -> "myGlobalKey"
+				})
+			})
+		})
+		
+		val expected = classes.createInstanceUsingBuilder("Bar", #{
+			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+				"externalReference" -> "myExternalKey",
+				"globalReference" -> "myGlobalKey"
+			})
+		})
+		
+		val result = test.invokeFunc(RosettaModelObject, myInput)
+		
+		assertEquals(expected, result)		
+	}
+	
+	
+	@Test
 	def void testSettingMetaOnOutput() {
 		val code = '''
 			type Bar:
@@ -80,6 +126,53 @@ class FunctionGeneratorTest {
 		val result = test.invokeFunc(RosettaModelObject, myInput)
 		
 		assertEquals(expected, result)		
+	}
+	
+	@Test
+	def void testPassingMetaItemToConstructorWithReferenceAsKey() {
+		val code = '''
+			type Foo:
+				[metadata key]
+
+			type Bar:
+				b Foo (1..1)
+				[metadata reference]
+				
+			func Test:
+				inputs:
+					myInput Foo (1..1)
+					[metadata reference]
+				output:
+					result Bar (1..1)
+				
+				set result: Bar {
+					b: myInput as-key
+				}
+		'''.generateCode
+				
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+       val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"externalKey" -> "myExternalKey",
+					"globalKey" -> "myGlobalKey"
+				})
+			})
+		})
+		
+		val expected = classes.createInstanceUsingBuilder("Bar", #{
+			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+				"externalReference" -> "myExternalKey",
+				"globalReference" -> "myGlobalKey"
+			})
+		})
+		
+		val result = test.invokeFunc(RosettaModelObject, myInput)
+		
+		assertEquals(expected, result)
 	}
 	
 	@Test

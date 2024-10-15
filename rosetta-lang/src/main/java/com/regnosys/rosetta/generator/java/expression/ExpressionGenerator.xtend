@@ -1155,7 +1155,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			if (isMulti) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
-				value.javaCode(MAPPER_C.wrapExtends(value), scope)
+				value.javaCode(MAPPER_C.wrapExtendsWithoutMeta(value), scope)
 					.collapseToSingleExpression(scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -1174,7 +1174,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				value.javaCode(typeProvider.getRMetaAnnotatedType(value).toJavaReferenceType, scope)
+				value.javaCode(typeProvider.getRMetaAnnotatedType(value).RType.withEmptyMeta.toJavaReferenceType, scope)
 					.declareAsVariable(true, feature.name, scope)
 					.mapExpression[
 						JavaExpression.from(
