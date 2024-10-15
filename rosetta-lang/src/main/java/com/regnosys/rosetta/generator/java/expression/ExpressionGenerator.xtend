@@ -1120,11 +1120,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				expr.values.map[pair|
 					val attr = pair.key as Attribute
 					val attrExpr = pair.value
-					val isReference = attr.isReference
+					val hasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasMeta
 					val assignAsKey = attrExpr instanceof AsKeyOperation
 					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
-						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
+						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF hasMeta && !assignAsKey»Value«ENDIF»(«it»)''', null)]
 				].reduce[acc,attrCode|
 					acc.then(attrCode, [allSetCode,setAttr|
 						JavaExpression.from(
@@ -1194,7 +1194,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature, value).toJavaReferenceType
+			val clazz = typeProvider.getRTypeOfFeature(feature, value).RType.withEmptyMeta.toJavaReferenceType
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
