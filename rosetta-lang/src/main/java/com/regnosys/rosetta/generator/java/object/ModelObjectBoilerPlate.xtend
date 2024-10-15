@@ -77,7 +77,7 @@ class ModelObjectBoilerPlate {
 		'''
 			«IF attr.RType instanceof REnumType»
 				«IF attr.isMulti»
-					_result = 31 * _result + («id» != null ? «id».stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
+					_result = 31 * _result + («id» != null ? «id».stream().map(«Object»::getClass).map(«Class»::getName).mapToInt(«String»::hashCode).sum() : 0);
 				«ELSE»
 					_result = 31 * _result + («id» != null ? «id».getClass().getName().hashCode() : 0);
 				«ENDIF»
@@ -106,7 +106,7 @@ class ModelObjectBoilerPlate {
 		val methodScope = scope.methodScope("toString")
 		'''
 		@Override
-		public String toString() {
+		public «String» toString() {
 			return "«classNameFunc.apply(t.name)» {" +
 				«FOR attribute : t.javaAttributes SEPARATOR ' ", " +'»
 					"«attribute.name»=" + this.«methodScope.getIdentifierOrThrow(attribute)» +
@@ -120,9 +120,9 @@ class ModelObjectBoilerPlate {
 		val methodScope = scope.methodScope("equals")
 		'''
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(«Object» o) {
 			if (this == o) return true;
-			if (o == null || !(o instanceof «RosettaModelObject») || !getType().equals(((RosettaModelObject)o).getType())) return false;
+			if (o == null || !(o instanceof «RosettaModelObject») || !getType().equals(((«RosettaModelObject»)o).getType())) return false;
 			«IF c.hasSuperDataType»
 				if (!super.equals(o)) return false;
 			«ENDIF»

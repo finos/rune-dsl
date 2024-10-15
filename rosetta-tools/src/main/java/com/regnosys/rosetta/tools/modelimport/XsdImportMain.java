@@ -38,8 +38,7 @@ public class XsdImportMain {
 
     public static void main(String[] args) throws IOException, ParseException {
         Options options = new Options()
-                .addOption("x", "xsd-path", true, "Path to the xsd")
-                .addOption("p", "properties-path", true, "Path to generation properties file")
+                .addOption("c", "config-path", true, "Path to generation config file")
                 .addOption("ros", "rosetta-output-path", true, "Path to generation output folder")
                 .addOption("xml", "xml-config-output-path", true, "Path to output file for the XML configuration");
 
@@ -56,7 +55,7 @@ public class XsdImportMain {
         // Parse rosetta generation properties file
         Path configPath = Path.of(rawConfigPath);
         ImportConfig config = getImportConfig(configPath);
-        Path schemaPath = configPath.resolve(config.getSchemaLocation()).normalize();
+        Path schemaPath = configPath.getParent().resolve(config.getSchemaLocation()).normalize();
 
         // Parse xsd
         XsdParser parserInstance = new XsdParser(schemaPath.toString(), new RosettaXsdParserConfig());

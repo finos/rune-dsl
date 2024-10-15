@@ -88,6 +88,11 @@ public class XsdUtil {
                 builder.append(part, 1, part.length());
             }
         }
+        // TODO
+        String name = builder.toString();
+        if (name.equals("Object")) {
+        	return "_Object";
+        }
         return builder.toString();
     }
 
@@ -103,6 +108,11 @@ public class XsdUtil {
                 builder.append(part, 1, part.length());
             }
         });
+        // TODO
+        String name = builder.toString();
+        if (name.equals("type")) {
+        	return "_type";
+        }
         return builder.toString();
     }
     
