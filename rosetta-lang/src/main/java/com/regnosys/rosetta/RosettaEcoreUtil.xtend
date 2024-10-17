@@ -227,7 +227,15 @@ class RosettaEcoreUtil {
 		return '''«containerName»«name»'''
 	}
 	
-	
+	/*
+	 * This method is resolving references during scoping which is not an advised approach.
+	 * It could lead to poor performance as it is possible that it could be called upon to
+	 * resolve across multiple files. For now this is acceptable as in reality it's not going
+	 * going to get called to run across multiple files.
+	 * 
+	 * TODO: find an alternative approach to this.
+	 * 
+	 */
  	private def List<RosettaFeature> getMetaDescriptions(RMetaAnnotatedType type, EObject context) {
  		val metas = type.metaAttributes.map[it.name].toList
  		if (!metas.isEmpty) {
