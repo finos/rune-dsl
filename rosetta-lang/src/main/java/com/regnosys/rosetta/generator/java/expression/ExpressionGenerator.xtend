@@ -986,8 +986,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSumOperation(SumOperation expr, Context context) {
-		val itemType = typeProvider.getRMetaAnnotatedType(expr.argument).toJavaReferenceType
-		buildListOperationNoBody(expr, "sum" + itemType.simpleName, MAPPER_C.wrapExtends(itemType), [MAPPER_S.wrap(itemType)], context.scope)
+		val itemType = typeProvider.getRMetaAnnotatedType(expr.argument).RType.toJavaReferenceType
+		buildListOperationNoBody(expr, "sum" + itemType.simpleName, MAPPER_C.wrapExtendsWithoutMeta(itemType), [MAPPER_S.wrap(itemType)], context.scope)
 	}
 
 	override protected caseSymbolReference(RosettaSymbolReference expr, Context context) {

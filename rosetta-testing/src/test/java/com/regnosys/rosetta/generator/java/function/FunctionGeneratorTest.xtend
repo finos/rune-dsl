@@ -42,6 +42,43 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void testSumOnMetaIntegers() {
+		val code = '''
+			func Test:
+			  inputs:
+			    n int (0..*)
+			      [metadata scheme]
+			  output:
+			    result int (1..1)
+			  set result:
+			    n sum
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")	
+		
+        val myInputs = #[
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+				"value" -> 6,
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			}),
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+				"value" -> 5,
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			})
+        ]	
+        
+		val result = test.invokeFunc(Integer, myInputs)
+		
+		assertEquals(11, result)
+	}
 
 	@Test
 	def void testMaxFunctionsOnMetaItemsInInput() {
