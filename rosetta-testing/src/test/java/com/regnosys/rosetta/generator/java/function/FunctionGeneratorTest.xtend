@@ -43,6 +43,41 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	@Test
+	def void testMetaOnChoiceTypes() {
+		val code = '''
+			type Foo:
+			  a string (1..1)
+			  b int (0..1)
+			  c number (0..1)
+			
+			func Test:
+			  inputs:
+			    foo Foo (1..1)
+			      [metadata scheme]
+			  output:
+			    result boolean (1..1)
+			  set result:
+			    foo required choice b, c
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+      	val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+        		"a" -> "aValue",
+        		"c" -> BigDecimal.valueOf(20)
+			}),
+			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+				"scheme" -> "myScheme"
+			})
+		})
+        
+        val result = test.invokeFunc(Boolean, myInput)
+        assertTrue(result)
+	}
 
 	@Test
 	def void testSortFunctionsOnMetaItemsInInput() {

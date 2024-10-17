@@ -472,8 +472,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	private def buildConstraint(RosettaExpression arg, Collection<RAttribute> usedAttributes,
 		Necessity validationType, Context context) {
-		val argItemType = typeProvider.getRMetaAnnotatedType(arg).toJavaReferenceType
-		arg.javaCode(MAPPER.wrapExtends(argItemType), context.scope)
+		val argItemType = typeProvider.getRMetaAnnotatedType(arg).RType.toJavaReferenceType
+		arg.javaCode(MAPPER.wrapExtendsWithoutMeta(argItemType), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('choice')»(«it», «Arrays».asList(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)''', COMPARISON_RESULT)]
 	}
