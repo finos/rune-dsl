@@ -425,6 +425,33 @@ Each attribute of the `metadata` annotation corresponds to a different qualifier
 - The `template` qualifier indicates that a data type is eligible to be used as a [data template](#data-template). Data templates provide a way to store data which may be duplicated across multiple objects into a single template, to be referenced by all these objects.
 - the other metadata annotations are used for [cross-referencing](#cross-referencing).
 
+#### Meta-Data Use In Functions And Expressions 
+
+It is possible to use `metadata` annotated function inputs and expressions outputs to access the value of a piece of metadata. The following is an example of using `metadata` that has been passed into a function:
+
+```Haskell
+func MyFunc:
+    inputs:
+        myInput string (1..1)
+        [metadata reference]
+    output:
+        myResult string (1..1)
+
+    set myResult: myInput -> reference
+```
+
+Additionally here is an example of how to work with metadata that is the output of an expression:
+
+```Haskell
+func MyFunc:
+    inputs:
+        myInput string (1..*)
+        [metadata reference]
+    output:
+        myResult string (1..*)
+    set myResult: myInput extract reference
+```
+
 ### Document Reference
 
 #### Purpose
