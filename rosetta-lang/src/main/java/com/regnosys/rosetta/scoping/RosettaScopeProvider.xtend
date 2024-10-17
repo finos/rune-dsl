@@ -112,7 +112,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case CHOICE_OPERATION__ATTRIBUTES: {
 					if (context instanceof ChoiceOperation) {
-						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument))
+						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument).RType.withEmptyMeta)
 					}
 					return IScope.NULLSCOPE
 				}
