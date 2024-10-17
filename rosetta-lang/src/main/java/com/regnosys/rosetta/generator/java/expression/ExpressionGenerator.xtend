@@ -1085,7 +1085,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val lambdaScope = context.scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier("s")
 		conversionOperation(expr,
-			context, '''«lambdaParam» -> «LocalTime».parse(s, «DateTimeFormatter».ISO_LOCAL_TIME)''',
+			context, '''«lambdaParam» -> «LocalTime».parse(«lambdaParam», «DateTimeFormatter».ISO_LOCAL_TIME)''',
 			DateTimeParseException)
 	}
 	
