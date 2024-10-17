@@ -44,6 +44,49 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testToStringOnEnumWithMeta() {
+		val code = '''
+			enum MyEnum:
+				A
+				B
+				C
+				
+			type Foo:
+				myEnum MyEnum (1..1)
+				[metadata scheme]
+			
+			func Test:
+				inputs:
+					myInput Foo (1..1)
+					
+				output:
+					result string (1..1)
+					
+				set result: myInput -> myEnum to-string
+		'''.generateCode
+				
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")
+        
+        val myEnumClass = classes.get("com.rosetta.test.model.MyEnum") as Class<? extends Enum>
+        val enumInstance = Enum.valueOf(myEnumClass, "B")
+        
+        val myInput = classes.createInstanceUsingBuilder("Foo", #{
+        	"myEnum" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", #{
+        		"value" -> enumInstance,
+        		"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+        	})
+        })
+        
+		val result = test.invokeFunc(String, myInput)
+		
+		assertEquals("B", result)	
+	}
+	
+	@Test
 	def void testSettingMetaOnOutputWithReferenceAsKey() {
 		val code = '''
 			type Foo:

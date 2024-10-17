@@ -1081,13 +1081,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToStringOperation(ToStringOperation expr, Context context) {
-		val rMetaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr.argument)
-		val StringConcatenationClient toStringMethod = if (rMetaAnnotatedType.RType.stripFromTypeAliases instanceof REnumType) {
-			'''«rMetaAnnotatedType.toJavaReferenceType»::toDisplayString'''
+		val rType = typeProvider.getRMetaAnnotatedType(expr.argument).RType
+		val StringConcatenationClient toStringMethod = if (rType.stripFromTypeAliases instanceof REnumType) {
+			'''«rType.toJavaReferenceType»::toDisplayString'''
 		} else {
 			'''«Object»::toString'''
 		}
-		expr.argument.javaCode(MAPPER_S.wrapExtends(expr.argument), context.scope)
+		expr.argument.javaCode(MAPPER_S.wrapExtendsWithoutMeta(expr.argument), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«it».map("«expr.operator»", «toStringMethod»)''', MAPPER_S.wrap(expr))]
 	}
