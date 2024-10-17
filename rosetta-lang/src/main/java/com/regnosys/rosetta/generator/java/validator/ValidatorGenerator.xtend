@@ -126,7 +126,7 @@ class ValidatorGenerator {
 	}
 		
 	private def StringConcatenationClient checkTypeFormat(RAttribute attr, String atrVariable) {
-		val t = attr.RType.stripFromTypeAliases
+		val t = attr.RMetaAnnotatedType.RType.stripFromTypeAliases
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
 				val min = t.interval.minBound
@@ -149,7 +149,7 @@ class ValidatorGenerator {
 	}
 	
 	private def StringConcatenationClient getAttributeValue(RAttribute attr) {
-		if (attr.metaAnnotations.empty) {
+		if (!attr.RMetaAnnotatedType.hasMeta) {
 			'''o.get«attr.name?.toFirstUpper»()'''
 		} else {
 			val jt = attr.toMetaJavaType

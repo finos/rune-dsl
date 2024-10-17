@@ -31,7 +31,8 @@ public class DeepFeatureCallUtil {
 			result.put(attr.getName(), attr);
 		}
 		for (RAttribute attr : allNonOverridenAttributes) {
-			RType attrType = attr.getRType();
+
+			RType attrType = attr.getRMetaAnnotatedType().getRType();
 			if (attrType instanceof RChoiceType) {
 				attrType = ((RChoiceType) attrType).asRDataType();
 			}
@@ -80,7 +81,7 @@ public class DeepFeatureCallUtil {
 			String name = e.getKey();
 			RAttribute currFeature = e.getValue();
 			RAttribute otherFeature = otherFeatureMap.get(name);
-			if (otherFeature != null && !currFeature.getMetaAnnotations().isEmpty() && otherFeature.getMetaAnnotations().isEmpty()) {
+			if (otherFeature != null && currFeature.getRMetaAnnotatedType().hasMeta() && !otherFeature.getRMetaAnnotatedType().hasMeta()) {
 				e.setValue(otherFeature);
 			}
 		}
@@ -91,7 +92,7 @@ public class DeepFeatureCallUtil {
 			if (candidate != null) {
 				if (!match(candidate, attr)) {
 					featuresMapToModify.remove(name);
-				} else if (!candidate.getMetaAnnotations().isEmpty() && attr.getMetaAnnotations().isEmpty()) {
+				} else if (candidate.getRMetaAnnotatedType().hasMeta() && !attr.getRMetaAnnotatedType().hasMeta()) {
 					// Make sure we don't give back an attribute with metadata if not all of them have it.
 					featuresMapToModify.put(name, attr);
 				}
@@ -101,7 +102,7 @@ public class DeepFeatureCallUtil {
 		});
 	}
 	public boolean match(RAttribute a, RAttribute b) {
-		if (!a.getRType().equals(b.getRType())) {
+		if (!a.getRMetaAnnotatedType().getRType().equals(b.getRMetaAnnotatedType().getRType())) {
 			return false;
 		}
 		if (a.isMulti() != b.isMulti()) {

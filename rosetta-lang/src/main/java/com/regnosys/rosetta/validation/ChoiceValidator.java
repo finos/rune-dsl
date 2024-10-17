@@ -66,12 +66,12 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
 		Map<RType, RChoiceOption> includedOptions = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
-			if (opt.getType() instanceof RChoiceType) {
-				((RChoiceType) opt.getType()).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
+			if (opt.getType().getRType() instanceof RChoiceType) {
+				((RChoiceType) opt.getType().getRType()).getAllOptions().forEach(o -> includedOptions.put(o.getType().getRType(), opt));
 			}
 		}
 		for (RChoiceOption opt: t.getOwnOptions()) {
-			RChoiceOption alreadyIncluded = includedOptions.put(opt.getType(), opt);
+			RChoiceOption alreadyIncluded = includedOptions.put(opt.getType().getRType(), opt);
 			if (alreadyIncluded != null) {
 				String msg;
 				if (alreadyIncluded.getType().equals(opt.getType())) {

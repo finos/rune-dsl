@@ -7,7 +7,7 @@ import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 public class RChoiceOption implements RObject {
 	
 	private final ChoiceOption option;
-	private RType type = null;
+	private RMetaAnnotatedType type = null;
 	
 	private final RChoiceType choiceType;
 	
@@ -25,7 +25,7 @@ public class RChoiceOption implements RObject {
 		return option;
 	}
 
-	public RType getType() {
+	public RMetaAnnotatedType getType() {
 		if (type == null) {
 			type = typeProvider.getRTypeOfSymbol(option);
 		}
