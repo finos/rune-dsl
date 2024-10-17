@@ -433,7 +433,7 @@ It is possible to use `metadata` annotated function inputs and expressions outpu
 func MyFunc:
     inputs:
         myInput string (1..1)
-        [metadata scheme]
+            [metadata scheme]
     output:
         myResult string (1..1)
 
@@ -446,7 +446,7 @@ Additionally here is an example of how to work with metadata that is the output 
 func MyFunc:
     inputs:
         myInput string (1..*)
-        [metadata scheme]
+            [metadata scheme]
     output:
         myResult string (1..*)
     set myResult: myInput extract scheme
