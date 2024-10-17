@@ -43,6 +43,50 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+
+	@Test
+	def void testSortFunctionsOnMetaItemsInInput() {
+		val code = '''
+			func Test:
+				inputs:
+					myInputs string (1..*)
+					[metadata scheme]
+				output:
+					result string (1..*)
+					
+				set result: myInputs sort
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")	
+        
+        val myInputs = #[
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "DDDD",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			}),
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "AAAA",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			}),
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "HHHH",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			})
+        ]	
+        
+		val result = test.invokeFunc(List, myInputs)
+		
+		assertEquals(#["AAAA", "DDDD", "HHHH"], result)
+	}	
+		
 	@Test
 	def void testSumOnMetaIntegers() {
 		val code = '''

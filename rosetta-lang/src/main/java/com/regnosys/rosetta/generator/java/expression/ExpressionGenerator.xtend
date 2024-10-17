@@ -973,8 +973,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSortOperation(SortOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtends(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "sort", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|a], context.scope)
+		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "sort", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|a], context.scope)
 	}
 
 	override protected caseStringLiteral(RosettaStringLiteral expr, Context context) {
