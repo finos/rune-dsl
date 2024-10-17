@@ -84,6 +84,7 @@ import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
@@ -97,7 +98,6 @@ import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
@@ -113,6 +113,7 @@ import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.records.Date
 import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod
+import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaType
@@ -137,8 +138,6 @@ import org.eclipse.xtext.xbase.lib.Functions.Function3
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
-import com.rosetta.util.types.JavaClass
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -890,13 +889,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseMaxOperation(MaxOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtends(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "max", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
+		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "max", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
 	}
 
 	override protected caseMinOperation(MinOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtends(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "min", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
+		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "min", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
 	}
 
 	override protected caseMultiplyOperation(ArithmeticOperation expr, Context context) {

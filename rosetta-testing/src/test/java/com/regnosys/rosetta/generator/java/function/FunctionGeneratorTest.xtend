@@ -42,6 +42,80 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+
+	@Test
+	def void testMaxFunctionsOnMetaItemsInInput() {
+		val code = '''
+			func Test:
+				inputs:
+					myInputs string (1..*)
+					[metadata scheme]
+				output:
+					result string (1..1)
+					
+				set result: myInputs max
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")	
+        
+        val myInputs = #[
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "AAAA",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			}),
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "BBBB",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			})
+        ]	
+        
+		val result = test.invokeFunc(String, myInputs)
+		
+		assertEquals("BBBB", result)
+	}	
+	
+	@Test
+	def void testMinFunctionsOnMetaItemsInInput() {
+		val code = '''
+			func Test:
+				inputs:
+					myInputs string (1..*)
+					[metadata scheme]
+				output:
+					result string (1..1)
+					
+				set result: myInputs min
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+        
+        val test = classes.createFunc("Test")	
+        
+        val myInputs = #[
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "AAAA",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			}),
+        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+				"value" -> "BBBB",
+				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
+					"scheme" -> "myScheme"
+				})
+			})
+        ]	
+        
+		val result = test.invokeFunc(String, myInputs)
+		
+		assertEquals("AAAA", result)
+	}
 	
 	@Test
 	def void testToStringOnEnumWithMeta() {
