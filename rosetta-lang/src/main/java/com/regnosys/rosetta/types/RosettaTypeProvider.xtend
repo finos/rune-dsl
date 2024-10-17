@@ -424,7 +424,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	
 	override protected caseListLiteral(ListLiteral expr, Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		val types = expr.elements.map[RMetaAnnotatedType].filter[it !== null]
-		val joined = types.joinMetaAnnotatedType
+		val joined = types.joinMetaAnnotatedTypes
 		val unique = newLinkedHashSet(types)
 		val StringConcatenationClient failedList = '''«FOR t: unique.take(unique.size-1) SEPARATOR ", "»`«t»`«ENDFOR» and `«unique.last»`'''
 		if (joined == ANY) {
@@ -509,7 +509,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			// Generic return type for number type e.g. Min(1,2) or Max(2,6)
 			val argTypes = expr.args.map[safeRType(cycleTracker)]
 			if (argTypes.forall[isSubtypeOf(returnType)]) {
-				argTypes.joinMetaAnnotatedType
+				argTypes.joinMetaAnnotatedTypes
 			} else {
 				returnType
 			}
@@ -561,7 +561,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	override protected caseSwitchOperation(SwitchOperation expr, Map<EObject, RMetaAnnotatedType> context) {
 		expr.cases
 			.map[it.expression.RMetaAnnotatedType]
-			.joinMetaAnnotatedType
+			.joinMetaAnnotatedTypes
  	}
 
 }

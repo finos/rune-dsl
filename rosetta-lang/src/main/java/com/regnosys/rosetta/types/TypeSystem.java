@@ -104,7 +104,7 @@ public class TypeSystem {
 		return subtypeRelation.join(t1, t2);
     }
     
-    public RMetaAnnotatedType joinMetaAnnotatedType(Iterable<RMetaAnnotatedType> types) {
+    public RMetaAnnotatedType joinMetaAnnotatedTypes(Iterable<RMetaAnnotatedType> types) {
 		Objects.requireNonNull(types);
 		Validate.noNullElements(types);
 		

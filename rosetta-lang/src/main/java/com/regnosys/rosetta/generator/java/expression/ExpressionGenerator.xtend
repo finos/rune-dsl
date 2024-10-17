@@ -212,7 +212,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					if (argRTypes.forall[isSubtypeOf(returnRType)]) {
 						// TODO: this is a hack
 						// Generic return type for number type e.g. Min(1,2) or Max(2,6)
-						val argAndReturnType = argRTypes.joinMetaAnnotatedType.toJavaReferenceType
+						val argAndReturnType = argRTypes.joinMetaAnnotatedTypes.toJavaReferenceType
 						argCode = arguments.head.javaCode(argAndReturnType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
