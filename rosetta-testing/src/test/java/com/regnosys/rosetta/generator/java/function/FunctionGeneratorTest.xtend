@@ -142,13 +142,10 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
         
         val test = classes.createFunc("Test")
-        
-        val myEnumClass = classes.get("com.rosetta.test.model.MyEnum") as Class<? extends Enum>
-        val enumInstance = Enum.valueOf(myEnumClass, "B")
-        
+                        
         val myInput = classes.createInstanceUsingBuilder("Foo", #{
         	"myEnum" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", #{
-        		"value" -> enumInstance,
+        		"value" -> classes.createEnumInstance("MyEnum", "B"),
         		"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
 					"scheme" -> "myScheme"
 				})
