@@ -1,13 +1,14 @@
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
@@ -127,41 +128,42 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		}
 	}
 	
-	public Optional<TypeXMLConfiguration> getXMLConfiguration(XsdElement xsdElement, RosettaXsdMapping typeMappings, String schemaTargetNamespace) {
-		Data data = typeMappings.getRosettaTypeFromElement(xsdElement);
+	public Map<Data, TypeXMLConfiguration> getXMLConfiguration(XsdElement xsdElement, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {
+		Data data = xsdMapping.getRosettaTypeFromElement(xsdElement);
 		if (xsdElement.getTypeAsXsd() == null) {
 			// TODO
-			return Optional.empty();
+			return Collections.emptyMap();
 		}
 		
-		Map<String, AttributeXMLConfiguration> attributeConfig;
-		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
-		if (xsdType instanceof XsdComplexType) {
-			Data dataType = typeMappings.getRosettaTypeFromComplex((XsdComplexType) xsdType);
-			if (data.equals(dataType)) {
-				attributeConfig = typeImport.getAttributeConfiguration((XsdComplexType) xsdElement.getTypeAsXsd(), typeMappings);
-			} else {				
-				attributeConfig = Collections.emptyMap();
-			}
-		} else {
-			attributeConfig = new LinkedHashMap<>();
-			Attribute attr = typeMappings.getAttribute(xsdElement);
-			attributeConfig.put(attr.getName(), new AttributeXMLConfiguration(
-					Optional.empty(),
-					Optional.empty(),
-					Optional.of(AttributeXMLRepresentation.VALUE)));
-		}
+		Map<Data, TypeXMLConfiguration> result = new LinkedHashMap<>();
 		
+		Map<String, AttributeXMLConfiguration> attributeConfig = new LinkedHashMap<>();
 		Map<String, String> xmlAttributes = new LinkedHashMap<>();
 		if (schemaTargetNamespace != null) {
 			xmlAttributes.put("xmlns", schemaTargetNamespace);
 		}
 		xmlAttributes.put("xmlns:xsi", util.XSI_NAMESPACE);
-		return Optional.of(
+		result.put(data,
 				new TypeXMLConfiguration(
 					Optional.of(xsdElement.getName()),
 					Optional.of(xmlAttributes),
-					attributeConfig.isEmpty() ? Optional.empty() : Optional.of(attributeConfig)
+					Optional.of(attributeConfig)
 				));
+		
+		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
+		if (xsdType instanceof XsdComplexType) {
+			Data dataType = xsdMapping.getRosettaTypeFromComplex(xsdType);
+			if (data.equals(dataType)) {
+				typeImport.completeAttributeConfiguration(attributeConfig, xsdType, xsdMapping, result);
+			}
+		} else {
+			Attribute attr = xsdMapping.getAttribute(xsdElement);
+			attributeConfig.put(attr.getName(), new AttributeXMLConfiguration(
+					Optional.empty(),
+					Optional.empty(),
+					Optional.of(AttributeXMLRepresentation.VALUE)));
+		}
+
+		return result;
 	}
 }

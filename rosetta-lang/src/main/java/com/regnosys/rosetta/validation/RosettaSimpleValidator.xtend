@@ -549,7 +549,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkClassNameStartsWithCapital(Data classe) {
-		if (!Character.isUpperCase(classe.name.charAt(0))) {
+		if (Character.isLowerCase(classe.name.charAt(0))) {
 			warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -558,7 +558,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkConditionName(Condition condition) {
 		if (condition.name === null && !condition.isConstraintCondition) {
 			warning("Condition name should be specified", ROSETTA_NAMED__NAME, INVALID_NAME)
-		} else if (condition.name !== null && !Character.isUpperCase(condition.name.charAt(0))) {
+		} else if (condition.name !== null && Character.isLowerCase(condition.name.charAt(0))) {
 			warning("Condition name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -573,14 +573,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkFunctionNameStartsWithCapital(Function enumeration) {
-		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
+		if (Character.isLowerCase(enumeration.name.charAt(0))) {
 			warning("Function name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 
 	@Check
 	def void checkEnumerationNameStartsWithCapital(RosettaEnumeration enumeration) {
-		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
+		if (Character.isLowerCase(enumeration.name.charAt(0))) {
 			warning("Enumeration name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -589,7 +589,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
 		val annotationAttribute = attribute.eContainer instanceof Annotation
 		val choiceOption = attribute instanceof ChoiceOption
-		if (!choiceOption && !annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
+		if (!choiceOption && !annotationAttribute && Character.isUpperCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}

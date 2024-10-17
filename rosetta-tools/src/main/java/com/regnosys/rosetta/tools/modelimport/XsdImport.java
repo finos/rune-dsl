@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -124,23 +125,31 @@ public class XsdImport {
 				
 		Map<ModelSymbolId, TypeXMLConfiguration> result = new HashMap<>();
 		targetNamespaceToXsdElementsMap.forEach((targetNamespace, xsdElements) -> {
-			xsdElements.forEach(abstractElem -> {
-				if (abstractElem instanceof XsdElement xsdElem) {
-                    xsdElementImport.getXMLConfiguration(xsdElem, xsdMapping, targetNamespace)
-						.ifPresent(elemXMLConfig -> {
-							Data type = xsdMapping.getRosettaTypeFromElement(xsdElem);
-							result.put(modelIdProvider.getSymbolId(type), elemXMLConfig);
-						});
-				} else if (abstractElem instanceof XsdComplexType xsdType) {
-                    xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, targetNamespace)
-						.ifPresent(typeXMLConfig -> {
-							Data type = xsdMapping.getRosettaTypeFromComplex(xsdType);
-							result.put(modelIdProvider.getSymbolId(type), typeXMLConfig);
-						});
-				}
-			});
+			xsdElements.stream()
+				.flatMap(abstractElem -> {
+					if (abstractElem instanceof XsdElement xsdElem) {
+	                    return xsdElementImport.getXMLConfiguration(xsdElem, xsdMapping, targetNamespace).entrySet().stream();
+					} else if (abstractElem instanceof XsdComplexType xsdType) {
+	                    return xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, targetNamespace).entrySet().stream();
+					}
+					return Stream.empty();
+				})
+				.filter(e -> !isEmpty(e.getValue()))
+				.map(e -> Map.entry(e.getKey(), prune(e.getValue())))
+				.collect(Collectors.toMap(e -> modelIdProvider.getSymbolId(e.getKey()), Map.Entry::getValue))
+				.forEach((id, config) -> result.put(id, config));
 		});
 		return new RosettaXMLConfiguration(result);
+	}
+	private TypeXMLConfiguration prune(TypeXMLConfiguration config) {
+		return new TypeXMLConfiguration(
+				config.getXmlRootElementName(),
+				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
+				config.getAttributes().map(x -> x.isEmpty() ? null : x)
+			);
+	}
+	private boolean isEmpty(TypeXMLConfiguration config) {
+		return config.getXmlRootElementName().isEmpty() && (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty()) && (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty());
 	}
 
 	public void saveResources(String outputPath) throws IOException {

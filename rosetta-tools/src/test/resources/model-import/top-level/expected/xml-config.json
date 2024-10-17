@@ -1,8 +1,32 @@
 {
+  "test.ns.Document" : {
+    "attributes" : {
+      "attr" : {
+        "xmlName" : "Attr"
+      },
+      "value" : {
+        "xmlName" : "Value"
+      }
+    }
+  },
+  "test.ns.Foo" : {
+    "attributes" : {
+      "attr1" : {
+        "xmlName" : "Attr1"
+      },
+      "xmlValue" : {
+        "xmlName" : "XMLValue"
+      }
+    }
+  },
   "test.ns.Measure" : {
     "attributes" : {
       "value" : {
         "xmlRepresentation" : "VALUE"
+      },
+      "unit" : {
+        "xmlName" : "Unit",
+        "xmlRepresentation" : "ATTRIBUTE"
       }
     }
   },

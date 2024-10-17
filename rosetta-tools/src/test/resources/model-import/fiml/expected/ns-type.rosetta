@@ -1335,7 +1335,7 @@ type AtomicSettlementTransfer: <"Abstract base class for all transfer of cash or
 
 type Attribution: <"An attribution must specify its type, and an amount. Any of the three amount fields below can be used (and they can all be used at the same time), as long as they are used consistently. You can express an attribution in a maximum of three different currencies (settlement, base, underlying), which are usually the same as the settlement currency on the trade, the base currency used for accounting purposes, and the underlying currency which refers to the currency of an underlying instrument used in a transaction. Note however that these are just guidelines; you can actually specify attributions in any currency that you like, as long as you are consistent. Within an Attributions structure, all attribution/settlementAmounts are expressed in the same currency, defined by the settlementCurrency field (see enclosing Attributions structure). Same holds true for base and underlying amounts.">
 
-	^type AttributionType (1..1) <"The attribution type. The cash settlement amount specified in the enclosing transfer will be broken down into several subcomponents (like a PandL explain), and the type of the breakdown is defined here. Typical values are in a scheme.">
+	_type AttributionType (1..1) <"The attribution type. The cash settlement amount specified in the enclosing transfer will be broken down into several subcomponents (like a PandL explain), and the type of the breakdown is defined here. Typical values are in a scheme.">
 	settlementAmount number (0..1) <"An amount expressed in the settlement currency that was indicated in the enclosing Attributions structure. This is done to avoid repeating the currency for every amount when we know that attributions are expressed in a consistent way, with the same currencies.">
 	baseAmount number (0..1) <"An amount expressed in the base currency defined in the enclosing Attributions structure (see baseCurrency). If this optional field is present, baseCurrency must be defined in the enclosing structure.">
 	underlyingAmount number (0..1) <"An amount expressed in the currency of an underlyer ( see underlyingCurrency). If this field is present then the underlyingCurrency field in the enclosing structure must be defined.">
@@ -1640,7 +1640,7 @@ type VersionedSettlementTransferId: <"Settlement Transfer Id with version contro
 
 type VersionedSettlementTransferType: <"SettlementTransfer Type with version control elements.">
 
-	^type SettlementTransferType (1..1) <"??? A brief description should be provided">
+	_type SettlementTransferType (1..1) <"??? A brief description should be provided">
 
 type VersionedStreamId: <"StreamId with version control elements.">
 
@@ -1671,7 +1671,7 @@ type ExtensionPeriodModel: <"Extension provisions">
 type SettlementTransferIdentifierModel: <"Settlement transfer identifier elements.">
 
 	id SettlementTransferId (0..*) <"??? A brief description should be provided">
-	^type SettlementTransferType (0..*) <"??? A brief description should be provided">
+	_type SettlementTransferType (0..*) <"??? A brief description should be provided">
 
 type TradeComponentOrIdentifierOrNetModel: <"Trade or Trade Identifier.">
 

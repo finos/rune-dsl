@@ -1055,7 +1055,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseThenOperation(ThenOperation expr, Context context) {
 		val thenArgCode = expr.argument.javaCode(expr.argument.isMulti ? MAPPER_C.wrapExtends(expr.argument) as JavaType : MAPPER_S.wrapExtends(expr.argument), context.scope)
-		val thenAsVarCode = thenArgCode.declareAsVariable(true, "thenResult", context.scope)
+		val thenAsVarCode = thenArgCode.declareAsVariable(true, "thenArg", context.scope)
 		if (expr.function.parameters.size == 0) {
 			context.scope.createKeySynonym(expr.function.implicitVarInContext, thenArgCode)
 		} else {

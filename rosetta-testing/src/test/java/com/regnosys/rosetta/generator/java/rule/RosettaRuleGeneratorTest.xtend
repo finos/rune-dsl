@@ -778,9 +778,9 @@ class RosettaRuleGeneratorTest {
 					}
 					
 					protected String assignOutput(String output, Foo input) {
-						final MapperS<Bar> thenResult = MapperS.of(input)
+						final MapperS<Bar> thenArg = MapperS.of(input)
 							.mapSingleToItem(item -> item.<Bar>map("getBar", foo -> foo.getBar()));
-						output = thenResult
+						output = thenArg
 							.mapSingleToItem(item -> item.<String>map("getBaz", bar -> bar.getBaz())).get();
 						
 						return output;
@@ -855,8 +855,8 @@ class RosettaRuleGeneratorTest {
 				}
 				
 				protected String assignOutput(String output, Foo input) {
-					final MapperS<Bar> thenResult = MapperS.of(rule2Rule.evaluate(input));
-					output = thenResult
+					final MapperS<Bar> thenArg = MapperS.of(rule2Rule.evaluate(input));
+					output = thenArg
 						.mapSingleToItem(item -> item.<String>map("getVal", bar -> bar.getVal())).get();
 					
 					return output;
