@@ -308,16 +308,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val StringConcatenationClient right = receiverType.buildMapFunc(attr, isDeepFeature, scope)
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
 		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, attr.EObject, scope)
-		
-//		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !attr.isMulti) {
-//			MAPPER_S as JavaGenericTypeDeclaration<?>
-//		} else {
-//			MAPPER_C as JavaGenericTypeDeclaration<?>
-//		}
-//		val resultType = resultWrapper.wrap(resultItemType)
-//		return mapperReceiverCode
-//			.collapseToSingleExpression(scope)
-//			.mapExpression[JavaExpression.from('''«it»«right»''', resultType)]
 	}
 	
 	private def JavaStatementBuilder featureCall(JavaStatementBuilder mapperReceiverCode, JavaClass<?> resultItemType, StringConcatenationClient right, JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaFeature feature, JavaScope scope) {
