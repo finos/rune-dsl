@@ -387,10 +387,9 @@ class TypeCoercionService {
 	}
 	
 	/*
-	 * 1. Check if the expected type is a FieldWithMeta or ReferencWithMeta
-	 * 2. Call itemToItem() on the actual type and the getValue() from the expected
-	 * 3. Depending on the expected meta type create expression with a ReferenceWithMetaXXXX or FieldWithMetaXXX setting its value 
-	 * to the previous expression
+	 * 1. Get the item conversion expression lambda for the given expression
+	 * 2. If the lambda exists then run it and wrap the response in RJavaWithMetaValue builder
+	 * 3. If no lambda exists wrap the given expression in RJavaWithMetaValue builder
 	 */
 	private def JavaStatementBuilder itemToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) { 
 		val expectedValueType = expected.valueType
