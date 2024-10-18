@@ -44,6 +44,40 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
+	def void testCanPassMetaFromOutputOfFunctionCall() {
+		val code = '''
+		func A:
+			inputs:
+				myInput string (1..1)
+					[metadata scheme]		
+		  	output:
+		    	result string (1..1)
+		      		[metadata scheme]
+		     set result: myInput
+		
+		func B:
+			inputs:
+				myInput string (1..1)
+					[metadata scheme]
+		  	output:
+		    	result string (1..1)
+		  	set result:
+		    	A(myInput) -> scheme
+		'''.generateCode
+		
+		code.compileToClasses
+ 		val classes = code.compileToClasses
+		
+		val funcB = classes.createFunc("B")
+		
+		val myInput = classes.createFieldWithMetaString("myValue", "myScheme")
+		
+		val result = funcB.invokeFunc(String, myInput)
+		
+		assertEquals("myScheme", result)
+	}
+	
+	@Test
 	def void testIngoreMetaOnSwitchInputs() {
  		val code = '''			
 			func Test:
