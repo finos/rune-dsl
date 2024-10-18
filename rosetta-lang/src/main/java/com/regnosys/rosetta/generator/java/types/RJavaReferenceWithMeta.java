@@ -10,7 +10,6 @@ import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeDeclaration;
-import com.rosetta.util.types.RJavaWithMetaValue;
 
 public class RJavaReferenceWithMeta extends RJavaWithMetaValue {
 	private final DottedPath namespace;

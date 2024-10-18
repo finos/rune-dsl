@@ -1,6 +1,8 @@
-package com.rosetta.util.types;
+package com.regnosys.rosetta.generator.java.types;
 
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.util.types.JavaClass;
+import com.rosetta.util.types.JavaReferenceType;
 
 public abstract class RJavaWithMetaValue extends JavaClass<RosettaModelObject>{
 	protected final JavaReferenceType valueType;

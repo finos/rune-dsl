@@ -139,7 +139,7 @@ import org.eclipse.xtext.xbase.lib.Functions.Function3
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
-import com.rosetta.util.types.RJavaWithMetaValue
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	

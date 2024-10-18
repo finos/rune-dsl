@@ -45,7 +45,6 @@ import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeArgument;
 import com.rosetta.util.types.JavaWildcardTypeArgument;
-import com.rosetta.util.types.RJavaWithMetaValue;
 
 public class JavaTypeUtil {
 	@Inject

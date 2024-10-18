@@ -22,7 +22,7 @@ import java.util.stream.Collectors
 import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
-import com.rosetta.util.types.RJavaWithMetaValue
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 
 /**
