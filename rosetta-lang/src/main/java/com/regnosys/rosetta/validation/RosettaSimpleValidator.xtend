@@ -301,7 +301,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  				}
  			}
 			if (!missingOptions.empty) {
-				error('''Missing the following cases: «missingOptions.map[it.RType.name].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
+				error('''Missing the following cases: «missingOptions.map[it.toString].join(", ")». Either provide all or add a default.''', op, ROSETTA_OPERATION__OPERATOR)
 			}
 		}
 	}
