@@ -44,7 +44,58 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
-	def void testMetaOnChoiceTypes() {
+	def void testIngoreMetaOnSwitchInputs() {
+ 		val code = '''			
+			func Test:
+				inputs:
+					myInput string (1..1)
+						[metadata scheme]
+				output:
+					result int (1..1)
+			
+				set result: myInput switch 
+					"a" then 1,
+					"b" then 2,
+					default 3
+ 		'''.generateCode
+ 		
+ 		val classes = code.compileToClasses
+
+        val test = classes.createFunc("Test")
+		
+		val myInput = classes.createFieldWithMetaString("b", "myScheme")
+		
+		assertEquals(2, test.invokeFunc(Integer, myInput))
+	}	
+	
+	@Test
+	def void testIngoreMetaOnSwitchBasicTypeInputs() {
+ 		val code = '''			
+			func Test:
+				inputs:
+					myInput string (1..1)
+						[metadata scheme]
+				output:
+					result int (1..1)
+			
+				set result: myInput switch 
+					"a" then 1,
+					"b" then 2,
+					default 3
+ 		'''.generateCode
+ 		
+ 		val classes = code.compileToClasses
+
+        val test = classes.createFunc("Test")
+		
+		val myInput = classes.createFieldWithMetaString("b", "myScheme")
+		
+		assertEquals(2, test.invokeFunc(Integer, myInput))
+	}
+	
+	
+	@Test
+	def void testIgnoreMetaOnChoiceTypes() {
 		val code = '''
 			type Foo:
 			  a string (1..1)

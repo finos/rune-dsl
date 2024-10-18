@@ -1224,10 +1224,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
-		val inputMetaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr.argument)
-		val inputRType =inputMetaAnnotatedType.RType
+		val inputRType =  typeProvider.getRMetaAnnotatedType(expr.argument).RType
 		if (inputRType instanceof RChoiceType) {
-			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputMetaAnnotatedType.toJavaReferenceType), context.scope)
+			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputRType.toJavaReferenceType), context.scope)
 			
 			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
 				val choiceOption = new RChoiceOption(switchCase.guard.choiceOptionGuard, inputRType, typeProvider)
@@ -1262,7 +1261,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 				)
 			], context)
 		} else if (inputRType instanceof RBasicType) {
-			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputMetaAnnotatedType.toJavaReferenceType), context.scope)
+			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputRType.toJavaReferenceType), context.scope)
 			val mapperSConditionType = MAPPER_S.wrap(switchArgument.expressionType.itemType)
 			
 			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
