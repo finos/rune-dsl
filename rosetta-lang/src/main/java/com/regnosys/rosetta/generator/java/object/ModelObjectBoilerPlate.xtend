@@ -72,8 +72,9 @@ class ModelObjectBoilerPlate {
 
 	private def StringConcatenationClient contributeHashCode(RAttribute attr, JavaScope scope) {
 		val id = scope.getIdentifierOrThrow(attr)
+		val rMetaAnnotatedType = attr.RMetaAnnotatedType
 		'''
-			«IF attr.RMetaAnnotatedType.RType instanceof REnumType»
+			«IF !rMetaAnnotatedType.hasMeta && rMetaAnnotatedType.RType instanceof REnumType»
 				«IF attr.isMulti»
 					_result = 31 * _result + («id» != null ? «id».stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
 				«ELSE»
