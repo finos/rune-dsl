@@ -97,7 +97,7 @@ public class TypeSystem {
     	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
     }
     
-    public RMetaAnnotatedType join(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+    public RMetaAnnotatedType joinMetaAnnotatedTypes(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
 		Objects.requireNonNull(t1);
 		Objects.requireNonNull(t2);
 		

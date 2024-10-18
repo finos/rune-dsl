@@ -318,7 +318,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		if (elseT.RType instanceof RErrorType) {
 			return NOTHING.withEmptyMeta
 		}
-		val joined = join(ifT, elseT)
+		val joined = joinMetaAnnotatedTypes(ifT, elseT)
 		if (joined == ANY) {
 			new RErrorType('''Types `«ifT»` and `«elseT»` do not have a common supertype.''').withEmptyMeta
 		} else {
