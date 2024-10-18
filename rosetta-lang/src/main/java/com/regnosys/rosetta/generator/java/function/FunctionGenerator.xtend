@@ -1,12 +1,19 @@
 package com.regnosys.rosetta.generator.java.function
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.google.inject.ImplementedBy
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import com.regnosys.rosetta.generator.java.statement.JavaStatement
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -34,41 +41,34 @@ import com.regnosys.rosetta.types.ROperationType
 import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.utils.ExpressionHelper
+import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.utils.ModelIdProvider
+import com.rosetta.model.lib.ModelSymbolId
 import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
 import com.rosetta.model.lib.functions.RosettaFunction
 import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaGenericTypeDeclaration
+import com.rosetta.util.types.JavaParameterizedType
 import com.rosetta.util.types.JavaPrimitiveType
+import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaType
+import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.ArrayList
+import java.util.Collections
 import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
+import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
+
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
-import com.regnosys.rosetta.utils.ImplicitVariableUtil
-import com.rosetta.util.types.JavaParameterizedType
-import javax.inject.Inject
-import com.rosetta.model.lib.ModelSymbolId
-import com.rosetta.util.types.JavaReferenceType
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
-import com.regnosys.rosetta.generator.java.statement.JavaStatement
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.rosetta.util.types.generated.GeneratedJavaClass
-import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
-import java.util.Collections
-import com.fasterxml.jackson.core.type.TypeReference
-import com.rosetta.util.types.JavaGenericTypeDeclaration
-import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
-import com.regnosys.rosetta.utils.ModelIdProvider
-import com.regnosys.rosetta.RosettaEcoreUtil
 
 class FunctionGenerator {
 
@@ -76,7 +76,7 @@ class FunctionGenerator {
 	@Inject JavaDependencyProvider dependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
-	@Inject extension RosettaEcoreUtil
+	
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality
@@ -118,7 +118,7 @@ class FunctionGenerator {
 	}
 	
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
-		val parameterVariable = inputs.head.RMetaAnnotatedType.RType.toListOrSingleJavaType(inputs.head.multi)
+		val parameterVariable = inputs.head.RMetaAnnotatedType.toListOrSingleJavaType(inputs.head.multi)
 		JavaParameterizedType.from(new TypeReference<IQualifyFunctionExtension<?>>() {}, parameterVariable)
 	}
 
