@@ -858,7 +858,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				if (callable instanceof Attribute) {
 					if (callable.isOutput) {
 						val implicitType = element.typeOfImplicitVariable
-						val implicitFeatures = implicitType.RType.allFeatures(callable)
+						val implicitFeatures = implicitType.allFeatures(callable)
 						if (implicitFeatures.exists[name == callable.name]) {
 							error(
 								'''Ambiguous reference. `«callable.name»` may either refer to `«defaultImplicitVariable.name» -> «callable.name»` or to the output variable.''',
