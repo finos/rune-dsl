@@ -263,7 +263,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		// - all guards should be choice option guards,
 		// - all cases should be reachable,
 		// - all choice options should be covered.
-		val Map<ChoiceOption, RType> includedOptions = newHashMap
+		val Map<ChoiceOption, RMetaAnnotatedType> includedOptions = newHashMap
 		for (caseStatement : op.cases) {
  			if (caseStatement.guard.choiceOptionGuard === null) {
  				error('''Case should match a choice option of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
@@ -273,10 +273,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  				if (alreadyCovered !== null) {
  					error('''Case already covered by «alreadyCovered»''', caseStatement, SWITCH_CASE__GUARD)
  				} else {
- 					val guardType = guard.RTypeOfSymbol.RType
+ 					val guardType = guard.RTypeOfSymbol
  					includedOptions.put(guard, guardType)
- 					if (guardType instanceof RChoiceType) {
- 						guardType.allOptions.forEach[includedOptions.put(it.EObject, guardType)]
+ 					val valueType = guardType.RType
+ 					if (valueType instanceof RChoiceType) {
+ 						valueType.allOptions.forEach[includedOptions.put(it.EObject, guardType)]
  					}
  				}
  			}
@@ -285,15 +286,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  			val missingOptions = Lists.newArrayList(argumentType.ownOptions.map[type])
  			for (guard : includedOptions.values.toSet) {
  				for (var i=0; i<missingOptions.size; i++) {
- 					val opt = missingOptions.get(i).RType
+ 					val opt = missingOptions.get(i)
+ 					val optValueType = opt.RType
  					if (opt.isSubtypeOf(guard, false)) {
  						missingOptions.remove(i)
  						i--
- 					} else if (opt instanceof RChoiceType) {
+ 					} else if (optValueType instanceof RChoiceType) {
  						if (guard.isSubtypeOf(opt, false)) {
  							missingOptions.remove(i)
  							i--
- 							missingOptions.addAll(opt.ownOptions.map[type])
+ 							missingOptions.addAll(optValueType.ownOptions.map[type])
  						}
  					}
  				}
