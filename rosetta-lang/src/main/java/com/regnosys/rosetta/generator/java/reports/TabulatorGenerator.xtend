@@ -229,12 +229,11 @@ class TabulatorGenerator {
 			if (functionOutputType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
-				val type = functionOutputType as RDataType
-				val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
+				val classBody = functionOutputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 				
-				recursivelyGenerateTabulators(fsa, type, context, newHashSet)
+				recursivelyGenerateTabulators(fsa, functionOutputType, context, newHashSet)
 			}
 		}
 	}
