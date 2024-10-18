@@ -315,12 +315,27 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return type.map(t -> toJavaType(t)).orElse(typeUtil.OBJECT);
 	}
 	
+	public JavaClass<?> toPolymorphicListOrSingleJavaType(RMetaAnnotatedType type, boolean isMany) {
+		if (isMany) {
+			return toPolymorphicList(toJavaReferenceType(type));
+		} else
+			return toJavaReferenceType(type);
+	}
+	
 	public JavaClass<?> toPolymorphicListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
 			return toPolymorphicList(toJavaReferenceType(type));
 		} else
 			return toJavaReferenceType(type);
 	}
+	
+	public JavaClass<?> toListOrSingleJavaType(RMetaAnnotatedType type, boolean isMany) {
+		if (isMany) {
+			return typeUtil.wrap(typeUtil.LIST, toJavaReferenceType(type));
+		} else
+			return toJavaReferenceType(type);
+	}
+	
 	public JavaClass<?> toListOrSingleJavaType(RType type, boolean isMany) {
 		if (isMany) {
 			return typeUtil.wrap(typeUtil.LIST, toJavaReferenceType(type));
