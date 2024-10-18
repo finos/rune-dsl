@@ -138,6 +138,8 @@ import org.eclipse.xtext.xbase.lib.Functions.Function3
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.rosetta.util.types.RJavaWithMetaValue
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -489,10 +491,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				argumentTypeToReturnType.apply(argCode.expressionType)
 			)]
 	}
+	
 
-	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, boolean autoUnwrapMeta, JavaScope scope) {
 		if (op.function === null) {
-			buildListOperationNoBody(op, name, expectedArgumentType, [argumentAndBodyTypeToReturnType.apply(it, null)], scope)
+			if (autoUnwrapMeta && expectedArgumentType.itemType instanceof RJavaFieldWithMeta) {
+				buildUnwrappingListOperation(op, name, expectedArgumentType, expectedArgumentType.itemType as RJavaFieldWithMeta, expectedBodyType, argumentAndBodyTypeToReturnType, scope)
+			} else {
+				buildListOperationNoBody(op, name, expectedArgumentType, [argumentAndBodyTypeToReturnType.apply(it, null)], scope)
+			}
 		} else {
 			buildSingleItemListOperation(op, name, expectedArgumentType, expectedBodyType, argumentAndBodyTypeToReturnType, scope)
 		}
@@ -512,6 +519,22 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				argumentAndBodyTypeToReturnType.apply(argCode.expressionType, inlineFunctionBodyType)
 			)]
 	}
+	
+	
+	private def JavaStatementBuilder buildUnwrappingListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, RJavaWithMetaValue expectedItemType,  JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+		val argCode = op.argument.javaCode(expectedArgumentType, scope)
+			.collapseToSingleExpression(scope)
+		val lambdaPara = new JavaVariable(scope.createUniqueIdentifier("lambdaParam"), MAPPER_S.wrap(expectedItemType))
+		val unwrapCoerceon = typeCoercionService.addCoercions(lambdaPara, MAPPER_S.wrap(expectedItemType.valueType), scope)
+		
+		argCode
+			.mapExpression[JavaExpression.from(
+				'''
+				«it»
+					.«name»(«lambdaPara» -> «unwrapCoerceon.toLambdaBody»)''',
+				argumentAndBodyTypeToReturnType.apply(argCode.expressionType, expectedItemType.valueType)
+			)]
+	}	
 
 	private def StringConcatenationClient buildMapFuncAttribute(RMetaAnnotatedType itemType, RAttribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
@@ -825,7 +848,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					)]
 			} else {
 				// Case MapperS to MapperS
-				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", MAPPER_S.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b], context.scope)
+				buildSingleItemListOperation(expr, "mapSingleToItem", MAPPER_S.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b], context.scope)
 			}
 		} else {
 			if (expr.argument.isOutputListOfLists) {
@@ -872,7 +895,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						)]
 				} else {
 					// MapperC to MapperC
-					buildSingleItemListOperationOptionalBody(expr, "mapItem", MAPPER_C.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b.hasWildcardArgument ? MAPPER_C.wrapExtends(bodyItemType) : MAPPER_C.wrap(bodyItemType)], context.scope)
+					buildSingleItemListOperation(expr, "mapItem", MAPPER_C.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b.hasWildcardArgument ? MAPPER_C.wrapExtends(bodyItemType) : MAPPER_C.wrap(bodyItemType)], context.scope)
 				}
 			}
 		}
@@ -880,12 +903,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseMaxOperation(MaxOperation expr, Context context) {
 		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "max", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
+		buildSingleItemListOperationOptionalBody(expr, "max", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], true, context.scope)
 	}
 
 	override protected caseMinOperation(MinOperation expr, Context context) {
 		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "min", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
+		buildSingleItemListOperationOptionalBody(expr, "min", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], true, context.scope)
 	}
 
 	override protected caseMultiplyOperation(ArithmeticOperation expr, Context context) {
@@ -974,7 +997,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseSortOperation(SortOperation expr, Context context) {
 		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "sort", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|a], context.scope)
+		buildSingleItemListOperationOptionalBody(expr, "sort", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|a], true, context.scope)
 	}
 
 	override protected caseStringLiteral(RosettaStringLiteral expr, Context context) {
