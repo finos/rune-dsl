@@ -16,6 +16,7 @@ import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
 
@@ -64,10 +65,10 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 	@Check
 	public void checkChoiceOptionsDoNotOverlap(Choice choice) {
 		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
-		Map<RType, RChoiceOption> includedOptions = new HashMap<>();
+		Map<RMetaAnnotatedType, RChoiceOption> includedOptions = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
-			if (opt.getType() instanceof RChoiceType) {
-				((RChoiceType) opt.getType()).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
+			if (opt.getType().getRType() instanceof RChoiceType) {
+				((RChoiceType) opt.getType().getRType()).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
 			}
 		}
 		for (RChoiceOption opt: t.getOwnOptions()) {

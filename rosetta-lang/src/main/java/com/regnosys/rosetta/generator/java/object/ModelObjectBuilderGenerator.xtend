@@ -131,7 +131,7 @@ class ModelObjectBuilderGenerator {
 						}
 						else {
 							result = «scope.getIdentifierOrThrow(attribute)» = «attribute.toMetaItemJavaType».builder();
-							«IF !attribute.metaAnnotations.filter[m|m.name=="location"].isEmpty»
+							«IF !attribute.RMetaAnnotatedType.metaAttributes.filter[m|m.name=="location"].isEmpty»
 								result.getOrCreateMeta().toBuilder().addKey(«Key».builder().setScope("DOCUMENT"));
 							«ENDIF»
 						}
@@ -148,7 +148,7 @@ class ModelObjectBuilderGenerator {
 						«attribute.toBuilderTypeSingle» result;
 						return getIndex(«scope.getIdentifierOrThrow(attribute)», _index, () -> {
 									«attribute.toBuilderTypeSingle» new«attribute.name.toFirstUpper» = «attribute.toMetaItemJavaType».builder();
-									«IF !attribute.metaAnnotations.filter[m|m.name=="location"].isEmpty»
+									«IF !attribute.RMetaAnnotatedType.metaAttributes.filter[m|m.name=="location"].isEmpty»
 										new«attribute.name.toFirstUpper».getOrCreateMeta().addKey(«Key».builder().setScope("DOCUMENT"));
 									«ENDIF»
 									return new«attribute.name.toFirstUpper»;
@@ -183,7 +183,7 @@ class ModelObjectBuilderGenerator {
 				getIndex(this.«scope.getIdentifierOrThrow(attribute)», _idx, () -> «attribute.toBuilder(scope)»);
 				return this;
 			}
-			«IF !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RMetaAnnotatedType.hasMeta»
 			
 			@Override
 			public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toItemJavaType» «scope.getIdentifierOrThrow(attribute)») {
@@ -220,7 +220,7 @@ class ModelObjectBuilderGenerator {
 				}
 				return this;
 			}
-			«IF !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RMetaAnnotatedType.hasMeta»
 				
 				@Override
 				public «thisName» add«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
@@ -249,7 +249,7 @@ class ModelObjectBuilderGenerator {
 				this.«scope.getIdentifierOrThrow(attribute)» = «scope.getIdentifierOrThrow(attribute)»==null?null:«attribute.toBuilder(scope)»;
 				return this;
 			}
-			«IF !attribute.metaAnnotations.isEmpty»
+			«IF attribute.RMetaAnnotatedType.hasMeta»
 				@Override
 				public «thisName» set«attribute.name.toFirstUpper»Value(«attribute.toJavaType» «scope.getIdentifierOrThrow(attribute)») {
 					this.getOrCreate«attribute.name.toFirstUpper»().setValue(«scope.getIdentifierOrThrow(attribute)»);
@@ -293,7 +293,7 @@ class ModelObjectBuilderGenerator {
 	}
 
 	def StringConcatenationClient toBuilderTypeSingle(RAttribute attribute) {
-		if (!attribute.metaAnnotations.isEmpty) {
+		if (attribute.RMetaAnnotatedType.hasMeta) {
 			'''«attribute.toMetaItemJavaType.toBuilderType»'''
 		} else {
 			'''«attribute.toBuilderTypeUnderlying»'''
@@ -301,7 +301,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	private def StringConcatenationClient toBuilderTypeUnderlying(RAttribute attribute) {
-		if (attribute.isRosettaModelObject) '''«attribute.RType.name».«attribute.RType.name»Builder'''
+		if (attribute.isRosettaModelObject) '''«attribute.RMetaAnnotatedType.RType.name».«attribute.RMetaAnnotatedType.RType.name»Builder'''
 		else '''«attribute.toMetaItemJavaType»'''
 	}
 	

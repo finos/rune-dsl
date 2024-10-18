@@ -97,6 +97,11 @@ class CodeGeneratorTestHelper {
 		val code = generateCode(model)
 		code.inMemoryCompileToClasses(this.class.classLoader);
 	}
+	
+	def createEnumInstance(Map<String, Class<?>> classes, String className, String enumValue) {
+        val myEnumClass = classes.get(rootPackage + '.' + className) as Class<? extends Enum>
+		Enum.valueOf(myEnumClass, enumValue) as Enum<?>
+	}
 
 	def createInstanceUsingBuilder(Map<String, Class<?>> classes, String className, Map<String, Object> itemsToSet) {
 		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet)

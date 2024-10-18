@@ -45,11 +45,6 @@ public class RAliasType extends RParametrizedType {
 	public RType getRefersTo() {
 		return refersTo;
 	}
-
-	@Override
-	public boolean hasMeta() {
-	    return refersTo.hasMeta();
-	}
 	
 	@Override
 	public boolean hasNaturalOrder() {

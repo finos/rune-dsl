@@ -17,7 +17,6 @@
 package com.regnosys.rosetta.utils;
 
 import com.regnosys.rosetta.types.RAliasType;
-import com.regnosys.rosetta.types.RAnnotateType;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
@@ -46,8 +45,12 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 	}
 	
 	protected Return doSwitch(RType type, Context context) {
-		if (type instanceof RAnnotateType) {
-			return doSwitch((RAnnotateType)type, context);
+		if (type instanceof RDataType) {
+			return caseDataType((RDataType)type, context);
+		} else if (type instanceof RChoiceType) {
+			return caseChoiceType((RChoiceType)type, context);
+		} else if (type instanceof REnumType) {
+			return caseEnumType((REnumType)type, context);
 		} else if (type instanceof RErrorType) {
 			return caseErrorType((RErrorType)type, context);
 		} else if (type instanceof RParametrizedType) {
@@ -57,16 +60,7 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 		}
 		throw errorMissedCase(type);
 	}
-	protected Return doSwitch(RAnnotateType type, Context context) {
-		if (type instanceof RDataType) {
-			return caseDataType((RDataType)type, context);
-		} else if (type instanceof RChoiceType) {
-			return caseChoiceType((RChoiceType)type, context);
-		} else if (type instanceof REnumType) {
-			return caseEnumType((REnumType)type, context);
-		}
-		throw errorMissedCase(type);
-	}
+
 	protected Return doSwitch(RParametrizedType type, Context context) {
 		if (type instanceof RAliasType) {
 			return caseAliasType((RAliasType)type, context);

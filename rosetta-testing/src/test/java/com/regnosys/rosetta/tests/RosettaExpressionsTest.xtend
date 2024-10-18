@@ -159,7 +159,7 @@ class RosettaExpressionsTest {
 
 		code.compileToClasses
 	}
-	
+
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMetaSimple() {
 		val code = '''
@@ -176,7 +176,7 @@ class RosettaExpressionsTest {
 		'''.generateCode
 		code.compileToClasses
 	}
-	
+
 	@Test
 	def void shoudCodeGenerateAndCompileAccessingMeta() {
 		val code = '''

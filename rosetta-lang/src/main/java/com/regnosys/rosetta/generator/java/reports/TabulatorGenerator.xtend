@@ -73,10 +73,11 @@ class TabulatorGenerator {
 			isTabulated(attr, newHashSet)
 		}
 		private def boolean isTabulated(RAttribute attr, Set<Data> visited) {
-			val attrType = if (attr.RType instanceof RChoiceType) {
-				(attr.RType as RChoiceType).asRDataType
+			val rawAttrType = attr.RMetaAnnotatedType.RType
+			val attrType = if (rawAttrType instanceof RChoiceType) {
+				rawAttrType.asRDataType
 			} else {
-				attr.RType
+				rawAttrType
 			}
 			if (attrType instanceof RDataType) {
 				needsTabulator(attrType, visited)
@@ -219,7 +220,7 @@ class TabulatorGenerator {
 			val tabulatorClass = func.toApplicableTabulatorClass
 			val topScope = new JavaScope(tabulatorClass.packageName)
 
-			val t = typeProvider.getRTypeOfSymbol(func.output)
+			val t = typeProvider.getRTypeOfSymbol(func.output).RType
 			val functionOutputType = if (t instanceof RChoiceType) {
 				t.asRDataType
 			} else {
@@ -228,12 +229,11 @@ class TabulatorGenerator {
 			if (functionOutputType instanceof RDataType) {
 				val context = createFunctionTabulatorContext(typeTranslator, func)
 				
-				val type = functionOutputType
-				val classBody = type.mainTabulatorClassBody(context, topScope, tabulatorClass)
+				val classBody = functionOutputType.mainTabulatorClassBody(context, topScope, tabulatorClass)
 				val content = buildClass(tabulatorClass.packageName, classBody, topScope)
 				fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 				
-				recursivelyGenerateTabulators(fsa, type, context, newHashSet)
+				recursivelyGenerateTabulators(fsa, functionOutputType, context, newHashSet)
 			}
 		}
 	}
@@ -249,6 +249,7 @@ class TabulatorGenerator {
 		
 			type
 				.allNonOverridenAttributes
+				.map[RMetaAnnotatedType]
 				.map[RType]
 				.map[it instanceof RChoiceType ? asRDataType : it]
 				.filter(RDataType)
@@ -418,6 +419,7 @@ class TabulatorGenerator {
 	private def Set<NestedTabulatorInstance> findNestedTabulatorsAndCreateIdentifiers(RDataType type, TabulatorContext context, JavaScope scope) {
 		val result = type.allNonOverridenAttributes
 			.filter[context.isTabulated(it)]
+			.map[RMetaAnnotatedType]
 			.map[RType]
 			.map[it instanceof RChoiceType ? asRDataType : it]
 			.filter(RDataType)
@@ -438,10 +440,11 @@ class TabulatorGenerator {
 	}
 
 	private def StringConcatenationClient fieldValue(RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
-		val rType = if (attr.RType instanceof RChoiceType) {
-			(attr.RType as RChoiceType).asRDataType
+		val rawAttr = attr.RMetaAnnotatedType.RType
+		val rType = if (rawAttr instanceof RChoiceType) {
+			rawAttr.asRDataType
 		} else {
-			attr.RType
+			rawAttr
 		}
 			
 		val resultId = scope.createIdentifier(attr.toComputedField, attr.name)
@@ -458,7 +461,7 @@ class TabulatorGenerator {
 			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
 				«IF attr.isMulti»
 				.map(«lambdaParam» -> «lambdaParam».stream()
-					«IF !attr.metaAnnotations.empty»
+					«IF attr.RMetaAnnotatedType.hasMeta»
 						.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 						.filter(«Objects»::nonNull)
 					«ENDIF»
@@ -467,14 +470,14 @@ class TabulatorGenerator {
 				.map(fieldValues -> new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(fieldValues)))
 				.orElse(new «MultiNestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ELSE»
-				«IF !attr.metaAnnotations.empty».map(«lambdaParam» -> «lambdaParam».getValue())«ENDIF»
+				«IF attr.RMetaAnnotatedType.hasMeta».map(«lambdaParam» -> «lambdaParam».getValue())«ENDIF»
 				.map(«lambdaParam» -> new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.of(«nestedTabulator».tabulate(«lambdaParam»))))
 				.orElse(new «NestedFieldValueImpl»(«scope.getIdentifierOrThrow(attr)», Optional.empty()));
 				«ENDIF»
 			'''
 		} else {
 			'''
-			«IF attr.metaAnnotations.empty»
+			«IF !attr.RMetaAnnotatedType.hasMeta»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»()));
 			«ELSEIF attr.isMulti»
 			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())

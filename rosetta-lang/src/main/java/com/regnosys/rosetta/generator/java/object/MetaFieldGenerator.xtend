@@ -16,6 +16,10 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RMetaAnnotatedType
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.rosetta.model.lib.meta.FieldWithMeta
@@ -23,7 +27,6 @@ import com.rosetta.model.lib.meta.GlobalKeyFields
 import com.rosetta.model.lib.meta.MetaDataFields
 import com.rosetta.model.lib.meta.ReferenceWithMeta
 import com.rosetta.model.lib.meta.TemplateFields
-import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaParameterizedType
 import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.ArrayList
@@ -34,10 +37,10 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-
-import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.utils.PositiveIntegerInterval
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 import com.regnosys.rosetta.types.RType
 
 class MetaFieldGenerator {
@@ -71,34 +74,26 @@ class MetaFieldGenerator {
 //			}
 //		}
 		
-		val modelClasses = model.elements.filter [
-			it instanceof Data
-		]
-		if (modelClasses.empty) {
-			return
-		}
 		
 		//find all the reference types
-		val namespaceClasses = Multimaps.index(modelClasses, [c|c.model]).asMap
-		for (nsc : namespaceClasses.entrySet) {
+		if (ctx.cancelIndicator.canceled) {
+				return
+		}
+		for (attr : model.eAllOfType(Attribute).map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]) {
+			val targetModel = attr.RMetaAnnotatedType.RType.namespace
+			val targetPackage = new RootPackage(targetModel)
+			val metaJt = attr.toForcedMetaItemJavaType
+
 			if (ctx.cancelIndicator.canceled) {
 				return
 			}
-			val attributesWithMeta = nsc.value.filter(Data).flatMap[buildRDataType.ownAttributes].filter[!metaAnnotations.empty]
 			
-			for (attr : attributesWithMeta) {
-				val targetModel = attr.RType.namespace
-				val targetPackage = new RootPackage(targetModel)
-				val metaJt = attr.toForcedMetaItemJavaType
-
-				if (ctx.cancelIndicator.canceled) {
-					return
-				}
-				if (attr.hasReferenceOrAddressMetadata) {
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RType))
-				} else {
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RType))
-				}
+			if (metaJt instanceof RJavaReferenceWithMeta) {
+				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType.RType))
+			} else if (metaJt instanceof RJavaFieldWithMeta) {
+				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType.RType))
+			} else {
+				throw new UnsupportedOperationException("Invalid JavaType: " + metaJt)
 			}
 		}
 	}
@@ -201,9 +196,9 @@ class MetaFieldGenerator {
 		buildClass(packages.basicMetafields, body, scope)
 	}
 
-	def CharSequence fieldWithMeta(RootPackage root, JavaClass<?> metaJavaType, RType valueType) {
+	private def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RType valueType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType, emptyList, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, valueType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
@@ -260,9 +255,9 @@ class MetaFieldGenerator {
 		 #[globalRefAttribute, externalRefAttribute, refAttribute]
 	}
 	
-	def referenceWithMeta(RootPackage root, JavaClass<?> metaJavaType, RType valueType) {
+	private def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RType valueType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType, emptyList, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, valueType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 			
 		val Data d = SimpleFactory.eINSTANCE.createData;

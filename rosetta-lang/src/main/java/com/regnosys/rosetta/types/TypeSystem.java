@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -78,7 +79,7 @@ public class TypeSystem {
                     RType inputType = typeCallToRType(rule.getInput());
                     result = meet(result, inputType);
                 } else {
-                    RType attrType = stripFromTypeAliases(attr.getRType());
+                    RType attrType = stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
                     if (attrType instanceof RChoiceType) {
                     	attrType = ((RChoiceType) attrType).asRDataType();
                     }
@@ -94,6 +95,28 @@ public class TypeSystem {
 	}
     private RType getRulesInputTypeFromCache(RDataType data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
     	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
+    }
+    
+    public RMetaAnnotatedType joinMetaAnnotatedTypes(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+		Objects.requireNonNull(t1);
+		Objects.requireNonNull(t2);
+		
+		return subtypeRelation.join(t1, t2);
+    }
+    
+    public RMetaAnnotatedType joinMetaAnnotatedTypes(Iterable<RMetaAnnotatedType> types) {
+		Objects.requireNonNull(types);
+		Validate.noNullElements(types);
+		
+		RMetaAnnotatedType any = new RMetaAnnotatedType(builtins.ANY, List.of());
+		RMetaAnnotatedType acc = new RMetaAnnotatedType(builtins.NOTHING, List.of());
+		for (RMetaAnnotatedType t: types) {
+			acc = subtypeRelation.join(acc, t);
+			if (acc.equals(any)) {
+				return acc;
+			}
+		}
+		return acc;
     }
 
 	public RType join(RType t1, RType t2) {
@@ -145,6 +168,16 @@ public class TypeSystem {
 			}
 		}
 		return acc;
+	}
+	
+	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup) {
+		return isSubtypeOf(sub, sup, true);
+	}
+	public boolean isSubtypeOf(RMetaAnnotatedType sub, RMetaAnnotatedType sup, boolean treatChoiceTypeAsData) {
+		Objects.requireNonNull(sub);
+		Objects.requireNonNull(sup);
+		
+		return subtypeRelation.isSubtypeOf(sub, sup, treatChoiceTypeAsData);
 	}
 	
 	public boolean isSubtypeOf(RType sub, RType sup) {
