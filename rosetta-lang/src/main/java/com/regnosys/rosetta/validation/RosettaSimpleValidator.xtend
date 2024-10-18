@@ -124,6 +124,7 @@ import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.google.common.collect.Lists
 import com.regnosys.rosetta.types.RMetaAnnotatedType
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -146,6 +147,26 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
 	@Inject extension RosettaInterpreter
+	
+	@Check
+	def void checkOnlyExistsNotUsedOnMeta(RosettaOnlyExistsExpression op) {
+		val message = "Invalid use of `only exists` on meta feature"
+		
+		op.args
+			.filter(RosettaFeatureCall)
+			.filter[it.feature instanceof RosettaMetaType]
+			.forEach[
+				error('''«message» «it.feature.name»''', it, ROSETTA_FEATURE_CALL__FEATURE)
+			]
+			
+		op.args
+			.filter(RosettaSymbolReference)
+			.filter[it.symbol instanceof RosettaMetaType]
+			.forEach[
+				error('''«message» «it.symbol.name»''', it, ROSETTA_SYMBOL_REFERENCE__SYMBOL)
+			]
+			
+	}
 	
 	@Check
 	def void deprecatedWarning(EObject object) {

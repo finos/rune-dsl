@@ -32,6 +32,58 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testOnlyExistsOnMetaIsNotValidOnSymbolReferences() {
+		val model = '''
+			type Foo:
+			  	a int (0..1)
+			  	b int (0..1)
+			  	c int (0..1)
+			  
+			type Bar:
+			  	b int (1..1)
+			
+			func MyFunc:
+				inputs:
+			    	foosWithMeta Foo (1..*)
+			      		[metadata scheme]
+			  	output:
+			    	result Foo (1..*)
+			  	add result:
+			    	foosWithMeta filter (b, scheme) only exists
+		'''.parseRosetta
+				
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+			"Invalid use of `only exists` on meta feature scheme"
+		)
+	}	
+	
+	@Test
+	def void testOnlyExistsOnMetaIsNotValidOnFeatureCalls() {
+		val model = '''
+			type Foo:
+			  	a int (0..1)
+			  	b int (0..1)
+			  	c int (0..1)
+			  
+			type Bar:
+			  	b int (1..1)
+			
+			func MyFunc:
+				inputs:
+			    	foo Foo (1..1)
+			      		[metadata scheme]
+			  	output:
+			    	result boolean (1..1)
+			  	set result:
+			    	(foo -> b, foo -> scheme) only exists
+		'''.parseRosetta
+				
+		model.assertError(ROSETTA_FEATURE_CALL, null,
+			"Invalid use of `only exists` on meta feature scheme"
+		)
+	}
+	
+	@Test
 	def void testSwitchOnChoiceCannotHaveLiteralGuard() {
  		val model = '''
 			choice Foo:
