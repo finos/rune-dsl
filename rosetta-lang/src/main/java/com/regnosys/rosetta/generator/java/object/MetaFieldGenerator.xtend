@@ -79,21 +79,21 @@ class MetaFieldGenerator {
 				return
 		}
 		for (attr : model.eAllOfType(Attribute).map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]) {
-				val targetModel = attr.RMetaAnnotatedType.RType.namespace
-				val targetPackage = new RootPackage(targetModel)
-				val metaJt = attr.toForcedMetaItemJavaType
+			val targetModel = attr.RMetaAnnotatedType.RType.namespace
+			val targetPackage = new RootPackage(targetModel)
+			val metaJt = attr.toForcedMetaItemJavaType
 
-				if (ctx.cancelIndicator.canceled) {
-					return
-				}
+			if (ctx.cancelIndicator.canceled) {
+				return
+			}
 			
-				if (metaJt instanceof RJavaReferenceWithMeta) {
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
-				} else if (metaJt instanceof RJavaFieldWithMeta) {
-					fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
-				} else {
-					throw new UnsupportedOperationException("Invalid JavaType: " + metaJt)
-				}
+			if (metaJt instanceof RJavaReferenceWithMeta) {
+				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', referenceWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
+			} else if (metaJt instanceof RJavaFieldWithMeta) {
+				fsa.generateFile('''«metaJt.canonicalName.withForwardSlashes».java''', fieldWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType))
+			} else {
+				throw new UnsupportedOperationException("Invalid JavaType: " + metaJt)
+			}
 		}
 	}
 	
