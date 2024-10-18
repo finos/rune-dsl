@@ -49,7 +49,7 @@ class FunctionGeneratorTest {
 		func A:
 			inputs:
 				myInput string (1..1)
-					[metadata scheme]		
+					[metadata scheme]
 		  	output:
 		    	result string (1..1)
 		      		[metadata scheme]
