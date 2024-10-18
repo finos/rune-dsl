@@ -117,6 +117,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 import org.eclipse.emf.ecore.impl.EClassImpl
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
@@ -620,10 +621,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkConditionalExpression(RosettaConditionalExpression expr) {
-		checkType(BOOLEAN, expr.^if, expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, INSIGNIFICANT_INDEX)
+		checkType(BOOLEAN.withEmptyMeta, expr.^if, expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, INSIGNIFICANT_INDEX)
 	}
 
-	private def checkType(RType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
+	private def checkType(RMetaAnnotatedType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
 		val actualMetaType = expression.RMetaAnnotatedType
 		val actualType = actualMetaType?.RType
 		if (actualType === null) {
@@ -631,11 +632,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 		if (actualType instanceof RErrorType)
 			error('''«actualType.name»''', owner, ref, index, TYPE_ERROR)
-		else if (expectedType instanceof RErrorType)
-			error('''«expectedType.name»''', owner, ref, index, TYPE_ERROR)
+		else if (expectedType.RType instanceof RErrorType)
+			error('''«expectedType.RType.name»''', owner, ref, index, TYPE_ERROR)
 		else if (expectedType !== null && expectedType != MISSING) {
-			if (!actualType.isSubtypeOf(expectedType))
-				error('''Expected type '«expectedType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
+			if (!actualMetaType.isSubtypeOf(expectedType))
+				error('''Expected type '«expectedType.RType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
 					index, TYPE_ERROR)
 		}
 	}
@@ -825,7 +826,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.inputs.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							
+							checkType(param.getRTypeOfSymbol, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
 							if(!param.card.isMany && cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
@@ -833,7 +835,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						]
 					} else if (callable instanceof RosettaRule) {
 						if (callable.input !== null) {
-							checkType(callable.input.typeCallToRType, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
+							checkType(callable.input.typeCallToRType.withEmptyMeta, element.args.head, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
 							if (cardinality.isMulti(element.args.head)) {
 								error('''Expecting single cardinality for input to rule.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0)
@@ -844,7 +846,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 							val callerArg = indexed.value
 							val callerIdx = indexed.key
 							val param = callable.parameters.get(callerIdx)
-							checkType(param.typeCall.typeCallToRType, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
+							checkType(param.typeCall.typeCallToRType.withEmptyMeta, callerArg, element, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
 							if(cardinality.isMulti(callerArg)) {
 								error('''Expecting single cardinality for parameter '«param.name»'.''', element,
 									ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, callerIdx)
@@ -1162,7 +1164,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				if (!seenFeatures.add(feature)) {
 					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
 				}
-				checkType(feature.getRTypeOfFeature(null).RType, expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+				checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
 				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
 					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
 						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
@@ -1648,7 +1650,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		val attr = o.path !== null
 				? o.pathAsSegmentList.last.attribute
 				: o.assignRoot
-		checkType(attr.RTypeOfSymbol.RType, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
+		checkType(attr.RTypeOfSymbol, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
 		val isList = cardinality.isSymbolMulti(attr)
 		if (o.add && !isList) {
 			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
