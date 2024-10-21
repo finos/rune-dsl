@@ -110,7 +110,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	
 	@Override
 	protected RosettaValue caseListLiteral(ListLiteral expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		List<?> results = expr.getElements().stream()
 				.flatMap(elem -> interpret(elem, context).getItems().stream())
 				.collect(Collectors.toList());
@@ -185,7 +185,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 
 	@Override
 	protected RosettaValue caseAddOperation(ArithmeticOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		if (typeSystem.isSubtypeOf(type, builtins.UNCONSTRAINED_NUMBER)) {
 			RosettaNumber left = interpret(expr.getLeft(), context).getSingleOrThrow(RosettaNumber.class);
 			RosettaNumber right = interpret(expr.getRight(), context).getSingleOrThrow(RosettaNumber.class);
@@ -206,8 +206,8 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	
 	@Override
 	protected RosettaValue caseSubtractOperation(ArithmeticOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
-		RType leftType = typeProvider.getRType(expr.getLeft());
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
+		RType leftType = typeProvider.getRMetaAnnotatedType(expr.getLeft()).getRType();
 		if (typeSystem.isSubtypeOf(leftType, builtins.UNCONSTRAINED_NUMBER)) {
 			RosettaNumber left = interpret(expr.getLeft(), context).getSingleOrThrow(RosettaNumber.class);
 			RosettaNumber right = interpret(expr.getRight(), context).getSingleOrThrow(RosettaNumber.class);
@@ -223,7 +223,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	
 	@Override
 	protected RosettaValue caseMultiplyOperation(ArithmeticOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		RosettaNumber left = interpret(expr.getLeft(), context).getSingleOrThrow(RosettaNumber.class);
 		RosettaNumber right = interpret(expr.getRight(), context).getSingleOrThrow(RosettaNumber.class);
 		RosettaNumber result = left.multiply(right);
@@ -232,7 +232,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	
 	@Override
 	protected RosettaValue caseDivideOperation(ArithmeticOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		RosettaNumber left = interpret(expr.getLeft(), context).getSingleOrThrow(RosettaNumber.class);
 		RosettaNumber right = interpret(expr.getRight(), context).getSingleOrThrow(RosettaNumber.class);
 		RosettaNumber result = left.divide(right);
@@ -404,7 +404,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 
 	@Override
 	protected RosettaValue caseCountOperation(RosettaCountOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		RosettaValue arg = interpret(expr.getArgument(), context);
 		RosettaNumber result = RosettaNumber.valueOf(arg.size());
 		return valueFactory.createOfType(type, result);
@@ -438,7 +438,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 
 	@Override
 	protected RosettaValue caseFirstOperation(FirstOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		RosettaValue arg = interpret(expr.getArgument(), context);
 		if (arg.size() == 0) {
 			return RosettaValue.empty();
@@ -455,7 +455,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 
 	@Override
 	protected RosettaValue caseLastOperation(LastOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		RosettaValue arg = interpret(expr.getArgument(), context);
 		if (arg.size() == 0) {
 			return RosettaValue.empty();
@@ -482,7 +482,7 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 
 	@Override
 	protected RosettaValue caseSumOperation(SumOperation expr, RosettaInterpreterContext context) {
-		RType type = typeProvider.getRType(expr);
+		RType type = typeProvider.getRMetaAnnotatedType(expr).getRType();
 		List<RosettaNumber> arg = interpret(expr.getArgument(), context).getItems(RosettaNumber.class);
 		RosettaNumber result = arg.stream().reduce(RosettaNumber.ZERO, RosettaNumber::add);
 		return valueFactory.createOfType(type, result);

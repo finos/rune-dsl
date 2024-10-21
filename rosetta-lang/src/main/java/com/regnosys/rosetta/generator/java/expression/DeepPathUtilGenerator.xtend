@@ -24,6 +24,7 @@ import java.util.HashSet
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 
 class DeepPathUtilGenerator {
 	@Inject extension ImportManagerExtension
@@ -54,7 +55,7 @@ class DeepPathUtilGenerator {
 		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
 		val recursiveDeepFeaturesMap = choiceType.allNonOverridenAttributes.toMap([it], [
-			val attrType = it.RType
+			val attrType = it.RMetaAnnotatedType.RType
 			deepFeatures.toMap([it], [
 				var t = attrType
 				if (t instanceof RChoiceType) {
@@ -98,13 +99,12 @@ class DeepPathUtilGenerator {
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
-		val deepFeatureHasMeta = !deepFeature.metaAnnotations.empty
 		val attrs = choiceType.allNonOverridenAttributes.toList
 		var JavaStatementBuilder acc = JavaExpression.NULL
 		for (a : attrs.reverseView) {
 			val currAcc = acc
 			acc = inputParameter
-					.featureCall(choiceType, a, false, scope, true)
+					.attributeCall(choiceType.withEmptyMeta, a, false, scope)
 					.declareAsVariable(true, a.name.toFirstLower, scope)
 					.mapExpression[attrVar|
 						attrVar.exists(ExistsModifier.NONE, scope)
@@ -114,7 +114,8 @@ class DeepPathUtilGenerator {
 								val deepFeatureExpr = if (deepFeature.match(a)) {
 									attrVar
 								} else {
-									var attrType = a.RType
+									val metaRType = a.RMetaAnnotatedType
+									var attrType = metaRType.RType
 									if (attrType instanceof RChoiceType) {
 										attrType = attrType.asRDataType
 									}
@@ -124,7 +125,7 @@ class DeepPathUtilGenerator {
 									} else {
 										(attrType as RDataType).allNonOverridenAttributes.findFirst[name.equals(deepFeature.name)]
 									}
-									attrVar.featureCall(attrType, actualFeature, needsToGoDownDeeper, scope, !deepFeatureHasMeta)
+									attrVar.attributeCall(metaRType, actualFeature, needsToGoDownDeeper, scope)
 								}
 								new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)
 							]

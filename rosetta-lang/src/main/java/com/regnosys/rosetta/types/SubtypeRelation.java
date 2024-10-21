@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +9,7 @@ import java.util.Stack;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
@@ -33,7 +35,17 @@ public class SubtypeRelation {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
+	public boolean isSubtypeOf(RMetaAnnotatedType t1, RMetaAnnotatedType t2, boolean treatChoiceTypesAsDataTypes) {
+		if (t1.equals(t2)) {
+			return true;
+		}
+		return isSubtypeOf(t1.getRType(), t2.getRType(), treatChoiceTypesAsDataTypes);
+	}
+	
 	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes) {
+		if (t1.equals(t2)) {
+			return true;
+		}
 		return isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, null);
 	}
 	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, Stack<RType> visited) {
@@ -57,11 +69,11 @@ public class SubtypeRelation {
 		} else if (t1 instanceof RChoiceType) {
 			RType t1_ = t1;
 			RType t2_ = t2;
-			return ((RChoiceType)t1).getOwnOptions().stream().allMatch(t -> safeIsSubtypeOf(t.getType(), t2_, false, t1_, visited));
+			return ((RChoiceType)t1).getOwnOptions().stream().allMatch(t -> safeIsSubtypeOf(t.getType().getRType(), t2_, false, t1_, visited));
 		} else if (t2 instanceof RChoiceType) {
 			RType t1_ = t1;
 			RType t2_ = t2;
-			return ((RChoiceType)t2).getOwnOptions().stream().anyMatch(t -> safeIsSubtypeOf(t1_, t.getType(), false, t2_, visited));
+			return ((RChoiceType)t2).getOwnOptions().stream().anyMatch(t -> safeIsSubtypeOf(t1_, t.getType().getRType(), false, t2_, visited));
 		} else if (t1 instanceof RDataType) {
 			RType st = ((RDataType)t1).getSuperType();
 			if (st == null) {
@@ -87,6 +99,15 @@ public class SubtypeRelation {
 		boolean result = isSubtypeOf(t1, t2, treatChoiceTypesAsDataTypes, visited);
 		visited.pop();
 		return result;
+	}
+	
+	public RMetaAnnotatedType join(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+		RType t1RType = t1.getRType();
+		RType t2RType = t2.getRType();
+		if (t1RType.equals(t2RType)) {
+			return new RMetaAnnotatedType(t1RType, intersectMeta(t1, t2));
+		}
+		return new RMetaAnnotatedType(join(t1RType, t2RType), List.of());
 	}
 	
 	public RType join(RType t1, RType t2) {
@@ -189,4 +210,12 @@ public class SubtypeRelation {
 		}
 		return join(curr1, curr2);
 	}
+	
+	private List<RMetaAttribute> intersectMeta(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+		return Sets
+				.intersection(new HashSet<>(t1.getMetaAttributes()), new HashSet<>(t2.getMetaAttributes()))
+				.immutableCopy()
+				.asList();
+	}
+	
 }

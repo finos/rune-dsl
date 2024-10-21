@@ -31,7 +31,7 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
 
-public class RDataType extends RAnnotateType implements RObject {
+public class RDataType extends RType implements RObject {
 	private final Data data;
 	
 	private RDataType superType = null;

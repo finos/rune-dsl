@@ -29,12 +29,15 @@ import javax.inject.Inject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
+import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.MapperListOfLists;
 import com.rosetta.model.lib.mapper.MapperS;
+import com.rosetta.model.lib.meta.FieldWithMeta;
+import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaGenericTypeDeclaration;
 import com.rosetta.util.types.JavaParameterizedType;
@@ -63,11 +66,14 @@ public class JavaTypeUtil {
 	public final JavaClass<com.rosetta.model.lib.records.Date> DATE = JavaClass.from(com.rosetta.model.lib.records.Date.class);
 	public final JavaClass<LocalDateTime> LOCAL_DATE_TIME = JavaClass.from(LocalDateTime.class);
 	public final JavaClass<ZonedDateTime> ZONED_DATE_TIME = JavaClass.from(ZonedDateTime.class);
+	public final JavaClass<GlobalKey> GLOBAL_KEY = JavaClass.from(GlobalKey.class);
 	
 	public final JavaClass<Object> OBJECT = JavaClass.OBJECT;
 	public final JavaClass<Cloneable> CLONEABLE = JavaClass.CLONEABLE;
 	public final JavaClass<Serializable> SERIALIZABLE = JavaClass.SERIALIZABLE;
 	
+	public final JavaGenericTypeDeclaration<FieldWithMeta<?>> FIELD_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<ReferenceWithMeta<?>> REFERENCE_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});	
 	public final JavaGenericTypeDeclaration<List<?>> LIST = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<Mapper<?>> MAPPER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<MapperS<?>> MAPPER_S = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
@@ -84,17 +90,27 @@ public class JavaTypeUtil {
 		return wrap(wrapperType, JavaType.from(itemType));
 	}
 	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
-		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
+		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item)));
 	}
-	
+	public <T> JavaParameterizedType<T> wrapExtendsWithoutMeta(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
+		if (itemType instanceof RJavaWithMetaValue) {
+			RJavaWithMetaValue metaItemType = (RJavaWithMetaValue) itemType;
+			return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(metaItemType.getValueType()));
+		}
+		return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
+	}
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
 	}
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, Class<?> itemType) {
 		return wrapExtends(wrapperType, JavaType.from(itemType));
 	}
+	public <T> JavaParameterizedType<T> wrapExtendsWithoutMeta(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
+		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item).getRType()));
+	}
+	
 	public <T> JavaParameterizedType<T> wrapExtends(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
-		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
+		return wrapExtends(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item)));
 	}
 	
 	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
@@ -114,7 +130,7 @@ public class JavaTypeUtil {
 		return wrapExtendsIfNotFinal(wrapperType, JavaType.from(itemType));
 	}
 	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, RosettaExpression item) {
-		return wrapExtendsIfNotFinal(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRType(item)));
+		return wrapExtendsIfNotFinal(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item)));
 	}
 	
 	public boolean hasWildcardArgument(JavaType t) {
@@ -146,7 +162,6 @@ public class JavaTypeUtil {
 		}
 		return newItemType;
 	}
-	
 	public boolean extendsNumber(JavaType t) {
 		return t.isSubtypeOf(NUMBER);
 	}

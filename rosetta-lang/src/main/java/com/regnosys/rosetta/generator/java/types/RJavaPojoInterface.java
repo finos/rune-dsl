@@ -47,6 +47,7 @@ public class RJavaPojoInterface extends JavaClass<RosettaModelObject> {
 
 	@Override
 	public boolean isSubtypeOf(JavaType other) {
+		//TODO: is this first check needed?
 		if (other instanceof JavaPrimitiveType) {
 			return false;
 		}

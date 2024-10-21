@@ -1,6 +1,13 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RDataType
+import com.regnosys.rosetta.types.REnumType
+import com.regnosys.rosetta.types.TypeSystem
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder
 import com.rosetta.model.lib.RosettaModelObject
@@ -11,19 +18,10 @@ import com.rosetta.model.lib.process.AttributeMeta
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
-import java.util.Objects
-import org.eclipse.xtend2.lib.StringConcatenationClient
-
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import javax.inject.Inject
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.types.TypeSystem
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.RosettaEcoreUtil
 import java.util.List
-import com.regnosys.rosetta.types.RChoiceType
+import java.util.Objects
+import javax.inject.Inject
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ModelObjectBoilerPlate {
 
@@ -74,8 +72,9 @@ class ModelObjectBoilerPlate {
 
 	private def StringConcatenationClient contributeHashCode(RAttribute attr, JavaScope scope) {
 		val id = scope.getIdentifierOrThrow(attr)
+		val rMetaAnnotatedType = attr.RMetaAnnotatedType
 		'''
-			«IF attr.RType instanceof REnumType»
+			«IF !rMetaAnnotatedType.hasMeta && rMetaAnnotatedType.RType instanceof REnumType»
 				«IF attr.isMulti»
 					_result = 31 * _result + («id» != null ? «id».stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
 				«ELSE»

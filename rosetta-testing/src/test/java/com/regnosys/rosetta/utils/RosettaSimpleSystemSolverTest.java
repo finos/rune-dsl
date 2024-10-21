@@ -86,8 +86,8 @@ public class RosettaSimpleSystemSolverTest {
 	
 	@Test
 	public void testSimpleSystem() {
-		Attribute x = parser.createAttribute("x int (1..1)");
-		Attribute y = parser.createAttribute("y int (1..1)");
+		Attribute x = parser.parseAttribute("x int (1..1)");
+		Attribute y = parser.parseAttribute("y int (1..1)");
 		List<Equation> system = parse("x", "42", "-1", "y", "10", "10", x, y);
 		SolutionSet set = solve(system, x, y).orElseThrow();
 		assertSolution(Map.of(x, helper.toValue(42), y, helper.toValue(-1)), set);
@@ -95,9 +95,9 @@ public class RosettaSimpleSystemSolverTest {
 	
 	@Test
 	public void testSimpleSystemWithVariable() {
-		Attribute x = parser.createAttribute("x int (1..1)");
-		Attribute y = parser.createAttribute("y int (1..1)");
-		Attribute a = parser.createAttribute("a int (1..1)");
+		Attribute x = parser.parseAttribute("x int (1..1)");
+		Attribute y = parser.parseAttribute("y int (1..1)");
+		Attribute a = parser.parseAttribute("a int (1..1)");
 		List<Equation> system = parse("x", "a", "a", "y", "x", "29", x, y, a);
 		SolutionSet set = solve(system, x, y).orElseThrow();
 		assertSolution(Map.of(x, helper.toValue(29), y, helper.toValue(29)), set, Map.of(a, helper.toValue(29)));
@@ -105,15 +105,15 @@ public class RosettaSimpleSystemSolverTest {
 	
 	@Test
 	public void testNotSimpleSystem() {
-		Attribute x = parser.createAttribute("x int (1..1)");
+		Attribute x = parser.parseAttribute("x int (1..1)");
 		Equation system = parse("x", "42 + 1", x);
 		assertTrue(solve(system, x).isEmpty());
 	}
 	
 	@Test
 	public void testUnsolvableSystem() {
-		Attribute x = parser.createAttribute("x int (1..1)");
-		Attribute a = parser.createAttribute("a int (1..1)");
+		Attribute x = parser.parseAttribute("x int (1..1)");
+		Attribute a = parser.parseAttribute("a int (1..1)");
 		List<Equation> system = parse("x", "a", "a", "0", x, a);
 		SolutionSet set = solve(system, x).orElseThrow();
 		assertTrue(set.getSolution(RosettaInterpreterContext.ofSymbolMap(Map.of(a, helper.toValue(1)))).isEmpty());
@@ -121,8 +121,8 @@ public class RosettaSimpleSystemSolverTest {
 	
 	@Test
 	public void testUnderdeterminedSystem() {
-		Attribute x = parser.createAttribute("x int (1..1)");
-		Attribute y = parser.createAttribute("y int (1..1)");
+		Attribute x = parser.parseAttribute("x int (1..1)");
+		Attribute y = parser.parseAttribute("y int (1..1)");
 		List<Equation> system = parse("x", "42", "10", "10", x, y);
 		assertTrue(solve(system, x, y).isEmpty());
 	}

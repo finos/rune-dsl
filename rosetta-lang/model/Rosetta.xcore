@@ -126,7 +126,7 @@ class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, Ro
 }
 
 
-class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType {
+class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType, RosettaSymbol {
 	
 }
 

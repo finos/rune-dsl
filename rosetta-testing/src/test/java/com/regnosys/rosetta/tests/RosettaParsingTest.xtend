@@ -35,6 +35,21 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void canPassMetadataToFunctions() {
+		'''
+			func MyFunc:
+			    inputs:
+			        myInput string (1..1)
+			        [metadata scheme]
+			    output:
+			        myResult string (1..1)
+			
+			    set myResult: myInput -> scheme
+		'''.parseRosettaWithNoIssues
+	}
+	
+	
+	@Test
 	def void testPropagationForScopingForImplicitEnumType() {
 		val model = '''
 		enum FooEnum:

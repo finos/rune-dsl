@@ -221,6 +221,7 @@ auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
 
 auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 	val t = call.type
+	
 	switch t {
 		Choice: t.buildRChoiceType
 		Data: t.buildRDataType

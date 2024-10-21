@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.expression
 import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
@@ -71,6 +72,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SortOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchCase
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
@@ -82,20 +84,24 @@ import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RChoiceOption
+import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RFunction
+import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
+import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
@@ -107,6 +113,7 @@ import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.records.Date
 import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod
+import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaType
@@ -127,19 +134,12 @@ import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.xbase.lib.Functions.Function3
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
-import com.regnosys.rosetta.types.RChoiceType
-import com.regnosys.rosetta.types.builtin.RBasicType
-import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
-import java.util.function.BiFunction
-import com.regnosys.rosetta.generator.java.statement.JavaAssignment
-import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption
-import com.regnosys.rosetta.types.RChoiceOption
-import org.eclipse.xtext.xbase.lib.Functions.Function2
-import org.eclipse.xtext.xbase.lib.Functions.Function3
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -210,11 +210,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				} else {
 					// First evaluate all arguments
 					var JavaStatementBuilder argCode
-					val argRTypes = arguments.map[typeProvider.getRType(it)]
+					val argRTypes = arguments.map[typeProvider.getRMetaAnnotatedType(it)]
 					if (argRTypes.forall[isSubtypeOf(returnRType)]) {
 						// TODO: this is a hack
 						// Generic return type for number type e.g. Min(1,2) or Max(2,6)
-						val argAndReturnType = argRTypes.join.toJavaReferenceType
+						val argAndReturnType = argRTypes.joinMetaAnnotatedTypes.toJavaReferenceType
 						argCode = arguments.head.javaCode(argAndReturnType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
@@ -226,10 +226,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						argCode
 							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', argAndReturnType)]
 					} else {
-						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.toJavaReferenceType, scope)
+						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.withEmptyMeta.toJavaReferenceType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
-								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.toJavaReferenceType, scope),
+								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.withEmptyMeta.toJavaReferenceType, scope),
 								[argList, newArg|JavaExpression.from('''«argList», «newArg»''', null)],
 								scope
 							)
@@ -289,39 +289,31 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val itemType = expectedType.itemType
 		return JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)
 	}
-	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RosettaFeature feature, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
-		if (feature instanceof Attribute) {
-			return featureCall(receiverCode, receiverType, feature.buildRAttribute, isDeepFeature, scope, autoValue)
-		}
+	
+	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, JavaScope scope) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
-		val StringConcatenationClient right = switch (feature) {
-			RosettaMetaType: 
-				feature.buildMapFunc(scope)
-			RosettaRecordFeature:
-				'''.<«resultItemType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType as RRecordType, feature, scope)»)'''
-			default:
-				throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
-		}
+		val StringConcatenationClient right = feature.buildMapFunc(scope)
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
-		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !cardinalityProvider.isFeatureMulti(feature)) {
-			MAPPER_S as JavaGenericTypeDeclaration<?>
-		} else {
-			MAPPER_C as JavaGenericTypeDeclaration<?>
-		}
-		val resultType = resultWrapper.wrap(resultItemType)
-		return mapperReceiverCode
-			.collapseToSingleExpression(scope)
-			.mapExpression[JavaExpression.from('''«it»«right»''', resultType)]
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, feature, scope)
 	}
-	def JavaStatementBuilder featureCall(JavaStatementBuilder receiverCode, RType receiverType, RAttribute attr, boolean isDeepFeature, JavaScope scope, boolean autoValue) {
-		val resultItemType = if (!autoValue) {
-			attr.toMetaItemJavaType
-		} else {
-			attr.toItemJavaType
-		}
-		val StringConcatenationClient right = receiverType.buildMapFunc(attr, isDeepFeature, autoValue, scope)
-		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
-		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !attr.isMulti) {
+	
+	def JavaStatementBuilder recordCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaRecordFeature feature, JavaScope scope) {
+		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
+		val StringConcatenationClient right = '''.<«resultItemType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType.RType as RRecordType, feature, scope)»)'''
+		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, feature, scope)
+	}
+	
+	def JavaStatementBuilder attributeCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RAttribute attr, boolean isDeepFeature, JavaScope scope) {
+		val resultItemType = attr.toMetaItemJavaType
+		
+		val StringConcatenationClient right = receiverType.buildMapFunc(attr, isDeepFeature, scope)
+		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, attr.EObject, scope)
+	}
+	
+	private def JavaStatementBuilder featureCall(JavaStatementBuilder mapperReceiverCode, JavaClass<?> resultItemType, StringConcatenationClient right, JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaFeature feature, JavaScope scope) {
+		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !cardinalityProvider.isFeatureMulti(feature)) {
 			MAPPER_S as JavaGenericTypeDeclaration<?>
 		} else {
 			MAPPER_C as JavaGenericTypeDeclaration<?>
@@ -335,10 +327,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def binaryExpr(RosettaBinaryOperation expr, Context context) {
 		val left = expr.left
 		val right = expr.right
-		val leftRtype = typeProvider.getRType(expr.left)
-		val rightRtype = typeProvider.getRType(expr.right)
+		val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
+		val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
 		val joined = leftRtype.join(rightRtype).toJavaReferenceType
-		val resultType = operators.resultType(expr.operator, leftRtype, rightRtype).toJavaReferenceType
+		val resultType = operators.resultType(expr.operator, leftRtype, rightRtype).withEmptyMeta.toJavaReferenceType
 		val leftType = leftRtype.toJavaReferenceType
 		val rightType = rightRtype.toJavaReferenceType
 
@@ -437,20 +429,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	/**
 	 * Builds the expression of mapping functions to extract a path of attributes
 	 */
-	private def StringConcatenationClient buildMapFunc(RType itemType, RAttribute attribute, boolean isDeepFeature, boolean autoValue, JavaScope scope) {
+	private def StringConcatenationClient buildMapFunc(RMetaAnnotatedType itemType, RAttribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val mapFunc = itemType.buildMapFuncAttribute(attribute, isDeepFeature, scope)
 		val resultType = attribute.toMetaItemJavaType
 		if (attribute.isMulti) {
-			if (attribute.metaAnnotations.nullOrEmpty || !autoValue)
-				'''.<«resultType»>mapC(«mapFunc»)'''
-			else {
-				'''.<«resultType»>mapC(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
-			}
+			'''.<«resultType»>mapC(«mapFunc»)'''
 		} else {
-			if (attribute.metaAnnotations.nullOrEmpty || !autoValue) {
-				'''.<«resultType»>map(«mapFunc»)'''
-			} else
-				'''.<«resultType»>map(«mapFunc»).<«attribute.toItemJavaType»>map("getValue", _f->_f.getValue())'''
+			'''.<«resultType»>map(«mapFunc»)'''
 		}
 	}
 
@@ -489,8 +474,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	private def buildConstraint(RosettaExpression arg, Collection<RAttribute> usedAttributes,
 		Necessity validationType, Context context) {
-		val argItemType = typeProvider.getRType(arg).toJavaReferenceType
-		arg.javaCode(MAPPER.wrapExtends(argItemType), context.scope)
+		val argItemType = typeProvider.getRMetaAnnotatedType(arg).RType.toJavaReferenceType
+		arg.javaCode(MAPPER.wrapExtendsWithoutMeta(argItemType), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('choice')»(«it», «Arrays».asList(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)''', COMPARISON_RESULT)]
 	}
@@ -506,10 +491,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				argumentTypeToReturnType.apply(argCode.expressionType)
 			)]
 	}
+	
 
-	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, boolean autoUnwrapMeta, JavaScope scope) {
 		if (op.function === null) {
-			buildListOperationNoBody(op, name, expectedArgumentType, [argumentAndBodyTypeToReturnType.apply(it, null)], scope)
+			if (autoUnwrapMeta && expectedArgumentType.itemType instanceof RJavaFieldWithMeta) {
+				buildUnwrappingListOperation(op, name, expectedArgumentType, expectedArgumentType.itemType as RJavaFieldWithMeta, expectedBodyType, argumentAndBodyTypeToReturnType, scope)
+			} else {
+				buildListOperationNoBody(op, name, expectedArgumentType, [argumentAndBodyTypeToReturnType.apply(it, null)], scope)
+			}
 		} else {
 			buildSingleItemListOperation(op, name, expectedArgumentType, expectedBodyType, argumentAndBodyTypeToReturnType, scope)
 		}
@@ -529,14 +519,31 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				argumentAndBodyTypeToReturnType.apply(argCode.expressionType, inlineFunctionBodyType)
 			)]
 	}
+	
+	
+	private def JavaStatementBuilder buildUnwrappingListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, RJavaWithMetaValue expectedItemType,  JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+		val argCode = op.argument.javaCode(expectedArgumentType, scope)
+			.collapseToSingleExpression(scope)
+		val lambdaPara = new JavaVariable(scope.createUniqueIdentifier("lambdaParam"), MAPPER_S.wrap(expectedItemType))
+		val unwrapCoerceon = typeCoercionService.addCoercions(lambdaPara, MAPPER_S.wrap(expectedItemType.valueType), scope)
+		
+		argCode
+			.mapExpression[JavaExpression.from(
+				'''
+				«it»
+					.«name»(«lambdaPara» -> «unwrapCoerceon.toLambdaBody»)''',
+				argumentAndBodyTypeToReturnType.apply(argCode.expressionType, expectedItemType.valueType)
+			)]
+	}	
 
-	private def StringConcatenationClient buildMapFuncAttribute(RType itemType, RAttribute attribute, boolean isDeepFeature, JavaScope scope) {
+	private def StringConcatenationClient buildMapFuncAttribute(RMetaAnnotatedType itemType, RAttribute attribute, boolean isDeepFeature, JavaScope scope) {
 		val lambdaScope = scope.lambdaScope
-		val lambdaParam = lambdaScope.createUniqueIdentifier(itemType.name.toFirstLower)
-		val t = if (itemType instanceof RChoiceType) {
-			itemType.asRDataType
+		val itemRType = itemType.RType
+		val lambdaParam = lambdaScope.createUniqueIdentifier(itemRType.name.toFirstLower)
+		val t = if (itemRType instanceof RChoiceType) {
+			itemRType.asRDataType
 		} else {
-			itemType
+			itemRType
 		}
 		if (isDeepFeature) {
 			'''"choose«attribute.name.toFirstUpper»", «lambdaParam» -> «scope.getIdentifierOrThrow((t as RDataType).toDeepPathUtilJavaClass.toDependencyInstance)».choose«attribute.name.toFirstUpper»(«lambdaParam»)'''
@@ -666,7 +673,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseDistinctOperation(DistinctOperation expr, Context context) {
-		val argItemType = typeProvider.getRType(expr.argument).toJavaReferenceType
+		val argItemType = typeProvider.getRMetaAnnotatedType(expr.argument).toJavaReferenceType
 		val argCode = expr.argument.javaCode(MAPPER.wrapExtends(argItemType), context.scope)
 		val argType = argCode.expressionType
 		argCode
@@ -698,24 +705,22 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseFeatureCall(RosettaFeatureCall expr, Context context) {
-		if (expr.feature instanceof RosettaEnumValue) {
-			return enumCall(expr.feature as RosettaEnumValue, context.expectedType)
+		val feature = expr.feature
+		if (feature instanceof RosettaEnumValue) {
+			return enumCall(feature, context.expectedType)
+		} else if (feature instanceof Attribute) {
+			return attributeCall(expr.receiver.javaCode(MAPPER.wrapExtendsWithoutMeta(expr.receiver), context.scope), typeProvider.getRMetaAnnotatedType(expr.receiver), feature.buildRAttribute, false, context.scope)
+		} else if (feature instanceof RosettaMetaType) {
+			return metaCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRMetaAnnotatedType(expr.receiver), feature, context.scope)
+		} else if (feature instanceof RosettaRecordFeature) {
+			return recordCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRMetaAnnotatedType(expr.receiver), feature, context.scope)
+		} else {
+			throw new UnsupportedOperationException("Unsupported feature type of " + feature?.class?.name)
 		}
-		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-		if (expr.eContainer instanceof RosettaFeatureCall &&
-			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-			autoValue = false;
-		}
-		return featureCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, false, context.scope, autoValue)
 	}
 	
 	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {
-		var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-		if (expr.eContainer instanceof RosettaFeatureCall &&
-			(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-			autoValue = false;
-		}
-		return featureCall(expr.receiver.javaCode(MAPPER.wrapExtends(expr.receiver), context.scope), typeProvider.getRType(expr.receiver), expr.feature, true, context.scope, autoValue)
+		return attributeCall(expr.receiver.javaCode(MAPPER.wrapExtendsWithoutMeta(expr.receiver), context.scope), typeProvider.getRMetaAnnotatedType(expr.receiver), expr.feature.buildRAttribute, true, context.scope)
 	}
 
 	override protected caseFilterOperation(FilterOperation expr, Context context) {
@@ -810,7 +815,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		if (expr.elements.empty) {
 			return JavaExpression.NULL
 		}
-		val itemType = typeProvider.getRType(expr).toJavaReferenceType
+		val itemType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
 		val elements = newArrayList
 		for (var i = 0; i < expr.elements.size; i++) {
 			val elem = expr.elements.get(i)
@@ -824,7 +829,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseMapOperation(MapOperation expr, Context context) {
-		val bodyItemType = typeProvider.getRType(expr.function.body).toJavaReferenceType
+		val bodyItemType = typeProvider.getRMetaAnnotatedType(expr.function.body).toJavaReferenceType
 		val isBodyMulti = expr.function.isBodyExpressionMulti
 
 		if (!expr.isPreviousOperationMulti) {
@@ -843,7 +848,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					)]
 			} else {
 				// Case MapperS to MapperS
-				buildSingleItemListOperationOptionalBody(expr, "mapSingleToItem", MAPPER_S.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b], context.scope)
+				buildSingleItemListOperation(expr, "mapSingleToItem", MAPPER_S.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b], context.scope)
 			}
 		} else {
 			if (expr.argument.isOutputListOfLists) {
@@ -890,20 +895,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						)]
 				} else {
 					// MapperC to MapperC
-					buildSingleItemListOperationOptionalBody(expr, "mapItem", MAPPER_C.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b.hasWildcardArgument ? MAPPER_C.wrapExtends(bodyItemType) : MAPPER_C.wrap(bodyItemType)], context.scope)
+					buildSingleItemListOperation(expr, "mapItem", MAPPER_C.wrapExtends(expr.argument), MAPPER_S.wrapExtends(bodyItemType), [a,b|b.hasWildcardArgument ? MAPPER_C.wrapExtends(bodyItemType) : MAPPER_C.wrap(bodyItemType)], context.scope)
 				}
 			}
 		}
 	}
 
 	override protected caseMaxOperation(MaxOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtends(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "max", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
+		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "max", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], true, context.scope)
 	}
 
 	override protected caseMinOperation(MinOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtends(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "min", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], context.scope)
+		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "min", MAPPER_C.wrapExtendsWithoutMeta(expr.argument), bodyType, [a,b|MAPPER_S.wrap(a.itemType)], true, context.scope)
 	}
 
 	override protected caseMultiplyOperation(ArithmeticOperation expr, Context context) {
@@ -919,7 +924,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseOneOfOperation(OneOfOperation expr, Context context) {
-		val type = typeProvider.getRType(expr.argument)
+		val type = typeProvider.getRMetaAnnotatedType(expr.argument).RType
 		val t = if (type instanceof RChoiceType) {
 			type.asRDataType
 		} else {
@@ -929,7 +934,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
-		val itemType = typeProvider.getRType(expr.argument).toJavaReferenceType
+		val itemType = typeProvider.getRMetaAnnotatedType(expr.argument).toJavaReferenceType
 		expr.argument.javaCode(itemType, context.scope)
 	}
 
@@ -937,7 +942,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val first = expr.args.head
 		var RDataType parentType
 		val parent = if (first instanceof RosettaFeatureCall) {
-			val t = typeProvider.getRType(first.receiver)
+			val t = typeProvider.getRMetaAnnotatedType(first.receiver).RType
 			parentType = if (t instanceof RChoiceType) {
 				t.asRDataType
 			} else {
@@ -945,7 +950,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			first.receiver.javaCode(MAPPER.wrapExtends(parentType.toJavaReferenceType), context.scope)
 		} else {
-			val t = typeProvider.typeOfImplicitVariable(expr)
+			val t = typeProvider.typeOfImplicitVariable(expr).RType
 			parentType = if (t instanceof RChoiceType) {
 				t.asRDataType
 			} else {
@@ -972,7 +977,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseReduceOperation(ReduceOperation expr, Context context) {
-		val outputType = typeProvider.getRType(expr.function.body).toJavaReferenceType
+		val outputType = typeProvider.getRMetaAnnotatedType(expr.function.body).toJavaReferenceType
 		val inlineFunctionCodeAndBodyType = expr.function.inlineFunction(MAPPER_S.wrapExtends(outputType), context.scope)
 		val StringConcatenationClient inlineFunctionCode = inlineFunctionCodeAndBodyType.key
 		val inlineFunctionBodyType = inlineFunctionCodeAndBodyType.value
@@ -991,8 +996,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSortOperation(SortOperation expr, Context context) {
-		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtends(expr.function.body)
-		buildSingleItemListOperationOptionalBody(expr, "sort", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|a], context.scope)
+		val bodyType = if (expr.function !== null) MAPPER_S.wrapExtendsWithoutMeta(expr.function.body)
+		buildSingleItemListOperationOptionalBody(expr, "sort", MAPPER_C.wrapExtends(expr.argument), bodyType, [a,b|a], true, context.scope)
 	}
 
 	override protected caseStringLiteral(RosettaStringLiteral expr, Context context) {
@@ -1004,8 +1009,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSumOperation(SumOperation expr, Context context) {
-		val itemType = typeProvider.getRType(expr.argument).toJavaReferenceType
-		buildListOperationNoBody(expr, "sum" + itemType.simpleName, MAPPER_C.wrapExtends(itemType), [MAPPER_S.wrap(itemType)], context.scope)
+		val itemType = typeProvider.getRMetaAnnotatedType(expr.argument).RType.toJavaReferenceType
+		buildListOperationNoBody(expr, "sum" + itemType.simpleName, MAPPER_C.wrapExtendsWithoutMeta(itemType), [MAPPER_S.wrap(itemType)], context.scope)
 	}
 
 	override protected caseSymbolReference(RosettaSymbolReference expr, Context context) {
@@ -1015,14 +1020,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val attribute = rObjectFactory.buildRAttribute(s)
 				// Data attributes can only be called if there is an implicit variable present.
 				val implicitType = typeProvider.typeOfImplicitVariable(expr)
-				val implicitFeatures = implicitType.allFeatures(expr)
+				val implicitFeatures = implicitType.RType.allFeatures(expr)
 				if (implicitFeatures.contains(s)) {
-					var autoValue = true // if the attribute being referenced is WithMeta and we aren't accessing the meta fields then access the value by default
-					if (expr.eContainer instanceof RosettaFeatureCall &&
-						(expr.eContainer as RosettaFeatureCall).feature instanceof RosettaMetaType) {
-						autoValue = false;
-					}
-					featureCall(implicitVariable(expr, context.scope), implicitType, s, false, context.scope, autoValue)
+					attributeCall(implicitVariable(expr, context.scope), implicitType, s.buildRAttribute, false, context.scope)
 				} else
 					new JavaVariable(context.scope.getIdentifierOrThrow(attribute), attribute.toMetaJavaType)
 			}
@@ -1047,6 +1047,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			RosettaCallableWithArgs: {
 				callableWithArgsCall(s, expr.args, context.scope)
+			}
+			RosettaMetaType: {
+				val implicitType = typeProvider.typeOfImplicitVariable(expr)
+				metaCall(implicitVariable(expr, context.scope), implicitType, s, context.scope)
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
@@ -1089,13 +1093,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseToStringOperation(ToStringOperation expr, Context context) {
-		val rType = typeProvider.getRType(expr.argument)
+		val rType = typeProvider.getRMetaAnnotatedType(expr.argument).RType
 		val StringConcatenationClient toStringMethod = if (rType.stripFromTypeAliases instanceof REnumType) {
 			'''«rType.toJavaReferenceType»::toDisplayString'''
 		} else {
 			'''«Object»::toString'''
 		}
-		expr.argument.javaCode(MAPPER_S.wrapExtends(expr.argument), context.scope)
+		expr.argument.javaCode(MAPPER_S.wrapExtendsWithoutMeta(expr.argument), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«it».map("«expr.operator»", «toStringMethod»)''', MAPPER_S.wrap(expr))]
 	}
@@ -1104,18 +1108,19 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val lambdaScope = context.scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier("s")
 		conversionOperation(expr,
-			context, '''«lambdaParam» -> «LocalTime».parse(s, «DateTimeFormatter».ISO_LOCAL_TIME)''',
+			context, '''«lambdaParam» -> «LocalTime».parse(«lambdaParam», «DateTimeFormatter».ISO_LOCAL_TIME)''',
 			DateTimeParseException)
 	}
 	
 	override protected caseConstructorExpression(RosettaConstructorExpression expr, Context context) {
-		val t = typeProvider.getRType(expr).stripFromTypeAliases
-		val type = if (t instanceof RChoiceType) {
-			t.asRDataType
+		val metaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr)
+		val rType = metaAnnotatedType.RType.stripFromTypeAliases
+		val type = if (rType instanceof RChoiceType) {
+			rType.asRDataType
 		} else {
-			t
+			rType
 		}
-		val clazz = type.toJavaReferenceType
+		val clazz = metaAnnotatedType.toJavaReferenceType
 		if (type instanceof RDataType) {
 			if (expr.values.empty) {
 				JavaExpression.from('''
@@ -1127,11 +1132,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				expr.values.map[pair|
 					val attr = pair.key as Attribute
 					val attrExpr = pair.value
-					val isReference = attr.isReference
+					val hasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasMeta
 					val assignAsKey = attrExpr instanceof AsKeyOperation
 					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
-						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF isReference && !assignAsKey»Value«ENDIF»(«it»)''', null)]
+						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF hasMeta && !assignAsKey»Value«ENDIF»(«it»)''', null)]
 				].reduce[acc,attrCode|
 					acc.then(attrCode, [allSetCode,setAttr|
 						JavaExpression.from(
@@ -1158,11 +1163,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	private def JavaStatementBuilder evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaScope scope) {
 		if (assignAsKey) {
-			val metaClass = (feature as Attribute).toMetaJavaType
+			val metaClass = (feature as Attribute).buildRAttribute.toMetaJavaType.itemType
 			if (isMulti) {
 				val lambdaScope = scope.lambdaScope
 				val item = lambdaScope.createUniqueIdentifier("item")
-				value.javaCode(MAPPER_C.wrapExtends(value), scope)
+				value.javaCode(MAPPER_C.wrapExtendsWithoutMeta(value), scope)
 					.collapseToSingleExpression(scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -1181,7 +1186,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				value.javaCode(typeProvider.getRType(value).toJavaReferenceType, scope)
+				value.javaCode(typeProvider.getRMetaAnnotatedType(value).RType.withEmptyMeta.toJavaReferenceType, scope)
 					.declareAsVariable(true, feature.name, scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -1201,7 +1206,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature, value).toJavaReferenceType
+			val clazz = typeProvider.getRTypeOfFeature(feature, value).RType.withEmptyMeta.toJavaReferenceType
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
@@ -1219,7 +1224,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
-		val inputRType = typeProvider.getRType(expr.argument)
+		val inputRType =  typeProvider.getRMetaAnnotatedType(expr.argument).RType
 		if (inputRType instanceof RChoiceType) {
 			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputRType.toJavaReferenceType), context.scope)
 			
@@ -1227,10 +1232,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val choiceOption = new RChoiceOption(switchCase.guard.choiceOptionGuard, inputRType, typeProvider)
 				val optionPath = findOptionPath(inputRType, choiceOption)
 				
-				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, choiceOption.type.name.toFirstLower)
-				val guardType = choiceOption.type.toJavaReferenceType
+				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, choiceOption.type.RType.name.toFirstLower)
 				val optionExpr = optionPath.fold(switchArg as JavaStatementBuilder, [pathAcc,opt|
-					pathAcc.featureCall(opt.choiceType, opt.EObject, false, context.scope, true)
+					pathAcc.attributeCall(opt.choiceType.withEmptyMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.scope)
 				])
 				optionExpr
 					.collapseToSingleExpression(context.scope)
@@ -1278,10 +1282,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		var currentOption = currentChoice.ownOptions.findFirst[goal.type.isSubtypeOf(it.type, false)]
  		result.add(currentOption)
  		while (currentOption != goal) {
- 			if (currentOption === null || !(currentOption.type instanceof RChoiceType)) {
+ 			if (currentOption === null || !(currentOption.type.RType instanceof RChoiceType)) {
 				throw new IllegalStateException("Did not find an option path from " + from + " to " + goal + ". " + currentOption)
 			}
- 			currentChoice = currentOption.type as RChoiceType
+ 			currentChoice = currentOption.type.RType as RChoiceType
  			currentOption = currentChoice.ownOptions.findFirst[goal.type.isSubtypeOf(it.type, false)]
  			result.add(currentOption)
  		}
