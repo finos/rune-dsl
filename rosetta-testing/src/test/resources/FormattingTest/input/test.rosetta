@@ -1,0 +1,7 @@
+namespace test
+		
+		
+		typeAlias  maxNBoundedNumber
+		 ( n int  ,max  number)
+		     :
+		   number ( digits  : n  ,  max: max )
