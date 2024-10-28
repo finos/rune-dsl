@@ -6,7 +6,6 @@ import javax.inject.Provider;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -31,17 +30,14 @@ public class FormatterServiceTest {
 	@Inject ISerializer serializer;
 	
 	@Test
-	void test1 () throws IOException, URISyntaxException {
-		//ResourceSet resourceSet = resourceSetProvider.get();
-		//Resource resource = resourceSet.getResource(URI.createURI(Resources.getResource("FormattingTest/input/test.rosetta").toString()), true);
+	void formatSingleDocument() throws IOException, URISyntaxException {
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.getResource(URI.createURI(Resources.getResource("formatting-test/input/test.rosetta").toString()), true);
 		
-		//create xtext resource
-		XtextResource res = new XtextResource(URI.createURI(Resources.getResource("FormattingTest/input/test.rosetta").toString()));
-		formatterService.formatCollection(List.of(res));
+		List<Resource> formatCollection = formatterService.formatCollection(List.of(resource));
 		
-		String expected = Files.readString(Path.of(Resources.getResource("FormattingTest/expected/test.rosetta").toURI()));
-		String result = serializer.serialize(res.getContents().get(0)); //maybe change this to xtext too?
-		assertEquals(expected, result);
-		
+		String expected = Files.readString(Path.of(Resources.getResource("formatting-test/expected/test.rosetta").toURI()));
+		String result = serializer.serialize(formatCollection.get(0).getContents().get(0));
+		assertEquals(expected, result);	
 	}
 }
