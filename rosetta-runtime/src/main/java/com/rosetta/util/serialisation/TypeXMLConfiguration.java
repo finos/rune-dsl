@@ -29,17 +29,20 @@ public class TypeXMLConfiguration {
 	private final Optional<String> xmlElementName;
 	private final Optional<Map<String, String>> xmlAttributes;
 	private final Optional<Map<String, AttributeXMLConfiguration>> attributes;
+	private final Optional<Map<String, String>> enumValues;
 	
 	@JsonCreator
 	public TypeXMLConfiguration(
 			@JsonProperty("substitutionFor") Optional<ModelSymbolId> substitutionFor,
 			@JsonProperty("xmlElementName") Optional<String> xmlElementName,
 			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
-			@JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes) {
+			@JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
+			@JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
 		this.substitutionFor = substitutionFor;
 		this.xmlElementName = xmlElementName;
 		this.xmlAttributes = xmlAttributes;
 		this.attributes = attributes;
+		this.enumValues = enumValues;
 	}
 	
 	public Optional<ModelSymbolId> getSubstitutionFor() {
@@ -57,10 +60,14 @@ public class TypeXMLConfiguration {
 	public Optional<Map<String, AttributeXMLConfiguration>> getAttributes() {
 		return attributes;
 	}
+	
+	public Optional<Map<String, String>> getEnumValues() {
+		return enumValues;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(substitutionFor, xmlAttributes, xmlElementName, attributes);
+		return Objects.hash(substitutionFor, xmlAttributes, xmlElementName, attributes, enumValues);
 	}
 
 	@Override
@@ -75,6 +82,7 @@ public class TypeXMLConfiguration {
 		return Objects.equals(substitutionFor, other.substitutionFor)
 				&& Objects.equals(xmlAttributes, other.xmlAttributes)
 				&& Objects.equals(xmlElementName, other.xmlElementName)
-				&& Objects.equals(attributes, other.attributes);
+				&& Objects.equals(attributes, other.attributes)
+				&& Objects.equals(enumValues, other.enumValues);
 	}
 }
