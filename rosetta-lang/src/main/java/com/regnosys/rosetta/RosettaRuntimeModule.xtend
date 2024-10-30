@@ -47,8 +47,8 @@ import com.regnosys.rosetta.config.RosettaConfiguration
 import com.regnosys.rosetta.config.file.FileBasedRosettaConfigurationProvider
 import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.cache.RequestScopedCache
-import com.regnosys.rosetta.formatting2.CodeFormatterService
-import com.regnosys.rosetta.formatting2.RuneFormatter
+import com.regnosys.rosetta.formatting2.XtextResourceFormatter
+import com.regnosys.rosetta.formatting2.ResourceFormatterService
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -151,7 +151,7 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		RequestScopedCache
 	}
 	
-	def Class<? extends CodeFormatterService> bindCodeFormatterService() {
-		RuneFormatter
+	def Class<? extends ResourceFormatterService> bindResourceFormatterService() {
+		XtextResourceFormatter
 	}
 }

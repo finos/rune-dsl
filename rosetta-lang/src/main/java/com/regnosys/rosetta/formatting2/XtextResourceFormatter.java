@@ -1,0 +1,80 @@
+package com.regnosys.rosetta.formatting2;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.formatting2.FormatterRequest;
+import org.eclipse.xtext.formatting2.IFormatter2;
+import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
+import org.eclipse.xtext.formatting2.regionaccess.ITextRegionRewriter;
+import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
+import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
+import org.eclipse.xtext.preferences.ITypedPreferenceValues;
+import org.eclipse.xtext.resource.XtextResource;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+public class XtextResourceFormatter implements ResourceFormatterService{
+	@Inject
+	private Provider<FormatterRequest> formatterRequestProvider;
+	
+	@Inject 
+	private Provider<IFormatter2> iFormatter2Provider;
+
+	@Inject
+	private TextRegionAccessBuilder regionBuilder;
+	
+	@Override
+	public void formatCollection(Collection<Resource> resources) {
+	    formatCollection(resources, null);
+	}
+	
+	@Override
+	public void formatXtextResource(XtextResource resource) throws IOException {
+		formatXtextResource(resource, null);
+	}
+
+	@Override
+	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues){
+		resources.stream().forEach(resource -> {
+			if (resource instanceof XtextResource) {
+	            try {
+	                formatXtextResource((XtextResource) resource, preferenceValues);
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+	        } else {
+	            System.out.println("Resource is not of type XtextResource and will be skipped: " + resource);
+	        }
+		});
+	}
+
+	@Override
+	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues) throws IOException {
+		//setup request and formatter
+		FormatterRequest req = formatterRequestProvider.get();
+		req.setPreferences(preferenceValues);
+		IFormatter2 formatter = iFormatter2Provider.get();
+		
+		ITextRegionAccess regionAccess = regionBuilder.forNodeModel(resource).create();
+		req.setTextRegionAccess(regionAccess);
+		
+		//list contains all the replacements which should be applied to resource
+		List<ITextReplacement> replacements = formatter.format(req);
+				
+		//formatting using TextRegionRewriter
+		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
+		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
+
+		//With the formatted text, update the resource
+		InputStream resultStream = new ByteArrayInputStream(formattedString.getBytes(StandardCharsets.UTF_8));
+		resource.unload();
+		resource.load(resultStream, null);
+	}
+}
