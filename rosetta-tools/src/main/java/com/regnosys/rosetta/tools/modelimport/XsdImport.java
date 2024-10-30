@@ -31,6 +31,7 @@ import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdSchema;
+import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaModel;
@@ -125,15 +126,11 @@ public class XsdImport {
 				
 		Map<ModelSymbolId, TypeXMLConfiguration> result = new HashMap<>();
 		targetNamespaceToXsdElementsMap.forEach((targetNamespace, xsdElements) -> {
-			xsdElements.stream()
-				.flatMap(abstractElem -> {
-					if (abstractElem instanceof XsdElement xsdElem) {
-	                    return xsdElementImport.getXMLConfiguration(xsdElem, xsdMapping, targetNamespace).entrySet().stream();
-					} else if (abstractElem instanceof XsdComplexType xsdType) {
-	                    return xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, targetNamespace).entrySet().stream();
-					}
-					return Stream.empty();
-				})
+			Streams.concat(
+					xsdEnumImport.filterTypes(xsdElements).stream().flatMap(x -> xsdEnumImport.getXMLConfiguration(x, xsdMapping, targetNamespace).entrySet().stream()),
+					xsdElementImport.filterTypes(xsdElements).stream().flatMap(x -> xsdElementImport.getXMLConfiguration(x, xsdMapping, targetNamespace).entrySet().stream()),
+					xsdTypeImport.filterTypes(xsdElements).stream().flatMap(x -> xsdTypeImport.getXMLConfiguration(x, xsdMapping, targetNamespace).entrySet().stream())
+				)
 				.filter(e -> !isEmpty(e.getValue()))
 				.map(e -> Map.entry(e.getKey(), prune(e.getValue())))
 				.collect(Collectors.toMap(e -> modelIdProvider.getSymbolId(e.getKey()), Map.Entry::getValue))
@@ -146,11 +143,16 @@ public class XsdImport {
 				config.getSubstitutionFor(),
 				config.getXmlElementName(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
-				config.getAttributes().map(x -> x.isEmpty() ? null : x)
+				config.getAttributes().map(x -> x.isEmpty() ? null : x),
+				config.getEnumValues().map(x -> x.isEmpty() ? null : x)
 			);
 	}
 	private boolean isEmpty(TypeXMLConfiguration config) {
-		return config.getSubstitutionFor().isEmpty() && config.getXmlElementName().isEmpty() && (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty()) && (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty());
+		return config.getSubstitutionFor().isEmpty()
+				&& config.getXmlElementName().isEmpty()
+				&& (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty())
+				&& (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty())
+				&& (config.getEnumValues().isEmpty() || config.getEnumValues().get().isEmpty());
 	}
 
 	public void saveResources(String outputPath) throws IOException {

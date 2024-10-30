@@ -16,7 +16,11 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -28,6 +32,7 @@ import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.rosetta.util.serialisation.TypeXMLConfiguration;
 
 public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnumeration> {
 	
@@ -77,5 +82,26 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		typeMappings.registerEnumValue(ev, rosettaEnumValue);
 		
 		return rosettaEnumValue;
+	}
+	
+	public Map<RosettaEnumeration, TypeXMLConfiguration> getXMLConfiguration(XsdSimpleType xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {		
+		Map<String, String> enumValueMap = new LinkedHashMap<>();
+		xsdType.getAllRestrictions().stream().flatMap(r -> r.getEnumeration().stream())
+			.forEach(ev -> {
+				String value = util.toEnumValueName(ev.getValue());
+				if (!value.equals(ev.getValue())) {
+					enumValueMap.put(value, ev.getValue());
+				}
+			});
+		if (enumValueMap.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		RosettaEnumeration rosettaEnumeration = xsdMapping.getRosettaEnumerationFromSimple(xsdType);
+		return Collections.singletonMap(rosettaEnumeration, new TypeXMLConfiguration(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
+				Optional.of(enumValueMap)));
 	}
 }

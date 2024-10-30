@@ -164,7 +164,8 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 					substitution,
 					elementName,
 					xmlAttributes,
-					Optional.of(attributeConfig)
+					Optional.of(attributeConfig),
+					Optional.empty()
 				));
 		
 		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();

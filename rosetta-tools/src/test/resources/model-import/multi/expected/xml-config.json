@@ -114,6 +114,16 @@
       }
     }
   },
+  "fpml.confirmation.AccrualReferenceAmountTypeEnum" : {
+    "enumValues" : {
+      "COMMITMENT" : "Commitment",
+      "FUNDED" : "Funded",
+      "OTHER" : "Other",
+      "UNFUNDED" : "Unfunded",
+      "UNUTILIZED" : "Unutilized",
+      "UTILIZED" : "Utilized"
+    }
+  },
   "fpml.confirmation.AccrualTypeId" : {
     "attributes" : {
       "value" : {
@@ -425,6 +435,12 @@
     "substitutionFor" : "fpml.confirmation.Exercise",
     "xmlElementName" : "americanExercise"
   },
+  "fpml.confirmation.AmountAdjustmentEnum" : {
+    "enumValues" : {
+      "DECREASE" : "Decrease",
+      "INCREASE" : "Increase"
+    }
+  },
   "fpml.confirmation.AmountReference" : {
     "attributes" : {
       "href" : {
@@ -582,6 +598,19 @@
       }
     }
   },
+  "fpml.confirmation.AveragingInOutEnum" : {
+    "enumValues" : {
+      "IN" : "In",
+      "OUT" : "Out",
+      "BOTH" : "Both"
+    }
+  },
+  "fpml.confirmation.AveragingMethodEnum" : {
+    "enumValues" : {
+      "UNWEIGHTED" : "Unweighted",
+      "WEIGHTED" : "Weighted"
+    }
+  },
   "fpml.confirmation.AveragingSchedule" : {
     "attributes" : {
       "periodModel" : {
@@ -644,6 +673,13 @@
       }
     }
   },
+  "fpml.confirmation.BasketIdentifierModel" : {
+    "attributes" : {
+      "basketIdentifierModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.BasketName" : {
     "attributes" : {
       "value" : {
@@ -687,6 +723,20 @@
       }
     }
   },
+  "fpml.confirmation.BondCollateralModel" : {
+    "attributes" : {
+      "bondPriceAndYieldModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.BondEquityModel" : {
+    "attributes" : {
+      "bondChoiceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.BondOption" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "bondOption",
@@ -696,9 +746,22 @@
       }
     }
   },
+  "fpml.confirmation.BondPriceAndYieldModel" : {
+    "attributes" : {
+      "bondPriceAndYieldModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.Borrowing" : {
     "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
     "xmlElementName" : "borrowing"
+  },
+  "fpml.confirmation.BreakageCalculatedByEnum" : {
+    "enumValues" : {
+      "AGENT_BANK" : "Agent Bank",
+      "LENDER" : "Lender"
+    }
   },
   "fpml.confirmation.BreakageFeePayment" : {
     "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
@@ -739,6 +802,19 @@
       "commodityFixedPhysicalQuantityModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.BullionTypeEnum" : {
+    "enumValues" : {
+      "GOLD" : "Gold",
+      "PALLADIUM" : "Palladium",
+      "PLATINUM" : "Platinum",
+      "SILVER" : "Silver",
+      "RHODIUM" : "Rhodium",
+      "RHODIUM_SPONGE" : "RhodiumSponge",
+      "IRIDIUM" : "Iridium",
+      "RUTHENIUM" : "Ruthenium",
+      "OSMIUM" : "Osmium"
     }
   },
   "fpml.confirmation.BusinessCenter" : {
@@ -792,6 +868,11 @@
       }
     }
   },
+  "fpml.confirmation.BusinessDayConventionEnum" : {
+    "enumValues" : {
+      "NOT_APPLICABLE" : "NotApplicable"
+    }
+  },
   "fpml.confirmation.BusinessEventIdentifier" : {
     "attributes" : {
       "partyAndAccountReferencesModel" : {
@@ -836,6 +917,12 @@
       }
     }
   },
+  "fpml.confirmation.BuySellEnum" : {
+    "enumValues" : {
+      "BUYER" : "Buyer",
+      "SELLER" : "Seller"
+    }
+  },
   "fpml.confirmation.CalculatedAmount" : {
     "attributes" : {
       "dividendsModel" : {
@@ -853,6 +940,15 @@
   "fpml.confirmation.CalculationAgentDetermination" : {
     "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
     "xmlElementName" : "calculationAgentDetermination"
+  },
+  "fpml.confirmation.CalculationAgentPartyEnum" : {
+    "enumValues" : {
+      "EXERCISING_PARTY" : "ExercisingParty",
+      "NON_EXERCISING_PARTY" : "NonExercisingParty",
+      "AS_SPECIFIED_IN_MASTER_AGREEMENT" : "AsSpecifiedInMasterAgreement",
+      "AS_SPECIFIED_IN_STANDARD_TERMS_SUPPLEMENT" : "AsSpecifiedInStandardTermsSupplement",
+      "BOTH" : "Both"
+    }
   },
   "fpml.confirmation.CalculationFromObservation" : {
     "attributes" : {
@@ -908,6 +1004,20 @@
       "href" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.CalendarSourceEnum" : {
+    "enumValues" : {
+      "LISTED_OPTION" : "ListedOption",
+      "FUTURE" : "Future"
+    }
+  },
+  "fpml.confirmation.CallingPartyEnum" : {
+    "enumValues" : {
+      "INITIAL_BUYER" : "InitialBuyer",
+      "INITIAL_SELLER" : "InitialSeller",
+      "EITHER" : "Either",
+      "AS_DEFINED_IN_MASTER_AGREEMENT" : "AsDefinedInMasterAgreement"
     }
   },
   "fpml.confirmation.CancelableProvision" : {
@@ -1121,6 +1231,16 @@
       }
     }
   },
+  "fpml.confirmation.ClearingResultsModel" : {
+    "attributes" : {
+      "tradingEventsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "clearingResultsModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.ClearingStatus" : {
     "xmlElementName" : "clearingStatus",
     "xmlAttributes" : {
@@ -1322,6 +1442,14 @@
       }
     }
   },
+  "fpml.confirmation.CollateralValueAllocationEnum" : {
+    "enumValues" : {
+      "BUFFER" : "Buffer",
+      "FULL" : "Full",
+      "EXCESS_OVER_MARGIN" : "ExcessOverMargin",
+      "MARGIN" : "Margin"
+    }
+  },
   "fpml.confirmation.CollateralizationType" : {
     "attributes" : {
       "value" : {
@@ -1330,6 +1458,13 @@
       "collateralTypeScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.CommissionDenominationEnum" : {
+    "enumValues" : {
+      "PERCENTAGE" : "Percentage",
+      "CENTS_PER_SHARE" : "CentsPerShare",
+      "FIXED_AMOUNT" : "FixedAmount"
     }
   },
   "fpml.confirmation.CommitmentAdjustment" : {
@@ -1414,6 +1549,12 @@
       }
     }
   },
+  "fpml.confirmation.CommodityBullionSettlementDisruptionEnum" : {
+    "enumValues" : {
+      "NEGOTIATION" : "Negotiation",
+      "CANCELLATION_AND_PAYMENT" : "Cancellation and Payment"
+    }
+  },
   "fpml.confirmation.CommodityBusinessCalendar" : {
     "attributes" : {
       "value" : {
@@ -1422,6 +1563,39 @@
       "commodityBusinessCalendarScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.CommodityCalculationPeriodsModel" : {
+    "attributes" : {
+      "commodityCalculationPeriodsPointerModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityCoalCompositionModel" : {
+    "attributes" : {
+      "sO2" : {
+        "xmlName" : "SO2"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityCoalPropertiesModel" : {
+    "attributes" : {
+      "btUperLB" : {
+        "xmlName" : "BTUperLB"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityDayTypeEnum" : {
+    "enumValues" : {
+      "BUSINESS" : "Business",
+      "CALENDAR" : "Calendar",
+      "COMMODITY_BUSINESS" : "CommodityBusiness",
+      "CURRENCY_BUSINESS" : "CurrencyBusiness",
+      "EXCHANGE_BUSINESS" : "ExchangeBusiness",
+      "SCHEDULED_TRADING_DAY" : "ScheduledTradingDay",
+      "GAS_FLOW" : "GasFlow",
+      "NEARBY_CONTRACT_DAY" : "NearbyContractDay"
     }
   },
   "fpml.confirmation.CommodityDeliveryPeriods" : {
@@ -1441,6 +1615,13 @@
       },
       "deliveryPointScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityDeliveryPointsModel" : {
+    "attributes" : {
+      "commodityDeliveryPointsModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -1486,6 +1667,13 @@
       }
     }
   },
+  "fpml.confirmation.CommodityDigitalOptionFeaturesModel" : {
+    "attributes" : {
+      "commodityAsianModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.CommodityEuropeanExercise" : {
     "attributes" : {
       "commodityEuropeanExerciseSequence" : {
@@ -1514,6 +1702,29 @@
       },
       "commodityExpireRelativeToEventScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityFinancialOptionModel" : {
+    "attributes" : {
+      "commodityOptionFeaturesModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "commodityNotionalQuantityModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "commodityStrikePriceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "commodityFloatingStrikePriceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityFixedPriceModel" : {
+    "attributes" : {
+      "commodityFixedPriceModelChoice" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -1626,6 +1837,12 @@
       }
     }
   },
+  "fpml.confirmation.CommodityKnockEnum" : {
+    "enumValues" : {
+      "IN" : "In",
+      "OUT" : "Out"
+    }
+  },
   "fpml.confirmation.CommodityMarketDisruption" : {
     "attributes" : {
       "commodityMarketDisruptionSequence" : {
@@ -1697,6 +1914,13 @@
       }
     }
   },
+  "fpml.confirmation.CommodityNotionalQuantityModel" : {
+    "attributes" : {
+      "commodityNotionalQuantityModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.CommodityNotionalQuantitySchedule" : {
     "attributes" : {
       "commodityCalculationPeriodsPointerModel" : {
@@ -1728,6 +1952,38 @@
       }
     }
   },
+  "fpml.confirmation.CommodityOptionFeaturesModel" : {
+    "attributes" : {
+      "commodityOptionFeaturesModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityOptionFeaturesModelSequence" : {
+    "attributes" : {
+      "commodityAsianModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityPayRelativeToEnum" : {
+    "enumValues" : {
+      "CALCULATION_PERIOD_START_DATE" : "CalculationPeriodStartDate",
+      "CALCULATION_PERIOD_END_DATE" : "CalculationPeriodEndDate",
+      "LAST_PRICING_DATE" : "LastPricingDate",
+      "RESET_DATE" : "ResetDate",
+      "VALUATION_DATE" : "ValuationDate",
+      "CALCULATION_DATE" : "CalculationDate",
+      "CALCULATION_PERIOD_MONTH_END" : "CalculationPeriodMonthEnd",
+      "CALCULATION_PERIOD_MONTH_START" : "CalculationPeriodMonthStart",
+      "EFFECTIVE_DATE" : "EffectiveDate",
+      "PRICING_PERIOD_MONTH_END" : "PricingPeriodMonthEnd",
+      "TERMINATION_OR_EXPIRATION_DATE" : "TerminationOrExpirationDate",
+      "TRADE_DATE" : "TradeDate",
+      "PRICING_PERIOD_END_OF_WEEK" : "PricingPeriodEndOfWeek",
+      "FIRST_PRICING_DATE" : "FirstPricingDate"
+    }
+  },
   "fpml.confirmation.CommodityPayRelativeToEvent" : {
     "attributes" : {
       "value" : {
@@ -1735,6 +1991,13 @@
       },
       "commodityPayRelativeToEventScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityPaymentDatesModel" : {
+    "attributes" : {
+      "commodityNonPeriodicPaymentDatesModel" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -1847,6 +2110,23 @@
       }
     }
   },
+  "fpml.confirmation.CommodityProductModel" : {
+    "attributes" : {
+      "commodityReferencePriceFrameworkModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "commodityProductModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityProductModelSequence" : {
+    "attributes" : {
+      "commodityProductModelSequenceChoice" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.CommodityQuantityFrequency" : {
     "attributes" : {
       "value" : {
@@ -1878,6 +2158,12 @@
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.CommodityReturnCalculationFormulaEnum" : {
+    "enumValues" : {
+      "SIMPLE_FORMULA" : "SimpleFormula",
+      "COMPOUND_FORMULA" : "CompoundFormula"
     }
   },
   "fpml.confirmation.CommodityReturnLeg" : {
@@ -1914,6 +2200,13 @@
     "xmlElementName" : "commoditySwap",
     "attributes" : {
       "commoditySwapDetailsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommoditySwapDetailsModel" : {
+    "attributes" : {
+      "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -1986,6 +2279,13 @@
       }
     }
   },
+  "fpml.confirmation.CommodityWeatherOptionModel" : {
+    "attributes" : {
+      "weatherCalculationPeriodModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.CompoundingFrequency" : {
     "attributes" : {
       "value" : {
@@ -1994,6 +2294,14 @@
       "compoundingFrequencyScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.CompoundingMethodEnum" : {
+    "enumValues" : {
+      "FLAT" : "Flat",
+      "NONE" : "None",
+      "STRAIGHT" : "Straight",
+      "SPREAD_EXCLUSIVE" : "SpreadExclusive"
     }
   },
   "fpml.confirmation.CompressionActivity" : {
@@ -2014,6 +2322,21 @@
       "compressionTypeScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.ConditionEnum" : {
+    "enumValues" : {
+      "AT_OR_ABOVE" : "AtOrAbove",
+      "AT_OR_BELOW" : "AtOrBelow",
+      "ABOVE" : "Above",
+      "BELOW" : "Below"
+    }
+  },
+  "fpml.confirmation.ConditionsPrecedentMetEnum" : {
+    "enumValues" : {
+      "NO" : "No",
+      "WAIVED" : "Waived",
+      "YES" : "Yes"
     }
   },
   "fpml.confirmation.ConfirmationAcknowledgement" : {
@@ -2255,6 +2578,26 @@
       }
     }
   },
+  "fpml.confirmation.CorrelationAndOptionalSequenceModel" : {
+    "attributes" : {
+      "correlationModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "sequenceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CorrelationAndSequenceModel" : {
+    "attributes" : {
+      "correlationModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "sequenceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.CorrelationId" : {
     "attributes" : {
       "value" : {
@@ -2262,6 +2605,13 @@
       },
       "correlationIdScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.CorrelationModel" : {
+    "attributes" : {
+      "correlationIdModel" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -2301,6 +2651,13 @@
     "xmlElementName" : "creditCurve",
     "attributes" : {
       "creditCurveCharacteristicsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CreditCurveCharacteristicsModel" : {
+    "attributes" : {
+      "creditEntityModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -2578,9 +2935,36 @@
       }
     }
   },
+  "fpml.confirmation.DayTypeEnum" : {
+    "enumValues" : {
+      "BUSINESS" : "Business",
+      "CALENDAR" : "Calendar",
+      "COMMODITY_BUSINESS" : "CommodityBusiness",
+      "CURRENCY_BUSINESS" : "CurrencyBusiness",
+      "EXCHANGE_BUSINESS" : "ExchangeBusiness",
+      "SCHEDULED_TRADING_DAY" : "ScheduledTradingDay"
+    }
+  },
+  "fpml.confirmation.DaysModel" : {
+    "attributes" : {
+      "daysModelSequence0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "daysModelSequence1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.Deal" : {
     "attributes" : {
       "dealRulesModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.DealRolesModel" : {
+    "attributes" : {
+      "dealRolesModelSequence" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -2600,6 +2984,12 @@
       "dealSummarySequence" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.DealtCurrencyEnum" : {
+    "enumValues" : {
+      "EXCHANGED_CURRENCY1" : "ExchangedCurrency1",
+      "EXCHANGED_CURRENCY2" : "ExchangedCurrency2"
     }
   },
   "fpml.confirmation.DeclearReason" : {
@@ -2624,6 +3014,123 @@
     "substitutionFor" : "fpml.confirmation.FacilityGroup",
     "xmlElementName" : "delayedDraw"
   },
+  "fpml.confirmation.DeliveryDatesEnum" : {
+    "enumValues" : {
+      "CALCULATION_PERIOD" : "CalculationPeriod",
+      "FIRST_NEARBY" : "FirstNearby",
+      "SECOND_NEARBY" : "SecondNearby",
+      "THIRD_NEARBY" : "ThirdNearby",
+      "FOURTH_NEARBY" : "FourthNearby",
+      "FIFTH_NEARBY" : "FifthNearby",
+      "SIXTH_NEARBY" : "SixthNearby",
+      "SEVENTH_NEARBY" : "SeventhNearby",
+      "EIGHTH_NEARBY" : "EighthNearby",
+      "NINTH_NEARBY" : "NinthNearby",
+      "TENTH_NEARBY" : "TenthNearby",
+      "ELEVENTH_NEARBY" : "EleventhNearby",
+      "TWELFTH_NEARBY" : "TwelfthNearby",
+      "THIRTEENTH_NEARBY" : "ThirteenthNearby",
+      "FOURTEENTH_NEARBY" : "FourteenthNearby",
+      "FIFTEENTH_NEARBY" : "FifteenthNearby",
+      "SIXTEENTH_NEARBY" : "SixteenthNearby",
+      "SEVENTEENTH_NEARBY" : "SeventeenthNearby",
+      "EIGHTEENTH_NEARBY" : "EighteenthNearby",
+      "NINETEENTH_NEARBY" : "NineteenthNearby",
+      "TWENTIETH_NEARBY" : "TwentiethNearby",
+      "TWENTY_FIRST_NEARBY" : "TwentyFirstNearby",
+      "TWENTY_SECOND_NEARBY" : "TwentySecondNearby",
+      "TWENTY_THIRD_NEARBY" : "TwentyThirdNearby",
+      "TWENTY_FOURTH_NEARBY" : "TwentyFourthNearby",
+      "TWENTY_FIFTH_NEARBY" : "TwentyFifthNearby",
+      "TWENTY_SIXTH_NEARBY" : "TwentySixthNearby",
+      "TWENTY_SEVENTH_NEARBY" : "TwentySeventhNearby",
+      "TWENTY_EIGHTH_NEARBY" : "TwentyEighthNearby",
+      "TWENTY_NINTH_NEARBY" : "TwentyNinthNearby",
+      "THIRTIETH_NEARBY" : "ThirtiethNearby",
+      "THIRTY_FIRST_NEARBY" : "ThirtyFirstNearby",
+      "THIRTY_SECOND_NEARBY" : "ThirtySecondNearby",
+      "THIRTY_THIRD_NEARBY" : "ThirtyThirdNearby",
+      "THIRTY_FOURTH_NEARBY" : "ThirtyFourthNearby",
+      "THIRTY_FIFTH_NEARBY" : "ThirtyFifthNearby",
+      "THIRTY_SIXTH_NEARBY" : "ThirtySixthNearby",
+      "THIRTY_SEVENTH_NEARBY" : "ThirtySeventhNearby",
+      "THIRTY_EIGHTH_NEARBY" : "ThirtyEighthNearby",
+      "THIRTY_NINTH_NEARBY" : "ThirtyNinthNearby",
+      "FORTIETH_NEARBY" : "FortiethNearby",
+      "FORTY_FIRST_NEARBY" : "FortyFirstNearby",
+      "FORTY_SECOND_NEARBY" : "FortySecondNearby",
+      "FORTY_THIRD_NEARBY" : "FortyThirdNearby",
+      "FORTY_FOURTH_NEARBY" : "FortyFourthNearby",
+      "FORTY_FIFTH_NEARBY" : "FortyFifthNearby",
+      "FORTY_SIXTH_NEARBY" : "FortySixthNearby",
+      "FORTY_SEVENTH_NEARBY" : "FortySeventhNearby",
+      "FORTY_EIGHTH_NEARBY" : "FortyEighthNearby",
+      "FORTY_NINTH_NEARBY" : "FortyNinthNearby",
+      "FIFTIETH_NEARBY" : "FiftiethNearby",
+      "FIFTY_FIRST_NEARBY" : "FiftyFirstNearby",
+      "FIFTY_SECOND_NEARBY" : "FiftySecondNearby",
+      "FIFTY_THIRD_NEARBY" : "FiftyThirdNearby",
+      "FIFTY_FOURTH_NEARBY" : "FiftyFourthNearby",
+      "FIFTY_FIFTH_NEARBY" : "FiftyFifthNearby",
+      "FIFTY_SIXTH_NEARBY" : "FiftySixthNearby",
+      "FIFTY_SEVENTH_NEARBY" : "FiftySeventhNearby",
+      "FIFTY_EIGHTH_NEARBY" : "FiftyEighthNearby",
+      "FIFTY_NINTH_NEARBY" : "FiftyNinthNearby",
+      "SPOT" : "Spot",
+      "FIRST_NEARBY_WEEK" : "FirstNearbyWeek",
+      "SECOND_NEARBY_WEEK" : "SecondNearbyWeek",
+      "THIRD_NEARBY_WEEK" : "ThirdNearbyWeek",
+      "FOURTH_NEARBY_WEEK" : "FourthNearbyWeek",
+      "FIFTH_NEARBY_WEEK" : "FifthNearbyWeek",
+      "SIXTH_NEARBY_WEEK" : "SixthNearbyWeek",
+      "SEVENTH_NEARBY_WEEK" : "SeventhNearbyWeek",
+      "EIGHTH_NEARBY_WEEK" : "EighthNearbyWeek",
+      "NINTH_NEARBY_WEEK" : "NinthNearbyWeek",
+      "TENTH_NEARBY_WEEK" : "TenthNearbyWeek",
+      "ELEVENTH_NEARBY_WEEK" : "EleventhNearbyWeek",
+      "TWELFTH_NEARBY_WEEK" : "TwelfthNearbyWeek",
+      "THIRTEENTH_NEARBY_WEEK" : "ThirteenthNearbyWeek",
+      "FOURTEENTH_NEARBY_WEEK" : "FourteenthNearbyWeek",
+      "FIFTEENTH_NEARBY_WEEK" : "FifteenthNearbyWeek",
+      "SIXTEENTH_NEARBY_WEEK" : "SixteenthNearbyWeek",
+      "SEVENTEENTH_NEARBY_WEEK" : "SeventeenthNearbyWeek",
+      "EIGHTEENTH_NEARBY_WEEK" : "EighteenthNearbyWeek",
+      "NINETEENTH_NEARBY_WEEK" : "NineteenthNearbyWeek",
+      "TWENTIETH_NEARBY_WEEK" : "TwentiethNearbyWeek",
+      "TWENTY_FIRST_NEARBY_WEEK" : "TwentyFirstNearbyWeek",
+      "TWENTY_SECOND_NEARBY_WEEK" : "TwentySecondNearbyWeek",
+      "TWENTY_THIRD_NEARBY_WEEK" : "TwentyThirdNearbyWeek",
+      "TWENTY_FOURTHEARBY_WEEK" : "TwentyFourthearbyWeek",
+      "TWENTY_FIFTH_NEARBY_WEEK" : "TwentyFifthNearbyWeek",
+      "TWENTY_SIXTH_NEARBY_WEEK" : "TwentySixthNearbyWeek",
+      "TWENTY_SEVENTH_NEARBY_WEEK" : "TwentySeventhNearbyWeek",
+      "TWENTY_EIGHTH_NEARBY_WEEK" : "TwentyEighthNearbyWeek",
+      "TWENTY_NINTH_NEARBY_WEEK" : "TwentyNinthNearbyWeek",
+      "THIRTIETH_NEARBY_WEEK" : "ThirtiethNearbyWeek",
+      "THIRTY_FIRST_NEARBY_WEEK" : "ThirtyFirstNearbyWeek",
+      "THIRTY_SECOND_NEARBY_WEEK" : "ThirtySecondNearbyWeek",
+      "THIRTY_THIRD_NEARBY_WEEK" : "ThirtyThirdNearbyWeek",
+      "THIRTY_FOURTH_NEARBY_WEEK" : "ThirtyFourthNearbyWeek",
+      "THIRTY_FIFTH_NEARBY_WEEK" : "ThirtyFifthNearbyWeek",
+      "THIRTY_SIXTH_NEARBY_WEEK" : "ThirtySixthNearbyWeek",
+      "THIRTY_SEVENTH_NEARBY_WEEK" : "ThirtySeventhNearbyWeek",
+      "THIRTY_EIGHTH_NEARBY_WEEK" : "ThirtyEighthNearbyWeek",
+      "THIRTY_NINTH_NEARBY_WEEK" : "ThirtyNinthNearbyWeek",
+      "FORTIETH_NEARBY_WEEK" : "FortiethNearbyWeek",
+      "FORTY_FIRST_NEARBY_WEEK" : "FortyFirstNearbyWeek",
+      "FORTY_SECOND_NEARBY_WEEK" : "FortySecondNearbyWeek",
+      "FORTY_THIRD_NEARBY_WEEK" : "FortyThirdNearbyWeek",
+      "FORTY_FOURTH_NEARBY_WEEK" : "FortyFourthNearbyWeek",
+      "FORTY_FIFTH_NEARBY_WEEK" : "FortyFifthNearbyWeek",
+      "FORTY_SIXTH_NEARBY_WEEK" : "FortySixthNearbyWeek",
+      "FORTY_SEVENTH_NEARBY_WEEK" : "FortySeventhNearbyWeek",
+      "FORTY_EIGHTH_NEARBY_WEEK" : "FortyEighthNearbyWeek",
+      "FORTY_NINTH_NEARBY_WEEK" : "FortyNinthNearbyWeek",
+      "FIFTIETH_NEARBY_WEEK" : "FiftiethNearbyWeek",
+      "FIFTY_FIRST_NEARBY_WEEK" : "FiftyFirstNearbyWeek",
+      "FIFTY_SECOND_NEARBY_WEEK" : "FiftySecondNearbyWeek"
+    }
+  },
   "fpml.confirmation.DeliveryMethod" : {
     "attributes" : {
       "value" : {
@@ -2641,6 +3148,19 @@
       }
     }
   },
+  "fpml.confirmation.DeliveryNearbyTypeEnum" : {
+    "enumValues" : {
+      "CALCULATION_PERIOD" : "CalculationPeriod",
+      "NEARBY_MONTH" : "NearbyMonth",
+      "NEARBY_WEEK" : "NearbyWeek"
+    }
+  },
+  "fpml.confirmation.DeliveryTypeEnum" : {
+    "enumValues" : {
+      "FIRM" : "Firm",
+      "INTERRUPTIBLE" : "Interruptible"
+    }
+  },
   "fpml.confirmation.Deposit" : {
     "substitutionFor" : "fpml.confirmation.CurveInstrument",
     "xmlElementName" : "deposit"
@@ -2652,6 +3172,19 @@
       },
       "derivativeCalculationMethodScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.DerivativeCalculationParametersModel" : {
+    "attributes" : {
+      "finiteDifferenceDerivativeParametersModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "analyticDerivativeParametersModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "substitutionDerivativeParametersModel" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -2680,6 +3213,20 @@
       "href" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.DifferenceSeverityEnum" : {
+    "enumValues" : {
+      "WARNING" : "Warning",
+      "ERROR" : "Error"
+    }
+  },
+  "fpml.confirmation.DifferenceTypeEnum" : {
+    "enumValues" : {
+      "VALUE" : "Value",
+      "REFERENCE" : "Reference",
+      "STRUCTURE" : "Structure",
+      "SCHEME" : "Scheme"
     }
   },
   "fpml.confirmation.DigestMethod" : {
@@ -2730,6 +3277,12 @@
       }
     }
   },
+  "fpml.confirmation.DiscountingTypeEnum" : {
+    "enumValues" : {
+      "STANDARD" : "Standard",
+      "FRAYIELD" : "FRAYield"
+    }
+  },
   "fpml.confirmation.DisruptionFallback" : {
     "attributes" : {
       "value" : {
@@ -2738,6 +3291,26 @@
       "commodityMarketDisruptionFallbackScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.DisruptionFallbacksEnum" : {
+    "enumValues" : {
+      "AS_SPECIFIED_IN_MASTER_AGREEMENT" : "AsSpecifiedInMasterAgreement",
+      "AS_SPECIFIED_IN_CONFIRMATION" : "AsSpecifiedInConfirmation"
+    }
+  },
+  "fpml.confirmation.DividendAmountTypeEnum" : {
+    "enumValues" : {
+      "RECORD_AMOUNT" : "RecordAmount",
+      "EX_AMOUNT" : "ExAmount",
+      "PAID_AMOUNT" : "PaidAmount",
+      "AS_SPECIFIED_IN_MASTER_CONFIRMATION" : "AsSpecifiedInMasterConfirmation"
+    }
+  },
+  "fpml.confirmation.DividendCompositionEnum" : {
+    "enumValues" : {
+      "EQUITY_AMOUNT_RECEIVER_ELECTION" : "EquityAmountReceiverElection",
+      "CALCULATION_AGENT_ELECTION" : "CalculationAgentElection"
     }
   },
   "fpml.confirmation.DividendConditions" : {
@@ -2751,6 +3324,34 @@
       "declaredCashAndCashEquivalentDividendPercentageModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.DividendDateReferenceEnum" : {
+    "enumValues" : {
+      "EX_DATE" : "ExDate",
+      "DIVIDEND_PAYMENT_DATE" : "DividendPaymentDate",
+      "DIVIDEND_VALUATION_DATE" : "DividendValuationDate",
+      "RECORD_DATE" : "RecordDate",
+      "TERMINATION_DATE" : "TerminationDate",
+      "EQUITY_PAYMENT_DATE" : "EquityPaymentDate",
+      "FOLLOWING_PAYMENT_DATE" : "FollowingPaymentDate",
+      "AD_HOC_DATE" : "AdHocDate",
+      "CUMULATIVE_EQUITY_PAID" : "CumulativeEquityPaid",
+      "CUMULATIVE_LIBOR_PAID" : "CumulativeLiborPaid",
+      "CUMULATIVE_EQUITY_EX_DIV" : "CumulativeEquityExDiv",
+      "CUMULATIVE_LIBOR_EX_DIV" : "CumulativeLiborExDiv",
+      "SHARE_PAYMENT" : "SharePayment",
+      "CASH_SETTLEMENT_PAYMENT_DATE" : "CashSettlementPaymentDate",
+      "FLOATING_AMOUNT_PAYMENT_DATE" : "FloatingAmountPaymentDate",
+      "CASH_SETTLE_PAYMENT_DATE_EX_DIV" : "CashSettlePaymentDateExDiv",
+      "CASH_SETTLE_PAYMENT_DATE_ISSUER_PAYMENT" : "CashSettlePaymentDateIssuerPayment",
+      "EX_DIVIDEND_PAYMENT_DATE" : "ExDividendPaymentDate"
+    }
+  },
+  "fpml.confirmation.DividendEntitlementEnum" : {
+    "enumValues" : {
+      "EX_DATE" : "ExDate",
+      "RECORD_DATE" : "RecordDate"
     }
   },
   "fpml.confirmation.DividendLeg" : {
@@ -2781,6 +3382,12 @@
       }
     }
   },
+  "fpml.confirmation.DividendPeriodEnum" : {
+    "enumValues" : {
+      "FIRST_PERIOD" : "FirstPeriod",
+      "SECOND_PERIOD" : "SecondPeriod"
+    }
+  },
   "fpml.confirmation.DividendSwapOptionTransactionSupplement" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "dividendSwapOptionTransactionSupplement"
@@ -2804,9 +3411,24 @@
       }
     }
   },
+  "fpml.confirmation.DualCurrencyStrikeQuoteBasisEnum" : {
+    "enumValues" : {
+      "DEPOSIT_CURRENCY_PER_ALTERNATE_CURRENCY" : "DepositCurrencyPerAlternateCurrency",
+      "ALTERNATE_CURRENCY_PER_DEPOSIT_CURRENCY" : "AlternateCurrencyPerDepositCurrency"
+    }
+  },
   "fpml.confirmation.DualExchangeRate" : {
     "substitutionFor" : "fpml.confirmation.FxDisruptionEvent",
     "xmlElementName" : "dualExchangeRate"
+  },
+  "fpml.confirmation.EarlyTerminationDateEnum" : {
+    "enumValues" : {
+      "ANY_DAY" : "AnyDay",
+      "VALUATION_DATE" : "ValuationDate",
+      "RESET_DATE" : "ResetDate",
+      "AFTER_FIRST_RESET_DATE" : "AfterFirstResetDate",
+      "AS_SPECIFIED_IN_MCA" : "AsSpecifiedInMCA"
+    }
   },
   "fpml.confirmation.EarlyTerminationEvent" : {
     "attributes" : {
@@ -2869,6 +3491,11 @@
       }
     }
   },
+  "fpml.confirmation.ElectricityProductTypeEnum" : {
+    "enumValues" : {
+      "ELECTRICITY" : "Electricity"
+    }
+  },
   "fpml.confirmation.ElectricityTransmissionContingencyType" : {
     "attributes" : {
       "value" : {
@@ -2919,6 +3546,14 @@
       }
     }
   },
+  "fpml.confirmation.EnvironmentalAbandonmentOfSchemeEnum" : {
+    "enumValues" : {
+      "OPTION_A_1" : "OptionA(1)",
+      "OPTION_A_2" : "OptionA(2)",
+      "OPTION_B" : "OptionB",
+      "OPTION_C" : "OptionC"
+    }
+  },
   "fpml.confirmation.EnvironmentalPhysicalLeg" : {
     "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
     "xmlElementName" : "environmentalPhysicalLeg",
@@ -2936,6 +3571,28 @@
       "environmentalProductApplicableLawScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.EnvironmentalProductTypeEnum" : {
+    "enumValues" : {
+      "EUALLOWANCE" : "EUAllowance",
+      "EUCREDIT" : "EUCredit",
+      "ALTERNATIVE_ALLOWANCE" : "AlternativeAllowance",
+      "NOXEMISSIONS_PRODUCT" : "NOXEmissionsProduct",
+      "REGIONAL_EMISSIONS_PRODUCT" : "RegionalEmissionsProduct",
+      "RGGIEMISSIONS_PRODUCT" : "RGGIEmissionsProduct",
+      "SO2_EMISSIONS_PRODUCT" : "SO2EmissionsProduct",
+      "STATE_EMISSION_PRODUCT" : "StateEmissionProduct",
+      "VOLUNTARY_EMISSION_PRODUCT" : "VoluntaryEmissionProduct",
+      "RENEWABLE_ENERGY_CERTIFICATE" : "RenewableEnergyCertificate",
+      "AUSCARBON_CREDIT_UNIT" : "AUSCarbonCreditUnit",
+      "AUSCARBON_UNIT" : "AUSCarbonUnit",
+      "AUSENERGY_SAVING_CERTIFICATE" : "AUSEnergySavingCertificate",
+      "AUSLARGE_SCALE_GENERATION_CERTIFICATE" : "AUSLargeScaleGenerationCertificate",
+      "AUSSMALL_SCALE_TECHNOLOGY_CERTIFICATE" : "AUSSmallScaleTechnologyCertificate",
+      "AUSVICTORIAN_ENERGY_EFFICIENCY_CERTIFICATE" : "AUSVictorianEnergyEfficiencyCertificate",
+      "NZEMISSIONS_UNITS" : "NZEmissionsUnits",
+      "UKRENEWABLE_OBLIGATION_CERTIFICATE" : "UKRenewableObligationCertificate"
     }
   },
   "fpml.confirmation.EnvironmentalTrackingSystem" : {
@@ -2990,6 +3647,13 @@
       }
     }
   },
+  "fpml.confirmation.EquityExpirationModel" : {
+    "attributes" : {
+      "equityExpirationModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.EquityForward" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "equityForward"
@@ -3005,6 +3669,13 @@
       "indexAnnexFallbackModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.EquityOptionTypeEnum" : {
+    "enumValues" : {
+      "PUT" : "Put",
+      "CALL" : "Call",
+      "FORWARD" : "Forward"
     }
   },
   "fpml.confirmation.EquityPremium" : {
@@ -3029,6 +3700,13 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "equityUnderlyerProvisionsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.EquityUnderlyerProvisionsModel" : {
+    "attributes" : {
+      "indexAnnexFallbackModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -3151,6 +3829,16 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "optionsEventsBaseModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.EventsOrInfoModel" : {
+    "attributes" : {
+      "tradingAndPostTradeEventsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "tradeReferenceInformationModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -3380,6 +4068,13 @@
       }
     }
   },
+  "fpml.confirmation.ExerciseActionEnum" : {
+    "enumValues" : {
+      "FULL_EXERCISE" : "FullExercise",
+      "PARTIAL_EXERCISE" : "PartialExercise",
+      "ABANDON" : "Abandon"
+    }
+  },
   "fpml.confirmation.ExerciseEvent" : {
     "attributes" : {
       "id" : {
@@ -3408,6 +4103,27 @@
       }
     }
   },
+  "fpml.confirmation.ExerciseSideEnum" : {
+    "enumValues" : {
+      "PUT" : "Put",
+      "CALL" : "Call",
+      "PAYER" : "Payer",
+      "RECEIVER" : "Receiver"
+    }
+  },
+  "fpml.confirmation.ExerciseStyleEnum" : {
+    "enumValues" : {
+      "AMERICAN" : "American",
+      "BERMUDA" : "Bermuda",
+      "EUROPEAN" : "European"
+    }
+  },
+  "fpml.confirmation.ExerciseTimingEnum" : {
+    "enumValues" : {
+      "IMMEDIATE" : "Immediate",
+      "ON_EXPIRATION" : "OnExpiration"
+    }
+  },
   "fpml.confirmation.ExtendibleProvision" : {
     "attributes" : {
       "buyerSellerModel" : {
@@ -3427,6 +4143,12 @@
       "exchangeIdentifierModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.FPVFinalPriceElectionFallbackEnum" : {
+    "enumValues" : {
+      "FPVCLOSE" : "FPVClose",
+      "FPVHEDGE_EXECUTION" : "FPVHedgeExecution"
     }
   },
   "fpml.confirmation.FacilityCommitment" : {
@@ -3457,6 +4179,19 @@
       }
     }
   },
+  "fpml.confirmation.FacilityLoanContractDetailsModel" : {
+    "attributes" : {
+      "facilityDetailsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "facilityLoanContractDetailsModelChoice0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "facilityLoanContractDetailsModelChoice1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.FacilityNotification" : {
     "xmlElementName" : "facilityNotification",
     "xmlAttributes" : {
@@ -3465,6 +4200,16 @@
     },
     "attributes" : {
       "facilityDetailsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.FacilityOptionsFeesAndRatesModel" : {
+    "attributes" : {
+      "facilityOptionsFeesAndRatesModelChoice" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "facilityRatesModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -3574,6 +4319,15 @@
       }
     }
   },
+  "fpml.confirmation.FeeElectionEnum" : {
+    "enumValues" : {
+      "FLAT_FEE" : "FlatFee",
+      "AMORTIZED_FEE" : "AmortizedFee",
+      "FUNDING_FEE" : "FundingFee",
+      "FLAT_FEE_AND_FUNDING_FEE" : "FlatFeeAndFundingFee",
+      "AMORTIZED_FEE_AND_FUNDING_FEE" : "AmortizedFeeAndFundingFee"
+    }
+  },
   "fpml.confirmation.FeeLeg" : {
     "attributes" : {
       "feeLegChoice" : {
@@ -3673,6 +4427,12 @@
       "href" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.FlatRateEnum" : {
+    "enumValues" : {
+      "FIXED" : "Fixed",
+      "FLOATING" : "Floating"
     }
   },
   "fpml.confirmation.FloatingAmountProvisions" : {
@@ -3787,6 +4547,11 @@
       }
     }
   },
+  "fpml.confirmation.FraDiscountingEnum" : {
+    "enumValues" : {
+      "ISDAYIELD" : "ISDAYield"
+    }
+  },
   "fpml.confirmation.Frequency" : {
     "attributes" : {
       "id" : {
@@ -3837,6 +4602,13 @@
       }
     }
   },
+  "fpml.confirmation.FxAccrualConditionLevelModel" : {
+    "attributes" : {
+      "fxAccrualConditionLevelModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.FxAccrualDigitalOption" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "fxAccrualDigitalOption",
@@ -3859,6 +4631,12 @@
       "fxSettlementDateOrScheduleModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.FxAccrualKnockoutBarrierRetentionEnum" : {
+    "enumValues" : {
+      "KEEP" : "Keep",
+      "LOSE" : "Lose"
     }
   },
   "fpml.confirmation.FxAccrualLeverage" : {
@@ -3932,6 +4710,13 @@
       }
     }
   },
+  "fpml.confirmation.FxAccrualRegionBoundModel" : {
+    "attributes" : {
+      "fxAccrualRegionBoundModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.FxAccrualRegionLowerBound" : {
     "attributes" : {
       "fxAccrualConditionLevelModel" : {
@@ -3991,6 +4776,18 @@
       }
     }
   },
+  "fpml.confirmation.FxAveragingMethodEnum" : {
+    "enumValues" : {
+      "ARITHMETIC" : "Arithmetic",
+      "HARMONIC" : "Harmonic"
+    }
+  },
+  "fpml.confirmation.FxBarrierDirectionEnum" : {
+    "enumValues" : {
+      "DOWN" : "Down",
+      "UP" : "Up"
+    }
+  },
   "fpml.confirmation.FxBarrierFeature" : {
     "attributes" : {
       "fxBarrierFeatureSequence" : {
@@ -4003,6 +4800,32 @@
       "fxBarrierFeatureSequenceSequence" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.FxBarrierScopeEnum" : {
+    "enumValues" : {
+      "GLOBAL" : "Global",
+      "PER_EXPIRY" : "PerExpiry"
+    }
+  },
+  "fpml.confirmation.FxBarrierStyleEnum" : {
+    "enumValues" : {
+      "AMERICAN" : "American",
+      "EUROPEAN" : "European"
+    }
+  },
+  "fpml.confirmation.FxBarrierTypeEnum" : {
+    "enumValues" : {
+      "KNOCKIN" : "Knockin",
+      "KNOCKOUT" : "Knockout",
+      "REVERSE_KNOCKIN" : "ReverseKnockin",
+      "REVERSE_KNOCKOUT" : "ReverseKnockout"
+    }
+  },
+  "fpml.confirmation.FxBarrierTypeSimpleEnum" : {
+    "enumValues" : {
+      "KNOCKIN" : "Knockin",
+      "KNOCKOUT" : "Knockout"
     }
   },
   "fpml.confirmation.FxComplexBarrierBase" : {
@@ -4022,6 +4845,16 @@
     "attributes" : {
       "href" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.FxCoreDetailsModel" : {
+    "attributes" : {
+      "fxTenorModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "fxCoreDetailsModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -4136,6 +4969,12 @@
       }
     }
   },
+  "fpml.confirmation.FxOffsetConventionEnum" : {
+    "enumValues" : {
+      "FX_SPOT" : "FxSpot",
+      "FX_FORWARD" : "FxForward"
+    }
+  },
   "fpml.confirmation.FxOption" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "fxOption"
@@ -4193,6 +5032,18 @@
       }
     }
   },
+  "fpml.confirmation.FxRegionLowerBoundDirectionEnum" : {
+    "enumValues" : {
+      "AT_OR_ABOVE" : "AtOrAbove",
+      "ABOVE" : "Above"
+    }
+  },
+  "fpml.confirmation.FxRegionUpperBoundDirectionEnum" : {
+    "enumValues" : {
+      "AT_OR_BELOW" : "AtOrBelow",
+      "BELOW" : "Below"
+    }
+  },
   "fpml.confirmation.FxSchedule" : {
     "attributes" : {
       "fxScheduleSequence0" : {
@@ -4220,6 +5071,12 @@
       }
     }
   },
+  "fpml.confirmation.FxSettlementAdjustmentMethodEnum" : {
+    "enumValues" : {
+      "VARIED_STRIKE" : "VariedStrike",
+      "VARIED_NOTIONAL" : "VariedNotional"
+    }
+  },
   "fpml.confirmation.FxSingleLeg" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "fxSingleLeg",
@@ -4227,6 +5084,12 @@
       "fxCoreDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.FxStraddleTypeEnum" : {
+    "enumValues" : {
+      "AT_THE_MONEY_FORWARD" : "AtTheMoneyForward",
+      "DELTA_NEUTRAL" : "DeltaNeutral"
     }
   },
   "fpml.confirmation.FxStrikeReference" : {
@@ -4345,6 +5208,13 @@
       }
     }
   },
+  "fpml.confirmation.FxTargetRegionBoundModel" : {
+    "attributes" : {
+      "fxTargetRegionBoundModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.FxTargetRegionLowerBound" : {
     "attributes" : {
       "fxTargetConditionLevelModel" : {
@@ -4359,6 +5229,13 @@
       }
     }
   },
+  "fpml.confirmation.FxTargetStyleEnum" : {
+    "enumValues" : {
+      "EXACT" : "Exact",
+      "EXCLUSIVE" : "Exclusive",
+      "INCLUSIVE" : "Inclusive"
+    }
+  },
   "fpml.confirmation.FxTemplateTerms" : {
     "attributes" : {
       "value" : {
@@ -4367,6 +5244,16 @@
       "fxTemplateTermsScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.FxTenorPeriodEnum" : {
+    "enumValues" : {
+      "BROKEN" : "Broken",
+      "TODAY" : "Today",
+      "TOMORROW" : "Tomorrow",
+      "TOMORROW_NEXT" : "TomorrowNext",
+      "SPOT" : "Spot",
+      "SPOT_NEXT" : "SpotNext"
     }
   },
   "fpml.confirmation.FxTouch" : {
@@ -4461,6 +5348,26 @@
       "_type" : {
         "xmlName" : "type"
       }
+    }
+  },
+  "fpml.confirmation.GasProductTypeEnum" : {
+    "enumValues" : {
+      "BUTANE" : "Butane",
+      "CARBON_DIOXIDE" : "CarbonDioxide",
+      "EPMIX" : "EPMix",
+      "ETHANE" : "Ethane",
+      "GASOLINE" : "Gasoline",
+      "HELIUM" : "Helium",
+      "HYDROGEN_SULFIDE" : "HydrogenSulfide",
+      "ISOBUTANE" : "Isobutane",
+      "METHANE" : "Methane",
+      "NAPHTHA" : "Naphtha",
+      "NATURAL_GAS" : "NaturalGas",
+      "NITROGEN" : "Nitrogen",
+      "PENTANE" : "Pentane",
+      "PROPANE" : "Propane",
+      "PROPYLENE" : "Propylene",
+      "WATER" : "Water"
     }
   },
   "fpml.confirmation.GasQuality" : {
@@ -4669,6 +5576,14 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     }
   },
+  "fpml.confirmation.IndexEventConsequenceEnum" : {
+    "enumValues" : {
+      "CALCULATION_AGENT_ADJUSTMENT" : "CalculationAgentAdjustment",
+      "NEGOTIATED_CLOSE_OUT" : "NegotiatedCloseOut",
+      "CANCELLATION_AND_PAYMENT" : "CancellationAndPayment",
+      "RELATED_EXCHANGE" : "RelatedExchange"
+    }
+  },
   "fpml.confirmation.IndexId" : {
     "attributes" : {
       "value" : {
@@ -4799,6 +5714,12 @@
       }
     }
   },
+  "fpml.confirmation.InterestCalculationMethodEnum" : {
+    "enumValues" : {
+      "CONTRACT_POSITION_THRU_PERIOD" : "ContractPositionThruPeriod",
+      "PRO_RATA_SHARE_SNAPSHOT" : "ProRataShareSnapshot"
+    }
+  },
   "fpml.confirmation.InterestCapitalization" : {
     "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
     "xmlElementName" : "interestCapitalization",
@@ -4847,6 +5768,12 @@
       }
     }
   },
+  "fpml.confirmation.InterestShortfallCapEnum" : {
+    "enumValues" : {
+      "FIXED" : "Fixed",
+      "VARIABLE" : "Variable"
+    }
+  },
   "fpml.confirmation.IntermediaryInformation" : {
     "attributes" : {
       "routingIdentificationModel" : {
@@ -4862,6 +5789,14 @@
       "interpolationMethodScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.InterpolationPeriodEnum" : {
+    "enumValues" : {
+      "INITIAL" : "Initial",
+      "INITIAL_AND_FINAL" : "InitialAndFinal",
+      "FINAL" : "Final",
+      "ANY_PERIOD" : "AnyPeriod"
     }
   },
   "fpml.confirmation.IssuerId" : {
@@ -4987,6 +5922,13 @@
   "fpml.confirmation.LcAdjustment" : {
     "substitutionFor" : "fpml.confirmation.LcEventGroup",
     "xmlElementName" : "lcAdjustment"
+  },
+  "fpml.confirmation.LcAutoAdjustEnum" : {
+    "enumValues" : {
+      "AUTO_DECREASE" : "AutoDecrease",
+      "AUTO_INCREASE" : "AutoIncrease",
+      "AUTO_INCREASE_OR_DECREASE" : "AutoIncreaseOrDecrease"
+    }
   },
   "fpml.confirmation.LcFxRevaluation" : {
     "substitutionFor" : "fpml.confirmation.LcEventGroup",
@@ -5120,6 +6062,12 @@
       }
     }
   },
+  "fpml.confirmation.LengthUnitEnum" : {
+    "enumValues" : {
+      "PAGES" : "Pages",
+      "TIME_UNIT" : "TimeUnit"
+    }
+  },
   "fpml.confirmation.LetterOfCredit" : {
     "attributes" : {
       "letterOfCreditFeaturesModel" : {
@@ -5168,6 +6116,15 @@
       }
     }
   },
+  "fpml.confirmation.LimitModelEnum" : {
+    "enumValues" : {
+      "PING" : "Ping",
+      "PLUS1_TO_STOP" : "Plus1ToStop",
+      "PLUS1_TO_PING" : "Plus1ToPing",
+      "PUSH_TO_PING" : "PushToPing",
+      "PUSH_TO_STOP" : "PushToStop"
+    }
+  },
   "fpml.confirmation.LimitType" : {
     "attributes" : {
       "value" : {
@@ -5189,6 +6146,15 @@
       "linkIdScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.LoadTypeEnum" : {
+    "enumValues" : {
+      "BASE" : "Base",
+      "PEAK" : "Peak",
+      "OFF_PEAK" : "OffPeak",
+      "BLOCK_HOURS" : "BlockHours",
+      "CUSTOM" : "Custom"
     }
   },
   "fpml.confirmation.Loan" : {
@@ -5646,11 +6612,27 @@
       }
     }
   },
+  "fpml.confirmation.LoanTradingAccrualSettlementEnum" : {
+    "enumValues" : {
+      "FLAT" : "Flat",
+      "SETTLED_WITH_ACCRUED" : "SettledWithAccrued",
+      "SETTLED_WITHOUT_ACCRUED" : "SettledWithoutAccrued"
+    }
+  },
   "fpml.confirmation.LoanTradingAccruingFeeAccrual" : {
     "attributes" : {
       "_type" : {
         "xmlName" : "type"
       }
+    }
+  },
+  "fpml.confirmation.LoanTradingAccruingFeeTypeEnum" : {
+    "enumValues" : {
+      "COMMITMENT" : "Commitment",
+      "FACILITY" : "Facility",
+      "LETTER_OF_CREDIT_ISSUANCE" : "LetterOfCreditIssuance",
+      "TICKING" : "Ticking",
+      "UTILIZATION" : "Utilization"
     }
   },
   "fpml.confirmation.LoanTradingCounterpartySettlementFundingFactors" : {
@@ -5667,6 +6649,36 @@
       }
     }
   },
+  "fpml.confirmation.LoanTradingDocTypeEnum" : {
+    "enumValues" : {
+      "DISTRESSED" : "Distressed",
+      "PAR" : "Par"
+    }
+  },
+  "fpml.confirmation.LoanTradingFormOfPurchaseEnum" : {
+    "enumValues" : {
+      "ASSIGNMENT" : "Assignment",
+      "ASSIGNMENT_ONLY" : "AssignmentOnly",
+      "OTHER" : "Other",
+      "LMAFUNDED_PARTICIPATION" : "LMAFundedParticipation",
+      "LMAFUNDED_RISK_PARTICIPATION" : "LMAFundedRiskParticipation",
+      "LMARISK_PARTICIPATION" : "LMARiskParticipation",
+      "LMARISK_TO_FUNDED_PARTICIPATION" : "LMARiskToFundedParticipation",
+      "LMATRANSFER_AGREEMENT" : "LMATransferAgreement",
+      "LMATRANSFER_CERTIFICATE" : "LMATransferCertificate",
+      "PARTICIPATION" : "Participation"
+    }
+  },
+  "fpml.confirmation.LoanTradingNonRecurringFeeTypeEnum" : {
+    "enumValues" : {
+      "AMENDMENT" : "Amendment",
+      "CONSENT" : "Consent",
+      "FACILITY" : "Facility",
+      "FACILITY_EXENSION" : "FacilityExension",
+      "UPFRONT" : "Upfront",
+      "WAIVER" : "Waiver"
+    }
+  },
   "fpml.confirmation.LoanTradingPartyRole" : {
     "attributes" : {
       "value" : {
@@ -5677,11 +6689,41 @@
       }
     }
   },
+  "fpml.confirmation.LoanTradingSettlementTaskStatusEnum" : {
+    "enumValues" : {
+      "ACTIVE" : "Active",
+      "CLEARED" : "Cleared",
+      "CANCELLED" : "Cancelled"
+    }
+  },
+  "fpml.confirmation.LoanTradingTypeEnum" : {
+    "enumValues" : {
+      "PRIMARY" : "Primary",
+      "SECONDARY" : "Secondary"
+    }
+  },
+  "fpml.confirmation.LoanTradingVotingRightsEnum" : {
+    "enumValues" : {
+      "PASSED_ON_TO_BUYER" : "PassedOnToBuyer",
+      "RETAINED_BY_SELLER" : "RetainedBySeller"
+    }
+  },
   "fpml.confirmation.LoanTransferFee" : {
     "attributes" : {
       "loanTransferFeeSequence" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.LoanTransferFeePaidByEnum" : {
+    "enumValues" : {
+      "BUYER_SPLIT_ONE_HALF" : "BuyerSplitOneHalf",
+      "ONE_FEE_PAID_BY_BUYER" : "OneFeePaidByBuyer",
+      "ONE_FEE_PAID_BY_SELLER" : "OneFeePaidBySeller",
+      "PAID_BY_BUYER" : "PaidByBuyer",
+      "PAID_BY_SELLER" : "PaidBySeller",
+      "SELLER_SPLIT_ONE_HALF" : "SellerSplitOneHalf",
+      "SPLIT_FULL" : "SplitFull"
     }
   },
   "fpml.confirmation.LoanTransferNotification" : {
@@ -5736,6 +6778,13 @@
       }
     }
   },
+  "fpml.confirmation.MandatoryEarlyTerminationModel" : {
+    "attributes" : {
+      "mandatoryEarlyTerminationModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.Manifest" : {
     "xmlElementName" : "Manifest",
     "xmlAttributes" : {
@@ -5752,6 +6801,12 @@
         "xmlName" : "Id",
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.MarginTypeEnum" : {
+    "enumValues" : {
+      "CASH" : "Cash",
+      "INSTRUMENT" : "Instrument"
     }
   },
   "fpml.confirmation.Market" : {
@@ -5784,6 +6839,14 @@
       "commodityMarketDisruptionScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.MarketDisruptionEventsEnum" : {
+    "enumValues" : {
+      "APPLICABLE" : "Applicable",
+      "NOT_APPLICABLE" : "NotApplicable",
+      "AS_SPECIFIED_IN_MASTER_AGREEMENT" : "AsSpecifiedInMasterAgreement",
+      "AS_SPECIFIED_IN_CONFIRMATION" : "AsSpecifiedInConfirmation"
     }
   },
   "fpml.confirmation.MarketReference" : {
@@ -5933,6 +6996,13 @@
       }
     }
   },
+  "fpml.confirmation.MessageHeaderModel" : {
+    "attributes" : {
+      "signature" : {
+        "xmlName" : "Signature"
+      }
+    }
+  },
   "fpml.confirmation.MessageId" : {
     "attributes" : {
       "value" : {
@@ -5957,6 +7027,18 @@
       "commodityFixedPhysicalQuantityModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.MetalTitleEnum" : {
+    "enumValues" : {
+      "TRANSFERS_WITH_RISK_OF_LOSS" : "TransfersWithRiskOfLoss",
+      "DOES_NOT_TRANSFER_WITH_RISK_OF_LOSS" : "DoesNotTransferWithRiskOfLoss"
+    }
+  },
+  "fpml.confirmation.MethodOfAdjustmentEnum" : {
+    "enumValues" : {
+      "CALCULATION_AGENT" : "CalculationAgent",
+      "OPTIONS_EXCHANGE" : "OptionsExchange"
     }
   },
   "fpml.confirmation.MgmtData" : {
@@ -6037,9 +7119,42 @@
     "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
     "xmlElementName" : "mutualFund"
   },
+  "fpml.confirmation.MutualOrOptionalEarlyTerminationModel" : {
+    "attributes" : {
+      "mutualOrOptionalEarlyTerminationModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.MutualOrOptionalEarlyTerminationModelSequence" : {
+    "attributes" : {
+      "mutualOrOptionalEarlyTerminationModelSequenceSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.NationalisationOrInsolvencyOrDelistingEventEnum" : {
+    "enumValues" : {
+      "NEGOTIATED_CLOSEOUT" : "NegotiatedCloseout",
+      "CANCELLATION_AND_PAYMENT" : "CancellationAndPayment"
+    }
+  },
+  "fpml.confirmation.NegativeInterestRateTreatmentEnum" : {
+    "enumValues" : {
+      "NEGATIVE_INTEREST_RATE_METHOD" : "NegativeInterestRateMethod",
+      "ZERO_INTEREST_RATE_METHOD" : "ZeroInterestRateMethod"
+    }
+  },
   "fpml.confirmation.NetAndGross" : {
     "attributes" : {
       "netAndOrGrossModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.NetAndOrGrossModel" : {
+    "attributes" : {
+      "netAndOrGrossModelSequence" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -6076,6 +7191,12 @@
       "noTouchUpperBarrierObservationSequence1" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.NonCashDividendTreatmentEnum" : {
+    "enumValues" : {
+      "POTENTIAL_ADJUSTMENT_EVENT" : "PotentialAdjustmentEvent",
+      "CASH_EQUIVALENT" : "CashEquivalent"
     }
   },
   "fpml.confirmation.NonCorrectableRequestMessage" : {
@@ -6161,11 +7282,24 @@
       }
     }
   },
+  "fpml.confirmation.NotionalAdjustmentEnum" : {
+    "enumValues" : {
+      "EXECUTION" : "Execution",
+      "PORTFOLIO_REBALANCING" : "PortfolioRebalancing",
+      "STANDARD" : "Standard"
+    }
+  },
   "fpml.confirmation.NotionalAmountReference" : {
     "attributes" : {
       "href" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.NotionalChangeEnum" : {
+    "enumValues" : {
+      "INCREASE" : "Increase",
+      "DECREASE" : "Decrease"
     }
   },
   "fpml.confirmation.NotionalReference" : {
@@ -6188,6 +7322,26 @@
   "fpml.confirmation.NotionalStepRule" : {
     "attributes" : {
       "notionalStepRuleSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.NovationAmountsModel" : {
+    "attributes" : {
+      "novationAmountsOldModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.NovationAmountsOldModel" : {
+    "attributes" : {
+      "novationAmountsOldModelSequence0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "novationAmountsOldModelSequence1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "novationAmountsOldModelSequence2" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -6228,6 +7382,16 @@
   "fpml.confirmation.ObligationAcceleration" : {
     "substitutionFor" : "fpml.confirmation.CreditEvent",
     "xmlElementName" : "obligationAcceleration"
+  },
+  "fpml.confirmation.ObligationCategoryEnum" : {
+    "enumValues" : {
+      "PAYMENT" : "Payment",
+      "BORROWED_MONEY" : "BorrowedMoney",
+      "REFERENCE_OBLIGATIONS_ONLY" : "ReferenceObligationsOnly",
+      "BOND" : "Bond",
+      "LOAN" : "Loan",
+      "BOND_OR_LOAN" : "BondOrLoan"
+    }
   },
   "fpml.confirmation.ObligationDefault" : {
     "substitutionFor" : "fpml.confirmation.CreditEvent",
@@ -6285,6 +7449,19 @@
       }
     }
   },
+  "fpml.confirmation.OptionExerciseAmountModel" : {
+    "attributes" : {
+      "optionExerciseAmountModelSequence0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "optionExerciseAmountModelSequence1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "optionExerciseAmountModelSequence2" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.OptionExerciseAmounts" : {
     "attributes" : {
       "optionExerciseAmountsSequence0" : {
@@ -6318,6 +7495,13 @@
       }
     }
   },
+  "fpml.confirmation.OptionSettlementModel" : {
+    "attributes" : {
+      "settlementAmountOrCurrencyModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.OptionType" : {
     "attributes" : {
       "value" : {
@@ -6325,6 +7509,22 @@
       },
       "optionTypeScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.OptionTypeEnum" : {
+    "enumValues" : {
+      "PUT" : "Put",
+      "CALL" : "Call",
+      "PAYER" : "Payer",
+      "RECEIVER" : "Receiver",
+      "STRADDLE" : "Straddle"
+    }
+  },
+  "fpml.confirmation.OptionalEarlyTerminationModel" : {
+    "attributes" : {
+      "optionalEarlyTerminationModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -6491,6 +7691,26 @@
       }
     }
   },
+  "fpml.confirmation.ParametricScheduleModel" : {
+    "attributes" : {
+      "parametricScheduleModelSequence0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "parametricScheduleModelSequence1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "parametricScheduleModelSequence2" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.ParametricScheduleModelSequence2" : {
+    "attributes" : {
+      "businessCentersOrReferenceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.PartialExercise" : {
     "attributes" : {
       "partialExerciseModel" : {
@@ -6528,6 +7748,13 @@
       },
       "partyIdScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.PartyModel" : {
+    "attributes" : {
+      "partyInformationModel" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -6642,6 +7869,31 @@
       }
     }
   },
+  "fpml.confirmation.PayRelativeToEnum" : {
+    "enumValues" : {
+      "CALCULATION_PERIOD_START_DATE" : "CalculationPeriodStartDate",
+      "CALCULATION_PERIOD_END_DATE" : "CalculationPeriodEndDate",
+      "LAST_PRICING_DATE" : "LastPricingDate",
+      "RESET_DATE" : "ResetDate",
+      "VALUATION_DATE" : "ValuationDate"
+    }
+  },
+  "fpml.confirmation.PayerReceiverEnum" : {
+    "enumValues" : {
+      "PAYER" : "Payer",
+      "RECEIVER" : "Receiver"
+    }
+  },
+  "fpml.confirmation.PayerReceiverModel" : {
+    "attributes" : {
+      "payerModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "receiverModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.Payment" : {
     "attributes" : {
       "payerReceiverModel" : {
@@ -6714,6 +7966,12 @@
       }
     }
   },
+  "fpml.confirmation.PayoutEnum" : {
+    "enumValues" : {
+      "DEFERRED" : "Deferred",
+      "IMMEDIATE" : "Immediate"
+    }
+  },
   "fpml.confirmation.PenaltyRateChange" : {
     "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
     "xmlElementName" : "penaltyRateChange"
@@ -6732,6 +7990,20 @@
   "fpml.confirmation.PeriodRate" : {
     "attributes" : {
       "periodOptionalEndModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.PeriodTimeEnum" : {
+    "enumValues" : {
+      "HOUR" : "Hour",
+      "MINUTE" : "Minute",
+      "SECOND" : "Second"
+    }
+  },
+  "fpml.confirmation.PeriodWithDaysModel" : {
+    "attributes" : {
+      "periodModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -6817,6 +8089,23 @@
       }
     }
   },
+  "fpml.confirmation.PortfolioReferenceOrReportIdentificationModel" : {
+    "attributes" : {
+      "portfolioConstituentReferenceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "reportSectionIdentificationModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.PostTradeEventsBaseModel" : {
+    "attributes" : {
+      "postTradeEventsBaseModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.PrePayment" : {
     "attributes" : {
       "payerReceiverModel" : {
@@ -6832,6 +8121,23 @@
       "paymentDiscountingModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.PremiumQuoteBasisEnum" : {
+    "enumValues" : {
+      "PERCENTAGE_OF_CALL_CURRENCY_AMOUNT" : "PercentageOfCallCurrencyAmount",
+      "PERCENTAGE_OF_PUT_CURRENCY_AMOUNT" : "PercentageOfPutCurrencyAmount",
+      "CALL_CURRENCY_PER_PUT_CURRENCY" : "CallCurrencyPerPutCurrency",
+      "PUT_CURRENCY_PER_CALL_CURRENCY" : "PutCurrencyPerCallCurrency",
+      "EXPLICIT" : "Explicit"
+    }
+  },
+  "fpml.confirmation.PremiumTypeEnum" : {
+    "enumValues" : {
+      "PRE_PAID" : "PrePaid",
+      "POST_PAID" : "PostPaid",
+      "VARIABLE" : "Variable",
+      "FIXED" : "Fixed"
     }
   },
   "fpml.confirmation.PrepaymentNotification" : {
@@ -6857,6 +8163,12 @@
       "equityPriceModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.PriceExpressionEnum" : {
+    "enumValues" : {
+      "ABSOLUTE_TERMS" : "AbsoluteTerms",
+      "PERCENTAGE_OF_NOTIONAL" : "PercentageOfNotional"
     }
   },
   "fpml.confirmation.PriceMateriality" : {
@@ -7086,6 +8398,12 @@
       }
     }
   },
+  "fpml.confirmation.PutCallEnum" : {
+    "enumValues" : {
+      "PUT" : "Put",
+      "CALL" : "Call"
+    }
+  },
   "fpml.confirmation.QuantityReference" : {
     "attributes" : {
       "href" : {
@@ -7115,6 +8433,48 @@
       "quotationCharacteristicsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.QuotationCharacteristicsModel" : {
+    "attributes" : {
+      "quoteLocationModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.QuotationModel" : {
+    "attributes" : {
+      "quotationCharacteristicsModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.QuotationRateTypeEnum" : {
+    "enumValues" : {
+      "BID" : "Bid",
+      "ASK" : "Ask",
+      "MID" : "Mid",
+      "EXERCISING_PARTY_PAYS" : "ExercisingPartyPays"
+    }
+  },
+  "fpml.confirmation.QuotationSideEnum" : {
+    "enumValues" : {
+      "BID" : "Bid",
+      "ASK" : "Ask",
+      "MID" : "Mid"
+    }
+  },
+  "fpml.confirmation.QuotationStyleEnum" : {
+    "enumValues" : {
+      "POINTS_UP_FRONT" : "PointsUpFront",
+      "TRADED_SPREAD" : "TradedSpread",
+      "PRICE" : "Price"
+    }
+  },
+  "fpml.confirmation.QuoteBasisEnum" : {
+    "enumValues" : {
+      "CURRENCY1_PER_CURRENCY2" : "Currency1PerCurrency2",
+      "CURRENCY2_PER_CURRENCY1" : "Currency2PerCurrency1"
     }
   },
   "fpml.confirmation.QuoteTiming" : {
@@ -7177,6 +8537,19 @@
       "rateSourcePageScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.RateTreatmentEnum" : {
+    "enumValues" : {
+      "BOND_EQUIVALENT_YIELD" : "BondEquivalentYield",
+      "MONEY_MARKET_YIELD" : "MoneyMarketYield"
+    }
+  },
+  "fpml.confirmation.RealisedVarianceMethodEnum" : {
+    "enumValues" : {
+      "PREVIOUS" : "Previous",
+      "LAST" : "Last",
+      "BOTH" : "Both"
     }
   },
   "fpml.confirmation.ReasonCode" : {
@@ -7335,6 +8708,12 @@
       "bondEquityModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.RepoDurationEnum" : {
+    "enumValues" : {
+      "OVERNIGHT" : "Overnight",
+      "TERM" : "Term"
     }
   },
   "fpml.confirmation.RepoFarLeg" : {
@@ -7777,6 +9156,12 @@
       }
     }
   },
+  "fpml.confirmation.ResetRelativeToEnum" : {
+    "enumValues" : {
+      "CALCULATION_PERIOD_START_DATE" : "CalculationPeriodStartDate",
+      "CALCULATION_PERIOD_END_DATE" : "CalculationPeriodEndDate"
+    }
+  },
   "fpml.confirmation.ResourceId" : {
     "attributes" : {
       "value" : {
@@ -7910,9 +9295,50 @@
       }
     }
   },
+  "fpml.confirmation.ReturnTypeEnum" : {
+    "enumValues" : {
+      "DIVIDEND" : "Dividend",
+      "PRICE" : "Price",
+      "TOTAL" : "Total"
+    }
+  },
   "fpml.confirmation.Revolver" : {
     "substitutionFor" : "fpml.confirmation.FacilityGroup",
     "xmlElementName" : "revolver"
+  },
+  "fpml.confirmation.RollConventionEnum" : {
+    "enumValues" : {
+      "_1" : "1",
+      "_2" : "2",
+      "_3" : "3",
+      "_4" : "4",
+      "_5" : "5",
+      "_6" : "6",
+      "_7" : "7",
+      "_8" : "8",
+      "_9" : "9",
+      "_10" : "10",
+      "_11" : "11",
+      "_12" : "12",
+      "_13" : "13",
+      "_14" : "14",
+      "_15" : "15",
+      "_16" : "16",
+      "_17" : "17",
+      "_18" : "18",
+      "_19" : "19",
+      "_20" : "20",
+      "_21" : "21",
+      "_22" : "22",
+      "_23" : "23",
+      "_24" : "24",
+      "_25" : "25",
+      "_26" : "26",
+      "_27" : "27",
+      "_28" : "28",
+      "_29" : "29",
+      "_30" : "30"
+    }
   },
   "fpml.confirmation.Rollover" : {
     "substitutionFor" : "fpml.confirmation.FacilityEventGroup",
@@ -7933,6 +9359,13 @@
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.RoundingDirectionEnum" : {
+    "enumValues" : {
+      "UP" : "Up",
+      "DOWN" : "Down",
+      "NEAREST" : "Nearest"
     }
   },
   "fpml.confirmation.Routing" : {
@@ -8024,6 +9457,13 @@
       },
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.SensitivityDescriptionModel" : {
+    "attributes" : {
+      "pricingCoordinateOrReferenceModel" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -8132,6 +9572,14 @@
       }
     }
   },
+  "fpml.confirmation.SettlementPeriodDurationEnum" : {
+    "enumValues" : {
+      "_2_HOURS" : "2Hours",
+      "_1_HOUR" : "1Hour",
+      "_30_MINUTES" : "30Minutes",
+      "_15_MINUTES" : "15Minutes"
+    }
+  },
   "fpml.confirmation.SettlementPeriodFixingDates" : {
     "attributes" : {
       "settlementPeriodFixingDatesSequence" : {
@@ -8213,6 +9661,25 @@
       "href" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.SettlementTypeEnum" : {
+    "enumValues" : {
+      "CASH" : "Cash",
+      "PHYSICAL" : "Physical",
+      "ELECTION" : "Election",
+      "CASH_OR_PHYSICAL" : "CashOrPhysical"
+    }
+  },
+  "fpml.confirmation.ShareExtraordinaryEventEnum" : {
+    "enumValues" : {
+      "ALTERNATIVE_OBLIGATION" : "AlternativeObligation",
+      "CANCELLATION_AND_PAYMENT" : "CancellationAndPayment",
+      "OPTIONS_EXCHANGE" : "OptionsExchange",
+      "CALCULATION_AGENT" : "CalculationAgent",
+      "MODIFIED_CALCULATION_AGENT" : "ModifiedCalculationAgent",
+      "PARTIAL_CANCELLATION_AND_PAYMENT" : "PartialCancellationAndPayment",
+      "COMPONENT" : "Component"
     }
   },
   "fpml.confirmation.ShortSale" : {
@@ -8383,6 +9850,31 @@
       }
     }
   },
+  "fpml.confirmation.SpecifiedPriceEnum" : {
+    "enumValues" : {
+      "AFTERNOON" : "Afternoon",
+      "ASK" : "Ask",
+      "BID" : "Bid",
+      "CLOSING" : "Closing",
+      "HIGH" : "High",
+      "INDEX" : "Index",
+      "MEAN_OF_BID_AND_ASK" : "MeanOfBidAndAsk",
+      "LOCATIONAL_MARGINAL" : "LocationalMarginal",
+      "LOW" : "Low",
+      "MARGINAL_HOURLY" : "MarginalHourly",
+      "MARKET_CLEARING" : "MarketClearing",
+      "MEAN_OF_HIGH_AND_LOW" : "MeanOfHighAndLow",
+      "MORNING" : "Morning",
+      "OFFICIAL" : "Official",
+      "OPENING" : "Opening",
+      "SETTLEMENT" : "Settlement",
+      "SPOT" : "Spot",
+      "MIDPOINT" : "Midpoint",
+      "NATIONAL_SINGLE" : "NationalSingle",
+      "WEIGHTED_AVERAGE" : "WeightedAverage",
+      "UN_WEIGHTED_AVERAGE" : "UnWeightedAverage"
+    }
+  },
   "fpml.confirmation.SpreadSchedule" : {
     "attributes" : {
       "_type" : {
@@ -8411,11 +9903,24 @@
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "standardProduct"
   },
+  "fpml.confirmation.StandardSettlementStyleEnum" : {
+    "enumValues" : {
+      "STANDARD" : "Standard",
+      "NET" : "Net",
+      "STANDARD_AND_NET" : "StandardAndNet"
+    }
+  },
   "fpml.confirmation.StepBase" : {
     "attributes" : {
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.StepRelativeToEnum" : {
+    "enumValues" : {
+      "INITIAL" : "Initial",
+      "PREVIOUS" : "Previous"
     }
   },
   "fpml.confirmation.Strategy" : {
@@ -8443,6 +9948,12 @@
       }
     }
   },
+  "fpml.confirmation.StrikeQuoteBasisEnum" : {
+    "enumValues" : {
+      "PUT_CURRENCY_PER_CALL_CURRENCY" : "PutCurrencyPerCallCurrency",
+      "CALL_CURRENCY_PER_PUT_CURRENCY" : "CallCurrencyPerPutCurrency"
+    }
+  },
   "fpml.confirmation.StubCalculationPeriod" : {
     "attributes" : {
       "stubCalculationPeriodSequence" : {
@@ -8462,6 +9973,14 @@
       "stubFloatingRateIndexModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.StubPeriodTypeEnum" : {
+    "enumValues" : {
+      "SHORT_INITIAL" : "ShortInitial",
+      "SHORT_FINAL" : "ShortFinal",
+      "LONG_INITIAL" : "LongInitial",
+      "LONG_FINAL" : "LongFinal"
     }
   },
   "fpml.confirmation.SupervisorRegistration" : {
@@ -8538,6 +10057,14 @@
       }
     }
   },
+  "fpml.confirmation.TelephoneTypeEnum" : {
+    "enumValues" : {
+      "WORK" : "Work",
+      "MOBILE" : "Mobile",
+      "FAX" : "Fax",
+      "PERSONAL" : "Personal"
+    }
+  },
   "fpml.confirmation.TermDeposit" : {
     "substitutionFor" : "fpml.confirmation.Product",
     "xmlElementName" : "termDeposit",
@@ -8581,6 +10108,15 @@
       }
     }
   },
+  "fpml.confirmation.TimeTypeEnum" : {
+    "enumValues" : {
+      "CLOSE" : "Close",
+      "OPEN" : "Open",
+      "SPECIFIC_TIME" : "SpecificTime",
+      "DERIVATIVES_CLOSE" : "DerivativesClose",
+      "AS_SPECIFIED_IN_MASTER_CONFIRMATION" : "AsSpecifiedInMasterConfirmation"
+    }
+  },
   "fpml.confirmation.TimestampTypeScheme" : {
     "attributes" : {
       "value" : {
@@ -8599,6 +10135,12 @@
       "timezoneLocationScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.TouchConditionEnum" : {
+    "enumValues" : {
+      "TOUCH" : "Touch",
+      "NOTOUCH" : "Notouch"
     }
   },
   "fpml.confirmation.TouchRateObservation" : {
@@ -8754,6 +10296,19 @@
       }
     }
   },
+  "fpml.confirmation.TradeNotionalChangeModel" : {
+    "attributes" : {
+      "tradeNotionalChangeModelSequence0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "tradeNotionalChangeModelSequence1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "tradeNotionalChangeModelSequence2" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.TradeNovationContent" : {
     "attributes" : {
       "newTradeModel" : {
@@ -8798,6 +10353,16 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "newTradeModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.TradeOrInfoModel" : {
+    "attributes" : {
+      "tradeOrInfoModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "tradeReferenceInformationModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
@@ -8857,6 +10422,30 @@
       },
       "traderScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "fpml.confirmation.TradingAndPostTradeEventsModel" : {
+    "attributes" : {
+      "tradingEventsBaseModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "postTradeEventsBaseModel" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.TradingEventsBaseModel" : {
+    "attributes" : {
+      "tradingEventsBaseModelSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.TradingEventsModel" : {
+    "attributes" : {
+      "tradingEventsBaseModel" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
@@ -8936,6 +10525,14 @@
       }
     }
   },
+  "fpml.confirmation.TriggerConditionEnum" : {
+    "enumValues" : {
+      "AT_OR_ABOVE" : "AtOrAbove",
+      "AT_OR_BELOW" : "AtOrBelow",
+      "ABOVE" : "Above",
+      "BELOW" : "Below"
+    }
+  },
   "fpml.confirmation.TriggerRateObservation" : {
     "attributes" : {
       "triggerRateObservationSequence0" : {
@@ -8944,6 +10541,21 @@
       "triggerRateObservationSequence1" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.TriggerTimeTypeEnum" : {
+    "enumValues" : {
+      "CLOSING" : "Closing",
+      "ANYTIME" : "Anytime"
+    }
+  },
+  "fpml.confirmation.TriggerTypeEnum" : {
+    "enumValues" : {
+      "EQUAL_OR_LESS" : "EqualOrLess",
+      "EQUAL_OR_GREATER" : "EqualOrGreater",
+      "EQUAL" : "Equal",
+      "LESS" : "Less",
+      "GREATER" : "Greater"
     }
   },
   "fpml.confirmation.UnderlyerLoanRate" : {
@@ -8984,6 +10596,16 @@
     "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
     "xmlElementName" : "upfrontFeePayment"
   },
+  "fpml.confirmation.UtilizationModel" : {
+    "attributes" : {
+      "utilizationModelSequence0" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "utilizationModelSequence1" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
   "fpml.confirmation.UtilizationPeriod" : {
     "attributes" : {
       "periodWithDaysModel" : {
@@ -9023,6 +10645,18 @@
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.ValuationMethodEnum" : {
+    "enumValues" : {
+      "MARKET" : "Market",
+      "HIGHEST" : "Highest",
+      "AVERAGE_MARKET" : "AverageMarket",
+      "AVERAGE_HIGHEST" : "AverageHighest",
+      "BLENDED_MARKET" : "BlendedMarket",
+      "BLENDED_HIGHEST" : "BlendedHighest",
+      "AVERAGE_BLENDED_MARKET" : "AverageBlendedMarket",
+      "AVERAGE_BLENDED_HIGHEST" : "AverageBlendedHighest"
     }
   },
   "fpml.confirmation.ValuationPostponement" : {
@@ -9070,6 +10704,12 @@
       "valuationSetDetailScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
+    }
+  },
+  "fpml.confirmation.ValuationTypeEnum" : {
+    "enumValues" : {
+      "MODEL" : "Model",
+      "MARKET" : "Market"
     }
   },
   "fpml.confirmation.VarianceOptionTransactionSupplement" : {
@@ -9204,6 +10844,14 @@
       "weatherCalculationPeriodModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
+    }
+  },
+  "fpml.confirmation.WeatherSettlementLevelEnum" : {
+    "enumValues" : {
+      "CUMULATIVE" : "Cumulative",
+      "AVERAGE" : "Average",
+      "MXIMUM" : "Mximum",
+      "MINIMUM" : "Minimum"
     }
   },
   "fpml.confirmation.WeatherStationAirport" : {

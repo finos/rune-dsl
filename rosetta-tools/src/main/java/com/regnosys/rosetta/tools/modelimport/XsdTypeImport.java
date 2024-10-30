@@ -326,13 +326,19 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         }
     }
 	
-	public Map<Data, TypeXMLConfiguration> getXMLConfiguration(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {        
-		Data data = xsdMapping.getRosettaTypeFromComplex(xsdType);
-		if (xsdMapping.getElementsWithComplexType(xsdType)
-				.map(xsdMapping::getRosettaTypeFromElement)
-				.anyMatch(t -> t.equals(data))) {
-			// This type is merged into an element.
-			return Collections.emptyMap();
+	public Map<Data, TypeXMLConfiguration> getXMLConfiguration(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {
+		Data data;
+		if (xsdType instanceof XsdGroup group) {
+			data = xsdMapping.getRosettaTypeFromGroup(group);
+		} else {
+			XsdComplexType ct = (XsdComplexType)xsdType;
+			data = xsdMapping.getRosettaTypeFromComplex(ct);
+			if (xsdMapping.getElementsWithComplexType(ct)
+					.map(xsdMapping::getRosettaTypeFromElement)
+					.anyMatch(t -> t.equals(data))) {
+				// This type is merged into an element.
+				return Collections.emptyMap();
+			}
 		}
 		
 		Map<Data, TypeXMLConfiguration> result = new LinkedHashMap<>();
@@ -342,7 +348,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
-				Optional.of(attributeConfig)
+				Optional.of(attributeConfig),
+				Optional.empty()
 			);
 		result.put(data, config);
 		
@@ -434,7 +441,12 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 	private TypeXMLConfiguration createTypeConfiguration(Data data, Stream<XsdAbstractElement> abstractElements, boolean isChoiceGroup, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result) {
         // Create type config
 		Map<String, AttributeXMLConfiguration> currentConfig = new LinkedHashMap<>();
-		TypeXMLConfiguration config = new TypeXMLConfiguration(Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(currentConfig));
+		TypeXMLConfiguration config = new TypeXMLConfiguration(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
+				Optional.of(currentConfig),
+				Optional.empty());
         result.put(data, config);
 
         completeTypeConfiguration(currentConfig, abstractElements, isChoiceGroup, xsdMapping, result);
