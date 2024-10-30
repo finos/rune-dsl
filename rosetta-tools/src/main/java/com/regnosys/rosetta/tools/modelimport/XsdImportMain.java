@@ -24,7 +24,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.xmlet.xsdparser.core.XsdParser;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +57,7 @@ public class XsdImportMain {
         Path schemaPath = configPath.getParent().resolve(config.getSchemaLocation()).normalize();
 
         // Parse xsd
-        XsdParser parserInstance = new XsdParser(schemaPath.toString(), new RosettaXsdParserConfig());
+        RosettaXsdParser parserInstance = new RosettaXsdParser(schemaPath.toString());
 
         // Generate rosetta
         Injector injector = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();

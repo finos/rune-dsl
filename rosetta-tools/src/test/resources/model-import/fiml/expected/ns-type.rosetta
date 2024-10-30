@@ -100,19 +100,14 @@ type ReferenceEntity extends LegalEntityAsset: <"Referenceable instance of Legal
 	[rootType]
 
 type Break extends InterLifeBreak: <"Interlife break">
-	[rootType]
 
 type CashRepricing extends CashRepricingEvent: <"Global element representing cash repricing.">
-	[rootType]
 
 type Close extends InterLifeEvent: <"Interlife close event">
-	[rootType]
 
 type CollateralSubstitution extends CollateralSubstitutionEvent: <"Global element representing a collateral substitution.">
-	[rootType]
 
 type CouponEvent extends MidLifeEvent: <"Global element representing a coupon event. This structure is used for Buy-Sell Back trades to describe when a coupon is paid and what reinvestment rate will be applied. the amount is in the instrument currency. To be able to represent a buy/sell back with more than one collateral we use an href link to the underlying asset. This enables us to represent multiple coupons during the life of the trade, with different reinvestment rates, and possibly different instruments.">
-	[rootType]
 
 	currency string (0..1) <"The currency in which an amount is denominated.">
 	couponAmount string (1..1) <"The cash value of the coupon paid (not the coupon rate). It should be equal to the coupon rate divided by frequency (2\tfor semi annual) times the notional of the bond.">
@@ -122,31 +117,24 @@ type CouponEvent extends MidLifeEvent: <"Global element representing a coupon ev
 	transfer Transfer (0..1) <"The transfer structure can be used to explicitly state who will pay the coupon. In buy-sell-back trades, whoever holds the bond will receive the coupon (from the bond issuer) and keep it. If the bond holder passes the coupon on to the counterparty we expect to see a transfer from bond holder to counterparty here.">
 
 type FeeRateChange extends RateChangeEvent: <"Global element representing a fee rate change.">
-	[rootType]
 
 type InterestPayout extends InterestPayoutEvent: <"Global element representing an interest payout.">
-	[rootType]
 
 type MarkToMarketEvent extends MidLifeEvent: <"Global element representing a nominal repricing. A mark to market event. This type of event is an adjustment of the price of the underlying collateral done to reflect current market conditions. Depending on the direction of the collateral valuation, one of the contracting parties will either pledge more/less collateral in the contract, or add/substract cash from the contract value.">
-	[rootType]
 
 	collateral CollateralValuation (1..1) <"The updated collateral valuation for the contract. The change compared to the previously agreed valuation determines what securities or cash movement will occur.">
 	combinedInterestPayout boolean (1..1) <"Indicates that the parties agree to settle the accrued interest on the contract at the time of the repricing.">
 	transfer Transfer (0..1) <"Participants may use this structure to explicitly restate who is receiving/delivering cash and securities.">
 
 type MidLifeEvent extends EventBase: <"Abstract placeholder for repo mid life events. A mid life event in a repo or securities lending transaction. Such mid life events are bilateral agreements between contracting parties to alter the financial profile of the transaction. Such examples include interest payments, collateral substitutions, or mark-to-market activity (cash or nominal repricing) to re-balance the valuation of cash and collateral in the transaction.">
-	[rootType]
 
 	eventDate string (1..1) <"The date the event has been recorded.">
 
 type Open extends InterLifeEvent: <"Interlife open event">
-	[rootType]
 
 type RateChange extends RateChangeEvent: <"Global element representing a rate change.">
-	[rootType]
 
 type RateObservation extends RateObservationEvent: <"Global element representing rate observation.">
-	[rootType]
 
 type Repo: <"Global element representing a Repo transaction. A Repo, modeled as an FpML:Product.">
 	[rootType]

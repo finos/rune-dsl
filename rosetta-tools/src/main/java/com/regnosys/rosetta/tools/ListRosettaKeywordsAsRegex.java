@@ -49,5 +49,4 @@ public class ListRosettaKeywordsAsRegex {
 					.collect(Collectors.joining("|"))
 		);
 	}
-
 }

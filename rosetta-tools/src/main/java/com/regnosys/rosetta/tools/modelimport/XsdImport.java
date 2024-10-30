@@ -64,7 +64,7 @@ public class XsdImport {
 		this.modelIdProvider = modelIdProvider;
 	}
 
-	public ResourceSet generateRosetta(XsdParser parsedInstance, ImportTargetConfig targetConfig) {
+	public ResourceSet generateRosetta(RosettaXsdParser parsedInstance, ImportTargetConfig targetConfig) {
 		List<XsdAbstractElement> xsdElements = parsedInstance.getResultXsdSchemas().flatMap(XsdSchema::getXsdElements).toList();
 		
 		// Initialization
@@ -143,13 +143,14 @@ public class XsdImport {
 	}
 	private TypeXMLConfiguration prune(TypeXMLConfiguration config) {
 		return new TypeXMLConfiguration(
-				config.getXmlRootElementName(),
+				config.getSubstitutionFor(),
+				config.getXmlElementName(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getAttributes().map(x -> x.isEmpty() ? null : x)
 			);
 	}
 	private boolean isEmpty(TypeXMLConfiguration config) {
-		return config.getXmlRootElementName().isEmpty() && (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty()) && (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty());
+		return config.getSubstitutionFor().isEmpty() && config.getXmlElementName().isEmpty() && (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty()) && (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty());
 	}
 
 	public void saveResources(String outputPath) throws IOException {

@@ -16,16 +16,26 @@
 
 package com.rosetta.util.serialisation;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public class RosettaXMLConfiguration {
@@ -35,9 +45,23 @@ public class RosettaXMLConfiguration {
 	public RosettaXMLConfiguration(Map<ModelSymbolId, TypeXMLConfiguration> typeConfigMap) {
 		this.typeConfigMap = new TreeMap<>(typeConfigMap);
 	}
+	
+	public static RosettaXMLConfiguration load(InputStream input) throws IOException {
+		ObjectMapper xmlConfigurationMapper = new ObjectMapper()
+                .registerModule(new Jdk8Module()) // because RosettaXMLConfiguration contains `Optional` types.
+                .setSerializationInclusion(JsonInclude.Include.NON_ABSENT); // because we want to interpret an absent value as `Optional.empty()`.
+        return xmlConfigurationMapper.readValue(input, RosettaXMLConfiguration.class);
+	}
 
 	public Optional<TypeXMLConfiguration> getConfigurationForType(ModelSymbolId symbolId) {
 		return Optional.ofNullable(typeConfigMap.get(symbolId));
+	}
+	
+	public List<ModelSymbolId> getSubstitutionsForType(ModelSymbolId symbolId) {
+		return typeConfigMap.entrySet().stream()
+			.filter(e -> e.getValue().getSubstitutionFor().map(t -> t.equals(symbolId)).orElse(false))
+			.map(e -> e.getKey())
+			.collect(Collectors.toList());
 	}
 
 	@Override

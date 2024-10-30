@@ -341,6 +341,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		TypeXMLConfiguration config = new TypeXMLConfiguration(
 				Optional.empty(),
 				Optional.empty(),
+				Optional.empty(),
 				Optional.of(attributeConfig)
 			);
 		result.put(data, config);
@@ -433,7 +434,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 	private TypeXMLConfiguration createTypeConfiguration(Data data, Stream<XsdAbstractElement> abstractElements, boolean isChoiceGroup, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result) {
         // Create type config
 		Map<String, AttributeXMLConfiguration> currentConfig = new LinkedHashMap<>();
-		TypeXMLConfiguration config = new TypeXMLConfiguration(Optional.empty(), Optional.empty(), Optional.of(currentConfig));
+		TypeXMLConfiguration config = new TypeXMLConfiguration(Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(currentConfig));
         result.put(data, config);
 
         completeTypeConfiguration(currentConfig, abstractElements, isChoiceGroup, xsdMapping, result);

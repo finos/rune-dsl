@@ -31,7 +31,7 @@
     }
   },
   "test.ns.TopLevel" : {
-    "xmlRootElementName" : "TopLevel",
+    "xmlElementName" : "TopLevel",
     "xmlAttributes" : {
       "xmlns" : "urn:my.schema",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"

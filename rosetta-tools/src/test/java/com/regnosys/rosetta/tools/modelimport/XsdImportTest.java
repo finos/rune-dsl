@@ -43,6 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
+import org.xmlet.xsdparser.xsdelements.elementswrapper.UnsolvedReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -106,7 +107,7 @@ public class XsdImportTest {
 		Path xsdFile = baseFolder.resolve(config.getSchemaLocation()).normalize();
 
 		// Load xsd elements
-		XsdParser parsedInstance = new XsdParser(xsdFile.toString(), new RosettaXsdParserConfig());
+		RosettaXsdParser parsedInstance = new RosettaXsdParser(xsdFile.toString());
 		assertNoUnresolvedXsdElements(parsedInstance);
 				
 		// Test rosetta
@@ -197,6 +198,11 @@ public class XsdImportTest {
     @Test
     void testNestedData() throws IOException, URISyntaxException {
         runTest("nested-data");
+    }
+    
+    @Test
+    void testSubstitution() throws IOException, URISyntaxException {
+        runTest("substitution");
     }
 
 	private ImportConfig mockConfig(Path basePath) {
