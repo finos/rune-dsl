@@ -49,7 +49,7 @@ class ExpressionParser {
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Collection<? extends CharSequence> attrs) {
-		val attributes = attrs.map[createAttribute(context)].toList
+		val attributes = attrs.map[parseAttribute(context)].toList
 		return parseExpression(expr, context, attributes)
 	}
 	
@@ -66,11 +66,11 @@ class ExpressionParser {
 		return expression
 	}
 	
-	def Attribute createAttribute(CharSequence attr) {
-		return createAttribute(attr, defaultContext)
+	def Attribute parseAttribute(CharSequence attr) {
+		return parseAttribute(attr, defaultContext)
 	}
 	
-	def Attribute createAttribute(CharSequence attr, List<RosettaModel> context) {
+	def Attribute parseAttribute(CharSequence attr, List<RosettaModel> context) {
 		val IParseResult result = parser.parse(grammar.attributeRule, new StringReader(attr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val attribute = result.rootASTElement as Attribute

@@ -101,7 +101,10 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 
 	@Override
 	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
-		return this.toExpression().declareAsVariable(isFinal, variableId, scope);
+		JavaExpression expression = this.toExpression();
+		JavaStatementBuilder variable = expression.declareAsVariable(isFinal, variableId, scope);
+		scope.createKeySynonym(this, expression);
+		return variable;
 	}
 
 	@Override

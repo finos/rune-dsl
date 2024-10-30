@@ -1,25 +1,29 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.rosetta.util.types.JavaType
-import java.math.BigInteger
-import java.math.BigDecimal
 import com.regnosys.rosetta.generator.java.JavaScope
-import java.util.Optional
-import java.util.Collections
-import java.util.stream.Collectors
-import com.rosetta.model.lib.mapper.MapperS
-import com.rosetta.model.lib.mapper.MapperC
-import com.rosetta.model.lib.expression.ComparisonResult
-import java.util.function.Function
-import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
-import javax.inject.Inject
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
-import java.util.ArrayList
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.model.lib.expression.ComparisonResult
+import com.rosetta.model.lib.mapper.MapperC
+import com.rosetta.model.lib.mapper.MapperS
+import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaReferenceType
+import com.rosetta.util.types.JavaType
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Optional
+import java.util.function.Function
+import java.util.stream.Collectors
+import javax.inject.Inject
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -35,6 +39,9 @@ import com.rosetta.util.types.JavaReferenceType
  * - `MapperC<Boolean>` to `ComparisonResult`
  * - `Void` to `LocalDate`
  * - `Void` to `MapperC<LocalDate>`
+ * - `FieldWithMetaString` to `String`
+ * - `String` to `FieldWithMetaString` 
+ * 
  * Item to item coercions and item to wrapper coercions are performed null-safe.
  * 
  * This service is auto-boxing aware. If the expected type is a wrapper class of a primitive type
@@ -97,8 +104,9 @@ class TypeCoercionService {
 		//   - if it is null, return null,
 		//   - otherwise, convert variable to expected type.
 		
-		getItemConversion(actual, expected)
+		getItemConversion(actual, expected, scope)
 			.map[itemConversion|
+				
 				convertNullSafe(
 					expr,
 					itemConversion,
@@ -121,19 +129,19 @@ class TypeCoercionService {
 		
 		// Exception: wrapping to a MapperS or MapperC is null safe, so no need to do a null check.
 		if (expected.extendsMapper) {
-			getItemConversion(actual, expectedItemType)
+			getItemConversion(actual, expectedItemType, scope)
 				.map[itemConversion|
 					convertNullSafe(
 						expr,
-						wrapConversion.compose(itemConversion),
+						itemConversion.andThen[mapExpression(wrapConversion)],
 						expected,
 						scope
 					)
 				].orElse(expr.mapExpression(wrapConversion))
 		} else {
-			val totalConversion = getItemConversion(actual, expectedItemType)
+			val totalConversion = getItemConversion(actual, expectedItemType, scope)
 				.map[itemConversion|
-					wrapConversion.compose(itemConversion)
+					itemConversion.andThen[mapExpression(wrapConversion)] as Function<JavaExpression, ? extends JavaStatementBuilder>
 				].orElse(wrapConversion)
 			
 			convertNullSafe(
@@ -191,7 +199,7 @@ class TypeCoercionService {
 		return totalConversion.apply(expr)
 	}
 	
-	private def Optional<Function<JavaExpression, JavaExpression>> getItemConversion(JavaType actual, JavaType expected) {
+	private def Optional<Function<JavaExpression, ? extends JavaStatementBuilder>> getItemConversion(JavaType actual, JavaType expected, JavaScope scope) {
 		if (actual == expected) {
 			return Optional.empty
 		}
@@ -202,8 +210,12 @@ class TypeCoercionService {
 		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
 			// Number type to number type
 			return Optional.of([getNumberConversionExpression(it, expected)])
-		}		
-		
+		} 
+		else if (actual instanceof RJavaWithMetaValue) {
+			return Optional.of([metaToItemConversionExpression(it, expected, scope)])
+		} else if (expected instanceof RJavaFieldWithMeta || expected instanceof RJavaReferenceWithMeta) {
+			return Optional.of([itemToMetaConversionExpression(it, expected as RJavaWithMetaValue, scope)])
+		} 
 		return Optional.empty
 	}
 	private def Function<JavaExpression, JavaExpression> getWrapConversion(JavaType wrapperType) {
@@ -231,7 +243,7 @@ class TypeCoercionService {
 	private def Optional<Function<JavaExpression, JavaExpression>> getWrappedItemConversion(JavaType actual, JavaType expectedItemType, JavaScope scope) {
 		val actualItemType = actual.itemType
 		
-		getItemConversion(actualItemType, expectedItemType)
+		getItemConversion(actualItemType, expectedItemType, scope)
 			.map[itemConversion|
 				if (actual.isList) {
 					[getListItemConversionExpression(it, itemConversion, expectedItemType.toReferenceType, scope)]
@@ -313,19 +325,32 @@ class TypeCoercionService {
 			}
 		)
 	}
-	private def JavaStatementBuilder convertNullSafe(JavaExpression expr, Function<JavaExpression, JavaExpression> conversion, JavaType expected, JavaScope scope) {
+	private def JavaStatementBuilder convertNullSafe(JavaExpression expr, Function<JavaExpression, ? extends JavaStatementBuilder> conversion, JavaType expected, JavaScope scope) {
 		val actual = expr.expressionType
 		if (actual instanceof JavaPrimitiveType) {
 			return expr.mapExpression(conversion)
 		}
-		return expr
-				.declareAsVariable(true, actual.simpleName.toFirstLower, scope)
-				.mapExpression[new JavaConditionalExpression(
-					JavaExpression.from('''«it» == null''', JavaPrimitiveType.BOOLEAN),
+		
+		expr
+			.declareAsVariable(true, actual.simpleName.toFirstLower, scope)
+			.mapExpression[varExpr|
+				val conditionExpr = JavaExpression.from('''«varExpr» == null''', JavaPrimitiveType.BOOLEAN)
+				val converted = conversion.apply(varExpr)
+				if (converted instanceof JavaExpression) {
+					return new JavaConditionalExpression(
+						conditionExpr,
+						expected.empty,
+						converted,
+						typeUtil
+					)
+				}
+				return new JavaIfThenElseBuilder(
+					conditionExpr,
 					expected.empty,
-					conversion.apply(it),
+					converted,
 					typeUtil
-				)]
+				)
+			]
 	}
 	
 	private def JavaExpression empty(JavaType expected) {
@@ -345,6 +370,35 @@ class TypeCoercionService {
 		} else {
 			JavaExpression.NULL
 		}
+	}
+	
+	/*
+	 * 1. Unwrap the meta by calling getValue() on the expression
+	 * 2. Map expression to a call to itemToItem(it, expected)
+	 */
+	private def JavaStatementBuilder metaToItemConversionExpression(JavaExpression expression, JavaType expected, JavaScope scope) {
+		val actual = expression.expressionType
+		if (actual instanceof RJavaWithMetaValue) {
+			JavaExpression.from('''«expression».getValue()''', actual.valueType)
+				.mapExpression[itemToItem(it, expected, scope)]
+		} else {
+			JavaExpression.NULL
+		}
+	}
+	
+	/*
+	 * 1. Get the item conversion expression lambda for the given expression
+	 * 2. If the lambda exists then run it and wrap the response in RJavaWithMetaValue builder
+	 * 3. If no lambda exists wrap the given expression in RJavaWithMetaValue builder
+	 */
+	private def JavaStatementBuilder itemToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaScope scope) { 
+		val expectedValueType = expected.valueType
+		getItemConversion(expression.expressionType, expectedValueType, scope)
+			.map[itemConversion|
+				itemConversion.apply(expression)
+					.mapExpression[JavaExpression.from('''«expected».builder().setValue(«it»).build()''', expected)]
+			]
+			.orElseGet[JavaExpression.from('''«expected».builder().setValue(«expression»).build()''', expected)]
 	}
 	
 	private def JavaExpression getNumberConversionExpression(JavaExpression expression, JavaType expected) {
@@ -434,7 +488,7 @@ class TypeCoercionService {
 	private def JavaExpression getMapperToItemConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«expression».get()''', expression.expressionType.itemType)
 	}
-	private def JavaExpression getListItemConversionExpression(JavaExpression expression, Function<JavaExpression, JavaExpression> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
+	private def JavaExpression getListItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
@@ -443,42 +497,43 @@ class TypeCoercionService {
 		JavaExpression.from(
 			'''
 			«expression».stream()
-				.<«expectedItemType»>map(«lambdaParam» -> «resultItem»)
+				.<«expectedItemType»>map(«lambdaParam» -> «resultItem.toLambdaBody»)
 				.collect(«Collectors».toList())
 			''',
 			resultType
 		)
 	}
-	private def JavaExpression getMapperSItemConversionExpression(JavaExpression expression, Function<JavaExpression, JavaExpression> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
+	private def JavaExpression getMapperSItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
-		val resultItem = itemConversion.apply(new JavaVariable(lambdaParam, actualItemType))
+		val inputToItem = new JavaVariable(lambdaParam, actualItemType)
 		val resultType = MAPPER_S.wrap(expectedItemType)
+		val resultItemNullSafe = convertNullSafe(inputToItem, itemConversion, expectedItemType, scope)
 		JavaExpression.from(
-			'''«expression».<«expectedItemType»>map("Type coercion", «lambdaParam» -> «lambdaParam» == null ? null : «resultItem»)''',
+			'''«expression».<«resultType.itemType»>map("Type coercion", «lambdaParam» -> «resultItemNullSafe.toLambdaBody»)''',
 			resultType
 		)
 	}
-	private def JavaExpression getMapperCItemConversionExpression(JavaExpression expression, Function<JavaExpression, JavaExpression> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
+	private def JavaExpression getMapperCItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val resultItem = itemConversion.apply(new JavaVariable(lambdaParam, actualItemType))
 		val resultType = MAPPER_C.wrap(expectedItemType)
 		JavaExpression.from(
-			'''«expression».<«expectedItemType»>map("Type coercion", «lambdaParam» -> «resultItem»)''',
+			'''«expression».<«expectedItemType»>map("Type coercion", «lambdaParam» -> «resultItem.toLambdaBody»)''',
 			resultType
 		)
 	}
-	private def JavaExpression getMapperListOfListsItemConversionExpression(JavaExpression expression, Function<JavaExpression, JavaExpression> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
+	private def JavaExpression getMapperListOfListsItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val listToListLambdaScope = scope.lambdaScope
 		val mapperCParam = listToListLambdaScope.createUniqueIdentifier("mapperC")
 		val resultMapperC = getMapperCItemConversionExpression(new JavaVariable(mapperCParam, MAPPER_C.wrap(actualItemType)), itemConversion, expectedItemType, listToListLambdaScope)
 		val resultType = MAPPER_LIST_OF_LISTS.wrap(expectedItemType)
 		JavaExpression.from(
-			'''«expression».<«expectedItemType»>mapListToList(«mapperCParam» -> «resultMapperC»)''',
+			'''«expression».<«expectedItemType»>mapListToList(«mapperCParam» -> «resultMapperC.toLambdaBody»)''',
 			resultType
 		)
 	}

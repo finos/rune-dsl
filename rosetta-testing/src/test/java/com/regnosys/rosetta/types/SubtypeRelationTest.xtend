@@ -13,6 +13,10 @@ import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.tests.util.ExpressionParser
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RStringType
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -20,12 +24,94 @@ class SubtypeRelationTest {
 	@Inject extension SubtypeRelation
 	@Inject extension ModelHelper
 	@Inject extension RObjectFactory
+	@Inject extension ExpressionParser
+	@Inject extension RosettaTypeProvider
+	@Inject extension RBuiltinTypeService
+	
 	
 	private def Data getData(RosettaModel model, String name) {
 		return model.elements.filter(RosettaNamed).findFirst[it.name == name] as Data
 	}
 	private def RosettaEnumeration getEnum(RosettaModel model, String name) {
 		return model.elements.filter(RosettaNamed).findFirst[it.name == name] as RosettaEnumeration
+	}
+	
+	@Test
+	def testJoinOnMetaSubTypesReturnsParent() {
+		val model = '''
+			type A:
+			
+			type B extends A:
+			
+			type C extends A:
+				
+		'''.parseRosettaWithNoIssues
+		
+		val fieldBType = '''
+			fieldB B (1..1)
+				[metadata reference]
+		'''.parseAttribute(#[model]).RTypeOfSymbol
+		
+		val fieldCType = '''
+			fieldC C (1..1)
+				[metadata reference]
+		'''.parseAttribute(#[model]).RTypeOfSymbol
+		
+		
+		val fieldA = model.getData("A").buildRDataType
+		
+		val joined = fieldBType.join(fieldCType)
+		
+		assertEquals(fieldA.withEmptyMeta, joined)
+	}
+
+	@Test
+	def testJoinOnSameBaseTypeWithMetaIsCorrect() {
+		val fieldA = '''
+			fieldA string (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldB = '''
+			fieldB string (1..1)
+				[metadata scheme]
+				[metadata address]
+		'''.parseAttribute.RTypeOfSymbol
+				
+		val result = fieldA.join(fieldB)
+		assertTrue(result.RType instanceof RStringType)
+		val resultMetaAttribute = result.getMetaAttributes.get(0)
+		assertEquals("scheme", resultMetaAttribute.name)
+		assertEquals(UNCONSTRAINED_STRING, resultMetaAttribute.RType)
+	}
+	
+	@Test
+	def testStringWithSchemeAndReferenceIsSubtypeOfRelationWithStringWithAddressAndLocation() {
+		val fieldAType = '''
+			fieldA string (1..1)
+				[metadata scheme]
+				[metadata reference]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		val fieldBType = '''
+			fieldB string (1..1)
+				[metadata address]
+				[metadata location]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertTrue(fieldAType.isSubtypeOf(fieldBType, true))
+		assertTrue(fieldBType.isSubtypeOf(fieldAType, true))
+	}
+	
+	@Test
+	def testStringWithSchemeIsSubtypeOfStringWithScheme() {
+		val fieldAType = '''
+			fieldA string (1..1)
+				[metadata scheme]
+		'''.parseAttribute.RTypeOfSymbol
+		
+		assertTrue(fieldAType.isSubtypeOf(fieldAType, true))
 	}
 	
 	@Test

@@ -28,22 +28,20 @@ public class RAttribute implements RAssignedRoot {
 	private final String name;
 	private final String definition;
 	private final List<RosettaDocReference> docReferences;
-	private final RType rType;
-	private final List<RAttribute> metaAnnotations;
+	private final RMetaAnnotatedType rMetaAnnotatedType;
 	private final PositiveIntegerInterval cardinality;
 	private final boolean isMeta;
 	private final RosettaRule ruleReference;
 	private final Attribute origin;
 
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
-		this(name, definition, docReferences, rType, metaAnnotations, cardinality, false, ruleReference, origin);
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RMetaAnnotatedType rMetaAnnotatedType, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
+		this(name, definition, docReferences, rMetaAnnotatedType, cardinality, false, ruleReference, origin);
 	}
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RType rType, List<RAttribute> metaAnnotations, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
+	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RMetaAnnotatedType rMetaAnnotatedType, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
-		this.rType = rType;
-		this.metaAnnotations = metaAnnotations;
+		this.rMetaAnnotatedType = rMetaAnnotatedType;
 		this.cardinality = cardinality;
 		this.isMeta = isMeta;
 		this.ruleReference = ruleReference;
@@ -59,10 +57,10 @@ public class RAttribute implements RAssignedRoot {
 		return origin;
 	}
 
-	public RType getRType() {
-		return rType;
+	public RMetaAnnotatedType getRMetaAnnotatedType() {
+		return rMetaAnnotatedType;
 	}
-
+	
 	@Override
 	public boolean isMulti() {
 		return cardinality.getMax().map(m -> m > 1).orElse(true);
@@ -80,15 +78,7 @@ public class RAttribute implements RAssignedRoot {
 		return docReferences;
 	}
 	
-	public List<RAttribute> getMetaAnnotations() {
-		return metaAnnotations;
-	}
-	
-	@Deprecated
-	public boolean hasReferenceOrAddressMetadata() {
-		return metaAnnotations.stream().anyMatch(a -> a.getName().equals("reference") || a.getName().equals("address"));
-	}
-	
+
 	public RosettaRule getRuleReference() {
 		return ruleReference;
 	}
@@ -99,7 +89,7 @@ public class RAttribute implements RAssignedRoot {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(definition, cardinality, metaAnnotations, name, rType, origin);
+		return Objects.hash(definition, cardinality, name, rMetaAnnotatedType, origin);
 	}
 
 	@Override
@@ -112,13 +102,13 @@ public class RAttribute implements RAssignedRoot {
 			return false;
 		RAttribute other = (RAttribute) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(cardinality, other.cardinality)
-				&& Objects.equals(metaAnnotations, other.metaAnnotations) && Objects.equals(name, other.name)
-				&& Objects.equals(rType, other.rType)
+				&& Objects.equals(name, other.name)
+				&& Objects.equals(rMetaAnnotatedType, other.rMetaAnnotatedType)
 				&& Objects.equals(origin, other.origin);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("RAttribute[name=%s, type=%s, cardinality=%s]", name, rType, cardinality);
+		return String.format("RAttribute[name=%s, type=%s, cardinality=%s]", name, rMetaAnnotatedType, cardinality);
 	}
 }

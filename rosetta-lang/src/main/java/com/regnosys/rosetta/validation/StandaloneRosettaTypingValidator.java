@@ -216,7 +216,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 						current = newCurrent;
 					}
 				} else {
-					RType attrType = ts.stripFromTypeAliases(attr.getRType());
+					RType attrType = ts.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
 					if (attrType instanceof RChoiceType) {
 						attrType = ((RChoiceType) attrType).asRDataType();
 					}

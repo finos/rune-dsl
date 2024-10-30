@@ -287,6 +287,11 @@ public class GenerateTmGrammar {
 		// - begin/while
 		// - list of patterns
 		if (tmMap.value.get("include") != null) {
+			if (!tmMap.path.get(tmMap.path.size() - 1).equals("patterns")) {
+				// Note: this check is only necessary for Monaco. See https://github.com/zikaari/monaco-textmate/issues/13.
+				// VS Code supports direct includes.
+				throw new ConfigurationException("Validation failed on include: may only be used inside 'patterns'. " + tmMap.getPath());
+			}
 			runValidators(tmMap, Map.of("include", include, "comment", comment, "repository", repository));
 		} else if (tmMap.value.get("match") != null) {
 			runValidators(tmMap, Map.of("name", scopes, "match", regex, "captures", captures, "comment", comment, "repository", repository));

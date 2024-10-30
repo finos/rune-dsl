@@ -32,7 +32,7 @@ class JavaDependencyProvider {
 
 			result.addAll(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
 			result.addAll(rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
-			result.addAll(deepFeatureCalls.map[typeProvider.getRType(receiver)].map[it instanceof RChoiceType ? asRDataType : it].filter(RDataType).map[toDeepPathUtilJavaClass])
+			result.addAll(deepFeatureCalls.map[typeProvider.getRMetaAnnotatedType(receiver).RType].map[it instanceof RChoiceType ? asRDataType : it].filter(RDataType).map[toDeepPathUtilJavaClass])
 		}
 	}
 
