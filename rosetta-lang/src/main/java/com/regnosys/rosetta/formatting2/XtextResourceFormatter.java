@@ -6,6 +6,7 @@ import java.util.List;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.formatting2.FormatterRequest;
@@ -16,11 +17,14 @@ import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 
 public class XtextResourceFormatter implements ResourceFormatterService{
+	private static Logger LOGGER = LoggerFactory.getLogger(XtextResourceFormatter.class);
 	@Inject
 	private Provider<FormatterRequest> formatterRequestProvider;
 	
@@ -29,34 +33,21 @@ public class XtextResourceFormatter implements ResourceFormatterService{
 
 	@Inject
 	private TextRegionAccessBuilder regionBuilder;
-	
-	@Override
-	public void formatCollection(Collection<Resource> resources) {
-	    formatCollection(resources, null);
-	}
-	
-	@Override
-	public void formatXtextResource(XtextResource resource) throws IOException {
-		formatXtextResource(resource, null);
-	}
 
 	@Override
 	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues){
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
-	            try {
-	                formatXtextResource((XtextResource) resource, preferenceValues);
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	            }
+	            formatXtextResource((XtextResource) resource, preferenceValues);
+	            
 	        } else {
-	            System.out.println("Resource is not of type XtextResource and will be skipped: " + resource);
+	        	LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
 	        }
 		});
 	}
 
 	@Override
-	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues) throws IOException {
+	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues){
 		//setup request and formatter
 		FormatterRequest req = formatterRequestProvider.get();
 		req.setPreferences(preferenceValues);
@@ -75,6 +66,10 @@ public class XtextResourceFormatter implements ResourceFormatterService{
 		//With the formatted text, update the resource
 		InputStream resultStream = new ByteArrayInputStream(formattedString.getBytes(StandardCharsets.UTF_8));
 		resource.unload();
-		resource.load(resultStream, null);
+		try {
+			resource.load(resultStream, null);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Since the resource is an in-memory string, this exception is not expected to be ever thrown.",e);
+		}
 	}
 }
