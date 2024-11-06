@@ -52,29 +52,19 @@ public class ResourceFormattingTool {
         
         Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
 		ResourceSet resourceSet = inj.getInstance(ResourceSet.class);
-        try {
-            // Find all .rosetta files in the directory
-            List<Path> rosettaFiles = Files.walk(directory)
+		ResourceFormatterService formatterService = inj.getInstance(ResourceFormatterService.class);
+        
+		try {
+            // Find all .rosetta files in the directory and load them from disk
+            List<Resource> resources = Files.walk(directory)
                 .filter(path -> path.toString().endsWith(".rosetta"))
+                .map(file -> resourceSet.getResource(URI.createFileURI(file.toString()), true))
                 .collect(Collectors.toList());
             
-            for (Path rosettaFile : rosettaFiles) {
-                // Load the resource from file
-            	Resource resource = resourceSet.createResource(URI.createFileURI(rosettaFile.toString()));
-                resource.load(null);
-                
-                // Format the resource
-        		ResourceFormatterService formatterService = inj.getInstance(ResourceFormatterService.class);
-                formatterService.formatCollection(List.of(resource), null);
-                
-                // Save the formatted resource back to disk
-                resource.save(null);
-                
-                LOGGER.info("Formatted and saved file at location " + rosettaFile);
-                System.out.println("Formatted and saved file at location " + rosettaFile);
-            }
+            //format resources
+            formatterService.formatCollection(resources, null);
         } catch (IOException e) {
-            LOGGER.debug("Error processing files: " + e.getMessage());
+            LOGGER.error("Error processing files: " + e.getMessage());
         }
 	}
 }

@@ -68,6 +68,8 @@ public class XtextResourceFormatter implements ResourceFormatterService{
 		resource.unload();
 		try {
 			resource.load(resultStream, null);
+			resource.save(null);
+			LOGGER.info("Successfully formatted and saved file at location " + resource.getURI());
 		} catch (IOException e) {
 			throw new UncheckedIOException("Since the resource is an in-memory string, this exception is not expected to be ever thrown.",e);
 		}
