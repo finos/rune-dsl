@@ -36,7 +36,7 @@ import com.regnosys.rosetta.formatting2.XtextResourceFormatter;
  * </p>
  */
 public class ResourceFormattingTool {		
-	private static Logger LOGGER = LoggerFactory.getLogger(XtextResourceFormatter.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(ResourceFormattingTool.class);
 	
 	public static void main(String[] args) {
 		if (args.length == 0) {
