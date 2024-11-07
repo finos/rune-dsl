@@ -68,6 +68,7 @@ public class ResourceFormattingTool {
             resources.forEach(resource -> {
 				try {
 					resource.save(null);
+					LOGGER.info("Successfully formatted and saved file at location " + resource.getURI());
 				} catch (IOException e) {
 					LOGGER.error("Error saving file at location " + resource.getURI() + ": "+ e.getMessage());
 				}
