@@ -61,8 +61,17 @@ public class ResourceFormattingTool {
                 .map(file -> resourceSet.getResource(URI.createFileURI(file.toString()), true))
                 .collect(Collectors.toList());
             
-            //format resources
+            // format resources
             formatterService.formatCollection(resources, null);
+            
+            // save each resource
+            resources.forEach(resource -> {
+				try {
+					resource.save(null);
+				} catch (IOException e) {
+					LOGGER.error("Error saving file at location " + resource.getURI() + ": "+ e.getMessage());
+				}
+			});
         } catch (IOException e) {
             LOGGER.error("Error processing files: " + e.getMessage());
         }

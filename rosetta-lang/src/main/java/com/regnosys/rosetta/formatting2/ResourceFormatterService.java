@@ -9,7 +9,7 @@ import org.eclipse.xtext.resource.XtextResource;
 public interface ResourceFormatterService {
 	
 	/**
-	 * Formats each {@link XtextResource} in the provided collection in-place.
+	 * Formats each {@link XtextResource} in the provided collection in-memory.
 	 * <p>
 	 * This method iterates over the given collection of resources and applies formatting 
 	 * directly to each resource. Formatting may include indentation, spacing adjustments, 
@@ -23,7 +23,7 @@ public interface ResourceFormatterService {
 	}
 	
 	/**
-	 * Formats the given {@link XtextResource} in-place.
+	 * Formats the given {@link XtextResource} in-memory.
 	 * <p>
 	 * This method applies formatting directly to the specified resource. Formatting can include
 	 * adjustments to indentation, spacing, and other stylistic elements to ensure consistency
@@ -39,7 +39,7 @@ public interface ResourceFormatterService {
 	}
 	
 	/**
-	 * Formats each {@link XtextResource} in the provided collection in-place, with specified formatting preferences.
+	 * Formats each {@link XtextResource} in the provided collection in-memory, with specified formatting preferences.
 	 * <p>
 	 * This method iterates over the given collection of resources and applies formatting 
 	 * directly to each resource. Formatting may include indentation, spacing adjustments, 
@@ -55,7 +55,7 @@ public interface ResourceFormatterService {
 	void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues); 
 	
 	/**
-	 * Formats the given {@link XtextResource} in-place.
+	 * Formats the given {@link XtextResource} in-memory.
 	 * <p>
 	 * This method applies formatting directly to the specified resource. Formatting can include
 	 * adjustments to indentation, spacing, and other stylistic elements to ensure consistency
