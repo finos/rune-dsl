@@ -66,5 +66,5 @@ public interface ResourceFormatterService {
 	 *
 	 * @param resource the {@link XtextResource} to format
 	 */
-	void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues);	
+	void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues);
 }

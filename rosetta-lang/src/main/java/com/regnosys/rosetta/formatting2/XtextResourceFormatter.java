@@ -23,47 +23,47 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class XtextResourceFormatter implements ResourceFormatterService{
+public class XtextResourceFormatter implements ResourceFormatterService {
 	private static Logger LOGGER = LoggerFactory.getLogger(XtextResourceFormatter.class);
 	@Inject
 	private Provider<FormatterRequest> formatterRequestProvider;
-	
-	@Inject 
+
+	@Inject
 	private Provider<IFormatter2> iFormatter2Provider;
 
 	@Inject
 	private TextRegionAccessBuilder regionBuilder;
 
 	@Override
-	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues){
+	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues) {
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
-	            formatXtextResource((XtextResource) resource, preferenceValues);
-	            
-	        } else {
-	        	LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
-	        }
+				formatXtextResource((XtextResource) resource, preferenceValues);
+
+			} else {
+				LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
+			}
 		});
 	}
 
 	@Override
-	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues){
-		//setup request and formatter
+	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues) {
+		// setup request and formatter
 		FormatterRequest req = formatterRequestProvider.get();
 		req.setPreferences(preferenceValues);
 		IFormatter2 formatter = iFormatter2Provider.get();
-		
+
 		ITextRegionAccess regionAccess = regionBuilder.forNodeModel(resource).create();
 		req.setTextRegionAccess(regionAccess);
-		
-		//list contains all the replacements which should be applied to resource
+
+		// list contains all the replacements which should be applied to resource
 		List<ITextReplacement> replacements = formatter.format(req);
-				
-		//formatting using TextRegionRewriter
+
+		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
-		//With the formatted text, update the resource
+		// With the formatted text, update the resource
 		InputStream resultStream = new ByteArrayInputStream(formattedString.getBytes(StandardCharsets.UTF_8));
 		resource.unload();
 		try {
@@ -71,7 +71,8 @@ public class XtextResourceFormatter implements ResourceFormatterService{
 			resource.save(null);
 			LOGGER.info("Successfully formatted and saved file at location " + resource.getURI());
 		} catch (IOException e) {
-			throw new UncheckedIOException("Since the resource is an in-memory string, this exception is not expected to be ever thrown.",e);
+			throw new UncheckedIOException(
+					"Since the resource is an in-memory string, this exception is not expected to be ever thrown.", e);
 		}
 	}
 }
