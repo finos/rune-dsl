@@ -46,9 +46,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 
 			// format resources
 			formatterService.formatCollection(resources, null);
-
-			LOGGER.info(resources.toString());
-
+			
 			// save each resource
 			resources.forEach(resource -> {
 				try {
