@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -28,10 +27,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.core.XsdParser;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
-import org.xmlet.xsdparser.xsdelements.XsdComplexType;
-import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdSchema;
-import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.RosettaModel;

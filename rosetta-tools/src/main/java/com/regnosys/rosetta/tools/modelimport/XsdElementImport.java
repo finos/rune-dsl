@@ -51,7 +51,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			if (xsdType instanceof XsdComplexType) {
 				Data dataType = typeMappings.getRosettaTypeFromComplex((XsdComplexType) xsdType);
 
-				if (name.toUpperCase().equals(dataType.getName().toUpperCase())) {
+				if (name.equalsIgnoreCase(dataType.getName())) {
 					// In case the element and type name overlap, we only generate the element.
 					// Join the documentation.
 					util.extractDocs(xsdElement).ifPresent(elemDocs -> {
@@ -78,7 +78,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 				util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 				typeMappings.registerElement(xsdElement, data);
 
-				Attribute valueAttr = typeImport.createValueAttribute();
+				Attribute valueAttr = typeImport.createValueAttribute(targetConfig);
 				typeMappings.registerAttribute(xsdElement, valueAttr);
 				data.getAttributes().add(valueAttr);
 

@@ -62,7 +62,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 
 		enumeration.stream()
 			.filter(e -> !e.getValue().isEmpty())
-			.map(e -> this.registerEnumValue(e, typeMappings))
+			.map(e -> this.registerEnumValue(e, typeMappings, targetConfig))
 			.forEach(rosettaEnumeration.getEnumValues()::add);
 		
 		return rosettaEnumeration;
@@ -73,8 +73,8 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		
 	}
 
-	private RosettaEnumValue registerEnumValue(XsdEnumeration ev, RosettaXsdMapping typeMappings) {
-		String value = util.toEnumValueName(ev.getValue());
+	private RosettaEnumValue registerEnumValue(XsdEnumeration ev, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
+		String value = util.toEnumValueName(ev.getValue(), targetConfig);
 		RosettaEnumValue rosettaEnumValue = RosettaFactory.eINSTANCE.createRosettaEnumValue();
 		rosettaEnumValue.setName(value);
 		util.extractDocs(ev).ifPresent(rosettaEnumValue::setDefinition);
@@ -88,9 +88,9 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		Map<String, String> enumValueMap = new LinkedHashMap<>();
 		xsdType.getAllRestrictions().stream().flatMap(r -> r.getEnumeration().stream())
 			.forEach(ev -> {
-				String value = util.toEnumValueName(ev.getValue());
-				if (!value.equals(ev.getValue())) {
-					enumValueMap.put(value, ev.getValue());
+				RosettaEnumValue rosettaEnumValue = xsdMapping.getEnumValue(ev);
+				if (!rosettaEnumValue.getName().equals(ev.getValue())) {
+					enumValueMap.put(rosettaEnumValue.getName(), ev.getValue());
 				}
 			});
 		if (enumValueMap.isEmpty()) {

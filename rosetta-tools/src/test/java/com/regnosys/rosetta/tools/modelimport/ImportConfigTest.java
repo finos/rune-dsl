@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.tools.modelimport;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +22,7 @@ public class ImportConfigTest {
 		// assert
 		assertEquals("test.ns", config.getTarget().getNamespace());
 		assertEquals("Test namespace definition", config.getTarget().getNamespaceDefinition());
+		assertNotNull(config.getTarget().getPreferences());
 	}
 
 	private ImportConfig getConfig(String path) throws FileNotFoundException, IOException {

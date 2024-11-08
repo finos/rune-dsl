@@ -126,7 +126,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		
 		if (xsdType instanceof XsdGroup group) {
             xsdMapping.registerGroup(group, data);
-        	completeData(data, Stream.of(group.getChildElement()), null, xsdMapping, result);
+        	completeData(data, Stream.of(group.getChildElement()), null, xsdMapping, result, targetConfig);
         } else {
         	XsdComplexType ct = (XsdComplexType)xsdType;
             xsdMapping.registerComplexType(ct, data);
@@ -134,12 +134,12 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         	// If the complex type extends a simple type, simulate this
             // by adding a `value` attribute of the corresponding type.
             if (getBaseSimpleType(ct).isPresent()) {
-                Attribute valueAttr = createValueAttribute();
+                Attribute valueAttr = createValueAttribute(targetConfig);
                 data.getAttributes().add(valueAttr);
                 xsdMapping.registerAttribute(ct, valueAttr);
             }
             
-	    	completeData(data, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping, result);
+	    	completeData(data, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping, result, targetConfig);
         }
 
         // Post process: make sure all names are unique:
@@ -154,75 +154,75 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		return result;
 	}
 
-	private void registerXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping, List<Data> result) {
+	private void registerXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         if (abstractElement instanceof XsdElement elem) {
-            Attribute attr = createAttributeFromElement(elem, currentChoiceGroup);
+            Attribute attr = createAttributeFromElement(elem, currentChoiceGroup, config);
             xsdMapping.registerAttribute(elem, attr);
             currentData.getAttributes().add(attr);
         } else if (abstractElement instanceof XsdGroup group) {
-            Attribute attr = createAttributeFromGroup(group, currentChoiceGroup);
+            Attribute attr = createAttributeFromGroup(group, currentChoiceGroup, config);
             xsdMapping.registerAttribute(group, attr);
             currentData.getAttributes().add(attr);
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
-        	Attribute attr = createAttributeFromXsdAttribute(xsdAttr);
+        	Attribute attr = createAttributeFromXsdAttribute(xsdAttr, config);
             xsdMapping.registerAttribute(xsdAttr, attr);
             currentData.getAttributes().add(attr);
         } else if (abstractElement instanceof XsdSequence seq) {
             if (currentChoiceGroup != null || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
-                Data newData = createData(currentData.getName() + "Sequence", seq.getXsdElements(), null, xsdMapping, result);
+                Data newData = createData(currentData.getName() + "Sequence", seq.getXsdElements(), null, xsdMapping, result, config);
                 xsdMapping.registerComplexType(seq, newData);
 
-                Attribute attr = createAttributeFromSequence(seq, newData.getName(), currentChoiceGroup);
+                Attribute attr = createAttributeFromSequence(seq, newData.getName(), currentChoiceGroup, config);
                 xsdMapping.registerAttribute(seq, attr);
                 currentData.getAttributes().add(attr);
             } else {
-                seq.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result));
+                seq.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result, config));
             }
         } else if (abstractElement instanceof XsdAll all) {
             if (currentChoiceGroup != null || all.getMinOccurs() == 0) {
-                Data newData = createData(currentData.getName() + "All", all.getXsdElements(), null, xsdMapping, result);
+                Data newData = createData(currentData.getName() + "All", all.getXsdElements(), null, xsdMapping, result, config);
                 xsdMapping.registerComplexType(all, newData);
 
-                Attribute attr = createAttributeFromAll(all, newData.getName(), currentChoiceGroup);
+                Attribute attr = createAttributeFromAll(all, newData.getName(), currentChoiceGroup, config);
                 xsdMapping.registerAttribute(all, attr);
                 currentData.getAttributes().add(attr);
             } else {
-                all.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result));
+                all.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result, config));
             }
         } else if (abstractElement instanceof XsdChoice choice) {
             if (currentChoiceGroup != null || isMulti(choice.getMaxOccurs())) {
                 boolean required = choice.getMinOccurs() > 0 && choice.getXsdElements().allMatch(elem -> Integer.parseInt(elem.getAttributesMap().getOrDefault(MIN_OCCURS_TAG, "1")) > 0);
                 ChoiceGroup initialChoiceGroup = new ChoiceGroup(new ArrayList<>(), required);
-                Data newData = createData(currentData.getName() + "Choice", choice.getXsdElements(), initialChoiceGroup, xsdMapping, result);
+                Data newData = createData(currentData.getName() + "Choice", choice.getXsdElements(), initialChoiceGroup, xsdMapping, result, config);
                 xsdMapping.registerComplexType(choice, newData);
 
-                Attribute attr = createAttributeFromChoice(choice, newData.getName(), currentChoiceGroup);
+                Attribute attr = createAttributeFromChoice(choice, newData.getName(), currentChoiceGroup, config);
                 xsdMapping.registerAttribute(choice, attr);
                 currentData.getAttributes().add(attr);
             } else {
                 ChoiceGroup newChoiceGroup = new ChoiceGroup(new ArrayList<>(), choice.getMinOccurs() > 0);
                 currentChoiceGroups.add(newChoiceGroup);
-                choice.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping, result));
+                choice.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping, result, config));
             }
         }
     }
-    private Data createData(String name, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result) {
+    private Data createData(String name, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         // Create type
         Data data = SimpleFactory.eINSTANCE.createData();
         data.setName(name);
         result.add(data);
 
-        completeData(data, abstractElements, initialChoiceGroup, xsdMapping, result);
+        completeData(data, abstractElements, initialChoiceGroup, xsdMapping, result, config);
 
         return data;
     }
-    private void completeData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result) {
+    private void completeData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         // Add attributes
         List<ChoiceGroup> choiceGroups = new ArrayList<>();
         if (initialChoiceGroup != null) {
             choiceGroups.add(initialChoiceGroup);
         }
-        abstractElements.forEach(elem -> registerXsdElementsRecursively(data, elem, initialChoiceGroup, choiceGroups, xsdMapping, result));
+        abstractElements.forEach(elem -> registerXsdElementsRecursively(data, elem, initialChoiceGroup, choiceGroups, xsdMapping, result, config));
 
         // Add conditions
         choiceGroups.forEach(choiceGroup -> {
@@ -457,14 +457,14 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		abstractElements.forEach(elem -> getAttributeConfigurationRecursively(currentConfig, elem, isChoiceGroup, xsdMapping, result));
     }
 
-	private Attribute createAttribute(String rawName, String docs, int minOccurs, String maxOccurs, ChoiceGroup choiceGroup) {
+	private Attribute createAttribute(String rawName, String docs, int minOccurs, String maxOccurs, ChoiceGroup choiceGroup, ImportTargetConfig config) {
 		Attribute attribute = SimpleFactory.eINSTANCE.createAttribute();
 
 		// definition
         attribute.setDefinition(docs);
 
 		// name
-		attribute.setName(util.toAttributeName(rawName));
+		attribute.setName(util.toAttributeName(rawName, config));
 
 		// cardinality
 		RosettaCardinality rosettaCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality();
@@ -483,22 +483,22 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		
 		return attribute;
 	}
-    private Attribute createAttributeFromElement(XsdElement elem, ChoiceGroup choiceGroup) {
-        return createAttribute(elem.getRawName(), util.extractDocs(elem).orElse(null), elem.getMinOccurs(), elem.getMaxOccurs(), choiceGroup);
+    private Attribute createAttributeFromElement(XsdElement elem, ChoiceGroup choiceGroup, ImportTargetConfig config) {
+        return createAttribute(elem.getRawName(), util.extractDocs(elem).orElse(null), elem.getMinOccurs(), elem.getMaxOccurs(), choiceGroup, config);
     }
-    private Attribute createAttributeFromGroup(XsdGroup group, ChoiceGroup choiceGroup) {
-        return createAttribute(group.getRawName(), util.extractDocs(group).orElse(null), group.getMinOccurs(), group.getMaxOccurs(), choiceGroup);
+    private Attribute createAttributeFromGroup(XsdGroup group, ChoiceGroup choiceGroup, ImportTargetConfig config) {
+        return createAttribute(group.getRawName(), util.extractDocs(group).orElse(null), group.getMinOccurs(), group.getMaxOccurs(), choiceGroup, config);
     }
-    private Attribute createAttributeFromSequence(XsdSequence seq, String rawName, ChoiceGroup choiceGroup) {
-        return createAttribute(rawName, null, seq.getMinOccurs(), seq.getMaxOccurs(), choiceGroup);
+    private Attribute createAttributeFromSequence(XsdSequence seq, String rawName, ChoiceGroup choiceGroup, ImportTargetConfig config) {
+        return createAttribute(rawName, null, seq.getMinOccurs(), seq.getMaxOccurs(), choiceGroup, config);
     }
-    private Attribute createAttributeFromAll(XsdAll all, String rawName, ChoiceGroup choiceGroup) {
-        return createAttribute(rawName, null, all.getMinOccurs(), String.valueOf(all.getMaxOccurs()), choiceGroup);
+    private Attribute createAttributeFromAll(XsdAll all, String rawName, ChoiceGroup choiceGroup, ImportTargetConfig config) {
+        return createAttribute(rawName, null, all.getMinOccurs(), String.valueOf(all.getMaxOccurs()), choiceGroup, config);
     }
-    private Attribute createAttributeFromChoice(XsdChoice choice, String rawName, ChoiceGroup choiceGroup) {
-        return createAttribute(rawName, null, choice.getMinOccurs(), choice.getMaxOccurs(), choiceGroup);
+    private Attribute createAttributeFromChoice(XsdChoice choice, String rawName, ChoiceGroup choiceGroup, ImportTargetConfig config) {
+        return createAttribute(rawName, null, choice.getMinOccurs(), choice.getMaxOccurs(), choiceGroup, config);
     }
-	private Attribute createAttributeFromXsdAttribute(XsdAttribute xsdAttribute) {
+	private Attribute createAttributeFromXsdAttribute(XsdAttribute xsdAttribute, ImportTargetConfig config) {
 		int minOccurs;
 		if (xsdAttribute.getUse().equals(UsageEnum.REQUIRED.getValue())) {
 			minOccurs = 1;
@@ -507,10 +507,10 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		} else {
 			throw new RuntimeException("Unknown XSD attribute usage: " + xsdAttribute.getUse());
 		}
-		return createAttribute(xsdAttribute.getRawName(), util.extractDocs(xsdAttribute).orElse(null), minOccurs, "1", null);
+		return createAttribute(xsdAttribute.getRawName(), util.extractDocs(xsdAttribute).orElse(null), minOccurs, "1", null, config);
 	}
-	public Attribute createValueAttribute() {
-        return createAttribute(SIMPLE_EXTENSION_ATTRIBUTE_NAME, null, 1, "1", null);
+	public Attribute createValueAttribute(ImportTargetConfig config) {
+        return createAttribute(SIMPLE_EXTENSION_ATTRIBUTE_NAME, null, 1, "1", null, config);
 	}
     private boolean isMulti(String maxOccurs) {
         return maxOccurs.equals(UNBOUNDED) || Integer.parseInt(maxOccurs) > 1;
