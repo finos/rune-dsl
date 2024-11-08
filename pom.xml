@@ -138,7 +138,6 @@
 		<module>rosetta-testing</module>
 		<module>rosetta-maven-plugin</module>
 		<module>rosetta-profiling</module>
-		<module>formatter-maven-plugin</module>
 	</modules>
 
 	<dependencyManagement>
