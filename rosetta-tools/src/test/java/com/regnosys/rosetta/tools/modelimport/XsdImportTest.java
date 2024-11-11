@@ -189,12 +189,6 @@ public class XsdImportTest {
 	void testMulti() throws IOException, URISyntaxException {
 		runTest("multi");
 	}
-	
-	@Test
-	@Disabled // TODO
-	void testFiML() throws IOException, URISyntaxException {
-		runTest("fiml");
-	}
 
     @Test
     void testNestedData() throws IOException, URISyntaxException {
