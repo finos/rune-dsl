@@ -1,7 +1,6 @@
 name: Build main branch and upload dependency graph
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
 

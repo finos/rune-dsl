@@ -140,6 +140,7 @@ class ModelObjectBuilderGenerator {
 					}
 					
 				«ELSE»
+					@Override
 					public «attribute.toBuilderTypeSingle» getOrCreate«attribute.name.toFirstUpper»(int _index) {
 
 						if («scope.getIdentifierOrThrow(attribute)»==null) {
@@ -173,6 +174,7 @@ class ModelObjectBuilderGenerator {
 		'''
 		«IF attribute.isMulti»
 			@Override
+			@«RosettaAttribute»("«attribute.javaAnnotation»")
 			public «thisName» add«attribute.name.toFirstUpper»(«attribute.toMetaItemJavaType» «scope.getIdentifierOrThrow(attribute)») {
 				if («scope.getIdentifierOrThrow(attribute)»!=null) this.«scope.getIdentifierOrThrow(attribute)».add(«attribute.toBuilder(scope)»);
 				return this;
@@ -208,7 +210,6 @@ class ModelObjectBuilderGenerator {
 			}
 			
 			@Override 
-			@«RosettaAttribute»("«attribute.javaAnnotation»")
 			public «thisName» set«attribute.name.toFirstUpper»(«attribute.toMetaJavaType» «scope.getIdentifierOrThrow(attribute)»s) {
 				if («scope.getIdentifierOrThrow(attribute)»s == null)  {
 					this.«scope.getIdentifierOrThrow(attribute)» = new «ArrayList»<>();

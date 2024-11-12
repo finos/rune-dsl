@@ -1,0 +1,15 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+type Document:
+	[rootType]
+
+	animal Animal (1..1)
+
+type Animal:
+
+	name string (0..1)
+
+type Cow extends Animal:
+
+type Goat extends Animal:

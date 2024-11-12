@@ -1,0 +1,23 @@
+{
+  "test.ns.Animal" : {
+    "attributes" : {
+      "name" : {
+        "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "test.ns.Cow" : {
+    "substitutionFor" : "test.ns.Animal",
+    "xmlElementName" : "cow"
+  },
+  "test.ns.Document" : {
+    "xmlElementName" : "document",
+    "xmlAttributes" : {
+      "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "test.ns.Goat" : {
+    "substitutionFor" : "test.ns.Animal",
+    "xmlElementName" : "goat"
+  }
+}

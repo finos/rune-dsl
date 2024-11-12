@@ -60,7 +60,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 	}
 
 	@Override
-	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public RosettaTypeAlias registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
 		RosettaTypeAlias typeAlias = RosettaFactory.eINSTANCE.createRosettaTypeAlias();
 		typeAlias.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(typeAlias::setDefinition);

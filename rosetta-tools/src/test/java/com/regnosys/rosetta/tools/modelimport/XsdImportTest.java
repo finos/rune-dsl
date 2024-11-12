@@ -17,15 +17,15 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
@@ -57,8 +58,6 @@ public class XsdImportTest {
 
 	private static final String NAMESPACE = "test.ns";
 	private static final String NAMESPACE_DEFINITION = "test.ns definition";
-	
-	private static final String SYN_SOURCE_NAME = "TEST_SYN_SOURCE";
 	
 	
 	@Inject
@@ -87,18 +86,32 @@ public class XsdImportTest {
 		rosettaXsdMapping.initializeBuiltins(resourceSet);
 	}
 	
+	private void assertNoUnresolvedXsdElements(XsdParser parsedInstance) {
+		// assertEquals("", parsedInstance.getUnsolvedReferences().stream().map(r -> r.getUnsolvedReference().getRef()).collect(Collectors.joining("\n")));
+	}
+	
 	private void runTest(String xsdName) throws IOException, URISyntaxException {
 		Path baseFolder = Path.of(getClass().getResource("/model-import/" + xsdName).toURI());
-		Path xsdFile = baseFolder.resolve("schema.xsd");
 		Path expectedFolder = baseFolder.resolve("expected");
+		Path configFile = baseFolder.resolve(xsdName + "-config.yml");
 		
-		GenerationProperties properties = mockProperties();
+		ImportConfig config;
+		if (Files.exists(configFile)) {
+			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+			try (InputStream input = Files.newInputStream(configFile)) {
+				config = mapper.readValue(input, ImportConfig.class);
+	        }
+		} else {
+			config = mockConfig(baseFolder);
+		}
+		Path xsdFile = baseFolder.resolve(config.getSchemaLocation()).normalize();
 
 		// Load xsd elements
-		XsdParser parsedInstance = new XsdParser(xsdFile.toString());
+		RosettaXsdParser parsedInstance = new RosettaXsdParser(xsdFile.toString());
+		assertNoUnresolvedXsdElements(parsedInstance);
 				
 		// Test rosetta
-		ResourceSet set = xsdImport.generateRosetta(parsedInstance, properties);
+		ResourceSet set = xsdImport.generateRosetta(parsedInstance, config.getTarget());
 		List<String> resourceNames = set.getResources().stream()
 				.map(Resource::getURI)
 				.filter(uri -> uri.scheme() == null)
@@ -126,7 +139,7 @@ public class XsdImportTest {
 		set.getResources().forEach(resource -> validationTestHelper.assertNoIssues(resource));
 	
 		// Test XML config
-		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(parsedInstance, properties);
+		RosettaXMLConfiguration xmlConfig = xsdImport.generateXMLConfiguration(parsedInstance, config.getTarget());
 		
 		String expected = Files.readString(expectedFolder.resolve("xml-config.json"));
 		ObjectMapper mapper = XsdImportMain.getObjectMapper();
@@ -173,7 +186,6 @@ public class XsdImportTest {
 	}
 	
 	@Test
-	@Disabled
 	void testMulti() throws IOException, URISyntaxException {
 		runTest("multi");
 	}
@@ -182,13 +194,15 @@ public class XsdImportTest {
     void testNestedData() throws IOException, URISyntaxException {
         runTest("nested-data");
     }
+    
+    @Test
+    void testSubstitution() throws IOException, URISyntaxException {
+        runTest("substitution");
+    }
 
-	private GenerationProperties mockProperties() {
-		GenerationProperties properties = mock(GenerationProperties.class);
-		when(properties.getNamespace()).thenReturn(NAMESPACE);
-		when(properties.getNamespaceDefinition()).thenReturn(NAMESPACE_DEFINITION);
-		when(properties.getSynonymSourceName()).thenReturn(SYN_SOURCE_NAME);
-		return properties;
+	private ImportConfig mockConfig(Path basePath) {
+		ImportConfig config = new ImportConfig(basePath.resolve("schema.xsd").toString(), new ImportTargetConfig(NAMESPACE, NAMESPACE_DEFINITION, Collections.emptyMap(), null));
+		return config;
 	}
 	
 	private List<Path> getResourceFiles(Path expectedPath) throws IOException {
