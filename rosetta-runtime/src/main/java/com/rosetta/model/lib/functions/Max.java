@@ -22,18 +22,30 @@ import java.math.BigInteger;
 public class Max {
 
 	public Integer execute(Integer x, Integer y) {
+		if (x == null || y == null) {
+			return null;
+		}
 		return Integer.max(x, y);
 	}
 	
 	public Long execute(Long x, Long y) {
+		if (x == null || y == null) {
+			return null;
+		}
 		return Long.max(x, y);
 	}
 	
 	public BigInteger execute(BigInteger x, BigInteger y) {
+		if (x == null || y == null) {
+			return null;
+		}
 		return x.max(y);
 	}
 
 	public BigDecimal execute(BigDecimal x, BigDecimal y) {
+		if (x == null || y == null) {
+			return null;
+		}
 		return x.max(y);
 	}
 }
