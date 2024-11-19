@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -41,7 +42,7 @@ public class RDataType extends RType implements RObject {
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
 	
-	// TODO: remove this hack
+	// TODO: remove this hack TODOTODOTODO
 	private List<RAttribute> additionalAttributes = null;
 
 	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
@@ -101,14 +102,17 @@ public class RDataType extends RType implements RObject {
 	}
 	
 	/**
-	 * Get a list of the attributes defined in this data type. This does not include attributes of any super types.
+	 * Get a list of the attributes defined in this data type. This does not include attributes of any super types,
+	 * except if the attribute is restricted by this data type.
 	 */
 	public List<RAttribute> getOwnAttributes() {
 		if (ownAttributes == null) {
+			Stream<RAttribute> regularAttributes = 
+					data.getAttributes().stream().map(s -> objectFactory.buildRAttribute(s));
 			if (additionalAttributes != null) {
-				this.ownAttributes = Streams.concat(additionalAttributes.stream(), data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr))).collect(Collectors.toList());
+				this.ownAttributes = Streams.concat(additionalAttributes.stream(), regularAttributes).collect(Collectors.toList());
 			} else {
-				this.ownAttributes = data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr)).collect(Collectors.toList());
+				this.ownAttributes = regularAttributes.collect(Collectors.toList());
 			}
 		}
 		return ownAttributes;
@@ -118,9 +122,12 @@ public class RDataType extends RType implements RObject {
 	 * Get a list of all attributes of this data type, including all attributes of its super types.
 	 * 
 	 * The list starts with the attributes of the top-most super type, and ends with the attributes of itself.
+	 * Attribute restrictions replace their respective parent attributes, respecting the original order.
 	 */
-	public List<RAttribute> getAllAttributes() {
-		return getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).collect(Collectors.toList());
+	public Collection<RAttribute> getAllAttributes() {
+		Map<String, RAttribute> result = new LinkedHashMap<>();
+		getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).forEach(a -> result.put(a.getName(), a));
+		return result.values();
 	}
 	
 	/**
@@ -129,11 +136,12 @@ public class RDataType extends RType implements RObject {
 	 * 
 	 * The collection starts with the attributes of the top-most super type, and ends with the attributes of itself.
 	 */
-	public Collection<RAttribute> getAllNonOverridenAttributes() {
-		Map<String, RAttribute> result = new LinkedHashMap<>();
-		getAllAttributes().stream().forEach(a -> result.put(a.getName(), a));
-		return result.values();
-	}
+//	@Deprecated
+//	public Collection<RAttribute> getAllNonOverridenAttributes() {
+//		Map<String, RAttribute> result = new LinkedHashMap<>();
+//		getAllAttributes().stream().forEach(a -> result.put(a.getName(), a));
+//		return result.values();
+//	}
 
 	@Override
 	public int hashCode() {

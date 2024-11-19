@@ -24,7 +24,6 @@ import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
-import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.util.Collection
 import java.util.LinkedHashSet
@@ -36,7 +35,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.util.SimpleCache
 
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 import org.eclipse.emf.ecore.util.EcoreUtil
 
 @Singleton // see `metaFieldsCache`
@@ -61,7 +59,7 @@ class RosettaEcoreUtil {
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
 			RDataType:
-				t.allNonOverridenAttributes.map[EObject]
+				t.allAttributes.map[EObject]
 			RChoiceType:
 				t.asRDataType.allFeatures(resourceSet)
 			REnumType:
@@ -118,6 +116,26 @@ class RosettaEcoreUtil {
 	@Deprecated // Use REnumType#getAllEnumValues instead
 	def getAllEnumValues(RosettaEnumeration e) {
 		e.allSuperEnumerations.map[enumValues].flatten
+	}
+	
+	def Attribute getParentAttribute(Attribute attr) {
+		val t = attr.eContainer
+		if (t instanceof Data) {
+			val visited = newHashSet
+			visited.add(t)
+			var st = t.superType
+			while (st !== null) {
+				val p = st.attributes.findFirst[name == attr.name]
+				if (p !== null) {
+					return p
+				}
+				st = st.superType
+				if (!visited.add(st)) {
+					return null
+				}
+			}
+		}
+		return null
 	}
 	
 	def Set<RosettaSynonym> getAllSynonyms(RosettaSynonym s) {
@@ -268,19 +286,13 @@ class RosettaEcoreUtil {
 			return attr.name
 	}
 	// Copied over from RosettaAttributeExtensions.
-	@Deprecated
+	@Deprecated // TODO
 	private def List<RAttribute> additionalAttributes(RDataType t) {
 		val res = newArrayList
 		if(hasKeyedAnnotation(t.EObject)){
-			res.add(new RAttribute(
-				'meta',
-				null,
-				emptyList,
-				provideMetaFieldsType(t).withMeta(#[]),
-				PositiveIntegerInterval.bounded(0, 1),
-				null,
-				null
-			))
+			res.add(
+				createArtificialAttribute('meta', provideMetaFieldsType(t), false)
+			)
 		}
 		return res
 	}

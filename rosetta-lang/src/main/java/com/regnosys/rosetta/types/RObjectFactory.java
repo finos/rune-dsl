@@ -21,13 +21,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.eclipse.xtext.EcoreUtil2;
 
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -46,7 +46,6 @@ import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RObjectFactory {
 	@Inject
@@ -59,6 +58,8 @@ public class RObjectFactory {
 	private ModelIdProvider modelIdProvider;
 	@Inject
 	private ExternalAnnotationUtil externalAnnotationUtil;
+	@Inject
+	private RosettaEcoreUtil ecoreUtil;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
@@ -73,10 +74,10 @@ public class RObjectFactory {
 				function.getAnnotations());
 	}
 	
-	// TODO: should be private
+	// TODO: should be private TODOTODO
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		RMetaAnnotatedType rAnnotatedType = new RMetaAnnotatedType(type, List.of());
-		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
+		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, null, this);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
@@ -137,7 +138,7 @@ public class RObjectFactory {
 	}
 	
 	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<RAttribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
-		Collection<RAttribute> attributes = reportDataType.getAllNonOverridenAttributes();
+		Collection<RAttribute> attributes = reportDataType.getAllAttributes();
 		List<ROperation> operations = new ArrayList<>();
 		
 		for (RAttribute attribute : attributes) {
@@ -171,17 +172,38 @@ public class RObjectFactory {
 		
 		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
 	}
-	
-	public RAttribute buildRAttribute(Attribute attribute) {
-		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfSymbol(attribute);
-		boolean isMeta =  attribute.getTypeCall().getType() instanceof RosettaMetaType;
-		PositiveIntegerInterval card = new PositiveIntegerInterval(
-				attribute.getCard().getInf(),
-				attribute.getCard().isUnbounded() ? Optional.empty() : Optional.of(attribute.getCard().getSup()));
-		RosettaRuleReference ruleRef = attribute.getRuleReference();
 
-		return new RAttribute(attribute.getName(), attribute.getDefinition(), attribute.getReferences(), rAnnotatedType,
-				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attribute);
+	public RAttribute buildRAttribute(Attribute attr) {
+		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfFeature(attr, null);
+		boolean isMeta = attr.getTypeCall().getType() instanceof RosettaMetaType;
+		RCardinality card = buildRCardinality(attr.getCard());
+		RosettaRuleReference ruleRef = attr.getRuleReference();
+
+		return new RAttribute(attr.isRestriction(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
+				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attr, this);
+	}
+	public RAttribute buildRAttributeOfParent(Attribute attr) {
+		Attribute parent = ecoreUtil.getParentAttribute(attr);
+		if (parent == null) {
+			return null;
+		}
+		return buildRAttribute(parent);
+	}
+	public RCardinality buildRCardinality(RosettaCardinality card) {
+		if (card.isUnbounded()) {
+			if (card.getInf() == 0) {
+				return RCardinality.UNBOUNDED;
+			}
+			return RCardinality.unbounded(card.getInf());
+		}
+		if (card.getSup() == 1) {
+			if (card.getInf() == 1) {
+				return RCardinality.SINGLE;
+			} else if (card.getInf() == 0) {
+				return RCardinality.OPTIONAL;
+			}
+		}
+		return RCardinality.bounded(card.getInf(), card.getSup());
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {

@@ -35,6 +35,41 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCannotRestrictAttributeOfItself() {
+		'''
+			type Foo:
+				restrict attr number (1..1)
+				attr number (0..1)
+		'''.parseRosetta
+			.assertError(null, null, "")
+	}
+	
+	@Test
+	def void testCanRestrictAttributeOfParent() {
+		'''
+			type Bar:
+				attr number (0..1)
+			
+			type Foo extends Bar:
+				restrict attr number (1..1)
+		'''.parseRosetta
+			.assertError(null, null, "")
+	}
+	
+	@Test
+	def void testNamespaceDescription() {
+		'''
+			namespace cdm.base.test : <"some description">
+			version "test"
+			
+			enum TestEnum:
+				ONE 
+				TWO 
+			
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void canPassMetadataToFunctions() {
 		'''
 			func MyFunc:

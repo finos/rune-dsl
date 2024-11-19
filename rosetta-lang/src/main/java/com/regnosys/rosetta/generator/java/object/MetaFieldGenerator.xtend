@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.google.common.collect.Multimaps
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
@@ -16,10 +15,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory
 import com.regnosys.rosetta.scoping.RosettaScopeProvider
-import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.utils.PositiveIntegerInterval
 import com.rosetta.model.lib.GlobalKey
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.rosetta.model.lib.meta.FieldWithMeta
@@ -40,7 +36,6 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 import com.regnosys.rosetta.types.RType
 
 class MetaFieldGenerator {
@@ -182,7 +177,7 @@ class MetaFieldGenerator {
 		d.name = name
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = packages.basicMetafields.withDots
-		d.attributes.addAll(attributes)
+//		d.attributes.addAll(attributes)
 		
 		val scope = new JavaScope(packages.basicMetafields)
 		
@@ -197,9 +192,7 @@ class MetaFieldGenerator {
 	}
 
 	private def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RType valueType) {
-		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
-		)
+		val valueAttribute = createArtificialAttribute("value", valueType, false) // TODO
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
 		metaType.setName("MetaFields")
@@ -214,9 +207,9 @@ class MetaFieldGenerator {
 		d.name = metaJavaType.simpleName
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
-		d.attributes.addAll(#[
-			metaAttribute
-		])
+//		d.attributes.addAll(#[
+//			metaAttribute
+//		])
 		
 		val FWMType = JavaParameterizedType.from(new TypeReference<FieldWithMeta<?>>() {}, valueType.toJavaReferenceType)
 		
@@ -256,15 +249,13 @@ class MetaFieldGenerator {
 	}
 	
 	private def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RType valueType) {
-		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
-		)
+		val valueAttribute = createArtificialAttribute("value", valueType, false) // TODO
 			
 		val Data d = SimpleFactory.eINSTANCE.createData;
 		d.name = metaJavaType.simpleName
 		d.model = RosettaFactory.eINSTANCE.createRosettaModel
 		d.model.name = metaJavaType.packageName.withDots
-		d.attributes.addAll(referenceAttributes())
+//		d.attributes.addAll(referenceAttributes())
 		val refInterface = JavaParameterizedType.from(new TypeReference<ReferenceWithMeta<?>>() {}, valueType.toJavaReferenceType)
 		
 		val scope = new JavaScope(root.metaField)

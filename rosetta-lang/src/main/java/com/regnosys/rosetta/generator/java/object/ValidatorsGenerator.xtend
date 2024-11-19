@@ -34,6 +34,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.List
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RCardinality
 
 class ValidatorsGenerator {
 
@@ -54,17 +55,17 @@ class ValidatorsGenerator {
 
 	private def generateClass(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, t.classBody(version, t.allNonOverridenAttributes), scope)
+		buildClass(root.typeValidation, t.classBody(version, t.allAttributes), scope)
 	}
 	
 	private def generateTypeFormatValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.allNonOverridenAttributes), scope)
+		buildClass(root.typeValidation, t.typeFormatClassBody(version, t.allAttributes), scope)
 	}
 
 	private def generateOnlyExistsValidator(RootPackage root, RDataType t, String version) {
 		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.allNonOverridenAttributes), scope)
+		buildClass(root.existsValidation, t.onlyExistsClassBody(version, t.allAttributes), scope)
 	}
 
 	def private StringConcatenationClient classBody(RDataType t, String version, Iterable<RAttribute> attributes) '''
@@ -177,15 +178,15 @@ class ValidatorsGenerator {
 	'''
 
 	private def StringConcatenationClient checkCardinality(RAttribute attr) {
-		if (attr.cardinality.minBound === 0 && attr.cardinality.unboundedRight) {
+		if (attr.cardinality == RCardinality.UNBOUNDED) {
 			null
 		} else {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
 			«IF attr.isMulti»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.cardinality.minBound», «attr.cardinality.max.orElse(0)»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»() == null ? 0 : ((«attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»()).size(), «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.cardinality.minBound», «attr.cardinality.max.orElse(0)»)
+				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («attr.toMetaJavaType») o.get«attr.name?.toFirstUpper»() != null ? 1 : 0, «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
 			«ENDIF»
 			'''
 		}

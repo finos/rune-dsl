@@ -140,6 +140,7 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
+import com.regnosys.rosetta.types.builtin.RRecordFeature
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -294,14 +295,14 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		val StringConcatenationClient right = feature.buildMapFunc(scope)
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
-		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, feature, scope)
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, cardinalityProvider.isFeatureMulti(feature), scope)
 	}
 	
 	def JavaStatementBuilder recordCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaRecordFeature feature, JavaScope scope) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		val StringConcatenationClient right = '''.<«resultItemType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType.RType as RRecordType, feature, scope)»)'''
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
-		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, feature, scope)
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, cardinalityProvider.isFeatureMulti(feature), scope)
 	}
 	
 	def JavaStatementBuilder attributeCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RAttribute attr, boolean isDeepFeature, JavaScope scope) {
@@ -309,11 +310,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		
 		val StringConcatenationClient right = receiverType.buildMapFunc(attr, isDeepFeature, scope)
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
-		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, attr.EObject, scope)
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, attr.isMulti, scope)
 	}
 	
-	private def JavaStatementBuilder featureCall(JavaStatementBuilder mapperReceiverCode, JavaClass<?> resultItemType, StringConcatenationClient right, JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaFeature feature, JavaScope scope) {
-		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !cardinalityProvider.isFeatureMulti(feature)) {
+	private def JavaStatementBuilder featureCall(JavaStatementBuilder mapperReceiverCode, JavaClass<?> resultItemType, StringConcatenationClient right, JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, boolean isMulti, JavaScope scope) {
+		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !isMulti) {
 			MAPPER_S as JavaGenericTypeDeclaration<?>
 		} else {
 			MAPPER_C as JavaGenericTypeDeclaration<?>
@@ -930,7 +931,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		} else {
 			type as RDataType
 		}
-		buildConstraint(expr.argument, t.allNonOverridenAttributes, Necessity.REQUIRED, context)
+		buildConstraint(expr.argument, t.allAttributes, Necessity.REQUIRED, context)
 	}
 
 	override protected caseOnlyElementOperation(RosettaOnlyElement expr, Context context) {
@@ -966,7 +967,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			throw new UnsupportedOperationException("Unsupported parent in `only exists` expression of type " + it?.class?.name)
 		]
-		val allAttrs = parentType.allNonOverridenAttributes
+		val allAttrs = parentType.allAttributes
 		parent
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«runtimeMethod('onlyExists')»(«it», «Arrays».asList(«allAttrs.join(", ")['"' + name + '"']»), «Arrays».asList(«requiredAttributes.join(", ")['"' + name + '"']»))''', COMPARISON_RESULT)]
@@ -1134,7 +1135,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					val attrExpr = pair.value
 					val hasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasMeta
 					val assignAsKey = attrExpr instanceof AsKeyOperation
-					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isSymbolMulti(attr), assignAsKey, context.scope)
+					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isFeatureMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
 						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF hasMeta && !assignAsKey»Value«ENDIF»(«it»)''', null)]
 				].reduce[acc,attrCode|

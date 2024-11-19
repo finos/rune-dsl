@@ -1589,49 +1589,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
             "Expected type `number`, but got `Foo` instead.")
 	}
-	
-	@Test
-	def void testLowerCaseClass() {
-		val model =
-		'''
-			synonym source FIX
-			synonym source FpML
-			
-			type partyIdentifier: <"">
-				partyId string (1..1) <"">
-					[synonym FIX value "PartyID" tag 448]
-					[synonym FpML value "partyId"]
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(DATA, INVALID_CASE,
-            "Type name should start with a capital")
-	}
-	
-	@Test
-	def void testLowerCaseEnumeration() {
-		val model =
-		'''
-			enum quoteRejectReasonEnum: <"">
-				UnknownSymbol
-				Other
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
-            "Enumeration name should start with a capital")
-	}
-	
-	@Test
-	def void testUpperCaseAttribute() {
-		val model =
-		'''
-			synonym source FIX
-			synonym source FpML
-			type PartyIdentifier: <"">
-					PartyId string (1..1) <"">
-						[synonym FIX value "PartyID" tag 448]
-						[synonym FpML value "partyId"]
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ATTRIBUTE, INVALID_CASE,
-            "Attribute name should start with a lower case")
-	}
 		
 	@Test
 	def void testTypeExpectation() {

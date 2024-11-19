@@ -56,8 +56,8 @@ class AnnotationRef {
 interface AssignPathRoot extends RosettaSymbol {
 }
 
-
-class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, AssignPathRoot, References {
+class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, References, AssignPathRoot {
+	boolean restriction
 	contains RosettaCardinality card
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference

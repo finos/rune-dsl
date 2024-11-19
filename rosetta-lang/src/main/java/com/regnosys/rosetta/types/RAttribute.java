@@ -22,22 +22,31 @@ import java.util.Objects;
 import com.regnosys.rosetta.rosetta.RosettaDocReference;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.utils.PositiveIntegerInterval;
 
 public class RAttribute implements RAssignedRoot {
+	private final boolean isRestriction;
 	private final String name;
 	private final String definition;
 	private final List<RosettaDocReference> docReferences;
 	private final RMetaAnnotatedType rMetaAnnotatedType;
-	private final PositiveIntegerInterval cardinality;
-	private final boolean isMeta;
+	private final RCardinality cardinality;
+	private final boolean isMeta; // TODO: remove?
 	private final RosettaRule ruleReference;
 	private final Attribute origin;
+	
+	private final RObjectFactory rObjectFactory;
+	private RAttribute parentAttribute = null;
 
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RMetaAnnotatedType rMetaAnnotatedType, PositiveIntegerInterval cardinality, RosettaRule ruleReference, Attribute origin) {
-		this(name, definition, docReferences, rMetaAnnotatedType, cardinality, false, ruleReference, origin);
+	public RAttribute(boolean isRestriction, String name, String definition, List<RosettaDocReference> docReferences,
+			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality, RosettaRule ruleReference,
+			Attribute origin, RObjectFactory rObjectFactory) {
+		this(isRestriction, name, definition, docReferences, rMetaAnnotatedType, cardinality, false, ruleReference, origin, rObjectFactory);
 	}
-	public RAttribute(String name, String definition, List<RosettaDocReference> docReferences, RMetaAnnotatedType rMetaAnnotatedType, PositiveIntegerInterval cardinality, boolean isMeta, RosettaRule ruleReference, Attribute origin) {
+
+	public RAttribute(boolean isRestriction, String name, String definition, List<RosettaDocReference> docReferences,
+			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality, boolean isMeta,
+			RosettaRule ruleReference, Attribute origin, RObjectFactory rObjectFactory) {
+		this.isRestriction = isRestriction;
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
@@ -46,13 +55,18 @@ public class RAttribute implements RAssignedRoot {
 		this.isMeta = isMeta;
 		this.ruleReference = ruleReference;
 		this.origin = origin;
+		this.rObjectFactory = rObjectFactory;
+	}
+	
+	public boolean isRestriction() {
+		return isRestriction;
 	}
 	
 	@Override
-	public String getName() {		
+	public String getName() {
 		return name;
 	}
-	
+
 	public Attribute getEObject() {
 		return origin;
 	}
@@ -60,31 +74,37 @@ public class RAttribute implements RAssignedRoot {
 	public RMetaAnnotatedType getRMetaAnnotatedType() {
 		return rMetaAnnotatedType;
 	}
-	
+
 	@Override
 	public boolean isMulti() {
-		return cardinality.getMax().map(m -> m > 1).orElse(true);
+		return cardinality.isMulti();
 	}
-	
-	public PositiveIntegerInterval getCardinality() {
+
+	public RCardinality getCardinality() {
 		return cardinality;
 	}
-	
+
 	public String getDefinition() {
 		return definition;
 	}
-	
+
 	public List<RosettaDocReference> getDocReferences() {
 		return docReferences;
 	}
-	
 
 	public RosettaRule getRuleReference() {
 		return ruleReference;
 	}
-	
+
 	public boolean isMeta() {
 		return isMeta;
+	}
+	
+	public RAttribute getParentAttribute() {
+		if (parentAttribute == null && origin.isRestriction()) {
+			parentAttribute = rObjectFactory.buildRAttributeOfParent(origin);
+		}
+		return parentAttribute;
 	}
 
 	@Override
@@ -102,8 +122,7 @@ public class RAttribute implements RAssignedRoot {
 			return false;
 		RAttribute other = (RAttribute) obj;
 		return Objects.equals(definition, other.definition) && Objects.equals(cardinality, other.cardinality)
-				&& Objects.equals(name, other.name)
-				&& Objects.equals(rMetaAnnotatedType, other.rMetaAnnotatedType)
+				&& Objects.equals(name, other.name) && Objects.equals(rMetaAnnotatedType, other.rMetaAnnotatedType)
 				&& Objects.equals(origin, other.origin);
 	}
 
