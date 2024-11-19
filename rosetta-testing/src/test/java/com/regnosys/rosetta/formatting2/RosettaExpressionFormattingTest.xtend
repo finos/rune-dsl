@@ -761,4 +761,26 @@ class RosettaExpressionFormattingTest {
 			(["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10)
 		'''
 	}
+	
+	@Test
+	def void testFunctionCallInParenthesis() {
+		'''
+		(SomeFunc 
+		 ( 
+		   ))
+		''' -> '''
+		(SomeFunc())
+		'''
+	}
+	
+	@Test
+	def void testConditionalInParenthesis() {
+		'''
+		(if  True 
+				  then 10)
+		''' -> '''
+		(if True then 10)
+		'''
+	}
+	
 }
