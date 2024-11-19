@@ -250,11 +250,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaSymbolReference expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension referenceCallGrammarAccess = rosettaReferenceOrFunctionCallAccess
+		
 		if (expr.explicitArguments) {
 			expr.regionFor.keywords(',').forEach[
 				prepend[noSpace]
 			]
-			expr.regionFor.keyword('(')
+			expr.regionFor.keyword(explicitArgumentsLeftParenthesisKeyword_0_2_0_0)
 				.prepend[noSpace]
 			
 			formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),

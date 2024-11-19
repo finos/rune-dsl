@@ -56,6 +56,7 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.TypeCallArgument
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
+import com.regnosys.rosetta.rosetta.simple.Choice
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -235,6 +236,18 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		
 		ele.regionFor.assignment(nameAssignment_1)
 			.prepend[oneSpace]
+	}
+	
+	def dispatch void format(Choice ele, extension IFormattableDocument document) {
+		ele.regionFor.keyword('choice')
+			.append[oneSpace]
+		ele.regionFor.keyword(':')
+			.prepend[noSpace]
+		ele.indentInner(document)
+		ele.attributes.forEach[
+			prepend[newLine]
+			format
+		]
 	}
 
 
