@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 
 @Mojo(name = "format")
@@ -38,6 +39,10 @@ public class ResourceFormatterMojo extends AbstractMojo {
 		ResourceSet resourceSet = inj.getInstance(ResourceSet.class);
 		ResourceFormatterService formatterService = inj.getInstance(ResourceFormatterService.class);
 
+		RosettaBuiltinsService builtins = inj.getInstance(RosettaBuiltinsService.class);
+		resourceSet.getResource(builtins.basicTypesURI, true);
+		resourceSet.getResource(builtins.annotationsURI, true);
+
 		try {
 			// Find all .rosetta files in the directory and load them from disk
 			List<Resource> resources = Files.walk(directory).filter(path -> path.toString().endsWith(".rosetta"))
@@ -46,7 +51,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 
 			// format resources
 			formatterService.formatCollection(resources, null);
-			
+
 			// save each resource
 			resources.forEach(resource -> {
 				try {
@@ -54,6 +59,9 @@ public class ResourceFormatterMojo extends AbstractMojo {
 					LOGGER.info("Successfully formatted and saved file at location " + resource.getURI());
 				} catch (IOException e) {
 					LOGGER.error("Error saving file at location " + resource.getURI() + ": " + e.getMessage());
+				} catch (RuntimeException e) {
+					LOGGER.error("RuntimeException while saving in following file: " + resource.getURI() + ": "
+							+ e.getMessage());
 				}
 			});
 		} catch (IOException e) {
