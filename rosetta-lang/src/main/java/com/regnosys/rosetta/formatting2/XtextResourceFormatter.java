@@ -61,7 +61,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		try {
 			regionAccess = regionBuilder.forNodeModel(resource).create();
 		} catch (Exception e) {
-			LOGGER.info("Resource " + resource.getURI() + " is empty.");
+			LOGGER.info("Resource " + resource.getURI() + " is empty.", e);
 			return;
 		}
 
@@ -72,7 +72,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		try {
 			replacements = formatter.format(req); // throws exception
 		} catch (RuntimeException e) {
-			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage());
+			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage(), e);
 		}
 
 		// Abort if replacements is empty (either because nothing to format or method

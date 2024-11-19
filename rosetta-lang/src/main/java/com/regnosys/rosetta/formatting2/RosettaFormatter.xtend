@@ -239,12 +239,16 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	def dispatch void format(Choice ele, extension IFormattableDocument document) {
-		ele.regionFor.keyword('choice')
+		ele.regionFor.keyword(choiceAccess.choiceKeyword_0)
 			.append[oneSpace]
 		ele.regionFor.keyword(':')
 			.prepend[noSpace]
 		ele.indentInner(document)
-		ele.attributes.forEach[
+		ele.formatDefinition(document)
+		ele.attributes.head
+			.prepend[setNewLines(1, 2, 2)]
+			.format
+		ele.attributes.tail.forEach[
 			prepend[newLine]
 			format
 		]
