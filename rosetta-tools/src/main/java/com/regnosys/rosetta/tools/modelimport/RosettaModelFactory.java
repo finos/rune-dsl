@@ -52,12 +52,12 @@ public class RosettaModelFactory {
 		return resourceSet;
 	}
 
-	public RosettaModel createRosettaModel(String type, GenerationProperties properties) {
-		Resource resource = createResource(properties.getNamespace(), type);
+	public RosettaModel createRosettaModel(String type, ImportTargetConfig targetConfig) {
+		Resource resource = createResource(targetConfig.getNamespace(), type);
 
 		RosettaModel rosettaModel = RosettaFactory.eINSTANCE.createRosettaModel();
-		rosettaModel.setName(properties.getNamespace());
-		rosettaModel.setDefinition(properties.getNamespaceDefinition());
+		rosettaModel.setName(targetConfig.getNamespace());
+		rosettaModel.setDefinition(targetConfig.getNamespaceDefinition());
 		rosettaModel.setVersion(PROJECT_VERSION);
 
 		resource.getContents().add(rosettaModel);

@@ -27,8 +27,6 @@ import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.core.XsdParser;
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
-import org.xmlet.xsdparser.xsdelements.XsdComplexType;
-import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdSchema;
 
 import com.google.common.collect.Streams;
@@ -63,7 +61,7 @@ public class XsdImport {
 		this.modelIdProvider = modelIdProvider;
 	}
 
-	public ResourceSet generateRosetta(XsdParser parsedInstance, GenerationProperties properties) {
+	public ResourceSet generateRosetta(RosettaXsdParser parsedInstance, ImportTargetConfig targetConfig) {
 		List<XsdAbstractElement> xsdElements = parsedInstance.getResultXsdSchemas().flatMap(XsdSchema::getXsdElements).toList();
 		
 		// Initialization
@@ -71,10 +69,10 @@ public class XsdImport {
 		
 		// First register all rosetta types and attributes, which makes it possible to support
 		// forward references and self-references.
-		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends Data> elements = xsdElementImport.registerTypes(xsdElements, xsdMapping, properties);
-		List<? extends Data> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, properties)
+		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends Data> elements = xsdElementImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends Data> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, targetConfig)
 				.stream().flatMap(Collection::stream).toList();
 
         // Post process to circumvent name conflicts:
@@ -91,12 +89,12 @@ public class XsdImport {
 
 		// Then write these types to the appropriate resources.
 		if (!enums.isEmpty()) {
-			RosettaModel enumModel = rosettaModelFactory.createRosettaModel(ENUM, properties);
+			RosettaModel enumModel = rosettaModelFactory.createRosettaModel(ENUM, targetConfig);
 			enumModel.getElements().addAll(enums);
 		}
 		
 		if (!aliases.isEmpty() || !elements.isEmpty() || !types.isEmpty()) {
-			RosettaModel typeModel = rosettaModelFactory.createRosettaModel(TYPE, properties);
+			RosettaModel typeModel = rosettaModelFactory.createRosettaModel(TYPE, targetConfig);
 			typeModel.getElements().addAll(aliases);
 			typeModel.getElements().addAll(elements);
 			typeModel.getElements().addAll(types);
@@ -111,7 +109,7 @@ public class XsdImport {
 		return rosettaModelFactory.getResourceSet();
 	}
 	
-	public RosettaXMLConfiguration generateXMLConfiguration(XsdParser parsedInstance, GenerationProperties properties) {
+	public RosettaXMLConfiguration generateXMLConfiguration(XsdParser parsedInstance, ImportTargetConfig targetConfig) {
 		Map<String, List<XsdAbstractElement>> targetNamespaceToXsdElementsMap = 
 				parsedInstance.getResultXsdSchemas()
 					.collect(Collectors.toMap(
@@ -124,23 +122,33 @@ public class XsdImport {
 				
 		Map<ModelSymbolId, TypeXMLConfiguration> result = new HashMap<>();
 		targetNamespaceToXsdElementsMap.forEach((targetNamespace, xsdElements) -> {
-			xsdElements.forEach(abstractElem -> {
-				if (abstractElem instanceof XsdElement xsdElem) {
-                    xsdElementImport.getXMLConfiguration(xsdElem, xsdMapping, targetNamespace)
-						.ifPresent(elemXMLConfig -> {
-							Data type = xsdMapping.getRosettaTypeFromElement(xsdElem);
-							result.put(modelIdProvider.getSymbolId(type), elemXMLConfig);
-						});
-				} else if (abstractElem instanceof XsdComplexType xsdType) {
-                    xsdTypeImport.getXMLConfiguration(xsdType, xsdMapping, targetNamespace)
-						.ifPresent(typeXMLConfig -> {
-							Data type = xsdMapping.getRosettaTypeFromComplex(xsdType);
-							result.put(modelIdProvider.getSymbolId(type), typeXMLConfig);
-						});
-				}
-			});
+			Streams.concat(
+					xsdEnumImport.filterTypes(xsdElements).stream().flatMap(x -> xsdEnumImport.getXMLConfiguration(x, xsdMapping, targetNamespace).entrySet().stream()),
+					xsdElementImport.filterTypes(xsdElements).stream().flatMap(x -> xsdElementImport.getXMLConfiguration(x, xsdMapping, targetNamespace).entrySet().stream()),
+					xsdTypeImport.filterTypes(xsdElements).stream().flatMap(x -> xsdTypeImport.getXMLConfiguration(x, xsdMapping, targetNamespace).entrySet().stream())
+				)
+				.filter(e -> !isEmpty(e.getValue()))
+				.map(e -> Map.entry(e.getKey(), prune(e.getValue())))
+				.collect(Collectors.toMap(e -> modelIdProvider.getSymbolId(e.getKey()), Map.Entry::getValue))
+				.forEach((id, config) -> result.put(id, config));
 		});
 		return new RosettaXMLConfiguration(result);
+	}
+	private TypeXMLConfiguration prune(TypeXMLConfiguration config) {
+		return new TypeXMLConfiguration(
+				config.getSubstitutionFor(),
+				config.getXmlElementName(),
+				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
+				config.getAttributes().map(x -> x.isEmpty() ? null : x),
+				config.getEnumValues().map(x -> x.isEmpty() ? null : x)
+			);
+	}
+	private boolean isEmpty(TypeXMLConfiguration config) {
+		return config.getSubstitutionFor().isEmpty()
+				&& config.getXmlElementName().isEmpty()
+				&& (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty())
+				&& (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty())
+				&& (config.getEnumValues().isEmpty() || config.getEnumValues().get().isEmpty());
 	}
 
 	public void saveResources(String outputPath) throws IOException {

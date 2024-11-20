@@ -3,6 +3,29 @@
     "attributes" : {
       "value" : {
         "xmlRepresentation" : "VALUE"
+      },
+      "fooSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "currency" : {
+        "xmlName" : "Currency",
+        "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  },
+  "test.ns.FooSequence" : {
+    "attributes" : {
+      "myGroup" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "fooSequenceSequence" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "fooSequenceChoice" : {
+        "xmlRepresentation" : "VIRTUAL"
+      },
+      "otherGroup" : {
+        "xmlRepresentation" : "VIRTUAL"
       }
     }
   }

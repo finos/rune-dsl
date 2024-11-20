@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
@@ -18,6 +17,8 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.regnosys.rosetta.utils.ModelIdProvider;
+import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.serialisation.AttributeXMLConfiguration;
 import com.rosetta.util.serialisation.AttributeXMLRepresentation;
 import com.rosetta.util.serialisation.TypeXMLConfiguration;
@@ -27,28 +28,30 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 	private final XsdUtil util;
 	private final RosettaBuiltinsService builtins;
 	private final XsdTypeImport typeImport;
+	private final ModelIdProvider modelIdProvider;
 	
 	@Inject
-	public XsdElementImport(XsdUtil util, RosettaBuiltinsService builtins, XsdTypeImport typeImport) {
+	public XsdElementImport(XsdUtil util, RosettaBuiltinsService builtins, XsdTypeImport typeImport, ModelIdProvider modelIdProvider) {
 		super(XsdElement.class);
 		this.util = util;
 		this.builtins = builtins;
 		this.typeImport = typeImport;
+		this.modelIdProvider = modelIdProvider;
 	}
 
 	@Override
-	public Data registerType(XsdElement xsdElement, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public Data registerType(XsdElement xsdElement, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
 		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
-        return getData(xsdElement, typeMappings, xsdType);
+        return getData(xsdElement, typeMappings, xsdType, targetConfig);
 	}
 
-	private Data getData(XsdElement xsdElement, RosettaXsdMapping typeMappings, XsdNamedElements xsdType) {
+	private Data getData(XsdElement xsdElement, RosettaXsdMapping typeMappings, XsdNamedElements xsdType, ImportTargetConfig targetConfig) {
+		String name = util.toTypeName(xsdElement.getName(), targetConfig);
 		if (xsdType != null /* TODO */ && typeMappings.hasType(xsdType)) {
 			if (xsdType instanceof XsdComplexType) {
 				Data dataType = typeMappings.getRosettaTypeFromComplex((XsdComplexType) xsdType);
 
-				String name = StringUtils.capitalize(xsdElement.getName());
-				if (name.equals(dataType.getName())) {
+				if (name.equalsIgnoreCase(dataType.getName())) {
 					// In case the element and type name overlap, we only generate the element.
 					// Join the documentation.
 					util.extractDocs(xsdElement).ifPresent(elemDocs -> {
@@ -63,7 +66,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 					return dataType;
 				} else {
 					Data data = SimpleFactory.eINSTANCE.createData();
-					data.setName(xsdElement.getName());
+					data.setName(name);
 					util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 					typeMappings.registerElement(xsdElement, data);
 
@@ -71,11 +74,11 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 				}
 			} else {
 				Data data = SimpleFactory.eINSTANCE.createData();
-				data.setName(xsdElement.getName());
+				data.setName(name);
 				util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 				typeMappings.registerElement(xsdElement, data);
 
-				Attribute valueAttr = typeImport.createValueAttribute();
+				Attribute valueAttr = typeImport.createValueAttribute(targetConfig);
 				typeMappings.registerAttribute(xsdElement, valueAttr);
 				data.getAttributes().add(valueAttr);
 
@@ -83,12 +86,16 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			}
 		} else {
 			Data data = SimpleFactory.eINSTANCE.createData();
-			data.setName(StringUtils.capitalize(xsdElement.getName()));
+			data.setName(name);
 			util.extractDocs(xsdElement).ifPresent(data::setDefinition);
 			typeMappings.registerElement(xsdElement, data);
 
 			return data;
 		}
+	}
+	
+	private boolean isRoot(XsdElement xsdElement) {
+		return !xsdElement.isAbstractObj() && (xsdElement.getXsdSubstitutionGroup() == null || isRoot(xsdElement.getXsdSubstitutionGroup()));
 	}
 
 	@Override
@@ -99,16 +106,18 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			return;
 		}
 		
-		// Add [rootType] annotation
-		Annotation rootTypeAnn = builtins.getAnnotationsResource(data.eResource().getResourceSet())
-				.getElements().stream()
-				.filter(elem -> elem instanceof Annotation)
-				.map(elem -> (Annotation)elem)
-				.filter(elem -> elem.getName().equals("rootType"))
-				.findAny().orElseThrow();
-		AnnotationRef rootTypeRef = SimpleFactory.eINSTANCE.createAnnotationRef();
-		rootTypeRef.setAnnotation(rootTypeAnn);
-		data.getAnnotations().add(rootTypeRef);
+		if (isRoot(xsdElement)) {
+			// Add [rootType] annotation
+			Annotation rootTypeAnn = builtins.getAnnotationsResource(data.eResource().getResourceSet())
+					.getElements().stream()
+					.filter(elem -> elem instanceof Annotation)
+					.map(elem -> (Annotation)elem)
+					.filter(elem -> elem.getName().equals("rootType"))
+					.findAny().orElseThrow();
+			AnnotationRef rootTypeRef = SimpleFactory.eINSTANCE.createAnnotationRef();
+			rootTypeRef.setAnnotation(rootTypeAnn);
+			data.getAnnotations().add(rootTypeRef);
+		}
 		
 		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
 		if (xsdType instanceof XsdComplexType) {
@@ -127,41 +136,52 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		}
 	}
 	
-	public Optional<TypeXMLConfiguration> getXMLConfiguration(XsdElement xsdElement, RosettaXsdMapping typeMappings, String schemaTargetNamespace) {
-		Data data = typeMappings.getRosettaTypeFromElement(xsdElement);
+	public Map<Data, TypeXMLConfiguration> getXMLConfiguration(XsdElement xsdElement, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {
+		Data data = xsdMapping.getRosettaTypeFromElement(xsdElement);
 		if (xsdElement.getTypeAsXsd() == null) {
 			// TODO
-			return Optional.empty();
+			return Collections.emptyMap();
 		}
 		
-		Map<String, AttributeXMLConfiguration> attributeConfig;
+		Map<Data, TypeXMLConfiguration> result = new LinkedHashMap<>();
+		
+		Optional<ModelSymbolId> substitution = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(elem -> modelIdProvider.getSymbolId(xsdMapping.getRosettaTypeFromElement(elem)));
+		Optional<String> elementName = xsdElement.isAbstractObj() ? Optional.empty() : Optional.of(xsdElement.getName());
+		Optional<Map<String, String>> xmlAttributes;
+		if (isRoot(xsdElement)) {
+			Map<String, String> attrs = new LinkedHashMap<>();
+			if (schemaTargetNamespace != null) {
+				attrs.put("xmlns", schemaTargetNamespace);
+			}
+			attrs.put("xmlns:xsi", util.XSI_NAMESPACE);
+			xmlAttributes = Optional.of(attrs);
+		} else {
+			xmlAttributes = Optional.empty();
+		}
+		Map<String, AttributeXMLConfiguration> attributeConfig = new LinkedHashMap<>();
+		result.put(data,
+				new TypeXMLConfiguration(
+					substitution,
+					elementName,
+					xmlAttributes,
+					Optional.of(attributeConfig),
+					Optional.empty()
+				));
+		
 		XsdNamedElements xsdType = xsdElement.getTypeAsXsd();
 		if (xsdType instanceof XsdComplexType) {
-			Data dataType = typeMappings.getRosettaTypeFromComplex((XsdComplexType) xsdType);
+			Data dataType = xsdMapping.getRosettaTypeFromComplex(xsdType);
 			if (data.equals(dataType)) {
-				attributeConfig = typeImport.getAttributeConfiguration((XsdComplexType) xsdElement.getTypeAsXsd(), typeMappings);
-			} else {				
-				attributeConfig = Collections.emptyMap();
+				typeImport.completeAttributeConfiguration(attributeConfig, xsdType, xsdMapping, result);
 			}
 		} else {
-			attributeConfig = new LinkedHashMap<>();
-			Attribute attr = typeMappings.getAttribute(xsdElement);
+			Attribute attr = xsdMapping.getAttribute(xsdElement);
 			attributeConfig.put(attr.getName(), new AttributeXMLConfiguration(
 					Optional.empty(),
 					Optional.empty(),
 					Optional.of(AttributeXMLRepresentation.VALUE)));
 		}
-		
-		Map<String, String> xmlAttributes = new LinkedHashMap<>();
-		if (schemaTargetNamespace != null) {
-			xmlAttributes.put("xmlns", schemaTargetNamespace);
-		}
-		xmlAttributes.put("xmlns:xsi", util.XSI_NAMESPACE);
-		return Optional.of(
-				new TypeXMLConfiguration(
-					Optional.of(xsdElement.getName()),
-					Optional.of(xmlAttributes),
-					attributeConfig.isEmpty() ? Optional.empty() : Optional.of(attributeConfig)
-				));
+
+		return result;
 	}
 }

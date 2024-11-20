@@ -16,7 +16,11 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -28,6 +32,7 @@ import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.rosetta.util.serialisation.TypeXMLConfiguration;
 
 public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnumeration> {
 	
@@ -47,7 +52,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 	}
 
 	@Override
-	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, GenerationProperties properties) {
+	public RosettaEnumeration registerType(XsdSimpleType xsdType, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
 		RosettaEnumeration rosettaEnumeration = RosettaFactory.eINSTANCE.createRosettaEnumeration();
 		rosettaEnumeration.setName(xsdType.getName());
 		util.extractDocs(xsdType).ifPresent(rosettaEnumeration::setDefinition);
@@ -56,7 +61,8 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		List<XsdEnumeration> enumeration = xsdType.getAllRestrictions().stream().flatMap(r -> r.getEnumeration().stream()).toList();
 
 		enumeration.stream()
-			.map(e -> this.registerEnumValue(e, typeMappings))
+			.filter(e -> !e.getValue().isEmpty())
+			.map(e -> this.registerEnumValue(e, typeMappings, targetConfig))
 			.forEach(rosettaEnumeration.getEnumValues()::add);
 		
 		return rosettaEnumeration;
@@ -67,8 +73,8 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		
 	}
 
-	private RosettaEnumValue registerEnumValue(XsdEnumeration ev, RosettaXsdMapping typeMappings) {
-		String value = util.toEnumValueName(ev.getValue());
+	private RosettaEnumValue registerEnumValue(XsdEnumeration ev, RosettaXsdMapping typeMappings, ImportTargetConfig targetConfig) {
+		String value = util.toEnumValueName(ev.getValue(), targetConfig);
 		RosettaEnumValue rosettaEnumValue = RosettaFactory.eINSTANCE.createRosettaEnumValue();
 		rosettaEnumValue.setName(value);
 		util.extractDocs(ev).ifPresent(rosettaEnumValue::setDefinition);
@@ -76,5 +82,26 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		typeMappings.registerEnumValue(ev, rosettaEnumValue);
 		
 		return rosettaEnumValue;
+	}
+	
+	public Map<RosettaEnumeration, TypeXMLConfiguration> getXMLConfiguration(XsdSimpleType xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {		
+		Map<String, String> enumValueMap = new LinkedHashMap<>();
+		xsdType.getAllRestrictions().stream().flatMap(r -> r.getEnumeration().stream())
+			.forEach(ev -> {
+				RosettaEnumValue rosettaEnumValue = xsdMapping.getEnumValue(ev);
+				if (!rosettaEnumValue.getName().equals(ev.getValue())) {
+					enumValueMap.put(rosettaEnumValue.getName(), ev.getValue());
+				}
+			});
+		if (enumValueMap.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		RosettaEnumeration rosettaEnumeration = xsdMapping.getRosettaEnumerationFromSimple(xsdType);
+		return Collections.singletonMap(rosettaEnumeration, new TypeXMLConfiguration(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
+				Optional.of(enumValueMap)));
 	}
 }

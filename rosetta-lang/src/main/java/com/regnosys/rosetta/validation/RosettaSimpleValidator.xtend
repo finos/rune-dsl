@@ -124,6 +124,8 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.google.common.collect.Lists
+import java.util.Collection
+import org.eclipse.xtext.resource.IResourceDescriptions
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 
@@ -574,7 +576,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkClassNameStartsWithCapital(Data classe) {
-		if (!Character.isUpperCase(classe.name.charAt(0))) {
+		if (Character.isLowerCase(classe.name.charAt(0))) {
 			warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -583,7 +585,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkConditionName(Condition condition) {
 		if (condition.name === null && !condition.isConstraintCondition) {
 			warning("Condition name should be specified", ROSETTA_NAMED__NAME, INVALID_NAME)
-		} else if (condition.name !== null && !Character.isUpperCase(condition.name.charAt(0))) {
+		} else if (condition.name !== null && Character.isLowerCase(condition.name.charAt(0))) {
 			warning("Condition name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -598,14 +600,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def void checkFunctionNameStartsWithCapital(Function enumeration) {
-		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
+		if (Character.isLowerCase(enumeration.name.charAt(0))) {
 			warning("Function name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
 
 	@Check
 	def void checkEnumerationNameStartsWithCapital(RosettaEnumeration enumeration) {
-		if (!Character.isUpperCase(enumeration.name.charAt(0))) {
+		if (Character.isLowerCase(enumeration.name.charAt(0))) {
 			warning("Enumeration name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -614,7 +616,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
 		val annotationAttribute = attribute.eContainer instanceof Annotation
 		val choiceOption = attribute instanceof ChoiceOption
-		if (!choiceOption && !annotationAttribute && !Character.isLowerCase(attribute.name.charAt(0))) {
+		if (!choiceOption && !annotationAttribute && Character.isUpperCase(attribute.name.charAt(0))) {
 			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -721,27 +723,40 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	// TODO This probably should be made namespace aware
 	@Check(FAST) // switch to NORMAL if it becomes slow
 	def checkTypeNamesAreUnique(RosettaModel model) {
-		val name2attr = HashMultimap.create
-		model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)].forEach [ // TODO better FunctionDispatch handling
-			name2attr.put(name, it)
+		// NOTE: this check is done case-insensitive!
+		// This is to prevent clashes in generated code (e.g., MyFoo.java and Myfoo.java),
+		// which case-insensitive file systems such as Mac and Windows do not handle well.
+		val namedRootElems = model.elements.filter(RosettaNamed).filter[!(it instanceof FunctionDispatch)]
+		val descr = getResourceDescriptions(model.eResource)
+		
+		val nonAnnotations = namedRootElems.filter[!(it instanceof Annotation)]
+		checkNamesInGroupAreUnique(nonAnnotations.toList, true, descr)
+		
+		val annotations = namedRootElems.filter[it instanceof Annotation]
+		checkNamesInGroupAreUnique(annotations.toList, true, descr)
+	}
+	private def checkNamesInGroupAreUnique(Collection<RosettaNamed> namedElems, boolean ignoreCase, IResourceDescriptions descr) {
+		val groupedElems = HashMultimap.create
+		namedElems.filter[name !== null].forEach [
+			groupedElems.put(ignoreCase ? name.toUpperCase : name, it)
 		]
-		val resourceDescription = getResourceDescriptions(model.eResource)
-		for (name : name2attr.keySet) {
-			val valuesByName = name2attr.get(name)
-			if (valuesByName.size > 1) {
-				valuesByName.forEach [
-					if (it.name !== null)
-						error('''Duplicate element named '«name»'«»''', it, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
+		for (key : groupedElems.keySet) {
+			val group = groupedElems.get(key)
+			if (group.size > 1) {
+				group.forEach [
+					error('''Duplicate element named '«name»'«»''', it, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
 				]
-			} else if (valuesByName.size == 1 && model.eResource.URI.isPlatformResource) {
-				val EObject toCheck = valuesByName.get(0)
-				val qName = toCheck.fullyQualifiedName
-				val sameNamed = resourceDescription.getExportedObjects(toCheck.eClass(), qName, false).filter [
-					confExtensions.isProjectLocal(model.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
-				].map[EObjectURI]
-				if (sameNamed.size > 1) {
-					error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
-						toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
+			} else if (group.size == 1 && group.head.eResource.URI.isPlatformResource) {
+				val toCheck = group.head
+				if (toCheck instanceof RosettaRootElement) {
+					val qName = toCheck.fullyQualifiedName
+					val sameNamed = descr.getExportedObjects(toCheck.eClass(), qName, false).filter [
+						confExtensions.isProjectLocal(toCheck.eResource.URI, it.EObjectURI) && getEClass() !== FUNCTION_DISPATCH
+					].map[EObjectURI]
+					if (sameNamed.size > 1) {
+						error('''Duplicate element named '«qName»' in «sameNamed.filter[toCheck.URI != it].join(', ',[it.lastSegment])»''',
+							toCheck, ROSETTA_NAMED__NAME, DUPLICATE_ELEMENT_NAME)
+					}
 				}
 			}
 		}

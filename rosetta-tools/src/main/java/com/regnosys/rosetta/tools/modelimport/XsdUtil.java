@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,9 +28,6 @@ import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 public class XsdUtil {
-	
-	private static final String XSD_NAME_PARTS_REGEX = "[^a-zA-Z0-9_]";
-
 	private final Set<String> documentationSources = Set.of("Definition");
 	
 	public final String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
@@ -73,60 +69,31 @@ public class XsdUtil {
 				.anyMatch(e -> !e.getEnumeration().isEmpty());
 	}
 
-    public String toTypeName(String xsdName) {
-        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (Character.isUpperCase(part.charAt(0))) {
-                builder.append(part);
-            } else {
-                builder.append(Character.toUpperCase(part.charAt(0)));
-                builder.append(part, 1, part.length());
-            }
+    public String toTypeName(String xsdName, ImportTargetConfig config) {
+    	String overridenName = config.getNameOverrides().get(xsdName);
+    	if (overridenName != null) {
+    		return overridenName;
+    	}
+        String name = config.getPreferences().getTypeCasing().transform(xsdName);
+        // TODO
+        if (name.equals("Object")) {
+        	return "_Object";
         }
-        return builder.toString();
+        return name;
     }
 
-    public String toAttributeName(String xsdName) {
-        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
-        StringBuilder builder = new StringBuilder();
-        builder.append(allFirstLowerIfNotAbbrevation(parts[0]));
-        Arrays.stream(parts).skip(1).forEach(part -> {
-            if (Character.isUpperCase(part.charAt(0))) {
-                builder.append(part);
-            } else {
-                builder.append(Character.toUpperCase(part.charAt(0)));
-                builder.append(part, 1, part.length());
-            }
-        });
-        return builder.toString();
+    public String toAttributeName(String xsdName, ImportTargetConfig config) {
+        String name = config.getPreferences().getAttributeCasing().transform(xsdName);
+        // TODO
+        if (name.equals("type")) {
+        	return "_type";
+        }
+        return name;
     }
     
-    public String toEnumValueName(String xsdName) {
-        String[] parts = xsdName.split(XSD_NAME_PARTS_REGEX);
-        String joined = String.join("_", parts).toUpperCase();
-        if (joined.matches("^[0-9].*")) {
-        	return "_" + joined;
-        }
-    	return joined;
+    public String toEnumValueName(String xsdName, ImportTargetConfig config) {
+    	return config.getPreferences().getEnumValueCasing().transform(xsdName);
     }
-	
-	private String allFirstLowerIfNotAbbrevation(String s) {
-		if (s == null || s.isEmpty())
-			return s;
-		int upperCased = 0;
-		while (upperCased < s.length() && Character.isUpperCase(s.charAt(upperCased))) {
-			upperCased++;
-		}
-		if (upperCased == 0)
-			return s;
-		if (s.length() == upperCased)
-			return s.toLowerCase();
-		if (upperCased == 1) {
-			return s.substring(0, 1).toLowerCase() + s.substring(1);
-		}
-		return s.substring(0, upperCased - 1).toLowerCase() + s.substring(upperCased - 1);
-	}
 
 	public void makeNamesUnique(List<? extends RosettaNamed> objects) {
 		objects.stream().collect(Collectors.groupingBy(RosettaNamed::getName)).forEach((name, group) -> {

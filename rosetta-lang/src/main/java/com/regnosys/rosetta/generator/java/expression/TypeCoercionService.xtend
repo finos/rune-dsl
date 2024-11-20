@@ -246,13 +246,13 @@ class TypeCoercionService {
 		getItemConversion(actualItemType, expectedItemType, scope)
 			.map[itemConversion|
 				if (actual.isList) {
-					[getListItemConversionExpression(it, itemConversion, scope)]
+					[getListItemConversionExpression(it, itemConversion, expectedItemType.toReferenceType, scope)]
 				} else if (actual.isMapperS) {
-					[getMapperSItemConversionExpression(it, expectedItemType.toReferenceType, itemConversion, scope)]
+					[getMapperSItemConversionExpression(it, itemConversion, expectedItemType.toReferenceType, scope)]
 				} else if (actual.isMapperC) {
-					[getMapperCItemConversionExpression(it, itemConversion, scope)]
+					[getMapperCItemConversionExpression(it, itemConversion, expectedItemType.toReferenceType, scope)]
 				} else if (actual.isMapperListOfLists) {
-					[getMapperListOfListsItemConversionExpression(it, itemConversion, scope)]
+					[getMapperListOfListsItemConversionExpression(it, itemConversion, expectedItemType.toReferenceType, scope)]
 				} else {
 					throw unexpectedWrapperException(actual)
 				}
@@ -488,51 +488,52 @@ class TypeCoercionService {
 	private def JavaExpression getMapperToItemConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«expression».get()''', expression.expressionType.itemType)
 	}
-	private def JavaExpression getListItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaScope scope) {
+	private def JavaExpression getListItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val resultItem = itemConversion.apply(new JavaVariable(lambdaParam, actualItemType))
+		val resultType = LIST.wrap(expectedItemType)
 		JavaExpression.from(
 			'''
 			«expression».stream()
-				.<«resultItem.expressionType»>map(«lambdaParam» -> «resultItem.toLambdaBody»)
+				.<«expectedItemType»>map(«lambdaParam» -> «resultItem.toLambdaBody»)
 				.collect(«Collectors».toList())
 			''',
-			LIST.wrap(resultItem.expressionType)
+			resultType
 		)
 	}
-	private def JavaExpression getMapperSItemConversionExpression(JavaExpression expression, JavaReferenceType expectedType, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaScope scope) {
+	private def JavaExpression getMapperSItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val inputToItem = new JavaVariable(lambdaParam, actualItemType)
-		val resultType = MAPPER_S.wrap(expectedType)
-		val resultItemNullSafe = convertNullSafe(inputToItem, itemConversion, expectedType, scope)
+		val resultType = MAPPER_S.wrap(expectedItemType)
+		val resultItemNullSafe = convertNullSafe(inputToItem, itemConversion, expectedItemType, scope)
 		JavaExpression.from(
 			'''«expression».<«resultType.itemType»>map("Type coercion", «lambdaParam» -> «resultItemNullSafe.toLambdaBody»)''',
 			resultType
 		)
 	}
-	private def JavaExpression getMapperCItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaScope scope) {
+	private def JavaExpression getMapperCItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val resultItem = itemConversion.apply(new JavaVariable(lambdaParam, actualItemType))
-		val resultType = MAPPER_C.wrap(resultItem.expressionType)
+		val resultType = MAPPER_C.wrap(expectedItemType)
 		JavaExpression.from(
-			'''«expression».<«resultType.itemType»>map("Type coercion", «lambdaParam» -> «resultItem.toLambdaBody»)''',
+			'''«expression».<«expectedItemType»>map("Type coercion", «lambdaParam» -> «resultItem.toLambdaBody»)''',
 			resultType
 		)
 	}
-	private def JavaExpression getMapperListOfListsItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaScope scope) {
+	private def JavaExpression getMapperListOfListsItemConversionExpression(JavaExpression expression, Function<JavaExpression, ? extends JavaStatementBuilder> itemConversion, JavaReferenceType expectedItemType, JavaScope scope) {
 		val actualItemType = expression.expressionType.itemType
 		val listToListLambdaScope = scope.lambdaScope
 		val mapperCParam = listToListLambdaScope.createUniqueIdentifier("mapperC")
-		val resultMapperC = getMapperCItemConversionExpression(new JavaVariable(mapperCParam, MAPPER_C.wrap(actualItemType)), itemConversion, listToListLambdaScope)
-		val resultType = MAPPER_LIST_OF_LISTS.wrap(resultMapperC.expressionType.itemType)
+		val resultMapperC = getMapperCItemConversionExpression(new JavaVariable(mapperCParam, MAPPER_C.wrap(actualItemType)), itemConversion, expectedItemType, listToListLambdaScope)
+		val resultType = MAPPER_LIST_OF_LISTS.wrap(expectedItemType)
 		JavaExpression.from(
-			'''«expression».<«resultType.itemType»>mapListToList(«mapperCParam» -> «resultMapperC.toLambdaBody»)''',
+			'''«expression».<«expectedItemType»>mapListToList(«mapperCParam» -> «resultMapperC.toLambdaBody»)''',
 			resultType
 		)
 	}
