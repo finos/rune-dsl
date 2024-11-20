@@ -637,8 +637,9 @@ enum ExistsModifier:
 	| MULTIPLE='multiple'
 ;
 
-SwitchCase:
- 	guard=SwitchCaseGuard 'then' expression=RosettaCalcExpression
+SwitchCaseOrDefault:
+	'default' expression=RosettaCalcExpression
+ 	| guard=SwitchCaseGuard 'then' expression=RosettaCalcExpression
 ;
 
 SwitchCaseGuard:
@@ -671,7 +672,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
-			|({SwitchOperation.argument=current} operator='switch' ((cases+=SwitchCase =>(',' cases+=SwitchCase)* =>(',' 'default' default=RosettaCalcExpression)?) | ('default' default=RosettaCalcExpression)))
+			|({SwitchOperation.argument=current} operator='switch' =>(cases+=SwitchCaseOrDefault =>(',' cases+=SwitchCaseOrDefault)*)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
@@ -708,7 +709,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation} operator='to-date')
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
-			|({SwitchOperation} operator='switch' ((cases+=SwitchCase =>(',' cases+=SwitchCase)* =>(',' 'default' default=RosettaCalcExpression)?) | ('default' default=RosettaCalcExpression)))
+			|({SwitchOperation} operator='switch' =>(cases+=SwitchCaseOrDefault =>(',' cases+=SwitchCaseOrDefault)*)?)
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -746,7 +747,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateOperation.argument=current} operator='to-date')
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
-			|({SwitchOperation.argument=current} operator='switch' ((cases+=SwitchCase =>(',' cases+=SwitchCase)* =>(',' 'default' default=RosettaCalcExpression)?) | ('default' default=RosettaCalcExpression)))
+			|({SwitchOperation.argument=current} operator='switch' =>(cases+=SwitchCaseOrDefault =>(',' cases+=SwitchCaseOrDefault)*)?)
 		)
 		| =>(
 			({SortOperation.argument=current} operator='sort')
