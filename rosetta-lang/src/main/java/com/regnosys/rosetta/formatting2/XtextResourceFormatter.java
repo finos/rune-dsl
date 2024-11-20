@@ -76,7 +76,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		}
 
 		// Abort if replacements is empty (either because nothing to format or method
-		// throws exception
+		// throws exception)
 		if (replacements.isEmpty()) {
 			LOGGER.info("No replacements to apply, skipping file");
 			return;
