@@ -3,10 +3,8 @@ package com.regnosys.rosetta.tools.modelimport;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +25,7 @@ public class ImportConfigTest {
 	}
 
 	private ImportConfig getConfig(String path) throws FileNotFoundException, IOException {
-		try (InputStream input = new FileInputStream(path)) {
-			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			return mapper.readValue(new File(path), ImportConfig.class);
-        }
+		ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+		return mapper.readValue(new File(path), ImportConfig.class);
 	}
 }

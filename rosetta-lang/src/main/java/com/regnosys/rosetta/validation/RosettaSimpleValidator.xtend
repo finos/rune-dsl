@@ -206,8 +206,19 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (op.argument.multi) {
 			error("Input to switch must be single cardinality", op.argument, null)
 		}
+		
+		// Check `default` is the last case
+		op.cases.take(op.cases.size-1)
+			.forEach[
+				if (isDefault) {
+					errorKeyword('''A default case is only allowed at the end.''', it, switchCaseOrDefaultAccess.defaultKeyword_0_0)
+				}
+			]
+		
 		val argumentType = op.argument.RMetaAnnotatedType.RType.stripFromTypeAliases
-		if (argumentType instanceof REnumType) {
+		if (argumentType == NOTHING) {
+			// If there is an error within the argument, do not check further.W
+		} else if (argumentType instanceof REnumType) {
 			checkEnumSwitch(argumentType, op)
 		} else if (argumentType instanceof RBasicType) {
 			checkBasicTypeSwitch(argumentType, op)
@@ -224,12 +235,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		// - there are no duplicate cases,
 		// - all enum values must be covered.
 		val seenValues = newHashSet
-		for (caseStatement : op.cases) {
+		for (caseStatement : op.cases.filter[!isDefault]) {
  			if (caseStatement.guard.enumGuard === null) {
- 				error('''Case should match an enum value of «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 				error('''Case should match an enum value of «argumentType»''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  			} else {
  				if (!seenValues.add(caseStatement.guard.enumGuard)) {
- 					error('''Duplicate case «caseStatement.guard.enumGuard.name»''', caseStatement, SWITCH_CASE__GUARD)
+ 					error('''Duplicate case «caseStatement.guard.enumGuard.name»''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  				}
  			}
  		}
@@ -247,16 +258,16 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		// - there are no duplicate cases,
 		// - all guards should be comparable to the input.
 		val seenValues = newHashSet
- 		for (caseStatement : op.cases) {
+ 		for (caseStatement : op.cases.filter[!isDefault]) {
  			if (caseStatement.guard.literalGuard === null) {
- 				error('''Case should match a literal of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 				error('''Case should match a literal of type «argumentType»''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  			} else {
  				if (!seenValues.add(caseStatement.guard.literalGuard.interpret)) {
- 					error('''Duplicate case''', caseStatement, SWITCH_CASE__GUARD)
+ 					error('''Duplicate case''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  				}
  				val conditionType = caseStatement.guard.literalGuard.RMetaAnnotatedType.RType
 	 			if (!conditionType.isComparable(argumentType)) {
- 					error('''Invalid case: «argumentType.notComparableMessage(conditionType)»''', caseStatement, SWITCH_CASE__GUARD)
+ 					error('''Invalid case: «argumentType.notComparableMessage(conditionType)»''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  				}
  			}
  		}
@@ -267,14 +278,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		// - all cases should be reachable,
 		// - all choice options should be covered.
 		val Map<ChoiceOption, RMetaAnnotatedType> includedOptions = newHashMap
-		for (caseStatement : op.cases) {
+		for (caseStatement : op.cases.filter[!isDefault]) {
  			if (caseStatement.guard.choiceOptionGuard === null) {
- 				error('''Case should match a choice option of type «argumentType»''', caseStatement, SWITCH_CASE__GUARD)
+ 				error('''Case should match a choice option of type «argumentType»''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  			} else {
  				val guard = caseStatement.guard.choiceOptionGuard
  				val alreadyCovered = includedOptions.get(guard)
  				if (alreadyCovered !== null) {
- 					error('''Case already covered by «alreadyCovered»''', caseStatement, SWITCH_CASE__GUARD)
+ 					error('''Case already covered by «alreadyCovered»''', caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD)
  				} else {
  					val guardType = guard.RTypeOfSymbol
  					includedOptions.put(guard, guardType)

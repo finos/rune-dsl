@@ -57,7 +57,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
-import com.regnosys.rosetta.rosetta.expression.SwitchCase;
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault;
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
@@ -152,10 +152,10 @@ public interface ExpectedTypeProvider {
 					} else {
 						LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
 					}
-				} else if (owner instanceof SwitchCase) {
-					SwitchCase switchCase = (SwitchCase) owner;
+				} else if (owner instanceof SwitchCaseOrDefault) {
+					SwitchCaseOrDefault switchCase = (SwitchCaseOrDefault) owner;
 					SwitchOperation op = switchCase.getSwitchOperation();
-					if (SWITCH_CASE__EXPRESSION.equals(reference)) {
+					if (SWITCH_CASE_OR_DEFAULT__EXPRESSION.equals(reference)) {
 						return getExpectedTypeFromContainer(op);
 					}
 				}
@@ -614,8 +614,6 @@ public interface ExpectedTypeProvider {
 					if (expr.getCases().stream().allMatch(c -> leavesItemTypeUnchanged(c.getExpression())) && (expr.getDefault() == null || leavesItemTypeUnchanged(expr.getDefault()))) {
 						return getExpectedTypeFromContainer(expr);
 					}
-				} else if (SWITCH_OPERATION__DEFAULT.equals(context.reference)) {
-					return getExpectedTypeFromContainer(expr);
 				}
 				return null;
 			}
