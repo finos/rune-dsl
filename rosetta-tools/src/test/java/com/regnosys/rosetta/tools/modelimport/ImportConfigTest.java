@@ -20,6 +20,7 @@ public class ImportConfigTest {
 		// assert
 		assertEquals("test.ns", config.getTarget().getNamespace());
 		assertEquals("Test namespace definition", config.getTarget().getNamespaceDefinition());
+		assertNotNull(config.getTarget().getNameOverrides());
 		assertNotNull(config.getTarget().getPreferences());
 	}
 
