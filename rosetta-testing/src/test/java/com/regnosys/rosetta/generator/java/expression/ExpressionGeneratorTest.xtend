@@ -37,6 +37,13 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import java.math.BigInteger
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.util.types.JavaType
+import java.util.List
+import java.util.Collection
+import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.tests.util.ModelHelper
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -45,8 +52,62 @@ class ExpressionGeneratorTest {
 	@Inject extension ExpressionParser
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeUtil
+	@Inject extension JavaTypeTranslator
+	@Inject extension RObjectFactory
+	@Inject extension ModelHelper
 	
 	DottedPath testPackageName = DottedPath.of("com", "regnosys", "test")
+	
+	
+	private def void assertJavaCode(String expectedCode, CharSequence expr, JavaType expectedType, List<RosettaModel> context) {
+		assertJavaCode(expectedCode, expr, expectedType, context, emptyList)
+	}
+	private def void assertJavaCode(String expectedCode, CharSequence expr, Class<?> expectedType, List<RosettaModel> context, Collection<? extends CharSequence> attrs) {
+		assertJavaCode(expectedCode, expr, JavaType.from(expectedType), context, attrs)
+	}
+	private def void assertJavaCode(String expectedCode, CharSequence expr, JavaType expectedType, List<RosettaModel> context, Collection<? extends CharSequence> attrs) {
+		val attributes = attrs.map[parseAttribute(context)].toList
+		val parsedExpr = expr.parseExpression(context, attributes)
+		
+		val pkg = DottedPath.of("test", "ns")
+		val scope = new JavaScope(pkg)
+		
+		val statements = newArrayList
+		statements.addAll(
+			attributes
+				.map[buildRAttribute]
+				.map[new JavaLocalVariableDeclarationStatement(false, toMetaJavaType, scope.createIdentifier(it, name))])
+		statements.add(parsedExpr.javaCode(expectedType, scope).completeAsReturn)
+		
+		val actual = statements.reduce[s1, s2|s1.append(s2)]
+		assertEquals(expectedCode, buildClass(pkg, '''«actual»''', scope).replace("package test.ns;", "").trim + System.lineSeparator)
+	}
+	
+
+	
+	@Test
+	def void testFeatureCallToIncompatibleRestrictionUsesCorrectGetter() {
+		val context = '''
+		type Foo:
+			attr number (1..1)
+		
+		type Bar extends Foo:
+			restrict attr int (1..1)
+		
+		func Round:
+			inputs:
+				inp number (1..1)
+			output:
+				result int (1..1)
+		'''.parseRosettaWithNoIssues
+		
+		val expected = '''
+		
+		'''
+		
+		assertJavaCode(expected, '''bar -> attr + Round(bar -> attr)''', Integer, #[context], #["bar Bar (1..1)"])	
+		
+	}
 	
 	@Test
 	def void shouldEscapeStrings() {
