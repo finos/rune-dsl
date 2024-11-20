@@ -35,6 +35,25 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void canSwitchWithSingleCase() {
+		val context = '''
+			choice FooOrBar:
+				Foo
+				Bar
+			
+			type Foo:
+			type Bar:
+		'''.parseRosettaWithNoIssues
+		
+		'''
+		fooOrBar switch
+			Foo then 42
+		'''
+			.parseExpression(#[context], #["fooOrBar FooOrBar (1..1)"])
+			.assertNoIssues
+	}
+	
+	@Test
 	def void canPassMetadataToFunctions() {
 		'''
 			func MyFunc:
