@@ -93,16 +93,8 @@ public class ResourceFormatterServiceTest {
 		ITextRegionAccess regionAccess = regionBuilder.forNodeModel((XtextResource) resource).create();
 		
 		String docTextBefore = regionAccess.regionForDocument().getText();
-		//System.out.println("Before: " + docTextBefore);
-		
-		//formatterService.formatCollection(resources);
-//		List<String> result = resources.stream().map(resource1 -> serializer.serialize(resource.getContents().get(0)))
-//				.collect(Collectors.toList());
 		String result = serializer.serialize(resource.getContents().get(0));
-		
-		//String docText = regionAccess.regionForDocument().getText();
-		//System.out.println( "After: " +result);
-		
+
 		Assertions.assertEquals(docTextBefore, result);
 	}
 }
