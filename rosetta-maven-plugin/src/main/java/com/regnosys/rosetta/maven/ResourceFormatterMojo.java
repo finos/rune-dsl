@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,7 +63,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 		resourceSet.getResource(builtins.basicTypesURI, true);
 		resourceSet.getResource(builtins.annotationsURI, true);
 
-		List<Resource> resources = new ArrayList<>();
+		List<Resource> resources;
 		try {
 			// Find all .rosetta files in the directory and load them from disk
 			resources = Files.walk(directory).filter(path -> path.toString().endsWith(".rosetta"))
