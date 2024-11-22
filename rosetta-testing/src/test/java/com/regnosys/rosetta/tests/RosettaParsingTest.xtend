@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.junit.jupiter.api.Assertions.*
 
@@ -41,7 +42,7 @@ class RosettaParsingTest {
 				restrict attr number (1..1)
 				attr number (0..1)
 		'''.parseRosetta
-			.assertError(null, null, "")
+			.assertError(ATTRIBUTE, null, "Attribute attr does not exist in supertype")
 	}
 	
 	@Test
@@ -52,8 +53,7 @@ class RosettaParsingTest {
 			
 			type Foo extends Bar:
 				restrict attr number (1..1)
-		'''.parseRosetta
-			.assertError(null, null, "")
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test

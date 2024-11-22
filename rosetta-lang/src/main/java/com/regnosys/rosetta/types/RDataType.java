@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -38,45 +36,58 @@ public class RDataType extends RType implements RObject {
 	private RDataType superType = null;
 	private ModelSymbolId symbolId = null;
 	private List<RAttribute> ownAttributes = null;
+	private List<RMetaAttribute> metaAttributes = null;
 	
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
+	private final RosettaTypeProvider typeProvider;
 	
 	// TODO: remove this hack TODOTODOTODO
-	private List<RAttribute> additionalAttributes = null;
+//	private List<RAttribute> additionalAttributes = null;
 
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
+	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final RosettaTypeProvider typeProvider) {
 		super();
 		this.data = data;
 		
 		this.modelIdProvider = modelIdProvider;
 		this.objectFactory = objectFactory;
+		this.typeProvider = typeProvider;
 	}
 	// TODO: remove this hack
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
-		this(data, modelIdProvider, objectFactory);
-		this.additionalAttributes = additionalAttributes;
-	}
+//	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
+//		this(data, modelIdProvider, objectFactory);
+//		this.additionalAttributes = additionalAttributes;
+//	}
 	
 	@Override
 	public Data getEObject() {
-		return this.data;
+		return data;
 	}
 	
 	@Override
 	public ModelSymbolId getSymbolId() {
-		if (this.symbolId == null) {
-			this.symbolId = modelIdProvider.getSymbolId(data);;
+		if (symbolId == null) {
+			symbolId = modelIdProvider.getSymbolId(data);;
 		}
-		return this.symbolId;
+		return symbolId;
+	}
+	
+	public List<RMetaAttribute> getMetaAttributes() {
+		if (metaAttributes == null) {
+			metaAttributes = typeProvider.getRMetaAttributes(data.getAnnotations());
+		}
+		return metaAttributes;
+	}
+	public boolean hasMetaAttribute(String name) {
+		return getMetaAttributes().stream().anyMatch(m -> m.getName().equals(name));
 	}
 	
 	public RDataType getSuperType() {
 		if (data.hasSuperType()) {
-			if (this.superType == null) {
-				this.superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory);
+			if (superType == null) {
+				superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory, typeProvider);
 			}
-			return this.superType;
+			return superType;
 		}
 		return null;
 	}
@@ -107,13 +118,7 @@ public class RDataType extends RType implements RObject {
 	 */
 	public List<RAttribute> getOwnAttributes() {
 		if (ownAttributes == null) {
-			Stream<RAttribute> regularAttributes = 
-					data.getAttributes().stream().map(s -> objectFactory.buildRAttribute(s));
-			if (additionalAttributes != null) {
-				this.ownAttributes = Streams.concat(additionalAttributes.stream(), regularAttributes).collect(Collectors.toList());
-			} else {
-				this.ownAttributes = regularAttributes.collect(Collectors.toList());
-			}
+			ownAttributes = data.getAttributes().stream().map(s -> objectFactory.buildRAttribute(s)).collect(Collectors.toList());
 		}
 		return ownAttributes;
 	}

@@ -100,11 +100,12 @@ class DeepPathUtilGenerator {
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
 		val attrs = choiceType.allAttributes.toList
+		val deepFeatureType = deepFeature.toMetaJavaType
 		var JavaStatementBuilder acc = JavaExpression.NULL
 		for (a : attrs.reverseView) {
 			val currAcc = acc
 			acc = inputParameter
-					.attributeCall(choiceType.withEmptyMeta, a, false, scope)
+					.attributeCall(choiceType.withEmptyMeta, a, false, a.toMetaJavaType, scope)
 					.declareAsVariable(true, a.name.toFirstLower, scope)
 					.mapExpression[attrVar|
 						attrVar.exists(ExistsModifier.NONE, scope)
@@ -125,7 +126,7 @@ class DeepPathUtilGenerator {
 									} else {
 										(attrType as RDataType).allAttributes.findFirst[name.equals(deepFeature.name)]
 									}
-									attrVar.attributeCall(metaRType, actualFeature, needsToGoDownDeeper, scope)
+									attrVar.attributeCall(metaRType, actualFeature, needsToGoDownDeeper, deepFeatureType, scope)
 								}
 								new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)
 							]

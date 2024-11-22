@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.xtext.util.SimpleCache
 
 import org.eclipse.emf.ecore.util.EcoreUtil
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -275,16 +276,7 @@ class RosettaEcoreUtil {
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
 	}
-	
-	@Deprecated
-	def String javaAnnotation(RAttribute attr) {
-		if (attr.name == "key" && attr.RMetaAnnotatedType.RType.name == "Key" && attr.RMetaAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
-			return 'location'
-		} else if (attr.name == "reference" && attr.RMetaAnnotatedType.RType.name == "Reference" && attr.RMetaAnnotatedType.RType.namespace.toString == "com.rosetta.model.lib.meta") {
-			return 'address'
-		} else
-			return attr.name
-	}
+
 	// Copied over from RosettaAttributeExtensions.
 	@Deprecated // TODO
 	private def List<RAttribute> additionalAttributes(RDataType t) {

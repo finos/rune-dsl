@@ -75,8 +75,9 @@ public class RObjectFactory {
 	}
 	
 	// TODO: should be private TODOTODO
+	@Deprecated
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		RMetaAnnotatedType rAnnotatedType = new RMetaAnnotatedType(type, List.of());
+		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withEmptyMeta(type);
 		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, null, this);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
@@ -228,12 +229,12 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, modelIdProvider, this);
+		return new RDataType(data, modelIdProvider, this, typeProvider);
 	}
 	// TODO: remove this hack
-	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
-		return new RDataType(data, modelIdProvider, this, additionalAttributes);
-	}
+//	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
+//		return new RDataType(data, modelIdProvider, this, additionalAttributes);
+//	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
 	}

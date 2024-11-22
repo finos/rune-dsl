@@ -32,8 +32,8 @@ class PojoRegressionTest {
 		code = '''
 			type Pojo:
 				[metadata key]
-				simpleAttr string (1..1)
-				multiSimpleAttr string (0..*)
+				simpleAttr string(maxLength: 42) (1..1)
+				multiSimpleAttr string(maxLength: 42) (0..*)
 				
 				simpleAttrWithMeta string (1..1)
 					[metadata scheme]
@@ -88,7 +88,9 @@ class PojoRegressionTest {
 		import com.rosetta.model.metafields.FieldWithMetaString;
 		import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
 		import com.rosetta.model.metafields.MetaFields;
+		import com.rosetta.model.metafields.MetaFields.MetaFieldsBuilder;
 		import com.rosetta.test.model.Foo;
+		import com.rosetta.test.model.Foo.FooBuilder;
 		import com.rosetta.test.model.Pojo;
 		import com.rosetta.test.model.Pojo.PojoBuilder;
 		import com.rosetta.test.model.Pojo.PojoBuilderImpl;
@@ -146,7 +148,6 @@ class PojoRegressionTest {
 				return Pojo.class;
 			}
 			
-			
 			@Override
 			default void process(RosettaPath path, Processor processor) {
 				processor.processBasic(path.newSubPath("simpleAttr"), String.class, getSimpleAttr(), this);
@@ -164,24 +165,33 @@ class PojoRegressionTest {
 			
 		
 			/*********************** Builder Interface  ***********************/
-			interface PojoBuilder extends Pojo, RosettaModelObjectBuilder {
+			interface PojoBuilder extends Pojo, RosettaModelObjectBuilder, GlobalKey.GlobalKeyBuilder {
 				FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateSimpleAttrWithMeta();
+				@Override
 				FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithMeta();
 				FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithMeta(int _index);
+				@Override
 				List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithMeta();
 				FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateSimpleAttrWithId();
+				@Override
 				FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithId();
 				FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithId(int _index);
+				@Override
 				List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithId();
 				Foo.FooBuilder getOrCreateComplexAttr();
+				@Override
 				Foo.FooBuilder getComplexAttr();
 				Foo.FooBuilder getOrCreateMultiComplexAttr(int _index);
+				@Override
 				List<? extends Foo.FooBuilder> getMultiComplexAttr();
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateComplexAttrWithRef();
+				@Override
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getComplexAttrWithRef();
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateMultiComplexAttrWithRef(int _index);
+				@Override
 				List<? extends ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> getMultiComplexAttrWithRef();
 				MetaFields.MetaFieldsBuilder getOrCreateMeta();
+				@Override
 				MetaFields.MetaFieldsBuilder getMeta();
 				Pojo.PojoBuilder setSimpleAttr(String simpleAttr);
 				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr0);
@@ -196,8 +206,8 @@ class PojoRegressionTest {
 				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta3, int _idx);
 				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta4);
 				Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta5);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta6);
-				Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta7);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMeta6);
+				Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMeta7);
 				Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString simpleAttrWithId0);
 				Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId1);
 				Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId0);
@@ -206,8 +216,8 @@ class PojoRegressionTest {
 				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId3, int _idx);
 				Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId4);
 				Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId5);
-				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId6);
-				Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId7);
+				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithId6);
+				Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithId7);
 				Pojo.PojoBuilder setComplexAttr(Foo complexAttr);
 				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr0);
 				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr1, int _idx);
@@ -421,7 +431,7 @@ class PojoRegressionTest {
 			}
 		
 			/*********************** Builder Implementation of Pojo  ***********************/
-			class PojoBuilderImpl implements Pojo.PojoBuilder, GlobalKeyBuilder {
+			class PojoBuilderImpl implements Pojo.PojoBuilder {
 			
 				protected String simpleAttr;
 				protected List<String> multiSimpleAttr = new ArrayList<>();
@@ -434,9 +444,6 @@ class PojoRegressionTest {
 				protected ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder complexAttrWithRef;
 				protected List<ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> multiComplexAttrWithRef = new ArrayList<>();
 				protected MetaFields.MetaFieldsBuilder meta;
-			
-				public PojoBuilderImpl() {
-				}
 			
 				@Override
 				@RosettaAttribute("simpleAttr")
@@ -639,6 +646,7 @@ class PojoRegressionTest {
 					getIndex(this.multiSimpleAttr, _idx, () -> multiSimpleAttr);
 					return this;
 				}
+				
 				@Override 
 				public Pojo.PojoBuilder addMultiSimpleAttr(List<String> multiSimpleAttrs) {
 					if (multiSimpleAttrs != null) {
@@ -667,6 +675,7 @@ class PojoRegressionTest {
 					this.simpleAttrWithMeta = simpleAttrWithMeta==null?null:simpleAttrWithMeta.toBuilder();
 					return this;
 				}
+				
 				@Override
 				public Pojo.PojoBuilder setSimpleAttrWithMetaValue(String simpleAttrWithMeta) {
 					this.getOrCreateSimpleAttrWithMeta().setValue(simpleAttrWithMeta);
@@ -696,6 +705,7 @@ class PojoRegressionTest {
 					this.getOrCreateMultiSimpleAttrWithMeta(_idx).setValue(multiSimpleAttrWithMeta);
 					return this;
 				}
+				
 				@Override 
 				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas != null) {
@@ -720,7 +730,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMetas) {
+				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas != null) {
 						for (String toAdd : multiSimpleAttrWithMetas) {
 							this.addMultiSimpleAttrWithMetaValue(toAdd);
@@ -730,7 +740,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMetas) {
+				public Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMetas) {
 					this.multiSimpleAttrWithMeta.clear();
 					if (multiSimpleAttrWithMetas!=null) {
 						multiSimpleAttrWithMetas.forEach(this::addMultiSimpleAttrWithMetaValue);
@@ -744,6 +754,7 @@ class PojoRegressionTest {
 					this.simpleAttrWithId = simpleAttrWithId==null?null:simpleAttrWithId.toBuilder();
 					return this;
 				}
+				
 				@Override
 				public Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId) {
 					this.getOrCreateSimpleAttrWithId().setValue(simpleAttrWithId);
@@ -773,6 +784,7 @@ class PojoRegressionTest {
 					this.getOrCreateMultiSimpleAttrWithId(_idx).setValue(multiSimpleAttrWithId);
 					return this;
 				}
+				
 				@Override 
 				public Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds != null) {
@@ -797,7 +809,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithIds) {
+				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds != null) {
 						for (String toAdd : multiSimpleAttrWithIds) {
 							this.addMultiSimpleAttrWithIdValue(toAdd);
@@ -807,7 +819,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithIds) {
+				public Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithIds) {
 					this.multiSimpleAttrWithId.clear();
 					if (multiSimpleAttrWithIds!=null) {
 						multiSimpleAttrWithIds.forEach(this::addMultiSimpleAttrWithIdValue);
@@ -833,6 +845,7 @@ class PojoRegressionTest {
 					getIndex(this.multiComplexAttr, _idx, () -> multiComplexAttr.toBuilder());
 					return this;
 				}
+				
 				@Override 
 				public Pojo.PojoBuilder addMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 					if (multiComplexAttrs != null) {
@@ -862,6 +875,7 @@ class PojoRegressionTest {
 					this.complexAttrWithRef = complexAttrWithRef==null?null:complexAttrWithRef.toBuilder();
 					return this;
 				}
+				
 				@Override
 				public Pojo.PojoBuilder setComplexAttrWithRefValue(Foo complexAttrWithRef) {
 					this.getOrCreateComplexAttrWithRef().setValue(complexAttrWithRef);
@@ -891,6 +905,7 @@ class PojoRegressionTest {
 					this.getOrCreateMultiComplexAttrWithRef(_idx).setValue(multiComplexAttrWithRef.toBuilder());
 					return this;
 				}
+				
 				@Override 
 				public Pojo.PojoBuilder addMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 					if (multiComplexAttrWithRefs != null) {
@@ -1060,6 +1075,193 @@ class PojoRegressionTest {
 	}
 	
 	@Test
+	def void testPojoValidator() {
+		assertGeneratedCode('com.rosetta.test.model.validation.PojoValidator', '''
+		package com.rosetta.test.model.validation;
+		
+		import com.google.common.collect.Lists;
+		import com.rosetta.model.lib.expression.ComparisonResult;
+		import com.rosetta.model.lib.path.RosettaPath;
+		import com.rosetta.model.lib.validation.ValidationResult;
+		import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+		import com.rosetta.model.lib.validation.Validator;
+		import com.rosetta.model.metafields.FieldWithMetaString;
+		import com.rosetta.test.model.Foo;
+		import com.rosetta.test.model.Pojo;
+		import com.rosetta.test.model.metafields.ReferenceWithMetaFoo;
+		import java.util.List;
+		
+		import static com.google.common.base.Strings.isNullOrEmpty;
+		import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
+		import static com.rosetta.model.lib.validation.ValidationResult.failure;
+		import static com.rosetta.model.lib.validation.ValidationResult.success;
+		import static java.util.stream.Collectors.joining;
+		import static java.util.stream.Collectors.toList;
+		
+		public class PojoValidator implements Validator<Pojo> {
+		
+			private List<ComparisonResult> getComparisonResults(Pojo o) {
+				return Lists.<ComparisonResult>newArrayList(
+						checkCardinality("simpleAttr", (String) o.getSimpleAttr() != null ? 1 : 0, 1, 1), 
+						checkCardinality("simpleAttrWithMeta", (FieldWithMetaString) o.getSimpleAttrWithMeta() != null ? 1 : 0, 1, 1), 
+						checkCardinality("simpleAttrWithId", (FieldWithMetaString) o.getSimpleAttrWithId() != null ? 1 : 0, 1, 1), 
+						checkCardinality("complexAttr", (Foo) o.getComplexAttr() != null ? 1 : 0, 1, 1), 
+						checkCardinality("complexAttrWithRef", (ReferenceWithMetaFoo) o.getComplexAttrWithRef() != null ? 1 : 0, 1, 1)
+					);
+			}
+		
+			@Override
+			public ValidationResult<Pojo> validate(RosettaPath path, Pojo o) {
+				String error = getComparisonResults(o)
+					.stream()
+					.filter(res -> !res.get())
+					.map(res -> res.getError())
+					.collect(joining("; "));
+		
+				if (!isNullOrEmpty(error)) {
+					return failure("Pojo", ValidationType.CARDINALITY, "Pojo", path, "", error);
+				}
+				return success("Pojo", ValidationType.CARDINALITY, "Pojo", path, "");
+			}
+		
+			@Override
+			public List<ValidationResult<?>> getValidationResults(RosettaPath path, Pojo o) {
+				return getComparisonResults(o)
+					.stream()
+					.map(res -> {
+						if (!isNullOrEmpty(res.getError())) {
+							return failure("Pojo", ValidationType.CARDINALITY, "Pojo", path, "", res.getError());
+						}
+						return success("Pojo", ValidationType.CARDINALITY, "Pojo", path, "");
+					})
+					.collect(toList());
+			}
+		
+		}
+		''')
+	}
+	
+	@Test
+	def void testPojoTypeFormatValidator() {
+		assertGeneratedCode('com.rosetta.test.model.validation.PojoTypeFormatValidator', '''
+		package com.rosetta.test.model.validation;
+		
+		import com.google.common.collect.Lists;
+		import com.rosetta.model.lib.expression.ComparisonResult;
+		import com.rosetta.model.lib.path.RosettaPath;
+		import com.rosetta.model.lib.validation.ValidationResult;
+		import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+		import com.rosetta.model.lib.validation.Validator;
+		import com.rosetta.test.model.Pojo;
+		import java.util.List;
+		
+		import static com.google.common.base.Strings.isNullOrEmpty;
+		import static com.rosetta.model.lib.expression.ExpressionOperators.checkString;
+		import static com.rosetta.model.lib.validation.ValidationResult.failure;
+		import static com.rosetta.model.lib.validation.ValidationResult.success;
+		import static java.util.Optional.empty;
+		import static java.util.Optional.of;
+		import static java.util.stream.Collectors.joining;
+		import static java.util.stream.Collectors.toList;
+		
+		public class PojoTypeFormatValidator implements Validator<Pojo> {
+		
+			private List<ComparisonResult> getComparisonResults(Pojo o) {
+				return Lists.<ComparisonResult>newArrayList(
+						checkString("simpleAttr", o.getSimpleAttr(), 0, of(42), empty()), 
+						checkString("multiSimpleAttr", o.getMultiSimpleAttr(), 0, of(42), empty())
+					);
+			}
+		
+			@Override
+			public ValidationResult<Pojo> validate(RosettaPath path, Pojo o) {
+				String error = getComparisonResults(o)
+					.stream()
+					.filter(res -> !res.get())
+					.map(res -> res.getError())
+					.collect(joining("; "));
+		
+				if (!isNullOrEmpty(error)) {
+					return failure("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "", error);
+				}
+				return success("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "");
+			}
+		
+			@Override
+			public List<ValidationResult<?>> getValidationResults(RosettaPath path, Pojo o) {
+				return getComparisonResults(o)
+					.stream()
+					.map(res -> {
+						if (!isNullOrEmpty(res.getError())) {
+							return failure("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "", res.getError());
+						}
+						return success("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "");
+					})
+					.collect(toList());
+			}
+		
+		}
+		''')
+	}
+	
+	@Test
+	def void testPojoOnlyExistsValidator() {
+		assertGeneratedCode('com.rosetta.test.model.validation.exists.PojoOnlyExistsValidator', '''
+		package com.rosetta.test.model.validation.exists;
+		
+		import com.google.common.collect.ImmutableMap;
+		import com.rosetta.model.lib.path.RosettaPath;
+		import com.rosetta.model.lib.validation.ExistenceChecker;
+		import com.rosetta.model.lib.validation.ValidationResult;
+		import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
+		import com.rosetta.model.lib.validation.ValidatorWithArg;
+		import com.rosetta.model.metafields.FieldWithMetaString;
+		import com.rosetta.test.model.Foo;
+		import com.rosetta.test.model.Pojo;
+		import com.rosetta.test.model.metafields.ReferenceWithMetaFoo;
+		import java.util.List;
+		import java.util.Map;
+		import java.util.Set;
+		import java.util.stream.Collectors;
+		
+		import static com.rosetta.model.lib.validation.ValidationResult.failure;
+		import static com.rosetta.model.lib.validation.ValidationResult.success;
+		
+		public class PojoOnlyExistsValidator implements ValidatorWithArg<Pojo, Set<String>> {
+		
+			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+			@Override
+			public <T2 extends Pojo> ValidationResult<Pojo> validate(RosettaPath path, T2 o, Set<String> fields) {
+				Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+						.put("simpleAttr", ExistenceChecker.isSet((String) o.getSimpleAttr()))
+						.put("multiSimpleAttr", ExistenceChecker.isSet((List<String>) o.getMultiSimpleAttr()))
+						.put("simpleAttrWithMeta", ExistenceChecker.isSet((FieldWithMetaString) o.getSimpleAttrWithMeta()))
+						.put("multiSimpleAttrWithMeta", ExistenceChecker.isSet((List<? extends FieldWithMetaString>) o.getMultiSimpleAttrWithMeta()))
+						.put("simpleAttrWithId", ExistenceChecker.isSet((FieldWithMetaString) o.getSimpleAttrWithId()))
+						.put("multiSimpleAttrWithId", ExistenceChecker.isSet((List<? extends FieldWithMetaString>) o.getMultiSimpleAttrWithId()))
+						.put("complexAttr", ExistenceChecker.isSet((Foo) o.getComplexAttr()))
+						.put("multiComplexAttr", ExistenceChecker.isSet((List<? extends Foo>) o.getMultiComplexAttr()))
+						.put("complexAttrWithRef", ExistenceChecker.isSet((ReferenceWithMetaFoo) o.getComplexAttrWithRef()))
+						.put("multiComplexAttrWithRef", ExistenceChecker.isSet((List<? extends ReferenceWithMetaFoo>) o.getMultiComplexAttrWithRef()))
+						.build();
+				
+				// Find the fields that are set
+				Set<String> setFields = fieldExistenceMap.entrySet().stream()
+						.filter(Map.Entry::getValue)
+						.map(Map.Entry::getKey)
+						.collect(Collectors.toSet());
+				
+				if (setFields.equals(fields)) {
+					return success("Pojo", ValidationType.ONLY_EXISTS, "Pojo", path, "");
+				}
+				return failure("Pojo", ValidationType.ONLY_EXISTS, "Pojo", path, "",
+						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+			}
+		}
+		''')
+	}
+	
+	@Test
 	def testFieldWithMetaStringCode() {
 		assertGeneratedCode('com.rosetta.model.metafields.FieldWithMetaString', '''
 		package com.rosetta.model.metafields;
@@ -1127,8 +1329,9 @@ class PojoRegressionTest {
 			
 		
 			/*********************** Builder Interface  ***********************/
-			interface FieldWithMetaStringBuilder extends FieldWithMetaString, RosettaModelObjectBuilder, GlobalKey.GlobalKeyBuilder, FieldWithMeta.FieldWithMetaBuilder<String> {
+			interface FieldWithMetaStringBuilder extends FieldWithMetaString, RosettaModelObjectBuilder, FieldWithMeta.FieldWithMetaBuilder<String>, GlobalKey.GlobalKeyBuilder {
 				MetaFields.MetaFieldsBuilder getOrCreateMeta();
+				@Override
 				MetaFields.MetaFieldsBuilder getMeta();
 				FieldWithMetaString.FieldWithMetaStringBuilder setValue(String value);
 				FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields meta);
@@ -1216,9 +1419,6 @@ class PojoRegressionTest {
 			
 				protected String value;
 				protected MetaFields.MetaFieldsBuilder meta;
-			
-				public FieldWithMetaStringBuilderImpl() {
-				}
 			
 				@Override
 				@RosettaAttribute("value")
@@ -1339,6 +1539,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.annotations.RosettaDataType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.Reference;
+		import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
 		import com.rosetta.model.lib.meta.ReferenceWithMeta;
 		import com.rosetta.model.lib.meta.ReferenceWithMeta.ReferenceWithMetaBuilder;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -1348,6 +1549,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.process.BuilderProcessor;
 		import com.rosetta.model.lib.process.Processor;
 		import com.rosetta.test.model.Foo;
+		import com.rosetta.test.model.Foo.FooBuilder;
 		import java.util.Objects;
 		
 		import static java.util.Optional.ofNullable;
@@ -1403,8 +1605,10 @@ class PojoRegressionTest {
 			/*********************** Builder Interface  ***********************/
 			interface ReferenceWithMetaFooBuilder extends ReferenceWithMetaFoo, RosettaModelObjectBuilder, ReferenceWithMeta.ReferenceWithMetaBuilder<Foo> {
 				Foo.FooBuilder getOrCreateValue();
+				@Override
 				Foo.FooBuilder getValue();
 				Reference.ReferenceBuilder getOrCreateReference();
+				@Override
 				Reference.ReferenceBuilder getReference();
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo value);
 				ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String globalReference);
@@ -1522,9 +1726,6 @@ class PojoRegressionTest {
 				protected String globalReference;
 				protected String externalReference;
 				protected Reference.ReferenceBuilder reference;
-			
-				public ReferenceWithMetaFooBuilderImpl() {
-				}
 			
 				@Override
 				@RosettaAttribute("value")
@@ -1678,788 +1879,6 @@ class PojoRegressionTest {
 		}
 		
 		class ReferenceWithMetaFooMeta extends BasicRosettaMetaData<ReferenceWithMetaFoo>{
-		
-		}
-		''')
-	}
-	
-	@Test
-	def testMetaFieldsCode() {
-		assertGeneratedCode('com.rosetta.model.metafields.MetaFields', '''
-		package com.rosetta.model.metafields;
-		
-		import com.google.common.collect.ImmutableList;
-		import com.rosetta.model.lib.RosettaModelObject;
-		import com.rosetta.model.lib.RosettaModelObjectBuilder;
-		import com.rosetta.model.lib.annotations.RosettaAttribute;
-		import com.rosetta.model.lib.annotations.RosettaDataType;
-		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import com.rosetta.model.lib.meta.GlobalKeyFields;
-		import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
-		import com.rosetta.model.lib.meta.Key;
-		import com.rosetta.model.lib.meta.MetaDataFields;
-		import com.rosetta.model.lib.meta.MetaDataFields.MetaDataFieldsBuilder;
-		import com.rosetta.model.lib.meta.RosettaMetaData;
-		import com.rosetta.model.lib.path.RosettaPath;
-		import com.rosetta.model.lib.process.AttributeMeta;
-		import com.rosetta.model.lib.process.BuilderMerger;
-		import com.rosetta.model.lib.process.BuilderProcessor;
-		import com.rosetta.model.lib.process.Processor;
-		import com.rosetta.util.ListEquals;
-		import java.util.ArrayList;
-		import java.util.List;
-		import java.util.Objects;
-		import java.util.stream.Collectors;
-		
-		import static java.util.Optional.ofNullable;
-		
-		/**
-		 * @version 1
-		 */
-		@RosettaDataType(value="MetaFields", builder=MetaFields.MetaFieldsBuilderImpl.class, version="0.0.0")
-		public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDataFields {
-		
-			MetaFieldsMeta metaData = new MetaFieldsMeta();
-		
-			/*********************** Getter Methods  ***********************/
-			String getScheme();
-			String getGlobalKey();
-			String getExternalKey();
-			List<? extends Key> getKey();
-		
-			/*********************** Build Methods  ***********************/
-			MetaFields build();
-			
-			MetaFields.MetaFieldsBuilder toBuilder();
-			
-			static MetaFields.MetaFieldsBuilder builder() {
-				return new MetaFields.MetaFieldsBuilderImpl();
-			}
-		
-			/*********************** Utility Methods  ***********************/
-			@Override
-			default RosettaMetaData<? extends MetaFields> metaData() {
-				return metaData;
-			}
-			
-			@Override
-			default Class<? extends MetaFields> getType() {
-				return MetaFields.class;
-			}
-			
-			
-			@Override
-			default void process(RosettaPath path, Processor processor) {
-				processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-				processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
-			}
-			
-		
-			/*********************** Builder Interface  ***********************/
-			interface MetaFieldsBuilder extends MetaFields, RosettaModelObjectBuilder, GlobalKeyFields.GlobalKeyFieldsBuilder, MetaDataFields.MetaDataFieldsBuilder {
-				Key.KeyBuilder getOrCreateKey(int _index);
-				List<? extends Key.KeyBuilder> getKey();
-				MetaFields.MetaFieldsBuilder setScheme(String scheme);
-				MetaFields.MetaFieldsBuilder setGlobalKey(String globalKey);
-				MetaFields.MetaFieldsBuilder setExternalKey(String externalKey);
-				MetaFields.MetaFieldsBuilder addKey(Key key0);
-				MetaFields.MetaFieldsBuilder addKey(Key key1, int _idx);
-				MetaFields.MetaFieldsBuilder addKey(List<? extends Key> key2);
-				MetaFields.MetaFieldsBuilder setKey(List<? extends Key> key3);
-		
-				@Override
-				default void process(RosettaPath path, BuilderProcessor processor) {
-					processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-					processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-					processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-					processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
-				}
-				
-		
-				MetaFields.MetaFieldsBuilder prune();
-			}
-		
-			/*********************** Immutable Implementation of MetaFields  ***********************/
-			class MetaFieldsImpl implements MetaFields {
-				private final String scheme;
-				private final String globalKey;
-				private final String externalKey;
-				private final List<? extends Key> key;
-				
-				protected MetaFieldsImpl(MetaFields.MetaFieldsBuilder builder) {
-					this.scheme = builder.getScheme();
-					this.globalKey = builder.getGlobalKey();
-					this.externalKey = builder.getExternalKey();
-					this.key = ofNullable(builder.getKey()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
-				}
-				
-				@Override
-				@RosettaAttribute("scheme")
-				public String getScheme() {
-					return scheme;
-				}
-				
-				@Override
-				@RosettaAttribute("globalKey")
-				public String getGlobalKey() {
-					return globalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("externalKey")
-				public String getExternalKey() {
-					return externalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("location")
-				public List<? extends Key> getKey() {
-					return key;
-				}
-				
-				@Override
-				public MetaFields build() {
-					return this;
-				}
-				
-				@Override
-				public MetaFields.MetaFieldsBuilder toBuilder() {
-					MetaFields.MetaFieldsBuilder builder = builder();
-					setBuilderFields(builder);
-					return builder;
-				}
-				
-				protected void setBuilderFields(MetaFields.MetaFieldsBuilder builder) {
-					ofNullable(getScheme()).ifPresent(builder::setScheme);
-					ofNullable(getGlobalKey()).ifPresent(builder::setGlobalKey);
-					ofNullable(getExternalKey()).ifPresent(builder::setExternalKey);
-					ofNullable(getKey()).ifPresent(builder::setKey);
-				}
-		
-				@Override
-				public boolean equals(Object o) {
-					if (this == o) return true;
-					if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-				
-					MetaFields _that = getType().cast(o);
-				
-					if (!Objects.equals(scheme, _that.getScheme())) return false;
-					if (!Objects.equals(globalKey, _that.getGlobalKey())) return false;
-					if (!Objects.equals(externalKey, _that.getExternalKey())) return false;
-					if (!ListEquals.listEquals(key, _that.getKey())) return false;
-					return true;
-				}
-				
-				@Override
-				public int hashCode() {
-					int _result = 0;
-					_result = 31 * _result + (scheme != null ? scheme.hashCode() : 0);
-					_result = 31 * _result + (globalKey != null ? globalKey.hashCode() : 0);
-					_result = 31 * _result + (externalKey != null ? externalKey.hashCode() : 0);
-					_result = 31 * _result + (key != null ? key.hashCode() : 0);
-					return _result;
-				}
-				
-				@Override
-				public String toString() {
-					return "MetaFields {" +
-						"scheme=" + this.scheme + ", " +
-						"globalKey=" + this.globalKey + ", " +
-						"externalKey=" + this.externalKey + ", " +
-						"key=" + this.key +
-					'}';
-				}
-			}
-		
-			/*********************** Builder Implementation of MetaFields  ***********************/
-			class MetaFieldsBuilderImpl implements MetaFields.MetaFieldsBuilder {
-			
-				protected String scheme;
-				protected String globalKey;
-				protected String externalKey;
-				protected List<Key.KeyBuilder> key = new ArrayList<>();
-			
-				public MetaFieldsBuilderImpl() {
-				}
-			
-				@Override
-				@RosettaAttribute("scheme")
-				public String getScheme() {
-					return scheme;
-				}
-				
-				@Override
-				@RosettaAttribute("globalKey")
-				public String getGlobalKey() {
-					return globalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("externalKey")
-				public String getExternalKey() {
-					return externalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("location")
-				public List<? extends Key.KeyBuilder> getKey() {
-					return key;
-				}
-				
-				@Override
-				public Key.KeyBuilder getOrCreateKey(int _index) {
-				
-					if (key==null) {
-						this.key = new ArrayList<>();
-					}
-					Key.KeyBuilder result;
-					return getIndex(key, _index, () -> {
-								Key.KeyBuilder newKey = Key.builder();
-								return newKey;
-							});
-				}
-				
-				@Override
-				@RosettaAttribute("scheme")
-				public MetaFields.MetaFieldsBuilder setScheme(String scheme) {
-					this.scheme = scheme==null?null:scheme;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("globalKey")
-				public MetaFields.MetaFieldsBuilder setGlobalKey(String globalKey) {
-					this.globalKey = globalKey==null?null:globalKey;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("externalKey")
-				public MetaFields.MetaFieldsBuilder setExternalKey(String externalKey) {
-					this.externalKey = externalKey==null?null:externalKey;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("location")
-				public MetaFields.MetaFieldsBuilder addKey(Key key) {
-					if (key!=null) this.key.add(key.toBuilder());
-					return this;
-				}
-				
-				@Override
-				public MetaFields.MetaFieldsBuilder addKey(Key key, int _idx) {
-					getIndex(this.key, _idx, () -> key.toBuilder());
-					return this;
-				}
-				@Override 
-				public MetaFields.MetaFieldsBuilder addKey(List<? extends Key> keys) {
-					if (keys != null) {
-						for (Key toAdd : keys) {
-							this.key.add(toAdd.toBuilder());
-						}
-					}
-					return this;
-				}
-				
-				@Override 
-				public MetaFields.MetaFieldsBuilder setKey(List<? extends Key> keys) {
-					if (keys == null)  {
-						this.key = new ArrayList<>();
-					}
-					else {
-						this.key = keys.stream()
-							.map(_a->_a.toBuilder())
-							.collect(Collectors.toCollection(()->new ArrayList<>()));
-					}
-					return this;
-				}
-				
-				
-				@Override
-				public MetaFields build() {
-					return new MetaFields.MetaFieldsImpl(this);
-				}
-				
-				@Override
-				public MetaFields.MetaFieldsBuilder toBuilder() {
-					return this;
-				}
-			
-				@SuppressWarnings("unchecked")
-				@Override
-				public MetaFields.MetaFieldsBuilder prune() {
-					key = key.stream().filter(b->b!=null).<Key.KeyBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-					return this;
-				}
-				
-				@Override
-				public boolean hasData() {
-					if (getScheme()!=null) return true;
-					if (getGlobalKey()!=null) return true;
-					if (getExternalKey()!=null) return true;
-					if (getKey()!=null && getKey().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-					return false;
-				}
-			
-				@SuppressWarnings("unchecked")
-				@Override
-				public MetaFields.MetaFieldsBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-					MetaFields.MetaFieldsBuilder o = (MetaFields.MetaFieldsBuilder) other;
-					
-					merger.mergeRosetta(getKey(), o.getKey(), this::getOrCreateKey);
-					
-					merger.mergeBasic(getScheme(), o.getScheme(), this::setScheme);
-					merger.mergeBasic(getGlobalKey(), o.getGlobalKey(), this::setGlobalKey);
-					merger.mergeBasic(getExternalKey(), o.getExternalKey(), this::setExternalKey);
-					return this;
-				}
-			
-				@Override
-				public boolean equals(Object o) {
-					if (this == o) return true;
-					if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-				
-					MetaFields _that = getType().cast(o);
-				
-					if (!Objects.equals(scheme, _that.getScheme())) return false;
-					if (!Objects.equals(globalKey, _that.getGlobalKey())) return false;
-					if (!Objects.equals(externalKey, _that.getExternalKey())) return false;
-					if (!ListEquals.listEquals(key, _that.getKey())) return false;
-					return true;
-				}
-				
-				@Override
-				public int hashCode() {
-					int _result = 0;
-					_result = 31 * _result + (scheme != null ? scheme.hashCode() : 0);
-					_result = 31 * _result + (globalKey != null ? globalKey.hashCode() : 0);
-					_result = 31 * _result + (externalKey != null ? externalKey.hashCode() : 0);
-					_result = 31 * _result + (key != null ? key.hashCode() : 0);
-					return _result;
-				}
-				
-				@Override
-				public String toString() {
-					return "MetaFieldsBuilder {" +
-						"scheme=" + this.scheme + ", " +
-						"globalKey=" + this.globalKey + ", " +
-						"externalKey=" + this.externalKey + ", " +
-						"key=" + this.key +
-					'}';
-				}
-			}
-		}
-		
-		class MetaFieldsMeta extends BasicRosettaMetaData<MetaFields>{
-		
-		}
-		''')
-	}
-	
-	@Test
-	def testMetaAndTemplateFieldsCode() {
-		assertGeneratedCode('com.rosetta.model.metafields.MetaAndTemplateFields', '''
-		package com.rosetta.model.metafields;
-		
-		import com.google.common.collect.ImmutableList;
-		import com.rosetta.model.lib.RosettaModelObject;
-		import com.rosetta.model.lib.RosettaModelObjectBuilder;
-		import com.rosetta.model.lib.annotations.RosettaAttribute;
-		import com.rosetta.model.lib.annotations.RosettaDataType;
-		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-		import com.rosetta.model.lib.meta.GlobalKeyFields;
-		import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
-		import com.rosetta.model.lib.meta.Key;
-		import com.rosetta.model.lib.meta.MetaDataFields;
-		import com.rosetta.model.lib.meta.MetaDataFields.MetaDataFieldsBuilder;
-		import com.rosetta.model.lib.meta.RosettaMetaData;
-		import com.rosetta.model.lib.meta.TemplateFields;
-		import com.rosetta.model.lib.meta.TemplateFields.TemplateFieldsBuilder;
-		import com.rosetta.model.lib.path.RosettaPath;
-		import com.rosetta.model.lib.process.AttributeMeta;
-		import com.rosetta.model.lib.process.BuilderMerger;
-		import com.rosetta.model.lib.process.BuilderProcessor;
-		import com.rosetta.model.lib.process.Processor;
-		import com.rosetta.util.ListEquals;
-		import java.util.ArrayList;
-		import java.util.List;
-		import java.util.Objects;
-		import java.util.stream.Collectors;
-		
-		import static java.util.Optional.ofNullable;
-		
-		/**
-		 * @version 1
-		 */
-		@RosettaDataType(value="MetaAndTemplateFields", builder=MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl.class, version="0.0.0")
-		public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFields, TemplateFields, MetaDataFields {
-		
-			MetaAndTemplateFieldsMeta metaData = new MetaAndTemplateFieldsMeta();
-		
-			/*********************** Getter Methods  ***********************/
-			String getScheme();
-			String getTemplateGlobalReference();
-			String getGlobalKey();
-			String getExternalKey();
-			List<? extends Key> getKey();
-		
-			/*********************** Build Methods  ***********************/
-			MetaAndTemplateFields build();
-			
-			MetaAndTemplateFields.MetaAndTemplateFieldsBuilder toBuilder();
-			
-			static MetaAndTemplateFields.MetaAndTemplateFieldsBuilder builder() {
-				return new MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl();
-			}
-		
-			/*********************** Utility Methods  ***********************/
-			@Override
-			default RosettaMetaData<? extends MetaAndTemplateFields> metaData() {
-				return metaData;
-			}
-			
-			@Override
-			default Class<? extends MetaAndTemplateFields> getType() {
-				return MetaAndTemplateFields.class;
-			}
-			
-			
-			@Override
-			default void process(RosettaPath path, Processor processor) {
-				processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("templateGlobalReference"), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-				processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-				processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
-			}
-			
-		
-			/*********************** Builder Interface  ***********************/
-			interface MetaAndTemplateFieldsBuilder extends MetaAndTemplateFields, RosettaModelObjectBuilder, GlobalKeyFields.GlobalKeyFieldsBuilder, TemplateFields.TemplateFieldsBuilder, MetaDataFields.MetaDataFieldsBuilder {
-				Key.KeyBuilder getOrCreateKey(int _index);
-				List<? extends Key.KeyBuilder> getKey();
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setScheme(String scheme);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplateGlobalReference(String templateGlobalReference);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key0);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key1, int _idx);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(List<? extends Key> key2);
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKey(List<? extends Key> key3);
-		
-				@Override
-				default void process(RosettaPath path, BuilderProcessor processor) {
-					processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-					processor.processBasic(path.newSubPath("templateGlobalReference"), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
-					processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-					processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-					processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
-				}
-				
-		
-				MetaAndTemplateFields.MetaAndTemplateFieldsBuilder prune();
-			}
-		
-			/*********************** Immutable Implementation of MetaAndTemplateFields  ***********************/
-			class MetaAndTemplateFieldsImpl implements MetaAndTemplateFields {
-				private final String scheme;
-				private final String templateGlobalReference;
-				private final String globalKey;
-				private final String externalKey;
-				private final List<? extends Key> key;
-				
-				protected MetaAndTemplateFieldsImpl(MetaAndTemplateFields.MetaAndTemplateFieldsBuilder builder) {
-					this.scheme = builder.getScheme();
-					this.templateGlobalReference = builder.getTemplateGlobalReference();
-					this.globalKey = builder.getGlobalKey();
-					this.externalKey = builder.getExternalKey();
-					this.key = ofNullable(builder.getKey()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
-				}
-				
-				@Override
-				@RosettaAttribute("scheme")
-				public String getScheme() {
-					return scheme;
-				}
-				
-				@Override
-				@RosettaAttribute("templateGlobalReference")
-				public String getTemplateGlobalReference() {
-					return templateGlobalReference;
-				}
-				
-				@Override
-				@RosettaAttribute("globalKey")
-				public String getGlobalKey() {
-					return globalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("externalKey")
-				public String getExternalKey() {
-					return externalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("location")
-				public List<? extends Key> getKey() {
-					return key;
-				}
-				
-				@Override
-				public MetaAndTemplateFields build() {
-					return this;
-				}
-				
-				@Override
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder toBuilder() {
-					MetaAndTemplateFields.MetaAndTemplateFieldsBuilder builder = builder();
-					setBuilderFields(builder);
-					return builder;
-				}
-				
-				protected void setBuilderFields(MetaAndTemplateFields.MetaAndTemplateFieldsBuilder builder) {
-					ofNullable(getScheme()).ifPresent(builder::setScheme);
-					ofNullable(getTemplateGlobalReference()).ifPresent(builder::setTemplateGlobalReference);
-					ofNullable(getGlobalKey()).ifPresent(builder::setGlobalKey);
-					ofNullable(getExternalKey()).ifPresent(builder::setExternalKey);
-					ofNullable(getKey()).ifPresent(builder::setKey);
-				}
-		
-				@Override
-				public boolean equals(Object o) {
-					if (this == o) return true;
-					if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-				
-					MetaAndTemplateFields _that = getType().cast(o);
-				
-					if (!Objects.equals(scheme, _that.getScheme())) return false;
-					if (!Objects.equals(templateGlobalReference, _that.getTemplateGlobalReference())) return false;
-					if (!Objects.equals(globalKey, _that.getGlobalKey())) return false;
-					if (!Objects.equals(externalKey, _that.getExternalKey())) return false;
-					if (!ListEquals.listEquals(key, _that.getKey())) return false;
-					return true;
-				}
-				
-				@Override
-				public int hashCode() {
-					int _result = 0;
-					_result = 31 * _result + (scheme != null ? scheme.hashCode() : 0);
-					_result = 31 * _result + (templateGlobalReference != null ? templateGlobalReference.hashCode() : 0);
-					_result = 31 * _result + (globalKey != null ? globalKey.hashCode() : 0);
-					_result = 31 * _result + (externalKey != null ? externalKey.hashCode() : 0);
-					_result = 31 * _result + (key != null ? key.hashCode() : 0);
-					return _result;
-				}
-				
-				@Override
-				public String toString() {
-					return "MetaAndTemplateFields {" +
-						"scheme=" + this.scheme + ", " +
-						"templateGlobalReference=" + this.templateGlobalReference + ", " +
-						"globalKey=" + this.globalKey + ", " +
-						"externalKey=" + this.externalKey + ", " +
-						"key=" + this.key +
-					'}';
-				}
-			}
-		
-			/*********************** Builder Implementation of MetaAndTemplateFields  ***********************/
-			class MetaAndTemplateFieldsBuilderImpl implements MetaAndTemplateFields.MetaAndTemplateFieldsBuilder {
-			
-				protected String scheme;
-				protected String templateGlobalReference;
-				protected String globalKey;
-				protected String externalKey;
-				protected List<Key.KeyBuilder> key = new ArrayList<>();
-			
-				public MetaAndTemplateFieldsBuilderImpl() {
-				}
-			
-				@Override
-				@RosettaAttribute("scheme")
-				public String getScheme() {
-					return scheme;
-				}
-				
-				@Override
-				@RosettaAttribute("templateGlobalReference")
-				public String getTemplateGlobalReference() {
-					return templateGlobalReference;
-				}
-				
-				@Override
-				@RosettaAttribute("globalKey")
-				public String getGlobalKey() {
-					return globalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("externalKey")
-				public String getExternalKey() {
-					return externalKey;
-				}
-				
-				@Override
-				@RosettaAttribute("location")
-				public List<? extends Key.KeyBuilder> getKey() {
-					return key;
-				}
-				
-				@Override
-				public Key.KeyBuilder getOrCreateKey(int _index) {
-				
-					if (key==null) {
-						this.key = new ArrayList<>();
-					}
-					Key.KeyBuilder result;
-					return getIndex(key, _index, () -> {
-								Key.KeyBuilder newKey = Key.builder();
-								return newKey;
-							});
-				}
-				
-				@Override
-				@RosettaAttribute("scheme")
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setScheme(String scheme) {
-					this.scheme = scheme==null?null:scheme;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("templateGlobalReference")
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplateGlobalReference(String templateGlobalReference) {
-					this.templateGlobalReference = templateGlobalReference==null?null:templateGlobalReference;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("globalKey")
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey) {
-					this.globalKey = globalKey==null?null:globalKey;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("externalKey")
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey) {
-					this.externalKey = externalKey==null?null:externalKey;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("location")
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key) {
-					if (key!=null) this.key.add(key.toBuilder());
-					return this;
-				}
-				
-				@Override
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key, int _idx) {
-					getIndex(this.key, _idx, () -> key.toBuilder());
-					return this;
-				}
-				@Override 
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(List<? extends Key> keys) {
-					if (keys != null) {
-						for (Key toAdd : keys) {
-							this.key.add(toAdd.toBuilder());
-						}
-					}
-					return this;
-				}
-				
-				@Override 
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKey(List<? extends Key> keys) {
-					if (keys == null)  {
-						this.key = new ArrayList<>();
-					}
-					else {
-						this.key = keys.stream()
-							.map(_a->_a.toBuilder())
-							.collect(Collectors.toCollection(()->new ArrayList<>()));
-					}
-					return this;
-				}
-				
-				
-				@Override
-				public MetaAndTemplateFields build() {
-					return new MetaAndTemplateFields.MetaAndTemplateFieldsImpl(this);
-				}
-				
-				@Override
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder toBuilder() {
-					return this;
-				}
-			
-				@SuppressWarnings("unchecked")
-				@Override
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder prune() {
-					key = key.stream().filter(b->b!=null).<Key.KeyBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-					return this;
-				}
-				
-				@Override
-				public boolean hasData() {
-					if (getScheme()!=null) return true;
-					if (getTemplateGlobalReference()!=null) return true;
-					if (getGlobalKey()!=null) return true;
-					if (getExternalKey()!=null) return true;
-					if (getKey()!=null && getKey().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-					return false;
-				}
-			
-				@SuppressWarnings("unchecked")
-				@Override
-				public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-					MetaAndTemplateFields.MetaAndTemplateFieldsBuilder o = (MetaAndTemplateFields.MetaAndTemplateFieldsBuilder) other;
-					
-					merger.mergeRosetta(getKey(), o.getKey(), this::getOrCreateKey);
-					
-					merger.mergeBasic(getScheme(), o.getScheme(), this::setScheme);
-					merger.mergeBasic(getTemplateGlobalReference(), o.getTemplateGlobalReference(), this::setTemplateGlobalReference);
-					merger.mergeBasic(getGlobalKey(), o.getGlobalKey(), this::setGlobalKey);
-					merger.mergeBasic(getExternalKey(), o.getExternalKey(), this::setExternalKey);
-					return this;
-				}
-			
-				@Override
-				public boolean equals(Object o) {
-					if (this == o) return true;
-					if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-				
-					MetaAndTemplateFields _that = getType().cast(o);
-				
-					if (!Objects.equals(scheme, _that.getScheme())) return false;
-					if (!Objects.equals(templateGlobalReference, _that.getTemplateGlobalReference())) return false;
-					if (!Objects.equals(globalKey, _that.getGlobalKey())) return false;
-					if (!Objects.equals(externalKey, _that.getExternalKey())) return false;
-					if (!ListEquals.listEquals(key, _that.getKey())) return false;
-					return true;
-				}
-				
-				@Override
-				public int hashCode() {
-					int _result = 0;
-					_result = 31 * _result + (scheme != null ? scheme.hashCode() : 0);
-					_result = 31 * _result + (templateGlobalReference != null ? templateGlobalReference.hashCode() : 0);
-					_result = 31 * _result + (globalKey != null ? globalKey.hashCode() : 0);
-					_result = 31 * _result + (externalKey != null ? externalKey.hashCode() : 0);
-					_result = 31 * _result + (key != null ? key.hashCode() : 0);
-					return _result;
-				}
-				
-				@Override
-				public String toString() {
-					return "MetaAndTemplateFieldsBuilder {" +
-						"scheme=" + this.scheme + ", " +
-						"templateGlobalReference=" + this.templateGlobalReference + ", " +
-						"globalKey=" + this.globalKey + ", " +
-						"externalKey=" + this.externalKey + ", " +
-						"key=" + this.key +
-					'}';
-				}
-			}
-		}
-		
-		class MetaAndTemplateFieldsMeta extends BasicRosettaMetaData<MetaAndTemplateFields>{
 		
 		}
 		''')

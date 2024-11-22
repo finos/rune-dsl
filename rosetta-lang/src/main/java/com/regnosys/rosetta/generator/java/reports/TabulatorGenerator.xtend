@@ -41,6 +41,7 @@ import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -433,13 +434,13 @@ class TabulatorGenerator {
 		'''
 		«FOR attr : type.allAttributes»
 			«IF context.isTabulated(attr)»
-				«fieldValue(attr, inputParam, scope)»
+				«fieldValue(type.toJavaReferenceType, attr, inputParam, scope)»
 			«ENDIF»
 		«ENDFOR»
 		'''
 	}
 
-	private def StringConcatenationClient fieldValue(RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
+	private def StringConcatenationClient fieldValue(JavaPojoInterface javaType, RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
 		val rawAttr = attr.RMetaAnnotatedType.RType
 		val rType = if (rawAttr instanceof RChoiceType) {
 			rawAttr.asRDataType
@@ -458,7 +459,7 @@ class TabulatorGenerator {
 		if (rType instanceof RDataType) {
 			val nestedTabulator = scope.getIdentifierOrThrow(rType.toNestedTabulatorInstance)
 			'''
-			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»())
 				«IF attr.isMulti»
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					«IF attr.RMetaAnnotatedType.hasMeta»
@@ -478,15 +479,15 @@ class TabulatorGenerator {
 		} else {
 			'''
 			«IF !attr.RMetaAnnotatedType.hasMeta»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»()));
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»()));
 			«ELSEIF attr.isMulti»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 					.filter(«Objects»::nonNull)
 					.collect(«Collectors».toList())));
 			«ELSE»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»())
 				.map(«lambdaParam» -> «lambdaParam».getValue()));
 			«ENDIF»
 			'''
