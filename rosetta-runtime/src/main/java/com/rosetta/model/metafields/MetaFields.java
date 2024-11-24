@@ -138,7 +138,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		
 		@Override
-		@RosettaAttribute("location")
+		@RosettaAttribute("scopedLocation")
 		public String getLocation() {
 			return location;
 		}
@@ -260,7 +260,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		
 		@Override
-		@RosettaAttribute("location")
+		@RosettaAttribute("scopedLocation")
 		public String getLocation() {
 			return location;
 		}
@@ -314,7 +314,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			return this;
 		}
 		@Override
-		@RosettaAttribute("location")
+		@RosettaAttribute("scopedLocation")
 		public MetaFields.MetaFieldsBuilder setLocation(String location) {
 			this.location = location==null?null:location;
 			return this;
