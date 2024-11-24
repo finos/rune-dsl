@@ -748,8 +748,8 @@ repository:
         - include: '#comment'
         - include: '#annotation'
         - include: '#documentation'
-        - name: keyword.other.override.rosetta
-          match: '{{wordStart}}override{{wordEnd}}'
+        - name: keyword.other.restrict.rosetta
+          match: '{{wordStart}}restrict{{wordEnd}}'
         - name: meta.attribute.rosetta
           begin: '{{identifier}}'
           beginCaptures:

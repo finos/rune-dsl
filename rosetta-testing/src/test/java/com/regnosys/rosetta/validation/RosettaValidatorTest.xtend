@@ -1792,7 +1792,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (0..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
 	}
 	
 	@Test
@@ -1804,7 +1804,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..*)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
 	}
 	
 	@Test
@@ -1816,7 +1816,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i string (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
 	}
 	
 	@Test 
@@ -2094,7 +2094,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				attr WithKey (0..1)
 				[metadata reference]
 		'''.parseRosetta
-		model.assertWarning(ATTRIBUTE, null,
+		model.assertError(ATTRIBUTE, null,
 			"WithKey must be annotated with [metadata key] as reference annotation is used")
 	}
 	
