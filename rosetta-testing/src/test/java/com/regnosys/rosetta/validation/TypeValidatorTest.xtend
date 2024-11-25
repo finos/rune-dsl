@@ -86,7 +86,7 @@ class TypeValidatorTest implements RosettaIssueCodes {
 		type Foo extends StringOrNumber:
 		'''.parseRosetta
 		
-		model.assertError(DATA, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Data 'StringOrNumber'")
+		model.assertWarning(DATA, null, "Extending a choice type is deprecated")
 	}
 	
 	@Test

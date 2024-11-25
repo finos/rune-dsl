@@ -31,6 +31,19 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def checkReferenceTypeMustHaveAKey() {
+		val model = '''
+			type WithKey:
+			
+			type TypeToUse:
+				attr WithKey (0..1)
+					[metadata reference]
+		'''.parseRosetta
+		model.assertWarning(ATTRIBUTE, null,
+			"WithKey must be annotated with [metadata key] as reference annotation is used")
+	}
+	
+	@Test
 	def void testValidAttributeRestrictions() {
 		'''
 			type Foo:

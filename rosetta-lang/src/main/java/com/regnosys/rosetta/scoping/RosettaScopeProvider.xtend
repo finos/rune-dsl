@@ -254,13 +254,6 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 					return IScope.NULLSCOPE
 				}
-				case DATA__SUPER_TYPE: {
-					// Type may not extend choice type
-					return filteredScope(
-						defaultScope(context, reference),
-						[st|st.EClass !== CHOICE]
-					)
-				}
 			}
 			return defaultScope(context, reference)
 		}

@@ -12,6 +12,7 @@ import org.eclipse.xtext.validation.Check;
 
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -27,6 +28,14 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 		// TODO: also enforce on Choice's once Choice does not extend Data anymore
 		if (Character.isLowerCase(data.getName().charAt(0))) {
 			warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE);
+		}
+	}
+	
+	@Check
+	public void checkDoNotExtendChoice(Data data) {
+		// TODO: remove once Choice does not extend Data anymore
+		if (data.getSuperType() instanceof Choice) {
+			warning("Extending a choice type is deprecated", data, DATA__SUPER_TYPE);
 		}
 	}
 	

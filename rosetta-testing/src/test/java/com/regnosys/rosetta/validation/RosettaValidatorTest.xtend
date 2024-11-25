@@ -2086,19 +2086,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def checkAsKeyUsage_03() {
-		val model = '''
-			type WithKey:
-			
-			type TypeToUse:
-				attr WithKey (0..1)
-				[metadata reference]
-		'''.parseRosetta
-		model.assertError(ATTRIBUTE, null,
-			"WithKey must be annotated with [metadata key] as reference annotation is used")
-	}
-	
-	@Test
 	def checkAsKeyUsage_04() {
 		val model = '''
 			type WithKey:
