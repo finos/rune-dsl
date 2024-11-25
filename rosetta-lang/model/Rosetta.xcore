@@ -100,7 +100,7 @@ class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
 }
 
-class RosettaRecordFeature extends RosettaNamed, RosettaTypedFeature {}
+class RosettaRecordFeature extends RosettaTypedFeature {}
 
 class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaDefinable {
 	contains RosettaParameter[] parameters
@@ -122,7 +122,7 @@ class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, Ro
 }
 
 
-class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType, RosettaSymbol {
+class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaSymbol {
 	
 }
 

@@ -763,6 +763,8 @@ repository:
         - include: '#comment'
         - include: '#annotation'
         - include: '#documentation'
+        - name: keyword.other.restrict.rosetta
+          match: '{{wordStart}}restrict{{wordEnd}}'
         - name: meta.attribute.rosetta
           begin: '{{identifier}}'
           beginCaptures:
@@ -776,6 +778,8 @@ repository:
         - include: '#comment'
         - include: '#annotation'
         - include: '#documentation'
+        - name: keyword.other.restrict.rosetta
+          match: '{{wordStart}}restrict{{wordEnd}}'
         - name: meta.attribute.rosetta
           begin: '{{identifier}}'
           beginCaptures:

@@ -20,7 +20,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import com.rosetta.util.types.generated.GeneratedJavaClass
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
@@ -35,7 +34,6 @@ class ModelObjectGenerator {
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
-	@Inject extension RosettaEcoreUtil
 	@Inject extension JavaTypeUtil
 	@Inject extension TypeCoercionService
 
@@ -173,7 +171,7 @@ class ModelObjectGenerator {
 		'''
 
 	def boolean globalKeyRecursive(RDataType class1) {
-		if (class1.EObject.hasKeyedAnnotation) {
+		if (class1.hasMetaAttribute('key')) {
 			return true
 		}
 		val s = class1.superType

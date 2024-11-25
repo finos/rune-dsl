@@ -158,7 +158,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			.filter(RosettaFeatureCall)
 			.filter[feature instanceof RosettaMetaType]
 			.forEach[
-				error('''«message» «(feature as RosettaMetaType).name»''', it, ROSETTA_FEATURE_CALL__FEATURE)
+				error('''«message» «feature.name»''', it, ROSETTA_FEATURE_CALL__FEATURE)
 			]
 			
 		op.args
@@ -612,19 +612,20 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkAttributes(Data clazz) {
 		val name2attr = HashMultimap.create
-		clazz.buildRDataType.allAttributes.forEach [
+		clazz.buildRDataType.allAttributes.filter[!isRestriction].forEach [
 			name2attr.put(name, it)
 		]
-//		for (name : clazz.attributes.map[name]) {
-//			val attrByName = name2attr.get(name)
-//			if (attrByName.size > 1) {
-//				val attrFromClazzes = attrByName.filter[EObject.eContainer == clazz]
-//				val attrFromSuperClasses = attrByName.filter[EObject.eContainer != clazz]
-//
-//				attrFromClazzes.checkTypeAttributeMustHaveSameTypeAsParent(attrFromSuperClasses, name)
-//				attrFromClazzes.checkAttributeCardinalityMatchSuper(attrFromSuperClasses, name)
-//			}
-//		}
+		// TODO: remove once `restrict` keyword is mandatory
+		for (name : clazz.attributes.filter[!isRestriction].map[name]) {
+			val attrByName = name2attr.get(name)
+			if (attrByName.size > 1) {
+				val attrFromClazzes = attrByName.filter[EObject.eContainer == clazz]
+				val attrFromSuperClasses = attrByName.filter[EObject.eContainer != clazz]
+
+				attrFromClazzes.checkTypeAttributeMustHaveSameTypeAsParent(attrFromSuperClasses, name)
+				attrFromClazzes.checkAttributeCardinalityMatchSuper(attrFromSuperClasses, name)
+			}
+		}
 	}
 
 	protected def void checkTypeAttributeMustHaveSameTypeAsParent(Iterable<RAttribute> attrFromClazzes,

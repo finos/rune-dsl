@@ -31,7 +31,6 @@ import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
-import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -74,9 +73,7 @@ public class RObjectFactory {
 				function.getAnnotations());
 	}
 	
-	// TODO: should be private TODOTODO
-	@Deprecated
-	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
+	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withEmptyMeta(type);
 		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, null, this);
 	}
@@ -176,12 +173,11 @@ public class RObjectFactory {
 
 	public RAttribute buildRAttribute(Attribute attr) {
 		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfFeature(attr, null);
-		boolean isMeta = attr.getTypeCall().getType() instanceof RosettaMetaType;
 		RCardinality card = buildRCardinality(attr.getCard());
 		RosettaRuleReference ruleRef = attr.getRuleReference();
 
 		return new RAttribute(attr.isRestriction(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
-				card, isMeta, ruleRef != null ? ruleRef.getReportingRule() : null, attr, this);
+				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr, this);
 	}
 	public RAttribute buildRAttributeOfParent(Attribute attr) {
 		Attribute parent = ecoreUtil.getParentAttribute(attr);
@@ -231,10 +227,6 @@ public class RObjectFactory {
 	public RDataType buildRDataType(Data data) {
 		return new RDataType(data, modelIdProvider, this, typeProvider);
 	}
-	// TODO: remove this hack
-//	public RDataType buildRDataType(Data data, List<RAttribute> additionalAttributes) {
-//		return new RDataType(data, modelIdProvider, this, additionalAttributes);
-//	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
 	}

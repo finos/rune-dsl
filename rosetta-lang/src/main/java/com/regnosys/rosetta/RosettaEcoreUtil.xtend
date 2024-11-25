@@ -2,25 +2,19 @@ package com.regnosys.rosetta
 
 import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRecordType
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation
-import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory
-import com.regnosys.rosetta.scoping.RosettaScopeProvider
-import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.types.RMetaAnnotatedType
-import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
@@ -33,16 +27,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
-import org.eclipse.xtext.util.SimpleCache
 
 import org.eclipse.emf.ecore.util.EcoreUtil
-import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
+import com.regnosys.rosetta.rosetta.simple.Annotated
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
 	
 	@Inject RBuiltinTypeService builtins
-	@Inject extension RObjectFactory objectFactory
 	@Inject extension RosettaConfigExtension configs
 	
 	def boolean isResolved(EObject obj) {
@@ -149,55 +141,49 @@ class RosettaEcoreUtil {
 		return seenSynonyms		
 	}
 	
+	@Deprecated
 	def metaAnnotations(Annotated it) {
 		allAnnotations.filter[annotation?.name == "metadata"]
 	}
 	
+	@Deprecated
 	def hasKeyedAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "key"]
 	}
 	
+	@Deprecated
 	def hasTemplateAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "template"]
 	}
 	
+	@Deprecated
 	def boolean hasMetaDataAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference" || attribute?.name == "location" || attribute?.name == "scheme" || attribute?.name == "id"]
 	}
 	
+	@Deprecated
 	def boolean hasMetaFieldAnnotations(Annotated it) {
 		metaAnnotations.exists[attribute?.name != "reference" && attribute?.name != "address"]
 	}
 	
-	def boolean hasMetaDataReference(RAttribute attribute) {
-		attribute.RMetaAnnotatedType.getMetaAttributes.exists[name == "reference"]
-	}
-		
-	def boolean hasMetaDataAddress(RAttribute attribute) {
-		attribute.RMetaAnnotatedType.getMetaAttributes.exists[name == "address"]
-	}
-	
+	@Deprecated
 	def boolean hasMetaDataAddress(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "address"]
 	}
 	
+	@Deprecated
 	def boolean hasIdAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "id"]
 	}
-	def boolean hasIdAnnotation(RAttribute it) {
-		RMetaAnnotatedType.getMetaAttributes.exists[name == "id"]
-	}
+	@Deprecated
 	def boolean hasReferenceAnnotation(Annotated it) {
 		metaAnnotations.exists[attribute?.name == "reference"]
 	}
+	@Deprecated
 	def hasCalculationAnnotation(Annotated it) {
 		allAnnotations.exists[annotation?.name == "calculation"]
 	}
-	
-	def boolean isReference(RAttribute attribute) {
-		return attribute.hasMetaDataReference || attribute.hasMetaDataAddress
-	}
-	
+	@Deprecated
 	def private allAnnotations(Annotated withAnnotations) {
 		withAnnotations?.annotations?.filter[annotation.isResolved]
 	}
@@ -275,57 +261,5 @@ class RosettaEcoreUtil {
 		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
 		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
 		return camel
-	}
-
-	// Copied over from RosettaAttributeExtensions.
-	@Deprecated // TODO
-	private def List<RAttribute> additionalAttributes(RDataType t) {
-		val res = newArrayList
-		if(hasKeyedAnnotation(t.EObject)){
-			res.add(
-				createArtificialAttribute('meta', provideMetaFieldsType(t), false)
-			)
-		}
-		return res
-	}
-	def List<RAttribute> javaAttributes(RDataType t) {
-		(t.ownAttributes + t.additionalAttributes).toList
-	}
-	def List<RAttribute> allJavaAttributes(RDataType t) {
-		val atts = t.javaAttributes
-		if (t.superType !== null) {
-			val attsWithSuper = t.superType.allJavaAttributes
-			val result = newArrayList
-			attsWithSuper.forEach[
-				val overridenAtt = atts.findFirst[att| att.name == name]
-				if (overridenAtt !== null) {
-					result.add(overridenAtt)
-				} else {
-					result.add(it)
-				}
-			]
-			result.addAll(atts.filter[att| !result.contains(att)].toList)
-			return result
-		}
-		return atts
-	}
-	
-	@Deprecated
-	String METAFIELDS_CLASS_NAME = 'MetaFields'
-	@Deprecated
-	String META_AND_TEMPLATE_FIELDS_CLASS_NAME = 'MetaAndTemplateFields'
-	
-	@Deprecated
-	SimpleCache<RDataType, RDataType> metaFieldsCache = new SimpleCache[RDataType t|
-		val rosModel = RosettaFactory.eINSTANCE.createRosettaModel()
-		rosModel.name = RosettaScopeProvider.LIB_NAMESPACE + ".metafields"
-		val name = if (hasTemplateAnnotation(t.EObject)) META_AND_TEMPLATE_FIELDS_CLASS_NAME else METAFIELDS_CLASS_NAME
-		val data = SimpleFactory.eINSTANCE.createData
-		data.model = rosModel
-		data.name = name
-		return objectFactory.buildRDataType(data)
-	]
-	private def RType provideMetaFieldsType(RDataType t) {
-		metaFieldsCache.get(t)
 	}
 }

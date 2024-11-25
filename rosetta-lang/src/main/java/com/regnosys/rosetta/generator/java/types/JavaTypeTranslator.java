@@ -90,7 +90,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
 	private ModelIdProvider modelIdProvider;
 	
-	// TODO: remove
 	@Deprecated
 	public boolean isRosettaModelObject(RAttribute attr) {
 		RMetaAnnotatedType rMetaAnnotatedType = attr.getRMetaAnnotatedType();
@@ -290,7 +289,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
 		}
 	}
-	public RJavaPojoInterface toJavaReferenceType(RDataType type) {
+	public JavaPojoInterface toJavaReferenceType(RDataType type) {
 		return toJavaType(type);
 	}
 	public RJavaEnum toJavaReferenceType(REnumType type) {
@@ -316,7 +315,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
-	public RJavaPojoInterface toJavaType(RDataType type) {
+	public JavaPojoInterface toJavaType(RDataType type) {
 		return caseDataType(type, null);
 	}
 	public RJavaEnum toJavaType(REnumType type) {
@@ -396,11 +395,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		throw new IllegalArgumentException("Cannot convert an error type to a Java type.");
 	}
 	@Override
-	protected RJavaPojoInterface caseDataType(RDataType type, Void context) {
+	protected JavaPojoInterface caseDataType(RDataType type, Void context) {
 		return new RJavaPojoInterface(type, typeSystem, this, typeUtil);
 	}
 	@Override
-	protected RJavaPojoInterface caseChoiceType(RChoiceType type, Void context) {
+	protected JavaPojoInterface caseChoiceType(RChoiceType type, Void context) {
 		return caseDataType(type.asRDataType(), context);
 	}
 	@Override

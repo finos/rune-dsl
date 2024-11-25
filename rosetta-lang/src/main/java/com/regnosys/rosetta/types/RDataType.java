@@ -41,9 +41,6 @@ public class RDataType extends RType implements RObject {
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
 	private final RosettaTypeProvider typeProvider;
-	
-	// TODO: remove this hack TODOTODOTODO
-//	private List<RAttribute> additionalAttributes = null;
 
 	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final RosettaTypeProvider typeProvider) {
 		super();
@@ -53,11 +50,6 @@ public class RDataType extends RType implements RObject {
 		this.objectFactory = objectFactory;
 		this.typeProvider = typeProvider;
 	}
-	// TODO: remove this hack
-//	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
-//		this(data, modelIdProvider, objectFactory);
-//		this.additionalAttributes = additionalAttributes;
-//	}
 	
 	@Override
 	public Data getEObject() {
@@ -134,19 +126,6 @@ public class RDataType extends RType implements RObject {
 		getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).forEach(a -> result.put(a.getName(), a));
 		return result.values();
 	}
-	
-	/**
-	 * Get an ordered collection of all attributes of this data type, including all attributes of its super types.
-	 * If multiple attributes have the same name, only the last one is kept.
-	 * 
-	 * The collection starts with the attributes of the top-most super type, and ends with the attributes of itself.
-	 */
-//	@Deprecated
-//	public Collection<RAttribute> getAllNonOverridenAttributes() {
-//		Map<String, RAttribute> result = new LinkedHashMap<>();
-//		getAllAttributes().stream().forEach(a -> result.put(a.getName(), a));
-//		return result.values();
-//	}
 
 	@Override
 	public int hashCode() {

@@ -304,7 +304,7 @@ class ModelObjectBuilderGenerator {
 			«val originalItemType = originalPropType.itemType»
 			«val addMethodScope = scope.methodScope(addMethodName)»
 			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), itemType)»
-			«val convertedAddMethodArg = addMethodArg.addCoercions(originalItemType, JavaExpression.NULL, addMethodScope).collapseToSingleExpression(addMethodScope)»
+			«val convertedAddMethodArg = addMethodArg.addCoercions(originalItemType, false, addMethodScope).collapseToSingleExpression(addMethodScope)»
 			@Override
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				convertedAddMethodArg
@@ -333,7 +333,7 @@ class ModelObjectBuilderGenerator {
 			«val originalValueType = originalItemType instanceof RJavaWithMetaValue ? originalItemType.valueType : originalItemType»
 			«val addValueMethodScope = scope.methodScope(addMethodName + "Value")»
 			«val addValueMethodArg = new JavaVariable(addValueMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), valueType)»
-			«val convertedAddValueMethodArg = addMethodArg.addCoercions(originalValueType, JavaExpression.NULL, addValueMethodScope).collapseToSingleExpression(addValueMethodScope)»
+			«val convertedAddValueMethodArg = addMethodArg.addCoercions(originalValueType, false, addValueMethodScope).collapseToSingleExpression(addValueMethodScope)»
 			
 			@Override
 			public «builderType» «addMethodName»Value(«valueType» «addValueMethodArg») «
@@ -361,7 +361,7 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 			«val addMultiMethodScope = scope.methodScope(addMethodName)»
 			«val addMultiMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower + "s"), parentPropType)»
-			«val convertedAddMultiMethodArg = addMultiMethodArg.addCoercions(originalPropType, JavaExpression.NULL, addMultiMethodScope).collapseToSingleExpression(addMultiMethodScope)»
+			«val convertedAddMultiMethodArg = addMultiMethodArg.addCoercions(originalPropType, false, addMultiMethodScope).collapseToSingleExpression(addMultiMethodScope)»
 			
 			@Override 
 			public «builderType» «addMethodName»(«parentPropType» «addMultiMethodArg») «
@@ -387,7 +387,7 @@ class ModelObjectBuilderGenerator {
 			«val originalValueType = originalItemType instanceof RJavaWithMetaValue ? originalItemType.valueType : originalItemType»
 			«val addMultiValueMethodScope = scope.methodScope(addMethodName + "Value")»
 			«val addMultiValueMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
-			«val convertedAddMultiValueMethodArg = addMultiValueMethodArg.addCoercions(originalPropType.isList ? LIST.wrapExtendsIfNotFinal(originalValueType) : originalValueType, JavaExpression.NULL, addMultiValueMethodScope).collapseToSingleExpression(addMultiValueMethodScope)»
+			«val convertedAddMultiValueMethodArg = addMultiValueMethodArg.addCoercions(originalPropType.isList ? LIST.wrapExtendsIfNotFinal(originalValueType) : originalValueType, false, addMultiValueMethodScope).collapseToSingleExpression(addMultiValueMethodScope)»
 			
 			@Override
 			public «builderType» «addMethodName»Value(«addMultiValueMethodArg.expressionType» «addMultiValueMethodArg») «
@@ -412,7 +412,7 @@ class ModelObjectBuilderGenerator {
 		«ELSE»
 			«val setMethodScope = scope.methodScope(setMethodName)»
 			«val setMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), parentPropType)»
-			«val convertedSetMethodArg = setMethodArg.addCoercions(originalPropType, JavaExpression.NULL, setMethodScope).collapseToSingleExpression(setMethodScope)»
+			«val convertedSetMethodArg = setMethodArg.addCoercions(originalPropType, false, setMethodScope).collapseToSingleExpression(setMethodScope)»
 			@Override
 			public «builderType» «setMethodName»(«parentPropType» «setMethodArg») «
 				convertedSetMethodArg
@@ -425,7 +425,7 @@ class ModelObjectBuilderGenerator {
 			«val originalValueType = originalPropType instanceof RJavaWithMetaValue ? originalPropType.valueType : originalPropType»
 			«val setValueMethodScope = scope.methodScope(setMethodName + "Value")»
 			«val setValueMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), valueType)»
-			«val convertedSetValueMethodArg = setMethodArg.addCoercions(originalValueType, JavaExpression.NULL, setValueMethodScope).collapseToSingleExpression(setValueMethodScope)»
+			«val convertedSetValueMethodArg = setMethodArg.addCoercions(originalValueType, false, setValueMethodScope).collapseToSingleExpression(setValueMethodScope)»
 			
 			@Override
 			public «builderType» «setMethodName»Value(«valueType» «setValueMethodArg») «

@@ -30,7 +30,6 @@ public class RAttribute implements RAssignedRoot {
 	private final List<RosettaDocReference> docReferences;
 	private final RMetaAnnotatedType rMetaAnnotatedType;
 	private final RCardinality cardinality;
-	private final boolean isMeta; // TODO: remove?
 	private final RosettaRule ruleReference;
 	private final Attribute origin;
 	
@@ -38,13 +37,7 @@ public class RAttribute implements RAssignedRoot {
 	private RAttribute parentAttribute = null;
 
 	public RAttribute(boolean isRestriction, String name, String definition, List<RosettaDocReference> docReferences,
-			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality, RosettaRule ruleReference,
-			Attribute origin, RObjectFactory rObjectFactory) {
-		this(isRestriction, name, definition, docReferences, rMetaAnnotatedType, cardinality, false, ruleReference, origin, rObjectFactory);
-	}
-
-	public RAttribute(boolean isRestriction, String name, String definition, List<RosettaDocReference> docReferences,
-			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality, boolean isMeta,
+			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality,
 			RosettaRule ruleReference, Attribute origin, RObjectFactory rObjectFactory) {
 		this.isRestriction = isRestriction;
 		this.name = name;
@@ -52,7 +45,6 @@ public class RAttribute implements RAssignedRoot {
 		this.docReferences = docReferences;
 		this.rMetaAnnotatedType = rMetaAnnotatedType;
 		this.cardinality = cardinality;
-		this.isMeta = isMeta;
 		this.ruleReference = ruleReference;
 		this.origin = origin;
 		this.rObjectFactory = rObjectFactory;
@@ -94,10 +86,6 @@ public class RAttribute implements RAssignedRoot {
 
 	public RosettaRule getRuleReference() {
 		return ruleReference;
-	}
-
-	public boolean isMeta() {
-		return isMeta;
 	}
 	
 	public RAttribute getParentAttribute() {

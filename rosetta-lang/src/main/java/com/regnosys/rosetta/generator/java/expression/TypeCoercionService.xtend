@@ -61,27 +61,24 @@ class TypeCoercionService {
 	@Inject extension JavaTypeUtil typeUtil
 	
 	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaScope scope) {
-		addCoercions(expr, expected, null, scope)
+		addCoercions(expr, expected, true, scope)
 	}
-	/**
-	 * defaultItemValue: the expression to use if the coercion fails. If null, throw an error.
-	 */
-	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	def JavaStatementBuilder addCoercions(JavaStatementBuilder expr, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expr.expressionType
 		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
 			return expected.empty
 		}
 
-		expr.mapExpression[addCoercions(expected, defaultItemValue, scope)]
+		expr.mapExpression[addCoercions(expected, throwOnFail, scope)]
 	}
 	
 	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaScope scope) {
-		addCoercions(expr, expected, null, scope)
+		addCoercions(expr, expected, true, scope)
 	}
 	/**
 	 * defaultItemValue: the expression to use if the coercion fails. If null, throw an error.
 	 */
-	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	def JavaStatementBuilder addCoercions(JavaExpression expr, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expr.expressionType
 		// Simple coercions
 		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
@@ -96,17 +93,17 @@ class TypeCoercionService {
 
 		// Complex coercions
 		if (actual.isWrapper && expected.isWrapper) {
-			wrapperToWrapper(expr, expected, defaultItemValue, scope)
+			wrapperToWrapper(expr, expected, throwOnFail, scope)
 		} else if (actual.isWrapper) {
-			wrapperToItem(expr, expected, defaultItemValue, scope)
+			wrapperToItem(expr, expected, throwOnFail, scope)
 		} else if (expected.isWrapper) {
-			itemToWrapper(expr, expected, defaultItemValue, scope)
+			itemToWrapper(expr, expected, throwOnFail, scope)
 		} else {
-			itemToItem(expr, expected, defaultItemValue, scope)
+			itemToItem(expr, expected, throwOnFail, scope)
 		}
 	}
 	
-	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def JavaStatementBuilder itemToItem(JavaExpression expr, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expr.expressionType
 		// Strategy:
 		// - if no item conversion is needed, return the given expression.
@@ -115,7 +112,7 @@ class TypeCoercionService {
 		//   - if it is null, return null,
 		//   - otherwise, convert variable to expected type.
 		
-		getItemConversion(actual, expected, defaultItemValue, scope)
+		getItemConversion(actual, expected, throwOnFail, scope)
 			.map[itemConversion|
 				
 				convertNullSafe(
@@ -126,7 +123,7 @@ class TypeCoercionService {
 				)
 			].orElse(expr)
 	}
-	private def JavaStatementBuilder itemToWrapper(JavaExpression expr, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def JavaStatementBuilder itemToWrapper(JavaExpression expr, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expr.expressionType
 		val expectedItemType = expected.itemType
 		
@@ -140,7 +137,7 @@ class TypeCoercionService {
 		
 		// Exception: wrapping to a MapperS or MapperC is null safe, so no need to do a null check.
 		if (expected.extendsMapper) {
-			getItemConversion(actual, expectedItemType, defaultItemValue, scope)
+			getItemConversion(actual, expectedItemType, throwOnFail, scope)
 				.map[itemConversion|
 					convertNullSafe(
 						expr,
@@ -150,7 +147,7 @@ class TypeCoercionService {
 					)
 				].orElse(expr.mapExpression(wrapConversion))
 		} else {
-			val totalConversion = getItemConversion(actual, expectedItemType, defaultItemValue, scope)
+			val totalConversion = getItemConversion(actual, expectedItemType, throwOnFail, scope)
 				.map[itemConversion|
 					itemConversion.andThen[mapExpression(wrapConversion)] as Function<JavaExpression, ? extends JavaStatementBuilder>
 				].orElse(wrapConversion)
@@ -163,7 +160,7 @@ class TypeCoercionService {
 			)
 		}
 	}
-	private def JavaStatementBuilder wrapperToItem(JavaExpression expr, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def JavaStatementBuilder wrapperToItem(JavaExpression expr, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expr.expressionType		
 		// Strategy:
 		// - unwrap the given expression.
@@ -178,9 +175,9 @@ class TypeCoercionService {
 		
 		val unwrappedExpr = getUnwrapConversion(actual).apply(expr)
 		
-		itemToItem(unwrappedExpr, expected, defaultItemValue, scope)
+		itemToItem(unwrappedExpr, expected, throwOnFail, scope)
 	}
-	private def JavaExpression wrapperToWrapper(JavaExpression expr, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def JavaExpression wrapperToWrapper(JavaExpression expr, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expr.expressionType
 		val expectedItemType = expected.itemType
 		
@@ -189,7 +186,7 @@ class TypeCoercionService {
 		// - Otherwise, first convert the item type to the expected item type (if necessary),
 		// - then convert the wrapper type to the expected wrapper type (if necessary).
 		
-		val optionalWrappedItemConversion = getWrappedItemConversion(actual, expectedItemType, defaultItemValue, scope)
+		val optionalWrappedItemConversion = getWrappedItemConversion(actual, expectedItemType, throwOnFail, scope)
 		val optionalWrapperConversion = getWrapperConversion(
 			optionalWrappedItemConversion.empty ? actual : actual.changeItemType(expectedItemType),
 			expected
@@ -210,7 +207,7 @@ class TypeCoercionService {
 		return totalConversion.apply(expr)
 	}
 	
-	private def Optional<Function<JavaExpression, ? extends JavaStatementBuilder>> getItemConversion(JavaType actual, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def Optional<Function<JavaExpression, ? extends JavaStatementBuilder>> getItemConversion(JavaType actual, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		if (actual == expected) {
 			return Optional.empty
 		}
@@ -220,16 +217,16 @@ class TypeCoercionService {
 			return Optional.of([it])
 		} else if (actual.toReferenceType.extendsNumber && expected.toReferenceType.extendsNumber) {
 			// Number type to number type
-			return Optional.of([getNumberConversionExpression(it, expected, defaultItemValue, scope)])
+			return Optional.of([getNumberConversionExpression(it, expected, throwOnFail, scope)])
 		} else if (actual instanceof RJavaWithMetaValue) {
 			// Meta to non-meta
-			return Optional.of([metaToItemConversionExpression(it, expected, defaultItemValue, scope)])
+			return Optional.of([metaToItemConversionExpression(it, expected, throwOnFail, scope)])
 		} else if (expected instanceof RJavaWithMetaValue) {
 			// Non-meta to meta
-			return Optional.of([itemToMetaConversionExpression(it, expected, defaultItemValue, scope)])
+			return Optional.of([itemToMetaConversionExpression(it, expected, throwOnFail, scope)])
 		} else if (expected instanceof JavaPojoInterface && expected.isSubtypeOf(actual)) {
 			// Supertype to subtype
-			return Optional.of([downCastConversionExpression(it, expected as JavaPojoInterface, defaultItemValue, scope)])
+			return Optional.of([downCastConversionExpression(it, expected as JavaPojoInterface, throwOnFail, scope)])
 		}
 		return Optional.empty
 	}
@@ -255,10 +252,10 @@ class TypeCoercionService {
 			throw unexpectedWrapperException(wrapperType)
 		}
 	}
-	private def Optional<Function<JavaExpression, JavaExpression>> getWrappedItemConversion(JavaType actual, JavaType expectedItemType, JavaExpression defaultItemValue, JavaScope scope) {
+	private def Optional<Function<JavaExpression, JavaExpression>> getWrappedItemConversion(JavaType actual, JavaType expectedItemType, boolean throwOnFail, JavaScope scope) {
 		val actualItemType = actual.itemType
 		
-		getItemConversion(actualItemType, expectedItemType, defaultItemValue, scope)
+		getItemConversion(actualItemType, expectedItemType, throwOnFail, scope)
 			.map[itemConversion|
 				if (actual.isList) {
 					[getListItemConversionExpression(it, itemConversion, expectedItemType.toReferenceType, scope)]
@@ -391,11 +388,11 @@ class TypeCoercionService {
 	 * 1. Unwrap the meta by calling getValue() on the expression
 	 * 2. Map expression to a call to itemToItem(it, expected)
 	 */
-	private def JavaStatementBuilder metaToItemConversionExpression(JavaExpression expression, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def JavaStatementBuilder metaToItemConversionExpression(JavaExpression expression, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expression.expressionType
 		if (actual instanceof RJavaWithMetaValue) {
 			JavaExpression.from('''«expression».getValue()''', actual.valueType)
-				.mapExpression[itemToItem(it, expected, defaultItemValue, scope)]
+				.mapExpression[itemToItem(it, expected, throwOnFail, scope)]
 		} else {
 			JavaExpression.NULL
 		}
@@ -406,9 +403,9 @@ class TypeCoercionService {
 	 * 2. If the lambda exists then run it and wrap the response in RJavaWithMetaValue builder
 	 * 3. If no lambda exists wrap the given expression in RJavaWithMetaValue builder
 	 */
-	private def JavaStatementBuilder itemToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, JavaExpression defaultItemValue, JavaScope scope) { 
+	private def JavaStatementBuilder itemToMetaConversionExpression(JavaExpression expression, RJavaWithMetaValue expected, boolean throwOnFail, JavaScope scope) { 
 		val expectedValueType = expected.valueType
-		getItemConversion(expression.expressionType, expectedValueType, defaultItemValue, scope)
+		getItemConversion(expression.expressionType, expectedValueType, throwOnFail, scope)
 			.map[itemConversion|
 				itemConversion.apply(expression)
 					.mapExpression[JavaExpression.from('''«expected».builder().setValue(«it»).build()''', expected)]
@@ -416,8 +413,8 @@ class TypeCoercionService {
 			.orElseGet[JavaExpression.from('''«expected».builder().setValue(«expression»).build()''', expected)]
 	}
 	
-	private def JavaStatementBuilder downCastConversionExpression(JavaExpression expression, JavaPojoInterface expected, JavaExpression defaultItemValue, JavaScope scope) { 
-		if (defaultItemValue === null) {
+	private def JavaStatementBuilder downCastConversionExpression(JavaExpression expression, JavaPojoInterface expected, boolean throwOnFail, JavaScope scope) { 
+		if (throwOnFail) {
 			JavaExpression.from('''«expected».class.cast(«expression»)''', expected)
 		} else {
 			expression
@@ -426,14 +423,14 @@ class TypeCoercionService {
 					new JavaConditionalExpression(
 						JavaExpression.from('''«it» instanceof «expected»''', JavaPrimitiveType.BOOLEAN),
 						JavaExpression.from('''«expected».class.cast(«it»)''', expected),
-						defaultItemValue,
+						JavaExpression.NULL,
 						typeUtil
 					)
 				]
 		}
 	}
 	
-	private def JavaStatementBuilder getNumberConversionExpression(JavaExpression expression, JavaType expected, JavaExpression defaultItemValue, JavaScope scope) {
+	private def JavaStatementBuilder getNumberConversionExpression(JavaExpression expression, JavaType expected, boolean throwOnFail, JavaScope scope) {
 		val actual = expression.expressionType
 		if (actual.toReferenceType.isInteger) {
 			if (expected.toReferenceType.isLong) {
@@ -462,7 +459,7 @@ class TypeCoercionService {
 		} else if (actual.toReferenceType.isLong) {
 			if (expected.toReferenceType.isInteger) {
 				// Case long/Long to int/Integer
-				if (defaultItemValue === null) {
+				if (throwOnFail) {
 					JavaExpression.from('''«Math».toIntExact(«expression»)''', JavaPrimitiveType.INT)
 				} else {
 					expression.declareAsVariable(true, "i", scope)
@@ -470,7 +467,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«it» <= «Integer».MAX_VALUE && «it» >= «Integer».MIN_VALUE''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''(int) «it»''', JavaPrimitiveType.INT),
-								defaultItemValue,
+								JavaExpression.NULL,
 								typeUtil
 							)
 						]
@@ -487,7 +484,7 @@ class TypeCoercionService {
 		} else if (actual.isBigInteger) {
 			if (expected.toReferenceType.isInteger) {
 				// Case BigInteger to int/Integer
-				if (defaultItemValue === null) {
+				if (throwOnFail) {
 					JavaExpression.from('''«expression».intValueExact()''', JavaPrimitiveType.INT)
 				} else {
 					expression.declareAsVariable(true, "i", scope)
@@ -495,14 +492,14 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigInteger».valueOf(«it».intValue()).equals(«it»)''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».intValue()''', JavaPrimitiveType.INT),
-								defaultItemValue,
+								JavaExpression.NULL,
 								typeUtil
 							)
 						]
 				}
 			} else if (expected.toReferenceType.isLong) {
 				// Case BigInteger to long/Long
-				if (defaultItemValue === null) {
+				if (throwOnFail) {
 					JavaExpression.from('''«expression».longValueExact()''', JavaPrimitiveType.LONG)
 				} else {
 					expression.declareAsVariable(true, "i", scope)
@@ -510,7 +507,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigInteger».valueOf(«it».longValue()).equals(«it»)''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».longValue()''', JavaPrimitiveType.LONG),
-								defaultItemValue,
+								JavaExpression.NULL,
 								typeUtil
 							)
 						]
@@ -524,7 +521,7 @@ class TypeCoercionService {
 		} else if (actual.isBigDecimal) {
 			if (expected.toReferenceType.isInteger) {
 				// Case BigDecimal to int/Integer
-				if (defaultItemValue === null) {
+				if (throwOnFail) {
 					JavaExpression.from('''«expression».intValueExact()''', JavaPrimitiveType.INT)
 				} else {
 					expression.declareAsVariable(true, "d", scope)
@@ -532,14 +529,14 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigDecimal».valueOf(«it».intValue()).compareTo(«it») == 0''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».intValue()''', JavaPrimitiveType.INT),
-								defaultItemValue,
+								JavaExpression.NULL,
 								typeUtil
 							)
 						]
 				}
 			} else if (expected.toReferenceType.isLong) {
 				// Case BigDecimal to long/Long
-				if (defaultItemValue === null) {
+				if (throwOnFail) {
 					JavaExpression.from('''«expression».longValueExact()''', JavaPrimitiveType.LONG)
 				} else {
 					expression.declareAsVariable(true, "d", scope)
@@ -547,14 +544,14 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigDecimal».valueOf(«it».longValue()).compareTo(«it») == 0''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».longValue()''', JavaPrimitiveType.LONG),
-								defaultItemValue,
+								JavaExpression.NULL,
 								typeUtil
 							)
 						]
 				}
 			} else if (expected.isBigInteger) {
 				// Case BigDecimal to BigInteger
-				if (defaultItemValue === null) {
+				if (throwOnFail) {
 					JavaExpression.from('''«expression».toBigIntegerExact()''', BIG_INTEGER)
 				} else {
 					expression.declareAsVariable(true, "d", scope)
@@ -562,7 +559,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''new «BigDecimal»(«it».toBigInteger()).compareTo(«it») == 0''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».toBigInteger()''', BIG_INTEGER),
-								defaultItemValue,
+								JavaExpression.NULL,
 								typeUtil
 							)
 						]

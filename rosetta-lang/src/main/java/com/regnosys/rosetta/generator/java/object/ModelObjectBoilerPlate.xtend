@@ -17,10 +17,6 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import java.util.Collection
 import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.RJavaEnum
-import com.rosetta.util.types.JavaParameterizedType
-import com.rosetta.util.types.generated.GeneratedJavaClass
-import com.rosetta.util.DottedPath
-import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration
 
 class ModelObjectBoilerPlate {
 
@@ -49,23 +45,6 @@ class ModelObjectBoilerPlate {
 	
 	def StringConcatenationClient implementsClause(JavaPojoInterface javaType) {
 		'''«FOR i : javaType.interfaces SEPARATOR ', '»«i»«ENDFOR»'''
-	}
-	
-	// TODO: cleanup
-	def dispatch buildify(Object object) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
-	}
-	
-	def dispatch buildify(Class<?> clazz) {
-		new GeneratedJavaClass<Object>(DottedPath.splitOnDots(clazz.packageName), clazz.simpleName+"."+clazz.simpleName+"Builder", Object)
-	}
-	def dispatch buildify(JavaClass<?> clazz) {
-		new GeneratedJavaClass<Object>(clazz.packageName, clazz.simpleName+"."+clazz.simpleName+"Builder", Object)
-	}
-	def dispatch buildify(JavaParameterizedType<?> clazz) {
-		val builderClass = new GeneratedJavaClass(clazz.packageName, clazz.simpleName+"."+clazz.simpleName+"Builder", Object)
-		val builderDeclaration = new GeneratedJavaGenericTypeDeclaration(builderClass, "T")
-		JavaParameterizedType.from(builderDeclaration, clazz.getArguments)
 	}
 
 	def StringConcatenationClient boilerPlate(JavaPojoInterface javaType, boolean extended, JavaScope scope) {
