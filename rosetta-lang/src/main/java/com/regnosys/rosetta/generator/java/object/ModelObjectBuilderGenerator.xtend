@@ -254,7 +254,7 @@ class ModelObjectBuilderGenerator {
 			«IF itemType instanceof RJavaWithMetaValue»
 			
 			@Override
-			public «builderType» add«prop.name.toFirstUpper»Value(«LIST.wrapExtendsIfNotFinal(itemType.valueType)» «field»s) {
+			public «builderType» add«prop.name.toFirstUpper»Value(«LIST.wrapExtends(itemType.valueType)» «field»s) {
 				if («field»s != null) {
 					for («itemType.valueType» toAdd : «field»s) {
 						this.add«prop.name.toFirstUpper»Value(toAdd);
@@ -264,7 +264,7 @@ class ModelObjectBuilderGenerator {
 			}
 			
 			@Override
-			public «builderType» set«prop.name.toFirstUpper»Value(«LIST.wrapExtendsIfNotFinal(itemType.valueType)» «field»s) {
+			public «builderType» set«prop.name.toFirstUpper»Value(«LIST.wrapExtends(itemType.valueType)» «field»s) {
 				this.«field».clear();
 				if («field»s!=null) {
 					«field»s.forEach(this::add«prop.name.toFirstUpper»Value);
@@ -386,7 +386,7 @@ class ModelObjectBuilderGenerator {
 			«val valueType = itemType.valueType»
 			«val originalValueType = originalItemType instanceof RJavaWithMetaValue ? originalItemType.valueType : originalItemType»
 			«val addMultiValueMethodScope = scope.methodScope(addMethodName + "Value")»
-			«val addMultiValueMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower + "s"), LIST.wrapExtendsIfNotFinal(valueType))»
+			«val addMultiValueMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
 			«val convertedAddMultiValueMethodArg = addMultiValueMethodArg.addCoercions(originalPropType.isList ? LIST.wrapExtendsIfNotFinal(originalValueType) : originalValueType, JavaExpression.NULL, addMultiValueMethodScope).collapseToSingleExpression(addMultiValueMethodScope)»
 			
 			@Override

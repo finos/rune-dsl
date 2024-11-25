@@ -123,8 +123,8 @@ class ModelObjectGenerator {
 				«javaType.toBuilderType» add«prop.name.toFirstUpper»Value(«(itemType as RJavaWithMetaValue).valueType» «builderScope.createUniqueIdentifier(prop.name)», int _idx);«ENDIF»
 				«javaType.toBuilderType» add«prop.name.toFirstUpper»(«prop.type» «builderScope.createUniqueIdentifier(prop.name)»);
 				«javaType.toBuilderType» set«prop.name.toFirstUpper»(«prop.type» «builderScope.createUniqueIdentifier(prop.name)»);
-				«IF itemType instanceof RJavaWithMetaValue»«javaType.toBuilderType» add«prop.name.toFirstUpper»Value(«LIST.wrapExtendsIfNotFinal((itemType as RJavaWithMetaValue).valueType)» «builderScope.createUniqueIdentifier(prop.name)»);
-				«javaType.toBuilderType» set«prop.name.toFirstUpper»Value(«LIST.wrapExtendsIfNotFinal((itemType as RJavaWithMetaValue).valueType)» «builderScope.createUniqueIdentifier(prop.name)»);«ENDIF»
+				«IF itemType instanceof RJavaWithMetaValue»«javaType.toBuilderType» add«prop.name.toFirstUpper»Value(«LIST.wrapExtends((itemType as RJavaWithMetaValue).valueType)» «builderScope.createUniqueIdentifier(prop.name)»);
+				«javaType.toBuilderType» set«prop.name.toFirstUpper»Value(«LIST.wrapExtends((itemType as RJavaWithMetaValue).valueType)» «builderScope.createUniqueIdentifier(prop.name)»);«ENDIF»
 			«ENDIF»
 		«ENDFOR»
 		'''

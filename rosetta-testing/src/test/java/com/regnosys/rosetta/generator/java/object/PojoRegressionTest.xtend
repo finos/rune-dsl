@@ -206,8 +206,8 @@ class PojoRegressionTest {
 				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta3, int _idx);
 				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta4);
 				Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta5);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMeta6);
-				Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMeta7);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta6);
+				Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta7);
 				Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString simpleAttrWithId0);
 				Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId1);
 				Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId0);
@@ -216,8 +216,8 @@ class PojoRegressionTest {
 				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId3, int _idx);
 				Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId4);
 				Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId5);
-				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithId6);
-				Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithId7);
+				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId6);
+				Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId7);
 				Pojo.PojoBuilder setComplexAttr(Foo complexAttr);
 				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr0);
 				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr1, int _idx);
@@ -730,7 +730,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMetas) {
+				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas != null) {
 						for (String toAdd : multiSimpleAttrWithMetas) {
 							this.addMultiSimpleAttrWithMetaValue(toAdd);
@@ -740,7 +740,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<String> multiSimpleAttrWithMetas) {
+				public Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMetas) {
 					this.multiSimpleAttrWithMeta.clear();
 					if (multiSimpleAttrWithMetas!=null) {
 						multiSimpleAttrWithMetas.forEach(this::addMultiSimpleAttrWithMetaValue);
@@ -809,7 +809,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithIds) {
+				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds != null) {
 						for (String toAdd : multiSimpleAttrWithIds) {
 							this.addMultiSimpleAttrWithIdValue(toAdd);
@@ -819,7 +819,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<String> multiSimpleAttrWithIds) {
+				public Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithIds) {
 					this.multiSimpleAttrWithId.clear();
 					if (multiSimpleAttrWithIds!=null) {
 						multiSimpleAttrWithIds.forEach(this::addMultiSimpleAttrWithIdValue);
