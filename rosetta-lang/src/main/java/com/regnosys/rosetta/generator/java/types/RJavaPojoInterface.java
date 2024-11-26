@@ -125,11 +125,18 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	}
 	private String getGetterNameForIncompatibleProperty(String propertyName, JavaType parentType, JavaType specializedType) {
 		if (typeUtil.isList(parentType) && typeUtil.isList(specializedType)) {
+			// List to list
 			return getGetterNameForIncompatibleProperty(propertyName, typeUtil.getItemType(parentType), typeUtil.getItemType(specializedType));
 		} else if (typeUtil.isList(parentType)) {
-			return "getSingleOf" + StringUtils.capitalize(propertyName);
+			// List to single
+			JavaType parentItemType = typeUtil.getItemType(parentType);
+			if (parentItemType.equals(specializedType)) {
+				return "get" + StringUtils.capitalize(propertyName) + "RestrictedAsSingle";
+			}
+			return "get" + StringUtils.capitalize(propertyName) + "RestrictedAsSingle" + specializedType.getSimpleName();
 		} else {
-			return "get" + StringUtils.capitalize(propertyName) + "As" + specializedType.getSimpleName();
+			// Type to other type
+			return "get" + StringUtils.capitalize(propertyName) + "RestrictedAs" + specializedType.getSimpleName();
 		}
 	}
 
@@ -149,7 +156,8 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		return type.getName();
 	}
 	
-	private RJavaPojoInterface getSuperPojo() {
+	@Override
+	public RJavaPojoInterface getSuperPojo() {
 		if (superPojo == null) {
 			RDataType superType = type.getSuperType();
 			if (superType != null) {

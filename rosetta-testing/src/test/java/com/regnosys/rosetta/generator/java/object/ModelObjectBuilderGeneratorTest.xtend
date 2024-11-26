@@ -111,8 +111,8 @@ class ModelObjectBuilderGeneratorTest {
 		assertThat(testClassCode, containsString('One.OneBuilder singleOne;'))
 
 		// Builder setters handles adding builder types
-		assertThat(testClassCode, containsString('public Test.TestBuilder setSingleOne(One singleOne) {'))
-		assertThat(testClassCode, containsString('public Test.TestBuilder addMultipleOnes(One multipleOnes) {'))
+		assertThat(testClassCode, containsString('public Test.TestBuilder setSingleOne(One _singleOne) {'))
+		assertThat(testClassCode, containsString('public Test.TestBuilder addMultipleOnes(One _multipleOnes) {'))
 
 		code.compileToClasses
 	}

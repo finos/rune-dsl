@@ -21,12 +21,17 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
+import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
+import com.rosetta.util.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.java.statement.builder.JavaThis
+import com.regnosys.rosetta.generator.java.statement.JavaEnhancedForLoop
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 
 class ModelObjectBuilderGenerator {
 	
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension JavaTypeTranslator
-	@Inject extension JavaTypeUtil
+	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TypeCoercionService
 
 	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaScope scope) {
@@ -43,7 +48,6 @@ class ModelObjectBuilderGenerator {
 			«FOR prop : properties»
 				protected «prop.toBuilderType» «builderScope.getIdentifierOrThrow(prop)»«IF prop.type.isList» = new «ArrayList»<>()«ENDIF»;
 			«ENDFOR»
-		
 			«properties.builderGetters(extendSuperImpl, builderScope)»
 			«javaType.setters(builderScope)»
 			
@@ -62,9 +66,9 @@ class ModelObjectBuilderGenerator {
 			public «javaType.toBuilderType» prune() {
 				«IF extendSuperImpl»super.prune();«ENDIF»
 				«FOR prop : properties»
-					«IF !prop.type.isList && prop.isRosettaModelObject»
+					«IF !prop.type.isList && prop.type.isRosettaModelObject»
 						if («builderScope.getIdentifierOrThrow(prop)»!=null && !«builderScope.getIdentifierOrThrow(prop)».prune().hasData()) «builderScope.getIdentifierOrThrow(prop)» = null;
-					«ELSEIF prop.type.isList && prop.isRosettaModelObject»
+					«ELSEIF prop.type.isList && prop.type.isRosettaModelObject»
 						«builderScope.getIdentifierOrThrow(prop)» = «builderScope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
@@ -92,7 +96,7 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 				«builderType» o = («builderType») other;
 				
-				«FOR prop : properties.filter[isRosettaModelObject]»
+				«FOR prop : properties.filter[type.isRosettaModelObject]»
 					«IF prop.type.isList»
 						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::getOrCreate«prop.name.toFirstUpper»);
 					«ELSE»
@@ -100,7 +104,7 @@ class ModelObjectBuilderGenerator {
 					«ENDIF»
 				«ENDFOR»
 				
-				«FOR prop : properties.filter[!isRosettaModelObject]»
+				«FOR prop : properties.filter[!type.isRosettaModelObject]»
 					«IF prop.type.isList»
 						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), («Consumer»<«prop.type.itemType»>) this::add«prop.name.toFirstUpper»);
 					«ELSE»
@@ -115,13 +119,14 @@ class ModelObjectBuilderGenerator {
 	private def StringConcatenationClient builderGetters(Iterable<JavaPojoProperty> properties, boolean extended, JavaScope scope) '''
 		«FOR prop : properties»
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
+			
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
-			
 			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, scope)»«ENDIF»
-			«IF prop.isRosettaModelObject»
+			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
+					
 					@Override
 					public «prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»() {
 						«prop.toBuilderTypeSingle» result;
@@ -137,15 +142,15 @@ class ModelObjectBuilderGenerator {
 						
 						return result;
 					}
-					
 					«IF !extended && prop.hasListParent»
+					
 					@Override
 					public «prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»(int _index) {
 						return getOrCreate«prop.name.toFirstUpper»();
 					}
-					
 					«ENDIF»
 				«ELSE»
+					
 					@Override
 					public «prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»(int _index) {
 
@@ -161,7 +166,6 @@ class ModelObjectBuilderGenerator {
 									return new«prop.name.toFirstUpper»;
 								});
 					}
-					
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -191,255 +195,274 @@ class ModelObjectBuilderGenerator {
 	private def StringConcatenationClient setters(JavaPojoInterface javaType, JavaScope scope)
 		'''
 		«FOR prop : javaType.allProperties»
-			«doSetter(javaType, prop, scope)»
+			
+			«doSetter(javaType, prop, prop, scope)»
 		«ENDFOR»
 		'''
 	
-	private def StringConcatenationClient doSetter(JavaPojoInterface javaType, JavaPojoProperty prop, JavaScope scope) {
+	private def StringConcatenationClient doSetter(JavaPojoInterface javaType, JavaPojoProperty mainProp, JavaPojoProperty currentProp, JavaScope scope) {
 		val builderType = javaType.toBuilderType
-		val propType = prop.type
-		val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.toBuilderType)
+		val mainPropType = mainProp.type
+		val propType = currentProp.type
+		val addMethodName = "add" + currentProp.name.toFirstUpper
+		val addValueMethodName = addMethodName + "Value"
+		val setMethodName = "set" + currentProp.name.toFirstUpper
+		val setValueMethodName = "set" + currentProp.name.toFirstUpper + "Value"
+		val isMainProp = mainProp == currentProp
+		val field = scope.getIdentifierOrThrow(mainProp)
+		val thisExpr = new JavaThis(builderType)
 		'''
 		«IF propType.isList»
 			«val itemType = propType.itemType»
-			@Override
-			@«RosettaAttribute»("«prop.javaAnnotation»")
-			public «builderType» add«prop.name.toFirstUpper»(«itemType» «field») {
-				if («field»!=null) this.«field».add(«prop.toBuilder(scope)»);
-				return this;
-			}
-			
-			@Override
-			public «builderType» add«prop.name.toFirstUpper»(«itemType» «field», int _idx) {
-				getIndex(this.«field», _idx, () -> «prop.toBuilder(scope)»);
-				return this;
-			}
-			«IF itemType instanceof RJavaWithMetaValue»
-			
-			@Override
-			public «builderType» add«prop.name.toFirstUpper»Value(«itemType.valueType» «field») {
-				this.getOrCreate«prop.name.toFirstUpper»(-1).setValue(«field»«IF itemType.isValueRosettaModelObject».toBuilder()«ENDIF»);
-				return this;
-			}
-
-			@Override
-			public «builderType» add«prop.name.toFirstUpper»Value(«itemType.valueType» «field», int _idx) {
-				this.getOrCreate«prop.name.toFirstUpper»(_idx).setValue(«field»«IF itemType.isValueRosettaModelObject».toBuilder()«ENDIF»);
-				return this;
-			}
-			«ENDIF»
-			
-			@Override 
-			public «builderType» add«prop.name.toFirstUpper»(«propType» «field»s) {
-				if («field»s != null) {
-					for («itemType» toAdd : «field»s) {
-						this.«field».add(toAdd«IF prop.isRosettaModelObject».toBuilder()«ENDIF»);
-					}
-				}
-				return this;
-			}
-			
-			@Override 
-			public «builderType» set«prop.name.toFirstUpper»(«propType» «field»s) {
-				if («field»s == null)  {
-					this.«field» = new «ArrayList»<>();
-				}
-				else {
-					this.«field» = «field»s.stream()
-						«IF prop.isRosettaModelObject».map(_a->_a.toBuilder())«ENDIF»
-						.collect(«Collectors».toCollection(()->new ArrayList<>()));
-				}
-				return this;
-			}
-			«IF itemType instanceof RJavaWithMetaValue»
-			
-			@Override
-			public «builderType» add«prop.name.toFirstUpper»Value(«LIST.wrapExtends(itemType.valueType)» «field»s) {
-				if («field»s != null) {
-					for («itemType.valueType» toAdd : «field»s) {
-						this.add«prop.name.toFirstUpper»Value(toAdd);
-					}
-				}
-				return this;
-			}
-			
-			@Override
-			public «builderType» set«prop.name.toFirstUpper»Value(«LIST.wrapExtends(itemType.valueType)» «field»s) {
-				this.«field».clear();
-				if («field»s!=null) {
-					«field»s.forEach(this::add«prop.name.toFirstUpper»Value);
-				}
-				return this;
-			}
-			«ENDIF»
-			
-		«ELSE»
-			@Override
-			@«RosettaAttribute»("«prop.javaAnnotation»")
-			public «builderType» set«prop.name.toFirstUpper»(«prop.type» «field») {
-				this.«field» = «field»==null?null:«prop.toBuilder(scope)»;
-				return this;
-			}
-			«IF propType instanceof RJavaWithMetaValue»
-			
-			@Override
-			public «builderType» set«prop.name.toFirstUpper»Value(«propType.valueType» «field») {
-				this.getOrCreate«prop.name.toFirstUpper»().setValue(«field»);
-				return this;
-			}
-			«ENDIF»
-		«ENDIF»
-		«IF prop.parentProperty !== null»«doCompatibleSetter(javaType, prop, prop.parentProperty, scope)»«ENDIF»
-		'''
-	}
-	private def StringConcatenationClient doCompatibleSetter(JavaPojoInterface javaType, JavaPojoProperty originalProp, JavaPojoProperty parentProp, JavaScope scope) {
-		val builderType = javaType.toBuilderType
-		val originalPropType = originalProp.type
-		val parentPropType = parentProp.type
-		val addMethodName = "add" + parentProp.name.toFirstUpper
-		val setMethodName = "set" + parentProp.name.toFirstUpper
-		'''
-		«IF parentPropType.isList»
-			«val itemType = parentPropType.itemType»
-			«val originalItemType = originalPropType.itemType»
+			«val mainItemType = mainPropType.itemType»
 			«val addMethodScope = scope.methodScope(addMethodName)»
-			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), itemType)»
-			«val convertedAddMethodArg = addMethodArg.addCoercions(originalItemType, false, addMethodScope).collapseToSingleExpression(addMethodScope)»
+			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
+			«IF isMainProp»@«RosettaAttribute»("«currentProp.javaAnnotation»")«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
-				convertedAddMethodArg
-					.mapExpression[
-						if (originalPropType.isList) {
-							JavaExpression.from('''«addMethodName»(«it»)''', builderType)
-						} else {
-							JavaExpression.from('''«setMethodName»(«it»)''', builderType)
-						}
-					].completeAsReturn.toBlock
+				(if (isMainProp) {
+					new JavaIfThenStatement(
+						JavaExpression.from('''«addMethodArg» != null''', JavaPrimitiveType.BOOLEAN),
+						JavaExpression.from('''this.«field».add(«addMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
+							.completeAsExpressionStatement
+					).append(thisExpr)
+				} else {
+					addMethodArg
+						.addCoercions(mainItemType, false, addMethodScope)
+						.collapseToSingleExpression(addMethodScope)
+						.mapExpression[
+							if (mainPropType.isList) {
+								JavaExpression.from('''«addMethodName»(«it»)''', builderType)
+							} else {
+								JavaExpression.from('''«setMethodName»(«it»)''', builderType)
+							}
+						]
+				}).completeAsReturn.toBlock
 				»
 			
+			«val indexedAddMethodScope = scope.methodScope(addMethodName)»
+			«val indexedAddMethodArg = new JavaVariable(indexedAddMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
-			public «builderType» «addMethodName»(«itemType» «addMethodArg», int _idx) «
-					convertedAddMethodArg
+			public «builderType» «addMethodName»(«itemType» «indexedAddMethodArg», int _idx) «
+				(if (isMainProp) {
+					JavaExpression.from('''getIndex(this.«field», _idx, () -> «indexedAddMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
+						.completeAsExpressionStatement
+						.append(thisExpr)
+				} else {
+					indexedAddMethodArg
+						.addCoercions(mainItemType, false, addMethodScope)
+						.collapseToSingleExpression(indexedAddMethodScope)
 						.mapExpression[
-							if (originalPropType.isList) {
+							if (mainPropType.isList) {
 								JavaExpression.from('''«addMethodName»(«it», _idx)''', builderType)
 							} else {
 								JavaExpression.from('''«setMethodName»(«it»)''', builderType)
 							}
-						].completeAsReturn.toBlock
-					»
+						]
+				}).completeAsReturn.toBlock
+				»
 			«IF itemType instanceof RJavaWithMetaValue»
 			«val valueType = itemType.valueType»
-			«val originalValueType = originalItemType instanceof RJavaWithMetaValue ? originalItemType.valueType : originalItemType»
-			«val addValueMethodScope = scope.methodScope(addMethodName + "Value")»
-			«val addValueMethodArg = new JavaVariable(addValueMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), valueType)»
-			«val convertedAddValueMethodArg = addMethodArg.addCoercions(originalValueType, false, addValueMethodScope).collapseToSingleExpression(addValueMethodScope)»
+			«val mainValueType = mainItemType instanceof RJavaWithMetaValue ? mainItemType.valueType : mainItemType»
 			
+			«val addValueMethodScope = scope.methodScope(addValueMethodName)»
+			«val addValueMethodArg = new JavaVariable(addValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), valueType)»
 			@Override
-			public «builderType» «addMethodName»Value(«valueType» «addValueMethodArg») «
-				convertedAddValueMethodArg
-					.mapExpression[
-						if (originalPropType.isList) {
-							JavaExpression.from('''«addMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-						} else {
-							JavaExpression.from('''«setMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-						}
-					].completeAsReturn.toBlock
+			public «builderType» «addValueMethodName»(«valueType» «addValueMethodArg») «
+				(if (isMainProp) {
+					JavaExpression.from('''this.getOrCreate«currentProp.name.toFirstUpper»(-1).setValue(«addValueMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
+						.completeAsExpressionStatement
+						.append(thisExpr)
+				} else {
+					addValueMethodArg
+						.addCoercions(mainValueType, false, addValueMethodScope)
+						.collapseToSingleExpression(addValueMethodScope)
+						.mapExpression[
+							if (mainPropType.isList) {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«addValueMethodName»«ELSE»«addMethodName»«ENDIF»(«it»)''', builderType)
+							} else {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+							}
+						]
+				}).completeAsReturn.toBlock
 				»
 
+			«val indexedAddValueMethodScope = scope.methodScope(addValueMethodName)»
+			«val indexedAddValueMethodArg = new JavaVariable(indexedAddValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), valueType)»
 			@Override
-			public «builderType» «addMethodName»Value(«valueType» «addValueMethodArg», int _idx) «
-				convertedAddValueMethodArg
-					.mapExpression[
-						if (originalPropType.isList) {
-							JavaExpression.from('''«addMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it», _idx)''', builderType)
-						} else {
-							JavaExpression.from('''«setMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-						}
-					].completeAsReturn.toBlock
+			public «builderType» «addValueMethodName»(«valueType» «addValueMethodArg», int _idx) «
+				(if (isMainProp) {
+					JavaExpression.from('''this.getOrCreate«currentProp.name.toFirstUpper»(_idx).setValue(«indexedAddValueMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
+						.completeAsExpressionStatement
+						.append(thisExpr)
+				} else {
+					indexedAddValueMethodArg
+						.addCoercions(mainValueType, false, indexedAddValueMethodScope)
+						.collapseToSingleExpression(indexedAddValueMethodScope)
+						.mapExpression[
+							if (mainPropType.isList) {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«addValueMethodName»«ELSE»«addMethodName»«ENDIF»(«it», _idx)''', builderType)
+							} else {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+							}
+						]
+				}).completeAsReturn.toBlock
 				»
 			«ENDIF»
-			«val addMultiMethodScope = scope.methodScope(addMethodName)»
-			«val addMultiMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower + "s"), parentPropType)»
-			«val convertedAddMultiMethodArg = addMultiMethodArg.addCoercions(originalPropType, false, addMultiMethodScope).collapseToSingleExpression(addMultiMethodScope)»
 			
+			«val addMultiMethodScope = scope.methodScope(addMethodName)»
+			«val addMultiMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
-			public «builderType» «addMethodName»(«parentPropType» «addMultiMethodArg») «
-				convertedAddMultiMethodArg
-					.mapExpression[
-						if (originalPropType.isList) {
-							JavaExpression.from('''«addMethodName»(«it»)''', builderType)
-						} else {
-							JavaExpression.from('''«setMethodName»(«it»)''', builderType)
-						}
-					].completeAsReturn.toBlock
+			public «builderType» «addMethodName»(«propType» «addMultiMethodArg») «
+				(if (isMainProp) {
+					val forLoopId = addMultiMethodScope.createUniqueIdentifier("toAdd")
+					val forLoopVar = new JavaVariable(forLoopId, itemType)
+					new JavaIfThenStatement(
+						JavaExpression.from('''«addMultiMethodArg» != null''', JavaPrimitiveType.BOOLEAN),
+						new JavaEnhancedForLoop(true, itemType, forLoopId, addMultiMethodArg,
+							JavaExpression.from('''this.«field».add(«forLoopVar.toBuilder»)''', JavaPrimitiveType.VOID)
+								.completeAsExpressionStatement
+						)
+					).append(thisExpr)
+				} else {
+					addMultiMethodArg
+						.addCoercions(mainPropType, false, addMultiMethodScope)
+						.collapseToSingleExpression(addMultiMethodScope)
+						.mapExpression[
+							if (mainPropType.isList) {
+								JavaExpression.from('''«addMethodName»(«it»)''', builderType)
+							} else {
+								JavaExpression.from('''«setMethodName»(«it»)''', builderType)
+							}
+						]
+				}).completeAsReturn.toBlock
 				»
 			
+			«val setMultiMethodScope = scope.methodScope(setMethodName)»
+			«val setMultiMethodArg = new JavaVariable(setMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
-			public «builderType» «setMethodName»(«parentPropType» «addMultiMethodArg») «
-				convertedAddMultiMethodArg
-					.mapExpression[
-						JavaExpression.from('''«setMethodName»(«it»)''', builderType)
-					].completeAsReturn.toBlock
+			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
+				(if (isMainProp) {
+					new JavaIfThenElseBuilder(
+						JavaExpression.from('''«setMultiMethodArg» == null''', JavaPrimitiveType.BOOLEAN),
+						JavaExpression.from('''this.«field» = new «ArrayList»<>()''', JavaPrimitiveType.VOID),
+						JavaExpression.from('''
+							this.«field» = «setMultiMethodArg».stream()
+								«IF propType.isRosettaModelObject».map(_a->_a.toBuilder())«ENDIF»
+								.collect(«Collectors».toCollection(()->new ArrayList<>()))''', JavaPrimitiveType.VOID),
+						typeUtil
+					).completeAsExpressionStatement
+						.append(thisExpr)
+				} else {
+					setMultiMethodArg
+						.addCoercions(mainPropType, false, setMultiMethodScope)
+						.collapseToSingleExpression(setMultiMethodScope)
+						.mapExpression[
+							JavaExpression.from('''«setMethodName»(«it»)''', builderType)
+						]
+				}).completeAsReturn.toBlock
 				»
 			«IF itemType instanceof RJavaWithMetaValue»
 			«val valueType = itemType.valueType»
-			«val originalValueType = originalItemType instanceof RJavaWithMetaValue ? originalItemType.valueType : originalItemType»
-			«val addMultiValueMethodScope = scope.methodScope(addMethodName + "Value")»
-			«val addMultiValueMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
-			«val convertedAddMultiValueMethodArg = addMultiValueMethodArg.addCoercions(originalPropType.isList ? LIST.wrapExtendsIfNotFinal(originalValueType) : originalValueType, false, addMultiValueMethodScope).collapseToSingleExpression(addMultiValueMethodScope)»
+			«val mainValueType = mainItemType instanceof RJavaWithMetaValue ? mainItemType.valueType : mainItemType»
 			
+			«val addMultiValueMethodScope = scope.methodScope(addValueMethodName)»
+			«val addMultiValueMethodArg = new JavaVariable(addMultiValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
 			@Override
-			public «builderType» «addMethodName»Value(«addMultiValueMethodArg.expressionType» «addMultiValueMethodArg») «
-				convertedAddMultiValueMethodArg
-					.mapExpression[
-						if (originalPropType.isList) {
-							JavaExpression.from('''«addMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-						} else {
-							JavaExpression.from('''«setMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-						}
-					].completeAsReturn.toBlock
+			public «builderType» «addValueMethodName»(«addMultiValueMethodArg.expressionType» «addMultiValueMethodArg») «
+				(if (isMainProp) {
+					val forLoopId = addMultiValueMethodScope.createUniqueIdentifier("toAdd")
+					val forLoopVar = new JavaVariable(forLoopId, itemType)
+					new JavaIfThenStatement(
+						JavaExpression.from('''«addMultiValueMethodArg» != null''', JavaPrimitiveType.BOOLEAN),
+						new JavaEnhancedForLoop(true, valueType, forLoopId, addMultiValueMethodArg,
+							JavaExpression.from('''this.«addValueMethodName»(«forLoopVar»)''', JavaPrimitiveType.VOID)
+								.completeAsExpressionStatement
+						)
+					).append(thisExpr)
+				} else {
+					addMultiValueMethodArg
+						.addCoercions(mainPropType.isList ? LIST.wrapExtendsIfNotFinal(mainValueType) : mainValueType, false, addMultiValueMethodScope)
+						.collapseToSingleExpression(addMultiValueMethodScope)
+						.mapExpression[
+							if (mainPropType.isList) {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«addValueMethodName»«ELSE»«addMethodName»«ENDIF»(«it»)''', builderType)
+							} else {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+							}
+						]
+				}).completeAsReturn.toBlock
 				»
 			
+			«val setMultiValueMethodScope = scope.methodScope(setValueMethodName)»
+			«val setMultiValueMethodArg = new JavaVariable(setMultiValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
 			@Override
-			public «builderType» «setMethodName»Value(«addMultiValueMethodArg.expressionType» «addMultiValueMethodArg») «
-				convertedAddMultiValueMethodArg
-					.mapExpression[
-						JavaExpression.from('''«setMethodName»«IF originalItemType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-					].completeAsReturn.toBlock
+			public «builderType» «setValueMethodName»(«setMultiValueMethodArg.expressionType» «setMultiValueMethodArg») «
+				(if (isMainProp) {
+					JavaExpression.from('''this.«field».clear()''', JavaPrimitiveType.VOID).completeAsExpressionStatement
+						.append(new JavaIfThenStatement(
+							JavaExpression.from('''«setMultiValueMethodArg» != null''', JavaPrimitiveType.BOOLEAN),
+							JavaExpression.from('''«setMultiValueMethodArg».forEach(this::«addValueMethodName»)''', JavaPrimitiveType.VOID)
+								.completeAsExpressionStatement
+						)).append(thisExpr)
+				} else {
+					setMultiValueMethodArg
+						.addCoercions(mainPropType.isList ? LIST.wrapExtendsIfNotFinal(mainValueType) : mainValueType, false, setMultiValueMethodScope)
+						.collapseToSingleExpression(setMultiValueMethodScope)
+						.mapExpression[
+							JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+						]
+				}).completeAsReturn.toBlock
 				»
 			«ENDIF»
 		«ELSE»
 			«val setMethodScope = scope.methodScope(setMethodName)»
-			«val setMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), parentPropType)»
-			«val convertedSetMethodArg = setMethodArg.addCoercions(originalPropType, false, setMethodScope).collapseToSingleExpression(setMethodScope)»
+			«val setMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), propType)»
 			@Override
-			public «builderType» «setMethodName»(«parentPropType» «setMethodArg») «
-				convertedSetMethodArg
-					.mapExpression[
-						JavaExpression.from('''«setMethodName»(«it»)''', builderType)
-					].completeAsReturn.toBlock
+			«IF isMainProp»@«RosettaAttribute»("«currentProp.javaAnnotation»")«ENDIF»
+			public «builderType» «setMethodName»(«propType» «setMethodArg») «
+				(if (isMainProp) {
+					JavaExpression.from('''this.«field» = «setMethodArg» == null ? null : «setMethodArg.toBuilder»''', JavaPrimitiveType.VOID)
+						.completeAsExpressionStatement
+						.append(thisExpr)
+				} else {
+					setMethodArg
+						.addCoercions(mainPropType, false, setMethodScope)
+						.collapseToSingleExpression(setMethodScope)
+						.mapExpression[
+							JavaExpression.from('''«setMethodName»(«it»)''', builderType)
+						]
+				}).completeAsReturn.toBlock
 				»
-			«IF parentPropType instanceof RJavaWithMetaValue»
-			«val valueType = parentPropType.valueType»
-			«val originalValueType = originalPropType instanceof RJavaWithMetaValue ? originalPropType.valueType : originalPropType»
-			«val setValueMethodScope = scope.methodScope(setMethodName + "Value")»
-			«val setValueMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(parentProp.name.toFirstLower), valueType)»
-			«val convertedSetValueMethodArg = setMethodArg.addCoercions(originalValueType, false, setValueMethodScope).collapseToSingleExpression(setValueMethodScope)»
+			«IF propType instanceof RJavaWithMetaValue»
+			«val valueType = propType.valueType»
+			«val mainValueType = mainPropType instanceof RJavaWithMetaValue ? mainPropType.valueType : mainPropType»
 			
+			«val setValueMethodScope = scope.methodScope(setValueMethodName)»
+			«val setValueMethodArg = new JavaVariable(setValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), valueType)»
 			@Override
-			public «builderType» «setMethodName»Value(«valueType» «setValueMethodArg») «
-				convertedSetValueMethodArg
-					.mapExpression[
-						JavaExpression.from('''«setMethodName»«IF originalPropType instanceof RJavaWithMetaValue»Value«ENDIF»(«it»)''', builderType)
-					].completeAsReturn.toBlock
+			public «builderType» «setValueMethodName»(«valueType» «setValueMethodArg») «
+				(if (isMainProp) {
+					JavaExpression.from('''this.getOrCreate«currentProp.name.toFirstUpper»().setValue(«setValueMethodArg»)''', JavaPrimitiveType.VOID)
+						.completeAsExpressionStatement
+						.append(thisExpr)
+				} else {
+					setMethodArg
+						.addCoercions(mainValueType, false, setValueMethodScope)
+						.collapseToSingleExpression(setValueMethodScope)
+						.mapExpression[
+							JavaExpression.from('''«IF mainPropType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+						]
+				}).completeAsReturn.toBlock
 				»
 			«ENDIF»
 		«ENDIF»
-		«IF parentProp.parentProperty !== null»«doCompatibleSetter(javaType, originalProp, parentProp.parentProperty, scope)»«ENDIF»
+		«IF currentProp.parentProperty !== null»
+		
+		«doSetter(javaType, mainProp, currentProp.parentProperty, scope)»
+		«ENDIF»
 		'''
 	}
-	
 	
 	private def hasData(Iterable<JavaPojoProperty> properties, boolean extended) '''
 		@Override
@@ -447,12 +470,12 @@ class ModelObjectBuilderGenerator {
 			«IF extended»if (super.hasData()) return true;«ENDIF»
 			«FOR prop : properties.filter[name!="meta"]»
 				«IF prop.type.isList»
-					«IF prop.isValueRosettaModelObject»
+					«IF prop.type.isValueRosettaModelObject»
 						if («prop.getterName»()!=null && «prop.getterName»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 					«ELSE»
 						if («prop.getterName»()!=null && !«prop.getterName»().isEmpty()) return true;
 					«ENDIF»
-				«ELSEIF prop.isValueRosettaModelObject»
+				«ELSEIF prop.type.isValueRosettaModelObject»
 					if («prop.getterName»()!=null && «prop.getterName»().hasData()) return true;
 				«ELSE»
 					if («prop.getterName»()!=null) return true;
@@ -468,13 +491,13 @@ class ModelObjectBuilderGenerator {
 	}
 
 	private def JavaType toBuilderTypeExt(JavaPojoProperty prop) {
-		if (prop.type.isList) (prop.isRosettaModelObject ? LIST.wrapExtends(prop.toBuilderTypeSingle) : LIST.wrap(prop.toBuilderTypeSingle))
+		if (prop.type.isList) (prop.type.isRosettaModelObject ? LIST.wrapExtends(prop.toBuilderTypeSingle) : LIST.wrap(prop.toBuilderTypeSingle))
 		else prop.toBuilderTypeSingle
 	}
 
 	def JavaType toBuilderTypeSingle(JavaPojoProperty prop) {
 		val itemType = prop.type.itemType
-		if (prop.isRosettaModelObject) {
+		if (prop.type.isRosettaModelObject) {
 			(itemType as JavaClass<?>).toBuilderType
 		} else {
 			itemType
@@ -482,11 +505,12 @@ class ModelObjectBuilderGenerator {
 	}
 	
 		
-	private def StringConcatenationClient toBuilder(JavaPojoProperty prop, JavaScope scope) {
-		if(prop.isRosettaModelObject) {
-			'''«scope.getIdentifierOrThrow(prop)».toBuilder()'''
+	private def JavaExpression toBuilder(JavaExpression expr) {
+		val t = expr.expressionType
+		if(t.isRosettaModelObject) {
+			JavaExpression.from('''«expr».toBuilder()''', (t as JavaClass<?>).toBuilderType)
 		} else {
-			'''«scope.getIdentifierOrThrow(prop)»'''
+			expr
 		}
 	}
 }

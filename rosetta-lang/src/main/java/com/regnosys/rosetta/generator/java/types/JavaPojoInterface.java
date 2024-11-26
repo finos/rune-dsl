@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.generator.java.types;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.util.types.JavaClass;
@@ -30,6 +31,8 @@ public abstract class JavaPojoInterface extends JavaClass<RosettaModelObject> {
 	
 	public abstract Collection<JavaPojoProperty> getOwnProperties();
 	public abstract Collection<JavaPojoProperty> getAllProperties();
+	
+	public abstract JavaPojoInterface getSuperPojo();
 	
 	public JavaPojoProperty findProperty(String propertyName, JavaType desiredType) {
 		JavaPojoProperty prop = findProperty(propertyName);
@@ -46,7 +49,7 @@ public abstract class JavaPojoInterface extends JavaClass<RosettaModelObject> {
 	public JavaPojoProperty findProperty(String propertyName) {
 		return getAllProperties().stream().filter(prop -> prop.getName().equals(propertyName))
 			.findAny()
-			.orElseThrow();
+			.orElseThrow(() -> new NoSuchElementException("No property named " + propertyName + " in pojo " + this));
 	}
 
 	@Override

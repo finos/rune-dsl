@@ -456,10 +456,11 @@ class TabulatorGenerator {
 		val nestedLambdaScope = lambdaScope.lambdaScope
 		val nestedLambdaParam = nestedLambdaScope.createUniqueIdentifier("x")
 		
+		val getter = javaType.findProperty(attr.name).getterName
 		if (rType instanceof RDataType) {
 			val nestedTabulator = scope.getIdentifierOrThrow(rType.toNestedTabulatorInstance)
 			'''
-			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»())
+			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».«getter»())
 				«IF attr.isMulti»
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					«IF attr.RMetaAnnotatedType.hasMeta»
@@ -479,15 +480,15 @@ class TabulatorGenerator {
 		} else {
 			'''
 			«IF !attr.RMetaAnnotatedType.hasMeta»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»()));
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«getter»()));
 			«ELSEIF attr.isMulti»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«getter»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 					.filter(«Objects»::nonNull)
 					.collect(«Collectors».toList())));
 			«ELSE»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«javaType.findProperty(attr.name).getterName»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«getter»())
 				.map(«lambdaParam» -> «lambdaParam».getValue()));
 			«ENDIF»
 			'''

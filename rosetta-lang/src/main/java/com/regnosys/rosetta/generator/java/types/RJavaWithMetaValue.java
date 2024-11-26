@@ -21,6 +21,11 @@ public abstract class RJavaWithMetaValue extends JavaPojoInterface {
 	public Collection<JavaPojoProperty> getAllProperties() {
 		return getOwnProperties();
 	}
+	
+	@Override
+	public JavaPojoInterface getSuperPojo() {
+		return null;
+	}
 
 	@Override
 	public String getJavadoc() {

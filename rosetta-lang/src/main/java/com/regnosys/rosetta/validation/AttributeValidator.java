@@ -24,6 +24,8 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*;
 
+import java.util.stream.Collectors;
+
 public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private RObjectFactory rObjectFactory;
@@ -78,6 +80,16 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					RMetaAnnotatedType parentAttrType = parentAttribute.getRMetaAnnotatedType();
 					if (!typeSystem.isSubtypeOf(restrictedType, parentAttrType)) {
 						error("The restricted type should be a subtype of the parent type " + parentAttrType, attr, ROSETTA_TYPED__TYPE_CALL);
+					}
+					// Enforce all metadata to be exactly the same
+					// Note that this is an artificial rule. Code generators support changing metadata.
+					if (!restrictedType.getMetaAttributes().equals(parentAttrType.getMetaAttributes())) {
+						if (parentAttrType.getMetaAttributes().isEmpty()) {
+							error("You cannot add metadata annotations to an existing attribute", attr, ROSETTA_NAMED__NAME);
+						} else {
+							String expectedMetaAttrs = parentAttrType.getMetaAttributes().stream().map(m -> m.getName()).collect(Collectors.joining(", "));
+							error("The metadata annotations should exactly match the parent attribute: " + expectedMetaAttrs, attr, ROSETTA_NAMED__NAME);
+						}
 					}
 					// Check cardinality
 					if (!parentAttribute.getCardinality().includes(attribute.getCardinality())) {

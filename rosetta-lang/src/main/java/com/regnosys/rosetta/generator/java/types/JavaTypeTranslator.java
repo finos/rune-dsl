@@ -100,11 +100,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		RType t = attr.getRMetaAnnotatedType().getRType();
 		return t instanceof RDataType || t instanceof RChoiceType;
 	}
-	public boolean isRosettaModelObject(JavaPojoProperty prop) {
-		return typeUtil.getItemType(prop.getType()).isSubtypeOf(typeUtil.ROSETTA_MODEL_OBJECT);
+	public boolean isRosettaModelObject(JavaType type) {
+		return typeUtil.getItemType(type).isSubtypeOf(typeUtil.ROSETTA_MODEL_OBJECT);
 	}
-	public boolean isValueRosettaModelObject(JavaPojoProperty prop) {
-		JavaType itemType = typeUtil.getItemType(prop.getType());
+	public boolean isValueRosettaModelObject(JavaType type) {
+		JavaType itemType = typeUtil.getItemType(type);
 		if (itemType instanceof RJavaWithMetaValue) {
 			return isValueRosettaModelObject((RJavaWithMetaValue)itemType);
 		}

@@ -49,8 +49,8 @@ class ModelObjectGenerator {
 	}
 
 	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaScope scope, JavaClass<?> metaType, String version) {
-		val superInterface = javaType.interfaces.head
-		val extendSuperImpl = superInterface instanceof JavaPojoInterface && javaType.ownProperties.forall[isCompatibleWithParent]
+		val superInterface = javaType.superPojo
+		val extendSuperImpl = superInterface !== null && javaType.ownProperties.forall[isCompatibleWithParent]
 		val interfaceScope = scope.classScope(javaType.toString)
 		val metaDataIdentifier = interfaceScope.createUniqueIdentifier("metaData");
 		val builderScope = interfaceScope.classScope('''«javaType»Builder''')
@@ -74,6 +74,7 @@ class ModelObjectGenerator {
 				«startComment('Builder Interface')»
 				interface «javaType»Builder extends «javaType»«FOR inter : javaType.interfaces BEFORE ', ' SEPARATOR ', '»«inter.toBuilderType»«ENDFOR» {
 					«javaType.pojoBuilderInterfaceGetterMethods(builderScope)»
+					«javaType.pojoBuilderInterfaceSetterMethods(javaType, builderScope)»
 
 					«javaType.builderProcessMethod»
 
@@ -94,10 +95,9 @@ class ModelObjectGenerator {
 	}
 
 	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(JavaPojoInterface javaType, JavaScope builderScope) {
-		val properties = javaType.ownProperties
 		'''
-		«FOR prop : properties»
-			«IF prop.isRosettaModelObject»
+		«FOR prop : javaType.ownProperties»
+			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
 					«prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»();
 					@Override
@@ -109,20 +109,48 @@ class ModelObjectGenerator {
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
-		«FOR prop : javaType.allProperties»
-			«IF !prop.type.isList»
-				«javaType.toBuilderType» set«prop.name.toFirstUpper»(«prop.type» «builderScope.createUniqueIdentifier(prop.name)»);
-				«IF prop.type instanceof RJavaWithMetaValue»«javaType.toBuilderType» set«prop.name.toFirstUpper»Value(«(prop.type as RJavaWithMetaValue).valueType» «builderScope.createUniqueIdentifier(prop.name)»);«ENDIF»
+		'''
+	}
+	protected def StringConcatenationClient pojoBuilderInterfaceSetterMethods(JavaPojoInterface mainType, JavaPojoInterface currentType, JavaScope builderScope) {
+		val isMainPojo = mainType == currentType
+		val builderType = mainType.toBuilderType
+		'''
+		«IF currentType.superPojo !== null»«pojoBuilderInterfaceSetterMethods(mainType, currentType.superPojo, builderScope)»«ENDIF»
+		«FOR prop : currentType.ownProperties»
+			«val setMethodName = "set" + prop.name.toFirstUpper»
+			«val setValueMethodName = setMethodName + "Value"»
+			«val propType = prop.type»
+			«IF !propType.isList»
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «setMethodName»(«propType» «builderScope.methodScope(setMethodName).createUniqueIdentifier(prop.name)»);
+				«IF propType instanceof RJavaWithMetaValue»
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «setValueMethodName»(«propType.valueType» «builderScope.methodScope(setValueMethodName).createUniqueIdentifier(prop.name)»);
+				«ENDIF»
 			«ELSE»
-				«val itemType = prop.type.itemType»
-				«javaType.toBuilderType» add«prop.name.toFirstUpper»(«itemType» «builderScope.createUniqueIdentifier(prop.name)»);
-				«javaType.toBuilderType» add«prop.name.toFirstUpper»(«itemType» «builderScope.createUniqueIdentifier(prop.name)», int _idx);
-				«IF itemType instanceof RJavaWithMetaValue»«javaType.toBuilderType» add«prop.name.toFirstUpper»Value(«(itemType as RJavaWithMetaValue).valueType» «builderScope.createUniqueIdentifier(prop.name)»);
-				«javaType.toBuilderType» add«prop.name.toFirstUpper»Value(«(itemType as RJavaWithMetaValue).valueType» «builderScope.createUniqueIdentifier(prop.name)», int _idx);«ENDIF»
-				«javaType.toBuilderType» add«prop.name.toFirstUpper»(«prop.type» «builderScope.createUniqueIdentifier(prop.name)»);
-				«javaType.toBuilderType» set«prop.name.toFirstUpper»(«prop.type» «builderScope.createUniqueIdentifier(prop.name)»);
-				«IF itemType instanceof RJavaWithMetaValue»«javaType.toBuilderType» add«prop.name.toFirstUpper»Value(«LIST.wrapExtends((itemType as RJavaWithMetaValue).valueType)» «builderScope.createUniqueIdentifier(prop.name)»);
-				«javaType.toBuilderType» set«prop.name.toFirstUpper»Value(«LIST.wrapExtends((itemType as RJavaWithMetaValue).valueType)» «builderScope.createUniqueIdentifier(prop.name)»);«ENDIF»
+				«val addMethodName = "add" + prop.name.toFirstUpper»
+				«val addValueMethodName = addMethodName + "Value"»
+				«val itemType = propType.itemType»
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «addMethodName»(«itemType» «builderScope.methodScope(addMethodName).createUniqueIdentifier(prop.name)»);
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «addMethodName»(«itemType» «builderScope.methodScope(addMethodName).createUniqueIdentifier(prop.name)», int _idx);
+				«IF itemType instanceof RJavaWithMetaValue»
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «addValueMethodName»(«itemType.valueType» «builderScope.methodScope(addValueMethodName).createUniqueIdentifier(prop.name)»);
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «addValueMethodName»(«itemType.valueType» «builderScope.methodScope(addValueMethodName).createUniqueIdentifier(prop.name)», int _idx);
+				«ENDIF»
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «addMethodName»(«propType» «builderScope.methodScope(addMethodName).createUniqueIdentifier(prop.name)»);
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «setMethodName»(«propType» «builderScope.methodScope(setMethodName).createUniqueIdentifier(prop.name)»);
+				«IF itemType instanceof RJavaWithMetaValue»
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «addValueMethodName»(«LIST.wrapExtends(itemType.valueType)» «builderScope.methodScope(addValueMethodName).createUniqueIdentifier(prop.name)»);
+				«IF !isMainPojo»@Override«ENDIF»
+				«builderType» «setValueMethodName»(«LIST.wrapExtends(itemType.valueType)» «builderScope.methodScope(setValueMethodName).createUniqueIdentifier(prop.name)»);
+				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
 		'''
@@ -240,7 +268,7 @@ class ModelObjectGenerator {
 	}
 
 	private def StringConcatenationClient propertyFromBuilder(JavaPojoProperty prop) {
-		if(prop.isRosettaModelObject) {
+		if(prop.type.isRosettaModelObject) {
 			if (prop.type.isList)
 				'''ofNullable(builder.«prop.getterName»()).filter(_l->!_l.isEmpty()).map(«prop.buildRosettaObjectList»).orElse(null)'''
 			else

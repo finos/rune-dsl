@@ -100,7 +100,7 @@ class ExpressionGeneratorTest {
 		
 		{
 			Bar bar;
-			return MapperMaths.<Integer, Integer, Integer>add(MapperS.of(bar).<Integer>map("getAttr", _bar -> _bar.getAttrAsInteger()), MapperS.of(round.evaluate(MapperS.of(bar).<BigDecimal>map("getAttr", _bar -> _bar.getAttr()).get()))).get();
+			return MapperMaths.<Integer, Integer, Integer>add(MapperS.of(bar).<Integer>map("getAttr", _bar -> _bar.getAttrRestrictedAsInteger()), MapperS.of(round.evaluate(MapperS.of(bar).<BigDecimal>map("getAttr", _bar -> _bar.getAttr()).get()))).get();
 		}
 		'''
 		

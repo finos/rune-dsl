@@ -133,7 +133,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR prop : javaType.allProperties»
-				«IF prop.isRosettaModelObject»
+				«IF prop.type.isRosettaModelObject»
 					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.type.itemType».class, «prop.getterName»()«prop.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«prop.name»"), «prop.type.itemType».class, «prop.getterName»(), this«prop.metaFlags»);
@@ -147,7 +147,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR prop : javaType.allProperties»
-				«IF prop.isRosettaModelObject»
+				«IF prop.type.isRosettaModelObject»
 					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.toBuilderTypeSingle».class, «prop.getterName»()«prop.metaFlags»);
 				«ELSE»
 					processor.processBasic(path.newSubPath("«prop.name»"), «prop.type.itemType».class, «prop.getterName»(), this«prop.metaFlags»);

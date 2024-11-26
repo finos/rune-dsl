@@ -194,45 +194,45 @@ class PojoRegressionTest {
 				@Override
 				MetaFields.MetaFieldsBuilder getMeta();
 				Pojo.PojoBuilder setSimpleAttr(String simpleAttr);
-				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr0);
-				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr1, int _idx);
-				Pojo.PojoBuilder addMultiSimpleAttr(List<String> multiSimpleAttr2);
-				Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttr3);
-				Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString simpleAttrWithMeta0);
-				Pojo.PojoBuilder setSimpleAttrWithMetaValue(String simpleAttrWithMeta1);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta0);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta1, int _idx);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta2);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta3, int _idx);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta4);
-				Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta5);
-				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta6);
-				Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta7);
-				Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString simpleAttrWithId0);
-				Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId1);
-				Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId0);
-				Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId1, int _idx);
-				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId2);
-				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId3, int _idx);
-				Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId4);
-				Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId5);
-				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId6);
-				Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId7);
+				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr);
+				Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr, int _idx);
+				Pojo.PojoBuilder addMultiSimpleAttr(List<String> multiSimpleAttr);
+				Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttr);
+				Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString simpleAttrWithMeta);
+				Pojo.PojoBuilder setSimpleAttrWithMetaValue(String simpleAttrWithMeta);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta, int _idx);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta, int _idx);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta);
+				Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta);
+				Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta);
+				Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta);
+				Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString simpleAttrWithId);
+				Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId);
+				Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId);
+				Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId, int _idx);
+				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId);
+				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId, int _idx);
+				Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId);
+				Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId);
+				Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId);
+				Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId);
 				Pojo.PojoBuilder setComplexAttr(Foo complexAttr);
-				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr0);
-				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr1, int _idx);
-				Pojo.PojoBuilder addMultiComplexAttr(List<? extends Foo> multiComplexAttr2);
-				Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttr3);
-				Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo complexAttrWithRef0);
-				Pojo.PojoBuilder setComplexAttrWithRefValue(Foo complexAttrWithRef1);
-				Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef0);
-				Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef1, int _idx);
-				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef2);
-				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef3, int _idx);
-				Pojo.PojoBuilder addMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef4);
-				Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef5);
-				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef6);
-				Pojo.PojoBuilder setMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef7);
+				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr);
+				Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr, int _idx);
+				Pojo.PojoBuilder addMultiComplexAttr(List<? extends Foo> multiComplexAttr);
+				Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttr);
+				Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo complexAttrWithRef);
+				Pojo.PojoBuilder setComplexAttrWithRefValue(Foo complexAttrWithRef);
+				Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef);
+				Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef, int _idx);
+				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef);
+				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef, int _idx);
+				Pojo.PojoBuilder addMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef);
+				Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef);
+				Pojo.PojoBuilder addMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef);
+				Pojo.PojoBuilder setMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef);
 				Pojo.PojoBuilder setMeta(MetaFields meta);
 		
 				@Override
@@ -444,7 +444,7 @@ class PojoRegressionTest {
 				protected ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder complexAttrWithRef;
 				protected List<ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> multiComplexAttrWithRef = new ArrayList<>();
 				protected MetaFields.MetaFieldsBuilder meta;
-			
+				
 				@Override
 				@RosettaAttribute("simpleAttr")
 				public String getSimpleAttr() {
@@ -630,27 +630,30 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttr")
-				public Pojo.PojoBuilder setSimpleAttr(String simpleAttr) {
-					this.simpleAttr = simpleAttr==null?null:simpleAttr;
-					return this;
-				}
-				@Override
-				@RosettaAttribute("multiSimpleAttr")
-				public Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr) {
-					if (multiSimpleAttr!=null) this.multiSimpleAttr.add(multiSimpleAttr);
+				public Pojo.PojoBuilder setSimpleAttr(String _simpleAttr) {
+					this.simpleAttr = _simpleAttr == null ? null : _simpleAttr;
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr, int _idx) {
-					getIndex(this.multiSimpleAttr, _idx, () -> multiSimpleAttr);
+				@RosettaAttribute("multiSimpleAttr")
+				public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr) {
+					if (_multiSimpleAttr != null) {
+						this.multiSimpleAttr.add(_multiSimpleAttr);
+					}
+					return this;
+				}
+				
+				@Override
+				public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr, int _idx) {
+					getIndex(this.multiSimpleAttr, _idx, () -> _multiSimpleAttr);
 					return this;
 				}
 				
 				@Override 
 				public Pojo.PojoBuilder addMultiSimpleAttr(List<String> multiSimpleAttrs) {
 					if (multiSimpleAttrs != null) {
-						for (String toAdd : multiSimpleAttrs) {
+						for (final String toAdd : multiSimpleAttrs) {
 							this.multiSimpleAttr.add(toAdd);
 						}
 					}
@@ -659,10 +662,9 @@ class PojoRegressionTest {
 				
 				@Override 
 				public Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttrs) {
-					if (multiSimpleAttrs == null)  {
+					if (multiSimpleAttrs == null) {
 						this.multiSimpleAttr = new ArrayList<>();
-					}
-					else {
+					} else {
 						this.multiSimpleAttr = multiSimpleAttrs.stream()
 							.collect(Collectors.toCollection(()->new ArrayList<>()));
 					}
@@ -671,45 +673,48 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithMeta")
-				public Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString simpleAttrWithMeta) {
-					this.simpleAttrWithMeta = simpleAttrWithMeta==null?null:simpleAttrWithMeta.toBuilder();
+				public Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString _simpleAttrWithMeta) {
+					this.simpleAttrWithMeta = _simpleAttrWithMeta == null ? null : _simpleAttrWithMeta.toBuilder();
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setSimpleAttrWithMetaValue(String simpleAttrWithMeta) {
-					this.getOrCreateSimpleAttrWithMeta().setValue(simpleAttrWithMeta);
+				public Pojo.PojoBuilder setSimpleAttrWithMetaValue(String _simpleAttrWithMeta) {
+					this.getOrCreateSimpleAttrWithMeta().setValue(_simpleAttrWithMeta);
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithMeta")
-				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta) {
-					if (multiSimpleAttrWithMeta!=null) this.multiSimpleAttrWithMeta.add(multiSimpleAttrWithMeta.toBuilder());
+				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta) {
+					if (_multiSimpleAttrWithMeta != null) {
+						this.multiSimpleAttrWithMeta.add(_multiSimpleAttrWithMeta.toBuilder());
+					}
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta, int _idx) {
-					getIndex(this.multiSimpleAttrWithMeta, _idx, () -> multiSimpleAttrWithMeta.toBuilder());
+				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta, int _idx) {
+					getIndex(this.multiSimpleAttrWithMeta, _idx, () -> _multiSimpleAttrWithMeta.toBuilder());
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta) {
-					this.getOrCreateMultiSimpleAttrWithMeta(-1).setValue(multiSimpleAttrWithMeta);
+				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String _multiSimpleAttrWithMeta) {
+					this.getOrCreateMultiSimpleAttrWithMeta(-1).setValue(_multiSimpleAttrWithMeta);
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta, int _idx) {
-					this.getOrCreateMultiSimpleAttrWithMeta(_idx).setValue(multiSimpleAttrWithMeta);
+				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String _multiSimpleAttrWithMeta, int _idx) {
+					this.getOrCreateMultiSimpleAttrWithMeta(_idx).setValue(_multiSimpleAttrWithMeta);
 					return this;
 				}
 				
 				@Override 
 				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas != null) {
-						for (FieldWithMetaString toAdd : multiSimpleAttrWithMetas) {
+						for (final FieldWithMetaString toAdd : multiSimpleAttrWithMetas) {
 							this.multiSimpleAttrWithMeta.add(toAdd.toBuilder());
 						}
 					}
@@ -718,10 +723,9 @@ class PojoRegressionTest {
 				
 				@Override 
 				public Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
-					if (multiSimpleAttrWithMetas == null)  {
+					if (multiSimpleAttrWithMetas == null) {
 						this.multiSimpleAttrWithMeta = new ArrayList<>();
-					}
-					else {
+					} else {
 						this.multiSimpleAttrWithMeta = multiSimpleAttrWithMetas.stream()
 							.map(_a->_a.toBuilder())
 							.collect(Collectors.toCollection(()->new ArrayList<>()));
@@ -732,7 +736,7 @@ class PojoRegressionTest {
 				@Override
 				public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas != null) {
-						for (String toAdd : multiSimpleAttrWithMetas) {
+						for (final String toAdd : multiSimpleAttrWithMetas) {
 							this.addMultiSimpleAttrWithMetaValue(toAdd);
 						}
 					}
@@ -742,7 +746,7 @@ class PojoRegressionTest {
 				@Override
 				public Pojo.PojoBuilder setMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMetas) {
 					this.multiSimpleAttrWithMeta.clear();
-					if (multiSimpleAttrWithMetas!=null) {
+					if (multiSimpleAttrWithMetas != null) {
 						multiSimpleAttrWithMetas.forEach(this::addMultiSimpleAttrWithMetaValue);
 					}
 					return this;
@@ -750,45 +754,48 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithId")
-				public Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString simpleAttrWithId) {
-					this.simpleAttrWithId = simpleAttrWithId==null?null:simpleAttrWithId.toBuilder();
+				public Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString _simpleAttrWithId) {
+					this.simpleAttrWithId = _simpleAttrWithId == null ? null : _simpleAttrWithId.toBuilder();
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId) {
-					this.getOrCreateSimpleAttrWithId().setValue(simpleAttrWithId);
+				public Pojo.PojoBuilder setSimpleAttrWithIdValue(String _simpleAttrWithId) {
+					this.getOrCreateSimpleAttrWithId().setValue(_simpleAttrWithId);
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithId")
-				public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId) {
-					if (multiSimpleAttrWithId!=null) this.multiSimpleAttrWithId.add(multiSimpleAttrWithId.toBuilder());
+				public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId) {
+					if (_multiSimpleAttrWithId != null) {
+						this.multiSimpleAttrWithId.add(_multiSimpleAttrWithId.toBuilder());
+					}
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId, int _idx) {
-					getIndex(this.multiSimpleAttrWithId, _idx, () -> multiSimpleAttrWithId.toBuilder());
+				public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId, int _idx) {
+					getIndex(this.multiSimpleAttrWithId, _idx, () -> _multiSimpleAttrWithId.toBuilder());
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId) {
-					this.getOrCreateMultiSimpleAttrWithId(-1).setValue(multiSimpleAttrWithId);
+				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String _multiSimpleAttrWithId) {
+					this.getOrCreateMultiSimpleAttrWithId(-1).setValue(_multiSimpleAttrWithId);
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId, int _idx) {
-					this.getOrCreateMultiSimpleAttrWithId(_idx).setValue(multiSimpleAttrWithId);
+				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String _multiSimpleAttrWithId, int _idx) {
+					this.getOrCreateMultiSimpleAttrWithId(_idx).setValue(_multiSimpleAttrWithId);
 					return this;
 				}
 				
 				@Override 
 				public Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds != null) {
-						for (FieldWithMetaString toAdd : multiSimpleAttrWithIds) {
+						for (final FieldWithMetaString toAdd : multiSimpleAttrWithIds) {
 							this.multiSimpleAttrWithId.add(toAdd.toBuilder());
 						}
 					}
@@ -797,10 +804,9 @@ class PojoRegressionTest {
 				
 				@Override 
 				public Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
-					if (multiSimpleAttrWithIds == null)  {
+					if (multiSimpleAttrWithIds == null) {
 						this.multiSimpleAttrWithId = new ArrayList<>();
-					}
-					else {
+					} else {
 						this.multiSimpleAttrWithId = multiSimpleAttrWithIds.stream()
 							.map(_a->_a.toBuilder())
 							.collect(Collectors.toCollection(()->new ArrayList<>()));
@@ -811,7 +817,7 @@ class PojoRegressionTest {
 				@Override
 				public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds != null) {
-						for (String toAdd : multiSimpleAttrWithIds) {
+						for (final String toAdd : multiSimpleAttrWithIds) {
 							this.addMultiSimpleAttrWithIdValue(toAdd);
 						}
 					}
@@ -821,7 +827,7 @@ class PojoRegressionTest {
 				@Override
 				public Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithIds) {
 					this.multiSimpleAttrWithId.clear();
-					if (multiSimpleAttrWithIds!=null) {
+					if (multiSimpleAttrWithIds != null) {
 						multiSimpleAttrWithIds.forEach(this::addMultiSimpleAttrWithIdValue);
 					}
 					return this;
@@ -829,27 +835,30 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("complexAttr")
-				public Pojo.PojoBuilder setComplexAttr(Foo complexAttr) {
-					this.complexAttr = complexAttr==null?null:complexAttr.toBuilder();
-					return this;
-				}
-				@Override
-				@RosettaAttribute("multiComplexAttr")
-				public Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr) {
-					if (multiComplexAttr!=null) this.multiComplexAttr.add(multiComplexAttr.toBuilder());
+				public Pojo.PojoBuilder setComplexAttr(Foo _complexAttr) {
+					this.complexAttr = _complexAttr == null ? null : _complexAttr.toBuilder();
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr, int _idx) {
-					getIndex(this.multiComplexAttr, _idx, () -> multiComplexAttr.toBuilder());
+				@RosettaAttribute("multiComplexAttr")
+				public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr) {
+					if (_multiComplexAttr != null) {
+						this.multiComplexAttr.add(_multiComplexAttr.toBuilder());
+					}
+					return this;
+				}
+				
+				@Override
+				public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr, int _idx) {
+					getIndex(this.multiComplexAttr, _idx, () -> _multiComplexAttr.toBuilder());
 					return this;
 				}
 				
 				@Override 
 				public Pojo.PojoBuilder addMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 					if (multiComplexAttrs != null) {
-						for (Foo toAdd : multiComplexAttrs) {
+						for (final Foo toAdd : multiComplexAttrs) {
 							this.multiComplexAttr.add(toAdd.toBuilder());
 						}
 					}
@@ -858,10 +867,9 @@ class PojoRegressionTest {
 				
 				@Override 
 				public Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
-					if (multiComplexAttrs == null)  {
+					if (multiComplexAttrs == null) {
 						this.multiComplexAttr = new ArrayList<>();
-					}
-					else {
+					} else {
 						this.multiComplexAttr = multiComplexAttrs.stream()
 							.map(_a->_a.toBuilder())
 							.collect(Collectors.toCollection(()->new ArrayList<>()));
@@ -871,45 +879,48 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("complexAttrWithRef")
-				public Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo complexAttrWithRef) {
-					this.complexAttrWithRef = complexAttrWithRef==null?null:complexAttrWithRef.toBuilder();
+				public Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo _complexAttrWithRef) {
+					this.complexAttrWithRef = _complexAttrWithRef == null ? null : _complexAttrWithRef.toBuilder();
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder setComplexAttrWithRefValue(Foo complexAttrWithRef) {
-					this.getOrCreateComplexAttrWithRef().setValue(complexAttrWithRef);
+				public Pojo.PojoBuilder setComplexAttrWithRefValue(Foo _complexAttrWithRef) {
+					this.getOrCreateComplexAttrWithRef().setValue(_complexAttrWithRef);
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("multiComplexAttrWithRef")
-				public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef) {
-					if (multiComplexAttrWithRef!=null) this.multiComplexAttrWithRef.add(multiComplexAttrWithRef.toBuilder());
+				public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef) {
+					if (_multiComplexAttrWithRef != null) {
+						this.multiComplexAttrWithRef.add(_multiComplexAttrWithRef.toBuilder());
+					}
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef, int _idx) {
-					getIndex(this.multiComplexAttrWithRef, _idx, () -> multiComplexAttrWithRef.toBuilder());
+				public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef, int _idx) {
+					getIndex(this.multiComplexAttrWithRef, _idx, () -> _multiComplexAttrWithRef.toBuilder());
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef) {
-					this.getOrCreateMultiComplexAttrWithRef(-1).setValue(multiComplexAttrWithRef.toBuilder());
+				public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo _multiComplexAttrWithRef) {
+					this.getOrCreateMultiComplexAttrWithRef(-1).setValue(_multiComplexAttrWithRef.toBuilder());
 					return this;
 				}
 				
 				@Override
-				public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef, int _idx) {
-					this.getOrCreateMultiComplexAttrWithRef(_idx).setValue(multiComplexAttrWithRef.toBuilder());
+				public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo _multiComplexAttrWithRef, int _idx) {
+					this.getOrCreateMultiComplexAttrWithRef(_idx).setValue(_multiComplexAttrWithRef.toBuilder());
 					return this;
 				}
 				
 				@Override 
 				public Pojo.PojoBuilder addMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 					if (multiComplexAttrWithRefs != null) {
-						for (ReferenceWithMetaFoo toAdd : multiComplexAttrWithRefs) {
+						for (final ReferenceWithMetaFoo toAdd : multiComplexAttrWithRefs) {
 							this.multiComplexAttrWithRef.add(toAdd.toBuilder());
 						}
 					}
@@ -918,10 +929,9 @@ class PojoRegressionTest {
 				
 				@Override 
 				public Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
-					if (multiComplexAttrWithRefs == null)  {
+					if (multiComplexAttrWithRefs == null) {
 						this.multiComplexAttrWithRef = new ArrayList<>();
-					}
-					else {
+					} else {
 						this.multiComplexAttrWithRef = multiComplexAttrWithRefs.stream()
 							.map(_a->_a.toBuilder())
 							.collect(Collectors.toCollection(()->new ArrayList<>()));
@@ -932,7 +942,7 @@ class PojoRegressionTest {
 				@Override
 				public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRefs) {
 					if (multiComplexAttrWithRefs != null) {
-						for (Foo toAdd : multiComplexAttrWithRefs) {
+						for (final Foo toAdd : multiComplexAttrWithRefs) {
 							this.addMultiComplexAttrWithRefValue(toAdd);
 						}
 					}
@@ -942,7 +952,7 @@ class PojoRegressionTest {
 				@Override
 				public Pojo.PojoBuilder setMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRefs) {
 					this.multiComplexAttrWithRef.clear();
-					if (multiComplexAttrWithRefs!=null) {
+					if (multiComplexAttrWithRefs != null) {
 						multiComplexAttrWithRefs.forEach(this::addMultiComplexAttrWithRefValue);
 					}
 					return this;
@@ -950,8 +960,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
-				public Pojo.PojoBuilder setMeta(MetaFields meta) {
-					this.meta = meta==null?null:meta.toBuilder();
+				public Pojo.PojoBuilder setMeta(MetaFields _meta) {
+					this.meta = _meta == null ? null : _meta.toBuilder();
 					return this;
 				}
 				
@@ -1419,7 +1429,7 @@ class PojoRegressionTest {
 			
 				protected String value;
 				protected MetaFields.MetaFieldsBuilder meta;
-			
+				
 				@Override
 				@RosettaAttribute("value")
 				public String getValue() {
@@ -1447,14 +1457,15 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
-				public FieldWithMetaString.FieldWithMetaStringBuilder setValue(String value) {
-					this.value = value==null?null:value;
+				public FieldWithMetaString.FieldWithMetaStringBuilder setValue(String _value) {
+					this.value = _value == null ? null : _value;
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("meta")
-				public FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields meta) {
-					this.meta = meta==null?null:meta.toBuilder();
+				public FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields _meta) {
+					this.meta = _meta == null ? null : _meta.toBuilder();
 					return this;
 				}
 				
@@ -1726,7 +1737,7 @@ class PojoRegressionTest {
 				protected String globalReference;
 				protected String externalReference;
 				protected Reference.ReferenceBuilder reference;
-			
+				
 				@Override
 				@RosettaAttribute("value")
 				public Foo.FooBuilder getValue() {
@@ -1779,26 +1790,29 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
-				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo value) {
-					this.value = value==null?null:value.toBuilder();
+				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo _value) {
+					this.value = _value == null ? null : _value.toBuilder();
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("globalReference")
-				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String globalReference) {
-					this.globalReference = globalReference==null?null:globalReference;
+				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String _globalReference) {
+					this.globalReference = _globalReference == null ? null : _globalReference;
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("externalReference")
-				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setExternalReference(String externalReference) {
-					this.externalReference = externalReference==null?null:externalReference;
+				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setExternalReference(String _externalReference) {
+					this.externalReference = _externalReference == null ? null : _externalReference;
 					return this;
 				}
+				
 				@Override
 				@RosettaAttribute("address")
-				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setReference(Reference reference) {
-					this.reference = reference==null?null:reference.toBuilder();
+				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setReference(Reference _reference) {
+					this.reference = _reference == null ? null : _reference.toBuilder();
 					return this;
 				}
 				

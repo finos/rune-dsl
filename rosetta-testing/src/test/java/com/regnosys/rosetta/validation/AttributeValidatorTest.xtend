@@ -50,13 +50,14 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 				complexAttr Parent (1..1)
 				listAttr number (0..*)
 				stringAttr string (1..1)
+					[metadata scheme]
 				refAttr Ref (1..1)
 				    [metadata reference]
 			
 			type Bar extends Foo:
 				restrict complexAttr Child (1..1)
 				restrict listAttr int (1..1)
-				restrict stringAttr string (1..1)
+				restrict stringAttr string(maxLength: 42) (1..1)
 					[metadata scheme]
 				restrict refAttr Subref (1..1)
 				    [metadata reference]
@@ -142,6 +143,32 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 				restrict attr string (0..1)
 		'''.parseRosetta
 			.assertError(ATTRIBUTE, null, "Cardinality may not be broader than the cardinality of the parent attribute (1..1)")
+	}
+	
+	@Test
+	def void testCannotAddMetadata() {
+		'''
+			type Foo:
+				attr string (1..1)
+			
+			type Bar extends Foo:
+				restrict attr string (1..1)
+					[metadata scheme]
+		'''.parseRosetta
+			.assertError(ATTRIBUTE, null, "You cannot add metadata annotations to an existing attribute")
+	}
+	
+	@Test
+	def void testCannotRemoveMetadata() {
+		'''
+			type Foo:
+				attr string (1..1)
+					[metadata scheme]
+			
+			type Bar extends Foo:
+				restrict attr string (1..1)
+		'''.parseRosetta
+			.assertError(ATTRIBUTE, null, "The metadata annotations should exactly match the parent attribute: scheme")
 	}
 	
 	@Test
