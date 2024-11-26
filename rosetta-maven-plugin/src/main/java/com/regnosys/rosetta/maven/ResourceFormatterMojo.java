@@ -1,11 +1,15 @@
 package com.regnosys.rosetta.maven;
 
 import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -15,13 +19,18 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.lsp4j.FormattingOptions;
+import org.eclipse.xtext.preferences.ITypedPreferenceValues;
+import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
+import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
 
 /**
  * <p>
@@ -29,19 +38,34 @@ import com.regnosys.rosetta.formatting2.ResourceFormatterService;
  * </p>
  * 
  * <p>
- * Given a path to a directory holding {@code .rosetta} resources, it formats the files
- * according to set formatting rules.
+ * Given a path to a directory holding {@code .rosetta} resources, it formats
+ * the files according to set formatting rules. Additionally, you can specify
+ * a custom configuration file for formatting options using the {@code formattingOptionsPath} parameter.
+ * If the {@code formattingOptionsPath} is not provided, the plugin will use default formatting options.
  * </p>
+ * 
  * 
  * <p>
  * To run the goal:
  * <ul>
  * <li>{@code mvn com.regnosys.rosetta:rosetta-maven-plugin:version:format -Dpath="path/to/directory"}</li>
+ * <li>Optionally, provide a custom formatting options file using {@code -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Example with both parameters:
+ * <ul>
+ * <li>{@code mvn com.regnosys.rosetta:rosetta-maven-plugin:version:format -Dpath="path/to/directory" -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
  * </ul>
  * </p>
  */
 @Mojo(name = "format")
 public class ResourceFormatterMojo extends AbstractMojo {
+	public static String PREFERENCE_INDENTATION_KEY = "indentation";
+	public static String PREFERENCE_MAX_LINE_WIDTH_KEY = "maxLineWidth";
+	public static String PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY = "conditionalMaxLineWidth";
+
 	private static Logger LOGGER = LoggerFactory.getLogger(ResourceFormatterMojo.class);
 
 	/**
@@ -50,10 +74,25 @@ public class ResourceFormatterMojo extends AbstractMojo {
 	@Parameter(property = "path", required = true)
 	private String path;
 
+	/**
+	 * Path to the .json file containing formatting options
+	 */
+	@Parameter(property = "formattingOptionsPath", required = false)
+	private String formattingOptionsPath;
+
+	private static final String DEFAULT_FORMATTING_OPTIONS_PATH = "../rosetta-runtime/src/main/resources/default-formatting-options.json";
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		Path directory = Paths.get(path);
 		LOGGER.info("Mojo running on path:" + directory.toString());
+
+		// If path not given, use default one
+		if (formattingOptionsPath == null) {
+			formattingOptionsPath = DEFAULT_FORMATTING_OPTIONS_PATH;
+		}
+
+		FormattingOptions formattingOptions = readFormattingOptions(formattingOptionsPath);
 
 		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
 		ResourceSet resourceSet = inj.getInstance(ResourceSet.class);
@@ -73,7 +112,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 			throw new MojoFailureException("Error processing files: " + e.getMessage(), e);
 		}
 		// format resources
-		formatterService.formatCollection(resources, null);
+		formatterService.formatCollection(resources, createPreferences(formattingOptions));
 
 		// save each resource
 		resources.forEach(resource -> {
@@ -89,5 +128,79 @@ public class ResourceFormatterMojo extends AbstractMojo {
 			}
 		});
 
+	}
+
+	private FormattingOptions readFormattingOptions(String formattingOptionsPath2) {
+		// Create an ObjectMapper
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		// Read the JSON into a Map
+		Map<String, Object> map = null;
+		File file = new File(formattingOptionsPath);
+		if (!file.exists()) {
+			throw new RuntimeException("File does not exist: " + formattingOptionsPath);
+		}
+		try {
+			map = objectMapper.readValue(file, Map.class);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Create a FormattingOptions object
+		FormattingOptions formattingOptions = new FormattingOptions();
+
+		// Populate the FormattingOptions object
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+
+			if (value instanceof String) {
+				formattingOptions.putString(key, (String) value);
+			} else if (value instanceof Number) {
+				formattingOptions.putNumber(key, (Number) value);
+			} else if (value instanceof Boolean) {
+				formattingOptions.putBoolean(key, (Boolean) value);
+			} else {
+				throw new IllegalArgumentException("Unsupported value type for key: " + key);
+			}
+		}
+		return formattingOptions;
+	}
+
+	private ITypedPreferenceValues createPreferences(FormattingOptions options) {
+		MapBasedPreferenceValues preferences = new MapBasedPreferenceValues();
+
+		String indent = "\t";
+		if (options != null) {
+			if (options.isInsertSpaces()) {
+				indent = Strings.padEnd("", options.getTabSize(), ' ');
+			}
+		}
+		preferences.put(PREFERENCE_INDENTATION_KEY, indent);
+
+		if (options == null) {
+			return preferences;
+		}
+
+		Number conditionalMaxLineWidth = options.getNumber(PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY);
+		if (conditionalMaxLineWidth != null) {
+			preferences.put(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth, conditionalMaxLineWidth.intValue());
+		}
+		Number maxLineWidth = options.getNumber(PREFERENCE_MAX_LINE_WIDTH_KEY);
+		if (maxLineWidth != null) {
+			preferences.put(RosettaFormatterPreferenceKeys.maxLineWidth, maxLineWidth.intValue());
+			if (conditionalMaxLineWidth == null) {
+				int defaultConditionalMaxLineWidth = RosettaFormatterPreferenceKeys.conditionalMaxLineWidth
+						.toValue(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth.getDefaultValue());
+				int defaultMaxLineWidth = RosettaFormatterPreferenceKeys.maxLineWidth
+						.toValue(RosettaFormatterPreferenceKeys.maxLineWidth.getDefaultValue());
+				double defaultRatio = (double) defaultConditionalMaxLineWidth / defaultMaxLineWidth;
+				preferences.put(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth,
+						(int) (maxLineWidth.doubleValue() * defaultRatio));
+			}
+		}
+
+		return preferences;
 	}
 }

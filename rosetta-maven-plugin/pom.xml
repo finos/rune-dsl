@@ -59,6 +59,11 @@
 			<groupId>org.eclipse.xtext</groupId>
 			<artifactId>xtext-maven-plugin</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.regnosys.rosetta</groupId>
+			<artifactId>com.regnosys.rosetta.ide</artifactId>
+			<version>0.0.0.main-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
