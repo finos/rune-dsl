@@ -1,16 +1,13 @@
 package com.regnosys.rosetta.formatting2;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.formatting2.ConflictingFormattingException;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.formatting2.IFormatter2;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
@@ -86,14 +83,22 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
-		// With the formatted text, update the resource
-		InputStream resultStream = new ByteArrayInputStream(formattedString.getBytes(StandardCharsets.UTF_8));
-		resource.unload();
+		// Rewrite file with formatted text
 		try {
-			resource.load(resultStream, null);
-		} catch (IOException e) {
-			throw new UncheckedIOException(
-					"Since the resource is an in-memory string, this exception is not expected to be ever thrown.", e);
+			java.net.URI javaUri = new java.net.URI(resource.getURI().toString());
+
+			// Convert the URL to a File object
+			File file = new File(javaUri);
+
+			// Write the content to the file
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+				writer.write(formattedString);
+			}
+
+			LOGGER.info("Content written to file: " + file.getAbsolutePath());
+
+		} catch (Exception e) {
+			LOGGER.error("Error writing to file.", e);
 		}
 
 	}

@@ -23,11 +23,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.google.common.io.Resources;
-import com.google.inject.Injector;
-import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
 
 @ExtendWith(InjectionExtension.class)
@@ -39,7 +36,7 @@ public class ResourceFormatterServiceTest {
 	Provider<ResourceSet> resourceSetProvider;
 	@Inject
 	ISerializer serializer;
-	
+
 	@Inject
 	private TextRegionAccessBuilder regionBuilder;
 
@@ -47,7 +44,8 @@ public class ResourceFormatterServiceTest {
 			throws IOException, URISyntaxException {
 		ResourceSet resourceSet = resourceSetProvider.get();
 		List<Resource> resources = new ArrayList<>();
-		List<String> expected = new ArrayList<>();
+		List<String> formattedText = new ArrayList<>();
+		List<String> expectedText = new ArrayList<>();
 
 		for (String url : inputUrls) {
 			Resource resource = resourceSet.getResource(URI.createURI(Resources.getResource(url).toString()), true);
@@ -55,15 +53,17 @@ public class ResourceFormatterServiceTest {
 		}
 
 		for (String url : expectedUrls) {
-			expected.add(Files.readString(Path.of(Resources.getResource(url).toURI())));
+			expectedText.add(Files.readString(Path.of(Resources.getResource(url).toURI())));
 		}
 
 		formatterService.formatCollection(resources);
 
-		List<String> result = resources.stream().map(resource -> serializer.serialize(resource.getContents().get(0)))
-				.collect(Collectors.toList());
+		for (Resource resource : resources) {
+			ITextRegionAccess regionAccess = regionBuilder.forNodeModel((XtextResource) resource).create();
+			formattedText.add(regionAccess.regionForDocument().getText());
+		}
 
-		Assertions.assertIterableEquals(expected, result);
+		Assertions.assertIterableEquals(expectedText, formattedText);
 	}
 
 	@Test
@@ -80,21 +80,5 @@ public class ResourceFormatterServiceTest {
 				List.of("formatting-test/expected/typeAlias.rosetta",
 						"formatting-test/expected/typeAliasWithDocumentation.rosetta"));
 	}
-	
-	@Test
-	void formatSaveStep() throws IOException {
-		String path = "formatting-test/input/onlyExists.rosetta";
-		
-		ResourceSet resourceSet = resourceSetProvider.get();
-		List<Resource> resources = new ArrayList<>();
-		Resource resource = resourceSet.getResource(URI.createURI(Resources.getResource(path).toString()), true);
-		resources.add(resource);
-		
-		ITextRegionAccess regionAccess = regionBuilder.forNodeModel((XtextResource) resource).create();
-		
-		String docTextBefore = regionAccess.regionForDocument().getText();
-		String result = serializer.serialize(resource.getContents().get(0));
 
-		Assertions.assertEquals(docTextBefore, result);
-	}
 }

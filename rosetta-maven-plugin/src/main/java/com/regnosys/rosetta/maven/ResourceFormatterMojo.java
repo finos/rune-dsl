@@ -117,21 +117,6 @@ public class ResourceFormatterMojo extends AbstractMojo {
 		}
 		// format resources
 		formatterService.formatCollection(resources, createPreferences(formattingOptions));
-
-		// save each resource
-		resources.forEach(resource -> {
-			try {
-				resource.save(null);
-				LOGGER.info("Successfully formatted and saved file at location " + resource.getURI());
-			} catch (IOException e) {
-				LOGGER.error("Error saving file at location " + resource.getURI() + ": " + e.getMessage(), e);
-			} catch (RuntimeException e) {
-				LOGGER.error(
-						"RuntimeException while saving in following file: " + resource.getURI() + ": " + e.getMessage(),
-						e);
-			}
-		});
-
 	}
 
 	private FormattingOptions readFormattingOptions(String options) throws IOException {
