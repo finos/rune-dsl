@@ -1,7 +1,8 @@
 package com.regnosys.rosetta.maven;
 
 import java.io.IOException;
-import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,6 +20,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.mwe.core.resources.ResourceLoader;
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
@@ -39,9 +41,10 @@ import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
  * 
  * <p>
  * Given a path to a directory holding {@code .rosetta} resources, it formats
- * the files according to set formatting rules. Additionally, you can specify
- * a custom configuration file for formatting options using the {@code formattingOptionsPath} parameter.
- * If the {@code formattingOptionsPath} is not provided, the plugin will use default formatting options.
+ * the files according to set formatting rules. Additionally, you can specify a
+ * custom configuration file for formatting options using the
+ * {@code formattingOptionsPath} parameter. If the {@code formattingOptionsPath}
+ * is not provided, the plugin will use default formatting options.
  * </p>
  * 
  * 
@@ -49,7 +52,8 @@ import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
  * To run the goal:
  * <ul>
  * <li>{@code mvn com.regnosys.rosetta:rosetta-maven-plugin:version:format -Dpath="path/to/directory"}</li>
- * <li>Optionally, provide a custom formatting options file using {@code -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
+ * <li>Optionally, provide a custom formatting options file using
+ * {@code -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
  * </ul>
  * </p>
  * 
@@ -80,19 +84,19 @@ public class ResourceFormatterMojo extends AbstractMojo {
 	@Parameter(property = "formattingOptionsPath", required = false)
 	private String formattingOptionsPath;
 
-	private static final String DEFAULT_FORMATTING_OPTIONS_PATH = "../rosetta-runtime/src/main/resources/default-formatting-options.json";
+	private static final String DEFAULT_FORMATTING_OPTIONS_PATH = "default-formatting-options.json";
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		Path directory = Paths.get(path);
 		LOGGER.info("Mojo running on path:" + directory.toString());
 
-		// If path not given, use default one
-		if (formattingOptionsPath == null) {
-			formattingOptionsPath = DEFAULT_FORMATTING_OPTIONS_PATH;
+		FormattingOptions formattingOptions = null;
+		try {
+			formattingOptions = readFormattingOptions(formattingOptionsPath);
+		} catch (IOException e) {
+			LOGGER.error("Config file not found.", e);
 		}
-
-		FormattingOptions formattingOptions = readFormattingOptions(formattingOptionsPath);
 
 		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
 		ResourceSet resourceSet = inj.getInstance(ResourceSet.class);
@@ -130,18 +134,21 @@ public class ResourceFormatterMojo extends AbstractMojo {
 
 	}
 
-	private FormattingOptions readFormattingOptions(String formattingOptionsPath2) {
-		// Create an ObjectMapper
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		// Read the JSON into a Map
-		Map<String, Object> map = null;
-		File file = new File(formattingOptionsPath);
-		if (!file.exists()) {
-			throw new RuntimeException("File does not exist: " + formattingOptionsPath);
+	private FormattingOptions readFormattingOptions(String options) throws IOException {
+		InputStream resourceStream;
+		// If path not given, use default one
+		if (options == null) {
+			// Retrieve resource as an InputStream
+			resourceStream = ResourceLoader.class.getClassLoader().getResourceAsStream(DEFAULT_FORMATTING_OPTIONS_PATH);
+		} else {
+			resourceStream = new FileInputStream(options);
 		}
+
+		// Create an ObjectMapper, read JSON into a Map
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, Object> map = null;
 		try {
-			map = objectMapper.readValue(file, Map.class);
+			map = objectMapper.readValue(resourceStream, Map.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

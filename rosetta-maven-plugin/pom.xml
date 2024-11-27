@@ -62,7 +62,12 @@
 		<dependency>
 			<groupId>com.regnosys.rosetta</groupId>
 			<artifactId>com.regnosys.rosetta.ide</artifactId>
-			<version>0.0.0.main-SNAPSHOT</version>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.regnosys.rosetta</groupId>
+			<artifactId>com.regnosys.rosetta.lib</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
