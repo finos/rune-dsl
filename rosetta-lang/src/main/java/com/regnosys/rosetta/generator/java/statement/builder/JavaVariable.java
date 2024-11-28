@@ -37,7 +37,9 @@ public class JavaVariable extends JavaExpression {
 	
 	@Override
 	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
-		scope.createSynonym(this, id);
+		if (scope.getIdentifier(this).map(scopeId -> !scopeId.equals(id)).orElse(true)) {
+			scope.createSynonym(this, id);
+		}
 		return this;
 	}
 

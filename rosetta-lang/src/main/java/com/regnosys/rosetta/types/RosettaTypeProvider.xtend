@@ -156,7 +156,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			.toList
 	}
 	
-	
 	private def RMetaAnnotatedType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
 			return NOTHING.withEmptyMeta

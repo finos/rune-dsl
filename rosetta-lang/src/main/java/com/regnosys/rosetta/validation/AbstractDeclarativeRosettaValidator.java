@@ -7,6 +7,7 @@ import java.util.List;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.Action;
 import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.Keyword;
@@ -19,6 +20,9 @@ import org.eclipse.xtext.validation.EValidatorRegistrar;
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.simple.Annotated;
 
 public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclarativeValidator {
 	
@@ -116,5 +120,17 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 			}
 		}
 		return null;
+	}
+	
+	protected void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EStructuralFeature ref, int index) {
+		if (annotated.getAnnotations().stream().anyMatch(ann -> ann.getAnnotation() != null && ann.getAnnotation().getName().equals("deprecated"))) {
+			String msg;
+			if (annotated instanceof RosettaNamed) {
+				msg = ((RosettaNamed)annotated).getName() + " is deprecated";
+			} else {
+				msg = "Deprecated";
+			}
+			warning(msg, owner, ref, index);
+		}
 	}
 }

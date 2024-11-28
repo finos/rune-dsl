@@ -31,13 +31,17 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.Templatable;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.MapperListOfLists;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.FieldWithMeta;
+import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
+import com.rosetta.model.metafields.MetaAndTemplateFields;
+import com.rosetta.model.metafields.MetaFields;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaGenericTypeDeclaration;
 import com.rosetta.util.types.JavaParameterizedType;
@@ -67,6 +71,10 @@ public class JavaTypeUtil {
 	public final JavaClass<LocalDateTime> LOCAL_DATE_TIME = JavaClass.from(LocalDateTime.class);
 	public final JavaClass<ZonedDateTime> ZONED_DATE_TIME = JavaClass.from(ZonedDateTime.class);
 	public final JavaClass<GlobalKey> GLOBAL_KEY = JavaClass.from(GlobalKey.class);
+	public final JavaClass<Templatable> TEMPLATABLE = JavaClass.from(Templatable.class);
+	public final JavaClass<Reference> REFERENCE = JavaClass.from(Reference.class);
+	public final JavaClass<MetaFields> META_FIELDS = JavaClass.from(MetaFields.class);
+	public final JavaClass<MetaAndTemplateFields> META_AND_TEMPLATE_FIELDS = JavaClass.from(MetaAndTemplateFields.class);
 	
 	public final JavaClass<Object> OBJECT = JavaClass.OBJECT;
 	public final JavaClass<Cloneable> CLONEABLE = JavaClass.CLONEABLE;
@@ -114,7 +122,7 @@ public class JavaTypeUtil {
 	}
 	
 	public <T> JavaParameterizedType<T> wrapExtendsIfNotFinal(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
-		if (itemType instanceof RJavaPojoInterface) {
+		if (itemType instanceof JavaPojoInterface) {
 			return wrapExtends(wrapperType, itemType);
 		} else {
 			return wrap(wrapperType, itemType);

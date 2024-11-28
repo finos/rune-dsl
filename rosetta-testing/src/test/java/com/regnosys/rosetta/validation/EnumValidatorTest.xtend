@@ -19,6 +19,17 @@ class EnumValidatorTest implements RosettaIssueCodes {
 	@Inject extension ModelHelper
 	
 	@Test
+	def void testEnumNameShouldBeCapitalized() {
+		val model =
+		'''
+			enum quoteRejectReasonEnum:
+				Other
+		'''.parseRosettaWithNoErrors
+		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
+            "Enumeration name should start with a capital")
+	}
+	
+	@Test
 	def void testDuplicateEnumValue() {
 		val model = '''
 			enum Foo:

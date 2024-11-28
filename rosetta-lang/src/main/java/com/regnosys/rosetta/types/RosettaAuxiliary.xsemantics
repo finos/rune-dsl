@@ -31,6 +31,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 inject extension TypeFactory typeFactory
 inject extension TypeValidationUtil util
@@ -100,7 +101,7 @@ auxiliary allEnumValues(RosettaEnumeration e) {
 }
 auxiliary mayBeEmpty(RDataType t) {
 	t.allAttributes.forall[
-		cardinality.minBound === 0
+		cardinality.isOptional
 	]
 }
 
@@ -143,7 +144,7 @@ auxiliary keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, R
 auxiliary allFeatures(RType t, ResourceSet resourceSet) {
 	switch t {
 		RDataType:
-			t.allNonOverridenAttributes.map[EObject]
+			t.allAttributes.map[EObject]
 		RChoiceType:
 			t.asRDataType.allFeatures(resourceSet)
 		REnumType:

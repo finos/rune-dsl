@@ -213,9 +213,11 @@ class ModelObjectGeneratorTest {
 	def void shouldGenerateRosettaReferenceField() {
 		val code = '''
 			type TestObject: <"">
-				fieldOne Test2 (0..1) [metadata reference]
+				fieldOne Test2 (0..1)
+					[metadata reference]
 			
 			type Test2:
+				[metadata key]
 		'''.generateCode
 		//code.writeClasses("objectTest")
 		val classes = code.compileToClasses
@@ -270,9 +272,11 @@ class ModelObjectGeneratorTest {
 		val code = '''
 			
 			type ComplexObject:
+				[metadata key]
 			
 			type TestObject: <"">
-				fieldOne ComplexObject (0..1) [metadata reference]
+				fieldOne ComplexObject (0..1)
+					[metadata reference]
 		'''.generateCode
 		//code.writeClasses("shouldCreateFieldWithReferenceTypeWhenAttributeIsReference")
 		val generatedClass = code.compileToClasses

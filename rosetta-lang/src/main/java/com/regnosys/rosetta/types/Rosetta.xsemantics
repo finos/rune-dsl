@@ -253,6 +253,9 @@ auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 			val refersTo = t.typeCall.typeCallToRType(RosettaInterpreterContext.of(args))
 			new RAliasType(t.typeFunctionOfTypeAlias, args, refersTo)
 		}
+		default: {
+			NOTHING
+		}
 	}
 }
 

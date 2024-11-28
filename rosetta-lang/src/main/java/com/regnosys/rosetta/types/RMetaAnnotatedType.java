@@ -34,6 +34,10 @@ public class RMetaAnnotatedType {
 	public List<RMetaAttribute> getMetaAttributes() {
 		return metaAttributes;
 	}
+	
+	public boolean hasMetaAttribute(String name) {
+		return metaAttributes.stream().anyMatch(m -> m.getName().equals(name));
+	}
 
 	@Override
 	public int hashCode() {

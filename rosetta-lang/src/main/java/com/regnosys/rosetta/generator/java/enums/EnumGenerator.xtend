@@ -32,7 +32,7 @@ class EnumGenerator {
 		val javaEnum = e.toJavaReferenceType
 		
 		val StringConcatenationClient classBody = '''
-		«javadoc(e.EObject, version)»
+		«javadoc(e.EObject.definition, e.EObject.references, version)»
 		@«RosettaEnum»("«e.name»")
 		public enum «e.name» {
 		

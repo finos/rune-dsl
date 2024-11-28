@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 
 import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
+import com.rosetta.model.metafields.MetaFields
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -850,14 +851,12 @@ class TabulatorTest {
 		val rootTabulator = classes.getModel3RootTabulator
 
         // bar is set and barReference is set as an unresolved reference
-		val barMetaFields = classes.createInstanceUsingBuilder(META_PKG, "MetaFields", #{"externalKey" -> "barExtKey", "globalKey" -> "barGlobalKey"})
+		val barMetaFields = MetaFields.builder.setExternalKey("barExtKey").setGlobalKey("barGlobalKey")
 		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"meta" -> barMetaFields, "b1" -> "bValue"})
 		val barReference = classes.createInstanceUsingBuilder(MODEL3_META_PKG, "ReferenceWithMetaBar", #{"externalReference" -> "barExtKey", "globalReference" -> "barGlobalKey"})
 		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "fValue", "barReference" -> barReference})
 		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "rValue", "foo" -> foo, "bar" -> bar})
-		assertEquals("Root {r1=rValue, " +
-			"foo=Foo {f1=fValue, barReference=ReferenceWithMetaBar {value=null, globalReference=barGlobalKey, externalReference=barExtKey, reference=null}}, " +
-			"bar=Bar {b1=bValue, meta=MetaFields {scheme=null, globalKey=barGlobalKey, externalKey=barExtKey, key=null}}}", 
+		assertEquals("Root {r1=rValue, foo=Foo {f1=fValue, barReference=ReferenceWithMetaBar {value=null, globalReference=barGlobalKey, externalReference=barExtKey, reference=null}}, bar=Bar {b1=bValue, meta=MetaFields {scheme=null, template=null, location=null, address=null, globalKey=barGlobalKey, externalKey=barExtKey, key=null}}}", 
 			root.toString)
 		
 		val tabulatedRoot = rootTabulator.tabulate(root)	
@@ -931,14 +930,12 @@ class TabulatorTest {
 		val rootTabulator = classes.getModel3RootTabulator
 
         // bar is set and barReference is set as an unresolved reference
-		val barMetaFields = classes.createInstanceUsingBuilder(META_PKG, "MetaFields", #{"externalKey" -> "barExtKey", "globalKey" -> "barGlobalKey"})
+		val barMetaFields = MetaFields.builder.setExternalKey("barExtKey").setGlobalKey("barGlobalKey")
 		val bar = classes.createInstanceUsingBuilder(MODEL3_PKG, "Bar", #{"meta" -> barMetaFields, "b1" -> "bValue"})
 		val barReference = classes.createInstanceUsingBuilder(MODEL3_META_PKG, "ReferenceWithMetaBar", #{"externalReference" -> "barExtKey", "globalReference" -> "barGlobalKey"})
 		val foo = classes.createInstanceUsingBuilder(MODEL3_PKG, "Foo", #{"f1" -> "fValue", "barReferences" -> #[barReference]})
 		val root = classes.createInstanceUsingBuilder(MODEL3_PKG, "Root", #{"r1" -> "rValue", "foo" -> foo, "bar" -> bar})
-		assertEquals("Root {r1=rValue, " +
-			"foo=Foo {f1=fValue, barReferences=[ReferenceWithMetaBar {value=null, globalReference=barGlobalKey, externalReference=barExtKey, reference=null}]}, " +
-			"bar=Bar {b1=bValue, meta=MetaFields {scheme=null, globalKey=barGlobalKey, externalKey=barExtKey, key=null}}}", 
+		assertEquals("Root {r1=rValue, foo=Foo {f1=fValue, barReferences=[ReferenceWithMetaBar {value=null, globalReference=barGlobalKey, externalReference=barExtKey, reference=null}]}, bar=Bar {b1=bValue, meta=MetaFields {scheme=null, template=null, location=null, address=null, globalKey=barGlobalKey, externalKey=barExtKey, key=null}}}",
 			root.toString)
 		
 		val tabulatedRoot = rootTabulator.tabulate(root)	

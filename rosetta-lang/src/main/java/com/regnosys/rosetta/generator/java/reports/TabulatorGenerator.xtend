@@ -41,6 +41,7 @@ import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 
 class TabulatorGenerator {
 	private interface TabulatorContext {
@@ -248,7 +249,7 @@ class TabulatorGenerator {
 			fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
 		
 			type
-				.allNonOverridenAttributes
+				.allAttributes
 				.map[RMetaAnnotatedType]
 				.map[RType]
 				.map[it instanceof RChoiceType ? asRDataType : it]
@@ -358,7 +359,7 @@ class TabulatorGenerator {
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
 			@«Singleton»
 			class Impl implements «tabulatorClass» {
-				«FOR attr : inputType.allNonOverridenAttributes»
+				«FOR attr : inputType.allAttributes»
 					«IF context.isTabulated(attr)»
 						«val fieldId = classScope.getIdentifierOrThrow(attr)»
 						private final «Field» «fieldId»;
@@ -391,7 +392,7 @@ class TabulatorGenerator {
 	
 	private def List<RAttribute> findTabulatedFieldsAndCreateIdentifiers(RDataType type, TabulatorContext context, JavaScope scope) {
 		type
-			.allNonOverridenAttributes
+			.allAttributes
 			.filter[context.isTabulated(it)]
 			.map[
 				scope.createIdentifier(it, name + "Field")
@@ -400,7 +401,7 @@ class TabulatorGenerator {
 	}
 	private def StringConcatenationClient initializeFields(RDataType type, TabulatorContext context, JavaScope scope) {
 		'''
-		«FOR attr : type.allNonOverridenAttributes»
+		«FOR attr : type.allAttributes»
 			«IF context.isTabulated(attr)»
 				«val fieldId = scope.getIdentifierOrThrow(attr)»
 				«val rule = context.getRule(attr)»
@@ -417,7 +418,7 @@ class TabulatorGenerator {
 	}
 	
 	private def Set<NestedTabulatorInstance> findNestedTabulatorsAndCreateIdentifiers(RDataType type, TabulatorContext context, JavaScope scope) {
-		val result = type.allNonOverridenAttributes
+		val result = type.allAttributes
 			.filter[context.isTabulated(it)]
 			.map[RMetaAnnotatedType]
 			.map[RType]
@@ -431,15 +432,15 @@ class TabulatorGenerator {
 	
 	private def StringConcatenationClient computeFieldValues(RDataType type, GeneratedIdentifier inputParam, TabulatorContext context, JavaScope scope) {
 		'''
-		«FOR attr : type.allNonOverridenAttributes»
+		«FOR attr : type.allAttributes»
 			«IF context.isTabulated(attr)»
-				«fieldValue(attr, inputParam, scope)»
+				«fieldValue(type.toJavaReferenceType, attr, inputParam, scope)»
 			«ENDIF»
 		«ENDFOR»
 		'''
 	}
 
-	private def StringConcatenationClient fieldValue(RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
+	private def StringConcatenationClient fieldValue(JavaPojoInterface javaType, RAttribute attr, GeneratedIdentifier inputParam, JavaScope scope) {
 		val rawAttr = attr.RMetaAnnotatedType.RType
 		val rType = if (rawAttr instanceof RChoiceType) {
 			rawAttr.asRDataType
@@ -455,10 +456,11 @@ class TabulatorGenerator {
 		val nestedLambdaScope = lambdaScope.lambdaScope
 		val nestedLambdaParam = nestedLambdaScope.createUniqueIdentifier("x")
 		
+		val getter = javaType.findProperty(attr.name).getterName
 		if (rType instanceof RDataType) {
 			val nestedTabulator = scope.getIdentifierOrThrow(rType.toNestedTabulatorInstance)
 			'''
-			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = «Optional».ofNullable(«inputParam».«getter»())
 				«IF attr.isMulti»
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					«IF attr.RMetaAnnotatedType.hasMeta»
@@ -478,15 +480,15 @@ class TabulatorGenerator {
 		} else {
 			'''
 			«IF !attr.RMetaAnnotatedType.hasMeta»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»()));
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«getter»()));
 			«ELSEIF attr.isMulti»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«getter»())
 				.map(«lambdaParam» -> «lambdaParam».stream()
 					.map(«nestedLambdaParam» -> «nestedLambdaParam».getValue())
 					.filter(«Objects»::nonNull)
 					.collect(«Collectors».toList())));
 			«ELSE»
-			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».get«attr.name.toFirstUpper»())
+			«FieldValue» «resultId» = new «FieldValueImpl»(«scope.getIdentifierOrThrow(attr)», «Optional».ofNullable(«inputParam».«getter»())
 				.map(«lambdaParam» -> «lambdaParam».getValue()));
 			«ENDIF»
 			'''
@@ -496,7 +498,7 @@ class TabulatorGenerator {
 	private def StringConcatenationClient fieldValuesAsList(RDataType type, TabulatorContext context, JavaScope scope) {
 		'''
 		«Arrays».asList(
-			«FOR attr : type.allNonOverridenAttributes.filter[context.isTabulated(it)] SEPARATOR ","»
+			«FOR attr : type.allAttributes.filter[context.isTabulated(it)] SEPARATOR ","»
 			«scope.getIdentifier(attr.toComputedField)»
 			«ENDFOR»
 		)'''

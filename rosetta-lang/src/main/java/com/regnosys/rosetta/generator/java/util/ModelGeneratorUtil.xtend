@@ -13,7 +13,7 @@ class ModelGeneratorUtil {
 		«javadoc(named, null)»
 	'''
 	
-	static def javadoc(RosettaNamed named, String version) {
+	private static def javadoc(RosettaNamed named, String version) {
 		val definition = if (named instanceof RosettaDefinable) named.definition else ""
 		val docRef = if (named instanceof References) named.references else emptyList
 		javadoc(definition, docRef, version)
@@ -21,7 +21,7 @@ class ModelGeneratorUtil {
 
 	static def javadoc(String definition, List<RosettaDocReference> docRef, String version) {
 		return if (definition === null && docRef.isEmpty && version === null)
-			''
+			null
 		else
 			'''
 				/**

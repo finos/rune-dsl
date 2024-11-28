@@ -18,7 +18,6 @@ import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
-import com.regnosys.rosetta.types.RType;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 

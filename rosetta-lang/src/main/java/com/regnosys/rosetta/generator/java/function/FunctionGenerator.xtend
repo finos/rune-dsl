@@ -343,7 +343,7 @@ class FunctionGenerator {
 		val evaluateScope = classScope.methodScope("evaluate")
 		function.inputs.forEach[evaluateScope.createIdentifier(it)]
 		'''
-		«javadoc(function, version)»
+		«javadoc(function.definition, function.references, version)»
 		public class «className» implements «RosettaFunction» {
 			«FOR dep : dependencies»
 				@«Inject» protected «dep» «dep.simpleName.toFirstLower»;
