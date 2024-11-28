@@ -3,9 +3,7 @@ package com.regnosys.rosetta.formatting2;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.util.function.BiConsumer;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.formatting2.FormatterRequest;
@@ -34,10 +32,11 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	private TextRegionAccessBuilder regionBuilder;
 
 	@Override
-	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues) {
+	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
+			BiConsumer<Resource, String> handler) {
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
-				formatXtextResource((XtextResource) resource, preferenceValues);
+				formatXtextResource((XtextResource) resource, preferenceValues, handler);
 
 			} else {
 				LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
@@ -46,7 +45,8 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	}
 
 	@Override
-	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues) {
+	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
+			BiConsumer<Resource, String> handler) {
 		LOGGER.info("Formatting file at location " + resource.getURI());
 
 		// setup request and formatter
@@ -72,35 +72,12 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage(), e);
 		}
 
-		// Abort if replacements is empty (either because nothing to format or method
-		// throws exception)
-		if (replacements.isEmpty()) {
-			LOGGER.info("No replacements to apply, skipping file");
-			return;
-		}
-
 		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
-		// Rewrite file with formatted text
-		try {
-			java.net.URI javaUri = new java.net.URI(resource.getURI().toString());
-
-			// Convert the URL to a File object
-			File file = new File(javaUri);
-
-			// Write the content to the file
-			try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-				writer.write(formattedString);
-			}
-
-			LOGGER.info("Content written to file: " + file.getAbsolutePath());
-
-		} catch (Exception e) {
-			LOGGER.error("Error writing to file.", e);
-		}
-
+		// Perform handler operation
+		handler.accept(resource, formattedString);
 	}
 
 }

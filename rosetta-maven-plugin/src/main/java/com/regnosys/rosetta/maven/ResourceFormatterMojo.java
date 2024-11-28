@@ -116,7 +116,16 @@ public class ResourceFormatterMojo extends AbstractMojo {
 			throw new MojoFailureException("Error processing files: " + e.getMessage(), e);
 		}
 		// format resources
-		formatterService.formatCollection(resources, createPreferences(formattingOptions));
+		formatterService.formatCollection(resources, createPreferences(formattingOptions),
+				(resource, formattedText) -> {
+					Path resourcePath = Path.of(resource.getURI().toFileString());
+					try {
+						Files.writeString(resourcePath, formattedText);
+						LOGGER.info("Content written to file: " + resourcePath);
+					} catch (IOException e) {
+						LOGGER.error("Error writing to file.", e);
+					}
+				});
 	}
 
 	private FormattingOptions readFormattingOptions(String options) throws IOException {

@@ -6,9 +6,6 @@ import javax.inject.Provider;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
-import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -37,9 +34,6 @@ public class ResourceFormatterServiceTest {
 	@Inject
 	ISerializer serializer;
 
-	@Inject
-	private TextRegionAccessBuilder regionBuilder;
-
 	private void testFormatting(Collection<String> inputUrls, Collection<String> expectedUrls)
 			throws IOException, URISyntaxException {
 		ResourceSet resourceSet = resourceSetProvider.get();
@@ -56,12 +50,9 @@ public class ResourceFormatterServiceTest {
 			expectedText.add(Files.readString(Path.of(Resources.getResource(url).toURI())));
 		}
 
-		formatterService.formatCollection(resources);
-
-		for (Resource resource : resources) {
-			ITextRegionAccess regionAccess = regionBuilder.forNodeModel((XtextResource) resource).create();
-			formattedText.add(regionAccess.regionForDocument().getText());
-		}
+		formatterService.formatCollection(resources, (resource, formattedContent) -> {
+			formattedText.add(formattedContent); // Collect formatted content for assertions
+		});
 
 		Assertions.assertIterableEquals(expectedText, formattedText);
 	}
