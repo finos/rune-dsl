@@ -17,7 +17,6 @@
 package com.regnosys.rosetta.types;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +33,6 @@ import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.TypeCall;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.typing.RosettaTyping;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
@@ -54,12 +52,6 @@ public class TypeSystem {
 	private IRequestScopedCache cache;
 	@Inject
 	private SubtypeRelation subtypeRelation;
-	
-	public RListType inferType(RosettaExpression expr) {
-		Objects.requireNonNull(expr);
-		
-		return typing.inferType(expr).getValue();
-	}
 	
 	public RType getRulesInputType(RDataType data, Optional<RosettaExternalRuleSource> source) {
 		return getRulesInputType(data, source, new HashSet<>());
@@ -108,11 +100,10 @@ public class TypeSystem {
 		Objects.requireNonNull(types);
 		Validate.noNullElements(types);
 		
-		RMetaAnnotatedType any = new RMetaAnnotatedType(builtins.ANY, List.of());
-		RMetaAnnotatedType acc = new RMetaAnnotatedType(builtins.NOTHING, List.of());
+		RMetaAnnotatedType acc = builtins.NOTHING_WITH_NO_META;
 		for (RMetaAnnotatedType t: types) {
 			acc = subtypeRelation.join(acc, t);
-			if (acc.equals(any)) {
+			if (acc.equals(builtins.ANY_WITH_NO_META)) {
 				return acc;
 			}
 		}
@@ -137,12 +128,6 @@ public class TypeSystem {
 			}
 		}
 		return acc;
-	}
-	public RListType listJoin(RListType t1, RListType t2) {
-		Objects.requireNonNull(t1);
-		Objects.requireNonNull(t2);
-		
-		return Objects.requireNonNull(typing.listJoin(t1, t2));
 	}
 	
 	public RType meet(RType t1, RType t2) {
@@ -196,11 +181,11 @@ public class TypeSystem {
 		return typing.listSubtypeSucceeded(sub, sup);
 	}
 	
-	public boolean isComparable(RType t1, RType t2) {
+	public boolean isComparable(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
 		Objects.requireNonNull(t1);
 		Objects.requireNonNull(t2);
 		
-		return typing.comparable(t1, t2);
+		return isSubtypeOf(t1, t2) || isSubtypeOf(t2, t1);
 	}
 	public boolean isListComparable(RListType t1, RListType t2) {
 		Objects.requireNonNull(t1);

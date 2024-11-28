@@ -9,10 +9,8 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
-import com.regnosys.rosetta.types.RListType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.TypeFactory
-import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.utils.ExpressionHelper
 import java.util.List
 
@@ -33,7 +31,6 @@ import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RChoiceType
 
 inject extension TypeFactory typeFactory
-inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
@@ -48,8 +45,6 @@ auxiliary {
 	ancestorEnums(RosettaEnumeration t) : List<RosettaEnumeration>
 	overlap(RosettaCardinality c1, RosettaCardinality c2)
 	join(RType t1, RType t2) : RType
-	union(RosettaCardinality c1, RosettaCardinality c2) : RosettaCardinality
-	listJoin(RListType t1, RListType t2) : RListType
 	allEnumValues(RosettaEnumeration d) : Iterable<RosettaEnumValue>
 	mayBeEmpty(RDataType d)
 	
@@ -79,17 +74,6 @@ auxiliary overlap(RosettaCardinality c1, RosettaCardinality c2) {
 }
 auxiliary join(RType t1, RType t2) {
 	return typeSystem.join(t1, t2)
-}
-auxiliary union(RosettaCardinality c1, RosettaCardinality c2) {
-	if (c1.unbounded || c2.unbounded) {
-		return createConstraint(Math.min(c1.inf, c2.inf))
-	} else {
-		return createConstraint(Math.min(c1.inf, c2.inf), Math.max(c1.sup, c2.sup))
-	}
-}
-auxiliary listJoin(RListType t1, RListType t2) {
-	val sup = join(t1.itemType, t2.itemType);
-	return createListType(sup, union(t1.constraint, t2.constraint))
 }
 auxiliary allEnumValues(RosettaEnumeration e) {
 	if (e.parent === null) {

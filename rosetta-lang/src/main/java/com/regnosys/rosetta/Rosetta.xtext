@@ -682,7 +682,7 @@ UnaryOperation returns RosettaExpression:
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
 			// @Compat: remove `map`
-			|({MapOperation.argument=current} operator=('map' | 'extract'))
+			|({MapOperation.argument=current} operator='extract')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 	| // Without left parameter:
@@ -719,7 +719,7 @@ UnaryOperation returns RosettaExpression:
 			 ({ReduceOperation} operator='reduce')
 			|({FilterOperation} operator='filter')
 			// @Compat: remove `map`
-			|({MapOperation} operator=('map' | 'extract'))
+			|({MapOperation} operator='extract')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)
 	(
@@ -757,7 +757,7 @@ UnaryOperation returns RosettaExpression:
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
 			// @Compat: remove `map`
-			|({MapOperation.argument=current} operator=('map' | 'extract'))
+			|({MapOperation.argument=current} operator='extract')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
 ;

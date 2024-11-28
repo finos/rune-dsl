@@ -205,15 +205,15 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before > 5 
-						or ( foo -> baz -> other > 10 and foo -> bar -> after > 15 )
+					foo -> bar first -> before > 5 
+						or ( foo -> baz -> other > 10 and foo -> bar first -> after > 15 )
 						or foo -> baz -> bazValue > 20
 			
 			func FeatureCallGreatherThan:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before > foo -> bar2 -> before
+					foo -> bar first -> before > foo -> bar2 first -> before
 			
 			««« Aliases
 

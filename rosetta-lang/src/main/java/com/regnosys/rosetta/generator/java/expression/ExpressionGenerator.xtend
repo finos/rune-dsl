@@ -98,7 +98,6 @@ import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBasicType
@@ -149,7 +148,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	@Inject protected RosettaTypeProvider typeProvider
-	@Inject RosettaOperators operators
 	@Inject extension CardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaEcoreUtil
@@ -330,7 +328,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
 		val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
 		val joined = leftRtype.join(rightRtype).toJavaReferenceType
-		val resultType = operators.resultType(expr.operator, leftRtype, rightRtype).withEmptyMeta.toJavaReferenceType
+		val resultType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
 		val leftType = leftRtype.toJavaReferenceType
 		val rightType = rightRtype.toJavaReferenceType
 

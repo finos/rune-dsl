@@ -16,19 +16,15 @@
 
 package com.regnosys.rosetta.validation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
-import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
@@ -43,28 +39,23 @@ import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
-import com.regnosys.rosetta.types.TypeValidationUtil;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.typing.validation.RosettaTypingCheckingValidator;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
-public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValidator {
+// TODO: remove
+public class StandaloneRosettaTypingValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private TypeSystem ts;
 	
 	@Inject
 	private TypeFactory tf;
-	
-	@Inject
-	private TypeValidationUtil tu;
 	
 	@Inject
 	private RBuiltinTypeService builtins;
@@ -75,32 +66,19 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	@Inject
 	private RObjectFactory objectFactory;
 	
-	@Override
-	protected List<EPackage> getEPackages() {
-		List<EPackage> result = new ArrayList<EPackage>();
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaExpression"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaTranslate"));
-		return result;
-	}
-	
-	@Override
-	public void register(EValidatorRegistrar registrar) {
-	}
-	
 	/**
 	 * Xsemantics does not allow raising warnings. See https://github.com/eclipse/xsemantics/issues/149.
 	 */
 	@Check
 	public void checkOnlyElement(RosettaOnlyElement e) {
-		RListType t = ts.inferType(e.getArgument());
-		if (t != null) {
-			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);
-			if (!minimalConstraint.isSubconstraintOf(t.getConstraint())) {
-				warning(tu.notLooserConstraintMessage(minimalConstraint, t), e, ROSETTA_UNARY_OPERATION__ARGUMENT);
-			}
-		}
+		// TODO: restore
+//		RListType t = ts.inferType(e.getArgument());
+//		if (t != null) {
+//			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);
+//			if (!minimalConstraint.isSubconstraintOf(t.getConstraint())) {
+//				warning(tu.notLooserConstraintMessage(minimalConstraint, t), e, ROSETTA_UNARY_OPERATION__ARGUMENT);
+//			}
+//		}
 	}
 	
 	/**

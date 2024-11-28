@@ -1,57 +1,19 @@
 system com.regnosys.rosetta.typing.RosettaTyping extends RosettaTypingAuxiliary
 
-import com.regnosys.rosetta.rosetta.RosettaEnumValue
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction
-import com.regnosys.rosetta.rosetta.RosettaTypedFeature
-import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
-import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
-import com.regnosys.rosetta.rosetta.expression.EqualityOperation
-import com.regnosys.rosetta.rosetta.expression.ListLiteral
-import com.regnosys.rosetta.rosetta.expression.LogicalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaBooleanLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaCountOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.RListType
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.TypeFactory
-import com.regnosys.rosetta.types.TypeValidationUtil
 import com.regnosys.rosetta.utils.ExpressionHelper
 
-import com.regnosys.rosetta.rosetta.RosettaSymbol
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
-import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
-import com.regnosys.rosetta.rosetta.expression.OneOfOperation
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import java.util.Optional
-import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
-import com.regnosys.rosetta.types.builtin.RNumberType
-import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.interpreter.RosettaInterpreter
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext
 import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver
-import com.regnosys.rosetta.rosetta.expression.RosettaPatternLiteral
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.types.RTypeFunction
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
@@ -62,16 +24,13 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaBuiltinType
 import com.regnosys.rosetta.interpreter.RosettaValue
 import com.rosetta.util.DottedPath
-import com.regnosys.rosetta.rosetta.RosettaRule
-import java.math.BigInteger
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.rosetta.simple.Choice
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
 
 inject extension TypeFactory typeFactory
-inject extension TypeValidationUtil util
 inject extension ExpressionHelper exprHelper
 inject extension ImplicitVariableUtil implicitVarUtil
 inject extension RBuiltinTypeService builtinTypes
@@ -86,10 +45,6 @@ auxiliary {
 	comparable(RType t1, RType t2)
 	listComparable(RListType t1, RListType t2)
 	
-	symbolListType(RosettaSymbol c): RListType
-	functionalOperationItemType(RosettaFunctionalOperation op): RListType
-	typeOfImplicitVariable(EObject context): Optional<RListType>
-	
 	// The methods below could be moved to RosettaAuxiliary were it not for issue https://github.com/eclipse/xsemantics/issues/178
 	typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias): RTypeFunction cached
 	typeCallToRType(TypeCall rt, RosettaInterpreterContext context): RType
@@ -97,9 +52,6 @@ auxiliary {
 }
 
 judgments {
-	inferType |- RosettaExpression expression : output RListType cached
-		error "Cannot type " + stringRep(expression) + "."
-		source expression
 	subtype |- RType subtype <: RType supertype
 		error subtype + " is not a subtype of " + supertype
 	listSubtype |- RListType subtype <| RListType supertype
@@ -117,66 +69,6 @@ auxiliary comparable(RType t1, RType t2) {
 auxiliary listComparable(RListType t1, RListType t2) {
 	comparable(t1.itemType, t2.itemType)
 	overlap(t1.constraint, t2.constraint)
-}
-
-auxiliary symbolListType(Attribute c) {
-	return attributeListType(c)
-}
-
-auxiliary symbolListType(ClosureParameter c) {
-	val f = c.function
-	val op = f.eContainer as RosettaFunctionalOperation
-	return functionalOperationItemType(op)
-}
-
-auxiliary symbolListType(RosettaEnumeration c) {
-	return createListType(c.buildREnumType, single)
-}
-
-auxiliary symbolListType(ShortcutDeclaration c) {
-	empty |- c.expression : var RListType t
-	return t
-}
-
-auxiliary symbolListType(RosettaExternalFunction c) {
-	return createListType(typeCallToRType(c.typeCall, new RosettaInterpreterContext), 1, 1)
-}
-
-auxiliary symbolListType(Function c) {
-	return createListType(typeCallToRType(c.^output.typeCall, new RosettaInterpreterContext), c.^output.card)
-}
-
-auxiliary symbolListType(RosettaRule c) {
-	empty |- c.expression : var RListType t
-	return t
-}
-
-auxiliary functionalOperationItemType(RosettaFunctionalOperation op) {
-	var RListType receiverType
-	empty |- op.argument : receiverType or receiverType = null
-	if (receiverType !== null) {
-		if (op instanceof ThenOperation) {
-			return receiverType
-		} else {
-			return createListType(receiverType.itemType, single)
-		}
-	}
-	return null
-}
-
-auxiliary typeOfImplicitVariable(EObject c) {
-	val definingContainer = c.findContainerDefiningImplicitVariable
-	definingContainer.map [
-		if (it instanceof Data) {
-			createListType(it.buildRDataType, single)
-		} else if (it instanceof RosettaFunctionalOperation) {
-			functionalOperationItemType
-		} else if (it instanceof RosettaRule) {
-			input?.typeCallToRType(new RosettaInterpreterContext)?.createListType(single)
-		} else if (it instanceof SwitchCase) {
-			guard.choiceOptionGuard.symbolListType
-		}
-	]
 }
 
 auxiliary typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
@@ -253,11 +145,14 @@ auxiliary typeCallToRType(TypeCall call, RosettaInterpreterContext context) {
 			val refersTo = t.typeCall.typeCallToRType(RosettaInterpreterContext.of(args))
 			new RAliasType(t.typeFunctionOfTypeAlias, args, refersTo)
 		}
+		default: {
+			NOTHING
+		}
 	}
 }
 
 auxiliary attributeListType(Attribute a) {
-	return createListType(typeCallToRType(a.typeCall, new RosettaInterpreterContext), a.card)
+	return new RListType(typeCallToRType(a.typeCall, new RosettaInterpreterContext), a.card)
 }
 
 /*** SUBTYPING **/
@@ -274,191 +169,3 @@ from {
 	G |- s.itemType <: t.itemType
 	s.constraint.isSubconstraintOf(t.constraint)
 }
-
-/*** TYPING ***/
-axiom TBoolean
-	G |- RosettaBooleanLiteral bool : singleBoolean
-axiom TString
-	G |- RosettaStringLiteral str : singleString(str.value.length, str.value.length)
-axiom TNumber
-	G |- RosettaNumberLiteral num : singleNumber(num.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, num.value.scale), num.value, num.value)
-axiom TInt
-	G |- RosettaIntLiteral i : singleInt(if (i.value.signum >= 0) i.value.toString.length else i.value.toString.length - 1, i.value, i.value)
-axiom TPattern
-	G |- RosettaPatternLiteral p : singlePattern
-
-rule TVar // TA-Var, TA-Func
-	G |- RosettaSymbolReference ref : RListType t
-from {
-	t = ref.symbol.symbolListType
-	
-	val itType = ref.typeOfImplicitVariable
-	if (itType.isPresent) {
-		if (itType.get.itemType.allFeatures(ref.eResource?.resourceSet).contains(ref.symbol)) {
-			// Case implicit `item -> ...`
-			t = createListType(t.itemType, t.constraint * itType.get.constraint)
-		}
-	}
-}
-rule TIt
-	G |- RosettaImplicitVariable c : RListType t
-from {
-	t = c.typeOfImplicitVariable.orElse(null)
-}
-
-rule TArithmetic
-	G |- ArithmeticOperation op : RListType lt
-from {
-	// TODO: keep type aliases
-	G |- op.left : var RListType t1
-	G |- op.right : var RListType t2
-	if (t1 !== null && t2 !== null) {
-		val item1 = t1.itemType
-		val item2 = t2.itemType
-		if (op.operator == '+') {
-			if ({G |- item1 <: DATE}) {
-				lt = singleDateTime
-			} else if ({G |- item1 <: UNCONSTRAINED_STRING} && {G |- item2 <: UNCONSTRAINED_STRING}) {
-				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
-					val s1 = l as RStringType
-					val s2 = r as RStringType
-					val newInterval = s1.interval.add(s2.interval)
-					constrainedString(newInterval, Optional.^empty())
-				]), single)
-			} else if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
-				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
-					val n1 = l as RNumberType
-					val n2 = r as RNumberType
-					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
-					val newInterval = n1.interval.add(n2.interval)
-					constrainedNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
-				]), single)
-			}
-		} else if (op.operator == '-') {
-			if ({G |- item1 <: DATE} || {G |- item2 <: DATE}) {
-				lt = singleUnconstrainedInt
-			} else if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
-				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
-					val n1 = l as RNumberType
-					val n2 = r as RNumberType
-					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|Math.max(a,b)])
-					val newInterval = n1.interval.subtract(n2.interval)
-					constrainedNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
-				]), single)
-			}
-		} else if (op.operator == '*') {
-			if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
-				lt = createListType(keepTypeAliasIfPossible(item1, item2, [l, r|
-					val n1 = l as RNumberType
-					val n2 = r as RNumberType
-					val newFractionalDigits = OptionalUtil.zipWith(n1.fractionalDigits, n2.fractionalDigits, [a,b|a+b])
-					val newInterval = n1.interval.multiply(n2.interval)
-					constrainedNumber(Optional.^empty(), newFractionalDigits, newInterval, Optional.^empty())
-				]), single)
-			}
-		} else if (op.operator == '/') {
-			if ({G |- item1 <: UNCONSTRAINED_NUMBER} && {G |- item2 <: UNCONSTRAINED_NUMBER}) {
-				lt = singleUnconstrainedNumber
-			}
-		}
-	}
-}
-
-axiom TEquality
-	G |- EqualityOperation op : singleBoolean
-axiom TLogical
-	G |- LogicalOperation op : singleBoolean
-axiom TComparison
-	G |- ComparisonOperation op : singleBoolean
-
-rule TIf
-	G |- RosettaConditionalExpression e : RListType t
-from {
-	var RListType tthen
-	var RListType telse
-	empty |- e.ifthen : tthen or tthen = null
-	empty |- e.elsethen : telse or telse = null
-	if (tthen !== null && telse !== null) {
-		t = listJoin(tthen, telse)
-	}
-}
-
-rule TList
-	G |- ListLiteral e : RListType t
-from {
-	val telems = newArrayList
-	if (e.elements.forall[
-		var RListType telem
-		empty |- it : telem or telem = null
-		if (telem === null) {
-			false
-		} else {
-			telems.add(telem)
-			true
-		}
-	]) {
-		t = telems.fold(emptyNothing, [ RListType acc, RListType telem |
-			if (acc === null) {
-				null
-			} else {
-				val sup = join(telem.itemType, acc.itemType);
-				if ({G |- ANY <: sup}) {
-					null
-				} else {
-					createListType(sup, telem.constraint + acc.constraint)
-				}
-			}
-		])
-	}
-}
-
-rule TProject // TA-Project
-	G |- RosettaFeatureCall e : RListType t
-from { // TODO: support metadata feature calls?
-	G |- e.receiver : var RListType dt
-	if (dt !== null) {
-		val a = e.^feature
-		switch (a) {
-			Attribute: { // regular projections
-				val at = a.attributeListType
-				t = createListType(at.itemType, dt.constraint * at.constraint)
-			}
-			RosettaTypedFeature: { // projections on record types or of metadata properties
-				if (a.typeCall === null) {
-					fail error "Unsupported by the type system."
-				} else {
-					t = createListType(a.typeCall.typeCallToRType(new RosettaInterpreterContext), dt.constraint)
-				}
-			}
-			RosettaEnumValue: { // projections on enums
-				t = dt
-			}
-		}
-	}
-}
-
-axiom TExists // TA-Exists
-	G |- RosettaExistsExpression e : singleBoolean
-axiom TAbsent
-	G |- RosettaAbsentExpression e : singleBoolean
-axiom TOnlyExists // TA-OnlyExists
-	G |- RosettaOnlyExistsExpression e : singleBoolean
-axiom TCount // TA-Count
-	G |- RosettaCountOperation e : singleInt(Optional.^empty(), Optional.of(BigInteger.ZERO), Optional.^empty())
-rule TOnlyElement // TA-OnlyElement
-	G |- RosettaOnlyElement e : RListType t
-from {
-	G |- e.argument : var RListType targ
-	if (targ !== null) {
-		t = createListType(targ.itemType, 0, 1)
-	}
-}
-rule TAsKey
-	G |- AsKeyOperation e : RListType t
-from {
-	G |- e.argument : t
-}
-axiom TOneOf
-	G |- OneOfOperation e : singleBoolean
-axiom TChoice
-	G |- ChoiceOperation e : singleBoolean

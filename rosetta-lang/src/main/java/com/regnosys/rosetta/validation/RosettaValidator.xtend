@@ -10,7 +10,7 @@ import org.eclipse.xtext.validation.ComposedChecks
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-@ComposedChecks(validators = #[RosettaSimpleValidator, StandaloneRosettaTypingValidator, EnumValidator, ChoiceValidator])
+@ComposedChecks(validators = #[RosettaSimpleValidator, StandaloneRosettaTypingValidator, EnumValidator, ChoiceValidator, ExpressionValidator])
 class RosettaValidator extends AbstractRosettaValidator {
 
 	

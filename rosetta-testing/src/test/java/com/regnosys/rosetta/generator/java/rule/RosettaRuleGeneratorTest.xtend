@@ -5,7 +5,6 @@ import com.google.inject.Injector
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.validation.RosettaIssueCodes
 import java.util.Map
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -1131,8 +1130,8 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 		.replace('\r', "")
 		.parseRosetta
-			.assertError(ROSETTA_SYMBOL_REFERENCE, RosettaIssueCodes.TYPE_ERROR,
-			"Expected type 'Foo' but was 'Bar'")
+			.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+			"Expected type `Foo`, but got `Bar` instead")
 		
 	}
 

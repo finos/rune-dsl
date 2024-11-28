@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 
+// TODO: remove
 public class RListType {
 	private final RType itemType;
 	private final RosettaCardinality constraint;

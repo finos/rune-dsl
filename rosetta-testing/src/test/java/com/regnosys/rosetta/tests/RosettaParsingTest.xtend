@@ -185,7 +185,7 @@ class RosettaParsingTest {
 	def void testDefaultIncompatibleTypesReturnsError() {
 		"a default 2"
 			.parseExpression(#["a string (1..1)"])
-			.assertError(DEFAULT_OPERATION, null, "Incompatible types: cannot use operator 'default' with string and int.")
+			.assertError(DEFAULT_OPERATION, null, "Types `string` and `int` do not have a common supertype")
 	}
 	
 	@Test
@@ -193,13 +193,6 @@ class RosettaParsingTest {
 		"a default b"
 			.parseExpression(#["a string (1..*)", "b string (1..*)"])
 			.assertNoIssues
-	}
-	
-	@Test
-	def void testDefaultIncompatibleCardinalityReturnsError() {
-		"a default b"
-			.parseExpression(#["a string (1..1)", "b string (1..*)"])
-			.assertError(DEFAULT_OPERATION, null, "Cardinality mismatch - default operator requires both sides to have matching cardinality")	
 	}
 	
 	@Test

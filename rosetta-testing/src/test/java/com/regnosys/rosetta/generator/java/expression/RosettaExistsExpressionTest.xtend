@@ -76,94 +76,94 @@ class RosettaExistsExpressionTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before only exists
+					foo -> bar first then before only exists
 			
 			func OnlyExistsMultiplePaths:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> after ) only exists
+					foo -> bar first then ( before, after ) only exists
 
 			func OnlyExistsPathWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> afterWithScheme ) only exists
+					foo -> bar first then ( before, afterWithScheme ) only exists
 			
 			func OnlyExistsBothPathsWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> beforeWithScheme, foo -> bar -> afterWithScheme ) only exists
+					foo -> bar first then ( beforeWithScheme, afterWithScheme ) only exists
 
 			func OnlyExistsListMultiplePaths:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> afterList ) only exists
+					foo -> bar first then ( before, afterList ) only exists
 
 			func OnlyExistsListPathWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> afterListWithScheme ) only exists
+					foo -> bar first then ( before, afterListWithScheme ) only exists
 			
 			func OnlyExistsListBothPathsWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> beforeListWithScheme, foo -> bar -> afterListWithScheme ) only exists
+					foo -> bar first then ( beforeListWithScheme, afterListWithScheme ) only exists
 
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleSeparateOr_NoAliases_Exists:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					foo -> bar -> before exists or foo -> bar -> after exists
 
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleOr_NoAliases_Exists:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					foo -> bar -> before exists or foo -> bar -> after exists or foo -> baz -> other exists
 			
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleOrBranchNode_NoAliases_Exists:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					foo -> bar exists or foo -> baz exists
 			
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleAnd_NoAliases_Exists:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					foo -> bar -> before exists and foo -> bar -> after exists and foo -> baz -> other exists
 			
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleOrAnd_NoAliases_Exists:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					foo -> bar -> before exists or ( foo -> bar -> after exists and foo -> baz -> other exists )
 			
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleOrAnd_NoAliases_Exists2:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					(foo -> bar -> before exists and foo -> bar -> after exists) or foo -> baz -> other exists or foo -> baz -> bazValue exists
 			
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleOrAnd_NoAliases_Exists3:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
 					(foo -> bar -> before exists or foo -> bar -> after exists) or (foo -> baz -> other exists and foo -> baz -> bazValue exists)
 			
-«««			TODO tests compilation only, add unit test
+««««««			TODO tests compilation only, add unit test
 			func MultipleExistsWithOrAnd:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)

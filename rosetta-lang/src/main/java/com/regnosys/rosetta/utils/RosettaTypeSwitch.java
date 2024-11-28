@@ -20,7 +20,6 @@ import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RParametrizedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBasicType;
@@ -51,8 +50,6 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 			return caseChoiceType((RChoiceType)type, context);
 		} else if (type instanceof REnumType) {
 			return caseEnumType((REnumType)type, context);
-		} else if (type instanceof RErrorType) {
-			return caseErrorType((RErrorType)type, context);
 		} else if (type instanceof RParametrizedType) {
 			return doSwitch((RParametrizedType)type, context);
 		} else if (type instanceof RRecordType) {
@@ -78,8 +75,6 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 			return caseBooleanType(type, context);
 		} else if (type.equals(builtins.TIME)) {
 			return caseTimeType(type, context);
-		} else if (type.equals(builtins.MISSING)) {
-			return caseMissingType(type, context);
 		} else if (type.equals(builtins.NOTHING)) {
 			return caseNothingType(type, context);
 		} else if (type.equals(builtins.ANY)) {
@@ -97,9 +92,7 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 		}
 		throw errorMissedCase(type);
 	}
-	
-	protected abstract Return caseErrorType(RErrorType type, Context context);
-	
+		
 	protected abstract Return caseDataType(RDataType type, Context context);
 	protected abstract Return caseChoiceType(RChoiceType type, Context context);
 	protected abstract Return caseEnumType(REnumType type, Context context);
@@ -110,7 +103,6 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 	protected abstract Return caseStringType(RStringType type, Context context);
 	protected abstract Return caseBooleanType(RBasicType type, Context context);
 	protected abstract Return caseTimeType(RBasicType type, Context context);
-	protected abstract Return caseMissingType(RBasicType type, Context context);
 	protected abstract Return caseNothingType(RBasicType type, Context context);
 	protected abstract Return caseAnyType(RBasicType type, Context context);
 	

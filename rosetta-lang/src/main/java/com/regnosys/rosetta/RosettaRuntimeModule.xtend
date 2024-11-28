@@ -40,7 +40,6 @@ import org.eclipse.xtext.parsetree.reconstr.ITransientValueService
 import com.regnosys.rosetta.resource.RosettaResource
 import com.regnosys.rosetta.typing.RosettaTyping
 import com.regnosys.rosetta.typing.RosettaTypingAuxiliary
-import com.regnosys.rosetta.typing.RosettaTypingChecking
 import org.eclipse.xtext.validation.IResourceValidator
 import com.regnosys.rosetta.validation.CachingResourceValidator
 import com.regnosys.rosetta.config.RosettaConfiguration
@@ -60,7 +59,6 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		// since they will only be instantiated once.
 		binder.bind(RosettaTyping).asEagerSingleton
 		binder.bind(RosettaTypingAuxiliary).asEagerSingleton
-		binder.bind(RosettaTypingChecking).asEagerSingleton
 	}
 	
 	override Class<? extends IFragmentProvider> bindIFragmentProvider() {
