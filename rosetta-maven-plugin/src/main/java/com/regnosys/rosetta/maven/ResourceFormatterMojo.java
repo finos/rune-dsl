@@ -128,14 +128,14 @@ public class ResourceFormatterMojo extends AbstractMojo {
 				});
 	}
 
-	private FormattingOptions readFormattingOptions(String options) throws IOException {
+	public static FormattingOptions readFormattingOptions(String optionsPath) throws IOException, MojoFailureException {
 		InputStream resourceStream;
 		// If path not given, use default one
-		if (options == null) {
+		if (optionsPath == null) {
 			// Retrieve resource as an InputStream
 			resourceStream = ResourceLoader.class.getClassLoader().getResourceAsStream(DEFAULT_FORMATTING_OPTIONS_PATH);
 		} else {
-			resourceStream = new FileInputStream(options);
+			resourceStream = new FileInputStream(optionsPath);
 		}
 
 		// Create an ObjectMapper, read JSON into a Map
@@ -144,8 +144,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 		try {
 			map = objectMapper.readValue(resourceStream, Map.class);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new MojoFailureException("Error processing formatting options: " + e.getMessage(), e);
 		}
 
 		// Create a FormattingOptions object
@@ -169,7 +168,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 		return formattingOptions;
 	}
 
-	private ITypedPreferenceValues createPreferences(FormattingOptions options) {
+	public static ITypedPreferenceValues createPreferences(FormattingOptions options) {
 		MapBasedPreferenceValues preferences = new MapBasedPreferenceValues();
 
 		String indent = "\t";

@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.formatting2;
 
 import java.util.Collection;
-import java.util.function.BiConsumer;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
@@ -29,13 +28,11 @@ public interface ResourceFormatterService {
 	 * 
 	 * @param resources a collection of {@link XtextResource} objects to be
 	 *                  formatted
-	 * @param handler   a {@link java.util.function.BiConsumer} that processes each
-	 *                  formatted resource. The first argument is the
-	 *                  {@link Resource}, and the second is the formatted content as
-	 *                  a {@link String}.
+	 * @param acceptor  an {@link IFormattedResourceAcceptor} to process the
+	 *                  formatted resource and its content
 	 */
-	default void formatCollection(Collection<Resource> resources, BiConsumer<Resource, String> handler) {
-		formatCollection(resources, null, handler);
+	default void formatCollection(Collection<Resource> resources, IFormattedResourceAcceptor acceptor) {
+		formatCollection(resources, null, acceptor);
 	}
 
 	/**
@@ -56,13 +53,11 @@ public interface ResourceFormatterService {
 	 * </p>
 	 * 
 	 * @param resources the {@link XtextResource} to format
-	 * @param handler   a {@link java.util.function.BiConsumer} that processes each
-	 *                  formatted resource. The first argument is the
-	 *                  {@link Resource}, and the second is the formatted content as
-	 *                  a {@link String}.
+	 * @param acceptor  an {@link IFormattedResourceAcceptor} to process the
+	 *                  formatted resource and its content
 	 */
-	default void formatXtextResource(XtextResource resource, BiConsumer<Resource, String> handler) {
-		formatXtextResource(resource, null, handler);
+	default void formatXtextResource(XtextResource resource, IFormattedResourceAcceptor acceptor) {
+		formatXtextResource(resource, null, acceptor);
 	}
 
 	/**
@@ -94,13 +89,11 @@ public interface ResourceFormatterService {
 	 * @param preferenceValues an {@link ITypedPreferenceValues} object containing
 	 *                         formatting preferences, or {@code null} if no
 	 *                         preferences are specified
-	 * @param handler          a {@link java.util.function.BiConsumer} that
-	 *                         processes each formatted resource. The first argument
-	 *                         is the {@link Resource}, and the second is the
-	 *                         formatted content as a {@link String}.
+	 * @param acceptor         an {@link IFormattedResourceAcceptor} to process the
+	 *                         formatted resource and its content
 	 */
 	void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
-			BiConsumer<Resource, String> handler);
+			IFormattedResourceAcceptor acceptor);
 
 	/**
 	 * Formats the given {@link XtextResource} in-memory, applying specified
@@ -129,11 +122,9 @@ public interface ResourceFormatterService {
 	 * @param preferenceValues an {@link ITypedPreferenceValues} object containing
 	 *                         formatting preferences, or {@code null} if no
 	 *                         preferences are specified
-	 * @param handler          a {@link java.util.function.BiConsumer} that
-	 *                         processes each formatted resource. The first argument
-	 *                         is the {@link Resource}, and the second is the
-	 *                         formatted content as a {@link String}.
+	 * @param acceptor         an {@link IFormattedResourceAcceptor} to process the
+	 *                         formatted resource and its content
 	 */
 	void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
-			BiConsumer<Resource, String> handler);
+			IFormattedResourceAcceptor acceptor);
 }

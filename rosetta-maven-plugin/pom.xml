@@ -60,14 +60,8 @@
 			<artifactId>xtext-maven-plugin</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta.ide</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta.lib</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
 		</dependency>
 	</dependencies>
 	<build>

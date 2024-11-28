@@ -3,7 +3,6 @@ package com.regnosys.rosetta.formatting2;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.formatting2.FormatterRequest;
@@ -33,10 +32,10 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 
 	@Override
 	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
-			BiConsumer<Resource, String> handler) {
+			IFormattedResourceAcceptor acceptor) {
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
-				formatXtextResource((XtextResource) resource, preferenceValues, handler);
+				formatXtextResource((XtextResource) resource, preferenceValues, acceptor);
 
 			} else {
 				LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
@@ -46,7 +45,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 
 	@Override
 	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
-			BiConsumer<Resource, String> handler) {
+			IFormattedResourceAcceptor acceptor) {
 		LOGGER.info("Formatting file at location " + resource.getURI());
 
 		// setup request and formatter
@@ -57,7 +56,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		ITextRegionAccess regionAccess = null;
 		try {
 			regionAccess = regionBuilder.forNodeModel(resource).create();
-		} catch (Exception e) {
+		} catch (IndexOutOfBoundsException e) {
 			LOGGER.info("Resource " + resource.getURI() + " is empty.", e);
 			return;
 		}
@@ -65,11 +64,12 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		req.setTextRegionAccess(regionAccess);
 
 		// list contains all the replacements which should be applied to resource
-		List<ITextReplacement> replacements = new ArrayList<>();
+		List<ITextReplacement> replacements;
 		try {
 			replacements = formatter.format(req); // throws exception
 		} catch (RuntimeException e) {
 			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage(), e);
+			replacements = new ArrayList<>();
 		}
 
 		// formatting using TextRegionRewriter
@@ -77,7 +77,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
 		// Perform handler operation
-		handler.accept(resource, formattedString);
+		acceptor.accept(resource, formattedString);
 	}
 
 }
