@@ -31,8 +31,6 @@ public class ResourceFormatterServiceTest {
 	ResourceFormatterService formatterService;
 	@Inject
 	Provider<ResourceSet> resourceSetProvider;
-	@Inject
-	ISerializer serializer;
 
 	private void testFormatting(Collection<String> inputUrls, Collection<String> expectedUrls)
 			throws IOException, URISyntaxException {

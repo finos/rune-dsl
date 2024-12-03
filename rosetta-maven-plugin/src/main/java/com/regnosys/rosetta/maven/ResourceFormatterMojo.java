@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
-import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
 
@@ -101,10 +100,6 @@ public class ResourceFormatterMojo extends AbstractMojo {
 		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
 		ResourceSet resourceSet = inj.getInstance(ResourceSet.class);
 		ResourceFormatterService formatterService = inj.getInstance(ResourceFormatterService.class);
-
-		RosettaBuiltinsService builtins = inj.getInstance(RosettaBuiltinsService.class);
-		resourceSet.getResource(builtins.basicTypesURI, true);
-		resourceSet.getResource(builtins.annotationsURI, true);
 
 		List<Resource> resources;
 		try {
