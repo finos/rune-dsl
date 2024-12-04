@@ -31,6 +31,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -114,15 +115,19 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(RosettaConstructorExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
-				
+			
+		val innermostConstructorChild = findInnermostConstructorChild(expr) as RosettaConstructorExpression
 		interior(
 			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
 				.prepend[oneSpace]
 				.append[newLine],
-			expr.regionFor.keyword(rightCurlyBracketKeyword_4)
-				.prepend[newLine],
+			innermostConstructorChild.regionFor.keyword(rightCurlyBracketKeyword_4)
+				.prepend[if (hasLastChildConstructor(expr)) noSpace else newLine],
 			[indent]
 		)
+		
+		expr.regionFor.keyword(rightCurlyBracketKeyword_4)
+			.prepend[if (hasLastChildConstructor(expr)) noSpace else newLine]		
 		
 		expr.regionFor.keywords(',').forEach[
 			prepend[noSpace]
@@ -130,12 +135,25 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		]
 		
 		expr.values.forEach[
-			indentInner(document)
-			regionFor.keyword(':').
-				prepend[noSpace]
+			regionFor.keyword(':')
+				.prepend[noSpace]
 				.append[oneSpace]
 			value.formatExpression(document, mode)
 		]
+	}
+	
+	private def findInnermostConstructorChild(RosettaConstructorExpression expr) {
+		if (hasLastChildConstructor(expr)) {
+			val lastChild = expr.values.last
+			findInnermostConstructorChild(lastChild.value as RosettaConstructorExpression)
+		} else {
+			expr
+		}
+	}
+	
+	private def hasLastChildConstructor(RosettaConstructorExpression expr) {
+		val lastChild = expr.values.last
+		!expr.implicitEmpty && lastChild instanceof ConstructorKeyValuePair && lastChild.value instanceof RosettaConstructorExpression
 	}
 	
 	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {

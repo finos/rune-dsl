@@ -46,6 +46,11 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	@Override
 	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
 			IFormattedResourceAcceptor acceptor) {
+		if (!resource.getAllContents().hasNext()) {
+			LOGGER.info("Resource " + resource.getURI() + " is empty.");
+			return;
+		}
+
 		LOGGER.info("Formatting file at location " + resource.getURI());
 
 		// setup request and formatter
@@ -53,14 +58,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		req.setPreferences(preferenceValues);
 		IFormatter2 formatter = iFormatter2Provider.get();
 
-		ITextRegionAccess regionAccess = null;
-		try {
-			regionAccess = regionBuilder.forNodeModel(resource).create();
-		} catch (IndexOutOfBoundsException e) {
-			LOGGER.info("Resource " + resource.getURI() + " is empty.", e);
-			return;
-		}
-
+		ITextRegionAccess regionAccess = regionBuilder.forNodeModel(resource).create();
 		req.setTextRegionAccess(regionAccess);
 
 		// list contains all the replacements which should be applied to resource

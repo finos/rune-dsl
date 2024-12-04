@@ -69,5 +69,11 @@ public class ResourceFormatterServiceTest {
 				List.of("formatting-test/expected/typeAlias.rosetta",
 						"formatting-test/expected/typeAliasWithDocumentation.rosetta"));
 	}
+	
+	@Test
+	void formatNestedConstructor() throws IOException, URISyntaxException {
+		testFormatting(List.of("formatting-test/input/nestedConstructor.rosetta"),
+				List.of("formatting-test/expected/nestedConstructor.rosetta"));
+	}
 
 }
