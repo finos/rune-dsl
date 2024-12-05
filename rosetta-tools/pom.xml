@@ -72,11 +72,6 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>rosetta-maven-plugin</artifactId>
-			<version>0.0.0.main-SNAPSHOT</version>
-		</dependency>
 
 		<!-- External dependencies -->
 		<dependency>

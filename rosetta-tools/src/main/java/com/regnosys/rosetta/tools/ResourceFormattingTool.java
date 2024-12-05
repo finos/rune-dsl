@@ -7,7 +7,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.maven.plugin.MojoFailureException;
+import javax.inject.Inject;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -17,8 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
+import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
-import com.regnosys.rosetta.maven.ResourceFormatterMojo;
 
 /**
  * A command-line tool for formatting `.rosetta` files in a specified directory.
@@ -38,6 +39,9 @@ import com.regnosys.rosetta.maven.ResourceFormatterMojo;
  * </p>
  */
 public class ResourceFormattingTool {		
+	@Inject
+	private static FormattingOptionsAdaptor formattingOptionsAdapter;
+	
 	private static Logger LOGGER = LoggerFactory.getLogger(ResourceFormattingTool.class);
 	
 	public static void main(String[] args) {
@@ -61,13 +65,10 @@ public class ResourceFormattingTool {
         if(args.length > 1) {
         	String formattingOptionsPath = args[1];
         	try {
-    			formattingOptions = ResourceFormatterMojo.readFormattingOptions(formattingOptionsPath);
+    			formattingOptions = formattingOptionsAdapter.readFormattingOptions(formattingOptionsPath);
     		} catch (IOException e) {
     			LOGGER.error("Config file not found.", e);
-    		} catch (MojoFailureException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+    		}
         }
         
         Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -86,7 +87,7 @@ public class ResourceFormattingTool {
             LOGGER.error("Error processing files: " + e.getMessage());
         }
 		
-		formatterService.formatCollection(resources, ResourceFormatterMojo.createPreferences(formattingOptions),
+		formatterService.formatCollection(resources, formattingOptionsAdapter.createPreferences(formattingOptions),
 				(resource, formattedText) -> {
 					Path resourcePath = Path.of(resource.getURI().toFileString());
 					try {
