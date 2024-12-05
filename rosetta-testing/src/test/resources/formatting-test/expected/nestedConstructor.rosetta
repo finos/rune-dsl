@@ -1,0 +1,11 @@
+namespace test
+
+func MyOtherFunc:
+	output:
+		result Foo (1..1)
+
+	set result:
+		Foo {
+			bar: Bar {
+				attr: "bar attr"
+		}}

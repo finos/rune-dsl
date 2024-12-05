@@ -244,6 +244,7 @@ class JoinOperation extends RosettaBinaryOperation {
 
 class RosettaOnlyExistsExpression extends RosettaExpression {
 	contains RosettaExpression[] args
+	boolean hasParentheses
 }
 
 /**

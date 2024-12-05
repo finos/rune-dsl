@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.google.common.io.Resources;
 import com.regnosys.rosetta.tests.RosettaInjectorProvider;
@@ -32,14 +31,13 @@ public class ResourceFormatterServiceTest {
 	ResourceFormatterService formatterService;
 	@Inject
 	Provider<ResourceSet> resourceSetProvider;
-	@Inject
-	ISerializer serializer;
 
 	private void testFormatting(Collection<String> inputUrls, Collection<String> expectedUrls)
 			throws IOException, URISyntaxException {
 		ResourceSet resourceSet = resourceSetProvider.get();
 		List<Resource> resources = new ArrayList<>();
-		List<String> expected = new ArrayList<>();
+		List<String> formattedText = new ArrayList<>();
+		List<String> expectedText = new ArrayList<>();
 
 		for (String url : inputUrls) {
 			Resource resource = resourceSet.getResource(URI.createURI(Resources.getResource(url).toString()), true);
@@ -47,15 +45,14 @@ public class ResourceFormatterServiceTest {
 		}
 
 		for (String url : expectedUrls) {
-			expected.add(Files.readString(Path.of(Resources.getResource(url).toURI())));
+			expectedText.add(Files.readString(Path.of(Resources.getResource(url).toURI())));
 		}
 
-		formatterService.formatCollection(resources);
+		formatterService.formatCollection(resources, (resource, formattedContent) -> {
+			formattedText.add(formattedContent); // Collect formatted content for assertions
+		});
 
-		List<String> result = resources.stream().map(resource -> serializer.serialize(resource.getContents().get(0)))
-				.collect(Collectors.toList());
-
-		Assertions.assertIterableEquals(expected, result);
+		Assertions.assertIterableEquals(expectedText, formattedText);
 	}
 
 	@Test
@@ -72,4 +69,11 @@ public class ResourceFormatterServiceTest {
 				List.of("formatting-test/expected/typeAlias.rosetta",
 						"formatting-test/expected/typeAliasWithDocumentation.rosetta"));
 	}
+	
+	@Test
+	void formatNestedConstructor() throws IOException, URISyntaxException {
+		testFormatting(List.of("formatting-test/input/nestedConstructor.rosetta"),
+				List.of("formatting-test/expected/nestedConstructor.rosetta"));
+	}
+
 }
