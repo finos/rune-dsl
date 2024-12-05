@@ -97,6 +97,49 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testConstructorFormat3() {
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: Foo {
+				bar: True
+			},
+		}
+		''' ->
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: Foo {
+				bar: True
+		},}
+		'''
+	}
+	
+	@Test
+	def void testConstructorNestedWithBooleanFormat() {
+		'''
+		Constr1 {
+            attr1: if True
+            then False,
+            attr2: if False
+            then Constr2 {
+                    attr11: Constr3 {
+                        attr111: 42
+                	}}
+        }
+		''' ->
+		'''
+		Constr1 {
+			attr1: if True then False,
+			attr2: if False
+				then Constr2 {
+					attr11: Constr3 {
+						attr111: 42
+		}}}
+		'''
+	}
+	
+	@Test
 	def void testOperationChainingFormat1() {
 		'''
 		input

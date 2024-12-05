@@ -32,6 +32,7 @@ import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -116,25 +117,42 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	private def dispatch void unsafeFormatExpression(RosettaConstructorExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
 			
-		val innermostConstructorChild = findInnermostConstructorChild(expr) as RosettaConstructorExpression
+		val innermostClosingCurlyBracket = findInnermostClosingCurlyBracket(
+			expr.regionFor.keyword(rightCurlyBracketKeyword_4)) as ISemanticRegion
+			
 		interior(
 			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
 				.prepend[oneSpace]
 				.append[newLine],
-			innermostConstructorChild.regionFor.keyword(rightCurlyBracketKeyword_4)
-				.prepend[if (hasLastChildConstructor(expr)) noSpace else newLine],
+			innermostClosingCurlyBracket,
 			[indent]
 		)
 		
-		expr.regionFor.keyword(rightCurlyBracketKeyword_4)
-			.prepend[if (hasLastChildConstructor(expr)) noSpace else newLine]		
+		val rightCurlyBracketRegion = expr.regionFor.keyword(rightCurlyBracketKeyword_4)
+		rightCurlyBracketRegion.prepend [
+			if(rightCurlyBracketRegion.comesAfter("}") // case '}}'
+			|| (rightCurlyBracketRegion.comesAfter(",") &&
+				rightCurlyBracketRegion.previousSemanticRegion.comesAfter("}")) // case '},}'
+			) noSpace else newLine
+		]	
 		
-		expr.regionFor.keywords(',').forEach[
-			prepend[noSpace]
-			append[newLine]
+		expr.regionFor.keywords(',').forEach [ valueExpr |
+			valueExpr.prepend[noSpace]
+			if (valueExpr.nextSemanticRegion.text == "}") {
+				valueExpr.append[noSpace]
+			} else {
+				valueExpr.append[newLine]
+			}
 		]
 		
 		expr.values.forEach[
+			if (expr.eContainer instanceof RosettaConditionalExpression &&
+				!(value instanceof RosettaConstructorExpression)) {
+				surround(
+					it,
+					[indent]
+				)
+			}
 			regionFor.keyword(':')
 				.prepend[noSpace]
 				.append[oneSpace]
@@ -142,18 +160,25 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		]
 	}
 	
-	private def findInnermostConstructorChild(RosettaConstructorExpression expr) {
-		if (hasLastChildConstructor(expr)) {
-			val lastChild = expr.values.last
-			findInnermostConstructorChild(lastChild.value as RosettaConstructorExpression)
-		} else {
-			expr
-		}
+	def comesAfter(ISemanticRegion region, String el) {
+		val prevRegionElement = region.previousSemanticRegion.text
+
+		prevRegionElement == el
 	}
 	
-	private def hasLastChildConstructor(RosettaConstructorExpression expr) {
-		val lastChild = expr.values.last
-		!expr.implicitEmpty && lastChild instanceof ConstructorKeyValuePair && lastChild.value instanceof RosettaConstructorExpression
+	private def findInnermostClosingCurlyBracket(ISemanticRegion region) {
+		if (region.comesAfter("}")) // case '}}'
+		{
+			val prevRegion = region.previousSemanticRegion
+			findInnermostClosingCurlyBracket(prevRegion)
+		} else if (region.comesAfter(",") && region.previousSemanticRegion.comesAfter("}")) // case '},}')
+		{
+			val prevRegion = region.previousSemanticRegion.previousSemanticRegion
+			findInnermostClosingCurlyBracket(prevRegion)
+
+		} else {
+			region
+		}
 	}
 	
 	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -192,13 +217,30 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(RosettaConditionalExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension conditionalGrammarAccess = rosettaCalcConditionalExpressionAccess
+		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
+		
+		// fix edge case where 'then' inside constructor value is not indented correctly
+		if (expr.eContainer instanceof ConstructorKeyValuePair) {
+			surround(
+				expr.regionFor.keyword(thenKeyword_3),
+				[indent]
+			)
+		}
 		
 		expr.regionFor.keywords(ifKeyword_1, thenKeyword_3, fullElseKeyword_5_0_0).forEach[
 			append[oneSpace]
 		]
 		val subExprs = #[expr.^if, expr.ifthen, expr.elsethen]
-		#[expr.^if, expr.ifthen].forEach[
-			if (!(it instanceof RosettaUnaryOperation)) {
+		#[expr.^if, expr.ifthen].forEach [
+			if (it instanceof RosettaConstructorExpression) {
+				val innermostClosingCurlyBracket = findInnermostClosingCurlyBracket(
+					it.regionFor.keyword(rightCurlyBracketKeyword_4)) as ISemanticRegion
+				interior(
+					it.regionFor.keyword(leftCurlyBracketKeyword_2),
+					innermostClosingCurlyBracket,
+					[indent]
+				)
+			} else if (!(it instanceof RosettaUnaryOperation)) {
 				surround(
 					it,
 					[indent]
