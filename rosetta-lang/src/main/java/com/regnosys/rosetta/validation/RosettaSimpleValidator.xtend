@@ -997,7 +997,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 					binOp, ROSETTA_OPERATION__OPERATOR)
 			}
 		} else if (binOp.cardMod !== CardinalityModifier.NONE) {
-			warning('''«binOp.cardMod» is only aplicable when the sides have differing cardinality''', binOp,
+			warning('''«binOp.cardMod» is only applicable when the sides have differing cardinality''', binOp,
 				ROSETTA_OPERATION__OPERATOR)
 		}
 	}
