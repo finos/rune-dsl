@@ -75,7 +75,7 @@ public class RObjectFactory {
 	
 	// TODO: should be private
 	public RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withEmptyMeta(type);
+		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withNoMeta(type);
 		return new RAttribute(name, null, Collections.emptyList(), rAnnotatedType, isMulti ? PositiveIntegerInterval.boundedLeft(0) : PositiveIntegerInterval.bounded(0, 1), null, null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		

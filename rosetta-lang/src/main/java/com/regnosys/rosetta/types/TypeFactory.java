@@ -40,13 +40,13 @@ public class TypeFactory {
 	}
 	
 	public RMetaAnnotatedType intWithNoMeta(Optional<Integer> digits, Optional<BigInteger> min, Optional<BigInteger> max) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedInt(digits, min, max));
+		return RMetaAnnotatedType.withNoMeta(constrainedInt(digits, min, max));
 	}
 	public RMetaAnnotatedType intWithNoMeta(int digits, BigInteger min, BigInteger max) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedInt(digits, min, max));
+		return RMetaAnnotatedType.withNoMeta(constrainedInt(digits, min, max));
 	}
 	public RMetaAnnotatedType intWithNoMeta(int digits, String min, String max) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedInt(digits, min, max));
+		return RMetaAnnotatedType.withNoMeta(constrainedInt(digits, min, max));
 	}
 	public RAliasType constrainedInt(Optional<Integer> digits, Optional<BigInteger> min, Optional<BigInteger> max) {
 		RNumberType refersTo = constrainedNumber(digits, Optional.of(0), min.map(BigDecimal::new), max.map(BigDecimal::new), Optional.empty());
@@ -64,17 +64,17 @@ public class TypeFactory {
 	
 	public RMetaAnnotatedType numberWithNoMeta(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			Optional<BigDecimal> min, Optional<BigDecimal> max, Optional<BigDecimal> scale) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedNumber(digits, fractionalDigits, min, max, scale));
+		return RMetaAnnotatedType.withNoMeta(constrainedNumber(digits, fractionalDigits, min, max, scale));
 	}
 	public RMetaAnnotatedType numberWithNoMeta(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			BigDecimalInterval interval, Optional<BigDecimal> scale) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedNumber(digits, fractionalDigits, interval, scale));
+		return RMetaAnnotatedType.withNoMeta(constrainedNumber(digits, fractionalDigits, interval, scale));
 	}
 	public RMetaAnnotatedType numberWithNoMeta(int digits, int fractionalDigits, BigDecimal min, BigDecimal max) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedNumber(digits, fractionalDigits, min, max));
+		return RMetaAnnotatedType.withNoMeta(constrainedNumber(digits, fractionalDigits, min, max));
 	}
 	public RMetaAnnotatedType numberWithNoMeta(int digits, int fractionalDigits, String min, String max) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedNumber(digits, fractionalDigits, min, max));
+		return RMetaAnnotatedType.withNoMeta(constrainedNumber(digits, fractionalDigits, min, max));
 	}
 	public RNumberType constrainedNumber(Optional<Integer> digits, Optional<Integer> fractionalDigits, 
 			Optional<BigDecimal> min, Optional<BigDecimal> max, Optional<BigDecimal> scale) {
@@ -92,13 +92,13 @@ public class TypeFactory {
 	}
 	
 	public RMetaAnnotatedType stringWithNoMeta(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedString(minLength, maxLength, pattern));
+		return RMetaAnnotatedType.withNoMeta(constrainedString(minLength, maxLength, pattern));
 	}
 	public RMetaAnnotatedType stringWithNoMeta(PositiveIntegerInterval interval, Optional<Pattern> pattern) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedString(interval, pattern));
+		return RMetaAnnotatedType.withNoMeta(constrainedString(interval, pattern));
 	}
 	public RMetaAnnotatedType stringWithNoMeta(int minLength, int maxLength) {
-		return RMetaAnnotatedType.withEmptyMeta(constrainedString(minLength, maxLength));
+		return RMetaAnnotatedType.withNoMeta(constrainedString(minLength, maxLength));
 	}
 	public RStringType constrainedString(Optional<Integer> minLength, Optional<Integer> maxLength, Optional<Pattern> pattern) {
 		return new RStringType(minLength, maxLength, pattern);

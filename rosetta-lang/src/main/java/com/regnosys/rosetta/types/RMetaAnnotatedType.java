@@ -14,8 +14,8 @@ public class RMetaAnnotatedType {
 		this.rType = rType;
 		this.metaAttributes = Validate.noNullElements(metaAttributes);
 	}
-	// TODO: Rename to withNoMeta
-	public static RMetaAnnotatedType withEmptyMeta(RType rType) {
+
+	public static RMetaAnnotatedType withNoMeta(RType rType) {
 		return new RMetaAnnotatedType(rType, List.of());
 	}
 	

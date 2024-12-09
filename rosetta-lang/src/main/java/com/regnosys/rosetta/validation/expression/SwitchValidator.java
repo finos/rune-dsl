@@ -79,7 +79,7 @@ public class SwitchValidator extends ExpressionValidator {
 		// - there are no duplicate cases,
 		// - all guards should be comparable to the input.
 		Set<RosettaValue> seenValues = new HashSet<>();
-		RMetaAnnotatedType argumentTypeWithoutMeta = RMetaAnnotatedType.withEmptyMeta(argumentType);
+		RMetaAnnotatedType argumentTypeWithoutMeta = RMetaAnnotatedType.withNoMeta(argumentType);
  		for (SwitchCase caseStatement : op.getCases()) {
  			RosettaLiteral guard = caseStatement.getGuard().getLiteralGuard();
  			if (guard == null) {

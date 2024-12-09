@@ -111,6 +111,12 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		return true;
 	}
 	
+	protected boolean commonTypeCheck(RosettaExpression expr1, RosettaExpression expr2, EObject sourceObject, EStructuralFeature feature) {
+		if (expr1 == null || expr2 == null) {
+			return true;
+		}
+		return commonTypeCheck(List.of(expr1, expr2), sourceObject, feature);
+	}
 	protected boolean commonTypeCheck(List<RosettaExpression> expressions, EObject sourceObject, EStructuralFeature feature) {
 		boolean haveCommonType = true;
 		if (!expressions.isEmpty()) {

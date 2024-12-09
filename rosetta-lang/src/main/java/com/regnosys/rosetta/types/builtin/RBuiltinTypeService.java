@@ -74,28 +74,28 @@ public class RBuiltinTypeService {
 	};
 	
 	public final RBasicType BOOLEAN = registerConstantType(new RBasicType("boolean", true));
-	public final RMetaAnnotatedType BOOLEAN_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(BOOLEAN);
+	public final RMetaAnnotatedType BOOLEAN_WITH_NO_META = RMetaAnnotatedType.withNoMeta(BOOLEAN);
 	public final RBasicType TIME = registerConstantType(new RBasicType("time", true));
-	public final RMetaAnnotatedType TIME_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(TIME);
+	public final RMetaAnnotatedType TIME_WITH_NO_META = RMetaAnnotatedType.withNoMeta(TIME);
 	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", false));
-	public final RMetaAnnotatedType PATTERN_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(PATTERN);
+	public final RMetaAnnotatedType PATTERN_WITH_NO_META = RMetaAnnotatedType.withNoMeta(PATTERN);
 	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
-	public final RMetaAnnotatedType NOTHING_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(NOTHING);
+	public final RMetaAnnotatedType NOTHING_WITH_NO_META = RMetaAnnotatedType.withNoMeta(NOTHING);
 	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
-	public final RMetaAnnotatedType ANY_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(ANY);
+	public final RMetaAnnotatedType ANY_WITH_NO_META = RMetaAnnotatedType.withNoMeta(ANY);
 	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()));
-	public final RMetaAnnotatedType UNCONSTRAINED_INT_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(UNCONSTRAINED_INT);
+	public final RMetaAnnotatedType UNCONSTRAINED_INT_WITH_NO_META = RMetaAnnotatedType.withNoMeta(UNCONSTRAINED_INT);
 	public final RNumberType UNCONSTRAINED_NUMBER = new RNumberType(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-	public final RMetaAnnotatedType UNCONSTRAINED_NUMBER_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(UNCONSTRAINED_NUMBER);
+	public final RMetaAnnotatedType UNCONSTRAINED_NUMBER_WITH_NO_META = RMetaAnnotatedType.withNoMeta(UNCONSTRAINED_NUMBER);
 	public final RStringType UNCONSTRAINED_STRING = new RStringType(Optional.empty(), Optional.empty(), Optional.empty());
-	public final RMetaAnnotatedType UNCONSTRAINED_STRING_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(UNCONSTRAINED_STRING);
+	public final RMetaAnnotatedType UNCONSTRAINED_STRING_WITH_NO_META = RMetaAnnotatedType.withNoMeta(UNCONSTRAINED_STRING);
 	
 	public final RDateType DATE = registerConstantType(new RDateType());
-	public final RMetaAnnotatedType DATE_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(DATE);
+	public final RMetaAnnotatedType DATE_WITH_NO_META = RMetaAnnotatedType.withNoMeta(DATE);
 	public final RDateTimeType DATE_TIME = registerConstantType(new RDateTimeType());
-	public final RMetaAnnotatedType DATE_TIME_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(DATE_TIME);
+	public final RMetaAnnotatedType DATE_TIME_WITH_NO_META = RMetaAnnotatedType.withNoMeta(DATE_TIME);
 	public final RZonedDateTimeType ZONED_DATE_TIME = registerConstantType(new RZonedDateTimeType());
-	public final RMetaAnnotatedType ZONED_DATE_TIME_WITH_NO_META = RMetaAnnotatedType.withEmptyMeta(ZONED_DATE_TIME);
+	public final RMetaAnnotatedType ZONED_DATE_TIME_WITH_NO_META = RMetaAnnotatedType.withNoMeta(ZONED_DATE_TIME);
 	
 	public RBuiltinTypeService() {
 		register("number", (m) -> RNumberType.from(m));

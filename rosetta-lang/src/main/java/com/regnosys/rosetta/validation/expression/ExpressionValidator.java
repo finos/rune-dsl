@@ -49,7 +49,6 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 // TODO: move over expression validations from RosettaSimpleValidator
@@ -186,7 +185,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkConditionalExpression(RosettaConditionalExpression expr) {
 		isSingleCheck(expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF);
 		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF);
-		commonTypeCheck(List.of(expr.getIfthen(), expr.getElsethen()), expr, ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN);
+		commonTypeCheck(expr.getIfthen(), expr.getElsethen(), expr, ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN);
 	}
 	
 	@Check
@@ -196,7 +195,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	
 	@Check
 	public void checkDefaultOperation(DefaultOperation op) {
-		commonTypeCheck(List.of(op.getLeft(), op.getRight()), op, ROSETTA_BINARY_OPERATION__RIGHT);
+		commonTypeCheck(op.getLeft(), op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT);
 	}
 	
 	@Check
@@ -233,7 +232,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				} else if (callable instanceof RosettaRule) {
 					RosettaRule f = (RosettaRule) callable;
 					if (minCount >= 1) {
-						RMetaAnnotatedType paramType = RMetaAnnotatedType.withEmptyMeta(typeSystem.typeCallToRType(f.getInput()));
+						RMetaAnnotatedType paramType = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(f.getInput()));
 						RosettaExpression arg = expr.getArgs().get(0);
 						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0);
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0);

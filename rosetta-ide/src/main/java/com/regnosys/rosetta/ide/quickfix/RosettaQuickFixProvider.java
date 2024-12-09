@@ -69,15 +69,4 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 			return List.of(edit);
 		});
 	}
-	
-	@QuickFix(RosettaIssueCodes.DEPRECATED_MAP)
-	public void fixDeprecatedMap(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Replace with `extract`.", (Diagnostic diagnostic, EObject object, Document document) -> {
-			RosettaUnaryOperation op = (RosettaUnaryOperation)object;
-			Range range = rangeUtils.getRange(op, ROSETTA_OPERATION__OPERATOR);
-			String edited = "extract";
-			TextEdit edit = new TextEdit(range, edited);
-			return List.of(edit);
-		});
-	}
 }

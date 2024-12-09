@@ -198,7 +198,7 @@ class MetaFieldGenerator {
 
 	private def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RType valueType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, valueType.withNoMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 		
 		val metaType = SimpleFactory.eINSTANCE.createData()
@@ -257,7 +257,7 @@ class MetaFieldGenerator {
 	
 	private def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RType valueType) {
 		val valueAttribute = new RAttribute(
-			"value", null, emptyList, valueType.withEmptyMeta, PositiveIntegerInterval.bounded(0, 1), null, null
+			"value", null, emptyList, valueType.withNoMeta, PositiveIntegerInterval.bounded(0, 1), null, null
 		)
 			
 		val Data d = SimpleFactory.eINSTANCE.createData;

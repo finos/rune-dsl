@@ -382,7 +382,7 @@ class RosettaTypeProviderTest {
 				A -> V1
 		'''.parseRosettaWithNoIssues
 		val A = (context.elements.get(0) as RosettaEnumeration).buildREnumType;
-		'A -> V1'.assertIsValidWithType(A.withEmptyMeta, false, #[context])
+		'A -> V1'.assertIsValidWithType(A.withNoMeta, false, #[context])
 	}
 	
 	@Test
@@ -561,8 +561,8 @@ class RosettaTypeProviderTest {
 			add result: if True then s2 else s3
 		'''.parseRosettaWithNoIssues
 		model.elements.last as Function => [
-			val max4String = inputs.get(1).typeCall.typeCallToRType.withEmptyMeta
-			val maxNString = inputs.get(2).typeCall.typeCallToRType.withEmptyMeta
+			val max4String = inputs.get(1).typeCall.typeCallToRType.withNoMeta
+			val maxNString = inputs.get(2).typeCall.typeCallToRType.withNoMeta
 			
 			operations => [
 				get(0).expression.assertIsValidWithType(maxNString, false)

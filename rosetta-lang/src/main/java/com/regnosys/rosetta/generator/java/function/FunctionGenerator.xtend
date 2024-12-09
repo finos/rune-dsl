@@ -68,7 +68,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 
 class FunctionGenerator {
 
@@ -477,7 +477,7 @@ class FunctionGenerator {
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withEmptyMeta.toJavaReferenceType, scope)
+				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withNoMeta.toJavaReferenceType, scope)
 					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 					.mapExpression[
 						JavaExpression.from(
