@@ -721,7 +721,7 @@ class RosettaParsingTest {
 				condition Foo_Bar:
 					if foo
 					then
-						if bar = BarEnum -> abc
+						if bar any = BarEnum -> abc
 							then foobar exists
 						else foobar is absent
 			enum BarEnum:

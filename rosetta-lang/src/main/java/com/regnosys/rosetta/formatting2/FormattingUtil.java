@@ -43,7 +43,7 @@ public class FormattingUtil {
 	public void formatInlineOrMultiline(IFormattableDocument document, EObject object, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		IEObjectRegion objRegion = getTextRegionExt(document).regionForEObject(object);
 		// I need to include the next hidden region in the conditional formatting as well,
-		 // because that's where I might decrease indentation in case of a (long) multi-line operation.
+		// because that's where I might decrease indentation in case of a (long) multi-line operation.
 		ITextSegment formattableRegion = objRegion.merge(objRegion.getNextHiddenRegion());
 		formatInlineOrMultiline(document, objRegion, formattableRegion, mode, maxLineWidth, inlineFormatter, multilineFormatter);
 	}

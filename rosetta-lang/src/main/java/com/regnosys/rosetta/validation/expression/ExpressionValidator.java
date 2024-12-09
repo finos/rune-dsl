@@ -1,19 +1,16 @@
-package com.regnosys.rosetta.validation;
+package com.regnosys.rosetta.validation.expression;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
+import org.eclipse.xtext.validation.ComposedChecks;
 
 import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
-import com.regnosys.rosetta.interpreter.RosettaInterpreter;
-import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
-import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
@@ -31,196 +28,41 @@ import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
-import com.regnosys.rosetta.rosetta.expression.RosettaLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
-import com.regnosys.rosetta.rosetta.expression.SwitchCase;
-import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Function;
-import com.regnosys.rosetta.types.CardinalityProvider;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.RParametrizedType;
 import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
-import com.regnosys.rosetta.types.TypeSystem;
-import com.regnosys.rosetta.types.builtin.RBasicType;
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 // TODO: move over expression validations from RosettaSimpleValidator
-public class ExpressionValidator  extends AbstractDeclarativeRosettaValidator {
-	@Inject
-	private RosettaTypeProvider typeProvider;
-	@Inject
-	private TypeSystem typeSystem;
-	@Inject
-	private RBuiltinTypeService builtins;
-	@Inject
-	private CardinalityProvider cardinalityProvider;
+@ComposedChecks(validators = { SwitchValidator.class })
+public class ExpressionValidator extends AbstractExpressionValidator {
 	@Inject
 	private ExpressionHelper exprHelper;
 	@Inject
 	private ImplicitVariableUtil implicitVarUtil;
 	@Inject
-	private RosettaInterpreter interpreter;
-	@Inject
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
-	
-	private String relevantTypeDescription(RMetaAnnotatedType type, RMetaAnnotatedType context) {
-		RType valueType = type.getRType();
-		RType valueContext = context.getRType();
-		if (valueType.equals(valueContext)) {
-			// Include meta info
-			return type.toString();
-		}
-		if (valueType.getName().equals(valueContext.getName())) {
-			// Include type parameters
-			return valueType.toString();
-		}
-		return valueType.getName();
-	}
-	
-	private String notASubtypeMessage(RMetaAnnotatedType expected, RMetaAnnotatedType actual) {
-		return new StringBuilder()
-				.append("Expected type `")
-				.append(relevantTypeDescription(expected, actual))
-				.append("`, but got `")
-				.append(relevantTypeDescription(actual, expected))
-				.append("` instead")
-				.toString();
-	}
-	private boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature) {
-		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, INSIGNIFICANT_INDEX);
-	}
-	private boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
-		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, featureIndex);
-	}
-	private boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature) {
-		return subtypeCheck(expected, actual, sourceObject, feature, INSIGNIFICANT_INDEX);
-	}
-	private boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
-		if (!typeSystem.isSubtypeOf(actual, expected)) {
-			error(notASubtypeMessage(expected, actual), sourceObject, feature, featureIndex);
-			return false;
-		}
-		return true;
-	}
-	
-	private String notComparableMessage(RMetaAnnotatedType left, RMetaAnnotatedType right) {
-		return new StringBuilder()
-				.append("Types `")
-				.append(relevantTypeDescription(left, right))
-				.append("` and `")
-				.append(relevantTypeDescription(right, left))
-				.append("` are not comparable")
-				.toString();
-	}
-	private boolean comparableTypeCheck(RosettaBinaryOperation sourceObject) {
-		RMetaAnnotatedType tl = typeProvider.getRMetaAnnotatedType(sourceObject.getLeft());
-		RMetaAnnotatedType tr = typeProvider.getRMetaAnnotatedType(sourceObject.getRight());
-		if (!typeSystem.isComparable(tl, tr)) {
-			error(notComparableMessage(tl, tr), sourceObject, null);
-			return false;
-		}
-		return true;
-	}
-	
-	private boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature) {
-		return isMultiCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX);
-	}
-	private boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
-		if (!cardinalityProvider.isMulti(expr)) {
-			error("Expecting multi cardinality", sourceObject, feature, featureIndex);
-			return false;
-		}
-		return true;
-	}
-	private boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature) {
-		return isSingleCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX);
-	}
-	private boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
-		if (cardinalityProvider.isMulti(expr)) {
-			error("Expecting single cardinality", sourceObject, feature, featureIndex);
-			return false;
-		}
-		return true;
-	}
-	
-	private boolean commonTypeCheck(List<RosettaExpression> expressions, EObject sourceObject, EStructuralFeature feature) {
-		boolean haveCommonType = true;
-		if (!expressions.isEmpty()) {
-			Set<RMetaAnnotatedType> types = new LinkedHashSet<>();
-			RMetaAnnotatedType firstElemType = typeProvider.getRMetaAnnotatedType(expressions.get(0));
-			types.add(firstElemType);
-			RMetaAnnotatedType commonType = firstElemType;
-			for (int i=1; i<expressions.size(); i++) {
-				RMetaAnnotatedType elemType = typeProvider.getRMetaAnnotatedType(expressions.get(i));
-				RMetaAnnotatedType newCommonType = typeSystem.joinMetaAnnotatedTypes(commonType, elemType);
-				if (typeSystem.isSubtypeOf(builtins.ANY_WITH_NO_META, newCommonType)) {
-					error(
-							"Types " + types.stream().map(t -> "`" + relevantTypeDescription(t, elemType) + "`").collect(Collectors.joining(", ")) + " and `" + relevantTypeDescription(elemType, newCommonType) + "` do not have a common supertype",
-							sourceObject,
-							feature,
-							feature == null || !feature.isMany() ? INSIGNIFICANT_INDEX : i);
-					haveCommonType = false;
-				} else {
-					types.add(elemType);
-					commonType = newCommonType;
-				}
-			}
-		}
-		return haveCommonType;
-	}
-	
-	private void unsupportedTypeError(RMetaAnnotatedType type, RosettaOperation op, EStructuralFeature feature, RType supportedType1, RType supportedType2, RType... moreSupportedTypes) {
-		StringBuilder supportedTypesMsg = new StringBuilder();
-		supportedTypesMsg.append("Supported types are ");
-		supportedTypesMsg.append(supportedType1);
-		if (moreSupportedTypes.length > 0) {
-			supportedTypesMsg.append(", ");
-			supportedTypesMsg.append(supportedType2);
-			for (int i=0; i<moreSupportedTypes.length-1; i++) {
-				supportedTypesMsg.append(", ");
-				supportedTypesMsg.append(moreSupportedTypes[i]);
-			}
-			supportedTypesMsg.append(" and ");
-			supportedTypesMsg.append(moreSupportedTypes[moreSupportedTypes.length-1]);
-		} else {
-			supportedTypesMsg.append(" and ");
-			supportedTypesMsg.append(supportedType2);
-		}
-		unsupportedTypeError(type, op.getOperator(), op, feature, supportedTypesMsg.toString());
-	}
-	private void unsupportedTypeError(RMetaAnnotatedType type, String operator, EObject sourceObject, EStructuralFeature feature, String supportedTypesMessage) {
-		error("Operator `" + operator + "` is not supported for type " + type.getRType() + ". " + supportedTypesMessage, sourceObject, feature);
-	}
 	
 	@Check
 	public void checkArithmeticOperation(ArithmeticOperation op) {
@@ -508,6 +350,14 @@ public class ExpressionValidator  extends AbstractDeclarativeRosettaValidator {
 		if (op.getAttributes().size() < 2) {
 			error("At least two attributes must be passed to a choice rule", op, CHOICE_OPERATION__ATTRIBUTES);
 		}
+		
+		Set<Attribute> seen = new HashSet<>();
+		for (var i = 0; i < op.getAttributes().size(); i++) {
+			Attribute attr = op.getAttributes().get(i);
+			if (!seen.add(attr)) {
+				error("Duplicate attribute.", op, CHOICE_OPERATION__ATTRIBUTES, i);
+			}
+		}
 	}
 	
 	@Check
@@ -519,118 +369,14 @@ public class ExpressionValidator  extends AbstractDeclarativeRosettaValidator {
 	}
 	
 	@Check
-	public void checkSwitch(SwitchOperation op) {
-		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT);
-		RMetaAnnotatedType argumentType = typeProvider.getRMetaAnnotatedType(op.getArgument());
-		RType rType = typeSystem.stripFromTypeAliases(argumentType.getRType());
-		if (rType instanceof REnumType) {
-			checkEnumSwitch((REnumType) rType, op);
-		} else if (rType instanceof RBasicType) {
-			checkBasicTypeSwitch((RBasicType) rType, op);
-		} else if (rType instanceof RChoiceType) {
-			checkChoiceSwitch((RChoiceType) rType, op);
-		} else {
-			unsupportedTypeError(argumentType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "Supported argument types are basic types, enumerations, and choice types");
-		}
-	}
-	private void checkEnumSwitch(REnumType argumentType, SwitchOperation op) {
-		// When the argument is an enum:
-		// - all guards should be enum guards,
-		// - there are no duplicate cases,
-		// - all enum values must be covered.
-		Set<RosettaEnumValue> seenValues = new HashSet<>();
-		for (SwitchCase caseStatement : op.getCases()) {
-			RosettaEnumValue guard = caseStatement.getGuard().getEnumGuard();
- 			if (guard == null) {
- 				error("Case should match an enum value of " + argumentType, caseStatement, SWITCH_CASE__GUARD);
- 			} else {
- 				if (!seenValues.add(guard)) {
- 					error("Duplicate case " + guard.getName(), caseStatement, SWITCH_CASE__GUARD);
- 				}
- 			}
- 		}
-
-		if (op.getDefault() == null) {
-			List<RosettaEnumValue> missingEnumValues = new ArrayList<>(argumentType.getAllEnumValues());
-			missingEnumValues.removeAll(seenValues);
-			if (!missingEnumValues.isEmpty()) {
-				String missingValuesMsg = missingEnumValues.stream().map(v -> v.getName()).collect(Collectors.joining(", "));
-				error("Missing the following cases: " + missingValuesMsg + ". Either provide all or add a default.", op, ROSETTA_OPERATION__OPERATOR);
-			}
-		}
-	}
-	private void checkBasicTypeSwitch(RBasicType argumentType, SwitchOperation op) {
-		// When the argument is a basic type:
-		// - all guards should be literal guards,
-		// - there are no duplicate cases,
-		// - all guards should be comparable to the input.
-		Set<RosettaValue> seenValues = new HashSet<>();
-		RMetaAnnotatedType argumentTypeWithoutMeta = RMetaAnnotatedType.withEmptyMeta(argumentType);
- 		for (SwitchCase caseStatement : op.getCases()) {
- 			RosettaLiteral guard = caseStatement.getGuard().getLiteralGuard();
- 			if (guard == null) {
- 				error("Case should match a literal of type " + argumentType, caseStatement, SWITCH_CASE__GUARD);
- 			} else {
- 				if (!seenValues.add(interpreter.interpret(guard))) {
- 					error("Duplicate case", caseStatement, SWITCH_CASE__GUARD);
- 				}
- 				RMetaAnnotatedType conditionType = typeProvider.getRMetaAnnotatedType(guard);
-	 			if (!typeSystem.isComparable(conditionType, argumentTypeWithoutMeta)) {
- 					error("Invalid case: " + notComparableMessage(conditionType, argumentTypeWithoutMeta), caseStatement, SWITCH_CASE__GUARD);
- 				}
- 			}
- 		}
-	}
-	private void checkChoiceSwitch(RChoiceType argumentType, SwitchOperation op) {
-		// When the argument is a choice type:
-		// - all guards should be choice option guards,
-		// - all cases should be reachable,
-		// - all choice options should be covered.
-		Map<ChoiceOption, RMetaAnnotatedType> includedOptions = new HashMap<>();
-		for (SwitchCase caseStatement : op.getCases()) {
-			ChoiceOption guard = caseStatement.getGuard().getChoiceOptionGuard();
- 			if (guard == null) {
- 				error("Case should match a choice option of type " + argumentType, caseStatement, SWITCH_CASE__GUARD);
- 			} else {
- 				RMetaAnnotatedType alreadyCovered = includedOptions.get(guard);
- 				if (alreadyCovered != null) {
- 					error("Case already covered by " + alreadyCovered, caseStatement, SWITCH_CASE__GUARD);
- 				} else {
- 					RMetaAnnotatedType guardType = typeProvider.getRTypeOfSymbol(guard);
- 					includedOptions.put(guard, guardType);
- 					RType valueType = guardType.getRType();
- 					if (valueType instanceof RChoiceType) {
- 						((RChoiceType)valueType).getAllOptions().forEach(it -> includedOptions.put(it.getEObject(), guardType));
- 					}
- 				}
- 			}
- 		}
-		if (op.getDefault() == null) {
- 			List<RMetaAnnotatedType> missingOptions = new ArrayList<>();
- 			argumentType.getOwnOptions().forEach(opt -> missingOptions.add(opt.getType()));
- 			for (RMetaAnnotatedType guard : new LinkedHashSet<>(includedOptions.values())) {
- 				for (var i=0; i<missingOptions.size(); i++) {
- 					RMetaAnnotatedType opt = missingOptions.get(i);
- 					RType optValueType = opt.getRType();
- 					if (typeSystem.isSubtypeOf(opt, guard, false)) {
- 						missingOptions.remove(i);
- 						i--;
- 					} else if (optValueType instanceof RChoiceType) {
- 						if (typeSystem.isSubtypeOf(guard, opt, false)) {
- 							missingOptions.remove(i);
- 							i--;
- 							((RChoiceType)optValueType).getOwnOptions()
- 								.forEach(o -> missingOptions.add(o.getType()));
- 						}
- 					}
- 				}
- 			}
-			if (!missingOptions.isEmpty()) {
-				String missingOptsMsg = missingOptions.stream()
-						.map(opt -> opt.toString())
-						.collect(Collectors.joining(", "));
-				error("Missing the following cases: " + missingOptsMsg + ". Either provide all or add a default.", op, ROSETTA_OPERATION__OPERATOR);
-			}
-		}
+	public void checkOnlyElement(RosettaOnlyElement e) {
+		// TODO: restore
+//		RListType t = ts.inferType(e.getArgument());
+//		if (t != null) {
+//			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);
+//			if (!minimalConstraint.isSubconstraintOf(t.getConstraint())) {
+//				warning(tu.notLooserConstraintMessage(minimalConstraint, t), e, ROSETTA_UNARY_OPERATION__ARGUMENT);
+//			}
+//		}
 	}
 }

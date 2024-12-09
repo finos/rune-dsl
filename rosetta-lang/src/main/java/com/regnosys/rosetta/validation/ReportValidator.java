@@ -30,8 +30,6 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
@@ -40,22 +38,16 @@ import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
-import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
-// TODO: remove
-public class StandaloneRosettaTypingValidator extends AbstractDeclarativeRosettaValidator {
+public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private TypeSystem ts;
-	
-	@Inject
-	private TypeFactory tf;
 	
 	@Inject
 	private RBuiltinTypeService builtins;
@@ -65,37 +57,6 @@ public class StandaloneRosettaTypingValidator extends AbstractDeclarativeRosetta
 	
 	@Inject
 	private RObjectFactory objectFactory;
-	
-	/**
-	 * Xsemantics does not allow raising warnings. See https://github.com/eclipse/xsemantics/issues/149.
-	 */
-	@Check
-	public void checkOnlyElement(RosettaOnlyElement e) {
-		// TODO: restore
-//		RListType t = ts.inferType(e.getArgument());
-//		if (t != null) {
-//			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);
-//			if (!minimalConstraint.isSubconstraintOf(t.getConstraint())) {
-//				warning(tu.notLooserConstraintMessage(minimalConstraint, t), e, ROSETTA_UNARY_OPERATION__ARGUMENT);
-//			}
-//		}
-	}
-	
-	/**
-	 * Xsemantics does not allow raising errors on a specific index of a multi-valued feature.
-	 * See https://github.com/eclipse/xsemantics/issues/64.
-	 */
-	@Check
-	public void checkChoiceOperationHasNoDuplicateAttributes(ChoiceOperation e) {
-		for (var i = 1; i < e.getAttributes().size(); i++) {
-			Attribute attr = e.getAttributes().get(i);
-			for (var j = 0; j < i; j++) {
-				if (attr.equals(e.getAttributes().get(j))) {
-					error("Duplicate attribute.", e, CHOICE_OPERATION__ATTRIBUTES, i);
-				}
-			}
-		}
-	}
 	
 	@Check
 	public void checkReport(RosettaReport report) {

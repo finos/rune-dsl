@@ -3129,7 +3129,7 @@ class FunctionGeneratorTest {
 					result string (0..1)
 				
 				condition:
-					[ m1 -> currency , m2 -> currency ] = currency
+					[ m1 -> currency , m2 -> currency ] any = currency
 		'''.generateCode
 		code.compileToClasses
 	}
@@ -3984,8 +3984,8 @@ class FunctionGeneratorTest {
 				set res: t1->num = t2->nums
 			
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_BINARY_OPERATION, null,
-			"Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
+		model.assertError(EQUALITY_OPERATION, null,
+			"Operator `=` should specify 'all' or 'any' when comparing a list to a single value")
 	}
 
 	@Test

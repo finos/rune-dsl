@@ -52,13 +52,13 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before = 5
+					foo -> bar -> before any = 5
 			
 			func FeatureCallNotEqualToLiteral:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before <> 5
+					foo -> bar -> before all <> 5
 			
 			func FeatureCallEqualToFeatureCall:
 				inputs: foo Foo (1..1)
@@ -70,7 +70,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before = foo -> baz -> other
+					foo -> bar -> before any = foo -> baz -> other
 			
 			func FeatureCallNotEqualToFeatureCall:
 				inputs: foo Foo (1..1)
@@ -82,19 +82,19 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before <> foo -> baz -> other
+					foo -> bar -> before all <> foo -> baz -> other
 			
 			func FeatureCallsEqualToLiteralOr:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before = 5 or foo -> baz -> other = 5
+					foo -> bar -> before any = 5 or foo -> baz -> other = 5
 			
 			func FeatureCallsEqualToLiteralAnd:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before = 5 and foo -> bar -> after = 5
+					foo -> bar -> before any = 5 and foo -> bar -> after any = 5
 			
 			««« TODO tests compilation only, add unit test
 
@@ -112,8 +112,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-				//	(foo -> bar -> before and foo -> baz -> other) = (foo -> bar -> after and foo -> baz -> bazValue)
-				[foo -> bar -> before,  foo -> baz -> other] = [foo -> bar -> after, foo -> baz -> bazValue]
+					[foo -> bar -> before,  foo -> baz -> other] = [foo -> bar -> after, foo -> baz -> bazValue]
 
 			««« TODO tests compilation only, add unit test
 
@@ -121,7 +120,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo(1..1)
 				output: result boolean (1..1)
 				set result:
-					(foo -> bar -> before = foo -> baz -> other) or (foo -> bar -> after = foo -> baz -> bazValue)
+					(foo -> bar -> before any = foo -> baz -> other) or (foo -> bar -> after any = foo -> baz -> bazValue)
 
 			««« TODO tests compilation only, add unit test
 
@@ -129,7 +128,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo(1..1)
 				output: result boolean (1..1)
 				set result:
-					(foo -> bar -> before = foo -> baz -> other) and (foo -> bar -> after = foo -> baz -> bazValue)
+					(foo -> bar -> before any = foo -> baz -> other) and (foo -> bar -> after any = foo -> baz -> bazValue)
 			
 			««« TODO tests compilation only, add unit test
 
@@ -137,7 +136,6 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					//		(foo -> bar -> before or foo -> bar -> after or foo -> baz -> other) = 5.0
 					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] contains 5.0
 			
 			««« TODO tests compilation only, add unit test
@@ -146,8 +144,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					// (foo -> bar -> before and foo -> bar -> after and foo -> baz -> other) = 5.0
-					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] = 5.0
+					[foo -> bar -> before, foo -> bar -> after, foo -> baz -> other] any = 5.0
 			
 			««« TODO tests compilation only, add unit test
 
@@ -155,7 +152,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					AliasBefore(foo) -> numbers = 5
+					AliasBefore(foo) -> numbers any = 5
 			
 			««« TODO tests compilation only, add unit test
 
@@ -171,7 +168,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					AliasBefore(foo) -> numbers = 5 or  AliasOther(foo) -> numbers = 5
+					AliasBefore(foo) -> numbers any = 5 or  AliasOther(foo) -> numbers any = 5
 			
 			««« TODO tests compilation only, add unit test
 
@@ -179,7 +176,7 @@ class RosettaBinaryOperationTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					AliasBefore(foo) -> numbers = 5 and AliasOther(foo) -> numbers = 5
+					AliasBefore(foo) -> numbers any = 5 and AliasOther(foo) -> numbers any = 5
 			
 			««« TODO tests compilation only, add unit test
 
