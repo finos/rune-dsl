@@ -2442,7 +2442,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorForMap() {
+	def shouldNotGenerateCountCardinalityErrorForExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2466,7 +2466,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorDefaultParameterForMap() {
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2490,7 +2490,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorForNestedMap() {
+	def shouldNotGenerateCountCardinalityErrorForNestedExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2516,7 +2516,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedMap() {
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2542,7 +2542,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 
 	@Test
-	def shouldNotGenerateErrorForMapListOperation() {
+	def shouldNotGenerateErrorForExtractListOperation() {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
@@ -2609,7 +2609,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set result:
 					if bars exists
-					then bars map [ item -> foo ] distinct only-element -> amount
+					then bars extract [ item -> foo ] distinct only-element -> amount
 		'''.parseRosetta
 		// then clause should generate syntax error (see test above shouldGenerateErrorForFeatureCallAfterListOperation)
 		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'")
@@ -2719,7 +2719,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListMapNoExpressionError() {
+	def void shouldGenerateListExtractNoExpressionError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2729,7 +2729,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map
+						extract
 			
 			type Foo:
 				x string (1..1)
@@ -2738,7 +2738,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListMapParametersError() {
+	def void shouldGenerateListExtractParametersError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2748,7 +2748,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a, b [ a -> x ]
+						extract a, b [ a -> x ]
 			
 			type Foo:
 				x string (1..1)
@@ -2757,7 +2757,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void mapWithNamedFunctionReferenceShouldGenerateNoError() {
+	def void extractWithNamedFunctionReferenceShouldGenerateNoError() {
 		val model = '''
 			func DoSomething:
 				inputs:
@@ -2785,7 +2785,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListMapParametersErrorNamedFunctionReference() {
+	def void shouldGenerateListExtractParametersErrorNamedFunctionReference() {
 		val model = '''
 			func DoSomething:
 				inputs:
@@ -2805,7 +2805,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map DoSomething
+						extract DoSomething
 			
 			type Foo:
 				x string (1..1)
@@ -2814,7 +2814,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldNotGenerateListMapExpressionCardinalityError() {
+	def void shouldNotGenerateListExtractExpressionCardinalityError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2835,7 +2835,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldNotGenerateListMapExpressionCardinalityError2() {
+	def void shouldNotGenerateListExtractExpressionCardinalityError2() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2859,7 +2859,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldNotGenerateListMapExpressionCardinalityError3() {
+	def void shouldNotGenerateListExtractExpressionCardinalityError3() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2897,7 +2897,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> x ] // not a list of lists
+						extract a [ a -> x ] // not a list of lists
 						flatten
 			
 			type Foo:
@@ -3013,7 +3013,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 			
 			type Foo:
 				xs string (0..*)
@@ -3032,7 +3032,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 			
 			type Foo:
 				xs string (0..*)
@@ -3051,7 +3051,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias stringsAlias:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 				
 				add strings:
 					stringsAlias
@@ -3073,7 +3073,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set res:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 						only-element
 			
 			type Foo:
@@ -3093,7 +3093,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add res:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 						distinct
 			
 			type Foo:
