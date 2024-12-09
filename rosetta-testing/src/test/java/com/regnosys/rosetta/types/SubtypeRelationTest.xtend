@@ -16,7 +16,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RStringType
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -62,7 +62,7 @@ class SubtypeRelationTest {
 		
 		val joined = fieldBType.join(fieldCType)
 		
-		assertEquals(fieldA.withEmptyMeta, joined)
+		assertEquals(fieldA.withNoMeta, joined)
 	}
 
 	@Test

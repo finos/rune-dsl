@@ -133,8 +133,8 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 		
 		// There should be a type error in rule B
 		val issues = diagnostics.get(ruleBURI)
-		assertEquals(2, issues.size)
-		assertEquals("Expected type 'int' but was 'string'", issues.head.message)
+		assertEquals(1, issues.size)
+		assertEquals("Expected type `int`, but got `string` instead", issues.head.message)
 	}
 	
 	@Test

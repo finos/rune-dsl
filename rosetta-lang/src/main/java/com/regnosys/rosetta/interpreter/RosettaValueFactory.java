@@ -29,7 +29,6 @@ import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBasicType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
@@ -59,11 +58,6 @@ public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>
 	}
 	public RosettaValue createOfType(RType type, Object item) {
 		return createOfType(type, List.of(item));
-	}
-
-	@Override
-	protected RosettaValue caseErrorType(RErrorType type, List<?> context) {
-		throw new UnsupportedOperationException("Cannot create a value of error type " + type);
 	}
 
 	@Override
@@ -110,11 +104,6 @@ public class RosettaValueFactory extends RosettaTypeSwitch<RosettaValue, List<?>
 //	protected RosettaValue casePatternType(RBasicType type, List<?> context) {
 //		return new RosettaPatternValue(castList(context, Pattern.class));
 //	}
-
-	@Override
-	protected RosettaValue caseMissingType(RBasicType type, List<?> context) {
-		throw new UnsupportedOperationException("Cannot create a value of a missing type");
-	}
 
 	@Override
 	protected RosettaValue caseNothingType(RBasicType type, List<?> context) {

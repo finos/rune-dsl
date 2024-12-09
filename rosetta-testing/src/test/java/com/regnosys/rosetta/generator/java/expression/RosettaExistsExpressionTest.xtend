@@ -76,43 +76,43 @@ class RosettaExistsExpressionTest {
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					foo -> bar -> before only exists
+					foo -> bar first then before only exists
 			
 			func OnlyExistsMultiplePaths:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> after ) only exists
+					foo -> bar first then ( before, after ) only exists
 
 			func OnlyExistsPathWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> afterWithScheme ) only exists
+					foo -> bar first then ( before, afterWithScheme ) only exists
 			
 			func OnlyExistsBothPathsWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> beforeWithScheme, foo -> bar -> afterWithScheme ) only exists
+					foo -> bar first then ( beforeWithScheme, afterWithScheme ) only exists
 
 			func OnlyExistsListMultiplePaths:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> afterList ) only exists
+					foo -> bar first then ( before, afterList ) only exists
 
 			func OnlyExistsListPathWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> before, foo -> bar -> afterListWithScheme ) only exists
+					foo -> bar first then ( before, afterListWithScheme ) only exists
 			
 			func OnlyExistsListBothPathsWithScheme:
 				inputs: foo Foo (1..1)
 				output: result boolean (1..1)
 				set result:
-					( foo -> bar -> beforeListWithScheme, foo -> bar -> afterListWithScheme ) only exists
+					foo -> bar first then ( beforeListWithScheme, afterListWithScheme ) only exists
 
 «««			TODO tests compilation only, add unit test
 			func MultipleSeparateOr_NoAliases_Exists:

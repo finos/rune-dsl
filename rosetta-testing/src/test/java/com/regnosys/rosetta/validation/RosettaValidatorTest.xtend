@@ -260,7 +260,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testSwitchInputRecordTypesAreNotValid() {
  		"someDate switch default \"someResult\""
  			.parseExpression(#["someDate date (1..1)"])
- 			.assertError(SWITCH_OPERATION, null, "Type `date` is not a valid switch argument type. Supported argument types are basic types, enumerations, and choice types.")	
+ 			.assertError(SWITCH_OPERATION, null, "Operator `switch` is not supported for type date. Supported argument types are basic types, enumerations, and choice types")	
  	}
 
 	@Test
@@ -281,7 +281,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  			default "someOtherValue"
  		'''
  			.parseExpression(#[model], #["inEnum SomeEnum (1..*)"])
- 			.assertError(ROSETTA_EXPRESSION, null, "Input to switch must be single cardinality")
+ 			.assertError(ROSETTA_EXPRESSION, null, "Expecting single cardinality")
 
 	}
 
@@ -356,7 +356,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		
  		"inFoo switch default 42"
 			.parseExpression(#[model], #["inFoo Foo (1..1)"])
- 			.assertError(SWITCH_OPERATION, null, "Type `Foo` is not a valid switch argument type. Supported argument types are basic types, enumerations, and choice types.")
+ 			.assertError(SWITCH_OPERATION, null, "Operator `switch` is not supported for type Foo. Supported argument types are basic types, enumerations, and choice types")
  	}
 
  	@Test
@@ -533,7 +533,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-			"Invalid number of arguments. Expecting 1 but passed 0."
+			"Expected 1 argument, but got 0 instead"
 		)
 	}
 	
@@ -1529,10 +1529,10 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				inputs: a int (0..*)
 				output: b int (0..*)
 				add b:
-					a extract [Add]
+					a extract Add
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-            "Expected 2 arguments, but got 0 instead.")
+            "Expected 2 arguments, but got 0 instead")
 	}
 	
 	@Test
@@ -1546,7 +1546,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					a()
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-            "A variable may not be called.")
+            "A variable may not be called")
 	}
 	
 	@Test
@@ -1586,8 +1586,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				condition A:
 					*42
 		'''.parseRosetta
-		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
-            "Expected type `number`, but got `Foo` instead.")
+		model.assertError(ARITHMETIC_OPERATION, null,
+            "Expected type `number`, but got `Foo` instead")
 	}
 	
 	@Test
@@ -1644,8 +1644,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					if id = True
 					then id < 1
 		'''.parseRosetta
-		model.assertError(ROSETTA_CONDITIONAL_EXPRESSION, TYPE_ERROR,
-			"Incompatible types: cannot use operator '=' with int and boolean.")
+		model.assertError(EQUALITY_OPERATION, null,
+			"Types `int` and `boolean` are not comparable")
 	}
 	
 	@Test
@@ -1672,7 +1672,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(COMPARISON_OPERATION, null, "Incompatible types: cannot use operator '<' with boolean and int.")
+		model.assertError(COMPARISON_OPERATION, null, "Operator `<` is not supported for type boolean. Supported types are number, date and zonedDateTime")
 	}
 	
 	@Test
@@ -2081,8 +2081,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			     Foo(timestamp) = timestamp
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_SYMBOL_REFERENCE, TYPE_ERROR, 
-			"Expected type 'zonedDateTime' but was 'date'")
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null, 
+			"Expected type `zonedDateTime`, but got `date` instead")
 	}
 	
 	@Test
@@ -2197,7 +2197,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					attribute1
 		'''.parseRosetta
 		model.assertError(CHOICE_OPERATION, null,
-			"At least two attributes must be passed to a choice rule.")
+			"At least two attributes must be passed to a choice rule")
 	}
 	
 	
@@ -2442,7 +2442,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorForMap() {
+	def shouldNotGenerateCountCardinalityErrorForExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2466,7 +2466,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorDefaultParameterForMap() {
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2490,7 +2490,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorForNestedMap() {
+	def shouldNotGenerateCountCardinalityErrorForNestedExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2516,7 +2516,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedMap() {
+	def shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedExtract() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -2542,7 +2542,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 
 	@Test
-	def shouldNotGenerateErrorForMapListOperation() {
+	def shouldNotGenerateErrorForExtractListOperation() {
 		val model = '''
 			type Bar:
 				foo Foo (1..1)
@@ -2609,7 +2609,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set result:
 					if bars exists
-					then bars map [ item -> foo ] distinct only-element -> amount
+					then bars extract [ item -> foo ] distinct only-element -> amount
 		'''.parseRosetta
 		// then clause should generate syntax error (see test above shouldGenerateErrorForFeatureCallAfterListOperation)
 		model.assertError(ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'")
@@ -2719,7 +2719,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListMapNoExpressionError() {
+	def void shouldGenerateListExtractNoExpressionError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2729,7 +2729,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map
+						extract
 			
 			type Foo:
 				x string (1..1)
@@ -2738,7 +2738,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListMapParametersError() {
+	def void shouldGenerateListExtractParametersError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2748,7 +2748,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a, b [ a -> x ]
+						extract a, b [ a -> x ]
 			
 			type Foo:
 				x string (1..1)
@@ -2757,7 +2757,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void mapWithNamedFunctionReferenceShouldGenerateNoError() {
+	def void extractWithNamedFunctionReferenceShouldGenerateNoError() {
 		val model = '''
 			func DoSomething:
 				inputs:
@@ -2785,7 +2785,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldGenerateListMapParametersErrorNamedFunctionReference() {
+	def void shouldGenerateListExtractParametersErrorNamedFunctionReference() {
 		val model = '''
 			func DoSomething:
 				inputs:
@@ -2805,16 +2805,16 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map DoSomething
+						extract DoSomething
 			
 			type Foo:
 				x string (1..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expected 2 arguments, but got 0 instead.")
+		model.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expected 2 arguments, but got 0 instead")
 	}
 	
 	@Test
-	def void shouldNotGenerateListMapExpressionCardinalityError() {
+	def void shouldNotGenerateListExtractExpressionCardinalityError() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2835,7 +2835,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldNotGenerateListMapExpressionCardinalityError2() {
+	def void shouldNotGenerateListExtractExpressionCardinalityError2() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2859,7 +2859,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void shouldNotGenerateListMapExpressionCardinalityError3() {
+	def void shouldNotGenerateListExtractExpressionCardinalityError3() {
 		val model = '''
 			func FuncFoo:
 			 	inputs:
@@ -2897,7 +2897,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> x ] // not a list of lists
+						extract a [ a -> x ] // not a list of lists
 						flatten
 			
 			type Foo:
@@ -3013,7 +3013,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 			
 			type Foo:
 				xs string (0..*)
@@ -3032,7 +3032,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add strings:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 			
 			type Foo:
 				xs string (0..*)
@@ -3051,7 +3051,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				alias stringsAlias:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 				
 				add strings:
 					stringsAlias
@@ -3073,7 +3073,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				set res:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 						only-element
 			
 			type Foo:
@@ -3093,7 +3093,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				
 				add res:
 					foos
-						map a [ a -> xs ] // list of lists
+						extract a [ a -> xs ] // list of lists
 						distinct
 			
 			type Foo:
@@ -3150,7 +3150,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x5 int (1..1)
 				x6 string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, null, "Left hand side of 'and' expression must be boolean")
+		model.assertError(ROSETTA_BINARY_OPERATION, null, "Expected type `boolean`, but got `number` instead")
 	}
 	
 	@Test
@@ -3169,7 +3169,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(LOGICAL_OPERATION, null, "Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `number` instead")
 	}
 	
 	@Test

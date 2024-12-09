@@ -99,7 +99,7 @@ class RosettaExpressionsTest {
 				output: result boolean (1..1)
 				set result:
 					test -> one + test -> two = 42
-		'''.parseRosetta.assertError(ARITHMETIC_OPERATION, null, "Incompatible types: cannot use operator '+' with date and date.")
+		'''.parseRosetta.assertError(ARITHMETIC_OPERATION, null, "Expected type `time`, but got `date` instead")
 	}
 	
 	/**
