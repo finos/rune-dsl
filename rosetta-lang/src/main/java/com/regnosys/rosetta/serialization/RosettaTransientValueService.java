@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.serialization;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -24,29 +25,43 @@ import org.eclipse.xtext.parsetree.reconstr.impl.DefaultTransientValueService;
 
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 
 public class RosettaTransientValueService extends DefaultTransientValueService {
-	private EStructuralFeature generatedInputWasSetFeature = ExpressionPackage.eINSTANCE.getHasGeneratedInput_GeneratedInputWasSet();
-	private EStructuralFeature implicitVariableIsInContextFeature = ExpressionPackage.eINSTANCE.getRosettaSymbolReference_ImplicitVariableIsInContext();
-	
+	private final Set<EStructuralFeature> ignoredFeatures;
+
+	public RosettaTransientValueService() {
+		EStructuralFeature generatedInputWasSetFeature = ExpressionPackage.eINSTANCE
+				.getHasGeneratedInput_GeneratedInputWasSet();
+		EStructuralFeature implicitVariableIsInContextFeature = ExpressionPackage.eINSTANCE
+				.getRosettaSymbolReference_ImplicitVariableIsInContext();
+		EStructuralFeature hardcodedConditionFeature = SimplePackage.eINSTANCE.getChoice__hardcodedConditions();
+		EStructuralFeature hardcodedNameFeature = SimplePackage.eINSTANCE.getChoiceOption__hardcodedName();
+		EStructuralFeature hardcodedCardinalityFeature = SimplePackage.eINSTANCE
+				.getChoiceOption__hardcodedCardinality();
+		ignoredFeatures = Set.of(generatedInputWasSetFeature, implicitVariableIsInContextFeature,
+				hardcodedConditionFeature, hardcodedNameFeature, hardcodedCardinalityFeature);
+
+	}
+
 	@Override
 	public boolean isCheckElementsIndividually(EObject owner, EStructuralFeature feature) {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isTransient(EObject owner, EStructuralFeature feature, int index) {
 		if (super.isTransient(owner, feature, index)) {
 			return true;
 		}
-		if (feature.equals(generatedInputWasSetFeature) || feature.equals(implicitVariableIsInContextFeature)) {
+		if (ignoredFeatures.contains(feature)) {
 			return true;
 		}
 		Object value = owner.eGet(feature);
 		if (index >= 0 && value instanceof List<?>) {
-			value = ((List<?>)value).get(index);
+			value = ((List<?>) value).get(index);
 		}
-		if (value instanceof RosettaExpression && ((RosettaExpression)value).isGenerated()) {
+		if (value instanceof RosettaExpression && ((RosettaExpression) value).isGenerated()) {
 			return true;
 		}
 		return false;

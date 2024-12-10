@@ -24,18 +24,15 @@ import javax.inject.Provider;
 
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.lsp4j.TextEdit;
-import org.eclipse.xtext.formatting.IIndentationInformation;
 import org.eclipse.xtext.formatting2.IFormatter2;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.ide.server.Document;
 import org.eclipse.xtext.ide.server.formatting.FormattingService;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
-import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.TextRegion;
 
-import com.google.common.base.Strings;
-import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
+import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
 
 /**
  * This class allows passing additional formatting parameters as defined in
@@ -47,55 +44,17 @@ import com.regnosys.rosetta.formatting2.RosettaFormatterPreferenceKeys;
  * - expose injected fields to child classes (make them protected)
  */
 public class RosettaFormattingService extends FormattingService {
-	public static String PREFERENCE_INDENTATION_KEY = "indentation";
-	public static String PREFERENCE_MAX_LINE_WIDTH_KEY = "maxLineWidth";
-	public static String PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY = "conditionalMaxLineWidth";
-	
 	@Inject
 	private Provider<IFormatter2> formatter2Provider;
-
 	@Inject
-	private IIndentationInformation indentationInformation;
-	
-	protected ITypedPreferenceValues createPreferences(FormattingOptions options) {
-		MapBasedPreferenceValues preferences = new MapBasedPreferenceValues();
-		
-		String indent = indentationInformation.getIndentString();
-		if (options != null) {
-			if (options.isInsertSpaces()) {
-				indent = Strings.padEnd("", options.getTabSize(), ' ');
-			}
-		}
-		preferences.put(PREFERENCE_INDENTATION_KEY, indent);
-		
-		if (options == null) {
-			return preferences;
-		}
+	private FormattingOptionsAdaptor formattingOptionsAdapter;
 
-		Number conditionalMaxLineWidth = options.getNumber(PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY);
-		if (conditionalMaxLineWidth != null) {
-			preferences.put(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth, conditionalMaxLineWidth.intValue());
-		}
-		Number maxLineWidth = options.getNumber(PREFERENCE_MAX_LINE_WIDTH_KEY);
-		if (maxLineWidth != null) {
-			preferences.put(RosettaFormatterPreferenceKeys.maxLineWidth, maxLineWidth.intValue());
-			if (conditionalMaxLineWidth == null) {
-				int defaultConditionalMaxLineWidth = RosettaFormatterPreferenceKeys.conditionalMaxLineWidth.toValue(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth.getDefaultValue());
-				int defaultMaxLineWidth = RosettaFormatterPreferenceKeys.maxLineWidth.toValue(RosettaFormatterPreferenceKeys.maxLineWidth.getDefaultValue());
-				double defaultRatio = (double)defaultConditionalMaxLineWidth / defaultMaxLineWidth;
-				preferences.put(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth, (int)(maxLineWidth.doubleValue() * defaultRatio));
-			}
-		}
-		
-		return preferences;
-	}
-		
 	@Override
 	public List<TextEdit> format(XtextResource resource, Document document, int offset, int length,
 			FormattingOptions options) {
 		List<TextEdit> result = new ArrayList<>();
 		if (this.formatter2Provider != null) {
-			ITypedPreferenceValues preferences = createPreferences(options);
+			ITypedPreferenceValues preferences = formattingOptionsAdapter.createPreferences(options);
 			List<ITextReplacement> replacements = format2(resource, new TextRegion(offset, length), preferences);
 			for (ITextReplacement r : replacements) {
 				result.add(toTextEdit(document, r.getReplacementText(), r.getOffset(), r.getLength()));

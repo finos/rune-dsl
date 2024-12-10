@@ -29,7 +29,7 @@ import org.eclipse.xtext.formatting2.regionaccess.ITextSegment;
 import org.eclipse.xtext.preferences.TypedPreferenceKey;
 
 public class FormattingUtil {
-	private ITextRegionExtensions getTextRegionExt(IFormattableDocument doc) {
+	public ITextRegionExtensions getTextRegionExt(IFormattableDocument doc) {
 		return doc.getRequest().getTextRegionAccess().getExtensions();
 	}
 	

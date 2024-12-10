@@ -3,6 +3,7 @@ package com.regnosys.rosetta.ide.formatting
 import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest
 import org.eclipse.lsp4j.FormattingOptions
+import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor
 
 class FormattingTest extends AbstractRosettaLanguageServerTest {
 	@Test
@@ -23,7 +24,7 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 		testFormatting(
 			[
 				val options = new FormattingOptions
-				options.putNumber(RosettaFormattingService.PREFERENCE_MAX_LINE_WIDTH_KEY, 10)
+				options.putNumber(FormattingOptionsAdaptor.PREFERENCE_MAX_LINE_WIDTH_KEY, 10)
 				it.options = options
 			],
 			[
@@ -67,7 +68,7 @@ class FormattingTest extends AbstractRosettaLanguageServerTest {
 		testFormatting(
 			[
 				val options = new FormattingOptions
-				options.putNumber(RosettaFormattingService.PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY, 10)
+				options.putNumber(FormattingOptionsAdaptor.PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY, 10)
 				it.options = options
 			],
 			[

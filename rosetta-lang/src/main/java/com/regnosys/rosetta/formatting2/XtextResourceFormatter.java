@@ -1,12 +1,8 @@
 package com.regnosys.rosetta.formatting2;
 
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.formatting2.FormatterRequest;
@@ -35,10 +31,11 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	private TextRegionAccessBuilder regionBuilder;
 
 	@Override
-	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues) {
+	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
+			IFormattedResourceAcceptor acceptor) {
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
-				formatXtextResource((XtextResource) resource, preferenceValues);
+				formatXtextResource((XtextResource) resource, preferenceValues, acceptor);
 
 			} else {
 				LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
@@ -47,7 +44,15 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	}
 
 	@Override
-	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues) {
+	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
+			IFormattedResourceAcceptor acceptor) {
+		if (!resource.getAllContents().hasNext()) {
+			LOGGER.info("Resource " + resource.getURI() + " is empty.");
+			return;
+		}
+
+		LOGGER.info("Formatting file at location " + resource.getURI());
+
 		// setup request and formatter
 		FormatterRequest req = formatterRequestProvider.get();
 		req.setPreferences(preferenceValues);
@@ -57,20 +62,20 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		req.setTextRegionAccess(regionAccess);
 
 		// list contains all the replacements which should be applied to resource
-		List<ITextReplacement> replacements = formatter.format(req);
+		List<ITextReplacement> replacements;
+		try {
+			replacements = formatter.format(req); // throws exception
+		} catch (RuntimeException e) {
+			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage(), e);
+			replacements = new ArrayList<>();
+		}
 
 		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
-		// With the formatted text, update the resource
-		InputStream resultStream = new ByteArrayInputStream(formattedString.getBytes(StandardCharsets.UTF_8));
-		resource.unload();
-		try {
-			resource.load(resultStream, null);
-		} catch (IOException e) {
-			throw new UncheckedIOException(
-					"Since the resource is an in-memory string, this exception is not expected to be ever thrown.", e);
-		}
+		// Perform handler operation
+		acceptor.accept(resource, formattedString);
 	}
+
 }

@@ -63,10 +63,10 @@ class RosettaExpressionFormattingTest {
 		SomeType {
 			attr1: "Some expression",
 			attr2: foo
-					extract
-						if True
-						then ["This is a looong", "expression"]
-						else 42,
+				extract
+					if True
+					then ["This is a looong", "expression"]
+					else 42,
 		}
 		'''
 	}
@@ -87,12 +87,95 @@ class RosettaExpressionFormattingTest {
 		SomeType {
 			attr1: "Some expression",
 			attr2: foo
-					extract
-						if True
-						then ["This is a looong", "expression"]
-						else 42,
+				extract
+					if True
+					then ["This is a looong", "expression"]
+					else 42,
 			...
 		}
+		'''
+	}
+	
+	@Test
+	def void testConstructorFormat3() {
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: Foo {
+				bar: True
+			},
+		}
+		''' ->
+		'''
+		SomeType {
+			attr1: "Some expression",
+			attr2: Foo {
+				bar: True
+		},}
+		'''
+	}
+	
+	@Test
+	def void testConstructorNestedWithBooleanFormat() {
+		'''
+		Constr1 {
+            attr1: if True
+            then False,
+            attr2: if False
+            then Constr2 {
+                    attr11: Constr3 {
+                        attr111: 42
+                	}}
+        }
+		''' ->
+		'''
+		Constr1 {
+			attr1: if True then False,
+			attr2: if False
+				then Constr2 {
+					attr11: Constr3 {
+						attr111: 42
+		}}}
+		'''
+	}
+	
+	@Test
+	def void testCollapsingBracketsDeepNested() {
+		'''
+		Constr1 {
+					attr1: if True then False,
+					attr2: if False
+						then 42 extract Constr2 {
+							attr11: Constr3 {
+								attr111: item
+				}}}
+		'''->'''
+		Constr1 {
+			attr1: if True then False,
+			attr2: if False
+				then 42
+				extract
+					Constr2 {
+						attr11: Constr3 {
+							attr111: item
+		}}}
+		'''
+	}
+	
+	@Test 
+	def void testConstructorNestedInUnaryOperation() {
+		'''
+		el1
+		extract
+			Constr1 {
+		    	attr1: val1
+			}
+		''' -> '''
+		el1
+			extract
+				Constr1 {
+					attr1: val1
+				}
 		'''
 	}
 	
@@ -761,4 +844,26 @@ class RosettaExpressionFormattingTest {
 			(["This", "is", "a", "loooooooooooooooooooooooong", "list"] count > 10)
 		'''
 	}
+	
+	@Test
+	def void testFunctionCallInParenthesis() {
+		'''
+		(SomeFunc 
+		 ( 
+		   ))
+		''' -> '''
+		(SomeFunc())
+		'''
+	}
+	
+	@Test
+	def void testConditionalInParenthesis() {
+		'''
+		(if  True 
+				  then 10)
+		''' -> '''
+		(if True then 10)
+		'''
+	}
+	
 }

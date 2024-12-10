@@ -588,4 +588,25 @@ class RosettaFormattingTest {
 				add out -> other: [in1, in1, in1, in1]
 		'''
 	}
+	
+	@Test
+	def void testChoice() {
+		'''
+		namespace "test"
+								version "test"
+		choice Test: 
+		    A
+		    
+		    	B
+
+		''' -> '''
+		namespace "test"
+		version "test"
+		
+		choice Test:
+			A
+			B
+		'''
+	}
+	
 }
