@@ -40,7 +40,7 @@ import javax.inject.Inject;
  * TODO: contribute to Xtext.
  *
  */
-public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaFormattingOptionsRetriever{
+public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
 	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
 
 	@Override
@@ -183,7 +183,7 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 		} catch (IOException e) {
 			// should never happen, since null path always leads to default options being returned
 			e.printStackTrace();
-			return null;
+			return CompletableFuture.failedFuture(e);
 		}
 	}
 }

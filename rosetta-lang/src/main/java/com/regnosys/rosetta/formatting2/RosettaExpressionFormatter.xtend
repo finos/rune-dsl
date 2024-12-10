@@ -181,11 +181,12 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	def indentInnerWithoutCurlyBracket(EObject expr, IHiddenRegion firstRegion, extension IFormattableDocument document) {
+		if (expr === null || firstRegion === null) return
 		val nextRegion = getTextRegionExt(document).nextHiddenRegion(expr)
 		val end = nextRegion.previousSemanticRegion
 		set(
 			firstRegion,
-			if (end.text == "}")
+			if (end.text == "}" && (end.previousSemanticRegion.text == "}" || end.nextSemanticRegion == "}"))
 				end.findInnermostClosingCurlyBracket.previousHiddenRegion
 			else
 				end.nextHiddenRegion,
@@ -194,12 +195,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void surroundIndentWithoutCurlyBracket(EObject expr, extension IFormattableDocument document) {
+		if (expr === null) return
 		val objectRegion = expr.regionForEObject
 		val end = objectRegion.nextHiddenRegion.previousSemanticRegion
 
 		set(
 			objectRegion.previousHiddenRegion,
-			if (end.text == "}")
+			if (end.text == "}" && (end.previousSemanticRegion.text == "}" || end.nextSemanticRegion == "}"))
 				end.findInnermostClosingCurlyBracket.previousHiddenRegion
 			else
 				end.nextHiddenRegion,
@@ -208,14 +210,17 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void interiorIndentWithoutCurlyBracket(ISemanticRegion start, ISemanticRegion end, extension IFormattableDocument document) {
-		set(
-			start.nextHiddenRegion,
-			if (end.text == "}")
-				end.findInnermostClosingCurlyBracket.previousHiddenRegion
-			else
-				end.previousHiddenRegion,
-			[indent]
-		)
+		if (start !== null && end !== null) {
+			set(
+				start.nextHiddenRegion,
+				if (end.text == "}" && (end.previousSemanticRegion.text == "}" || end.nextSemanticRegion == "}"))
+					end.findInnermostClosingCurlyBracket.previousHiddenRegion
+				else
+					end.previousHiddenRegion,
+				[indent]
+			)
+		}
+		
 	}
 	
 	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {

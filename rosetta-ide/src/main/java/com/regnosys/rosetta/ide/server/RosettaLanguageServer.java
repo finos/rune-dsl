@@ -6,7 +6,7 @@ import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageServer;
 
-public interface RosettaFormattingOptionsRetriever extends LanguageServer{
+public interface RosettaLanguageServer extends LanguageServer{
 
 	@JsonRequest
 	CompletableFuture<FormattingOptions> getDefaultFormattingOptions();

@@ -162,6 +162,23 @@ class RosettaExpressionFormattingTest {
 		'''
 	}
 	
+	@Test 
+	def void testConstructorNestedInUnaryOperation() {
+		'''
+		el1
+		extract
+			Constr1 {
+		    	attr1: val1
+			}
+		''' -> '''
+		el1
+			extract
+				Constr1 {
+					attr1: val1
+				}
+		'''
+	}
+	
 	@Test
 	def void testOperationChainingFormat1() {
 		'''
