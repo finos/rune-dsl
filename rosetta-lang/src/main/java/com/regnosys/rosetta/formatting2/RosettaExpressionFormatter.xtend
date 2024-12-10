@@ -160,6 +160,14 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			false
 	}
 	
+	def comesBefore(ISemanticRegion region, String el) {
+		if (region !== null && region.nextSemanticRegion !== null) {
+			val nextRegionElement = region.nextSemanticRegion.text
+			nextRegionElement == el
+		} else
+			false
+	}
+	
 	private def ISemanticRegion findInnermostClosingCurlyBracket(ISemanticRegion region) {
 		if (region.comesAfter("}")) // case '}}'
 		{
@@ -175,6 +183,17 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 	
+	private def boolean shouldBracketNotBeIndented(ISemanticRegion region) {
+		region.text == "}" 
+		&& 
+			(region.comesAfter("}") || region.comesBefore("}")) 
+			||
+				((region.comesAfter(",") && region.previousSemanticRegion.comesAfter("}")) 
+					||
+					(region.comesBefore(",") && region.nextSemanticRegion.comesBefore("}"))
+		)
+	}
+	
 	def indentInnerWithoutCurlyBracket(EObject expr, extension IFormattableDocument document) {
 		val ext = getTextRegionExt(document).previousHiddenRegion(expr)
 		expr.indentInnerWithoutCurlyBracket(ext.nextHiddenRegion, document)
@@ -186,7 +205,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		val end = nextRegion.previousSemanticRegion
 		set(
 			firstRegion,
-			if (end.text == "}" && (end.previousSemanticRegion.text == "}" || end.nextSemanticRegion == "}"))
+			if (shouldBracketNotBeIndented(end))
 				end.findInnermostClosingCurlyBracket.previousHiddenRegion
 			else
 				end.nextHiddenRegion,
@@ -201,7 +220,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 
 		set(
 			objectRegion.previousHiddenRegion,
-			if (end.text == "}" && (end.previousSemanticRegion.text == "}" || end.nextSemanticRegion == "}"))
+			if (shouldBracketNotBeIndented(end))
 				end.findInnermostClosingCurlyBracket.previousHiddenRegion
 			else
 				end.nextHiddenRegion,
@@ -213,7 +232,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		if (start !== null && end !== null) {
 			set(
 				start.nextHiddenRegion,
-				if (end.text == "}" && (end.previousSemanticRegion.text == "}" || end.nextSemanticRegion == "}"))
+				if (shouldBracketNotBeIndented(end))
 					end.findInnermostClosingCurlyBracket.previousHiddenRegion
 				else
 					end.previousHiddenRegion,
