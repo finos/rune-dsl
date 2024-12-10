@@ -368,7 +368,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			
 			RMetaAnnotatedType parentType = null;
 			if (parent != null) {
-				isSingleCheck(parent, parent, null, "The `only exists` operation requires a single cardinality input");
+				isSingleCheck(parent, parent, null, "The `only exists` operator requires a single cardinality input");
 				parentType = typeProvider.getRMetaAnnotatedType(parent);
 			} else {
 				if (cardinalityProvider.isImplicitVariableMulti(expr)) {
