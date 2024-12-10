@@ -82,13 +82,6 @@ Install the latest version of the "Eclipse IDE for Java and DSL Developers" usin
 #### Install the Checkstyle plugin
 We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).
 
-#### Install the Xsemantics plugin
-We use the [Xsemantics DSL](https://github.com/eclipse/xsemantics) to define the type system of Rune. To enable language support for it in Eclipse, follow these steps:
-1. Find out which version of Xsemantics you need by looking in the `pom.xml` file of the parent project. There should be a property called `xsemantics.version`.
-2. Go to Help > Install New Software...
-3. In 'Work with' fill in [https://download.eclipse.org/xsemantics/milestones/](https://download.eclipse.org/xsemantics/milestones/).
-4. Install the appropriate version of XSemantics.
-
 #### Setup the project
 1. **Open the project in Eclipse**: File > Open Projects from File System..., select the right folder, click Finish.
 2. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
@@ -106,7 +99,6 @@ If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the follo
 Support for developing Xtext projects in Intellij is limited. It has no support for
 - editing `Xtend` files
 - editing the `Xtext` file
-- editing the `Xsemantics` file
 - running `GenerateRosetta.mwe2`.
 
 You can however let Maven take care of that, and still edit regular Java files, run tests, etc.

@@ -101,7 +101,6 @@
 		<xtext.version>2.27.0</xtext.version>
 		<commons-lang3.version>3.14.0</commons-lang3.version>
 		<commons-text.version>1.12.0</commons-text.version>
-		<xsemantics.version>1.22.0</xsemantics.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<org.eclipse.emf.ecore.xcore.lib.version>1.6.0</org.eclipse.emf.ecore.xcore.lib.version>
 		<maven-plugin-api.version>3.9.8</maven-plugin-api.version>
@@ -276,22 +275,6 @@
 				<version>${org.eclipse.emf.ecore.xcore.lib.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.xsemantics</groupId>
-				<artifactId>org.eclipse.xsemantics.runtime</artifactId>
-				<version>${xsemantics.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>ch.qos.reload4j</groupId>
-						<artifactId>reload4j</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xsemantics</groupId>
-				<artifactId>org.eclipse.xsemantics.dsl</artifactId>
-				<version>${xsemantics.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>
 				<version>${snakeyaml.version}</version>
@@ -451,7 +434,6 @@
 								<source>${project.basedir}/src-gen/main/java</source>
 								<source>${project.basedir}/emf-gen/main/java</source>
 								<source>${project.basedir}/xtend-gen/main/java</source>
-								<source>${project.basedir}/xsemantics-gen/main/java</source>
 							</sources>
 						</configuration>
 					</execution>

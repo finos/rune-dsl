@@ -10,12 +10,12 @@ public class RMetaAnnotatedType {
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
 	
-	public RMetaAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
+	private RMetaAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
 		this.rType = rType;
 		this.metaAttributes = Validate.noNullElements(metaAttributes);
 	}
-	
-	public static RMetaAnnotatedType withEmptyMeta(RType rType) {
+
+	public static RMetaAnnotatedType withNoMeta(RType rType) {
 		return new RMetaAnnotatedType(rType, List.of());
 	}
 	
