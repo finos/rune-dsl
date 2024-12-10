@@ -31,8 +31,10 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -116,16 +118,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(RosettaConstructorExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
-			
-		val innermostClosingCurlyBracket = findInnermostClosingCurlyBracket(
-			expr.regionFor.keyword(rightCurlyBracketKeyword_4)) as ISemanticRegion
-			
-		interior(
+
+		interiorIndentWithoutCurlyBracket(
 			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
 				.prepend[oneSpace]
 				.append[newLine],
-			innermostClosingCurlyBracket,
-			[indent]
+			expr.regionFor.keyword(rightCurlyBracketKeyword_4),
+			document
 		)
 		
 		val rightCurlyBracketRegion = expr.regionFor.keyword(rightCurlyBracketKeyword_4)
@@ -146,13 +145,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		]
 		
 		expr.values.forEach[
-			if (expr.eContainer instanceof RosettaConditionalExpression &&
-				!(value instanceof RosettaConstructorExpression)) {
-				surround(
-					it,
-					[indent]
-				)
-			}
 			regionFor.keyword(':')
 				.prepend[noSpace]
 				.append[oneSpace]
@@ -161,12 +153,14 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	def comesAfter(ISemanticRegion region, String el) {
-		val prevRegionElement = region.previousSemanticRegion.text
-
-		prevRegionElement == el
+		if (region !== null && region.previousSemanticRegion !== null) {
+			val prevRegionElement = region.previousSemanticRegion.text
+			prevRegionElement == el
+		} else
+			false
 	}
 	
-	private def findInnermostClosingCurlyBracket(ISemanticRegion region) {
+	private def ISemanticRegion findInnermostClosingCurlyBracket(ISemanticRegion region) {
 		if (region.comesAfter("}")) // case '}}'
 		{
 			val prevRegion = region.previousSemanticRegion
@@ -181,14 +175,57 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 	
+	def indentInnerWithoutCurlyBracket(EObject expr, extension IFormattableDocument document) {
+		val ext = getTextRegionExt(document).previousHiddenRegion(expr)
+		expr.indentInnerWithoutCurlyBracket(ext.nextHiddenRegion, document)
+	}
+	
+	def indentInnerWithoutCurlyBracket(EObject expr, IHiddenRegion firstRegion, extension IFormattableDocument document) {
+		val nextRegion = getTextRegionExt(document).nextHiddenRegion(expr)
+		val end = nextRegion.previousSemanticRegion
+		set(
+			firstRegion,
+			if (end.text == "}")
+				end.findInnermostClosingCurlyBracket.previousHiddenRegion
+			else
+				end.nextHiddenRegion,
+			[indent]
+		)
+	}
+	
+	private def void surroundIndentWithoutCurlyBracket(EObject expr, extension IFormattableDocument document) {
+		val objectRegion = expr.regionForEObject
+		val end = objectRegion.nextHiddenRegion.previousSemanticRegion
+
+		set(
+			objectRegion.previousHiddenRegion,
+			if (end.text == "}")
+				end.findInnermostClosingCurlyBracket.previousHiddenRegion
+			else
+				end.nextHiddenRegion,
+			[indent]
+		)
+	}
+	
+	private def void interiorIndentWithoutCurlyBracket(ISemanticRegion start, ISemanticRegion end, extension IFormattableDocument document) {
+		set(
+			start.nextHiddenRegion,
+			if (end.text == "}")
+				end.findInnermostClosingCurlyBracket.previousHiddenRegion
+			else
+				end.previousHiddenRegion,
+			[indent]
+		)
+	}
+	
 	private def dispatch void unsafeFormatExpression(ListLiteral expr, extension IFormattableDocument document, FormattingMode mode) {
 		expr.regionFor.keywords(',').forEach[
 			prepend[noSpace]
 		]
-		interior(
+		interiorIndentWithoutCurlyBracket(
 			expr.regionFor.keyword('['),
 			expr.regionFor.keyword(']'),
-			[indent]
+			document
 		)
 		
 		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
@@ -217,7 +254,6 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(RosettaConditionalExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension conditionalGrammarAccess = rosettaCalcConditionalExpressionAccess
-		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
 		
 		// fix edge case where 'then' inside constructor value is not indented correctly
 		if (expr.eContainer instanceof ConstructorKeyValuePair) {
@@ -232,18 +268,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		]
 		val subExprs = #[expr.^if, expr.ifthen, expr.elsethen]
 		#[expr.^if, expr.ifthen].forEach [
-			if (it instanceof RosettaConstructorExpression) {
-				val innermostClosingCurlyBracket = findInnermostClosingCurlyBracket(
-					it.regionFor.keyword(rightCurlyBracketKeyword_4)) as ISemanticRegion
-				interior(
-					it.regionFor.keyword(leftCurlyBracketKeyword_2),
-					innermostClosingCurlyBracket,
-					[indent]
-				)
-			} else if (!(it instanceof RosettaUnaryOperation)) {
-				surround(
+			if (!(it instanceof RosettaUnaryOperation)) {
+				surroundIndentWithoutCurlyBracket(
 					it,
-					[indent]
+					document
 				)
 			}
 		]
@@ -261,7 +289,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.regionFor.keyword(fullElseKeyword_5_0_0)
 					.prepend[newLine]
 				if (expr.eContainingFeature == ROSETTA_BINARY_OPERATION__RIGHT) {
-					expr.indentInner(doc)
+					expr.indentInnerWithoutCurlyBracket(doc)
 				}
 				expr.^if.formatExpression(doc, mode.stopChain)
 				expr.ifthen.formatExpression(doc, mode.stopChain)
@@ -331,13 +359,13 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.args.forEach[formatExpression(doc, mode)]
 				],
 				[extension doc | // case: long argument list
-					expr.indentInner(doc)
-					interior(
+					expr.indentInnerWithoutCurlyBracket(doc)
+					interiorIndentWithoutCurlyBracket(
 						expr.regionFor.keyword('(')
 							.append[newLine],
 						expr.regionFor.keyword(')')
 							.prepend[newLine],
-						[indent]
+						doc
 					)
 					expr.regionFor.keywords(',').forEach[
 						append[newLine]
@@ -376,7 +404,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: long operation
 				if (!expr.left.isEmpty) {
 					val afterArgument = expr.left.nextHiddenRegion
-					expr.indentInner(afterArgument, doc)
+					expr.indentInnerWithoutCurlyBracket(afterArgument, doc)
 					afterArgument
 						.set[newLine]
 					
@@ -386,7 +414,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 							false
 						}
 					if (expr.left instanceof RosettaBinaryOperation && !leftIsSameOperation) {
-						expr.left.indentInner(doc)
+						expr.left.indentInnerWithoutCurlyBracket(doc)
 					}
 					
 					expr.left.formatExpression(doc, mode.chainIf(leftIsSameOperation))
@@ -436,12 +464,12 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					}
 				],
 				[extension doc | // case: long inline function
-					interior(
+					interiorIndentWithoutCurlyBracket(
 						left
 							.append[newLine],
 						right
 							.prepend[newLine],
-						[indent]
+						doc
 					)
 					f.body.formatExpression(doc, mode.stopChain)
 				]
@@ -450,9 +478,9 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			val astRegion = f.regionForEObject
 			val formattableRegion = astRegion.merge(astRegion.previousHiddenRegion).merge(astRegion.nextHiddenRegion)
 			if (!(op instanceof ThenOperation && f.body instanceof RosettaUnaryOperation)) {
-				surround(
+				surroundIndentWithoutCurlyBracket(
 					f.body,
-					[indent]
+					document
 				)
 			}
 			formatInlineOrMultiline(document, astRegion, formattableRegion, mode.singleLineIf(op instanceof ThenOperation),
@@ -521,7 +549,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 						initialArgument = initialArgument.argument
 					}
 					if (!initialArgument.isEmpty) {
-						expr.indentInner(afterArgument, doc)
+						expr.indentInnerWithoutCurlyBracket(afterArgument, doc)
 					}
 					afterArgument
 						.set[newLine]

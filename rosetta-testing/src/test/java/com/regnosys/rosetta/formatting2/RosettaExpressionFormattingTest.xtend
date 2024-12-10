@@ -140,6 +140,29 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testCollapsingBracketsDeepNested() {
+		'''
+		Constr1 {
+					attr1: if True then False,
+					attr2: if False
+						then 42 extract Constr2 {
+							attr11: Constr3 {
+								attr111: item
+				}}}
+		'''->'''
+		Constr1 {
+			attr1: if True then False,
+			attr2: if False
+				then 42
+				extract
+					Constr2 {
+						attr11: Constr3 {
+							attr111: item
+		}}}
+		'''
+	}
+	
+	@Test
 	def void testOperationChainingFormat1() {
 		'''
 		input
