@@ -23,20 +23,25 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.util.CancelIndicator;
 
+import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import javax.inject.Inject;
 
 /**
  * TODO: contribute to Xtext.
  *
  */
-public class RosettaLanguageServerImpl extends LanguageServerImpl  {
+public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaFormattingOptionsRetriever{
+	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
 
 	@Override
 	protected ServerCapabilities createServerCapabilities(InitializeParams params) {
@@ -169,5 +174,16 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  {
 	@Override
 	public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
 		return this.getRequestManager().runRead((cancelIndicator) -> this.semanticTokensRange(params, cancelIndicator));
+	}
+
+	@Override
+	public CompletableFuture<FormattingOptions> getDefaultFormattingOptions() {
+		try {
+			return CompletableFuture.completedFuture(formattingOptionsAdapter.readFormattingOptions(null));
+		} catch (IOException e) {
+			// should never happen, since null path always leads to default options being returned
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
