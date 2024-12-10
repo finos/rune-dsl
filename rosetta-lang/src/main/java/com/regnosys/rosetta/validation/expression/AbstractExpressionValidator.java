@@ -3,6 +3,7 @@ package com.regnosys.rosetta.validation.expression;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -34,38 +35,53 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 	protected String relevantTypeDescription(RMetaAnnotatedType type, RMetaAnnotatedType context) {
 		RType valueType = type.getRType();
 		RType valueContext = context.getRType();
+		String prepend = valueType.getName().equals(valueContext.getName()) ? valueType.getNamespace() + "." : "";
 		if (valueType.equals(valueContext)) {
 			// Include meta info
-			return type.toString();
+			return prepend + type.toString();
 		}
 		if (valueType.getName().equals(valueContext.getName())) {
 			// Include type parameters
-			return valueType.toString();
+			return prepend + valueType.toString();
 		}
-		return valueType.getName();
+		return prepend + valueType.getName();
 	}
 	
-	protected String notASubtypeMessage(RMetaAnnotatedType expected, RMetaAnnotatedType actual) {
-		return new StringBuilder()
+	protected String notASubtypeMessage(RMetaAnnotatedType expected, RMetaAnnotatedType actual, Function<String, String> suggestion) {
+		String actualDescr = relevantTypeDescription(actual, expected);
+		StringBuilder msg = new StringBuilder()
 				.append("Expected type `")
 				.append(relevantTypeDescription(expected, actual))
 				.append("`, but got `")
-				.append(relevantTypeDescription(actual, expected))
-				.append("` instead")
-				.toString();
+				.append(actualDescr)
+				.append("` instead");
+		if (suggestion != null) {
+			msg.append(". ");
+			msg.append(suggestion.apply(actualDescr));
+		}
+		return msg.toString();
 	}
-	protected boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature) {
-		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, INSIGNIFICANT_INDEX);
+	private Function<String, String> defaultSubtypeSuggestion(RosettaOperation op) {
+		return actual -> "Cannot use `" + actual + "` with operator `" + op.getOperator() + "`";
 	}
-	protected boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
-		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, featureIndex);
+	protected boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, RosettaOperation op) {
+		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, INSIGNIFICANT_INDEX, defaultSubtypeSuggestion(op));
 	}
-	protected boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature) {
-		return subtypeCheck(expected, actual, sourceObject, feature, INSIGNIFICANT_INDEX);
+	protected boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, Function<String, String> suggestion) {
+		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
 	}
-	protected boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
+	protected boolean subtypeCheck(RMetaAnnotatedType expected, RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex, Function<String, String> suggestion) {
+		return subtypeCheck(expected, typeProvider.getRMetaAnnotatedType(expr), sourceObject, feature, featureIndex, suggestion);
+	}
+	protected boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature, RosettaOperation op) {
+		return subtypeCheck(expected, actual, sourceObject, feature, INSIGNIFICANT_INDEX, defaultSubtypeSuggestion(op));
+	}
+	protected boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature, Function<String, String> suggestion) {
+		return subtypeCheck(expected, actual, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
+	}
+	protected boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature, int featureIndex, Function<String, String> suggestion) {
 		if (!typeSystem.isSubtypeOf(actual, expected)) {
-			error(notASubtypeMessage(expected, actual), sourceObject, feature, featureIndex);
+			error(notASubtypeMessage(expected, actual, suggestion), sourceObject, feature, featureIndex);
 			return false;
 		}
 		return true;

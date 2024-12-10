@@ -15,6 +15,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.RosettaParameter;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
@@ -73,7 +74,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	@Check
 	public void checkCondition(Condition c) {
 		isSingleCheck(c.getExpression(), c, CONDITION__EXPRESSION, "A condition should be single cardinality");
-		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, c.getExpression(), c, CONDITION__EXPRESSION);
+		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, c.getExpression(), c, CONDITION__EXPRESSION, actual -> "A condition must be a boolean");
 	}
 	
 	@Check
@@ -86,7 +87,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		AssignPathRoot attr = op.getPath() != null
 				? segments.get(segments.size() - 1).getAttribute()
 				: op.getAssignRoot();
-		subtypeCheck(typeProvider.getRTypeOfSymbol(attr), expr, op, OPERATION__EXPRESSION);
+		subtypeCheck(typeProvider.getRTypeOfSymbol(attr), expr, op, OPERATION__EXPRESSION, actual -> "Cannot assign `" + actual + "` to output `" + attr.getName() + "`");
 		boolean isList = cardinalityProvider.isSymbolMulti(attr);
 		if (op.isAdd() && !isList) {
 			error("`add` must be used with a list", op, OPERATION__ASSIGN_ROOT);
@@ -113,11 +114,11 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
 				// Do not check right type
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.DATE_WITH_NO_META)) {
-				subtypeCheck(builtins.TIME_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+				subtypeCheck(builtins.TIME_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot add `" + actual + "` to a `date`");
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.UNCONSTRAINED_STRING_WITH_NO_META)) {
-				subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+				subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot add `" + actual + "` to a `string`");
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.UNCONSTRAINED_NUMBER_WITH_NO_META)) {
-				subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+				subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot add `" + actual + "` to a `number`");
 			} else {
 				unsupportedTypeError(leftType, op, ROSETTA_BINARY_OPERATION__LEFT, builtins.UNCONSTRAINED_NUMBER, builtins.UNCONSTRAINED_STRING, builtins.DATE);
 				if (!typeSystem.isSubtypeOf(rightType, builtins.TIME_WITH_NO_META) 
@@ -130,9 +131,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
 				// Do not check right type
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.DATE_WITH_NO_META)) {
-				subtypeCheck(builtins.DATE_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+				subtypeCheck(builtins.DATE_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot subtract `" + actual + "` from a `date`");
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.UNCONSTRAINED_NUMBER_WITH_NO_META)) {
-				subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+				subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot subtract `" + actual + "` from a `number`");
 			} else {
 				unsupportedTypeError(leftType, op, ROSETTA_BINARY_OPERATION__LEFT, builtins.UNCONSTRAINED_NUMBER, builtins.DATE);
 				if (!typeSystem.isSubtypeOf(rightType, builtins.DATE_WITH_NO_META) 
@@ -141,8 +142,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				}
 			}
 		} else {
-			subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, leftType, op, ROSETTA_BINARY_OPERATION__LEFT);
-			subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, leftType, op, ROSETTA_BINARY_OPERATION__LEFT, op);
+			subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 		}
 	}
 	
@@ -184,8 +185,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		RMetaAnnotatedType rightType = typeProvider.getRMetaAnnotatedType(right);
 		isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, op);
 		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, op);
-		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, leftType, op, ROSETTA_BINARY_OPERATION__LEFT);
-		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, leftType, op, ROSETTA_BINARY_OPERATION__LEFT, op);
+		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 	}
 	
 	@Check
@@ -203,11 +204,11 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
 			// Do not check right type
 		} else if (typeSystem.isSubtypeOf(leftType, builtins.ZONED_DATE_TIME_WITH_NO_META)) {
-			subtypeCheck(builtins.ZONED_DATE_TIME_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			subtypeCheck(builtins.ZONED_DATE_TIME_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot compare a `" + actual + "` to a `zonedDateTime`");
 		} else if (typeSystem.isSubtypeOf(leftType, builtins.DATE_WITH_NO_META)) {
-			subtypeCheck(builtins.DATE_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			subtypeCheck(builtins.DATE_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot compare a `" + actual + "` to a `date`");
 		} else if (typeSystem.isSubtypeOf(leftType, builtins.UNCONSTRAINED_NUMBER_WITH_NO_META)) {
-			subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			subtypeCheck(builtins.UNCONSTRAINED_NUMBER_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot compare a `" + actual + "` to a `number`");
 		} else {
 			unsupportedTypeError(leftType, op, ROSETTA_BINARY_OPERATION__LEFT, builtins.UNCONSTRAINED_NUMBER, builtins.DATE, builtins.ZONED_DATE_TIME);
 			if (!typeSystem.isSubtypeOf(rightType, builtins.ZONED_DATE_TIME_WITH_NO_META) 
@@ -234,7 +235,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	@Check
 	public void checkConditionalExpression(RosettaConditionalExpression expr) {
 		isSingleCheck(expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, "The condition of an if-then-else expression should be single cardinality");
-		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF);
+		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, actual -> "The condition of an if-then-else expression must be a boolean");
 		commonTypeCheck(expr.getIfthen(), expr.getElsethen(), expr, ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN);
 	}
 	
@@ -264,20 +265,22 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				if (callable instanceof RosettaExternalFunction) {
 					RosettaExternalFunction f = (RosettaExternalFunction) callable;
 					for (int i=0; i<minCount; i++) {
-						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(f.getParameters().get(i), null);
+						RosettaParameter param = f.getParameters().get(i);
+						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
 						RosettaExpression arg = expr.getArgs().get(i);
 						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i);
+						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to parameter `" + param.getName() + "`");
 					}
 				} else if (callable instanceof Function) {
 					Function f = (Function) callable;
 					for (int i=0; i<minCount; i++) {
-						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(f.getInputs().get(i), null);
+						Attribute param = f.getInputs().get(i);
+						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
 						RosettaExpression arg = expr.getArgs().get(i);
 						if (!cardinalityProvider.isSymbolMulti(f.getInputs().get(i))) {
 							isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
 						}
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i);
+						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to input `" + param.getName() + "`");
 					}
 				} else if (callable instanceof RosettaRule) {
 					RosettaRule f = (RosettaRule) callable;
@@ -285,7 +288,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 						RMetaAnnotatedType paramType = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(f.getInput()));
 						RosettaExpression arg = expr.getArgs().get(0);
 						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0);
+						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");
 					}
 				}
 			} else {
@@ -413,8 +416,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkJoinOperation(JoinOperation op) {
 		isMultiCheck(op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT, op);
 		isSingleCheck(op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT, op);
-		subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT);
-		subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT);
+		subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT, op);
+		subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 	}
 	
 	@Check
