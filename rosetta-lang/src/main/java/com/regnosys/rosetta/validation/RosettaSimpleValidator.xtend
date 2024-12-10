@@ -443,8 +443,8 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	@Check
-	def void checkFunctionNameStartsWithCapital(Function enumeration) {
-		if (Character.isLowerCase(enumeration.name.charAt(0))) {
+	def void checkFunctionNameStartsWithCapital(Function func) {
+		if (Character.isLowerCase(func.name.charAt(0))) {
 			warning("Function name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
 	}
@@ -1343,30 +1343,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (!bodyRType.RType.hasNaturalOrder) {
 				error('''Operation «op.operator» only supports comparable types (string, int, number, boolean, date). Found type «bodyRType.RType.name».''', ref, null)
 			}			
-		}
-	}
-
-	@Check
-	def checkOutputOperation(Operation o) {
-		val expr = o?.expression
-		if (expr !== null && expr.isOutputListOfLists) {
-			error('''Assign expression contains a list of lists, use flatten to create a list.''', o,
-				OPERATION__EXPRESSION)
-		}
-		val attr = o.path !== null
-				? o.pathAsSegmentList.last.attribute
-				: o.assignRoot
-		checkType(attr.RTypeOfSymbol, expr, o, OPERATION__EXPRESSION, INSIGNIFICANT_INDEX)
-		val isList = cardinality.isSymbolMulti(attr)
-		if (o.add && !isList) {
-			error('''Add must be used with a list.''', o, OPERATION__ASSIGN_ROOT)
-		}
-		if (!o.add && isList) {
-			info('''Set used with a list. Any existing list items will be overwritten.  Use Add to append items to existing list.''',
-				o, OPERATION__ASSIGN_ROOT)
-		}
-		if (!isList && cardinality.isMulti(o.expression)) {
-			error('''Cardinality mismatch - cannot assign list to a single value.''', o, OPERATION__ASSIGN_ROOT)
 		}
 	}
 

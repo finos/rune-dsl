@@ -34,7 +34,7 @@ public class SwitchValidator extends ExpressionValidator {
 	
 	@Check
 	public void checkSwitch(SwitchOperation op) {
-		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT);
+		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, op);
 		RMetaAnnotatedType argumentType = typeProvider.getRMetaAnnotatedType(op.getArgument());
 		RType rType = typeSystem.stripFromTypeAliases(argumentType.getRType());
 		if (rType instanceof REnumType) {

@@ -3985,7 +3985,7 @@ class FunctionGeneratorTest {
 			
 		'''.parseRosetta
 		model.assertError(EQUALITY_OPERATION, null,
-			"Operator `=` should specify 'all' or 'any' when comparing a list to a single value")
+			"Operator `=` should specify `all` or `any` when comparing a list to a single value")
 	}
 
 	@Test

@@ -32,6 +32,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testConditionShouldBeSingleCardinality() {
+		val model = '''
+			type Foo:
+				condition C:
+					[True, False]
+		'''.parseRosetta
+		
+		model.assertError(CONDITION, null, "Expecting single cardinality. A condition should be single cardinality")
+	}
+	
+	@Test
 	def void testOnlyExistsOnMetaIsNotValidOnSymbolReferences() {
 		val model = '''
 			type Foo:
@@ -728,7 +739,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(OPERATION, null,
-			"Cardinality mismatch - cannot assign list to a single value.")
+			"Expecting single cardinality. Cannot assign a list to a single value")
 	}
 	
 	@Test
@@ -1691,7 +1702,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set out:
 					"not a Foo"
 		'''.parseRosetta
-		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'Foo' but was 'string'")
+		model.assertError(OPERATION, null, "Expected type `Foo`, but got `string` instead")
 	}
 	
 	
@@ -1708,7 +1719,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set out -> id:
 					"not a boolean"
 		'''.parseRosetta
-		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'boolean' but was 'string'")
+		model.assertError(OPERATION, null, "Expected type `boolean`, but got `string` instead")
 	}
 	
 	@Test
@@ -1729,7 +1740,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  set result -> attr:
 			     in1 as-key
 		'''.parseRosetta
-		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'WithKey' but was 'TypeToUse'")
+		model.assertError(OPERATION, null, "Expected type `WithKey`, but got `TypeToUse` instead")
 	}
 	
 	@Test
@@ -1761,7 +1772,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output: out string (0..1)
 				set out: in0->other
 		'''.parseRosetta
-		model.assertError(OPERATION, TYPE_ERROR, "Expected type 'string' but was 'int'")
+		model.assertError(OPERATION, null, "Expected type `string`, but got `int` instead")
 	}
 	
 	@Test
@@ -3018,7 +3029,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
-		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list.")
+		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list")
 	}
 	
 	@Test
@@ -3037,7 +3048,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				xs string (0..*)
 		'''.parseRosetta
-		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list.")
+		model.assertError(OPERATION, null, "Assign expression contains a list of lists, use flatten to create a list")
 	}
 	
 	@Test

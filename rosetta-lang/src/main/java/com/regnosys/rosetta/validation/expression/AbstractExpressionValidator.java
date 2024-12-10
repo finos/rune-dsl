@@ -90,22 +90,38 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		return true;
 	}
 	
-	protected boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature) {
-		return isMultiCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX);
+	protected boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, RosettaOperation op) {
+		String suggestion = "The `" + op.getOperator() + "` operator requires a multi cardinality input";
+		return isMultiCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
 	}
-	protected boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
+	protected boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, String suggestion) {
+		return isMultiCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
+	}
+	protected boolean isMultiCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex, String suggestion) {
 		if (!cardinalityProvider.isMulti(expr)) {
-			error("Expecting multi cardinality", sourceObject, feature, featureIndex);
+			String msg = "Expecting multi cardinality";
+			if (suggestion != null) {
+				msg += ". " + suggestion;
+			}
+			error(msg, sourceObject, feature, featureIndex);
 			return false;
 		}
 		return true;
 	}
-	protected boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature) {
-		return isSingleCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX);
+	protected boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, RosettaOperation op) {
+		String suggestion = "The `" + op.getOperator() + "` operator requires a single cardinality input";
+		return isSingleCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
 	}
-	protected boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex) {
+	protected boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, String suggestion) {
+		return isSingleCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
+	}
+	protected boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex, String suggestion) {
 		if (cardinalityProvider.isMulti(expr)) {
-			error("Expecting single cardinality", sourceObject, feature, featureIndex);
+			String msg = "Expecting single cardinality";
+			if (suggestion != null) {
+				msg += ". " + suggestion;
+			}
+			error(msg, sourceObject, feature, featureIndex);
 			return false;
 		}
 		return true;

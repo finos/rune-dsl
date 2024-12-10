@@ -27,6 +27,7 @@ import com.regnosys.rosetta.rosetta.expression.ExistsModifier;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
@@ -37,8 +38,12 @@ import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
@@ -46,9 +51,11 @@ import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 // TODO: move over expression validations from RosettaSimpleValidator
@@ -64,14 +71,44 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaFunctionExtensions functionExtensions;
 	
 	@Check
+	public void checkCondition(Condition c) {
+		isSingleCheck(c.getExpression(), c, CONDITION__EXPRESSION, "A condition should be single cardinality");
+		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, c.getExpression(), c, CONDITION__EXPRESSION);
+	}
+	
+	@Check
+	public void checkFunctionOperation(Operation op) {
+		RosettaExpression expr = op.getExpression();
+		if (expr != null && cardinalityProvider.isOutputListOfLists(expr)) {
+			error("Assign expression contains a list of lists, use flatten to create a list", op, OPERATION__EXPRESSION);
+		}
+		List<Segment> segments = op.pathAsSegmentList();
+		AssignPathRoot attr = op.getPath() != null
+				? segments.get(segments.size() - 1).getAttribute()
+				: op.getAssignRoot();
+		subtypeCheck(typeProvider.getRTypeOfSymbol(attr), expr, op, OPERATION__EXPRESSION);
+		boolean isList = cardinalityProvider.isSymbolMulti(attr);
+		if (op.isAdd() && !isList) {
+			error("`add` must be used with a list", op, OPERATION__ASSIGN_ROOT);
+		}
+		if (!op.isAdd() && isList) {
+			info("`set` used with a list. Any existing list items will be overwritten. Use `add` to append items to existing list",
+				op, OPERATION__ASSIGN_ROOT);
+		}
+		if (!isList) {
+			isSingleCheck(expr, op, OPERATION__EXPRESSION, "Cannot assign a list to a single value");
+		}
+	}
+	
+	@Check
 	public void checkArithmeticOperation(ArithmeticOperation op) {
 		RosettaExpression left = op.getLeft();
 		RosettaExpression right = op.getRight();
 		String operator = op.getOperator();
 		RMetaAnnotatedType leftType = typeProvider.getRMetaAnnotatedType(left);
 		RMetaAnnotatedType rightType = typeProvider.getRMetaAnnotatedType(right);
-		isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT);
-		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT);
+		isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, op);
+		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 		if (operator.equals("+")) {
 			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
 				// Do not check right type
@@ -109,19 +146,32 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		}
 	}
 	
-	@Check
-	public void checkEqualityOperation(EqualityOperation op) {
+	private void checkModifiedBinaryOperation(ModifiableBinaryOperation op) {
 		RosettaExpression left = op.getLeft();
 		RosettaExpression right = op.getRight();
+		String removeModifierSuggestion = "Did you mean to remove the `" + op.getCardMod().getLiteral() + "` modifier on the `" + op.getOperator() + "` operator?";
+		String suggestion;
+		if (cardinalityProvider.isMulti(right)) {
+			// Multi and single are flipped
+			suggestion = "Did you mean to flip around the operands of the `" + op.getOperator() + "` operator?";
+		} else {
+			// Both are single
+			suggestion = removeModifierSuggestion;
+		}
+		isMultiCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, suggestion);
+		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, removeModifierSuggestion);
+	}
+	
+	@Check
+	public void checkEqualityOperation(EqualityOperation op) {
 		comparableTypeCheck(op);
 		if (op.getCardMod() != CardinalityModifier.NONE) {
-			isMultiCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT);
-			isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			checkModifiedBinaryOperation(op);
 		} else {
 			boolean leftIsMulti = cardinalityProvider.isMulti(op.getLeft());
 			boolean rightIsMulti = cardinalityProvider.isMulti(op.getRight());
 			if (leftIsMulti != rightIsMulti) {
-				error("Operator `" + op.getOperator() + "` should specify 'all' or 'any' when comparing a list to a single value", op, null);
+				error("Operator `" + op.getOperator() + "` should specify `all` or `any` when comparing a list to a single value", op, null);
 			}
 		}
 	}
@@ -132,8 +182,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		RosettaExpression right = op.getRight();
 		RMetaAnnotatedType leftType = typeProvider.getRMetaAnnotatedType(left);
 		RMetaAnnotatedType rightType = typeProvider.getRMetaAnnotatedType(right);
-		isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT);
-		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT);
+		isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, op);
+		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, leftType, op, ROSETTA_BINARY_OPERATION__LEFT);
 		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT);
 	}
@@ -145,11 +195,10 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		RMetaAnnotatedType leftType = typeProvider.getRMetaAnnotatedType(left);
 		RMetaAnnotatedType rightType = typeProvider.getRMetaAnnotatedType(right);
 		if (op.getCardMod() != CardinalityModifier.NONE) {
-			isMultiCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT);
-			isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			checkModifiedBinaryOperation(op);
 		} else {
-			isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT);
-			isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT);
+			isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, "Did you mean to use `all` or `any` in front of the `" + op.getOperator() + "` operator?");
+			isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, "Did you mean to use `all` or `any` in front of the `" + op.getOperator() + "` operator?");
 		}
 		if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
 			// Do not check right type
@@ -171,19 +220,20 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	
 	@Check
 	public void checkContainsExpression(RosettaContainsExpression expr) {
-		isMultiCheck(expr.getLeft(), expr, ROSETTA_BINARY_OPERATION__LEFT);
+		isMultiCheck(expr.getLeft(), expr, ROSETTA_BINARY_OPERATION__LEFT, "Did you mean to use the `=` operator instead?");
 		comparableTypeCheck(expr);
 	}
 	
 	@Check
 	public void checkDisjointExpression(RosettaDisjointExpression expr) {
-		isMultiCheck(expr.getLeft(), expr, ROSETTA_BINARY_OPERATION__LEFT);
+		isMultiCheck(expr.getLeft(), expr, ROSETTA_BINARY_OPERATION__LEFT, expr);
+		isMultiCheck(expr.getRight(), expr, ROSETTA_BINARY_OPERATION__LEFT, expr);
 		comparableTypeCheck(expr);
 	}
 	
 	@Check
 	public void checkConditionalExpression(RosettaConditionalExpression expr) {
-		isSingleCheck(expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF);
+		isSingleCheck(expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF, "The condition of an if-then-else expression should be single cardinality");
 		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, expr.getIf(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IF);
 		commonTypeCheck(expr.getIfthen(), expr.getElsethen(), expr, ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN);
 	}
@@ -216,7 +266,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 					for (int i=0; i<minCount; i++) {
 						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(f.getParameters().get(i), null);
 						RosettaExpression arg = expr.getArgs().get(i);
-						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i);
+						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i);
 					}
 				} else if (callable instanceof Function) {
@@ -225,7 +275,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(f.getInputs().get(i), null);
 						RosettaExpression arg = expr.getArgs().get(i);
 						if (!cardinalityProvider.isSymbolMulti(f.getInputs().get(i))) {
-							isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i);
+							isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
 						}
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i);
 					}
@@ -234,7 +284,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 					if (minCount >= 1) {
 						RMetaAnnotatedType paramType = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(f.getInput()));
 						RosettaExpression arg = expr.getArgs().get(0);
-						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0);
+						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0);
 					}
 				}
@@ -266,7 +316,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	@Check
 	public void checkExistsExpression(RosettaExistsExpression expr) {
 		if (expr.getModifier() == ExistsModifier.MULTIPLE || expr.getModifier() == ExistsModifier.SINGLE) {
-			isMultiCheck(expr.getArgument(), expr, ROSETTA_UNARY_OPERATION__ARGUMENT);
+			isMultiCheck(expr.getArgument(), expr, ROSETTA_UNARY_OPERATION__ARGUMENT, expr);
 		}
 	}
 	
@@ -315,11 +365,11 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			
 			RMetaAnnotatedType parentType = null;
 			if (parent != null) {
-				isSingleCheck(parent, parent, null);
+				isSingleCheck(parent, parent, null, "The `only exists` operation requires a single cardinality input");
 				parentType = typeProvider.getRMetaAnnotatedType(parent);
 			} else {
 				if (cardinalityProvider.isImplicitVariableMulti(expr)) {
-					error("Expecting single cardinality parent", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS, 0);
+					error("Expecting single cardinality input", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS, 0);
 				}
 				parentType = typeProvider.typeOfImplicitVariable(expr);
 			}
@@ -332,7 +382,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	
 	@Check
 	public void checkOneOfOperation(OneOfOperation op) {
-		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT);
+		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, op);
 		RMetaAnnotatedType argType = typeProvider.getRMetaAnnotatedType(op.getArgument());
 		if (!mayBeEmpty(argType.getRType())) {
 			unsupportedTypeError(argType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "All attributes of input type should be optional");
@@ -341,7 +391,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	
 	@Check
 	public void checkChoiceOperation(ChoiceOperation op) {
-		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT);
+		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, op);
 		RMetaAnnotatedType argType = typeProvider.getRMetaAnnotatedType(op.getArgument());
 		if (!(argType.getRType() instanceof RDataType)) {
 			unsupportedTypeError(argType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "Input should be a complex type");
@@ -361,8 +411,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	
 	@Check
 	public void checkJoinOperation(JoinOperation op) {
-		isMultiCheck(op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT);
-		isSingleCheck(op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT);
+		isMultiCheck(op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT, op);
+		isSingleCheck(op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 		subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT);
 		subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT);
 	}
