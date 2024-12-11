@@ -12,19 +12,19 @@ import com.google.inject.ProvidedBy;
 public class RosettaGeneratorsConfiguration {
 	private final Predicate<String> namespaceFilter;
 	private final RosettaTabulatorConfiguration rosettaTabulatorConfiguration;
-	private final JavaConfiguration javaConfiguration;
+	private final JavaConfiguration java;
 
 	public RosettaGeneratorsConfiguration() {
 		this(n -> true, new RosettaTabulatorConfiguration(List.of(), List.of()), new JavaConfiguration(null));
 	}
-	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter, RosettaTabulatorConfiguration tabulators, JavaConfiguration javaConfiguration) {
+	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter, RosettaTabulatorConfiguration tabulators, JavaConfiguration java) {
 		Objects.requireNonNull(namespaceFilter);
 		Objects.requireNonNull(tabulators);
-		Objects.requireNonNull(javaConfiguration);
+		Objects.requireNonNull(java);
 		
 		this.namespaceFilter = namespaceFilter;
 		this.rosettaTabulatorConfiguration = tabulators;
-		this.javaConfiguration = javaConfiguration;
+		this.java = java;
 	}
 
 	public Predicate<String> getNamespaceFilter() {
@@ -36,7 +36,7 @@ public class RosettaGeneratorsConfiguration {
 	}
 	
 	public JavaConfiguration getJava() {
-		return javaConfiguration;
+		return java;
 	}
 
 	public static class Provider implements javax.inject.Provider<RosettaGeneratorsConfiguration> {
