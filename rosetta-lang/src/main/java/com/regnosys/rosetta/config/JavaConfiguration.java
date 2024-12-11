@@ -8,6 +8,10 @@ import com.google.inject.ProvidedBy;
 public class JavaConfiguration {
 	private final String runtimeModuleClass;
 
+	public JavaConfiguration() {
+		this(null);
+	}
+
 	public JavaConfiguration(String runtimeModuleClass) {
 		this.runtimeModuleClass = runtimeModuleClass;
 	}

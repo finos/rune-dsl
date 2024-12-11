@@ -14,6 +14,7 @@ public class RosettaTabulatorConfiguration {
 	public RosettaTabulatorConfiguration() {
 		this(Collections.emptyList(), Collections.emptyList());
 	}
+	
 	public RosettaTabulatorConfiguration(List<String> annotations, List<String> types) {
 		Validate.noNullElements(annotations);
 		Validate.noNullElements(types);
