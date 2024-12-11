@@ -21,19 +21,35 @@ import java.math.BigInteger;
 import java.time.chrono.IsoChronology;
 
 public class IsLeapYear {
-	public boolean execute(Integer year) {
-		return execute(year.longValue());
+	public Boolean execute(Integer year) {
+		if (year == null) {
+			return null;
+		}
+		return isLeapYear(year.longValue());
 	}
 	
-	public boolean execute(Long year) {
-		return IsoChronology.INSTANCE.isLeapYear(year);
+	public Boolean execute(Long year) {
+		if (year == null) {
+			return null;
+		}
+		return isLeapYear(year.longValue());
 	}
 	
-	public boolean execute(BigInteger year) {
-		return execute(year.longValue());
+	public Boolean execute(BigInteger year) {
+		if (year == null) {
+			return null;
+		}
+		return isLeapYear(year.longValue());
 	}
 
-	public boolean execute(BigDecimal year) {
-		return execute(year.longValue());
+	public Boolean execute(BigDecimal year) {
+		if (year == null) {
+			return null;
+		}
+		return isLeapYear(year.longValue());
+	}
+	
+	private boolean isLeapYear(long year) {
+		return IsoChronology.INSTANCE.isLeapYear(year);
 	}
 }

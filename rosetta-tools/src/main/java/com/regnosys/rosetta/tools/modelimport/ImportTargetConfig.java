@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.tools.modelimport;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,7 +21,7 @@ public class ImportTargetConfig {
 			@JsonProperty("preferences") ImportTargetPreferences preferences) {
 		this.namespace = namespace;
 		this.namespaceDefinition = namespaceDefinition;
-		this.nameOverrides = nameOverrides;
+		this.nameOverrides = nameOverrides == null ? Collections.emptyMap() : nameOverrides;
 		this.preferences = preferences == null ? new ImportTargetPreferences(null, null, null) : preferences;
 	}
 

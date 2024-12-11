@@ -7,64 +7,124 @@ import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
 
 public interface ResourceFormatterService {
-	
+
 	/**
-	 * Formats each {@link XtextResource} in the provided collection in-memory.
+	 * Formats each {@link XtextResource} in the provided collection in-memory and
+	 * passes the formatted content to a handler for further processing.
 	 * <p>
-	 * This method iterates over the given collection of resources and applies formatting 
-	 * directly to each resource. Formatting may include indentation, spacing adjustments, 
-	 * and other stylistic improvements to ensure consistency and readability of the resources.
+	 * This method iterates over the given collection of resources and applies
+	 * formatting directly to each resource. Formatting may include indentation,
+	 * spacing adjustments, and other stylistic improvements to ensure consistency
+	 * and readability of the resources.
 	 * </p>
 	 * 
-	 * @param resources a collection of {@link XtextResource} objects to be formatted
-	 */
-	default void formatCollection(Collection<Resource> resources) {
-		formatCollection(resources, null);
-	}
-	
-	/**
-	 * Formats the given {@link XtextResource} in-memory.
 	 * <p>
-	 * This method applies formatting directly to the specified resource. Formatting can include
-	 * adjustments to indentation, spacing, and other stylistic elements to ensure consistency
-	 * and readability of the resource content.
+	 * The handler, represented as a {@link java.util.function.BiConsumer}, is
+	 * called with two arguments: the {@link Resource} being formatted, and the
+	 * resulting formatted text as a {@link String}. This allows the caller to
+	 * specify actions such as saving the formatted content, logging it, or
+	 * collecting it for assertions in a test.
+	 * </p>
+	 * 
+	 * @param resources a collection of {@link XtextResource} objects to be
+	 *                  formatted
+	 * @param acceptor  an {@link IFormattedResourceAcceptor} to process the
+	 *                  formatted resource and its content
+	 */
+	default void formatCollection(Collection<Resource> resources, IFormattedResourceAcceptor acceptor) {
+		formatCollection(resources, null, acceptor);
+	}
+
+	/**
+	 * Formats the given {@link XtextResource} in-memory and passes the formatted
+	 * content to a handler for further processing.
+	 * <p>
+	 * This method applies formatting directly to the specified resource. Formatting
+	 * can include adjustments to indentation, spacing, and other stylistic elements
+	 * to ensure consistency and readability of the resource content.
+	 * </p>
+	 * 
+	 * <p>
+	 * The handler, represented as a {@link java.util.function.BiConsumer}, is
+	 * called with two arguments: the {@link Resource} being formatted, and the
+	 * resulting formatted text as a {@link String}. This allows the caller to
+	 * specify actions such as saving the formatted content, logging it, or
+	 * collecting it for assertions in a test.
 	 * </p>
 	 * 
 	 * @param resources the {@link XtextResource} to format
-	 * @param preferenceValues an {@link ITypedPreferenceValues} object containing formatting preferences, 
-	 *                         or {@code null} if no preferences are specified
+	 * @param acceptor  an {@link IFormattedResourceAcceptor} to process the
+	 *                  formatted resource and its content
 	 */
-	default void formatXtextResource(XtextResource resource) {
-		formatXtextResource(resource, null);
+	default void formatXtextResource(XtextResource resource, IFormattedResourceAcceptor acceptor) {
+		formatXtextResource(resource, null, acceptor);
 	}
-	
+
 	/**
-	 * Formats each {@link XtextResource} in the provided collection in-memory, with specified formatting preferences.
+	 * Formats each {@link XtextResource} in the provided collection in-memory,
+	 * applying specified formatting preferences, and passes the formatted content
+	 * to a handler for further processing.
 	 * <p>
-	 * This method iterates over the given collection of resources and applies formatting 
-	 * directly to each resource. Formatting may include indentation, spacing adjustments, 
-	 * and other stylistic improvements to ensure consistency and readability of the resources.
-	 * The formatting can be customized based on the specified {@link ITypedPreferenceValues}.
-	 * If no preferences are required, {@code preferenceValues} can be set to {@code null}.
+	 * This method iterates over the given collection of resources, formats each
+	 * resource according to the provided preferences, and invokes a handler to
+	 * process the formatted content. Formatting includes indentation, spacing
+	 * adjustments, and other stylistic refinements to ensure consistency and
+	 * readability of the resources. The formatting behavior can be customized based
+	 * on the provided {@link ITypedPreferenceValues}.
+	 * </p>
+	 * <p>
+	 * The handler, represented as a {@link java.util.function.BiConsumer}, is
+	 * called for each resource with two arguments: the {@link Resource} being
+	 * formatted, and the resulting formatted text as a {@link String}. This allows
+	 * the caller to specify actions such as saving the formatted content, logging
+	 * it, or collecting it for assertions in a test.
+	 * </p>
+	 * <p>
+	 * If no formatting preferences are required, the {@code preferenceValues}
+	 * parameter can be set to {@code null}.
 	 * </p>
 	 * 
-	 * @param resources a collection of {@link XtextResource} objects to be formatted
-	 * @param preferenceValues an {@link ITypedPreferenceValues} object containing formatting preferences, 
-	 *                         or {@code null} if no preferences are specified
+	 * @param resources        a collection of {@link XtextResource} objects to be
+	 *                         formatted
+	 * @param preferenceValues an {@link ITypedPreferenceValues} object containing
+	 *                         formatting preferences, or {@code null} if no
+	 *                         preferences are specified
+	 * @param acceptor         an {@link IFormattedResourceAcceptor} to process the
+	 *                         formatted resource and its content
 	 */
-	void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues); 
-	
+	void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
+			IFormattedResourceAcceptor acceptor);
+
 	/**
-	 * Formats the given {@link XtextResource} in-memory.
+	 * Formats the given {@link XtextResource} in-memory, applying specified
+	 * formatting preferences, and passes the formatted content to a handler for
+	 * further processing.
 	 * <p>
-	 * This method applies formatting directly to the specified resource. Formatting can include
-	 * adjustments to indentation, spacing, and other stylistic elements to ensure consistency
-	 * and readability of the resource content.
-	 * The formatting can be customized based on the specified {@link ITypedPreferenceValues}.
-	 * If no preferences are required, {@code preferenceValues} can be set to {@code null}.
+	 * This method formats each resource according to the provided preferences, and
+	 * invokes a handler to process the formatted content. Formatting includes
+	 * indentation, spacing adjustments, and other stylistic refinements to ensure
+	 * consistency and readability of the resources. The formatting behavior can be
+	 * customized based on the provided {@link ITypedPreferenceValues}.
 	 * </p>
-	 *
-	 * @param resource the {@link XtextResource} to format
+	 * <p>
+	 * The handler, represented as a {@link java.util.function.BiConsumer}, is
+	 * called with two arguments: the {@link Resource} being formatted, and the
+	 * resulting formatted text as a {@link String}. This allows the caller to
+	 * specify actions such as saving the formatted content, logging it, or
+	 * collecting it for assertions in a test.
+	 * </p>
+	 * <p>
+	 * If no formatting preferences are required, the {@code preferenceValues}
+	 * parameter can be set to {@code null}.
+	 * </p>
+	 * 
+	 * @param resource         the {@link XtextResource} to be formatted
+	 * @param preferenceValues an {@link ITypedPreferenceValues} object containing
+	 *                         formatting preferences, or {@code null} if no
+	 *                         preferences are specified
+	 * @param acceptor         an {@link IFormattedResourceAcceptor} to process the
+	 *                         formatted resource and its content
 	 */
-	void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues);
+	void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
+			IFormattedResourceAcceptor acceptor);
 }
