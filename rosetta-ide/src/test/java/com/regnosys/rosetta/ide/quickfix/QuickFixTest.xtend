@@ -87,4 +87,83 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 			]
 		]
 	}
+	
+	@Test
+	def testQuickFixDuplicateImport() {
+		val model = '''
+		namespace foo.bar
+		
+		import dsl.foo.*
+		import dsl.foo.*
+		
+		func Bar:
+			inputs: foo Foo (1..1)
+			output: result int (1..1)
+			
+			set result: fooImport.returnResult()
+		'''
+		testCodeAction[
+			it.model = model
+			it.filesInScope = #{"foo.rosetta" -> '''
+				namespace dsl.foo
+				
+				type Foo:
+					a int (1..1)
+			'''}
+			assertCodeActions = [
+				assertEquals(1, size)
+				
+				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
+				
+				sorted.get(0).getRight => [
+					assertEquals("Optimize imports.", title)
+					edit.changes.values.head.head => [
+						assertEquals("", newText)
+						assertEquals(new Position(3, 0), range.start)
+						assertEquals(new Position(3, 16), range.end)
+					]
+				]
+			]
+		]
+	}
+	
+	@Test
+	def testQuickFixUnusedImport() {
+		val model = '''
+		namespace foo.bar
+		
+		import dsl.foo.*
+		import dsl.bar.*
+		
+		func Bar:
+			inputs: foo Foo (1..1)
+			output: result int (1..1)
+			
+			set result: fooImport.returnResult()
+		'''
+		testCodeAction[
+			it.model = model
+			it.filesInScope = #{"foo.rosetta" -> '''
+				namespace dsl.foo
+				
+				type Foo:
+					a int (1..1)
+			'''}
+			assertCodeActions = [
+				assertEquals(1, size)
+				
+				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
+				
+				sorted.get(0).getRight => [
+					assertEquals("Optimize imports.", title)
+					edit.changes.values.head.head => [
+						assertEquals("", newText)
+						assertEquals(new Position(3, 0), range.start)
+						assertEquals(new Position(3, 16), range.end)
+					]
+				]
+			]
+		]
+	}
+	
 }

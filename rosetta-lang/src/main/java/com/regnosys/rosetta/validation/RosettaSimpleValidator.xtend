@@ -128,6 +128,8 @@ import java.util.Collection
 import org.eclipse.xtext.resource.IResourceDescriptions
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.Import
+import java.util.HashSet
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -150,6 +152,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
 	@Inject extension RosettaInterpreter
+	@Inject ImportValidatorService importValidatorService;
 	
 	@Check
 	def void checkOnlyExistsNotUsedOnMeta(RosettaOnlyExistsExpression op) {
@@ -1574,12 +1577,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkImport(RosettaModel model) {
-		var usedNames = model.eAllContents.flatMap[
-			eCrossReferences.filter(RosettaRootElement).filter[isResolved].iterator
-		].map[
-			fullyQualifiedName
-		].toList
-
 		for (ns : model.imports) {
 			if (ns.importedNamespace !== null) {
 				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
@@ -1587,17 +1584,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  				if (!isWildcard && ns.namespaceAlias !== null) {
  					error('''"as" statement can only be used with wildcard imports''', ns, IMPORT__NAMESPACE_ALIAS);
  				}
-
-
- 				val isUsed = if (isWildcard) {
- 					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
- 				} else {
- 					usedNames.contains(qn)
-				}
-				if (!isUsed) {
-					warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
-				}
 			}
+		}
+		
+		val unused = importValidatorService.findUnused(model);	
+		for (ns: unused) {
+			warning('''Unused import «ns.importedNamespace»: «ns.namespaceAlias»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+		}
+		
+		val duplicates = importValidatorService.findDuplicates(model.imports);		
+		for (imp : duplicates) {
+			warning('''Duplicate import «imp.importedNamespace»''', imp, IMPORT__IMPORTED_NAMESPACE, DUPLICATE_IMPORT)
 		}
 	}
 
