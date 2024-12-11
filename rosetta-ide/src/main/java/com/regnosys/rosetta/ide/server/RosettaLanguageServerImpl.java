@@ -182,7 +182,6 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 			return CompletableFuture.completedFuture(formattingOptionsAdapter.readFormattingOptions(null));
 		} catch (IOException e) {
 			// should never happen, since null path always leads to default options being returned
-			e.printStackTrace();
 			return CompletableFuture.failedFuture(e);
 		}
 	}
