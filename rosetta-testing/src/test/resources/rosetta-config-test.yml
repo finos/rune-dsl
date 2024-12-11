@@ -9,3 +9,5 @@ generators:
     annotations:
       - projection
       - enrich
+  java:
+    runtimeModuleClass: com.regnosys.model.XyzRuntimeModule

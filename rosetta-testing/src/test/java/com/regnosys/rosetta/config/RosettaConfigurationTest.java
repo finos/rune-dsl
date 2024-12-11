@@ -1,12 +1,17 @@
 package com.regnosys.rosetta.config;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+
+import org.junit.jupiter.api.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -44,14 +49,18 @@ public class RosettaConfigurationTest {
 		assertTrue(annotations.contains("projection"));
 		assertTrue(annotations.contains("enrich"));
 		
+		assertNotNull(config.getGenerators());
+		assertNotNull(config.getGenerators().getJava());
+		String runtimeModuleClass = config.getGenerators().getJava().getRuntimeModuleClass();
+		assertEquals("com.regnosys.model.XyzRuntimeModule", runtimeModuleClass);
 	}
 	
 	@Test
-	public void testConfigWithoutTabulatorsConfig() {
+	public void testConfigWithNamespaceOnlyConfig() {
 		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
 			@SuppressWarnings("unused")
 			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
-				return ConfigWithoutTabulatorsFileProvider.class;
+				return ConfigWithNamespaceOnlyFileProvider.class;
 			}
 		});
 		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
@@ -62,6 +71,25 @@ public class RosettaConfigurationTest {
 		assertNotNull(annotations);
 		assertEquals(0, annotations.size());
 		
+		assertNotNull(config.getGenerators());
+		assertNotNull(config.getGenerators().getJava());
+		assertNull(config.getGenerators().getJava().getRuntimeModuleClass());
+	}
+	
+	@Test
+	public void testConfigWithEmptyRuntimeModuleClassConfig() {
+		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
+			@SuppressWarnings("unused")
+			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
+				return ConfigWithEmptyRuntimeModuleClassFileProvider.class;
+			}
+		});
+		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
+
+		assertNotNull(config.getGenerators());
+		assertNotNull(config.getGenerators().getJava());
+		assertNull(config.getGenerators().getJava().getRuntimeModuleClass());
+		
 	}
 	
 	private static class MyConfigFileProvider extends RosettaConfigurationFileProvider {
@@ -70,10 +98,16 @@ public class RosettaConfigurationTest {
 			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test.yml");
 		}
 	}
-	private static class ConfigWithoutTabulatorsFileProvider extends RosettaConfigurationFileProvider {
+	private static class ConfigWithNamespaceOnlyFileProvider extends RosettaConfigurationFileProvider {
 		@Override
 		public URL get() {
-			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test-without-tabulators.yml");
+			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test-with-namespace-only.yml");
+		}
+	}
+	private static class ConfigWithEmptyRuntimeModuleClassFileProvider extends RosettaConfigurationFileProvider {
+		@Override
+		public URL get() {
+			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test-empty-runtime-module-class.yml");
 		}
 	}
 }

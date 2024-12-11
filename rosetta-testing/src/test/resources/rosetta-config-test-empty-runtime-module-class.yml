@@ -1,0 +1,6 @@
+model:
+  name: XYZ Model
+dependencies:
+generators:
+  java:
+    runtimeModule: 
