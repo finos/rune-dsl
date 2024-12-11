@@ -49,7 +49,6 @@ public class RosettaConfigurationTest {
 		assertTrue(annotations.contains("projection"));
 		assertTrue(annotations.contains("enrich"));
 		
-		assertNotNull(config.getGenerators());
 		assertNotNull(config.getGenerators().getJava());
 		String runtimeModuleClass = config.getGenerators().getJava().getRuntimeModuleClass();
 		assertEquals("com.regnosys.model.XyzRuntimeModule", runtimeModuleClass);

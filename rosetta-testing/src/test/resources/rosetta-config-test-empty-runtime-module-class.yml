@@ -3,4 +3,4 @@ model:
 dependencies:
 generators:
   java:
-    runtimeModule: 
+    runtimeModuleClass: 
