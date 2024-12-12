@@ -12,7 +12,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
@@ -62,7 +61,7 @@ public class ImportValidatorService {
 	    return unusedImports;
 		
 	}
-	public List<Import> findDuplicates(EList<Import> imports) {
+	public List<Import> findDuplicates(List<Import> imports) {
 		Set<String> seenNamespaces = new HashSet<String>();
 		List<Import> duplicates = new ArrayList<Import>();
 		// check duplicates		

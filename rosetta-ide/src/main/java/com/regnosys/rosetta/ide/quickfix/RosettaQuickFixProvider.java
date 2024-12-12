@@ -19,12 +19,14 @@ package com.regnosys.rosetta.ide.quickfix;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.xtext.ide.editor.quickfix.AbstractDeclarativeIdeQuickfixProvider;
@@ -95,21 +97,38 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 			Import importObj = (Import) object;
 			EObject container = importObj.eContainer();
 			if (container instanceof RosettaModel) {
-				List<TextEdit> textEdits = new ArrayList<>();
-
 				RosettaModel model = (RosettaModel) container;
-				List<Import> duplicateImports = importValidatorService.findUnused(model);
-				List<Import> unusedImports = importValidatorService.findDuplicates(model.getImports());
+				List<Import> imports = model.getImports();
 
-				for (Import imp : duplicateImports) {
-					Range range = rangeUtils.getRange(imp);
-					textEdits.add(new TextEdit(range, ""));
-				}
-				for (Import imp : unusedImports) {
-					Range range = rangeUtils.getRange(imp);
-					textEdits.add(new TextEdit(range, ""));
-				}
-				return textEdits;
+				Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
+				Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();
+
+				List<Import> importsToKeep = new ArrayList<>(imports);
+				
+				// remove all duplicate/unused imports
+				List<Import> duplicateImports = importValidatorService.findUnused(model);
+				importsToKeep.removeAll(duplicateImports);
+				
+				List<Import> unusedImports = importValidatorService.findDuplicates(imports);
+	            importsToKeep.removeAll(unusedImports);
+
+				// sort the imports left alphabetically
+				importsToKeep.sort(
+						Comparator.comparing(Import::getImportedNamespace, Comparator.nullsLast(String::compareTo)));
+				
+				// create a string with all the imports
+				StringBuilder sortedImportsText = new StringBuilder();
+	            for (Import imp : importsToKeep) {
+	                sortedImportsText.append("import ").append(imp.getImportedNamespace());
+	                if (imp.getNamespaceAlias() != null) {
+	                    sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
+	                }
+	                sortedImportsText.append("\n");
+	            }
+	            
+	            // find the range of all imports to replace
+	            Range importsRange = new Range(importsStart, importsEnd);
+	            return List.of(new TextEdit(importsRange, sortedImportsText.toString().strip()));
 			}
 
 			// if not model, return empty list of edits
