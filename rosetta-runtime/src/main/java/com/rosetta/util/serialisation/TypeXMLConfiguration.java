@@ -32,6 +32,16 @@ public class TypeXMLConfiguration {
 	private final Optional<Map<String, String>> enumValues;
 	
 	@JsonCreator
+	@Deprecated
+	public TypeXMLConfiguration(
+			@JsonProperty("substitutionFor") Optional<ModelSymbolId> substitutionFor,
+			@JsonProperty("xmlElementName") Optional<String> xmlElementName,
+			@JsonProperty("xmlRootElementName") @Deprecated Optional<String> xmlRootElementName,
+			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
+			@JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
+			@JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
+		this(substitutionFor, xmlElementName.isPresent() ? xmlElementName : xmlRootElementName, xmlAttributes, attributes, enumValues);
+	}
 	public TypeXMLConfiguration(
 			@JsonProperty("substitutionFor") Optional<ModelSymbolId> substitutionFor,
 			@JsonProperty("xmlElementName") Optional<String> xmlElementName,

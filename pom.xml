@@ -133,7 +133,7 @@
 		<maven-javadoc-plugin.version>3.7.0</maven-javadoc-plugin.version>
 		<nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
 		<frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
-		<node.version>20.14.0</node.version>
+		<node.version>22.11.0</node.version>
 	</properties>
 
 	<modules>
