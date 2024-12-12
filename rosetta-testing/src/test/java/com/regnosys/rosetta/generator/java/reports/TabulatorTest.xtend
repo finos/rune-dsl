@@ -577,6 +577,7 @@ class TabulatorTest {
 				basic2 int (1..1)
 			
 			type Report extends BaseReport:
+				override basic1 string (1..1)
 				basic2 int (1..1)
 				basic3 number (1..1)
 			
