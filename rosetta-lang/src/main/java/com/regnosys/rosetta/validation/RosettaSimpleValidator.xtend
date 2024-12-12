@@ -152,7 +152,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension TypeValidationUtil
 	@Inject extension RObjectFactory objectFactory
 	@Inject extension RosettaInterpreter
-	@Inject ImportValidatorService importValidatorService;
+	@Inject ImportManagementService importManagementService;
 	
 	@Check
 	def void checkOnlyExistsNotUsedOnMeta(RosettaOnlyExistsExpression op) {
@@ -1587,12 +1587,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 		
-		val unused = importValidatorService.findUnused(model);	
+		val unused = importManagementService.findUnused(model);	
 		for (ns: unused) {
 			warning('''Unused import «ns.importedNamespace»: «ns.namespaceAlias»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
 		}
 		
-		val duplicates = importValidatorService.findDuplicates(model.imports);		
+		val duplicates = importManagementService.findDuplicates(model.imports);		
 		for (imp : duplicates) {
 			warning('''Duplicate import «imp.importedNamespace»''', imp, IMPORT__IMPORTED_NAMESPACE, DUPLICATE_IMPORT)
 		}

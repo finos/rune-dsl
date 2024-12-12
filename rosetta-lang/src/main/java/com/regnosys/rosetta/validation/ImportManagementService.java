@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,10 +16,27 @@ import javax.inject.Inject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
-public class ImportValidatorService {
+public class ImportManagementService {
 
 	@Inject RosettaEcoreUtil rosettaEcoreUtil;
 	@Inject IQualifiedNameProvider qualifiedNameProvider;
+	
+	public List<Import> cleanupImports(RosettaModel model) {
+		List<Import> imports = model.getImports();
+		List<Import> importsToKeep = new ArrayList<>(imports);
+		
+		// remove all duplicate/unused imports
+		List<Import> duplicateImports = findUnused(model);
+		importsToKeep.removeAll(duplicateImports);
+		
+		List<Import> unusedImports = findDuplicates(imports);
+        importsToKeep.removeAll(unusedImports);
+        
+        importsToKeep.sort(
+				Comparator.comparing(Import::getImportedNamespace, Comparator.nullsLast(String::compareTo)));
+        
+        return importsToKeep;
+	}
 	
 	public List<Import> findUnused(RosettaModel model) {
 		List<QualifiedName> usedNames = new ArrayList<>();
@@ -61,6 +79,7 @@ public class ImportValidatorService {
 	    return unusedImports;
 		
 	}
+	
 	public List<Import> findDuplicates(List<Import> imports) {
 		Set<String> seenNamespaces = new HashSet<String>();
 		List<Import> duplicates = new ArrayList<Import>();
@@ -71,6 +90,20 @@ public class ImportValidatorService {
 			}
 		}
 		return duplicates;
+	}
+	
+	
+	public String toString(List<Import> imports) {
+		StringBuilder sortedImportsText = new StringBuilder();
+        for (Import imp : imports) {
+            sortedImportsText.append("import ").append(imp.getImportedNamespace());
+            if (imp.getNamespaceAlias() != null) {
+                sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
+            }
+            sortedImportsText.append("\n");
+        }
+        
+        return sortedImportsText.toString().strip();
 	}
 
 }
