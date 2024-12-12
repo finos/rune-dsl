@@ -442,6 +442,7 @@ class TabulatorTest {
 					[ruleReference Basic2]
 			
 			type Report extends BaseReport:
+				override basic1 string (1..1)
 				basic2 int (1..1)
 					[ruleReference Basic2Modified]
 				basic3 number (1..1)

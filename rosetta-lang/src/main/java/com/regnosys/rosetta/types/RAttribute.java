@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.types;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 
 public class RAttribute implements RAssignedRoot {
-	private final boolean isRestriction;
+	private final boolean isOverride;
 	private final String name;
 	private final String definition;
 	private final List<RosettaDocReference> docReferences;
@@ -36,10 +37,10 @@ public class RAttribute implements RAssignedRoot {
 	private final RObjectFactory rObjectFactory;
 	private RAttribute parentAttribute = null;
 
-	public RAttribute(boolean isRestriction, String name, String definition, List<RosettaDocReference> docReferences,
+	public RAttribute(boolean isOverride, String name, String definition, List<RosettaDocReference> docReferences,
 			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality,
 			RosettaRule ruleReference, Attribute origin, RObjectFactory rObjectFactory) {
-		this.isRestriction = isRestriction;
+		this.isOverride = isOverride;
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
@@ -50,8 +51,8 @@ public class RAttribute implements RAssignedRoot {
 		this.rObjectFactory = rObjectFactory;
 	}
 	
-	public boolean isRestriction() {
-		return isRestriction;
+	public boolean isOverride() {
+		return isOverride;
 	}
 	
 	@Override
@@ -81,15 +82,30 @@ public class RAttribute implements RAssignedRoot {
 	}
 
 	public List<RosettaDocReference> getDocReferences() {
-		return docReferences;
+		RAttribute p = getParentAttribute();
+		List<RosettaDocReference> parentDocRefs;
+		if (p == null || (parentDocRefs = p.getDocReferences()).isEmpty()) {
+			return docReferences;
+		}
+		List<RosettaDocReference> docRefs = new ArrayList<>(docReferences.size() + parentDocRefs.size());
+		docRefs.addAll(docReferences);
+		docRefs.addAll(parentDocRefs);
+		return docRefs;
 	}
 
 	public RosettaRule getRuleReference() {
-		return ruleReference;
+		if (ruleReference != null) {
+			return ruleReference;
+		}
+		RAttribute p = getParentAttribute();
+		if (p != null) {
+			return p.getRuleReference();
+		}
+		return null;
 	}
 	
 	public RAttribute getParentAttribute() {
-		if (parentAttribute == null && origin.isRestriction()) {
+		if (parentAttribute == null && origin.isOverride()) {
 			parentAttribute = rObjectFactory.buildRAttributeOfParent(origin);
 		}
 		return parentAttribute;

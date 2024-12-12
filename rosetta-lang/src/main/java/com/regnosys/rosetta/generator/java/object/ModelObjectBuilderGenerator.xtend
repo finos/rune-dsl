@@ -26,6 +26,8 @@ import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.statement.builder.JavaThis
 import com.regnosys.rosetta.generator.java.statement.JavaEnhancedForLoop
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
+import java.util.Collections
+import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 
 class ModelObjectBuilderGenerator {
 	
@@ -98,7 +100,7 @@ class ModelObjectBuilderGenerator {
 				
 				«FOR prop : properties.filter[type.isRosettaModelObject]»
 					«IF prop.type.isList»
-						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::getOrCreate«prop.name.toFirstUpper»);
+						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::«prop.getOrCreateName»);
 					«ELSE»
 						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::set«prop.name.toFirstUpper»);
 					«ENDIF»
@@ -123,12 +125,11 @@ class ModelObjectBuilderGenerator {
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
-			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, scope)»«ENDIF»
 			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
 					
 					@Override
-					public «prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»() {
+					public «prop.toBuilderTypeSingle» «prop.getOrCreateName»() {
 						«prop.toBuilderTypeSingle» result;
 						if («field»!=null) {
 							result = «field»;
@@ -142,17 +143,10 @@ class ModelObjectBuilderGenerator {
 						
 						return result;
 					}
-					«IF !extended && prop.hasListParent»
-					
-					@Override
-					public «prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»(int _index) {
-						return getOrCreate«prop.name.toFirstUpper»();
-					}
-					«ENDIF»
 				«ELSE»
 					
 					@Override
-					public «prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»(int _index) {
+					public «prop.toBuilderTypeSingle» «prop.getOrCreateName»(int _index) {
 
 						if («field»==null) {
 							this.«field» = new «ArrayList»<>();
@@ -168,26 +162,72 @@ class ModelObjectBuilderGenerator {
 					}
 				«ENDIF»
 			«ENDIF»
+			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, prop, scope)»«ENDIF»
 		«ENDFOR»
 	'''
-	private def boolean hasListParent(JavaPojoProperty prop) {
-		val p = prop.parentProperty
-		return p !== null && (p.type.isList || hasListParent(p))
-	}
 	
-	private def StringConcatenationClient derivedIncompatibleGettersForProperty(JavaExpression originalField, JavaPojoProperty prop, JavaScope scope) {
+	private def StringConcatenationClient derivedIncompatibleGettersForProperty(JavaExpression originalField, JavaPojoProperty originalProp, JavaPojoProperty prop, JavaScope scope) {
 		val parent = prop.parentProperty
 		if (parent === null) {
 			return null
 		} else if (parent.getterName == prop.getterName) {
-			return derivedIncompatibleGettersForProperty(originalField, parent, scope)
+			return derivedIncompatibleGettersForProperty(originalField, originalProp, parent, scope)
 		}
 		val getterScope = scope.methodScope(parent.getterName)
 		'''
-		@Override
-		public «parent.toBuilderTypeExt» «parent.getterName»() «originalField.addCoercions(parent.toBuilderTypeExt, getterScope).completeAsReturn.toBlock»
 		
-		«derivedIncompatibleGettersForProperty(originalField, parent, scope)»
+		@Override
+		public «parent.toBuilderTypeExt» «parent.getterName»() «
+			(if (parent.type.isList) {
+				if (originalProp.type.isList) {
+					originalField
+						.addCoercions(parent.type, getterScope)
+						.collapseToSingleExpression(scope)
+						.mapExpression[
+							val lambdaParam = new JavaVariable(getterScope.lambdaScope.createUniqueIdentifier(parent.type.itemType.simpleName.toFirstLower), parent.type.itemType)
+							JavaExpression.from(
+								'''«it».stream().map(«lambdaParam» -> «lambdaParam.toBuilder.toLambdaBody»).collect(«Collectors».toList())''',
+								parent.toBuilderTypeExt
+							)
+						]
+				} else {
+					originalField
+						.addCoercions(parent.type.itemType, getterScope)
+						.mapExpression[
+							if (it == JavaExpression.NULL) {
+								JavaExpression.from('''«Collections».<«parent.toBuilderTypeSingle»>emptyList()''', parent.toBuilderTypeExt)
+							} else {
+								toBuilder.mapExpression[JavaExpression.from('''«Collections».singletonList(«it»)''', parent.toBuilderTypeExt)]
+							}
+						]
+				}
+			} else {
+				originalField
+					.addCoercions(parent.type, getterScope)
+					.mapExpressionIfNotNull[toBuilder]
+			}).completeAsReturn.toBlock»
+		«IF parent.type.isRosettaModelObject»
+			«IF !parent.type.isList»
+				
+				@Override
+				public «parent.toBuilderTypeSingle» «parent.getOrCreateName»() «
+					JavaExpression.from('''«originalProp.getOrCreateName»()''', originalProp.type.itemType)
+						.addCoercions(parent.type.itemType, scope)
+						.mapExpressionIfNotNull[toBuilder]
+						.completeAsReturn
+						.toBlock»
+			«ELSE»
+				
+				@Override
+				public «parent.toBuilderTypeSingle» «parent.getOrCreateName»(int _index) «
+					JavaExpression.from('''«originalProp.getOrCreateName»(«IF originalProp.type.isList»_index«ENDIF»)''', originalProp.type.itemType)
+						.addCoercions(parent.type.itemType, scope)
+						.mapExpressionIfNotNull[toBuilder]
+						.completeAsReturn
+						.toBlock»
+			«ENDIF»
+		«ENDIF»
+		«derivedIncompatibleGettersForProperty(originalField, originalProp, parent, scope)»
 		'''
 	}
 	
@@ -270,7 +310,7 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «builderType» «addValueMethodName»(«valueType» «addValueMethodArg») «
 				(if (isMainProp) {
-					JavaExpression.from('''this.getOrCreate«currentProp.name.toFirstUpper»(-1).setValue(«addValueMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
+					JavaExpression.from('''this.«currentProp.getOrCreateName»(-1).setValue(«addValueMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
 						.completeAsExpressionStatement
 						.append(thisExpr)
 				} else {
@@ -292,7 +332,7 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «builderType» «addValueMethodName»(«valueType» «addValueMethodArg», int _idx) «
 				(if (isMainProp) {
-					JavaExpression.from('''this.getOrCreate«currentProp.name.toFirstUpper»(_idx).setValue(«indexedAddValueMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
+					JavaExpression.from('''this.«currentProp.getOrCreateName»(_idx).setValue(«indexedAddValueMethodArg.toBuilder»)''', JavaPrimitiveType.VOID)
 						.completeAsExpressionStatement
 						.append(thisExpr)
 				} else {
@@ -443,11 +483,11 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «builderType» «setValueMethodName»(«valueType» «setValueMethodArg») «
 				(if (isMainProp) {
-					JavaExpression.from('''this.getOrCreate«currentProp.name.toFirstUpper»().setValue(«setValueMethodArg»)''', JavaPrimitiveType.VOID)
+					JavaExpression.from('''this.«currentProp.getOrCreateName»().setValue(«setValueMethodArg»)''', JavaPrimitiveType.VOID)
 						.completeAsExpressionStatement
 						.append(thisExpr)
 				} else {
-					setMethodArg
+					setValueMethodArg
 						.addCoercions(mainValueType, false, setValueMethodScope)
 						.collapseToSingleExpression(setValueMethodScope)
 						.mapExpression[

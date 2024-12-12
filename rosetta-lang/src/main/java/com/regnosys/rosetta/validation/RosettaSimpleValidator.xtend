@@ -612,11 +612,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkAttributes(Data clazz) {
 		val name2attr = HashMultimap.create
-		clazz.buildRDataType.allAttributes.filter[!isRestriction].forEach [
+		clazz.buildRDataType.allAttributes.filter[!isOverride].forEach [
 			name2attr.put(name, it)
 		]
-		// TODO: remove once `restrict` keyword is mandatory
-		for (name : clazz.attributes.filter[!isRestriction].map[name]) {
+		// TODO: remove once `override` keyword is mandatory
+		for (name : clazz.attributes.filter[!isOverride].map[name]) {
 			val attrByName = name2attr.get(name)
 			if (attrByName.size > 1) {
 				val attrFromClazzes = attrByName.filter[EObject.eContainer == clazz]

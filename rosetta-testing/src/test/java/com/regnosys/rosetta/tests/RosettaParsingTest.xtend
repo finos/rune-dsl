@@ -36,23 +36,23 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
-	def void testCannotRestrictAttributeOfItself() {
+	def void testCannotOverrideAttributeOfItself() {
 		'''
 			type Foo:
-				restrict attr number (1..1)
+				override attr number (1..1)
 				attr number (0..1)
 		'''.parseRosetta
 			.assertError(ATTRIBUTE, null, "Attribute attr does not exist in supertype")
 	}
 	
 	@Test
-	def void testCanRestrictAttributeOfParent() {
+	def void testCanOverrideAttributeOfParent() {
 		'''
 			type Bar:
 				attr number (0..1)
 			
 			type Foo extends Bar:
-				restrict attr number (1..1)
+				override attr number (1..1)
 		'''.parseRosettaWithNoIssues
 	}
 	

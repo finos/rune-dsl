@@ -99,7 +99,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		if (parentProperty == null) {
 			JavaPojoProperty newProperty = new JavaPojoProperty(
 					name,
-					"get" + StringUtils.capitalize(name),
+					name,
 					type,
 					javadoc,
 					meta,
@@ -109,34 +109,34 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		} else {
 			JavaType parentType = parentProperty.getType();
 			if (!type.equals(parentType)) {
-				String newGetterName;
+				String compatibilityName;
 				if (type.isSubtypeOf(parentType)) {
 					// Specialize existing property => reuse getter of parent
-					newGetterName = parentProperty.getGetterName();
+					compatibilityName = parentProperty.getName();
 				} else {
 					// Incompatible specialization => need new getter
-					newGetterName = getGetterNameForIncompatibleProperty(name, parentType, type);
+					compatibilityName = getIncompatiblePropertyName(name, parentType, type);
 				}
-				JavaPojoProperty newProperty = parentProperty.specialize(newGetterName, type, javadoc, meta, hasLocation);
+				JavaPojoProperty newProperty = parentProperty.specialize(compatibilityName, type, javadoc, meta, hasLocation);
 				ownProperties.put(name, newProperty);
 				allProperties.put(name, newProperty);
 			}
 		}
 	}
-	private String getGetterNameForIncompatibleProperty(String propertyName, JavaType parentType, JavaType specializedType) {
+	private String getIncompatiblePropertyName(String propertyName, JavaType parentType, JavaType specializedType) {
 		if (typeUtil.isList(parentType) && typeUtil.isList(specializedType)) {
 			// List to list
-			return getGetterNameForIncompatibleProperty(propertyName, typeUtil.getItemType(parentType), typeUtil.getItemType(specializedType));
+			return getIncompatiblePropertyName(propertyName, typeUtil.getItemType(parentType), typeUtil.getItemType(specializedType));
 		} else if (typeUtil.isList(parentType)) {
 			// List to single
 			JavaType parentItemType = typeUtil.getItemType(parentType);
 			if (parentItemType.equals(specializedType)) {
-				return "get" + StringUtils.capitalize(propertyName) + "RestrictedAsSingle";
+				return propertyName + "OverriddenAsSingle";
 			}
-			return "get" + StringUtils.capitalize(propertyName) + "RestrictedAsSingle" + specializedType.getSimpleName();
+			return propertyName + "OverriddenAsSingle" + specializedType.getSimpleName();
 		} else {
 			// Type to other type
-			return "get" + StringUtils.capitalize(propertyName) + "RestrictedAs" + specializedType.getSimpleName();
+			return propertyName + "OverriddenAs" + specializedType.getSimpleName();
 		}
 	}
 

@@ -30,7 +30,7 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 	}
 	
 	private void createProposalsForAttributeName(Attribute attr, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
-		if (attr.isRestriction()) {
+		if (attr.isOverride()) {
 			EObject container = attr.eContainer();
 			if (container instanceof Data) {
 				Data data = (Data) container;

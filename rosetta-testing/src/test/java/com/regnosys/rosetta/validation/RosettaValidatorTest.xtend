@@ -1792,7 +1792,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (0..1)
 		'''.parseRosetta
-		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test
@@ -1804,7 +1804,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..*)
 		'''.parseRosetta
-		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test
@@ -1816,7 +1816,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i string (1..1)
 		'''.parseRosetta
-		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test 

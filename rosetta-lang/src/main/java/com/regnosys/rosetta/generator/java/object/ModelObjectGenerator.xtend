@@ -99,11 +99,11 @@ class ModelObjectGenerator {
 		«FOR prop : javaType.ownProperties»
 			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
-					«prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»();
+					«prop.toBuilderTypeSingle» «prop.getOrCreateName»();
 					@Override
 					«prop.toBuilderTypeSingle» «prop.getterName»();
 				«ELSE»
-					«prop.toBuilderTypeSingle» getOrCreate«prop.name.toFirstUpper»(int _index);
+					«prop.toBuilderTypeSingle» «prop.getOrCreateName»(int _index);
 					@Override
 					«List»<? extends «prop.toBuilderTypeSingle»> «prop.getterName»();
 				«ENDIF»

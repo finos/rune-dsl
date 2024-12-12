@@ -44,7 +44,7 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testValidAttributeRestrictions() {
+	def void testValidAttributeOverrides() {
 		'''
 			type Foo:
 				complexAttr Parent (1..1)
@@ -55,11 +55,11 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 				    [metadata reference]
 			
 			type Bar extends Foo:
-				restrict complexAttr Child (1..1)
-				restrict listAttr int (1..1)
-				restrict stringAttr string(maxLength: 42) (1..1)
+				override complexAttr Child (1..1)
+				override listAttr int (1..1)
 					[metadata scheme]
-				restrict refAttr Subref (1..1)
+				override stringAttr string(maxLength: 42) (1..1)
+				override refAttr Subref (1..1)
 				    [metadata reference]
 				barAttr int (1..1)
 			
@@ -77,52 +77,52 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testCannotRestrictNonExistingAttribute() {
+	def void testCannotOverrideNonExistingAttribute() {
 		'''
 			type Foo:
 				attr number (0..1)
 			
 			type Bar extends Foo:
-				restrict otherAttr number (0..1)
+				override otherAttr number (0..1)
 		'''.parseRosetta
 			.assertError(ATTRIBUTE, null, "Attribute otherAttr does not exist")
 	}
 	
 	@Test
-	def void testCannotRestrictFunctionAttribute() {
+	def void testCannotOverrideFunctionAttribute() {
 		'''
 			func Foo:
 				inputs:
-					restrict foo int (1..1)
+					override foo int (1..1)
 				output:
 					result int (1..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "You can only restrict the attribute of a type")
+			.assertError(ATTRIBUTE, null, "You can only override the attribute of a type")
 	}
 	
 	@Test
-	def void testCannotRestrictAttributeToNonSubtype() {
+	def void testCannotOverrideAttributeToNonSubtype() {
 		'''
 			type Foo:
 				attr number (0..1)
 			
 			type Bar extends Foo:
-				restrict attr string (0..1)
+				override attr string (0..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "The restricted type should be a subtype of the parent type number")
+			.assertError(ATTRIBUTE, null, "The overridden type should be a subtype of the parent type number")
 	}
 	
 	@Test
-	def void testCannotRestrictAttributeToDifferentSubtype() {
+	def void testCannotOverrideAttributeToDifferentSubtype() {
 		'''
 			type Foo:
 				attr Parent (0..1)
 			
 			type Bar extends Foo:
-				restrict attr Child1 (0..1)
+				override attr Child1 (0..1)
 			
 			type Qux extends Bar:
-				restrict attr Child2 (0..1)
+				override attr Child2 (0..1)
 			
 			type Parent:
 			
@@ -130,7 +130,7 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 			
 			type Child2 extends Parent:
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "The restricted type should be a subtype of the parent type Child1")
+			.assertError(ATTRIBUTE, null, "The overridden type should be a subtype of the parent type Child1")
 	}
 	
 	@Test
@@ -140,39 +140,13 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 				attr string (1..1)
 			
 			type Bar extends Foo:
-				restrict attr string (0..1)
+				override attr string (0..1)
 		'''.parseRosetta
 			.assertError(ATTRIBUTE, null, "Cardinality may not be broader than the cardinality of the parent attribute (1..1)")
 	}
 	
 	@Test
-	def void testCannotAddMetadata() {
-		'''
-			type Foo:
-				attr string (1..1)
-			
-			type Bar extends Foo:
-				restrict attr string (1..1)
-					[metadata scheme]
-		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "You cannot add metadata annotations to an existing attribute")
-	}
-	
-	@Test
-	def void testCannotRemoveMetadata() {
-		'''
-			type Foo:
-				attr string (1..1)
-					[metadata scheme]
-			
-			type Bar extends Foo:
-				restrict attr string (1..1)
-		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "The metadata annotations should exactly match the parent attribute: scheme")
-	}
-	
-	@Test
-	def void testCannotRestrictChoiceTypeToOption() {
+	def void testCannotOverrideChoiceTypeToOption() {
 		// Note: this should be supported once https://github.com/finos/rune-dsl/issues/797 is resolved
 		'''
 			choice StringOrNumber:
@@ -183,13 +157,13 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 			    attr StringOrNumber (1..1)
 			
 			type Bar extends Foo:
-			    restrict attr string (1..1)
+			    override attr string (1..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "The restricted type should be a subtype of the parent type StringOrNumber")
+			.assertError(ATTRIBUTE, null, "The overridden type should be a subtype of the parent type StringOrNumber")
 	}
 	
 	@Test
-	def void testCannotRestrictChoiceTypeToSubchoice() {
+	def void testCannotOverrideChoiceTypeToSubchoice() {
 		// Note: this should be supported once https://github.com/finos/rune-dsl/issues/797 is resolved
 		'''
 			choice StringOrNumberOrBoolean:
@@ -205,9 +179,46 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 			    attr StringOrNumberOrBoolean (1..1)
 			
 			type Bar extends Foo:
-			    restrict attr StringOrNumber (1..1)
+			    override attr StringOrNumber (1..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "The restricted type should be a subtype of the parent type StringOrNumberOrBoolean")
+			.assertError(ATTRIBUTE, null, "The overridden type should be a subtype of the parent type StringOrNumberOrBoolean")
+	}
+	
+	@Test
+	def void testMustOverrideRuleReferenceWhenRestrictingType() {
+		'''
+			type Parent:
+			type Child extends Parent:
+			
+			type Foo:
+			    attr Parent (1..1)
+			    	[ruleReference AttrRule]
+			
+			type Bar extends Foo:
+			    override attr Child (1..1)
+			
+			reporting rule AttrRule from Parent:
+				item
+		'''.parseRosetta
+			.assertError(ATTRIBUTE, null, "The overridden type is incompatible with the inherited rule reference `AttrRule`. Either change the type or override the rule reference")
+	}
+	
+	@Test
+	def void testMustNotOverrideRuleReferenceWhenRestrictingTypeToCompatibleType() {
+		'''
+			type Parent:
+			type Child extends Parent:
+			
+			type Foo:
+			    attr Parent (1..1)
+			    	[ruleReference AttrRule]
+			
+			type Bar extends Foo:
+			    override attr Child (1..1)
+			
+			reporting rule AttrRule from Child:
+				item
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test
@@ -232,13 +243,13 @@ class AttributeValidatorTest implements RosettaIssueCodes {
     }
 	
 	@Test
-	def void supportDeprecatedAnnotationOnAttributeRestriction() {
+	def void supportDeprecatedAnnotationOnAttributeOverride() {
 		'''
 			type Foo:
 				attr string (1..1)
 			
 			type Bar extends Foo:
-				restrict attr string (1..1)
+				override attr string (1..1)
 					[deprecated]
 			
 			func Test:

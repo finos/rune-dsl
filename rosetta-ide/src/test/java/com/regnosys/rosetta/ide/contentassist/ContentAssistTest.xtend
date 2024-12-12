@@ -471,7 +471,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 	}
 	
 	@Test
-	def void testAttributeRestriction() {
+	def void testAttributeOverride() {
 		val model = '''
 			namespace my.ns
 			
@@ -480,7 +480,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 				parentAttr int (1..1)
 			
 			type Foo extends Parent:
-				restrict attr int (1..1)
+				override attr int (1..1)
 				otherAttr string (1..1)
 			
 			type Bar extends Foo:

@@ -9,9 +9,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import javax.inject.Inject
-import org.eclipse.xtext.diagnostics.Diagnostic
 
 @ExtendWith(InjectionExtension)
 @InjectWith(MyRosettaInjectorProvider)
@@ -38,29 +36,29 @@ class TypeValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void testAttributeRestrictionsMustComeFirst() {
+	def void testAttributeOverridesMustComeFirst() {
 		'''
 			type Foo:
 				attr number (0..1)
 			
 			type Bar extends Foo:
 				barAttr int (1..1)
-				restrict attr number (1..1)
+				override attr number (1..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "Attribute restrictions should come before any new attributes.")
+			.assertError(ATTRIBUTE, null, "Attribute overrides should come before any new attributes.")
 	}
 	
 	@Test
-	def void testCannotRestrictAttributeTwice() {
+	def void testCannotOverrideAttributeTwice() {
 		'''
 			type Foo:
 				attr number (0..1)
 			
 			type Bar extends Foo:
-				restrict attr number (1..1)
-				restrict attr int (1..1)
+				override attr number (1..1)
+				override attr int (1..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "Duplicate attribute restriction for 'attr'.")
+			.assertError(ATTRIBUTE, null, "Duplicate attribute override for 'attr'.")
 	}
 	
 	@Test
@@ -73,7 +71,7 @@ class TypeValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				attr string (1..1)
         '''.parseRosetta
-			.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'attr'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.")
+			.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'attr'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test

@@ -74,29 +74,29 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 		if (data.getSuperType() != null) {
 			ecoreUtil.getAllAttributes(data.getSuperType()).forEach(attr -> usedNames.add(attr.getName()));
 		}
-		Set<String> usedRestrictions = new HashSet<>();
+		Set<String> usedOverrides = new HashSet<>();
 		for (Attribute attr: data.getAttributes()) {
-			if (!attr.isRestriction()) {
+			if (!attr.isOverride()) {
 				if (!usedNames.add(attr.getName())) {
 					// TODO: make this an error
-					warning("Duplicate attribute '" + attr.getName() + "'. To override the ruleReference or synonym annotations on this attribute, use a rule source or synonym source instead. To restrict the type or cardinality of this attribute, use the keyword `restrict`.", attr, ROSETTA_NAMED__NAME);
+					warning("Duplicate attribute '" + attr.getName() + "'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.", attr, ROSETTA_NAMED__NAME);
 				}
 			} else {
-				if (!usedRestrictions.add(attr.getName())) {
-					error("Duplicate attribute restriction for '" + attr.getName() + "'.", attr, ROSETTA_NAMED__NAME);
+				if (!usedOverrides.add(attr.getName())) {
+					error("Duplicate attribute override for '" + attr.getName() + "'.", attr, ROSETTA_NAMED__NAME);
 				}
 			}
 		}
 	}
 	
 	@Check
-	public void checkAttributeRestrictionsShouldComeFirst(Data data) {
+	public void checkAttributeOverridesShouldComeFirst(Data data) {
 		boolean newAttrEncountered = false;
 		for (Attribute attr: data.getAttributes()) {
-			if (!attr.isRestriction()) {
+			if (!attr.isOverride()) {
 				newAttrEncountered = true;
 			} else if (newAttrEncountered) {
-				error("Attribute restrictions should come before any new attributes.", attr, null);
+				error("Attribute overrides should come before any new attributes.", attr, null);
 			}
 		}
 	}

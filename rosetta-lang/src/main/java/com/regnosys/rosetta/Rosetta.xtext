@@ -87,7 +87,8 @@ ChoiceOption:
 ;
 
 Attribute:
-	restriction?='restrict'? RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
+	override?='override'? RosettaNamed RosettaTyped card=RosettaCardinality
+	RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
 ;

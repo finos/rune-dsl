@@ -176,7 +176,7 @@ public class RObjectFactory {
 		RCardinality card = buildRCardinality(attr.getCard());
 		RosettaRuleReference ruleRef = attr.getRuleReference();
 
-		return new RAttribute(attr.isRestriction(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
+		return new RAttribute(attr.isOverride(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
 				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr, this);
 	}
 	public RAttribute buildRAttributeOfParent(Attribute attr) {

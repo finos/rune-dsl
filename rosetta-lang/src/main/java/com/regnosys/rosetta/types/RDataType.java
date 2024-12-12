@@ -106,7 +106,7 @@ public class RDataType extends RType implements RObject {
 	
 	/**
 	 * Get a list of the attributes defined in this data type. This does not include attributes of any super types,
-	 * except if the attribute is restricted by this data type.
+	 * except if the attribute is overridden by this data type.
 	 */
 	public List<RAttribute> getOwnAttributes() {
 		if (ownAttributes == null) {
@@ -119,7 +119,7 @@ public class RDataType extends RType implements RObject {
 	 * Get a list of all attributes of this data type, including all attributes of its super types.
 	 * 
 	 * The list starts with the attributes of the top-most super type, and ends with the attributes of itself.
-	 * Attribute restrictions replace their respective parent attributes, respecting the original order.
+	 * Attribute overrides replace their respective parent attributes, respecting the original order.
 	 */
 	public Collection<RAttribute> getAllAttributes() {
 		Map<String, RAttribute> result = new LinkedHashMap<>();

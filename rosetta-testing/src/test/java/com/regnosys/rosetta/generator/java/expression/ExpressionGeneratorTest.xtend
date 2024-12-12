@@ -72,13 +72,13 @@ class ExpressionGeneratorTest {
 
 	
 	@Test
-	def void testFeatureCallToIncompatibleRestrictionUsesCorrectGetter() {
+	def void testFeatureCallToIncompatibleOverrideUsesCorrectGetter() {
 		val context = '''
 		type Foo:
 			attr number (1..1)
 		
 		type Bar extends Foo:
-			restrict attr int (1..1)
+			override attr int (1..1)
 		
 		func Round:
 			inputs:
@@ -100,7 +100,7 @@ class ExpressionGeneratorTest {
 		
 		{
 			Bar bar;
-			return MapperMaths.<Integer, Integer, Integer>add(MapperS.of(bar).<Integer>map("getAttr", _bar -> _bar.getAttrRestrictedAsInteger()), MapperS.of(round.evaluate(MapperS.of(bar).<BigDecimal>map("getAttr", _bar -> _bar.getAttr()).get()))).get();
+			return MapperMaths.<Integer, Integer, Integer>add(MapperS.of(bar).<Integer>map("getAttr", _bar -> _bar.getAttrOverriddenAsInteger()), MapperS.of(round.evaluate(MapperS.of(bar).<BigDecimal>map("getAttr", _bar -> _bar.getAttr()).get()))).get();
 		}
 		'''
 		

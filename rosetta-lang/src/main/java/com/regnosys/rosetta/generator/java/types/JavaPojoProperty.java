@@ -18,6 +18,7 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
@@ -26,27 +27,27 @@ import com.rosetta.util.types.JavaType;
 
 public class JavaPojoProperty {
 	private final String name;
-	private final String getterName;
+	private final String compatibilityName;
 	private final JavaType type;
 	private final String javadoc;
 	private final JavaPojoProperty parentProperty;
 	private final AttributeMeta meta; // used in `process` method
 	private final boolean hasLocation; // used in builder `getOrCreate`
 
-	public JavaPojoProperty(String name, String getterName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
-		this(name, getterName, type, javadoc, meta, hasLocation, null);
+	public JavaPojoProperty(String name, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
+		this(name, compatibilityName, type, javadoc, meta, hasLocation, null);
 	}
-	private JavaPojoProperty(String name, String getterName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, JavaPojoProperty parentProperty) {
+	private JavaPojoProperty(String name, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, JavaPojoProperty parentProperty) {
 		this.name = name;
-		this.getterName = getterName;
+		this.compatibilityName = compatibilityName;
 		this.type = type;
 		this.javadoc = javadoc;
 		this.meta = meta;
 		this.hasLocation = hasLocation;
 		this.parentProperty = parentProperty;
 	}
-	public JavaPojoProperty specialize(String newGetterName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation) {
-		return new JavaPojoProperty(name, newGetterName, newType, newJavadoc, newMeta, newHasLocation, this);
+	public JavaPojoProperty specialize(String compatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation) {
+		return new JavaPojoProperty(name, compatibilityName, newType, newJavadoc, newMeta, newHasLocation, this);
 	}
 	
 	public boolean isCompatibleWithParent() {
@@ -57,7 +58,10 @@ public class JavaPojoProperty {
 		return name;
 	}
 	public String getGetterName() {
-		return getterName;
+		return "get" + StringUtils.capitalize(compatibilityName);
+	}
+	public String getGetOrCreateName() {
+		return "getOrCreate" + StringUtils.capitalize(compatibilityName);
 	}
 	public JavaType getType() {
 		return type;
@@ -81,7 +85,7 @@ public class JavaPojoProperty {
 			protected void appendTo(TargetStringConcatenation target) {
 				target.append(expr);
 				target.append('.');
-				target.append(getterName);
+				target.append(getGetterName());
 				target.append("()");
 			}
 		}, type);
@@ -89,11 +93,11 @@ public class JavaPojoProperty {
 	
 	@Override
 	public String toString() {
-		return JavaPojoProperty.class.getSimpleName() + "[" + type.getSimpleName() + " " + getterName + "()]";
+		return JavaPojoProperty.class.getSimpleName() + "[" + type.getSimpleName() + " " + getGetterName() + "()]";
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(getterName, hasLocation, javadoc, meta, name, parentProperty, type);
+		return Objects.hash(compatibilityName, hasLocation, javadoc, meta, name, parentProperty, type);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -104,7 +108,7 @@ public class JavaPojoProperty {
 		if (getClass() != obj.getClass())
 			return false;
 		JavaPojoProperty other = (JavaPojoProperty) obj;
-		return Objects.equals(getterName, other.getterName) && hasLocation == other.hasLocation
+		return Objects.equals(compatibilityName, other.compatibilityName) && hasLocation == other.hasLocation
 				&& Objects.equals(javadoc, other.javadoc) && meta == other.meta && Objects.equals(name, other.name)
 				&& Objects.equals(parentProperty, other.parentProperty) && Objects.equals(type, other.type);
 	}

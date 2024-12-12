@@ -7,6 +7,7 @@ import org.eclipse.xtext.validation.Check;
 
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
@@ -14,6 +15,7 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
@@ -23,8 +25,6 @@ import com.regnosys.rosetta.types.TypeSystem;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*;
-
-import java.util.stream.Collectors;
 
 public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
@@ -64,11 +64,11 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	}
 	
 	@Check
-	public void checkAttributeRestriction(Attribute attr) {
-		if (attr.isRestriction()) {
+	public void checkAttributeOverride(Attribute attr) {
+		if (attr.isOverride()) {
 			EObject container = attr.eContainer();
 			if (!(container instanceof Data)) {
-				error("You can only restrict the attribute of a type", attr, ATTRIBUTE__RESTRICTION);
+				error("You can only override the attribute of a type", attr, ATTRIBUTE__OVERRIDE);
 			} else {
 				RAttribute attribute = rObjectFactory.buildRAttribute(attr);
 				RAttribute parentAttribute = attribute.getParentAttribute();
@@ -76,24 +76,32 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					// If parent is deprecated, mark name of attribute as deprecated
 					checkDeprecatedAnnotation(parentAttribute.getEObject(), attr, ROSETTA_NAMED__NAME, INSIGNIFICANT_INDEX);
 					// Check types
-					RMetaAnnotatedType restrictedType = attribute.getRMetaAnnotatedType();
+					RMetaAnnotatedType overriddenType = attribute.getRMetaAnnotatedType();
 					RMetaAnnotatedType parentAttrType = parentAttribute.getRMetaAnnotatedType();
-					if (!typeSystem.isSubtypeOf(restrictedType, parentAttrType)) {
-						error("The restricted type should be a subtype of the parent type " + parentAttrType, attr, ROSETTA_TYPED__TYPE_CALL);
-					}
-					// Enforce all metadata to be exactly the same
-					// Note that this is an artificial rule. Code generators support changing metadata.
-					if (!restrictedType.getMetaAttributes().equals(parentAttrType.getMetaAttributes())) {
-						if (parentAttrType.getMetaAttributes().isEmpty()) {
-							error("You cannot add metadata annotations to an existing attribute", attr, ROSETTA_NAMED__NAME);
-						} else {
-							String expectedMetaAttrs = parentAttrType.getMetaAttributes().stream().map(m -> m.getName()).collect(Collectors.joining(", "));
-							error("The metadata annotations should exactly match the parent attribute: " + expectedMetaAttrs, attr, ROSETTA_NAMED__NAME);
-						}
+					if (!typeSystem.isSubtypeOf(overriddenType, parentAttrType)) {
+						error("The overridden type should be a subtype of the parent type " + parentAttrType, attr, ROSETTA_TYPED__TYPE_CALL);
 					}
 					// Check cardinality
 					if (!parentAttribute.getCardinality().includes(attribute.getCardinality())) {
 						error("Cardinality may not be broader than the cardinality of the parent attribute " + parentAttribute.getCardinality(), attr, ATTRIBUTE__CARD);
+					}
+					// Check inherited rule reference is compatible
+					if (attr.getRuleReference() == null) {
+						RosettaRule r = parentAttribute.getRuleReference();
+						if (r != null) {
+							RFunction rule = rObjectFactory.buildRFunction(r);
+							
+							// check type
+							RMetaAnnotatedType ruleType = rule.getOutput().getRMetaAnnotatedType();
+							if (!typeSystem.isSubtypeOf(ruleType, overriddenType)) {
+								error("The overridden type is incompatible with the inherited rule reference `" + r.getName() + "`. Either change the type or override the rule reference", attr, ROSETTA_TYPED__TYPE_CALL);
+							}
+							
+							// check cardinality
+							if (!attribute.isMulti() && rule.getOutput().isMulti()) {
+								error("Cardinality is incompatible with the inherited rule reference `" + r.getName() + "`. Either change the cardinality or override the rule reference", attr, ATTRIBUTE__CARD);
+							}
+						}
 					}
 				} else {
 					error("Attribute " + attr.getName() + " does not exist in supertype", attr, ROSETTA_NAMED__NAME);
