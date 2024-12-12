@@ -790,7 +790,7 @@ RosettaCalcConditionalExpression returns RosettaExpression:
 ;
 
 RosettaCalcOnlyExists returns RosettaExpression:
-	{RosettaOnlyExistsExpression} (args+=RosettaOnlyExistsElement | ('(' args+=RosettaOnlyExistsElement (',' args+=RosettaOnlyExistsElement)* ')')) 'only' 'exists'
+	{RosettaOnlyExistsExpression} (args+=RosettaOnlyExistsElement | (hasParentheses?='(' args+=RosettaOnlyExistsElement (',' args+=RosettaOnlyExistsElement)* ')')) 'only' 'exists'
 ;
 
 RosettaOnlyExistsElement returns RosettaExpression:
