@@ -484,7 +484,7 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 				otherAttr string (1..1)
 			
 			type Bar extends Foo:
-				restrict 
+				override 
 				barAttr int (1..1)
 		'''
 		testCompletion[
