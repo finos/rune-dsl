@@ -2,11 +2,14 @@ package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
 import com.google.inject.Injector
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.regnosys.rosetta.tests.RosettaInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
+import com.rosetta.model.lib.RosettaModelObject
 import java.util.Map
+import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -17,7 +20,6 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
-import javax.inject.Inject
 
 @InjectWith(RosettaInjectorProvider)
 @ExtendWith(InjectionExtension)
@@ -26,7 +28,8 @@ class RosettaRuleGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
-
+	@Inject extension FunctionGeneratorHelper
+	
 	static final CharSequence REPORT_TYPES = '''
 					namespace com.rosetta.test.model
 
@@ -758,7 +761,20 @@ class RosettaRuleGeneratorTest {
 
 		} finally {
 		}
-		code.compileToClasses
+		val classes = code.compileToClasses
+
+        val test = classes.createFunc("com.rosetta.test.model.reports", "TEST_REGMiFIRReportFunction")
+		
+		val input = classes.createInstanceUsingBuilder("Bar", #{"bar1" -> "bar1Value"})
+		
+		val output = test.invokeFunc(RosettaModelObject, input)
+		
+		// expected output
+		val expectedQuxReport = classes.createInstanceUsingBuilder("QuxReport", #{"attr" -> "bar1Value"})
+		val expectedBazReport = classes.createInstanceUsingBuilder("BazReport", #{"qux" -> expectedQuxReport})
+		val expectedBarReport = classes.createInstanceUsingBuilder("QuxReport", #{"baz" -> expectedBazReport})
+		
+		assertEquals(expectedBarReport, output)
 	}
 	
 	@Test
