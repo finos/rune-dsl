@@ -22,8 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -142,6 +140,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 
 	@Override
 	public boolean isSubtypeOf(JavaType other) {
+		// TODO: also check other interfaces
 		if (typeUtil.ROSETTA_MODEL_OBJECT.isSubtypeOf(other)) {
 			return true;
 		}
