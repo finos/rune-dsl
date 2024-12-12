@@ -632,6 +632,136 @@ class RosettaRuleGeneratorTest {
 	}
 	
 	@Test
+	def void parseSimpleReportForTypeWithExternalRuleReferencesWithEmptyAs() {
+		val model = #[
+				REPORT_TYPES,
+				'''
+					namespace com.rosetta.test.model
+					
+					eligibility rule FooRule from Bar:
+						filter bar1 exists
+
+					reporting rule BarToBazReport from Bar:
+						extract BazReport {
+							qux: QuxReport {
+								attr: item -> bar1
+							}
+						} 
+						as "Label 1"
+
+					reporting rule EmptyWithAs from Bar:
+						empty 
+						as "Label 2"
+					
+				''',
+				'''
+					namespace com.rosetta.test.model
+					
+					body Authority TEST_REG
+					corpus TEST_REG MiFIR
+
+					report TEST_REG MiFIR in T+1
+					from Bar
+					when FooRule
+					with type BarReport
+					with source RuleSource
+
+					type BarReport:
+						baz BazReport (1..1)
+
+					type BazReport:
+						qux QuxReport (1..1)
+
+					type QuxReport:
+						attr string (1..1)
+
+					rule source RuleSource {
+
+						BarReport:
+							+ baz
+								[ruleReference BarToBazReport]
+
+						QuxReport:
+							+ attr
+								[ruleReference EmptyWithAs]
+					}
+				''']
+		val code = model.generateCode
+		//println(code)
+		val reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction")
+		try {
+			assertThat(reportJava, CoreMatchers.notNullValue())
+			val expected = '''
+				package com.rosetta.test.model.reports;
+				
+				import com.google.inject.ImplementedBy;
+				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.functions.ModelObjectValidator;
+				import com.rosetta.model.lib.reports.ReportFunction;
+				import com.rosetta.test.model.Bar;
+				import com.rosetta.test.model.BarReport;
+				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import java.util.Optional;
+				import javax.inject.Inject;
+				
+				
+				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+					
+					@Inject protected ModelObjectValidator objectValidator;
+					
+					// RosettaFunction dependencies
+					//
+					@Inject protected BarToBazReportRule barToBazReportRule;
+				
+					/**
+					* @param input 
+					* @return output 
+					*/
+					@Override
+					public BarReport evaluate(Bar input) {
+						BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+						
+						final BarReport output;
+						if (outputBuilder == null) {
+							output = null;
+						} else {
+							output = outputBuilder.build();
+							objectValidator.validate(BarReport.class, output);
+						}
+						
+						return output;
+					}
+				
+					protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+				
+					public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+						@Override
+						protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+							BarReport.BarReportBuilder output = BarReport.builder();
+							return assignOutput(output, input);
+						}
+						
+						protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+							output
+								.setBaz(barToBazReportRule.evaluate(input));
+							
+							return Optional.ofNullable(output)
+								.map(o -> o.prune())
+								.orElse(null);
+						}
+					}
+				}
+			'''
+			assertEquals(expected, reportJava)
+
+		} finally {
+		}
+		code.compileToClasses
+	}
+	
+	@Test
 	def void parseSimpleReportWithEmptyType() {
 		val model = '''
 			body Authority TEST_REG
