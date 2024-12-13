@@ -79,8 +79,8 @@ class TabulatorGenerator {
 			} else {
 				rawAttrType
 			}
-			if (attrType instanceof RDataType) {
-				needsTabulator(attrType, visited)
+			if (attrType instanceof RDataType && needsTabulator(attrType as RDataType, visited)) {
+				true
 			} else {
 				ruleMap.containsKey(attr)
 			}
@@ -198,12 +198,7 @@ class TabulatorGenerator {
 	def generateTabulatorForReportData(IFileSystemAccess2 fsa, RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
 		val context = getReportTabulatorContext(type, ruleSource)
 		if (context.needsTabulator(type)) {
-			val tabulatorClass = type.EObject.toTabulatorJavaClass(ruleSource)
-			val topScope = new JavaScope(tabulatorClass.packageName)
-
-			val classBody = type.tabulatorClassBody(context, topScope, tabulatorClass)
-			val content = buildClass(tabulatorClass.packageName, classBody, topScope)
-			fsa.generateFile(tabulatorClass.canonicalName.withForwardSlashes + ".java", content)
+			recursivelyGenerateTabulators(fsa, type, context, newHashSet)
 		}
 	}
 	
