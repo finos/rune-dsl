@@ -243,14 +243,14 @@ class AttributeValidatorTest implements RosettaIssueCodes {
     }
 	
 	@Test
-	def void supportDeprecatedAnnotationOnAttributeOverride() {
+	def void inheritDeprecatedAnnotationOnAttributeOverride() {
 		'''
 			type Foo:
 				attr string (1..1)
+					[deprecated]
 			
 			type Bar extends Foo:
 				override attr string (1..1)
-					[deprecated]
 			
 			func Test:
 				inputs:
