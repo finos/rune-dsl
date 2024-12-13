@@ -4,9 +4,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.Action;
 import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.Keyword;
@@ -20,9 +23,17 @@ import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.regnosys.rosetta.RosettaEcoreUtil;
+import com.regnosys.rosetta.rosetta.RosettaNamed;
+import com.regnosys.rosetta.rosetta.simple.Annotated;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+
 public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclarativeValidator {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeclarativeRosettaValidator.class);
+	
+	@Inject
+	private RosettaEcoreUtil ecoreUtil;
 	
 	@Override
 	protected List<EPackage> getEPackages() {
@@ -116,5 +127,23 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 			}
 		}
 		return null;
+	}
+	
+	protected void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EStructuralFeature ref, int index) {
+		if (annotated.getAnnotations().stream().anyMatch(ann -> ann.getAnnotation() != null && ann.getAnnotation().getName().equals("deprecated"))) {
+			String msg;
+			if (annotated instanceof RosettaNamed) {
+				msg = ((RosettaNamed)annotated).getName() + " is deprecated";
+			} else {
+				msg = "Deprecated";
+			}
+			warning(msg, owner, ref, index);
+		} else if (annotated instanceof Attribute) {
+			// Check if deprecated annotation is inherited
+			Attribute parent = ecoreUtil.getParentAttribute((Attribute) annotated);
+			if (parent != null) {
+				checkDeprecatedAnnotation(parent, owner, ref, index);
+			}
+		}
 	}
 }

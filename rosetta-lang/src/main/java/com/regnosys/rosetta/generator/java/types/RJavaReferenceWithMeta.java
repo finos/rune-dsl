@@ -1,9 +1,10 @@
 package com.regnosys.rosetta.generator.java.types;
 
+import java.util.Collection;
 import java.util.List;
 
-import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
+import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaParameterizedType;
@@ -44,32 +45,8 @@ public class RJavaReferenceWithMeta extends RJavaWithMetaValue {
 	}
 
 	@Override
-	public JavaTypeDeclaration<? super RosettaModelObject> getSuperclassDeclaration() {
-		return JavaClass.OBJECT;
-	}
-
-	@Override
 	public List<? extends JavaTypeDeclaration<?>> getInterfaceDeclarations() {
-		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT, javaTypeUtil.FIELD_WITH_META);
-
-	}
-
-	@Override
-	public boolean extendsDeclaration(JavaTypeDeclaration<?> other) {
-		if (other instanceof JavaClass) {
-			return this.isSubtypeOf((JavaClass<?>)other);
-		}
-		return false;
-	}
-
-	@Override
-	public boolean isFinal() {
-		return false;
-	}
-
-	@Override
-	public Class<? extends RosettaModelObject> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
-		return Class.forName(getCanonicalName().toString(), true, classLoader).asSubclass(RosettaModelObject.class);
+		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT, javaTypeUtil.REFERENCE_WITH_META);
 	}
 
 	@Override
@@ -79,8 +56,16 @@ public class RJavaReferenceWithMeta extends RJavaWithMetaValue {
 
 	@Override
 	public List<JavaClass<?>> getInterfaces() {
-		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT,referenceWithMetaParameterisedType);
-
+		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT, referenceWithMetaParameterisedType);
 	}
 
+	@Override
+	public Collection<JavaPojoProperty> getOwnProperties() {
+		return List.of(
+				new JavaPojoProperty("value", "value", valueType, null, null, false),
+				new JavaPojoProperty("globalReference", "globalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
+				new JavaPojoProperty("externalReference", "externalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
+				new JavaPojoProperty("reference", "reference", javaTypeUtil.REFERENCE, null, null, false)
+			);
+	}
 }

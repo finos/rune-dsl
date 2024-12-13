@@ -469,4 +469,33 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			'''
 		]
 	}
+	
+	@Test
+	def void testAttributeOverride() {
+		val model = '''
+			namespace my.ns
+			
+			type Parent:
+				attr int (0..1)
+				parentAttr int (1..1)
+			
+			type Foo extends Parent:
+				override attr int (1..1)
+				otherAttr string (1..1)
+			
+			type Bar extends Foo:
+				override 
+				barAttr int (1..1)
+		'''
+		testCompletion[
+			it.model = model
+			it.line = 11
+			it.column = 10
+			it.expectedCompletionItems = '''
+			attr -> attr [[11, 10] .. [11, 10]]
+			otherAttr -> otherAttr [[11, 10] .. [11, 10]]
+			parentAttr -> parentAttr [[11, 10] .. [11, 10]]
+			'''
+		]
+	}
 }

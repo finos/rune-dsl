@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Streams;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -37,45 +36,50 @@ public class RDataType extends RType implements RObject {
 	private RDataType superType = null;
 	private ModelSymbolId symbolId = null;
 	private List<RAttribute> ownAttributes = null;
+	private List<RMetaAttribute> metaAttributes = null;
 	
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
-	
-	// TODO: remove this hack
-	private List<RAttribute> additionalAttributes = null;
+	private final RosettaTypeProvider typeProvider;
 
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory) {
+	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final RosettaTypeProvider typeProvider) {
 		super();
 		this.data = data;
 		
 		this.modelIdProvider = modelIdProvider;
 		this.objectFactory = objectFactory;
-	}
-	// TODO: remove this hack
-	public RDataType(final Data data, final ModelIdProvider modelIdProvider, final RObjectFactory objectFactory, final List<RAttribute> additionalAttributes) {
-		this(data, modelIdProvider, objectFactory);
-		this.additionalAttributes = additionalAttributes;
+		this.typeProvider = typeProvider;
 	}
 	
 	@Override
 	public Data getEObject() {
-		return this.data;
+		return data;
 	}
 	
 	@Override
 	public ModelSymbolId getSymbolId() {
-		if (this.symbolId == null) {
-			this.symbolId = modelIdProvider.getSymbolId(data);;
+		if (symbolId == null) {
+			symbolId = modelIdProvider.getSymbolId(data);;
 		}
-		return this.symbolId;
+		return symbolId;
+	}
+	
+	public List<RMetaAttribute> getMetaAttributes() {
+		if (metaAttributes == null) {
+			metaAttributes = typeProvider.getRMetaAttributes(data.getAnnotations());
+		}
+		return metaAttributes;
+	}
+	public boolean hasMetaAttribute(String name) {
+		return getMetaAttributes().stream().anyMatch(m -> m.getName().equals(name));
 	}
 	
 	public RDataType getSuperType() {
 		if (data.hasSuperType()) {
-			if (this.superType == null) {
-				this.superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory);
+			if (superType == null) {
+				superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory, typeProvider);
 			}
-			return this.superType;
+			return superType;
 		}
 		return null;
 	}
@@ -101,15 +105,12 @@ public class RDataType extends RType implements RObject {
 	}
 	
 	/**
-	 * Get a list of the attributes defined in this data type. This does not include attributes of any super types.
+	 * Get a list of the attributes defined in this data type. This does not include attributes of any super types,
+	 * except if the attribute is overridden by this data type.
 	 */
 	public List<RAttribute> getOwnAttributes() {
 		if (ownAttributes == null) {
-			if (additionalAttributes != null) {
-				this.ownAttributes = Streams.concat(additionalAttributes.stream(), data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr))).collect(Collectors.toList());
-			} else {
-				this.ownAttributes = data.getAttributes().stream().map(attr -> objectFactory.buildRAttribute(attr)).collect(Collectors.toList());
-			}
+			ownAttributes = data.getAttributes().stream().map(s -> objectFactory.buildRAttribute(s)).collect(Collectors.toList());
 		}
 		return ownAttributes;
 	}
@@ -118,20 +119,11 @@ public class RDataType extends RType implements RObject {
 	 * Get a list of all attributes of this data type, including all attributes of its super types.
 	 * 
 	 * The list starts with the attributes of the top-most super type, and ends with the attributes of itself.
+	 * Attribute overrides replace their respective parent attributes, respecting the original order.
 	 */
-	public List<RAttribute> getAllAttributes() {
-		return getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).collect(Collectors.toList());
-	}
-	
-	/**
-	 * Get an ordered collection of all attributes of this data type, including all attributes of its super types.
-	 * If multiple attributes have the same name, only the last one is kept.
-	 * 
-	 * The collection starts with the attributes of the top-most super type, and ends with the attributes of itself.
-	 */
-	public Collection<RAttribute> getAllNonOverridenAttributes() {
+	public Collection<RAttribute> getAllAttributes() {
 		Map<String, RAttribute> result = new LinkedHashMap<>();
-		getAllAttributes().stream().forEach(a -> result.put(a.getName(), a));
+		getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).forEach(a -> result.put(a.getName(), a));
 		return result.values();
 	}
 

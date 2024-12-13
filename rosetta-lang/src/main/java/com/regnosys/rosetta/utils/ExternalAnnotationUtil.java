@@ -150,7 +150,7 @@ public class ExternalAnnotationUtil {
 	
 	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type, T visitor) {
 		// collect inline rule reference
-		type.getAllNonOverridenAttributes()
+		type.getAllAttributes()
 			.forEach(attr -> 
 				Optional.ofNullable(attr.getRuleReference()).ifPresent(rule -> visitor.add(attr, rule)));
 		
@@ -237,7 +237,7 @@ public class ExternalAnnotationUtil {
 	private void collectReportingRules(RDataType dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<RDataType> collectedTypes) {
 		Map<RAttribute, RosettaRule> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
 		
-		dataType.getAllNonOverridenAttributes().forEach(attr -> {
+		dataType.getAllAttributes().forEach(attr -> {
 			RType attrType = attr.getRMetaAnnotatedType().getRType();
 			if (attrType instanceof RChoiceType) {
 				attrType = ((RChoiceType) attrType).asRDataType();

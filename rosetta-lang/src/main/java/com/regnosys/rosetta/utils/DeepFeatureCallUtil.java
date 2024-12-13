@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RCardinality;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
@@ -26,11 +26,11 @@ public class DeepFeatureCallUtil {
 		
 		Map<String, RAttribute> deepIntersection = null;
 		Map<String, RAttribute> result = new HashMap<>();
-		Collection<RAttribute> allNonOverridenAttributes = type.getAllNonOverridenAttributes();
-		for (RAttribute attr : allNonOverridenAttributes) {
+		Collection<RAttribute> allAttributes = type.getAllAttributes();
+		for (RAttribute attr : allAttributes) {
 			result.put(attr.getName(), attr);
 		}
-		for (RAttribute attr : allNonOverridenAttributes) {
+		for (RAttribute attr : allAttributes) {
 
 			RType attrType = attr.getRMetaAnnotatedType().getRType();
 			if (attrType instanceof RChoiceType) {
@@ -40,7 +40,7 @@ public class DeepFeatureCallUtil {
 			if (attrType instanceof RDataType) {
 				RDataType attrDataType = (RDataType)attrType;
 				attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
-				for (RAttribute attrFeature : attrDataType.getAllNonOverridenAttributes()) {
+				for (RAttribute attrFeature : attrDataType.getAllAttributes()) {
 					attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
 				}
 			} else {
@@ -118,8 +118,9 @@ public class DeepFeatureCallUtil {
 		// 3. Type has at least one attribute.
 		Data data = type.getEObject();
 		if (data.getConditions().stream().anyMatch(cond -> isOneOfItem(cond.getExpression()))) {
-			if (data.getAttributes().stream().allMatch(a -> isSingularOptional(a.getCard()))) {
-				if (!data.getAttributes().isEmpty()) {
+			Collection<RAttribute> allAttributes = type.getAllAttributes();
+			if (allAttributes.stream().allMatch(a -> isSingularOptional(a.getCardinality()))) {
+				if (!allAttributes.isEmpty()) {
 					return true;
 				}
 			}
@@ -134,7 +135,7 @@ public class DeepFeatureCallUtil {
 		}
 		return false;
 	}
-	private boolean isSingularOptional(RosettaCardinality card) {
-		return !card.isUnbounded() && card.getInf() == 0 && card.getSup() == 1;
+	private boolean isSingularOptional(RCardinality card) {
+		return card.equals(RCardinality.OPTIONAL);
 	}
 }

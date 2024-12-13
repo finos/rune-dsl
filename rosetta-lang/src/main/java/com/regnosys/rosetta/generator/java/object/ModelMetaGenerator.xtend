@@ -52,9 +52,9 @@ class ModelMetaGenerator {
 	
 	private def StringConcatenationClient metaClassBody(RDataType t, RootPackage root, String className, String version) {
 		val dataClass = t.toJavaType
-		val validator = t.toValidatorClass
-		val typeFormatValidator = t.toTypeFormatValidatorClass
-		val onlyExistsValidator = t.toOnlyExistsValidatorClass
+		val validator = dataClass.toValidatorClass
+		val typeFormatValidator = dataClass.toTypeFormatValidatorClass
+		val onlyExistsValidator = dataClass.toOnlyExistsValidatorClass
 		val context = t.EObject.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(t.EObject, context.resources.map[contents.head as RosettaModel].toSet)
 		val conditions = t.allSuperTypes.map[conditionRules(it.EObject.conditions)].flatten
