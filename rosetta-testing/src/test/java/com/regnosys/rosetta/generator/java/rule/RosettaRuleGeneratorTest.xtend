@@ -772,7 +772,7 @@ class RosettaRuleGeneratorTest {
 		// expected output
 		val expectedQuxReport = classes.createInstanceUsingBuilder("QuxReport", #{"attr" -> "bar1Value"})
 		val expectedBazReport = classes.createInstanceUsingBuilder("BazReport", #{"qux" -> expectedQuxReport})
-		val expectedBarReport = classes.createInstanceUsingBuilder("QuxReport", #{"baz" -> expectedBazReport})
+		val expectedBarReport = classes.createInstanceUsingBuilder("BarReport", #{"baz" -> expectedBazReport})
 		
 		assertEquals(expectedBarReport, output)
 	}
