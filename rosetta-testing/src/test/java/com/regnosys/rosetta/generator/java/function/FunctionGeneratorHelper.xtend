@@ -42,7 +42,11 @@ class FunctionGeneratorHelper {
 	}
 	
 	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		injector.getInstance(classes.get(rootPackage.functions + '.' + funcName)) as RosettaFunction
+		createFunc(classes, rootPackage.functions.toString, funcName)
+	}
+	
+	def createFunc(Map<String, Class<?>> classes, String namespace, String funcName) {
+		injector.getInstance(classes.get(namespace + '.' + funcName)) as RosettaFunction
 	}
 	
 	def <T> invokeFunc(RosettaFunction func, Class<T> resultClass, Object... inputs) {
