@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.junit.jupiter.api.Assertions.*
 
@@ -88,6 +89,39 @@ class RosettaParsingTest {
 //		'''
 //			.parseExpression(#[context], #["criterium AssetCriterium (1..1)"])
 //			.assertNoIssues
+	}
+	
+	def void testCannotOverrideAttributeOfItself() {
+		'''
+			type Foo:
+				override attr number (1..1)
+				attr number (0..1)
+		'''.parseRosetta
+			.assertError(ATTRIBUTE, null, "Attribute attr does not exist in supertype")
+	}
+	
+	@Test
+	def void testCanOverrideAttributeOfParent() {
+		'''
+			type Bar:
+				attr number (0..1)
+			
+			type Foo extends Bar:
+				override attr number (1..1)
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
+	def void testNamespaceDescription() {
+		'''
+			namespace cdm.base.test : <"some description">
+			version "test"
+			
+			enum TestEnum:
+				ONE 
+				TWO 
+			
+		'''.parseRosettaWithNoIssues
 	}
 	
 	@Test

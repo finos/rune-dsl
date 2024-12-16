@@ -22,6 +22,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.rosetta.model.metafields.MetaFields
 
 class CodeGeneratorTestHelper {
 
@@ -153,12 +154,11 @@ class CodeGeneratorTestHelper {
 	}
 
 	def FieldWithMeta<String> createFieldWithMetaString(Map<String, Class<?>> classes, String value, String scheme) {
-		val metaFieldsBuilder = classes.get('com.rosetta.model.metafields.MetaFields').getMethod("builder").invoke(null);
-		metaFieldsBuilder.class.getMatchingMethod('setScheme', #[scheme.class]).invoke(metaFieldsBuilder, scheme);
+		val metaFieldsBuilder = MetaFields.builder().setScheme(scheme)
 		
 		val fieldWithMetaStringBuilder = classes.get('com.rosetta.model.metafields.FieldWithMetaString').getMethod("builder").invoke(null);
 		fieldWithMetaStringBuilder.class.getMatchingMethod('setValue', #[value.class]).invoke(fieldWithMetaStringBuilder, value);
-		fieldWithMetaStringBuilder.class.getMatchingMethod('setMeta', #[metaFieldsBuilder.class]).invoke(fieldWithMetaStringBuilder, metaFieldsBuilder);
+		fieldWithMetaStringBuilder.class.getMatchingMethod('setMeta', #[MetaFields]).invoke(fieldWithMetaStringBuilder, metaFieldsBuilder);
 		
 		return fieldWithMetaStringBuilder.class.getMethod('build').invoke(fieldWithMetaStringBuilder) as FieldWithMeta<String>;
 	}

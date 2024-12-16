@@ -195,7 +195,7 @@ class ModelGeneratorUtilTest {
 								.parseRosetta(model).elements
 								.filter(Data)
 								.filter[name == 'Foo']
-								.map[attributes].flatten
+								.flatMap[attributes]
 								.filter[name == 'bar']
 								.get(0)
 

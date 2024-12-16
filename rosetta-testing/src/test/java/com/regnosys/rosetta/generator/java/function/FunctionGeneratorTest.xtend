@@ -33,6 +33,7 @@ import java.time.LocalDateTime
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.meta.Reference
+import com.rosetta.model.metafields.MetaFields
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaInjectorProvider)
@@ -155,9 +156,7 @@ class FunctionGeneratorTest {
         		"a" -> "aValue",
         		"c" -> BigDecimal.valueOf(20)
 			}),
-			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-				"scheme" -> "myScheme"
-			})
+			"meta" -> MetaFields.builder.setScheme("myScheme")
 		})
         
         val result = test.invokeFunc(Boolean, myInput)
@@ -212,15 +211,11 @@ class FunctionGeneratorTest {
         val myInputs = #[
         	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 				"value" -> 6,
-				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"scheme" -> "myScheme"
-				})
+				"meta" -> MetaFields.builder.setScheme("myScheme")
 			}),
         	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 				"value" -> 5,
-				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"scheme" -> "myScheme"
-				})
+				"meta" -> MetaFields.builder.setScheme("myScheme")
 			})
         ]	
         
@@ -312,9 +307,7 @@ class FunctionGeneratorTest {
         val myInput = classes.createInstanceUsingBuilder("Foo", #{
         	"myEnum" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", #{
         		"value" -> classes.createEnumInstance("MyEnum", "B"),
-        		"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"scheme" -> "myScheme"
-				})
+        		"meta" -> MetaFields.builder.setScheme("myScheme")
         	})
         })
         
@@ -349,10 +342,7 @@ class FunctionGeneratorTest {
         
         val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
-				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"externalKey" -> "myExternalKey",
-					"globalKey" -> "myGlobalKey"
-				})
+				"meta" -> MetaFields.builder.setExternalKey("myExternalKey").setGlobalKey("myGlobalKey")
 			})
 		})
 		
@@ -392,9 +382,7 @@ class FunctionGeneratorTest {
         
         val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 			"value" -> "someInput",
-			"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-				"scheme" -> "myScheme"
-			})
+			"meta" -> MetaFields.builder.setScheme("myScheme")
 		})
 		
 		val expected = classes.createInstanceUsingBuilder("Bar", #{
@@ -441,10 +429,7 @@ class FunctionGeneratorTest {
         val myInput = classes.createInstanceUsingBuilder("FooContainer" , #{
         	"foo" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 				"value" -> classes.createInstanceUsingBuilder("Foo", #{
-					"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-						"externalKey" -> "myExternalKey",
-						"globalKey" -> "myGlobalKey"
-					})
+					"meta" -> MetaFields.builder.setExternalKey("myExternalKey").setGlobalKey("myGlobalKey")
 				})
 			})
         })
@@ -489,10 +474,7 @@ class FunctionGeneratorTest {
         
        val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
-				"meta" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"externalKey" -> "myExternalKey",
-					"globalKey" -> "myGlobalKey"
-				})
+				"meta" -> MetaFields.builder.setExternalKey("myExternalKey").setGlobalKey("myGlobalKey")
 			})
 		})
 		
@@ -623,6 +605,8 @@ class FunctionGeneratorTest {
 	def void testDeepFeatureCallWithMeta() {
 		val code = '''
 			choice Foo:
+				[metadata key]
+				
 			    A
 			    B
 			
@@ -931,9 +915,7 @@ class FunctionGeneratorTest {
 		})
 		val fooStrWithScheme = classes.createInstanceUsingBuilder("Foo", #{
 			"MyString" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-					"scheme" -> "myScheme"
-				}),
+				"meta" -> MetaFields.builder.setScheme("myScheme"),
 				"value" -> "abc123"
 			})
 		})
@@ -1285,13 +1267,9 @@ class FunctionGeneratorTest {
         val aB = classes.createInstanceUsingBuilder("A", #{
 	    		"B" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaB", #{
 	    			"value" -> classes.createInstanceUsingBuilder("B", #{
-	    				"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-	    					"key" -> #[Key.builder.setKeyValue("myKey")]
-	    				}),
+	    				"meta" -> MetaFields.builder.setKey(#[Key.builder.setKeyValue("myKey")]),
 	    				"id" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-	    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-		    					"scheme" -> "myScheme"
-		    				}),
+	    					"meta" -> MetaFields.builder.setScheme("myScheme"),
 	    					"value" -> "abc123"
 	    				})
 	    			}),
@@ -1336,15 +1314,11 @@ class FunctionGeneratorTest {
     				"prop" -> 
     					#[
     						classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
-		    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-			    					"scheme" -> "myScheme"
-			    				}),
+		    					"meta" -> MetaFields.builder.setScheme("myScheme"),
 		    					"value" -> 42
 		    				}),
 		    				classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
-		    					"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-			    					"scheme" -> "otherScheme"
-			    				}),
+		    					"meta" -> MetaFields.builder.setScheme("otherScheme"),
 		    					"value" -> 0
 		    				})
     					]
@@ -1785,10 +1759,7 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 		
 		val objectWithKey = classes.createInstanceUsingBuilder('TypeWithKey', #{
-			"meta" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "MetaFields", #{
-				"externalKey" -> "external",
-				"globalKey" -> "global"
-			})
+			"meta" -> MetaFields.builder.setExternalKey("external").setGlobalKey("global")
 		})
 		val objectWithKeyReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), 'ReferenceWithMetaTypeWithKey', #{
 			"externalReference" -> "external",

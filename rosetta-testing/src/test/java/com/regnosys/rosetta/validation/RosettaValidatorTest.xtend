@@ -1589,49 +1589,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_IMPLICIT_VARIABLE, null,
             "Expected type `number`, but got `Foo` instead.")
 	}
-	
-	@Test
-	def void testLowerCaseClass() {
-		val model =
-		'''
-			synonym source FIX
-			synonym source FpML
-			
-			type partyIdentifier: <"">
-				partyId string (1..1) <"">
-					[synonym FIX value "PartyID" tag 448]
-					[synonym FpML value "partyId"]
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(DATA, INVALID_CASE,
-            "Type name should start with a capital")
-	}
-	
-	@Test
-	def void testLowerCaseEnumeration() {
-		val model =
-		'''
-			enum quoteRejectReasonEnum: <"">
-				UnknownSymbol
-				Other
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
-            "Enumeration name should start with a capital")
-	}
-	
-	@Test
-	def void testUpperCaseAttribute() {
-		val model =
-		'''
-			synonym source FIX
-			synonym source FpML
-			type PartyIdentifier: <"">
-					PartyId string (1..1) <"">
-						[synonym FIX value "PartyID" tag 448]
-						[synonym FpML value "partyId"]
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ATTRIBUTE, INVALID_CASE,
-            "Attribute name should start with a lower case")
-	}
 		
 	@Test
 	def void testTypeExpectation() {
@@ -1835,7 +1792,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (0..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test
@@ -1847,7 +1804,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..*)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test
@@ -1859,7 +1816,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i string (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test 
@@ -2126,19 +2083,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(AS_KEY_OPERATION, null,
 			"'as-key' can only be used with attributes annotated with [metadata reference] annotation.")
-	}
-	
-	@Test
-	def checkAsKeyUsage_03() {
-		val model = '''
-			type WithKey:
-			
-			type TypeToUse:
-				attr WithKey (0..1)
-				[metadata reference]
-		'''.parseRosetta
-		model.assertWarning(ATTRIBUTE, null,
-			"WithKey must be annotated with [metadata key] as reference annotation is used")
 	}
 	
 	@Test

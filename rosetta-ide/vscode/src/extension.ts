@@ -31,8 +31,8 @@ export async function activate(context: ExtensionContext) {
     let script = context.asAbsolutePath(path.join('src', 'rosetta', 'languageserver', 'bin', launcher));
     
     let serverOptions: ServerOptions = {
-        run : { command: script },
-        debug: { command: script, args: ['-trace'], options: { env: createDebugEnv() } }
+        run : { command: script, options: { shell: true } },
+        debug: { command: script, args: ['-trace'], options: { shell: true, env: createDebugEnv() } },
     };
     
     let clientOptions: LanguageClientOptions = {
@@ -63,7 +63,7 @@ export async function activate(context: ExtensionContext) {
     await lc.start().then(() => {
         console.log("Rosetta Language Server started.");
     }).catch((err) => {
-        console.error("Failed to launch Rosetta Language Server.")
+        console.error("Failed to launch Rosetta Language Server.");
         console.error(err);
     });
 }

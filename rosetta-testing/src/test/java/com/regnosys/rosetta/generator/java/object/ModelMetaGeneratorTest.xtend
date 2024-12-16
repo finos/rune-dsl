@@ -133,9 +133,9 @@ class ModelMetaGeneratorTest {
 			
 				private List<ComparisonResult> getComparisonResults(Foo o) {
 					return Lists.<ComparisonResult>newArrayList(
-							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
+							checkCardinality("a", (List<String>) o.getA() == null ? 0 : o.getA().size(), 1, 2), 
 							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1), 
-							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0), 
+							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0), 
 							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
 						);
 				}
