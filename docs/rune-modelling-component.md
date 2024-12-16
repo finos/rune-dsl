@@ -199,6 +199,28 @@ type Vehicle extends VehicleFeature:
    vehicleClassification VehicleClassificationEnum (1..1)
 ```
 
+An attribute can also be *overridden* to restrict the type or cardinality, or to add annotations to it, by using the `override` keyword:
+
+``` Haskell
+type VehicleReport:
+    vehicleRegistrationID string (1..1)
+    firstRegistrationDate date (0..1)
+    engineType EngineTypeEnum (0..1)
+
+type EuropeanParliamentReport extends VehicleReport:
+    override vehicleRegistrationID Max40Text (1..1) // Change type to compatible string type limited to 40 characters
+        [ruleReference VehicleRegistrationID] // Add rule reference
+    override firstRegistrationDate date (1..1) // Change cardinality to be required
+        [ruleReference FirstRegistrationDate] // Add rule reference
+    override engineType EngineTypeEnum (1..1) // Change cardinality to be required
+        [ruleReference EngineType] // Add rule reference
+    // New attributes can be a added after all overrides
+    vehicleClassificationType VehicleClassificationEnum (1..1)
+        [ruleReference VehicleClassificationType]
+    euroEmissionStandard string (1..1)
+        [ruleReference EuroEmissionStandard]
+```
+
 {{< notice info "Note" >}}
 For clarity purposes, the documentation snippets omit the annotations and definitions that are associated with the data types and attributes, unless the purpose of the snippet is to highlight some of those features.
 {{< /notice >}}
