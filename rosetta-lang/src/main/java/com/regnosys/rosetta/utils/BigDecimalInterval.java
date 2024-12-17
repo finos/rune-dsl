@@ -42,6 +42,7 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
 	
 	@Override
 	public boolean equals(Object object) {
+		if (this == object) return true;
 		if (object == null) return false;
 		if (getClass() != object.getClass()) return false;
 		
@@ -50,6 +51,8 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
 				&& boundEquals(getMax(), other.getMax());
 	}
 	private boolean boundEquals(Optional<BigDecimal> a, Optional<BigDecimal> b) {
+		// When checking equality between `BigDecimal`s, we should ignore precision,
+		// so we check equality using `x.compareTo(y) == 0` instead.
 		return Objects.equals(a, b) || OptionalUtil.zipWith(a, b, (x, y) -> x.compareTo(y) == 0).orElse(false);
 	}
 

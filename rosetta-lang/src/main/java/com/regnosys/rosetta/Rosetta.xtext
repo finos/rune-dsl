@@ -77,7 +77,7 @@ Choice:
 	'choice' RosettaNamed ':' RosettaDefinable?
 	(Annotations|ClassSynonyms)*
 	
-	attributes += ChoiceOption*
+	attributes+=ChoiceOption*
 ;
 
 ChoiceOption:
@@ -87,7 +87,8 @@ ChoiceOption:
 ;
 
 Attribute:
-	RosettaNamed RosettaTyped card=RosettaCardinality RosettaDefinable?
+	override?='override'? RosettaNamed RosettaTyped card=RosettaCardinality
+	RosettaDefinable?
 	(References|Annotations|Synonyms)*
 	RuleReference?
 ;

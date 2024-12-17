@@ -22,7 +22,7 @@ class RosettaFormattingTest {
 		req.toBeFormatted = unformated
 		
 		// extra check to make sure we didn't miss any hidden region in our formatter:
-		req.allowUnformattedWhitespace = false 
+		req.allowUnformattedWhitespace = false
 		
 		// see issue https://github.com/eclipse/xtext-core/issues/2058
 		req.request.allowIdentityEdits = true

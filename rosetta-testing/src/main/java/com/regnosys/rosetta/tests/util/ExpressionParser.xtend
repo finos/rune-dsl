@@ -45,7 +45,7 @@ class ExpressionParser {
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, Collection<? extends CharSequence> attrs) {
-		return parseExpression(expr, defaultContext, attrs)
+		return parseExpression(expr, emptyList, attrs)
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Collection<? extends CharSequence> attrs) {
@@ -54,15 +54,16 @@ class ExpressionParser {
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, Attribute... attributes) {
-		return parseExpression(expr, defaultContext, attributes)
+		return parseExpression(expr, emptyList, attributes)
 	}
 	
 	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Attribute... attributes) {
+		val cont = context.isEmpty ? defaultContext : context
 		val IParseResult result = parser.parse(grammar.rosettaCalcExpressionRule, new StringReader(expr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val expression = result.rootASTElement as RosettaExpression
-		createResource("expr", expression, context)
-		link(expression, context, attributes)
+		createResource("expr", expression, cont)
+		link(expression, cont, attributes)
 		return expression
 	}
 	
@@ -71,10 +72,11 @@ class ExpressionParser {
 	}
 	
 	def Attribute parseAttribute(CharSequence attr, List<RosettaModel> context) {
+		val cont = context.isEmpty ? defaultContext : context
 		val IParseResult result = parser.parse(grammar.attributeRule, new StringReader(attr.toString()))
 		assertFalse(result.hasSyntaxErrors)
 		val attribute = result.rootASTElement as Attribute
-		createResource("attribute", attribute, context)
+		createResource("attribute", attribute, cont)
 		link(attribute, context, emptyList)
 		return attribute
 	}

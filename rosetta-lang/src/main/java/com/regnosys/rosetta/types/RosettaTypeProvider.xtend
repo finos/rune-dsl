@@ -88,6 +88,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<EObject, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -136,6 +137,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	
 	def List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
+		if (symbol instanceof Attribute) {
+			if (symbol.isOverride) {
+				return (extensions.getParentAttribute(symbol).RMetaAttributesOfSymbol + symbol.annotations.RMetaAttributes).toList
+			}
+		}
 		if (symbol instanceof Annotated) {
 			return symbol.annotations.RMetaAttributes
 		}
@@ -143,6 +149,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	
 	def List<RMetaAttribute> getRMetaAttributesOfFeature(RosettaFeature feature) {
+		if (feature instanceof RosettaSymbol) {
+			return feature.RMetaAttributesOfSymbol
+		}
 		if (feature instanceof Annotated) {
 			return feature.annotations.RMetaAttributes
 		}
@@ -155,7 +164,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType, it.attribute)]
 			.toList
 	}
-	
 	
 	private def RMetaAnnotatedType safeRType(RosettaSymbol symbol, EObject context,Map<EObject, RMetaAnnotatedType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {

@@ -63,10 +63,6 @@ interface RosettaRootElement {
 	container RosettaModel model opposite elements
 }
 
-abstract class RosettaFeatureOwner extends RosettaDefinable {
-	contains RosettaTypedFeature[] features
-}
-
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
@@ -126,7 +122,7 @@ class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, Ro
 }
 
 
-class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaType, RosettaSymbol {
+class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaSymbol {
 	
 }
 
