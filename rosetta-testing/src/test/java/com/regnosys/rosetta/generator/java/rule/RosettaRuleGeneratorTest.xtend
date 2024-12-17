@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import java.util.Map
@@ -18,7 +18,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @ExtendWith(InjectionExtension)
 class RosettaRuleGeneratorTest {
 
@@ -1131,7 +1131,7 @@ class RosettaRuleGeneratorTest {
 		.replace('\r', "")
 		.parseRosetta
 			.assertError(ROSETTA_SYMBOL_REFERENCE, null,
-			"Expected type `Foo`, but got `Bar` instead")
+			"Expected type `Foo`, but got `Bar` instead. Rule `Rule2` cannot be called with type `Bar`")
 		
 	}
 

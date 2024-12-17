@@ -119,7 +119,7 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 			if (suggestion != null) {
 				msg += ". " + suggestion;
 			}
-			error(msg, sourceObject, feature, featureIndex);
+			warning(msg, sourceObject, feature, featureIndex);
 			return false;
 		}
 		return true;
@@ -137,7 +137,7 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 			if (suggestion != null) {
 				msg += ". " + suggestion;
 			}
-			error(msg, sourceObject, feature, featureIndex);
+			warning(msg, sourceObject, feature, featureIndex);
 			return false;
 		}
 		return true;

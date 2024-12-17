@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import java.math.BigDecimal
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Disabled
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaBinaryOperationTest {
 	
 	@Inject extension CodeGeneratorTestHelper

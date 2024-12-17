@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
@@ -35,7 +35,7 @@ import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.meta.Reference
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class FunctionGeneratorTest {
 
 	@Inject extension FunctionGeneratorHelper
@@ -3516,7 +3516,7 @@ class FunctionGeneratorTest {
 		'''.parseRosetta
 
 		model.assertError(LOGICAL_OPERATION, null,
-			"Expected type `boolean`, but got `Foo` instead")
+			"Expected type `boolean`, but got `Foo` instead. Cannot use `Foo` with operator `and`")
 	}
 
 	@Test

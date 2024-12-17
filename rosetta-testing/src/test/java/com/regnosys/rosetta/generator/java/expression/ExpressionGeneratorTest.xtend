@@ -10,7 +10,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.eclipse.emf.common.util.ECollections
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -39,7 +39,7 @@ import java.math.BigInteger
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ExpressionGeneratorTest {
 	@Inject extension ExpressionGenerator expressionGenerator
 	@Inject extension ExpressionParser

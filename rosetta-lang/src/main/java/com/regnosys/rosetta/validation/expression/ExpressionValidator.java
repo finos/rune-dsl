@@ -151,16 +151,25 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		RosettaExpression left = op.getLeft();
 		RosettaExpression right = op.getRight();
 		String removeModifierSuggestion = "Did you mean to remove the `" + op.getCardMod().getLiteral() + "` modifier on the `" + op.getOperator() + "` operator?";
-		String suggestion;
+		String flipOperandsSuggestion = "Did you mean to flip around the operands of the `" + op.getOperator() + "` operator?";
+		String leftSuggestion;
 		if (cardinalityProvider.isMulti(right)) {
 			// Multi and single are flipped
-			suggestion = "Did you mean to flip around the operands of the `" + op.getOperator() + "` operator?";
+			leftSuggestion = flipOperandsSuggestion;
 		} else {
 			// Both are single
-			suggestion = removeModifierSuggestion;
+			leftSuggestion = removeModifierSuggestion;
 		}
-		isMultiCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, suggestion);
-		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, removeModifierSuggestion);
+		String rightSuggestion;
+		if (cardinalityProvider.isMulti(left)) {
+			// Both are multi
+			rightSuggestion = null;
+		} else {
+			// Multi and single are flipped
+			rightSuggestion = flipOperandsSuggestion;
+		}
+		isMultiCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, leftSuggestion);
+		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, rightSuggestion);
 	}
 	
 	@Check

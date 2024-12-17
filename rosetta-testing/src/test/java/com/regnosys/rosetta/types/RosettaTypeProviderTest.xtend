@@ -4,7 +4,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -35,7 +35,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @TestInstance(Lifecycle.PER_CLASS)
 class RosettaTypeProviderTest {
 
@@ -126,13 +126,13 @@ class RosettaTypeProviderTest {
 	def void testLogicalOperationTypeChecking() {
 		'1 or False'
 			.parseExpression
-			.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `int` instead")
+			.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `int` instead. Cannot use `int` with operator `or`")
 		'True or 3.14'
 			.parseExpression
-			.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `number` instead")
+			.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `number` instead. Cannot use `number` with operator `or`")
 		'a or False'
 			.parseExpression(#['a boolean (1..2)'])
-			.assertError(LOGICAL_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(LOGICAL_OPERATION, null, "Expecting single cardinality. The `or` operator requires a single cardinality input")
 	}
 	
 	@Test
@@ -168,7 +168,7 @@ class RosettaTypeProviderTest {
 			.assertError(EQUALITY_OPERATION, null, "Types `int` and `boolean` are not comparable")
 		'[1, 3] any <> a'
 			.parseExpression(#['a int (1..2)'])
-			.assertError(EQUALITY_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(EQUALITY_OPERATION, null, "Expecting single cardinality")
 //		'[1, 2] all = empty'
 //			.parseExpression
 //			.assertError(EQUALITY_OPERATION, null, "Expected a single value, but got an empty value instead")
@@ -177,10 +177,10 @@ class RosettaTypeProviderTest {
 //			.assertError(EQUALITY_OPERATION, null, "Expected a single value, but got an empty value instead")
 		'[1, 2] all = [1, 2]'
 			.parseExpression
-			.assertError(EQUALITY_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(EQUALITY_OPERATION, null, "Expecting single cardinality")
 		'5 any <> [1, 2]'
 			.parseExpression
-			.assertError(EQUALITY_OPERATION, null, "Expecting multi cardinality")
+			.assertWarning(EQUALITY_OPERATION, null, "Expecting multi cardinality. Did you mean to flip around the operands of the `<>` operator?")
 //		'[3.0] any <> 5'
 //			.parseExpression
 //			.assertError(EQUALITY_OPERATION, null, "The cardinality operator `any` is redundant when comparing two single values")
@@ -208,20 +208,20 @@ class RosettaTypeProviderTest {
 	def void testArithmeticOperationTypeChecking() {
 		'[1, 2] + 3'
 			.parseExpression
-			.assertError(ARITHMETIC_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(ARITHMETIC_OPERATION, null, "Expecting single cardinality. The `+` operator requires a single cardinality input")
 		// TODO
 //		'empty - 3'
 //			.parseExpression
 //			.assertError(ARITHMETIC_OPERATION, null, "Expected a single value, but got an empty value instead.")
 		'1.5 * False'
 			.parseExpression
-			.assertError(ARITHMETIC_OPERATION, null, "Expected type `number`, but got `boolean` instead")
+			.assertError(ARITHMETIC_OPERATION, null, "Expected type `number`, but got `boolean` instead. Cannot use `boolean` with operator `*`")
 		'"ab" + 3'
 			.parseExpression
-			.assertError(ARITHMETIC_OPERATION, null, "Expected type `string`, but got `int` instead")
+			.assertError(ARITHMETIC_OPERATION, null, "Expected type `string`, but got `int` instead. Cannot add `int` to a `string`")
 		'a + 5'
 			.parseExpression(#['a int (1..2)'])
-			.assertError(ARITHMETIC_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(ARITHMETIC_OPERATION, null, "Expecting single cardinality. The `+` operator requires a single cardinality input")
 	}
 	
 	@Test
@@ -241,36 +241,36 @@ class RosettaTypeProviderTest {
 		// TODO: support date, zonedDateTime and `time`?
 		'[1, 2] < 3'
 			.parseExpression
-			.assertError(COMPARISON_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting single cardinality. Did you mean to use `all` or `any` in front of the `<` operator?")
 		// TODO
 //		'empty > 3'
 //			.parseExpression
 //			.assertError(COMPARISON_OPERATION, null, "Expected a single value, but got an empty value instead.")
 		'1.5 <= False'
 			.parseExpression
-			.assertError(COMPARISON_OPERATION, null, "Expected type `number`, but got `boolean` instead")
+			.assertError(COMPARISON_OPERATION, null, "Expected type `number`, but got `boolean` instead. Cannot compare a `boolean` to a `number`")
 		
 		'a < 5'
 			.parseExpression(#['a int (1..2)'])
-			.assertError(COMPARISON_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting single cardinality. Did you mean to use `all` or `any` in front of the `<` operator?")
 		'[1, 2] any < a'
 			.parseExpression(#['a int (1..2)'])
-			.assertError(COMPARISON_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting single cardinality")
 //		'[1, 2] all >= empty'
 //			.parseExpression
 //			.assertError(COMPARISON_OPERATION, null, "Expected a single value, but got an empty value instead")
 		'empty any < empty'
 			.parseExpression
-			.assertError(COMPARISON_OPERATION, null, "Expecting multi cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting multi cardinality. Did you mean to remove the `any` modifier on the `<` operator?")
 		'[1, 2] all > [1, 2]'
 			.parseExpression
-			.assertError(COMPARISON_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting single cardinality")
 		'5 any <= [1, 2]'
 			.parseExpression
-			.assertError(COMPARISON_OPERATION, null, "Expecting single cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting single cardinality. Did you mean to flip around the operands of the `<=` operator?")
 		'5 all >= 1'
 			.parseExpression
-			.assertError(COMPARISON_OPERATION, null, "Expecting multi cardinality")
+			.assertWarning(COMPARISON_OPERATION, null, "Expecting multi cardinality. Did you mean to remove the `all` modifier on the `>=` operator?")
 	}
 	
 	@Test
@@ -282,7 +282,7 @@ class RosettaTypeProviderTest {
 	def void testConditionalExpressionTypeChecking() {
 		'if [True, False] then 1 else 2'
 			.parseExpression
-			.assertError(ROSETTA_CONDITIONAL_EXPRESSION, null, "Expecting single cardinality")
+			.assertWarning(ROSETTA_CONDITIONAL_EXPRESSION, null, "Expecting single cardinality. The condition of an if-then-else expression should be single cardinality")
 		// TODO
 //		'if empty then 1 else 2'
 //			.parseExpression
@@ -342,7 +342,7 @@ class RosettaTypeProviderTest {
 			.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expected 2 arguments, but got 3 instead");
 		'SomeFunc(1, [2, 3])'
 			.parseExpression(#[context])
-			.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expected type `boolean`, but got `int` instead");
+			.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expected type `boolean`, but got `int` instead. Cannot assign `int` to input `b`");
 		// TODO
 //		'SomeFunc(1, [False, True, False, False, True])'
 //			.parseExpression(#[context])
@@ -510,7 +510,7 @@ class RosettaTypeProviderTest {
 		]
 		
 		(model.elements.get(2) as Function).operations => [
-			get(0).expression.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Expecting single cardinality")
+			get(0).expression.assertWarning(ROSETTA_SYMBOL_REFERENCE, null, "Expecting single cardinality. The `only exists` operator requires a single cardinality input")
 			get(1).expression.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, null, "Object must have a parent object")
 			get(2).expression.assertError(ROSETTA_SYMBOL_REFERENCE, null, "All parent paths must be equal")
 			get(3).expression.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Operator `only exists` is not supported for type Foo. All attributes of input type should be optional")

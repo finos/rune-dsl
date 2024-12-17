@@ -12,7 +12,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaInjectorProvider)
+@InjectWith(MyRosettaTestInjectorProvider)
 class EnumValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper

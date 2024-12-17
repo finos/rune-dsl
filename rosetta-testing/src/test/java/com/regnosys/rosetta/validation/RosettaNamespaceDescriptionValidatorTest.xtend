@@ -3,7 +3,7 @@
  */
 package com.regnosys.rosetta.validation
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaNamespaceDescriptionValidatorTest {
 
 	@Inject extension ValidationTestHelper

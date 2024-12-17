@@ -12,7 +12,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaInjectorProvider)
+@InjectWith(MyRosettaTestInjectorProvider)
 class ChoiceValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper

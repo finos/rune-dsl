@@ -5,7 +5,7 @@ package com.regnosys.rosetta.validation
 
 import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.service.SingletonBinding
@@ -24,7 +24,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaInjectorProvider)
+@InjectWith(MyRosettaTestInjectorProvider)
 class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
@@ -39,7 +39,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[True, False]
 		'''.parseRosetta
 		
-		model.assertError(CONDITION, null, "Expecting single cardinality. A condition should be single cardinality")
+		model.assertWarning(CONDITION, null, "Expecting single cardinality. A condition should be single cardinality")
 	}
 	
 	@Test
@@ -292,7 +292,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  			default "someOtherValue"
  		'''
  			.parseExpression(#[model], #["inEnum SomeEnum (1..*)"])
- 			.assertError(ROSETTA_EXPRESSION, null, "Expecting single cardinality")
+ 			.assertWarning(ROSETTA_EXPRESSION, null, "Expecting single cardinality")
 
 	}
 
@@ -738,7 +738,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				ins then val
 		'''.parseRosetta
 		
-		model.assertError(OPERATION, null,
+		model.assertWarning(OPERATION, null,
 			"Expecting single cardinality. Cannot assign a list to a single value")
 	}
 	
@@ -3520,11 +3520,11 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 }
 	
-class MyRosettaInjectorProvider extends RosettaInjectorProvider {
+class MyRosettaTestInjectorProvider extends RosettaTestInjectorProvider {
 	override createRuntimeModule() {
 		return new RosettaRuntimeModule(){
 			override bindClassLoaderToInstance() {
-				return MyRosettaInjectorProvider
+				return MyRosettaTestInjectorProvider
 						.getClassLoader();
 			}
 			

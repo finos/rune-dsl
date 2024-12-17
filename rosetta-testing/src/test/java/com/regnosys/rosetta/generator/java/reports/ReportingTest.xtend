@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.reports
 
 import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import javax.inject.Inject
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import com.rosetta.model.lib.ModelReportId
 import com.rosetta.util.types.generated.GeneratedJavaClassService
 
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @ExtendWith(InjectionExtension)
 class ReportingTest {
 	

@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.validation.ValidationResult
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaConditionTest {
 	
 	@Inject extension CodeGeneratorTestHelper

@@ -27,7 +27,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper

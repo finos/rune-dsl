@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import java.io.File
 import java.math.BigDecimal
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class DataRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper

@@ -5,7 +5,7 @@ import java.util.List
 import java.util.HashMap
 import com.google.inject.Injector
 import com.regnosys.rosetta.RosettaRuntimeModule
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 
 class CustomConfigTestHelper {
 	static def compileToClassesForModel(List<HashMap<String, String>> code,
@@ -48,7 +48,7 @@ class CustomConfigTestHelper {
 
 				new RosettaRuntimeModule() {
 					override ClassLoader bindClassLoaderToInstance() {
-						RosettaInjectorProvider.getClassLoader()
+						RosettaTestInjectorProvider.getClassLoader()
 					}
 
 					def Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
