@@ -363,16 +363,23 @@ class ToZonedDateTimeOperation extends ParseOperation {
 }
 
 class SwitchOperation extends RosettaUnaryOperation {
-	contains SwitchCase[] cases opposite switchOperation
-	contains RosettaExpression ^default
+	contains SwitchCaseOrDefault[] cases opposite switchOperation
+	
+	op RosettaExpression getDefault() {
+		cases.findFirst[isDefault]?.expression
+	}
 }
-class SwitchCase {
+class SwitchCaseOrDefault {
 	container SwitchOperation switchOperation opposite cases
 	contains SwitchCaseGuard guard opposite ^case
 	contains RosettaExpression expression
+	
+	op boolean isDefault() {
+		guard === null
+	}
 }
 class SwitchCaseGuard {
-	container SwitchCase ^case opposite guard
+	container SwitchCaseOrDefault ^case opposite guard
 	
 	contains RosettaLiteral literalGuard
 	

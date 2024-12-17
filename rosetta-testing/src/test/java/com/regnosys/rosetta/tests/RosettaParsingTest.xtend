@@ -36,6 +36,20 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void canSwitchWithSingleCase() {
+		val context = '''			
+			choice NumberChoice:
+			    number
+		'''.parseRosettaWithNoIssues
+		
+		'''
+		x switch
+			number then 42
+		'''
+			.parseExpression(#[context], #["x NumberChoice (1..1)"])
+			.assertNoIssues
+	}
+	
 	def void testCannotOverrideAttributeOfItself() {
 		'''
 			type Foo:
