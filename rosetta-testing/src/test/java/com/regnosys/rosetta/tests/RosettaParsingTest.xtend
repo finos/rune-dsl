@@ -37,58 +37,17 @@ class RosettaParsingTest {
 	
 	@Test
 	def void canSwitchWithSingleCase() {
-		val context = '''
-			type AssetType:
-			
-			choice AssetCriterium: <"Represents a set of criteria used to specify eligible collateral assets.">
-			    // Unit criteria:
-			    AssetType <"Represents a filter based on the asset product type.">
-			    AgencyRatingCriterium <"Represents an agency rating based on default risk and creditors claim in event of default associated with specific instrument.">
-			    // Combine multiple criteria using of the two following types
-			    AllAssetCriteria <"Represents a list of criteria of which all should be satisfied.">
-			    AnyAssetCriteria <"Represents a list of criteria of which at least one should be satisfied.">
-			    // Negate a criterium
-			    NegativeAssetCriterium <"Specifies which criterium should NOT be satisfied.">
-			
-			type NegativeAssetCriterium:
-			    criterium AssetCriterium (1..1)
-			
-			type AllAssetCriteria:
-			    criteria AssetCriterium (2..*)
-			
-			type AnyAssetCriteria:
-			    criteria AssetCriterium (2..*)
-			
-			type AgencyRatingCriterium: <"Represents a class to specify multiple credit notations alongside a conditional 'any' or 'all' qualifier.">
-			
-			func Foo:
-				inputs:
-					criterium AssetCriterium (1..1)
-				output:
-					result boolean (1..1)
-				set result:
-					criterium switch
-					    AssetType then empty
-			
-			func Example:
-				inputs:
-					inp int (1..1)
-				output:
-					outp int (1..1)
+		val context = '''			
+			choice NumberChoice:
+			    number
 		'''.parseRosettaWithNoIssues
 		
-//		'''
-//		func Foo:
-//			inputs:
-//				criterium AssetCriterium (1..1)
-//			output:
-//				result boolean (1..1)
-//			set result:
-//				criterium switch
-//				    AssetType then empty
-//		'''
-//			.parseExpression(#[context], #["criterium AssetCriterium (1..1)"])
-//			.assertNoIssues
+		'''
+		x switch
+			number then 42
+		'''
+			.parseExpression(#[context], #["x NumberChoice (1..1)"])
+			.assertNoIssues
 	}
 	
 	def void testCannotOverrideAttributeOfItself() {
