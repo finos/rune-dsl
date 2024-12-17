@@ -16,12 +16,15 @@
 
 package com.regnosys.rosetta.ide.quickfix;
 
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR;
+
 import java.util.List;
 
 import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.xtext.ide.editor.quickfix.AbstractDeclarativeIdeQuickfixProvider;
@@ -30,13 +33,17 @@ import org.eclipse.xtext.ide.editor.quickfix.QuickFix;
 import org.eclipse.xtext.ide.server.Document;
 
 import com.regnosys.rosetta.ide.util.RangeUtils;
-import com.regnosys.rosetta.validation.RosettaIssueCodes;
+import com.regnosys.rosetta.rosetta.Import;
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
+import com.regnosys.rosetta.validation.ImportManagementService;
+import com.regnosys.rosetta.validation.RosettaIssueCodes;
 
 public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvider {
 	@Inject
 	private RangeUtils rangeUtils;
+	@Inject 
+	private ImportManagementService importManagementService;
 	
 	@QuickFix(RosettaIssueCodes.REDUNDANT_SQUARE_BRACKETS)
 	public void fixRedundantSquareBrackets(DiagnosticResolutionAcceptor acceptor) {
@@ -78,6 +85,31 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 			String edited = "extract";
 			TextEdit edit = new TextEdit(range, edited);
 			return List.of(edit);
+		});
+	}
+	
+	@QuickFix(RosettaIssueCodes.UNUSED_IMPORT)
+	@QuickFix(RosettaIssueCodes.DUPLICATE_IMPORT)
+	public void fixUnoptimizedImports(DiagnosticResolutionAcceptor acceptor) {
+		acceptor.accept("Optimize imports.", (Diagnostic diagnostic, EObject object, Document document) -> {
+			Import importObj = (Import) object;
+			EObject container = importObj.eContainer();
+			if (container instanceof RosettaModel) {
+				RosettaModel model = (RosettaModel) container;
+				List<Import> imports = model.getImports();
+
+				List<Import> sortedImports = importManagementService.cleanupImports(model);
+				String sortedImportsText = importManagementService.toString(sortedImports);
+	            
+	            // find the range of all imports to replace
+				Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
+				Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();
+	            Range importsRange = new Range(importsStart, importsEnd);
+	            return List.of(new TextEdit(importsRange, sortedImportsText));
+			}
+
+			// if not model, return empty list of edits
+			return List.of();
 		});
 	}
 }
