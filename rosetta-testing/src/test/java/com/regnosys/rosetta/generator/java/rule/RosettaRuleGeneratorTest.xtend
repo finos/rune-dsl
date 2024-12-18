@@ -2,11 +2,10 @@ package com.regnosys.rosetta.generator.java.rule
 
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.validation.RosettaIssueCodes
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.rosetta.model.lib.RosettaModelObject
 import java.util.Map
 import javax.inject.Inject
@@ -20,8 +19,9 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
+import com.rosetta.util.DottedPath
 
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @ExtendWith(InjectionExtension)
 class RosettaRuleGeneratorTest {
 
@@ -763,7 +763,7 @@ class RosettaRuleGeneratorTest {
 		}
 		val classes = code.compileToClasses
 
-        val test = classes.createFunc("com.rosetta.test.model.reports", "TEST_REGMiFIRReportFunction")
+        val test = classes.createFunc("TEST_REGMiFIRReportFunction", DottedPath.splitOnDots("com.rosetta.test.model.reports"))
 		
 		val input = classes.createInstanceUsingBuilder("Bar", #{"bar1" -> "bar1Value"})
 		
@@ -1277,8 +1277,8 @@ class RosettaRuleGeneratorTest {
 		'''.toString
 		.replace('\r', "")
 		.parseRosetta
-			.assertError(ROSETTA_SYMBOL_REFERENCE, RosettaIssueCodes.TYPE_ERROR,
-			"Expected type 'Foo' but was 'Bar'")
+			.assertError(ROSETTA_SYMBOL_REFERENCE, null,
+			"Expected type `Foo`, but got `Bar` instead. Rule `Rule2` cannot be called with type `Bar`")
 		
 	}
 

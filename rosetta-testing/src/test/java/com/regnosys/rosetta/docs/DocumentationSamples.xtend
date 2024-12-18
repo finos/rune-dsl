@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.docs
 
 import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import javax.inject.Inject
@@ -22,7 +22,7 @@ import com.rosetta.util.types.generated.GeneratedJavaClass
  * If one of these tests fail, then the documentation should be reviewed as well,
  * as this probably means a code sample is out-dated.
  */
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @ExtendWith(InjectionExtension)
 class DocumentationSamples {
 	

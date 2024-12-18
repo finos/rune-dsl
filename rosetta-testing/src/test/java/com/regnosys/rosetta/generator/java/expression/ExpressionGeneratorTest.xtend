@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
@@ -26,7 +26,7 @@ import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ExpressionGeneratorTest {
 	@Inject extension ExpressionGenerator expressionGenerator
 	@Inject extension ExpressionParser

@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.validator
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 
 class ValidatorGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper

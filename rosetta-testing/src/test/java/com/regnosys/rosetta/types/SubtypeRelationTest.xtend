@@ -3,7 +3,7 @@ package com.regnosys.rosetta.types
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.^extension.ExtendWith
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ModelHelper
@@ -16,10 +16,10 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RStringType
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class SubtypeRelationTest {
 	@Inject extension SubtypeRelation
 	@Inject extension ModelHelper
@@ -62,7 +62,7 @@ class SubtypeRelationTest {
 		
 		val joined = fieldBType.join(fieldCType)
 		
-		assertEquals(fieldA.withEmptyMeta, joined)
+		assertEquals(fieldA.withNoMeta, joined)
 	}
 
 	@Test

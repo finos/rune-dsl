@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.path.RosettaPath
@@ -20,7 +20,7 @@ import com.rosetta.model.lib.validation.ValidationResult
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class OneOfRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper

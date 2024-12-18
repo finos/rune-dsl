@@ -23,7 +23,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 
 import org.eclipse.xtext.testing.InjectWith;
@@ -37,7 +37,7 @@ import com.regnosys.rosetta.tests.util.RosettaValueHelper;
 import com.rosetta.model.lib.RosettaNumber;
 
 @ExtendWith(InjectionExtension.class)
-@InjectWith(RosettaInjectorProvider.class)
+@InjectWith(RosettaTestInjectorProvider.class)
 public class RosettaInterpreterTest {
 	@Inject
 	private ExpressionParser parser;

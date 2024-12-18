@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.validation.ValidationResult
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaConditionTest {
 	
 	@Inject extension CodeGeneratorTestHelper
@@ -37,11 +37,11 @@ class RosettaConditionTest {
 				
 				condition FeatureCallComparisonDecreasing:
 					if bar exists
-					then bar -> before > bar -> after
+					then bar first -> before > bar first -> after
 				
 				condition BarFeatureCallGreaterThanLiteralZero:
 					if bar exists 
-					then bar -> after > 0
+					then bar first -> after > 0
 							
 				condition BazFeatureCallGreaterThanLiteralFive:
 					if baz exists 
@@ -71,10 +71,10 @@ class RosettaConditionTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
 		// FeatureCallComparisonDecreasing (success)
-		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar -> before > bar -> after")		
+		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar first -> before > bar first -> after")		
 		
 		// BarFeatureCallGreaterThanLiteralZero (success)
-		assertCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero', true, "if bar exists then bar -> after > 0")		
+		assertCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero', true, "if bar exists then bar first -> after > 0")		
 		
 		// BazFeatureCallGreaterThanLiteralZero (success)
 		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero', true, "if baz exists then baz -> other > 0")
@@ -90,10 +90,10 @@ class RosettaConditionTest {
 		val fooInstance = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', bazInstance), of('bar', ImmutableList.of(barInstance))))
 
 		// FeatureCallComparisonDecreasing (success)
-		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar -> before > bar -> after")		
+		assertCondition(fooInstance, 'FooFeatureCallComparisonDecreasing', true, "if bar exists then bar first -> before > bar first -> after")		
 		
 		// BarFeatureCallGreaterThanLiteralZero (fail)
-		assertCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero', false, "if bar exists then bar -> after > 0")		
+		assertCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero', false, "if bar exists then bar first -> after > 0")		
 		
 		// BazFeatureCallGreaterThanLiteralZero (success)
 		assertCondition(fooInstance, 'FooBazFeatureCallGreaterThanLiteralZero', true, "if baz exists then baz -> other > 0")
@@ -111,13 +111,13 @@ class RosettaConditionTest {
 		// FeatureCallComparisonDecreasing (fail)
 		val conditionBarDescreasing = ValidationResult.cast(classes.runCondition(fooInstance, 'FooFeatureCallComparisonDecreasing'))
 		assertFalse(conditionBarDescreasing.success)
-		assertThat(conditionBarDescreasing.definition, is("if bar exists then bar -> before > bar -> after"))
+		assertThat(conditionBarDescreasing.definition, is("if bar exists then bar first -> before > bar first -> after"))
 		assertThat(conditionBarDescreasing.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getBefore] values [-10] are not > than all elements of paths [Foo->getBar[0]->getAfter] values [0]"))
 
 		// BarFeatureCallGreaterThanLiteralZero (fail)
 		val conditionBarGreaterThanZero = ValidationResult.cast(classes.runCondition(fooInstance, 'FooBarFeatureCallGreaterThanLiteralZero'))
 		assertFalse(conditionBarGreaterThanZero.success)
-		assertThat(conditionBarGreaterThanZero.getDefinition(), is("if bar exists then bar -> after > 0"))
+		assertThat(conditionBarGreaterThanZero.getDefinition(), is("if bar exists then bar first -> after > 0"))
 		assertThat(conditionBarGreaterThanZero.failureReason.orElse(""), is("all elements of paths [Foo->getBar[0]->getAfter] values [0] are not > than all elements of paths [BigDecimal] values [0]"))
 		
 		// BazFeatureCallGreaterThanLiteralZero (fail)

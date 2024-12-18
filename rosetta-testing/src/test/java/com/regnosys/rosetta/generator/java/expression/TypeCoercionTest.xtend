@@ -3,7 +3,7 @@ package com.regnosys.rosetta.generator.java.expression
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import javax.inject.Inject
 import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
@@ -25,7 +25,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class TypeCoercionTest {
 	@Inject TypeCoercionService coercionService
 	@Inject extension ImportManagerExtension

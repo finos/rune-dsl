@@ -10,9 +10,10 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import javax.inject.Inject
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class TypeValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper

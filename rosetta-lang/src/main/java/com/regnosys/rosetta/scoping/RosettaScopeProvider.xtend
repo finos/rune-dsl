@@ -62,7 +62,7 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.Attribute
 
 /**
@@ -110,13 +110,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case CHOICE_OPERATION__ATTRIBUTES: {
 					if (context instanceof ChoiceOperation) {
-						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument).RType.withEmptyMeta)
+						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument).RType.withNoMeta)
 					}
 					return IScope.NULLSCOPE
 				}
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).withEmptyMeta)
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).withNoMeta)
 					}
 					return IScope.NULLSCOPE
 				}
