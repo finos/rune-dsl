@@ -112,24 +112,23 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 		if (this.equals(other)) {
 			return true;
 		}
-		if (other.extendsDeclaration(getGenericTypeDeclaration())) {
+		JavaGenericTypeDeclaration<? super T> typeDeclaration = getGenericTypeDeclaration();
+		if (other.extendsDeclaration(typeDeclaration)) {
 			JavaClass<?> currentSuper = other;
 			JavaClass<?> nextSuper = currentSuper.getSuperclass();
 			// First check superclasses
-			while (nextSuper.extendsDeclaration(getGenericTypeDeclaration())) {
+			while (nextSuper.extendsDeclaration(typeDeclaration)) {
 				currentSuper = nextSuper;
-				nextSuper = nextSuper.getSuperclass();
+				nextSuper = currentSuper.getSuperclass();
 			}
 			// Then check interfaces
-			JavaClass<?> temp0 = currentSuper;
-			Optional<JavaClass<?>> nextInterface = temp0.getInterfaces().stream()
-					.filter(i -> temp0.extendsDeclaration(i))
+			Optional<JavaClass<?>> nextInterface = currentSuper.getInterfaces().stream()
+					.filter(i -> i.extendsDeclaration(typeDeclaration))
 					.findAny();
 			while (nextInterface.isPresent()) {
 				currentSuper = nextInterface.get();
-				JavaClass<?> temp1 = currentSuper;
-				nextInterface = temp1.getInterfaces().stream()
-						.filter(i -> temp1.extendsDeclaration(i))
+				nextInterface = currentSuper.getInterfaces().stream()
+						.filter(i -> i.extendsDeclaration(typeDeclaration))
 						.findAny();
 			}
 			Map<JavaTypeVariable, JavaTypeArgument> substitution = ((JavaParameterizedType<?>)currentSuper).getTypeVariableSubstitution();

@@ -98,19 +98,18 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 		} else {
 			current = builtins.ANY;
 		}
-		for (Attribute attr: data.getAttributes()) {
-			RosettaRuleReference ref = attr.getRuleReference();
-			if (ref != null) {
-				RosettaRule rule = ref.getReportingRule();
+		for (RAttribute attr: rData.getOwnAttributes()) {
+			RosettaRule rule = attr.getRuleReference();
+			if (rule != null) {
 				RType inputType = ts.typeCallToRType(rule.getInput());
 				RType newCurrent = ts.meet(current, inputType);
 				if (newCurrent.equals(builtins.NOTHING)) {
-					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", ref, ROSETTA_RULE_REFERENCE__REPORTING_RULE);
+					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr.getEObject().getRuleReference(), ROSETTA_RULE_REFERENCE__REPORTING_RULE);
 				} else {
 					current = newCurrent;
 				}
 			} else {
-				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
+				RType attrType = ts.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
 				if (attrType instanceof RChoiceType) {
 					attrType = ((RChoiceType) attrType).asRDataType();
 				}
@@ -120,7 +119,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 					if (!inputType.equals(builtins.NOTHING)) {
 						RType newCurrent = ts.meet(current, inputType);
 						if (newCurrent.equals(builtins.NOTHING)) {
-							error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr, null);
+							error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr.getEObject(), null);
 						} else {
 							current = newCurrent;
 						}

@@ -10,13 +10,25 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import javax.inject.Inject
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaTestInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class EnumValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
 	@Inject extension ModelHelper
+	
+	@Test
+	def void testEnumNameShouldBeCapitalized() {
+		val model =
+		'''
+			enum quoteRejectReasonEnum:
+				Other
+		'''.parseRosettaWithNoErrors
+		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
+            "Enumeration name should start with a capital")
+	}
 	
 	@Test
 	def void testDuplicateEnumValue() {

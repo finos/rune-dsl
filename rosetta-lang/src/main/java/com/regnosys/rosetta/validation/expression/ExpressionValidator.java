@@ -333,7 +333,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	}
 	
 	private boolean mayBeEmpty(RType t) {
-		return t instanceof RDataType && ((RDataType) t).getAllAttributes().stream().allMatch(a -> a.getCardinality().getMinBound() == 0) || t instanceof RChoiceType;
+		return t instanceof RDataType && ((RDataType) t).getAllAttributes().stream().allMatch(a -> a.getCardinality().isOptional()) || t instanceof RChoiceType;
 	}
 	@Check
 	public void checkOnlyExistsExpression(RosettaOnlyExistsExpression expr) {

@@ -226,6 +226,33 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             choiceGroups.add(initialChoiceGroup);
         }
         abstractElements.forEach(elem -> registerXsdElementsRecursively(data, elem, initialChoiceGroup, choiceGroups, xsdMapping, result, config));
+<<<<<<< HEAD
+=======
+
+        // Add conditions
+        choiceGroups.forEach(choiceGroup -> {
+			if (choiceGroup.attributes.size() > 1) {
+				Condition choice = SimpleFactory.eINSTANCE.createCondition();
+				choice.setName("Choice");
+				// TODO: shouldn't the count of parent attributes also be taken into account?
+				if (choiceGroup.attributes.size() == data.getAttributes().size() && choiceGroup.required) {
+					OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
+					oneOf.setOperator("one-of");
+					choice.setExpression(oneOf);
+				} else {
+					ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
+					op.setOperator("choice");
+					op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
+					op.getAttributes().addAll(choiceGroup.attributes);
+					choice.setExpression(op);
+				}
+				data.getConditions().add(choice);
+			} else if (choiceGroup.attributes.size() == 1 && choiceGroup.required) {
+				Attribute attr = choiceGroup.attributes.get(0);
+				attr.getCard().setInf(1);
+			}
+        });
+>>>>>>> 0ce292e904fba5f063ba8c1d7bc65c53d2db8a9a
     }
 
 	@Override

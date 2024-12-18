@@ -1,0 +1,8 @@
+namespace test
+
+func MyFunc: 
+	output:
+		result boolean (1..1)
+
+	set result:
+		(foo -> bar) only exists

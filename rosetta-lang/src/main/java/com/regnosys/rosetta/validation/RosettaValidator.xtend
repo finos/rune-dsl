@@ -11,7 +11,15 @@ import com.regnosys.rosetta.validation.expression.ExpressionValidator
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-@ComposedChecks(validators = #[RosettaSimpleValidator, ReportValidator, EnumValidator, ChoiceValidator, ExpressionValidator])
+@ComposedChecks(validators = #[
+	RosettaSimpleValidator,
+	ReportValidator,
+	TypeValidator,
+	AttributeValidator,
+	EnumValidator,
+	ChoiceValidator,
+	ExpressionValidator
+])
 class RosettaValidator extends AbstractRosettaValidator {
 
 	

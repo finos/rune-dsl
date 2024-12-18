@@ -22,7 +22,7 @@ import java.util.Optional;
 import org.apache.commons.lang3.Validate;
 
 /**
- * A class representing an interval between two numbers.
+ * A class representing an interval between two comparable objects.
  * 
  * The bounds are inclusive, an may be unbounded. The following forms are allowed:
  * - [min, max]
@@ -30,13 +30,13 @@ import org.apache.commons.lang3.Validate;
  * - [min, +infinity[
  * - ]-infinity, +infinity[
  */
-public abstract class Interval<T extends Number & Comparable<? super T>> {
+public abstract class Interval<T extends Comparable<? super T>> {
 	private final Optional<T> min;
 	private final Optional<T> max;
 	
 	public Interval(Optional<T> min, Optional<T> max) {
 		if (min.isPresent() && max.isPresent()) {
-			Validate.isTrue(min.get().compareTo(max.get()) <= 0);
+			Validate.isTrue(min.get().compareTo(max.get()) <= 0, "The minimum (" + min.get() + ") must be less than the maximum (" + max.get() + ")");
 		}
 		this.min = min;
 		this.max = max;
@@ -59,6 +59,24 @@ public abstract class Interval<T extends Number & Comparable<? super T>> {
 	}
 	
 	public boolean includes(T x) {
+		if (min.map(b -> b.compareTo(x) > 0).orElse(false)) {
+			return false;
+		}
+		if (max.map(b -> b.compareTo(x) < 0).orElse(false)) {
+			return false;
+		}
+		return true;
+	}
+	public boolean includes(Interval<T> other) {
+		if (min.map(b -> other.min.map(ob -> b.compareTo(ob) > 0).orElse(true)).orElse(false)) {
+			return false;
+		}
+		if (max.map(b -> other.max.map(ob -> b.compareTo(ob) < 0).orElse(true)).orElse(false)) {
+			return false;
+		}
+		return true;
+	}
+	public boolean strictlyIncludes(T x) {
 		if (min.map(b -> b.compareTo(x) >= 0).orElse(false)) {
 			return false;
 		}
@@ -67,11 +85,11 @@ public abstract class Interval<T extends Number & Comparable<? super T>> {
 		}
 		return true;
 	}
-	public boolean strictlyIncludes(T x) {
-		if (min.map(b -> b.compareTo(x) > 0).orElse(false)) {
+	public boolean strictlyIncludes(Interval<T> other) {
+		if (min.map(b -> other.min.map(ob -> b.compareTo(ob) >= 0).orElse(true)).orElse(false)) {
 			return false;
 		}
-		if (max.map(b -> b.compareTo(x) < 0).orElse(false)) {
+		if (max.map(b -> other.max.map(ob -> b.compareTo(ob) <= 0).orElse(true)).orElse(false)) {
 			return false;
 		}
 		return true;
@@ -94,16 +112,14 @@ public abstract class Interval<T extends Number & Comparable<? super T>> {
 		return Objects.hash(min, max);
 	}
 	@Override
-	public boolean equals(Object object) {
-		if (this == object) {
+	public boolean equals(Object obj) {
+		if (this == obj)
 			return true;
-		}
-		if (getClass() != object.getClass()) {
+		if (obj == null)
 			return false;
-		}
-		
-		Interval<?> other = (Interval<?>)object;
-		return Objects.equals(min, other.min)
-				&& Objects.equals(max, other.max);
+		if (getClass() != obj.getClass())
+			return false;
+		Interval<?> other = (Interval<?>) obj;
+		return Objects.equals(max, other.max) && Objects.equals(min, other.min);
 	}
 }

@@ -32,6 +32,7 @@ import com.rosetta.util.types.generated.GeneratedJavaClass
 import com.rosetta.model.lib.validation.ElementValidationResult
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.types.RCardinality
 
 class ValidatorGenerator {
 	@Inject extension ImportManagerExtension
@@ -68,7 +69,7 @@ class ValidatorGenerator {
 					«ModelSymbolId» modelSymbolId = new «ModelSymbolId»(packageName, simpleName);
 				
 				 	«List»<«AttributeValidation»> attributeValidations = new «ArrayList»<>();
-				 	«FOR attribute : type.allNonOverridenAttributes»
+				 	«FOR attribute : type.allAttributes»
 				 	 	attributeValidations.add(validate«attribute.name.toFirstUpper»(«attribute.attributeValue», path));
 				 	«ENDFOR»
 				 	
@@ -80,7 +81,7 @@ class ValidatorGenerator {
 				 	return new «TypeValidation»(modelSymbolId, attributeValidations, conditionValidations);
 				}
 				
-				«FOR attribute : type.allNonOverridenAttributes»
+				«FOR attribute : type.allAttributes»
 				public «AttributeValidation» validate«attribute.name.toFirstUpper»(«attribute.toJavaType» atr, «RosettaPath» path) {
 					«List»<«ElementValidationResult»> validationResults = new «ArrayList»<>();
 					«val cardinalityCheck = checkCardinality(attribute)»
@@ -114,13 +115,13 @@ class ValidatorGenerator {
 		
 	}
 	private def StringConcatenationClient checkCardinality(RAttribute attr) {
-		if (attr.cardinality.minBound === 0 && attr.cardinality.unboundedRight) {
+		if (attr.cardinality == RCardinality.UNBOUNDED) {
 			null
 		} else {
 			if (attr.isMulti) {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr == null ? 0 : atr.size(), «attr.cardinality.minBound», «attr.cardinality.max.orElse(0)» , path)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr == null ? 0 : atr.size(), «attr.cardinality.min», «attr.cardinality.max.orElse(0)» , path)'''
 			} else {
-				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr != null ? 1 : 0, «attr.cardinality.minBound», «attr.cardinality.max.orElse(0)», path)'''
+				'''«method(ValidationUtil, "checkCardinality")»("«attr.name.toString»", atr != null ? 1 : 0, «attr.cardinality.min», «attr.cardinality.max.orElse(0)», path)'''
 			}
 		}
 	}

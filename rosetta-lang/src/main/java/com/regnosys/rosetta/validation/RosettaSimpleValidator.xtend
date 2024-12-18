@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
-import com.regnosys.rosetta.rosetta.RosettaFeatureOwner
 import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -30,7 +29,6 @@ import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -148,16 +146,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 					}
 				}
 			}
-		}
-	}
-	private def void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EReference ref, int index) {
-		if (annotated.annotations.exists[annotation?.name == "deprecated"]) {
-			val msg = if (annotated instanceof RosettaNamed) {
-				'''«annotated.name» is deprecated'''
-			} else {
-				"Deprecated"
-			}
-			warning(msg, owner, ref, index)
 		}
 	}
 
@@ -419,13 +407,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	@Check
-	def void checkClassNameStartsWithCapital(Data classe) {
-		if (Character.isLowerCase(classe.name.charAt(0))) {
-			warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
-	@Check
 	def void checkConditionName(Condition condition) {
 		if (condition.name === null && !condition.isConstraintCondition) {
 			warning("Condition name should be specified", ROSETTA_NAMED__NAME, INVALID_NAME)
@@ -449,22 +430,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 	}
 
-	@Check
-	def void checkEnumerationNameStartsWithCapital(RosettaEnumeration enumeration) {
-		if (Character.isLowerCase(enumeration.name.charAt(0))) {
-			warning("Enumeration name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
-	@Check
-	def void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
-		val annotationAttribute = attribute.eContainer instanceof Annotation
-		val choiceOption = attribute instanceof ChoiceOption
-		if (!choiceOption && !annotationAttribute && Character.isUpperCase(attribute.name.charAt(0))) {
-			warning("Attribute name should start with a lower case", ROSETTA_NAMED__NAME, INVALID_CASE)
-		}
-	}
-
 	private def checkType(RMetaAnnotatedType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
 		val actualMetaType = expression.RMetaAnnotatedType
 		val actualType = actualMetaType.RType
@@ -476,10 +441,11 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkAttributes(Data clazz) {
 		val name2attr = HashMultimap.create
-		clazz.buildRDataType.allAttributes.forEach [
+		clazz.buildRDataType.allAttributes.filter[!isOverride].forEach [
 			name2attr.put(name, it)
 		]
-		for (name : clazz.attributes.map[name]) {
+		// TODO: remove once `override` keyword is mandatory
+		for (name : clazz.attributes.filter[!isOverride].map[name]) {
 			val attrByName = name2attr.get(name)
 			if (attrByName.size > 1) {
 				val attrFromClazzes = attrByName.filter[EObject.eContainer == clazz]
@@ -510,23 +476,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		attrFromClazzes.forEach [ childAttr |
 			attrFromSuperClasses.forEach [ parentAttr |
 				if (childAttr.cardinality != parentAttr.cardinality) {
-					error('''Overriding attribute '«name»' with cardinality («childAttr.cardRepr») must match the cardinality of the attribute it overrides («parentAttr.cardRepr»)''',
+					error('''Overriding attribute '«name»' with cardinality («childAttr.cardinality») must match the cardinality of the attribute it overrides («parentAttr.cardinality»)''',
 						childAttr.EObject, ROSETTA_NAMED__NAME, CARDINALITY_ERROR)
 				}
 			]
-		]
-	}
-
-	private def cardRepr(RAttribute attr) '''«attr.cardinality.minBound»..«attr.cardinality.max.map[toString].orElse('*')»'''
-
-	@Check
-	def checkFeatureNamesAreUnique(RosettaFeatureOwner ele) {
-		ele.features.groupBy[name].forEach [ k, v |
-			if (v.size > 1) {
-				v.forEach [
-					error('''Duplicate feature "«k»"''', it, ROSETTA_NAMED__NAME)
-				]
-			}
 		]
 	}
 
@@ -804,22 +757,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 
 	@Check
-	def checkAttribute(Attribute ele) {
-		var eleType = ele.RTypeOfSymbol.RType
-
-		if (eleType instanceof RChoiceType) {
-			eleType = eleType.asRDataType
-		}
-		if (eleType instanceof RDataType) {
-			if (ele.hasReferenceAnnotation && !(hasKeyedAnnotation(eleType.EObject) || eleType.allSuperTypes.exists[EObject.hasKeyedAnnotation])) {
-				//TODO turn to error if it's okay
-				warning('''«ele.typeCall.type.name» must be annotated with [metadata key] as reference annotation is used''',
-					ROSETTA_TYPED__TYPE_CALL)
-			}
-		}
-	}
-
-	@Check
 	def checkDispatch(Function ele) {
 		if (ele instanceof FunctionDispatch)
 			return
@@ -888,45 +825,44 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	def checkConstructorExpression(RosettaConstructorExpression ele) {
 
-		val rType = ele.RMetaAnnotatedType?.RType
-		if (rType !== null) {
-			var baseRType = rType.stripFromTypeAliases
-			if (baseRType instanceof RChoiceType) {
-				baseRType = baseRType.asRDataType
-			}
-			if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
-				error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
-			}
+		val rType = ele.RMetaAnnotatedType.RType
 			
-			val seenFeatures = newHashSet
-			for (pair : ele.values) {
-				val feature = pair.key
-				val expr = pair.value
-				if (!seenFeatures.add(feature)) {
-					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
-				}
-				checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
-				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
-					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
-						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
-				}
+		var baseRType = rType.stripFromTypeAliases
+		if (baseRType instanceof RChoiceType) {
+			baseRType = baseRType.asRDataType
+		}
+		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
+			error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
+		}
+		
+		val seenFeatures = newHashSet
+		for (pair : ele.values) {
+			val feature = pair.key
+			val expr = pair.value
+			if (!seenFeatures.add(feature)) {
+				error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
 			}
-			val absentAttributes = rType
-				.allFeatures(ele)
-				.filter[!seenFeatures.contains(it)]
-			val requiredAbsentAttributes = absentAttributes
-				.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
-			if (ele.implicitEmpty) {
-				if (!requiredAbsentAttributes.empty) {
-					error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
-				}
-				if (absentAttributes.size === requiredAbsentAttributes.size) {
-					error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
-				}
-			} else {
-				if (!absentAttributes.empty) {
-					error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
-				}
+			checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+			if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
+				error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
+					CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+			}
+		}
+		val absentAttributes = rType
+			.allFeatures(ele)
+			.filter[!seenFeatures.contains(it)]
+		val requiredAbsentAttributes = absentAttributes
+			.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
+		if (ele.implicitEmpty) {
+			if (!requiredAbsentAttributes.empty) {
+				error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
+			}
+			if (absentAttributes.size === requiredAbsentAttributes.size) {
+				error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
+			}
+		} else {
+			if (!absentAttributes.empty) {
+				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
 			}
 		}
 	}
@@ -1042,7 +978,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 										if (attrRef.attribute.isResolved) {
 											checkForLocation(attrRef.attribute, it)
 											val targetType = attrRef.attribute.typeCall.typeCallToRType
-											val thisType = ele.RTypeOfSymbol.RType
+											val thisType = ele.getRTypeOfFeature(null).RType
 											if (!thisType.isSubtypeOf(targetType))
 												error('''Expected address target type of '«thisType.name»' but was '«targetType?.name ?: 'null'»'«»''', it, ANNOTATION_QUALIFIER__QUAL_PATH, TYPE_ERROR)
 										}
@@ -1061,7 +997,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		]
 	}
 
-	def checkForLocation(Attribute attribute, AnnotationQualifier checked) {
+	private def checkForLocation(Attribute attribute, AnnotationQualifier checked) {
 		var locationFound = !attribute.metadataAnnotations.filter[it.attribute?.name == "location"].empty
 		if (!locationFound) {
 			error('''Target of address must be annotated with metadata location''', checked,
@@ -1100,7 +1036,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			val funcOutputDataType = funcOutputType as RDataType
 			
 			val funcOutputSuperTypes = funcOutputDataType.allSuperTypes.toSet
-			val annotationAttributeTypes = annotationDataType.EObject.attributes.map[RTypeOfSymbol].toList
+			val annotationAttributeTypes = annotationDataType.allAttributes.map[RType].toList
 			
 			if (annotationDataType != funcOutputDataType
 				&& !funcOutputSuperTypes.contains(annotationDataType) // annotation type is a super type of output type

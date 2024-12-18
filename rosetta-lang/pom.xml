@@ -67,6 +67,10 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
+        <dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
+		</dependency>
         <!-- This dependency is only necessary to make it work in Eclipse. TODO:
         remove this and figure out a better way. -->
         <dependency>

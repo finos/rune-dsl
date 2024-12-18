@@ -30,7 +30,6 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
@@ -70,6 +69,7 @@ import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.generated.GeneratedJavaClass;
 import com.rosetta.util.types.generated.GeneratedJavaClassService;
+import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
@@ -89,17 +89,28 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
 	private ModelIdProvider modelIdProvider;
 	
-	private DottedPath getModelPackage(RosettaRootElement object) {
-		return modelIdProvider.toDottedPath(object.getModel());
-	}
-	
+	@Deprecated
 	public boolean isRosettaModelObject(RAttribute attr) {
 		RMetaAnnotatedType rMetaAnnotatedType = attr.getRMetaAnnotatedType();
 		return isValueRosettaModelObject(attr) || rMetaAnnotatedType.hasMeta();
 	}
+	@Deprecated
 	public boolean isValueRosettaModelObject(RAttribute attr) {
 		RType t = attr.getRMetaAnnotatedType().getRType();
 		return t instanceof RDataType || t instanceof RChoiceType;
+	}
+	public boolean isRosettaModelObject(JavaType type) {
+		return typeUtil.getItemType(type).isSubtypeOf(typeUtil.ROSETTA_MODEL_OBJECT);
+	}
+	public boolean isValueRosettaModelObject(JavaType type) {
+		JavaType itemType = typeUtil.getItemType(type);
+		if (itemType instanceof RJavaWithMetaValue) {
+			return isValueRosettaModelObject((RJavaWithMetaValue)itemType);
+		}
+		return itemType.isSubtypeOf(typeUtil.ROSETTA_MODEL_OBJECT);
+	}
+	public boolean isValueRosettaModelObject(RJavaWithMetaValue t) {
+		return t.getValueType().isSubtypeOf(typeUtil.ROSETTA_MODEL_OBJECT);
 	}
 	
 	public JavaParameterizedType<List<?>> toPolymorphicList(JavaReferenceType t) {
@@ -277,7 +288,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
 		}
 	}
-	public RJavaPojoInterface toJavaReferenceType(RDataType type) {
+	public JavaPojoInterface toJavaReferenceType(RDataType type) {
 		return toJavaType(type);
 	}
 	public RJavaEnum toJavaReferenceType(REnumType type) {
@@ -303,7 +314,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
-	public RJavaPojoInterface toJavaType(RDataType type) {
+	public JavaPojoInterface toJavaType(RDataType type) {
 		return caseDataType(type, null);
 	}
 	public RJavaEnum toJavaType(REnumType type) {
@@ -348,20 +359,24 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (type.equals(JavaClass.from(RosettaModelObject.class))) {
 			return JavaClass.from(RosettaModelObjectBuilder.class);
 		}
-		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Builder", Object.class);
+		GeneratedJavaClass<Object> base = new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Builder", Object.class);
+		if (type instanceof JavaParameterizedType<?>) {
+			return JavaParameterizedType.from(new GeneratedJavaGenericTypeDeclaration<>(base, "T"), ((JavaParameterizedType<?>)type).getArguments());
+		}
+		return base;
 	}
 	public JavaClass<?> toBuilderImplType(JavaClass<?> type) {
 		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "BuilderImpl", Object.class);
 	}
 	
-	public JavaClass<?> toValidatorClass(RDataType t) {
-		return new GeneratedJavaClass<>(validation(getModelPackage(t.getEObject())), t.getName() + "Validator", Object.class);
+	public JavaClass<?> toValidatorClass(JavaPojoInterface t) {
+		return new GeneratedJavaClass<>(validation(t.getPackageName()), t.getSimpleName() + "Validator", Object.class);
 	}
-	public JavaClass<?> toTypeFormatValidatorClass(RDataType t) {
-		return new GeneratedJavaClass<>(validation(getModelPackage(t.getEObject())), t.getName() + "TypeFormatValidator", Object.class);
+	public JavaClass<?> toTypeFormatValidatorClass(JavaPojoInterface t) {
+		return new GeneratedJavaClass<>(validation(t.getPackageName()), t.getSimpleName() + "TypeFormatValidator", Object.class);
 	}
-	public JavaClass<?> toOnlyExistsValidatorClass(RDataType t) {
-		return new GeneratedJavaClass<>(existsValidation(getModelPackage(t.getEObject())), t.getName() + "OnlyExistsValidator", Object.class);
+	public JavaClass<?> toOnlyExistsValidatorClass(JavaPojoInterface t) {
+		return new GeneratedJavaClass<>(existsValidation(t.getPackageName()), t.getSimpleName() + "OnlyExistsValidator", Object.class);
 	}
 	
 	private DottedPath metaField(DottedPath p) {
@@ -375,11 +390,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	
 	@Override
-	protected RJavaPojoInterface caseDataType(RDataType type, Void context) {
-		return new RJavaPojoInterface(type, typeSystem);
+	protected JavaPojoInterface caseDataType(RDataType type, Void context) {
+		return new RJavaPojoInterface(type, typeSystem, this, typeUtil);
 	}
 	@Override
-	protected RJavaPojoInterface caseChoiceType(RChoiceType type, Void context) {
+	protected JavaPojoInterface caseChoiceType(RChoiceType type, Void context) {
 		return caseDataType(type.asRDataType(), context);
 	}
 	@Override

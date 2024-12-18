@@ -3,16 +3,12 @@
  */
 package com.regnosys.rosetta.validation
 
-import com.regnosys.rosetta.RosettaRuntimeModule
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.diagnostics.Diagnostic
-import org.eclipse.xtext.service.SingletonBinding
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import org.eclipse.xtext.validation.Check
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
@@ -24,7 +20,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaTestInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
@@ -251,7 +247,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		'''.parseRosetta
 
  		model.assertError(IMPORT, null,
- 			'"as" statement can only be used with wildcard import'
+ 			'"as" statement can only be used with wildcard imports'
  		)
  	}
  	
@@ -292,7 +288,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  			default "someOtherValue"
  		'''
  			.parseExpression(#[model], #["inEnum SomeEnum (1..*)"])
- 			.assertWarning(ROSETTA_EXPRESSION, null, "Expecting single cardinality")
+ 			.assertWarning(ROSETTA_EXPRESSION, null, "Expecting single cardinality. The `switch` operator requires a single cardinality input")
 
 	}
 
@@ -1598,50 +1594,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					*42
 		'''.parseRosetta
 		model.assertError(ARITHMETIC_OPERATION, null,
-            "Expected type `number`, but got `Foo` instead")
-	}
-	
-	@Test
-	def void testLowerCaseClass() {
-		val model =
-		'''
-			synonym source FIX
-			synonym source FpML
-			
-			type partyIdentifier: <"">
-				partyId string (1..1) <"">
-					[synonym FIX value "PartyID" tag 448]
-					[synonym FpML value "partyId"]
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(DATA, INVALID_CASE,
-            "Type name should start with a capital")
-	}
-	
-	@Test
-	def void testLowerCaseEnumeration() {
-		val model =
-		'''
-			enum quoteRejectReasonEnum: <"">
-				UnknownSymbol
-				Other
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ROSETTA_ENUMERATION, INVALID_CASE,
-            "Enumeration name should start with a capital")
-	}
-	
-	@Test
-	def void testUpperCaseAttribute() {
-		val model =
-		'''
-			synonym source FIX
-			synonym source FpML
-			type PartyIdentifier: <"">
-					PartyId string (1..1) <"">
-						[synonym FIX value "PartyID" tag 448]
-						[synonym FpML value "partyId"]
-		'''.parseRosettaWithNoErrors
-		model.assertWarning(ATTRIBUTE, INVALID_CASE,
-            "Attribute name should start with a lower case")
+            "Expected type `number`, but got `Foo` instead. Cannot use `Foo` with operator `*`")
 	}
 		
 	@Test
@@ -1702,7 +1655,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set out:
 					"not a Foo"
 		'''.parseRosetta
-		model.assertError(OPERATION, null, "Expected type `Foo`, but got `string` instead")
+		model.assertError(OPERATION, null, "Expected type `Foo`, but got `string` instead. Cannot assign `string` to output `out`")
 	}
 	
 	
@@ -1719,7 +1672,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				set out -> id:
 					"not a boolean"
 		'''.parseRosetta
-		model.assertError(OPERATION, null, "Expected type `boolean`, but got `string` instead")
+		model.assertError(OPERATION, null, "Expected type `boolean`, but got `string` instead. Cannot assign `string` to output `id`")
 	}
 	
 	@Test
@@ -1740,7 +1693,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  set result -> attr:
 			     in1 as-key
 		'''.parseRosetta
-		model.assertError(OPERATION, null, "Expected type `WithKey`, but got `TypeToUse` instead")
+		model.assertError(OPERATION, null, "Expected type `WithKey`, but got `TypeToUse` instead. Cannot assign `TypeToUse` to output `attr`")
 	}
 	
 	@Test
@@ -1772,7 +1725,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				output: out string (0..1)
 				set out: in0->other
 		'''.parseRosetta
-		model.assertError(OPERATION, null, "Expected type `string`, but got `int` instead")
+		model.assertError(OPERATION, null, "Expected type `string`, but got `int` instead. Cannot assign `int` to output `out`")
 	}
 	
 	@Test
@@ -1846,7 +1799,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (0..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (0..1) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test
@@ -1858,7 +1811,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i int (1..*)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, CARDINALITY_ERROR, "Overriding attribute 'i' with cardinality (1..*) must match the cardinality of the attribute it overrides (1..1)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test
@@ -1870,7 +1823,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				i string (1..1)
 		'''.parseRosetta
-		model.assertError(ATTRIBUTE, DUPLICATE_ATTRIBUTE, "Overriding attribute 'i' with type string must match the type of the attribute it overrides (int)")
+		model.assertWarning(ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.")
 	}
 	
 	@Test 
@@ -1882,7 +1835,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 			enum Foo: BAR
 		'''.parseRosetta
-		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element name')
+		model.assertError(ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, 'Duplicate element named \'Foo\'')
 	}
 		
 	@Test
@@ -2093,7 +2046,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYMBOL_REFERENCE, null, 
-			"Expected type `zonedDateTime`, but got `date` instead")
+			"Expected type `zonedDateTime`, but got `date` instead. Cannot assign `date` to input `timestamp`")
 	}
 	
 	@Test
@@ -2137,19 +2090,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		model.assertError(AS_KEY_OPERATION, null,
 			"'as-key' can only be used with attributes annotated with [metadata reference] annotation.")
-	}
-	
-	@Test
-	def checkAsKeyUsage_03() {
-		val model = '''
-			type WithKey:
-			
-			type TypeToUse:
-				attr WithKey (0..1)
-				[metadata reference]
-		'''.parseRosetta
-		model.assertWarning(ATTRIBUTE, null,
-			"WithKey must be annotated with [metadata key] as reference annotation is used")
 	}
 	
 	@Test
@@ -2291,7 +2231,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 		'''.parseRosetta
 		model.assertError(ROSETTA_SYNONYM_BODY, null,
-			"Pattern to match must be a valid regular expression")
+"Pattern to match must be a valid regular expression - Unclosed character class near index 5
+([A-Z)
+     ^")
 	}
 	
 	@Disabled
@@ -2325,7 +2267,9 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 
 		'''.parseRosetta
 		model.assertError(ROSETTA_ENUM_SYNONYM, null,
-			"Pattern to match must be a valid regular expression")
+"Pattern to match must be a valid regular expression - Unclosed character class near index 5
+([A-Z)
+     ^")
 	}
 	
 	@Test
@@ -3161,7 +3105,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x5 int (1..1)
 				x6 string (0..1)
 		'''.parseRosetta
-		model.assertError(ROSETTA_BINARY_OPERATION, null, "Expected type `boolean`, but got `number` instead")
+		model.assertError(ROSETTA_BINARY_OPERATION, null, "Expected type `boolean`, but got `number` instead. Cannot use `number` with operator `and`")
 	}
 	
 	@Test
@@ -3180,7 +3124,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				x3 number (1..1)
 				x4 number (1..1)
 		'''.parseRosetta
-		model.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `number` instead")
+		model.assertError(LOGICAL_OPERATION, null, "Expected type `boolean`, but got `number` instead. Cannot use `number` with operator `and`")
 	}
 	
 	@Test
@@ -3218,7 +3162,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			type Foo:
 				x string (0..1)
 		'''.parseRosetta
-		model.assertError(REDUCE_OPERATION, null, "List reduce expression must evaluate to the same type as the input. Found types Foo and String.")
+		model.assertError(REDUCE_OPERATION, null, "List reduce expression must evaluate to the same type as the input. Found types Foo and string.")
 	}
 	
 	@Test
@@ -3517,29 +3461,5 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		''').parseRosetta
 		
 		models.forEach[assertNoIssues]
-	}
-}
-	
-class MyRosettaTestInjectorProvider extends RosettaTestInjectorProvider {
-	override createRuntimeModule() {
-		return new RosettaRuntimeModule(){
-			override bindClassLoaderToInstance() {
-				return MyRosettaTestInjectorProvider
-						.getClassLoader();
-			}
-			
-			@SingletonBinding(eager=true)
-			override Class<? extends RosettaValidator> bindRosettaValidator() {
-				return ExceptionValidator
-			}
-		}
-	}
-}
-
-class ExceptionValidator extends RosettaValidator{
-	@Check
-	def checkForSharks(Data ele) {
-		if (ele.name.contains("Fish")) throw new Exception("SHARK!")
-		
 	}
 }

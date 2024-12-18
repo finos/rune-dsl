@@ -29,7 +29,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 		'''
 		testCodeAction[
 			it.model = model
-			assertCodeActions = [
+			it.assertCodeActions = [
 				assertEquals(2, size)
 				
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
