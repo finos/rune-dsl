@@ -13,6 +13,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.common.util.ECollections;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
@@ -21,21 +23,21 @@ public class ImportManagementService {
 	@Inject RosettaEcoreUtil rosettaEcoreUtil;
 	@Inject IQualifiedNameProvider qualifiedNameProvider;
 	
-	public List<Import> cleanupImports(RosettaModel model) {
-		List<Import> imports = model.getImports();
-		List<Import> importsToKeep = new ArrayList<>(imports);
+	public void cleanupImports(RosettaModel model) {
+		EList<Import> imports = model.getImports();
+		
+		ECollections.sort(imports, 
+				Comparator.comparing(Import::getImportedNamespace, Comparator.nullsLast(String::compareTo)) );
 		
 		// remove all duplicate/unused imports
-		List<Import> duplicateImports = findUnused(model);
-		importsToKeep.removeAll(duplicateImports);
+		List<Import> duplicateImports = findDuplicates(imports);
+        imports.removeAll(duplicateImports);
+        
+		List<Import> unusedImports = findUnused(model);
+		imports.removeAll(unusedImports);
 		
-		List<Import> unusedImports = findDuplicates(imports);
-        importsToKeep.removeAll(unusedImports);
+		System.out.println(imports);
         
-        importsToKeep.sort(
-				Comparator.comparing(Import::getImportedNamespace, Comparator.nullsLast(String::compareTo)));
-        
-        return importsToKeep;
 	}
 	
 	public List<Import> findUnused(RosettaModel model) {

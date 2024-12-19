@@ -32,6 +32,8 @@ import com.regnosys.rosetta.ide.contentassist.cancellable.RosettaOperationCancel
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenModifiersProvider
 import org.eclipse.xtext.ide.server.hover.IHoverService
 import com.regnosys.rosetta.ide.hover.RosettaHoverService
+import com.regnosys.rosetta.ide.quickfix.ICodeActionResolutionService
+import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixResolutionService
 
 /**
  * Use this class to register ide components.
@@ -84,6 +86,10 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends ICodeActionService2> bindICodeActionService2() {
 		RosettaQuickFixCodeActionService
+	}
+	
+	def Class<? extends ICodeActionResolutionService> bindICodeActionResolutionService() {
+		RosettaQuickFixResolutionService
 	}
 	
 	def Class<? extends ICancellableContentAssistParser> bindICancellableContentAssistParser() {

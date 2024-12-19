@@ -24,18 +24,18 @@ import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.xtext.ide.editor.quickfix.AbstractDeclarativeIdeQuickfixProvider;
 import org.eclipse.xtext.ide.editor.quickfix.DiagnosticResolutionAcceptor;
+import org.eclipse.xtext.ide.editor.quickfix.ISemanticModification;
 import org.eclipse.xtext.ide.editor.quickfix.QuickFix;
 import org.eclipse.xtext.ide.server.Document;
 
 import com.regnosys.rosetta.ide.util.RangeUtils;
-import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
+import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.validation.ImportManagementService;
 import com.regnosys.rosetta.validation.RosettaIssueCodes;
 
@@ -44,6 +44,8 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	private RangeUtils rangeUtils;
 	@Inject 
 	private ImportManagementService importManagementService;
+	@Inject
+    private RosettaTypeProvider types;
 	
 	@QuickFix(RosettaIssueCodes.REDUNDANT_SQUARE_BRACKETS)
 	public void fixRedundantSquareBrackets(DiagnosticResolutionAcceptor acceptor) {
@@ -91,25 +93,95 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	@QuickFix(RosettaIssueCodes.UNUSED_IMPORT)
 	@QuickFix(RosettaIssueCodes.DUPLICATE_IMPORT)
 	public void fixUnoptimizedImports(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Optimize imports.", (Diagnostic diagnostic, EObject object, Document document) -> {
-			Import importObj = (Import) object;
-			EObject container = importObj.eContainer();
-			if (container instanceof RosettaModel) {
-				RosettaModel model = (RosettaModel) container;
-				List<Import> imports = model.getImports();
-
-				List<Import> sortedImports = importManagementService.cleanupImports(model);
-				String sortedImportsText = importManagementService.toString(sortedImports);
+		ISemanticModification semanticModification = (Diagnostic diagnostic,
+				EObject object) -> context -> optimizeImports(object.eContainer());
+		acceptor.accept("Optimize imports.", semanticModification);
+//			
+//			Import importObj = (Import) object;
+//			EObject container = importObj.eContainer();
+//
+//			if (container instanceof RosettaModel) {
+//				RosettaModel model = (RosettaModel) container;
+//				List<Import> sortedImports = importManagementService.cleanupImports(model);
+//
+//				model.setImports(new BasicEList<Import>(sortedImports));
+				//types.getRMetaAnnotatedType(model);
+				
+//				System.out.println(model.eClass());
+//				for (EStructuralFeature feature : model.eClass().getEAllStructuralFeatures()) {
+//					if ("imports".equals(feature.getName())) {
+//						//feature.eGet(feature);
+//						System.out.println(feature);
+//						model.eSet(feature, sortedImports);
+//					}
+//					
+//				}
+//			}
+//		});
+				
+				
+				
+//				String sortedImportsText = importManagementService.toString(sortedImports);
+//	            
+//				
+//				
+//	            // find the range of all imports to replace
+//				Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
+//				Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();
+//	            Range importsRange = new Range(importsStart, importsEnd);
+//	            return List.of(new TextEdit(importsRange, sortedImportsText));
 	            
-	            // find the range of all imports to replace
-				Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
-				Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();
-	            Range importsRange = new Range(importsStart, importsEnd);
-	            return List.of(new TextEdit(importsRange, sortedImportsText));
-			}
+			
 
 			// if not model, return empty list of edits
-			return List.of();
-		});
+			//return List.of();
+			
+			
+//			Import importObj = (Import) object;
+//			EObject container = importObj.eContainer();
+//			if (container instanceof RosettaModel) {
+//				RosettaModel model = (RosettaModel) container;
+//				List<Import> imports = model.getImports();
+//
+//				List<Import> sortedImports = importManagementService.cleanupImports(model);
+//				String sortedImportsText = importManagementService.toString(sortedImports);
+//	            
+//	            // find the range of all imports to replace
+//				Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
+//				Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();
+//	            Range importsRange = new Range(importsStart, importsEnd);
+//	            return List.of(new TextEdit(importsRange, sortedImportsText));
+//			}
+//
+//			// if not model, return empty list of edits
+//			return List.of();
+		
+//		acceptor.accept("Optimize imports.", (Diagnostic diagnostic, EObject object, Document document) -> {
+//			
+//		});
+		
+	}
+
+	private void optimizeImports(EObject container) {
+		if (container instanceof RosettaModel) {
+			RosettaModel model = (RosettaModel) container;
+			importManagementService.cleanupImports(model); // cleans imports in place
+			
+			//System.out.println(model.getImports());
+			
+			//model.setName("newName");
+			
+			
+			
+			//model.setImports(new BasicEList<Import>(sortedImports));
+//			for (EStructuralFeature feature : model.eClass().getEAllStructuralFeatures()) {
+//				if ("imports".equals(feature.getName())) {
+//					//feature.eGet(feature);
+//					System.out.println(feature);
+//					model.eSet(feature, sortedImports);
+//				}
+//			}
+				
+		}
 	}
 }

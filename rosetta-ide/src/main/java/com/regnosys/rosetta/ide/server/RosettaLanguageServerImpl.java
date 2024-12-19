@@ -26,6 +26,7 @@ import org.eclipse.xtext.util.CancelIndicator;
 import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.ide.quickfix.ICodeActionResolutionService;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 
@@ -36,12 +37,28 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
+import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
+
 /**
  * TODO: contribute to Xtext.
  *
  */
 public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
-	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
+	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;	
+	
+	@Override
+	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved){
+		Options options = (Options) unresolved.getData();
+
+		URI uri = getURI(options.getCodeActionParams().getTextDocument());
+		IResourceServiceProvider serviceProvider = getResourceServiceProvider(uri);
+		ICodeActionResolutionService resolutionService = getService(serviceProvider, ICodeActionResolutionService.class);
+		if (resolutionService == null) {
+			return CompletableFuture.failedFuture(null);
+		}
+		
+		return resolutionService.getCodeActionResolution(unresolved);
+	}
 
 	@Override
 	protected ServerCapabilities createServerCapabilities(InitializeParams params) {

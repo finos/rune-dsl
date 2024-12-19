@@ -25,6 +25,12 @@ import org.eclipse.xtext.testing.FileInfo
 import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.TextDocumentPositionConfiguration
 import org.junit.jupiter.api.Assertions
+import org.eclipse.lsp4j.jsonrpc.messages.Either
+import org.eclipse.lsp4j.Command
+import org.eclipse.lsp4j.CodeAction
+import org.eclipse.lsp4j.CodeActionParams
+import org.eclipse.lsp4j.CodeActionContext
+import java.util.concurrent.CompletableFuture
 
 /**
  * TODO: contribute to Xtext.
@@ -32,6 +38,7 @@ import org.junit.jupiter.api.Assertions
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
 	@Inject RangeUtils ru
 	@Inject RosettaBuiltinsService builtins
+	@Inject RosettaLanguageServerImpl rosettaLanguageServer
 	
 	new() {
 		super("rosetta")
@@ -139,5 +146,44 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		}
 		val filePath = super.initializeContext(configuration);
 		return filePath
+	}
+	
+	@Accessors static class TestCodeActionConfiguration extends TextDocumentPositionConfiguration {
+		String expectedCodeActions = ''
+
+		(CompletableFuture<CodeAction>)=>void assertCodeActionResolution= null
+	}
+
+	protected def void testResultCodeAction((TestCodeActionConfiguration)=>void configurator) {
+		val extension configuration = new TestCodeActionConfiguration
+		configuration.filePath = 'MyModel.' + fileExtension
+		configurator.apply(configuration)
+		val filePath = initializeContext(configuration).uri
+		
+		val codeActions = languageServer.codeAction(new CodeActionParams=>[
+			textDocument = new TextDocumentIdentifier(filePath)
+			range = new Range => [
+				start = new Position(configuration.line, configuration.column)
+				end = start
+			]
+			context = new CodeActionContext => [
+				diagnostics = this.diagnostics.get(filePath)
+			]
+		])
+		
+		// Checking all diagnostics (?)
+		for (codeAction : codeActions.get) {
+    		val resolveResult = rosettaLanguageServer.resolveCodeAction(codeAction.getRight)
+		}
+		
+
+
+//		Assertions.assertEquals(configuration.expectedCodeActions, resolveResult.get.toExpectation)
+
+//		if (configuration.assertNoCodeActions !== null) {
+//			configuration.assertNoCodeActions.apply(resolveResult)
+//		} else {
+//			assertEquals(configuration.expectedCodeActions, result.get.toExpectation)
+//		}
 	}
 }

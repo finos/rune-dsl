@@ -53,7 +53,7 @@ import com.regnosys.rosetta.validation.ImportManagementService;
 public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 
 	@Inject
-	private IQuickFixProvider quickfixes;
+	private IQuickFixProvider quickfixes;	
 	@Inject
 	private RangeUtils rangeUtils;
 	@Inject 
@@ -73,16 +73,16 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 						.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
 						.collect(Collectors.toList());
 				for (DiagnosticResolution resolution : resolutions) {
-					result.add(Either.forRight(createFix(resolution, diagnostic)));
+					result.add(Either.forRight(createFix(resolution, diagnostic, diagnosticOptions)));
 				}
 			}
 		}
 		
 		// Handle Sorting Imports
-        if (shouldSortImports(options)) {
-            CodeAction sortImportsAction = createSortImportsAction(options);
-            result.add(Either.forRight(sortImportsAction));
-        }
+//        if (shouldSortImports(options)) {
+//            CodeAction sortImportsAction = createSortImportsAction(options);
+//            result.add(Either.forRight(sortImportsAction));
+//        }
         
 		return result;
 	}
@@ -104,6 +104,8 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 
         // Add the edits to the CodeAction
         action.setEdit(new WorkspaceEdit(Collections.singletonMap(resource.getURI().toString(), textEdits)));
+        
+        action.setKind(CodeActionKind.SourceOrganizeImports);
 
         return action;
     }
@@ -116,8 +118,8 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
             RosettaModel model = (RosettaModel) resourceContent;
             List<Import> imports = model.getImports();
             
-            List<Import> sortedImports = importManagementService.cleanupImports(model);
-			String sortedImportsText = importManagementService.toString(sortedImports);
+            importManagementService.cleanupImports(model);
+			String sortedImportsText = importManagementService.toString(imports);
 
 			// find the range of all imports to replace
             Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
@@ -128,13 +130,13 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
         return edits;
     }
 
-	private CodeAction createFix(DiagnosticResolution resolution, Diagnostic diagnostic) {
+	private CodeAction createFix(DiagnosticResolution resolution, Diagnostic diagnostic, Options diagnosticOptions) {
 		CodeAction codeAction = new CodeAction();
 		codeAction.setDiagnostics(Collections.singletonList(diagnostic));
 		codeAction.setTitle(resolution.getLabel());
-		codeAction.setEdit(resolution.apply());
 		codeAction.setKind(CodeActionKind.QuickFix);
-
+		codeAction.setData(diagnosticOptions);
+		
 		return codeAction;
 	}
 	
