@@ -27,6 +27,8 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.rosetta.model.lib.annotations.RuneDataType
+import com.regnosys.rosetta.config.RosettaConfiguration
 
 class ModelObjectGenerator {
 	
@@ -36,6 +38,7 @@ class ModelObjectGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 	@Inject extension TypeCoercionService
+	@Inject RosettaConfiguration rosettaConfiguration
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,
@@ -58,6 +61,7 @@ class ModelObjectGenerator {
 		'''
 			«javaType.javadoc»
 			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
+			@«RuneDataType»(value="«javaType.rosettaName»", model="«rosettaConfiguration.model.name»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
 			public interface «javaType» extends «implementsClause(javaType)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();

@@ -79,6 +79,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.AttributeMeta;
@@ -111,6 +112,7 @@ class PojoRegressionTest {
 		 * @version test
 		 */
 		@RosettaDataType(value="Pojo", builder=Pojo.PojoBuilderImpl.class, version="test")
+		@RuneDataType(value="Pojo", model="My test model", builder=Pojo.PojoBuilderImpl.class, version="test")
 		public interface Pojo extends RosettaModelObject, GlobalKey {
 		
 			PojoMeta metaData = new PojoMeta();
@@ -1282,6 +1284,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.FieldWithMeta;
 		import com.rosetta.model.lib.meta.FieldWithMeta.FieldWithMetaBuilder;
@@ -1298,6 +1301,7 @@ class PojoRegressionTest {
 		 * @version 1
 		 */
 		@RosettaDataType(value="FieldWithMetaString", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
+		@RuneDataType(value="FieldWithMetaString", model="My test model", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
 		public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<String>, GlobalKey {
 		
 			FieldWithMetaStringMeta metaData = new FieldWithMetaStringMeta();
@@ -1548,6 +1552,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.Reference;
 		import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
@@ -1569,6 +1574,7 @@ class PojoRegressionTest {
 		 * @version 1
 		 */
 		@RosettaDataType(value="ReferenceWithMetaFoo", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
+		@RuneDataType(value="ReferenceWithMetaFoo", model="My test model", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
 		public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithMeta<Foo> {
 		
 			ReferenceWithMetaFooMeta metaData = new ReferenceWithMetaFooMeta();

@@ -11,9 +11,9 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 public @interface RuneDataType {
     String value() default "";
 
+    String model() default "";
+
     Class<? extends RosettaModelObjectBuilder> builder();
 
     String version() default "";
-
-    String model() default "";
 }
