@@ -141,7 +141,6 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scopedLocation")
-		@RuneAttribute("@key:scoped")
 		public String getLocation() {
 			return location;
 		}
