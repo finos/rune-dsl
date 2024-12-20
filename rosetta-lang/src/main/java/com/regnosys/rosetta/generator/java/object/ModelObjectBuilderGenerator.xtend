@@ -1,33 +1,33 @@
 package com.regnosys.rosetta.generator.java.object
 
+import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import com.regnosys.rosetta.generator.java.statement.JavaEnhancedForLoop
+import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaThis
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
+import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
+import com.rosetta.model.lib.RosettaModelObjectBuilder
+import com.rosetta.model.lib.annotations.RosettaAttribute
+import com.rosetta.model.lib.annotations.RuneAttribute
+import com.rosetta.model.lib.annotations.RuneMetaType
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.process.BuilderMerger
+import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.JavaPrimitiveType
+import com.rosetta.util.types.JavaType
 import java.util.ArrayList
+import java.util.Collections
 import java.util.function.Consumer
 import java.util.stream.Collectors
-import org.eclipse.xtend2.lib.StringConcatenationClient
-
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import javax.inject.Inject
-import com.rosetta.model.lib.annotations.RosettaAttribute
-import com.rosetta.model.lib.RosettaModelObjectBuilder
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
-import com.rosetta.util.types.JavaType
-import com.rosetta.util.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
-import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
-import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
-import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
-import com.rosetta.util.types.JavaPrimitiveType
-import com.regnosys.rosetta.generator.java.statement.builder.JavaThis
-import com.regnosys.rosetta.generator.java.statement.JavaEnhancedForLoop
-import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
-import java.util.Collections
-import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ModelObjectBuilderGenerator {
 	
@@ -124,6 +124,7 @@ class ModelObjectBuilderGenerator {
 			
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
+			«IF prop.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«prop.javaRuneAnnotation»")«ENDIF»
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
 			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
@@ -258,7 +259,10 @@ class ModelObjectBuilderGenerator {
 			«val addMethodScope = scope.methodScope(addMethodName)»
 			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
-			«IF isMainProp»@«RosettaAttribute»("«currentProp.javaAnnotation»")«ENDIF»
+			«IF isMainProp»
+			@«RosettaAttribute»("«currentProp.javaAnnotation»")
+			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				(if (isMainProp) {
 					new JavaIfThenStatement(
@@ -459,7 +463,10 @@ class ModelObjectBuilderGenerator {
 			«val setMethodScope = scope.methodScope(setMethodName)»
 			«val setMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), propType)»
 			@Override
-			«IF isMainProp»@«RosettaAttribute»("«currentProp.javaAnnotation»")«ENDIF»
+			«IF isMainProp»
+			@«RosettaAttribute»("«currentProp.javaAnnotation»")
+			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «
 				(if (isMainProp) {
 					JavaExpression.from('''this.«field» = «setMethodArg» == null ? null : «setMethodArg.toBuilder»''', JavaPrimitiveType.VOID)

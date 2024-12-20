@@ -327,12 +327,14 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("attr")
+				@RuneAttribute("attr")
 				public Integer getAttr() {
 					return attr;
 				}
 				
 				@Override
 				@RosettaAttribute("numberAttr")
+				@RuneAttribute("numberAttr")
 				public BigInteger getNumberAttrOverriddenAsBigInteger() {
 					return numberAttr;
 				}
@@ -344,6 +346,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parent")
+				@RuneAttribute("parent")
 				public Child.ChildBuilder getParent() {
 					return parent;
 				}
@@ -363,6 +366,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parentList")
+				@RuneAttribute("parentList")
 				public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getParentListOverriddenAsSingleReferenceWithMetaChild() {
 					return parentList;
 				}
@@ -393,6 +397,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("stringAttr")
+				@RuneAttribute("stringAttr")
 				public FieldWithMetaString.FieldWithMetaStringBuilder getStringAttr() {
 					return stringAttr;
 				}
@@ -412,6 +417,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("attr")
+				@RuneAttribute("attr")
 				public Foo2.Foo2Builder setAttr(Integer _attr) {
 					this.attr = _attr == null ? null : _attr;
 					return this;
@@ -419,6 +425,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("numberAttr")
+				@RuneAttribute("numberAttr")
 				public Foo2.Foo2Builder setNumberAttr(BigInteger _numberAttr) {
 					this.numberAttr = _numberAttr == null ? null : _numberAttr;
 					return this;
@@ -437,6 +444,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parent")
+				@RuneAttribute("parent")
 				public Foo2.Foo2Builder setParent(Child _parent) {
 					this.parent = _parent == null ? null : _parent.toBuilder();
 					return this;
@@ -455,6 +463,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parentList")
+				@RuneAttribute("parentList")
 				public Foo2.Foo2Builder setParentList(ReferenceWithMetaChild _parentList) {
 					this.parentList = _parentList == null ? null : _parentList.toBuilder();
 					return this;
@@ -514,6 +523,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("stringAttr")
+				@RuneAttribute("stringAttr")
 				public Foo2.Foo2Builder setStringAttr(FieldWithMetaString _stringAttr) {
 					this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();
 					return this;
@@ -1006,12 +1016,14 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("attr")
+				@RuneAttribute("attr")
 				public Integer getAttr() {
 					return attr;
 				}
 				
 				@Override
 				@RosettaAttribute("numberAttr")
+				@RuneAttribute("numberAttr")
 				public Integer getNumberAttrOverriddenAsInteger() {
 					return numberAttr;
 				}
@@ -1028,6 +1040,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parent")
+				@RuneAttribute("parent")
 				public Child.ChildBuilder getParent() {
 					return parent;
 				}
@@ -1047,6 +1060,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parentList")
+				@RuneAttribute("parentList")
 				public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder getParentListOverriddenAsReferenceWithMetaGrandChild() {
 					return parentList;
 				}
@@ -1096,6 +1110,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("stringAttr")
+				@RuneAttribute("stringAttr")
 				public FieldWithMetaString.FieldWithMetaStringBuilder getStringAttr() {
 					return stringAttr;
 				}
@@ -1115,6 +1130,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("attr")
+				@RuneAttribute("attr")
 				public Foo3.Foo3Builder setAttr(Integer _attr) {
 					this.attr = _attr == null ? null : _attr;
 					return this;
@@ -1122,6 +1138,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("numberAttr")
+				@RuneAttribute("numberAttr")
 				public Foo3.Foo3Builder setNumberAttr(Integer _numberAttr) {
 					this.numberAttr = _numberAttr == null ? null : _numberAttr;
 					return this;
@@ -1151,6 +1168,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parent")
+				@RuneAttribute("parent")
 				public Foo3.Foo3Builder setParent(Child _parent) {
 					this.parent = _parent == null ? null : _parent.toBuilder();
 					return this;
@@ -1169,6 +1187,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parentList")
+				@RuneAttribute("parentList")
 				public Foo3.Foo3Builder setParentList(ReferenceWithMetaGrandChild _parentList) {
 					this.parentList = _parentList == null ? null : _parentList.toBuilder();
 					return this;
@@ -1255,6 +1274,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("stringAttr")
+				@RuneAttribute("stringAttr")
 				public Foo3.Foo3Builder setStringAttr(FieldWithMetaString _stringAttr) {
 					this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();
 					return this;
