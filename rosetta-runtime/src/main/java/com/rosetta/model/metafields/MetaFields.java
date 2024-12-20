@@ -5,6 +5,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.GlobalKeyFields;
 import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
@@ -127,6 +128,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("@scheme")
 		public String getScheme() {
 			return scheme;
 		}
@@ -139,30 +141,35 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scopedLocation")
+		@RuneAttribute("@key:scoped")
 		public String getLocation() {
 			return location;
 		}
 		
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public String getAddress() {
 			return address;
 		}
 		
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public String getExternalKey() {
 			return externalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("location")
+		@RuneAttribute("@key:scoped")
 		public List<? extends Key> getKey() {
 			return key;
 		}
@@ -249,6 +256,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("scheme")
 		public String getScheme() {
 			return scheme;
 		}
@@ -261,30 +269,35 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scopedLocation")
+		@RuneAttribute("@key:scoped")
 		public String getLocation() {
 			return location;
 		}
 		
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public String getAddress() {
 			return address;
 		}
 		
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public String getExternalKey() {
 			return externalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("location")
+		@RuneAttribute("@key:scoped")
 		public List<? extends Key.KeyBuilder> getKey() {
 			return key;
 		}
@@ -303,6 +316,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("scheme")
 		public MetaFields.MetaFieldsBuilder setScheme(String scheme) {
 			this.scheme = scheme==null?null:scheme;
 			return this;
@@ -315,24 +329,28 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		@Override
 		@RosettaAttribute("scopedLocation")
+		@RuneAttribute("@key:scoped")
 		public MetaFields.MetaFieldsBuilder setLocation(String location) {
 			this.location = location==null?null:location;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public MetaFields.MetaFieldsBuilder setAddress(String address) {
 			this.address = address==null?null:address;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public MetaFields.MetaFieldsBuilder setGlobalKey(String globalKey) {
 			this.globalKey = globalKey==null?null:globalKey;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public MetaFields.MetaFieldsBuilder setExternalKey(String externalKey) {
 			this.externalKey = externalKey==null?null:externalKey;
 			return this;
@@ -360,6 +378,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override 
 		@RosettaAttribute("location")
+		@RuneAttribute("@key:scoped")
 		public MetaFields.MetaFieldsBuilder setKey(List<? extends Key> keys) {
 			if (keys == null)  {
 				this.key = new ArrayList<>();

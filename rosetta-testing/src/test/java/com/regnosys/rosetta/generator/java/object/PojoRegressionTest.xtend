@@ -79,7 +79,9 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneMetaType;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.AttributeMeta;
@@ -146,6 +148,7 @@ class PojoRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends Pojo> getType() {
 				return Pojo.class;
 			}
@@ -286,66 +289,77 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttr")
+				@RuneAttribute("simpleAttr")
 				public String getSimpleAttr() {
 					return simpleAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttr")
+				@RuneAttribute("multiSimpleAttr")
 				public List<String> getMultiSimpleAttr() {
 					return multiSimpleAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithMeta")
+				@RuneAttribute("simpleAttrWithMeta")
 				public FieldWithMetaString getSimpleAttrWithMeta() {
 					return simpleAttrWithMeta;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithMeta")
+				@RuneAttribute("multiSimpleAttrWithMeta")
 				public List<? extends FieldWithMetaString> getMultiSimpleAttrWithMeta() {
 					return multiSimpleAttrWithMeta;
 				}
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithId")
+				@RuneAttribute("simpleAttrWithId")
 				public FieldWithMetaString getSimpleAttrWithId() {
 					return simpleAttrWithId;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithId")
+				@RuneAttribute("multiSimpleAttrWithId")
 				public List<? extends FieldWithMetaString> getMultiSimpleAttrWithId() {
 					return multiSimpleAttrWithId;
 				}
 				
 				@Override
 				@RosettaAttribute("complexAttr")
+				@RuneAttribute("complexAttr")
 				public Foo getComplexAttr() {
 					return complexAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("multiComplexAttr")
+				@RuneAttribute("multiComplexAttr")
 				public List<? extends Foo> getMultiComplexAttr() {
 					return multiComplexAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("complexAttrWithRef")
+				@RuneAttribute("complexAttrWithRef")
 				public ReferenceWithMetaFoo getComplexAttrWithRef() {
 					return complexAttrWithRef;
 				}
 				
 				@Override
 				@RosettaAttribute("multiComplexAttrWithRef")
+				@RuneAttribute("multiComplexAttrWithRef")
 				public List<? extends ReferenceWithMetaFoo> getMultiComplexAttrWithRef() {
 					return multiComplexAttrWithRef;
 				}
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneMetaType
 				public MetaFields getMeta() {
 					return meta;
 				}
@@ -1284,7 +1298,9 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneMetaType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.FieldWithMeta;
 		import com.rosetta.model.lib.meta.FieldWithMeta.FieldWithMetaBuilder;
@@ -1326,6 +1342,7 @@ class PojoRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends FieldWithMetaString> getType() {
 				return FieldWithMetaString.class;
 			}
@@ -1372,12 +1389,14 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
 				public String getValue() {
 					return value;
 				}
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneMetaType
 				public MetaFields getMeta() {
 					return meta;
 				}
@@ -1552,6 +1571,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.Reference;
@@ -1601,6 +1621,7 @@ class PojoRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends ReferenceWithMetaFoo> getType() {
 				return ReferenceWithMetaFoo.class;
 			}
@@ -1660,24 +1681,28 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
 				public Foo getValue() {
 					return value;
 				}
 				
 				@Override
 				@RosettaAttribute("globalReference")
+				@RuneAttribute("@ref")
 				public String getGlobalReference() {
 					return globalReference;
 				}
 				
 				@Override
 				@RosettaAttribute("externalReference")
+				@RuneAttribute("@ref:external")
 				public String getExternalReference() {
 					return externalReference;
 				}
 				
 				@Override
 				@RosettaAttribute("address")
+				@RuneAttribute("@ref:scoped")
 				public Reference getReference() {
 					return reference;
 				}

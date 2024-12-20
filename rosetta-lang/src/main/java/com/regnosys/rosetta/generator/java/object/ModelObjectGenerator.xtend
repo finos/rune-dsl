@@ -29,6 +29,8 @@ import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.rosetta.model.lib.annotations.RuneDataType
 import com.regnosys.rosetta.config.RosettaConfiguration
+import com.rosetta.model.lib.annotations.RuneAttribute
+import com.rosetta.model.lib.annotations.RuneMetaType
 
 class ModelObjectGenerator {
 	
@@ -169,6 +171,7 @@ class ModelObjectGenerator {
 		}
 
 		@Override
+		@«RuneAttribute»("@type")
 		default Class<? extends «javaType»> getType() {
 			return «javaType».class;
 		}
@@ -231,6 +234,7 @@ class ModelObjectGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
+			«IF prop.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«prop.javaRuneAnnotation»")«ENDIF»
 			public «prop.type» «prop.getterName»() «field.completeAsReturn.toBlock»
 			
 			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, scope)»«ENDIF»

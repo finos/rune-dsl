@@ -62,10 +62,10 @@ public class RJavaReferenceWithMeta extends RJavaWithMetaValue {
 	@Override
 	public Collection<JavaPojoProperty> getOwnProperties() {
 		return List.of(
-				new JavaPojoProperty("value", "value", valueType, null, null, false),
-				new JavaPojoProperty("globalReference", "globalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
-				new JavaPojoProperty("externalReference", "externalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
-				new JavaPojoProperty("reference", "reference", javaTypeUtil.REFERENCE, null, null, false)
+				new JavaPojoProperty("value", "@data", "value", valueType, null, null, false),
+				new JavaPojoProperty("globalReference", "@ref", "globalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
+				new JavaPojoProperty("externalReference", "@ref:external", "externalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
+				new JavaPojoProperty("reference", null, "reference", javaTypeUtil.REFERENCE, null, null, false)
 			);
 	}
 }

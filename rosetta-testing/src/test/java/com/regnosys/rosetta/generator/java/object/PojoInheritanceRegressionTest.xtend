@@ -76,6 +76,7 @@ class PojoInheritanceRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.mapper.MapperC;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -137,6 +138,7 @@ class PojoInheritanceRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends Foo2> getType() {
 				return Foo2.class;
 			}
@@ -213,12 +215,14 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("attr")
+				@RuneAttribute("attr")
 				public Integer getAttr() {
 					return attr;
 				}
 				
 				@Override
 				@RosettaAttribute("numberAttr")
+				@RuneAttribute("numberAttr")
 				public BigInteger getNumberAttrOverriddenAsBigInteger() {
 					return numberAttr;
 				}
@@ -230,12 +234,14 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parent")
+				@RuneAttribute("parent")
 				public Child getParent() {
 					return parent;
 				}
 				
 				@Override
 				@RosettaAttribute("parentList")
+				@RuneAttribute("parentList")
 				public ReferenceWithMetaChild getParentListOverriddenAsSingleReferenceWithMetaChild() {
 					return parentList;
 				}
@@ -247,6 +253,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("stringAttr")
+				@RuneAttribute("stringAttr")
 				public FieldWithMetaString getStringAttr() {
 					return stringAttr;
 				}
@@ -729,6 +736,7 @@ class PojoInheritanceRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.mapper.MapperC;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -791,6 +799,7 @@ class PojoInheritanceRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends Foo3> getType() {
 				return Foo3.class;
 			}
@@ -871,12 +880,14 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("attr")
+				@RuneAttribute("attr")
 				public Integer getAttr() {
 					return attr;
 				}
 				
 				@Override
 				@RosettaAttribute("numberAttr")
+				@RuneAttribute("numberAttr")
 				public Integer getNumberAttrOverriddenAsInteger() {
 					return numberAttr;
 				}
@@ -893,12 +904,14 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("parent")
+				@RuneAttribute("parent")
 				public Child getParent() {
 					return parent;
 				}
 				
 				@Override
 				@RosettaAttribute("parentList")
+				@RuneAttribute("parentList")
 				public ReferenceWithMetaGrandChild getParentListOverriddenAsReferenceWithMetaGrandChild() {
 					return parentList;
 				}
@@ -919,6 +932,7 @@ class PojoInheritanceRegressionTest {
 				
 				@Override
 				@RosettaAttribute("stringAttr")
+				@RuneAttribute("stringAttr")
 				public FieldWithMetaString getStringAttr() {
 					return stringAttr;
 				}

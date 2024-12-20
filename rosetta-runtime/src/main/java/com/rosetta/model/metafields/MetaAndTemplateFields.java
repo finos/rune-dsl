@@ -5,6 +5,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.GlobalKeyFields;
 import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
@@ -135,6 +136,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("scheme")
 		public String getScheme() {
 			return scheme;
 		}
@@ -147,12 +149,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("scopedLocation")
+		@RuneAttribute("@key:scoped")
 		public String getLocation() {
 			return location;
 		}
 		
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public String getAddress() {
 			return address;
 		}
@@ -165,18 +169,21 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public String getExternalKey() {
 			return externalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("location")
+		@RuneAttribute("@key:scoped")
 		public List<? extends Key> getKey() {
 			return key;
 		}

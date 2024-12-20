@@ -43,6 +43,13 @@ class ModelObjectBoilerPlate {
 			return prop.name
 	}
 	
+	def String javaRuneAnnotation(JavaPojoProperty prop) {
+		if (prop.type == REFERENCE) {
+			return '@ref:scoped'
+		} else
+			return prop.runeName	
+	}
+	
 	def StringConcatenationClient implementsClause(JavaPojoInterface javaType) {
 		'''«FOR i : javaType.interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}

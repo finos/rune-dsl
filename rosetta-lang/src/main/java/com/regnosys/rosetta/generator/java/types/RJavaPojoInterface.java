@@ -84,19 +84,20 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 			type.getOwnAttributes().forEach(attr -> {
 				String name = attr.getName();
 				JavaType type = typeTranslator.toMetaJavaType(attr);
-				addPropertyIfNecessary(name, type, ModelGeneratorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null), attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null, attr.getRMetaAnnotatedType().hasMetaAttribute("location"));
+				addPropertyIfNecessary(name, name, type, ModelGeneratorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null), attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null, attr.getRMetaAnnotatedType().hasMetaAttribute("location"));
 			});
 			if (type.hasMetaAttribute("key")) {
 				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
-				addPropertyIfNecessary("meta", metaFieldsType, null, null, false);
+				addPropertyIfNecessary("meta", null, metaFieldsType, null, null, false);
 			}
 		}
 	}
-	private void addPropertyIfNecessary(String name, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
+	private void addPropertyIfNecessary(String name, String runeName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
 		JavaPojoProperty parentProperty = allProperties.get(name);
 		if (parentProperty == null) {
 			JavaPojoProperty newProperty = new JavaPojoProperty(
 					name,
+					runeName,
 					name,
 					type,
 					javadoc,
