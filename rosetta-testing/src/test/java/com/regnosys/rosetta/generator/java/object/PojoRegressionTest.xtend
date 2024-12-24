@@ -690,6 +690,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiSimpleAttr")
 				public Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttrs) {
 					if (multiSimpleAttrs == null) {
 						this.multiSimpleAttr = new ArrayList<>();
@@ -753,6 +754,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiSimpleAttrWithMeta")
 				public Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas == null) {
 						this.multiSimpleAttrWithMeta = new ArrayList<>();
@@ -836,6 +838,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiSimpleAttrWithId")
 				public Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds == null) {
 						this.multiSimpleAttrWithId = new ArrayList<>();
@@ -901,6 +904,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiComplexAttr")
 				public Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 					if (multiComplexAttrs == null) {
 						this.multiComplexAttr = new ArrayList<>();
@@ -965,6 +969,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiComplexAttrWithRef")
 				public Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 					if (multiComplexAttrWithRefs == null) {
 						this.multiComplexAttrWithRef = new ArrayList<>();

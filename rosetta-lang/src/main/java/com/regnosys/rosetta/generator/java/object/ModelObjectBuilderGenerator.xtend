@@ -260,8 +260,8 @@ class ModelObjectBuilderGenerator {
 			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
 			«IF isMainProp»
-			@«RosettaAttribute»("«currentProp.javaAnnotation»")
-			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+				@«RosettaAttribute»("«currentProp.javaAnnotation»")
+				«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				(if (isMainProp) {
@@ -385,6 +385,9 @@ class ModelObjectBuilderGenerator {
 			«val setMultiMethodScope = scope.methodScope(setMethodName)»
 			«val setMultiMethodArg = new JavaVariable(setMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
+			«IF isMainProp»
+			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
 				(if (isMainProp) {
 					new JavaIfThenElseBuilder(
