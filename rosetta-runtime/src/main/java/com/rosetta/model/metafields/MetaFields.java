@@ -257,7 +257,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute("scheme")
+		@RuneAttribute("@scheme")
 		public String getScheme() {
 			return scheme;
 		}
@@ -316,7 +316,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute("scheme")
+		@RuneAttribute("@scheme")
 		public MetaFields.MetaFieldsBuilder setScheme(String scheme) {
 			this.scheme = scheme==null?null:scheme;
 			return this;
