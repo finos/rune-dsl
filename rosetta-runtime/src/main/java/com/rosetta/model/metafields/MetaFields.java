@@ -6,6 +6,7 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.GlobalKeyFields;
 import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
@@ -30,6 +31,7 @@ import static java.util.Optional.ofNullable;
  * @version 1
  */
 @RosettaDataType(value="MetaFields", builder=MetaFields.MetaFieldsBuilderImpl.class, version="0.0.0")
+@RuneDataType(value="MetaFields", builder=MetaFields.MetaFieldsBuilderImpl.class, version="0.0.0")
 public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDataFields {
 
 	MetaFieldsMeta metaData = new MetaFieldsMeta();
