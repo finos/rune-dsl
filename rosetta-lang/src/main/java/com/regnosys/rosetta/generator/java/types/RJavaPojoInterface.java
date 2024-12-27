@@ -88,7 +88,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 			});
 			if (type.hasMetaAttribute("key")) {
 				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
-				addPropertyIfNecessary("meta", null, metaFieldsType, null, null, false);
+				addPropertyIfNecessary("meta", "meta", metaFieldsType, null, null, false);
 			}
 		}
 	}

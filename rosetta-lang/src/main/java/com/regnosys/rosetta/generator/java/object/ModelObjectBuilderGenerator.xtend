@@ -124,7 +124,8 @@ class ModelObjectBuilderGenerator {
 			
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
-			«IF prop.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«prop.javaRuneAnnotation»")«ENDIF»
+			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			«IF prop.type==META_FIELDS»@«RuneMetaType»«ENDIF»
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
 			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
@@ -261,7 +262,8 @@ class ModelObjectBuilderGenerator {
 			@Override
 			«IF isMainProp»
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				(if (isMainProp) {
@@ -386,7 +388,8 @@ class ModelObjectBuilderGenerator {
 			«val setMultiMethodArg = new JavaVariable(setMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
 			«IF isMainProp»
-			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
 				(if (isMainProp) {
@@ -468,7 +471,8 @@ class ModelObjectBuilderGenerator {
 			@Override
 			«IF isMainProp»
 			@«RosettaAttribute»("«currentProp.javaAnnotation»")
-			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«currentProp.javaRuneAnnotation»")«ENDIF»
+			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «
 				(if (isMainProp) {

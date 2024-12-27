@@ -359,6 +359,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
 				@RuneMetaType
 				public MetaFields getMeta() {
 					return meta;
@@ -637,6 +638,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
 				@RuneMetaType
 				public MetaFields.MetaFieldsBuilder getMeta() {
 					return meta;
@@ -1002,6 +1004,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
 				@RuneMetaType
 				public Pojo.PojoBuilder setMeta(MetaFields _meta) {
 					this.meta = _meta == null ? null : _meta.toBuilder();
@@ -1423,6 +1426,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
 				@RuneMetaType
 				public MetaFields getMeta() {
 					return meta;
@@ -1489,6 +1493,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
 				@RuneMetaType
 				public MetaFields.MetaFieldsBuilder getMeta() {
 					return meta;
@@ -1517,6 +1522,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
 				@RuneMetaType
 				public FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields _meta) {
 					this.meta = _meta == null ? null : _meta.toBuilder();

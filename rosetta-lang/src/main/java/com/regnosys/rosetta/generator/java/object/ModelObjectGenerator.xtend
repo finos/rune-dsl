@@ -234,7 +234,8 @@ class ModelObjectGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
-			«IF prop.type==META_FIELDS»@«RuneMetaType»«ELSE»@«RuneAttribute»("«prop.javaRuneAnnotation»")«ENDIF»
+			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			«IF prop.type==META_FIELDS»@«RuneMetaType»«ENDIF»
 			public «prop.type» «prop.getterName»() «field.completeAsReturn.toBlock»
 			
 			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, scope)»«ENDIF»
