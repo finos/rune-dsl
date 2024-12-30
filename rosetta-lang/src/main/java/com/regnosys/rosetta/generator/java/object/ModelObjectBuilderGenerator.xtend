@@ -125,7 +125,7 @@ class ModelObjectBuilderGenerator {
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
-			«IF prop.type==META_FIELDS»@«RuneMetaType»«ENDIF»
+			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
 			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
@@ -263,7 +263,7 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
-				«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ENDIF»
+				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				(if (isMainProp) {
@@ -389,7 +389,7 @@ class ModelObjectBuilderGenerator {
 			@Override 
 			«IF isMainProp»
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
-			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ENDIF»
+			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
 				(if (isMainProp) {
@@ -472,7 +472,7 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 			@«RosettaAttribute»("«currentProp.javaAnnotation»")
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
-			«IF currentProp.type==META_FIELDS»@«RuneMetaType»«ENDIF»
+			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «
 				(if (isMainProp) {

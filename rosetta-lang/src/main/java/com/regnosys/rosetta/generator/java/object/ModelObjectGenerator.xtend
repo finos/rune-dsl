@@ -235,7 +235,7 @@ class ModelObjectGenerator {
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
-			«IF prop.type==META_FIELDS»@«RuneMetaType»«ENDIF»
+			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			public «prop.type» «prop.getterName»() «field.completeAsReturn.toBlock»
 			
 			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, scope)»«ENDIF»

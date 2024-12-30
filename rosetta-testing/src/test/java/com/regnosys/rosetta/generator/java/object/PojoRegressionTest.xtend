@@ -1610,6 +1610,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.annotations.RosettaDataType;
 		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneMetaType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.Reference;
 		import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
@@ -1719,6 +1720,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("value")
 				@RuneAttribute("@data")
+				@RuneMetaType
 				public Foo getValue() {
 					return value;
 				}
@@ -1809,6 +1811,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("value")
 				@RuneAttribute("@data")
+				@RuneMetaType
 				public Foo.FooBuilder getValue() {
 					return value;
 				}
@@ -1863,6 +1866,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("value")
 				@RuneAttribute("@data")
+				@RuneMetaType
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo _value) {
 					this.value = _value == null ? null : _value.toBuilder();
 					return this;
