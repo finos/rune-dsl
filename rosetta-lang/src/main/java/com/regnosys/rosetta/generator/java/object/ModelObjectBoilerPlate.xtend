@@ -52,7 +52,9 @@ class ModelObjectBoilerPlate {
 	}
 	
 	def boolean addRuneMetaAnnotation(JavaPojoProperty prop) {
-		return prop.type==META_FIELDS || (javaRuneAnnotation(prop) == "@data" && prop.type.isValueRosettaModelObject)
+		return prop.type == REFERENCE || 
+			prop.type==META_FIELDS || 
+			(javaRuneAnnotation(prop) == "@data" && prop.type.isValueRosettaModelObject)
 	}
 	
 	def StringConcatenationClient implementsClause(JavaPojoInterface javaType) {

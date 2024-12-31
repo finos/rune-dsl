@@ -1742,6 +1742,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("address")
 				@RuneAttribute("@ref:scoped")
+				@RuneMetaType
 				public Reference getReference() {
 					return reference;
 				}
@@ -1846,6 +1847,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("address")
 				@RuneAttribute("@ref:scoped")
+				@RuneMetaType
 				public Reference.ReferenceBuilder getReference() {
 					return reference;
 				}
@@ -1891,6 +1893,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("address")
 				@RuneAttribute("@ref:scoped")
+				@RuneMetaType
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setReference(Reference _reference) {
 					this.reference = _reference == null ? null : _reference.toBuilder();
 					return this;

@@ -1,6 +1,14 @@
 package com.rosetta.model.metafields;
 
+import static java.util.Optional.ofNullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -9,10 +17,8 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.GlobalKeyFields;
-import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
 import com.rosetta.model.lib.meta.Key;
 import com.rosetta.model.lib.meta.MetaDataFields;
-import com.rosetta.model.lib.meta.MetaDataFields.MetaDataFieldsBuilder;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -20,12 +26,6 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.util.ListEquals;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static java.util.Optional.ofNullable;
 
 /**
  * @version 1
@@ -44,7 +44,8 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	String getGlobalKey();
 	String getExternalKey();
 	List<? extends Key> getKey();
-
+	String getKeyScoped();
+	
 	/*********************** Build Methods  ***********************/
 	MetaFields build();
 	
@@ -92,6 +93,8 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		MetaFields.MetaFieldsBuilder addKey(Key key1, int _idx);
 		MetaFields.MetaFieldsBuilder addKey(List<? extends Key> key2);
 		MetaFields.MetaFieldsBuilder setKey(List<? extends Key> key3);
+        MetaFields.MetaFieldsBuilder setKeyScoped(String keyScoped);
+        String getKeyScoped();
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
@@ -170,11 +173,20 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("location")
-		@RuneAttribute("@key:scoped")
+        @Deprecated
 		public List<? extends Key> getKey() {
 			return key;
 		}
 		
+        @Override
+        @RuneAttribute("@key:scoped")
+        public String getKeyScoped() {
+            if (key == null || key.isEmpty()) {
+                return null;
+            }
+            return key.get(0).getKeyValue();
+        }
+        
 		@Override
 		public MetaFields build() {
 			return this;
@@ -297,10 +309,19 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("location")
-		@RuneAttribute("@key:scoped")
+        @Deprecated
 		public List<? extends Key.KeyBuilder> getKey() {
 			return key;
 		}
+		
+        @Override
+        @RuneAttribute("@key:scoped")
+        public String getKeyScoped() {
+            if (key == null || key.isEmpty()) {
+                return null;
+            }
+            return key.get(0).getKeyValue();
+        }
 		
 		public Key.KeyBuilder getOrCreateKey(int _index) {
 		
@@ -377,7 +398,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override 
 		@RosettaAttribute("location")
-		@RuneAttribute("@key:scoped")
+        @Deprecated
 		public MetaFields.MetaFieldsBuilder setKey(List<? extends Key> keys) {
 			if (keys == null)  {
 				this.key = new ArrayList<>();
@@ -389,6 +410,16 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			}
 			return this;
 		}
+		
+        @Override
+        @RuneAttribute("@key:scoped")
+        public MetaFields.MetaFieldsBuilder setKeyScoped(String keyScoped) {
+            this.key = new ArrayList<>();
+            if (keyScoped!=null)  {
+                this.key = Lists.newArrayList(Key.builder().setKeyValue(keyScoped));
+            }
+            return this;
+        }
 		
 		
 		@Override
