@@ -29,6 +29,8 @@ import com.rosetta.util.ListEquals;
 
 /**
  * @version 1
+ * 
+ * Note this class was made static as of DSL version 9.24.0 prior to that it was generated
  */
 @RosettaDataType(value="MetaFields", builder=MetaFields.MetaFieldsBuilderImpl.class, version="0.0.0")
 @RuneDataType(value="MetaFields", builder=MetaFields.MetaFieldsBuilderImpl.class, version="0.0.0")

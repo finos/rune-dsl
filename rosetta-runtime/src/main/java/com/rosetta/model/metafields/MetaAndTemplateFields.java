@@ -29,6 +29,8 @@ import static java.util.Optional.ofNullable;
 
 /**
  * @version 1
+ * 
+ * Note this class was made static as of DSL version 9.24.0 prior to that it was generated
  */
 @RosettaDataType(value="MetaAndTemplateFields", builder=MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl.class, version="0.0.0")
 @RuneDataType(value="MetaAndTemplateFields", builder=MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl.class, version="0.0.0")
