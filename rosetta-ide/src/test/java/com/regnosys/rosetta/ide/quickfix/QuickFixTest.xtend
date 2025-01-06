@@ -29,7 +29,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 		'''
 		testCodeAction[
 			it.model = model
-			assertCodeActions = [
+			it.assertCodeActions = [
 				assertEquals(2, size)
 				
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
@@ -49,39 +49,6 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 						assertEquals("42", newText)
 						assertEquals(new Position(12, 11), range.start)
 						assertEquals(new Position(12, 17), range.end)
-					]
-				]
-			]
-		]
-	}
-	
-	@Test
-	def testQuickFixDeprecatedMap() {
-		val model = '''
-		namespace foo.bar
-		
-		type Foo:
-			a int (1..1)
-		
-		func Bar:
-			inputs: foo Foo (1..1)
-			output: result int (1..1)
-			
-			set result: foo map a
-		'''
-		testCodeAction[
-			it.model = model
-			assertCodeActions = [
-				assertEquals(1, size)
-				
-				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
-				
-				sorted.get(0).getRight => [
-					assertEquals("Replace with `extract`.", title)
-					edit.changes.values.head.head => [
-						assertEquals("extract", newText)
-						assertEquals(new Position(9, 17), range.start)
-						assertEquals(new Position(9, 20), range.end)
 					]
 				]
 			]

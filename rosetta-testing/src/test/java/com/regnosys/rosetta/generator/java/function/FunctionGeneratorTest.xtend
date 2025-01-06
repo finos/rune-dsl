@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.rosetta.simple.SimplePackage
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.validation.RosettaIssueCodes
@@ -36,13 +36,30 @@ import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.metafields.MetaFields
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class FunctionGeneratorTest {
 
 	@Inject extension FunctionGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void reportingRuleSupportsRecursion() {
+		val code = '''
+		reporting rule Fac from int:
+			if item = 1
+			then 1
+			else item * Fac(item - 1)
+		'''.generateCode
+		
+		code.compileToClasses
+ 		val classes = code.compileToClasses
+		
+		val facRule = classes.createFunc("FacRule", rootPackage.reports)
+				
+		assertEquals(120, facRule.invokeFunc(Integer, #[5]))
+	}
 	
 	@Test
 	def void testCanPassMetaFromOutputOfFunctionCall() {
@@ -1194,42 +1211,6 @@ class FunctionGeneratorTest {
         val testOneOf = classes.createFunc("TestOneOf")
         assertTrue(testOneOf.invokeFunc(Boolean, #[b1]))
         assertFalse(testOneOf.invokeFunc(Boolean, #[b2]))
-	}
-	
-	@Test
-	def void onlyExistsOnList() {
-		val code = '''
-		type A:
-		    a1 string (0..1)
-		    a2 string (0..1)
-		    a3 boolean (0..1)
-		
-		func TestOnlyExists:
-			inputs:
-				a A (0..*)
-			output:
-				result boolean (1..1)
-			
-			set result:
-				a -> a1 only exists
-		'''.generateCode
-		
-		val classes = code.compileToClasses
-		
-		val a1 = classes.createInstanceUsingBuilder("A", #{
-			"a1" -> "some value"
-		})
-		val a2 = classes.createInstanceUsingBuilder("A", #{
-			"a1" -> "other value"
-		})
-		val a3 = classes.createInstanceUsingBuilder("A", #{
-			"a1" -> "some value",
-			"a2" -> "other value"
-		})
-        
-        val testOnlyExists = classes.createFunc("TestOnlyExists")
-        assertTrue(testOnlyExists.invokeFunc(Boolean, #[List.of(a1, a2)]))
-        assertFalse(testOnlyExists.invokeFunc(Boolean, #[List.of(a1, a2, a3)]))
 	}
 	
 	@Test
@@ -3119,7 +3100,7 @@ class FunctionGeneratorTest {
 					result string (0..1)
 				
 				condition:
-					[ m1 -> currency , m2 -> currency ] = currency
+					[ m1 -> currency , m2 -> currency ] any = currency
 		'''.generateCode
 		code.compileToClasses
 	}
@@ -3479,7 +3460,7 @@ class FunctionGeneratorTest {
 					top1-> foo disjoint top2 -> bar
 		'''.parseRosetta
 
-		model.assertError(ROSETTA_DISJOINT_EXPRESSION, null, "Incompatible types: cannot use operator 'disjoint' with Foo and string.")
+		model.assertError(ROSETTA_DISJOINT_EXPRESSION, null, "Types `Foo` and `string` are not comparable")
 	}
 
 	@Test
@@ -3499,14 +3480,14 @@ class FunctionGeneratorTest {
 					top1 Top (1..1)
 					top2 Top (1..1)
 				
-				output: result int (1..1)
+				output: result boolean (1..1)
 				
 				set result:
 					top1 -> foo and top2 -> foo
 		'''.parseRosetta
 
-		model.assertError(SimplePackage.Literals.OPERATION, RosettaIssueCodes.TYPE_ERROR,
-			"Left hand side of 'and' expression must be boolean")
+		model.assertError(LOGICAL_OPERATION, null,
+			"Expected type `boolean`, but got `Foo` instead. Cannot use `Foo` with operator `and`")
 	}
 
 	@Test
@@ -3948,7 +3929,7 @@ class FunctionGeneratorTest {
 			
 			type Bar:
 				num number (0..1)
-				zap Zap (1..1)
+				zap Zap (1..2)
 			
 			enum Zap:
 				A B C
@@ -3974,8 +3955,8 @@ class FunctionGeneratorTest {
 				set res: t1->num = t2->nums
 			
 		'''.parseRosetta
-		model.assertWarning(ROSETTA_BINARY_OPERATION, null,
-			"Comparison operator = should specify 'all' or 'any' when comparing a list to a single value")
+		model.assertError(EQUALITY_OPERATION, null,
+			"Operator `=` should specify `all` or `any` when comparing a list to a single value")
 	}
 
 	@Test

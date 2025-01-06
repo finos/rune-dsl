@@ -26,7 +26,7 @@ import javax.inject.Inject
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression
  */
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaExpressionsTest {
 
 	@Inject extension CodeGeneratorTestHelper
@@ -99,7 +99,7 @@ class RosettaExpressionsTest {
 				output: result boolean (1..1)
 				set result:
 					test -> one + test -> two = 42
-		'''.parseRosetta.assertError(ARITHMETIC_OPERATION, null, "Incompatible types: cannot use operator '+' with date and date.")
+		'''.parseRosetta.assertError(ARITHMETIC_OPERATION, null, "Expected type `time`, but got `date` instead. Cannot add `date` to a `date`")
 	}
 	
 	/**

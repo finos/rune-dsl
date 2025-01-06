@@ -3,7 +3,7 @@ package com.regnosys.rosetta.generator.java.object
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.junit.jupiter.api.Test
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
  * gets through, please add to this test so it does not happen again.
  */
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @TestInstance(Lifecycle.PER_CLASS)
 class PojoInheritanceRegressionTest {
 	@Inject extension CodeGeneratorTestHelper

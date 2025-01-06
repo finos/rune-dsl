@@ -11,9 +11,10 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import javax.inject.Inject
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 
 @ExtendWith(InjectionExtension)
-@InjectWith(MyRosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class AttributeValidatorTest implements RosettaIssueCodes {
 
 	@Inject extension ValidationTestHelper
@@ -85,7 +86,7 @@ class AttributeValidatorTest implements RosettaIssueCodes {
 			type Bar extends Foo:
 				override otherAttr number (0..1)
 		'''.parseRosetta
-			.assertError(ATTRIBUTE, null, "Attribute otherAttr does not exist")
+			.assertError(ATTRIBUTE, null, "Attribute otherAttr does not exist in supertype")
 	}
 	
 	@Test

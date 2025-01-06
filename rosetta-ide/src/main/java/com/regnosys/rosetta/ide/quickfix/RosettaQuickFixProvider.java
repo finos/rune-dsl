@@ -21,7 +21,6 @@ import java.util.*;
 import javax.inject.Inject;
 
 import com.regnosys.rosetta.rosetta.expression.*;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
@@ -68,17 +67,6 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
             Range range = rangeUtils.getRange(op, ROSETTA_OPERATION__OPERATOR);
             String original = document.getSubstring(range);
             String edited = "then " + original;
-            TextEdit edit = new TextEdit(range, edited);
-            return List.of(edit);
-        });
-    }
-
-    @QuickFix(RosettaIssueCodes.DEPRECATED_MAP)
-    public void fixDeprecatedMap(DiagnosticResolutionAcceptor acceptor) {
-        acceptor.accept("Replace with `extract`.", (Diagnostic diagnostic, EObject object, Document document) -> {
-            RosettaUnaryOperation op = (RosettaUnaryOperation) object;
-            Range range = rangeUtils.getRange(op, ROSETTA_OPERATION__OPERATOR);
-            String edited = "extract";
             TextEdit edit = new TextEdit(range, edited);
             return List.of(edit);
         });

@@ -48,12 +48,12 @@ import org.xmlet.xsdparser.core.XsdParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.rosetta.util.serialisation.RosettaXMLConfiguration;
 
 @ExtendWith(InjectionExtension.class)
-@InjectWith(RosettaInjectorProvider.class)
+@InjectWith(RosettaTestInjectorProvider.class)
 public class XsdImportTest {
 
 	private static final String NAMESPACE = "test.ns";

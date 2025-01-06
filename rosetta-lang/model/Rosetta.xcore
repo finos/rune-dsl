@@ -110,7 +110,7 @@ class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaC
 	}
 }
 
-class RosettaParameter extends RosettaTyped, RosettaNamed {
+class RosettaParameter extends RosettaTyped, RosettaSymbol {
 	boolean isArray
 }
 

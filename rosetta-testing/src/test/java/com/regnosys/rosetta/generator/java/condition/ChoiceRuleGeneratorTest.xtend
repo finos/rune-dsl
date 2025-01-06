@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import java.util.List
 import java.util.Map
@@ -15,7 +15,7 @@ import javax.inject.Inject
 import com.regnosys.rosetta.RosettaEcoreUtil
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ChoiceRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper

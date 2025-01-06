@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.reports
 
 import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.ModelReportId
 import com.rosetta.model.lib.RosettaModelObject
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*
 import static extension com.regnosys.rosetta.tests.util.CustomConfigTestHelper.*
 import com.rosetta.model.metafields.MetaFields
 
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @ExtendWith(InjectionExtension)
 class TabulatorTest {
 	

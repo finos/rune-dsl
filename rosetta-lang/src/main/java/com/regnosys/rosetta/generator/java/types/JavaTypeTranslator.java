@@ -40,7 +40,6 @@ import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RErrorType;
 import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.ROperation;
@@ -391,10 +390,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	
 	@Override
-	protected JavaType caseErrorType(RErrorType type, Void context) {
-		throw new IllegalArgumentException("Cannot convert an error type to a Java type.");
-	}
-	@Override
 	protected JavaPojoInterface caseDataType(RDataType type, Void context) {
 		return new RJavaPojoInterface(type, typeSystem, this, typeUtil);
 	}
@@ -436,10 +431,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Override
 	protected JavaClass<LocalTime> caseTimeType(RBasicType type, Void context) {
 		return typeUtil.LOCAL_TIME;
-	}
-	@Override
-	protected JavaType caseMissingType(RBasicType type, Void context) {
-		throw new IllegalArgumentException("Cannot convert a missing type to a Java type.");
 	}
 	@Override
 	protected JavaClass<Void> caseNothingType(RBasicType type, Void context) {

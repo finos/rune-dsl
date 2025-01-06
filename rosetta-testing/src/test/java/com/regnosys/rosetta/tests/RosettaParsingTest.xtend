@@ -28,7 +28,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaParsingTest {
 
 	@Inject extension ModelHelper modelHelper
@@ -220,7 +220,7 @@ class RosettaParsingTest {
 	def void testDefaultIncompatibleTypesReturnsError() {
 		"a default 2"
 			.parseExpression(#["a string (1..1)"])
-			.assertError(DEFAULT_OPERATION, null, "Incompatible types: cannot use operator 'default' with string and int.")
+			.assertError(DEFAULT_OPERATION, null, "Types `string` and `int` do not have a common supertype")
 	}
 	
 	@Test
@@ -228,13 +228,6 @@ class RosettaParsingTest {
 		"a default b"
 			.parseExpression(#["a string (1..*)", "b string (1..*)"])
 			.assertNoIssues
-	}
-	
-	@Test
-	def void testDefaultIncompatibleCardinalityReturnsError() {
-		"a default b"
-			.parseExpression(#["a string (1..1)", "b string (1..*)"])
-			.assertError(DEFAULT_OPERATION, null, "Cardinality mismatch - default operator requires both sides to have matching cardinality")	
 	}
 	
 	@Test
@@ -763,7 +756,7 @@ class RosettaParsingTest {
 				condition Foo_Bar:
 					if foo
 					then
-						if bar = BarEnum -> abc
+						if bar any = BarEnum -> abc
 							then foobar exists
 						else foobar is absent
 			enum BarEnum:

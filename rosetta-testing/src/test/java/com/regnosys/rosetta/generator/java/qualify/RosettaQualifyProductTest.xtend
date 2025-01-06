@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.qualify
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.qualify.QualifyResult
@@ -20,7 +20,7 @@ import static org.hamcrest.core.Is.is
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaQualifyProductTest {
 	
 	@Inject extension CodeGeneratorTestHelper

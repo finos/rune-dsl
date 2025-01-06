@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.formatting2
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
@@ -12,7 +12,7 @@ import org.eclipse.xtext.testing.formatter.FormatterTestRequest
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaFormattingTest {
 	@Inject
 	extension FormatterTestHelper
