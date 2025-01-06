@@ -61,6 +61,8 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 					.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
 					.collect(Collectors.toList());
 			for (DiagnosticResolution resolution : resolutions) {
+				
+				
 				result.add(Either.forRight(createFix(resolution, diagnostic)));
 			}
 		}
@@ -71,6 +73,8 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 		CodeAction codeAction = new CodeAction();
 		codeAction.setDiagnostics(Collections.singletonList(diagnostic));
 		codeAction.setTitle(resolution.getLabel());
+		// This causes very slow perf as the fix is applied in memory before needed.
+		// There needs to be another mechanism to do this. 
 		codeAction.setEdit(resolution.apply());
 		codeAction.setKind(CodeActionKind.QuickFix);
 
