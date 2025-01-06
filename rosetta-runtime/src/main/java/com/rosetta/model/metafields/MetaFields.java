@@ -46,7 +46,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	String getGlobalKey();
 	String getExternalKey();
 	List<? extends Key> getKey();
-	String getKeyScoped();
+	String getScopedKey();
 	
 	/*********************** Build Methods  ***********************/
 	MetaFields build();
@@ -95,8 +95,8 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		MetaFields.MetaFieldsBuilder addKey(Key key1, int _idx);
 		MetaFields.MetaFieldsBuilder addKey(List<? extends Key> key2);
 		MetaFields.MetaFieldsBuilder setKey(List<? extends Key> key3);
-        MetaFields.MetaFieldsBuilder setKeyScoped(String keyScoped);
-        String getKeyScoped();
+        MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey);
+        String getScopedKey();
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
@@ -182,7 +182,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
         @Override
         @RuneAttribute("@key:scoped")
-        public String getKeyScoped() {
+        public String getScopedKey() {
             if (key == null || key.isEmpty()) {
                 return null;
             }
@@ -318,7 +318,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
         @Override
         @RuneAttribute("@key:scoped")
-        public String getKeyScoped() {
+        public String getScopedKey() {
             if (key == null || key.isEmpty()) {
                 return null;
             }
@@ -415,10 +415,10 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
         @Override
         @RuneAttribute("@key:scoped")
-        public MetaFields.MetaFieldsBuilder setKeyScoped(String keyScoped) {
+        public MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey) {
             this.key = new ArrayList<>();
-            if (keyScoped!=null)  {
-                this.key = Lists.newArrayList(Key.builder().setKeyValue(keyScoped));
+            if (scopedKey!=null)  {
+                this.key = Lists.newArrayList(Key.builder().setKeyValue(scopedKey));
             }
             return this;
         }
