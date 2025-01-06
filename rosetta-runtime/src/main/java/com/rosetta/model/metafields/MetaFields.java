@@ -96,7 +96,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		MetaFields.MetaFieldsBuilder addKey(List<? extends Key> key2);
 		MetaFields.MetaFieldsBuilder setKey(List<? extends Key> key3);
 		MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey);
-        String getScopedKey();
+		String getScopedKey();
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
