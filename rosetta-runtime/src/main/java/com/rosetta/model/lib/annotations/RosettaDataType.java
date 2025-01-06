@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RosettaDataType {
