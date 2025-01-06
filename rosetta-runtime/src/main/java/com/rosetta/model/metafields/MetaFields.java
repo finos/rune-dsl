@@ -95,7 +95,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		MetaFields.MetaFieldsBuilder addKey(Key key1, int _idx);
 		MetaFields.MetaFieldsBuilder addKey(List<? extends Key> key2);
 		MetaFields.MetaFieldsBuilder setKey(List<? extends Key> key3);
-        MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey);
+		MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey);
         String getScopedKey();
 
 		@Override
