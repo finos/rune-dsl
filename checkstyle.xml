@@ -27,6 +27,6 @@
 	</module>
 	<module name="BeforeExecutionExclusionFileFilter">
 		<!-- Exclude any generated source folders -->
-		<property name="fileNamePattern" value=".*-gen/.*$" />
+		<property name="fileNamePattern" value=".*-gen[\\/].*$" />
 	</module>
 </module>
