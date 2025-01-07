@@ -77,17 +77,21 @@ To build the project, run `mvn clean install`.
 
 ### 2. Setting things up in Eclipse
 #### Install Eclipse IDE for Java and DSL Developers
-Install the latest version of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer).
+Install version `2022-06` of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer). Make sure to install version `2022-06`! Later versions dropped support for Java 8 Xtend files, which we need. You might have to enable "Advanced Mode" in the settings of the Eclipse Installer to install a specific version.
+
+#### Configure Eclipse with the right version of Java
+Xtend files cannot be build with any Java version later than 17. In Eclipse, go to Settings... > Java > Installed JREs and make sure the checked JRE points to a Java version of 17.
 
 #### Install the Checkstyle plugin
 We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).
 
-#### Setup the project
-1. **Open the project in Eclipse**: File > Open Projects from File System..., select the right folder, click Finish.
-2. **Update Maven dependencies**: right click on the `com.regnosys.rosetta.parent` project > Maven > Update project... and finish.
+#### Open the project in Eclipse
+Go to Import... > Existing Maven Project, select the right folder, click Finish.
 
 ##### Troubleshooting
 Make sure you have successfully run `mvn clean install`. (see section 1 of this guide)
+
+If there is any `bin` folders in the root of any submodule, delete it. These folders might be generated if the project is not configured correctly as a Maven project.
 
 If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the following.
 1. Disable auto-building. (Project > Build automatically)

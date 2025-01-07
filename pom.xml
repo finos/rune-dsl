@@ -87,6 +87,7 @@
 		<maven.compiler.release>11</maven.compiler.release>
 		<java.enforced.version>[17,18)</java.enforced.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<checkstyle.suppressions.file>${project.basedir}/checkstyle-suppressions.xml</checkstyle.suppressions.file>
 
 		<!-- Release -->
 		<gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
