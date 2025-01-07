@@ -20,6 +20,8 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
@@ -40,6 +42,7 @@ import com.rosetta.model.lib.process.Processor;
  *         for inside that TradeableProduct
  */
 @RosettaDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class)
+@RuneDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class, version="0.0.0")
 public interface Reference extends RosettaModelObject {
 	Reference build();
 
@@ -103,6 +106,7 @@ public interface Reference extends RosettaModelObject {
 		}
 
 		@RosettaAttribute("value")
+		@RuneAttribute("@ref:scoped")
 		public String getReference() {
 			return reference;
 		}
@@ -175,6 +179,7 @@ public interface Reference extends RosettaModelObject {
 		}
 
 		@RosettaAttribute("value")
+		@RuneAttribute("@ref:scoped")
 		public String getReference() {
 			return reference;
 		}
@@ -185,6 +190,7 @@ public interface Reference extends RosettaModelObject {
 		}
 
 		@RosettaAttribute("value")
+		@RuneAttribute("@ref:scoped")
 		public ReferenceBuilder setReference(String reference) {
 			this.reference = reference;
 			return this;

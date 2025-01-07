@@ -17,6 +17,7 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import java.util.Collection
 import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.RJavaEnum
+import com.regnosys.rosetta.types.RDataType
 
 class ModelObjectBoilerPlate {
 
@@ -41,6 +42,19 @@ class ModelObjectBoilerPlate {
 			return 'address'
 		} else
 			return prop.name
+	}
+	
+	def String javaRuneAnnotation(JavaPojoProperty prop) {
+		if (prop.type == REFERENCE) {
+			return '@ref:scoped'
+		} else
+			return prop.runeName	
+	}
+	
+	def boolean addRuneMetaAnnotation(JavaPojoProperty prop) {
+		return prop.type == REFERENCE || 
+			prop.type==META_FIELDS || 
+			(javaRuneAnnotation(prop) == "@data" && prop.type.isValueRosettaModelObject)
 	}
 	
 	def StringConcatenationClient implementsClause(JavaPojoInterface javaType) {
