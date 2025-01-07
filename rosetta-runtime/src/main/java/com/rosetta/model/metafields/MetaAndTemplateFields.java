@@ -1,19 +1,19 @@
 package com.rosetta.model.metafields;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneAttribute;
+import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.GlobalKeyFields;
-import com.rosetta.model.lib.meta.GlobalKeyFields.GlobalKeyFieldsBuilder;
 import com.rosetta.model.lib.meta.Key;
 import com.rosetta.model.lib.meta.MetaDataFields;
-import com.rosetta.model.lib.meta.MetaDataFields.MetaDataFieldsBuilder;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.meta.TemplateFields;
-import com.rosetta.model.lib.meta.TemplateFields.TemplateFieldsBuilder;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
@@ -29,8 +29,11 @@ import static java.util.Optional.ofNullable;
 
 /**
  * @version 1
+ * 
+ * Note this class was made static as of DSL version 9.24.0 prior to that it was generated
  */
 @RosettaDataType(value="MetaAndTemplateFields", builder=MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl.class, version="0.0.0")
+@RuneDataType(value="MetaAndTemplateFields", builder=MetaAndTemplateFields.MetaAndTemplateFieldsBuilderImpl.class, version="0.0.0")
 public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFields, TemplateFields, MetaDataFields {
 
 	MetaAndTemplateFieldsMeta metaData = new MetaAndTemplateFieldsMeta();
@@ -44,6 +47,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 	String getGlobalKey();
 	String getExternalKey();
 	List<? extends Key> getKey();
+	String getKeyScoped();
 
 	/*********************** Build Methods  ***********************/
 	MetaAndTemplateFields build();
@@ -94,6 +98,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key1, int _idx);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(List<? extends Key> key2);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKey(List<? extends Key> key3);
+		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKeyScoped(String keyScoped);
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
@@ -135,6 +140,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("scheme")
 		public String getScheme() {
 			return scheme;
 		}
@@ -153,6 +159,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public String getAddress() {
 			return address;
 		}
@@ -165,12 +172,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public String getExternalKey() {
 			return externalKey;
 		}
@@ -180,6 +189,15 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		public List<? extends Key> getKey() {
 			return key;
 		}
+		
+        @Override
+        @RuneAttribute("@key:scoped")
+        public String getKeyScoped() {
+            if (key == null || key.isEmpty()) {
+                return null;
+            }
+            return key.get(0).getKeyValue();
+        }
 		
 		@Override
 		public MetaAndTemplateFields build() {
@@ -268,6 +286,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 	
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("scheme")
 		public String getScheme() {
 			return scheme;
 		}
@@ -286,6 +305,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public String getAddress() {
 			return address;
 		}
@@ -298,12 +318,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public String getExternalKey() {
 			return externalKey;
 		}
@@ -326,8 +348,18 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 					});
 		}
 		
+        @Override
+        @RuneAttribute("@key:scoped")
+        public String getKeyScoped() {
+            if (key == null || key.isEmpty()) {
+                return null;
+            }
+            return key.get(0).getKeyValue();
+        }
+		
 		@Override
 		@RosettaAttribute("scheme")
+		@RuneAttribute("scheme")
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setScheme(String scheme) {
 			this.scheme = scheme==null?null:scheme;
 			return this;
@@ -346,6 +378,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		@Override
 		@RosettaAttribute("address")
+		@RuneAttribute("@ref:scoped")
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setAddress(String address) {
 			this.address = address==null?null:address;
 			return this;
@@ -358,12 +391,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		@Override
 		@RosettaAttribute("globalKey")
+		@RuneAttribute("@key")
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey) {
 			this.globalKey = globalKey==null?null:globalKey;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("externalKey")
+		@RuneAttribute("@key:external")
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey) {
 			this.externalKey = externalKey==null?null:externalKey;
 			return this;
@@ -402,6 +437,16 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 			}
 			return this;
 		}
+		
+        @Override
+        @RuneAttribute("@key:scoped")
+        public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKeyScoped(String keyScoped) {
+            this.key = new ArrayList<>();
+            if (keyScoped!=null)  {
+                this.key = Lists.newArrayList(Key.builder().setKeyValue(keyScoped));
+            }
+            return this;
+        }
 		
 		
 		@Override
