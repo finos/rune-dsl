@@ -1,8 +1,8 @@
 package com.regnosys.rosetta.generator.java.types;
 
+import java.util.Collection;
 import java.util.List;
 
-import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
@@ -13,15 +13,14 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 	private final DottedPath namespace;
-	private final JavaTypeUtil javaTypeUtil;
+	private final JavaTypeUtil typeUtil;
 	private final JavaParameterizedType<FieldWithMeta<?>> fieldWithMetaParameterisedType;
-
 	
-	public RJavaFieldWithMeta(JavaReferenceType valueType, DottedPath namespace, JavaTypeUtil javaTypeUtil) {
+	public RJavaFieldWithMeta(JavaReferenceType valueType, DottedPath namespace, JavaTypeUtil typeUtil) {
 		super(valueType);
 		this.namespace = namespace;
-		this.javaTypeUtil = javaTypeUtil;
-		fieldWithMetaParameterisedType = javaTypeUtil.wrap(javaTypeUtil.FIELD_WITH_META, valueType);
+		this.typeUtil = typeUtil;
+		fieldWithMetaParameterisedType = typeUtil.wrap(typeUtil.FIELD_WITH_META, valueType);
 	}
 
 	@Override
@@ -29,10 +28,10 @@ public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 		if (fieldWithMetaParameterisedType.isSubtypeOf(other)) {
 			return true;
 		}
-		if (javaTypeUtil.ROSETTA_MODEL_OBJECT.isSubtypeOf(other)) {
+		if (typeUtil.ROSETTA_MODEL_OBJECT.isSubtypeOf(other)) {
 			return true;
 		}
-		if (javaTypeUtil.GLOBAL_KEY.isSubtypeOf(other)) {
+		if (typeUtil.GLOBAL_KEY.isSubtypeOf(other)) {
 			return true;
 		}
 		return false;
@@ -44,31 +43,8 @@ public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 	}
 
 	@Override
-	public JavaTypeDeclaration<? super RosettaModelObject> getSuperclassDeclaration() {
-		return JavaClass.OBJECT;
-	}
-
-	@Override
 	public List<? extends JavaTypeDeclaration<?>> getInterfaceDeclarations() {
-		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT, javaTypeUtil.FIELD_WITH_META, javaTypeUtil.GLOBAL_KEY);
-	}
-
-	@Override
-	public boolean extendsDeclaration(JavaTypeDeclaration<?> other) {
-		if (other instanceof JavaClass) {
-			return this.isSubtypeOf((JavaClass<?>)other);
-		}
-		return false;
-	}
-
-	@Override
-	public boolean isFinal() {
-		return false;
-	}
-
-	@Override
-	public Class<? extends RosettaModelObject> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
-		return Class.forName(getCanonicalName().toString(), true, classLoader).asSubclass(RosettaModelObject.class);
+		return List.of(typeUtil.ROSETTA_MODEL_OBJECT, typeUtil.FIELD_WITH_META, typeUtil.GLOBAL_KEY);
 	}
 
 	@Override
@@ -76,10 +52,16 @@ public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 		return namespace;
 	}
 
-
 	@Override
 	public List<JavaClass<?>> getInterfaces() {
-		return List.of(javaTypeUtil.ROSETTA_MODEL_OBJECT,fieldWithMetaParameterisedType, javaTypeUtil.GLOBAL_KEY);
+		return List.of(typeUtil.ROSETTA_MODEL_OBJECT, fieldWithMetaParameterisedType, typeUtil.GLOBAL_KEY);
+	}
+
+	@Override
+	public Collection<JavaPojoProperty> getOwnProperties() {
+		return List.of(
+				new JavaPojoProperty("value", "@data", "value", valueType, null, null, false),
+				new JavaPojoProperty("meta", "meta", "meta", typeUtil.META_FIELDS, null, null, false)
+			);
 	}	
-	
 }

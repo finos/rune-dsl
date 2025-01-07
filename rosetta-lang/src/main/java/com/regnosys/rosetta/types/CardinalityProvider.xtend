@@ -72,6 +72,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.RosettaParameter
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 	static Logger LOGGER = LoggerFactory.getLogger(CardinalityProvider)
@@ -99,6 +100,9 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 		switch symbol {
 			RosettaFeature: {
 				isFeatureMulti(symbol as RosettaFeature, breakOnClosureParameter)
+			}
+			RosettaParameter: {
+				false
 			}
 			ClosureParameter: {
 				isClosureParameterMulti(symbol.function)

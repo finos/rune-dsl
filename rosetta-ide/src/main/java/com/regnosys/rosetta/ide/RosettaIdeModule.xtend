@@ -34,6 +34,9 @@ import org.eclipse.xtext.ide.server.hover.IHoverService
 import com.regnosys.rosetta.ide.hover.RosettaHoverService
 import com.regnosys.rosetta.ide.quickfix.ICodeActionResolutionService
 import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixResolutionService
+import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider
+import com.regnosys.rosetta.ide.contentassist.RosettaContentProposalProvider
+
 
 /**
  * Use this class to register ide components.
@@ -106,5 +109,9 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends IHoverService> bindIHoverService() {
 		RosettaHoverService
+	}
+	
+	def Class<? extends IdeContentProposalProvider> bindIdeContentProposalProvider() {
+		RosettaContentProposalProvider
 	}
 }

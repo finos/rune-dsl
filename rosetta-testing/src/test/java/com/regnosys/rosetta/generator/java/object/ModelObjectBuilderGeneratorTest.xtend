@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.Lists
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import java.util.List
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ModelObjectBuilderGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
@@ -111,8 +111,8 @@ class ModelObjectBuilderGeneratorTest {
 		assertThat(testClassCode, containsString('One.OneBuilder singleOne;'))
 
 		// Builder setters handles adding builder types
-		assertThat(testClassCode, containsString('public Test.TestBuilder setSingleOne(One singleOne) {'))
-		assertThat(testClassCode, containsString('public Test.TestBuilder addMultipleOnes(One multipleOnes) {'))
+		assertThat(testClassCode, containsString('public Test.TestBuilder setSingleOne(One _singleOne) {'))
+		assertThat(testClassCode, containsString('public Test.TestBuilder addMultipleOnes(One _multipleOnes) {'))
 
 		code.compileToClasses
 	}

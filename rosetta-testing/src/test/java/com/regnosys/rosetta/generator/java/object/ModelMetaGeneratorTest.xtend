@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ModelMetaGeneratorTest {
 	
 	@Inject extension ModelHelper
@@ -133,9 +133,9 @@ class ModelMetaGeneratorTest {
 			
 				private List<ComparisonResult> getComparisonResults(Foo o) {
 					return Lists.<ComparisonResult>newArrayList(
-							checkCardinality("a", (List<String>) o.getA() == null ? 0 : ((List<String>) o.getA()).size(), 1, 2), 
+							checkCardinality("a", (List<String>) o.getA() == null ? 0 : o.getA().size(), 1, 2), 
 							checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1), 
-							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : ((List<Integer>) o.getC()).size(), 1, 0), 
+							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0), 
 							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
 						);
 				}

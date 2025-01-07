@@ -68,7 +68,10 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 
 class FunctionGenerator {
 
@@ -343,7 +346,7 @@ class FunctionGenerator {
 		val evaluateScope = classScope.methodScope("evaluate")
 		function.inputs.forEach[evaluateScope.createIdentifier(it)]
 		'''
-		«javadoc(function, version)»
+		«javadoc(function.definition, function.references, version)»
 		public class «className» implements «RosettaFunction» {
 			«FOR dep : dependencies»
 				@«Inject» protected «dep» «dep.simpleName.toFirstLower»;
@@ -437,16 +440,32 @@ class FunctionGenerator {
 			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
-					JavaExpression.from(
-						'''
-							«op.assignTarget(function, outs, scope)»
-								«FOR seg : op.pathTail.indexed»
-									«IF seg.key < op.pathTail.size - 1»
-									.getOrCreate«seg.value.name.toFirstUpper»(«IF seg.value.multi»0«ENDIF»)«IF seg.value.RMetaAnnotatedType.hasMeta».getOrCreateValue()«ENDIF»
-									«ELSE»
-									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.value.name.toFirstUpper»«IF seg.value.RMetaAnnotatedType.hasMeta && !op.assignAsKey»Value«ENDIF»(«it»)«ENDIF»«ENDFOR»''',
-						JavaPrimitiveType.VOID
-					)
+					var expr = op.assignTarget(function, outs, scope)
+					for (seg : op.pathTail.indexed) {
+						val oldExpr = expr
+						val prop = (expr.expressionType as JavaPojoInterface).findProperty(seg.value.name)
+						val itemType = prop.type.itemType
+						if (seg.key < op.pathTail.size - 1) {
+							expr = JavaExpression.from(
+								'''
+								«oldExpr»
+									.«prop.getOrCreateName»(«IF prop.type.isList»0«ENDIF»)''',
+								itemType
+							)
+							if (itemType instanceof RJavaWithMetaValue) {
+								val metaExpr = expr
+								expr = JavaExpression.from('''«metaExpr».getOrCreateValue()''', itemType.valueType)
+							}
+						} else {
+							expr = JavaExpression.from(
+								'''
+								«oldExpr»
+									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«prop.name.toFirstUpper»«IF itemType instanceof RJavaWithMetaValue && !op.assignAsKey»Value«ENDIF»(«it»)''',
+								JavaPrimitiveType.VOID
+							)
+						}
+					}
+					expr
 				].completeAsExpressionStatement
 		}
 	}
@@ -477,7 +496,7 @@ class FunctionGenerator {
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withEmptyMeta.toJavaReferenceType, scope)
+				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withNoMeta.toJavaReferenceType, scope)
 					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -502,59 +521,60 @@ class FunctionGenerator {
 		}
 	}
 
-	private def StringConcatenationClient assignTarget(ROperation operation, RFunction function, Map<RShortcut, Boolean> outs,
+	private def JavaExpression assignTarget(ROperation operation, RFunction function, Map<RShortcut, Boolean> outs,
 		JavaScope scope) {
 		val root = operation.pathHead
 		switch (root) {
-			RAttribute: '''«scope.getIdentifierOrThrow(root)»'''
+			RAttribute: new JavaVariable(scope.getIdentifierOrThrow(root), root.RMetaAnnotatedType.toJavaReferenceType)
 			RShortcut:
 				unfoldLHSShortcut(root, function, scope)
 		}
 	}
 
-	private def StringConcatenationClient unfoldLHSShortcut(RShortcut shortcut, RFunction function, JavaScope scope) {
+	private def JavaExpression unfoldLHSShortcut(RShortcut shortcut, RFunction function, JavaScope scope) {
 		val e = shortcut.expression
 		if (e instanceof RosettaSymbolReference) {
 			if (e.symbol instanceof RosettaCallableWithArgs) {
 				// assign-output for an alias
-				return '''«scope.getIdentifierOrThrow(shortcut)»(«expressionGenerator.aliasCallArgs(shortcut, function, scope)»)'''
+				return JavaExpression.from('''«scope.getIdentifierOrThrow(shortcut)»(«expressionGenerator.aliasCallArgs(shortcut, function, scope)»)''', shortcut.shortcutExpressionJavaType)
 			}
 		}
-		return '''«lhsExpand(e, scope)»'''
+		return lhsExpand(e, scope)
 	}
 
-	private def dispatch StringConcatenationClient lhsExpand(RosettaExpression f, JavaScope scope) {
+	private def dispatch JavaExpression lhsExpand(RosettaExpression f, JavaScope scope) {
 		throw new IllegalStateException("No implementation for lhsExpand for " + f.class)
 	}
 
-	private def dispatch StringConcatenationClient lhsExpand(RosettaFeatureCall f,
-		JavaScope scope) '''«lhsExpand(f.receiver, scope)».«f.feature.lhsFeature»'''
+	private def dispatch JavaExpression lhsExpand(RosettaFeatureCall f,
+		JavaScope scope) { lhsExpand(f.receiver, scope).lhsFeature(f.feature) }
 
-	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbolReference f,
-		JavaScope scope) '''«f.symbol.lhsExpand(scope)»'''
+	private def dispatch JavaExpression lhsExpand(RosettaSymbolReference f,
+		JavaScope scope) { f.symbol.lhsExpand(scope) }
 
-	private def dispatch StringConcatenationClient lhsExpand(ShortcutDeclaration f,
-		JavaScope scope) '''«f.expression.lhsExpand(scope)»'''
+	private def dispatch JavaExpression lhsExpand(ShortcutDeclaration f,
+		JavaScope scope) { f.expression.lhsExpand(scope) }
 
-	private def dispatch StringConcatenationClient lhsExpand(RosettaUnaryOperation f,
-		JavaScope scope) '''«f.argument.lhsExpand(scope)»'''
+	private def dispatch JavaExpression lhsExpand(RosettaUnaryOperation f,
+		JavaScope scope) { f.argument.lhsExpand(scope) }
 
-	private def dispatch StringConcatenationClient lhsFeature(RosettaFeature f) {
+	private def dispatch JavaExpression lhsFeature(JavaExpression receiver, RosettaFeature f) {
 		throw new IllegalStateException("No implementation for lhsFeature for " + f.class)
 	}
 
-	private def dispatch StringConcatenationClient lhsFeature(Attribute f) {
-		val rAttribute = rTypeBuilderFactory.buildRAttribute(f)
-		if (rAttribute.multi) '''getOrCreate«rAttribute.name.toFirstUpper»(0)''' else '''getOrCreate«rAttribute.name.toFirstUpper»()'''
+	private def dispatch JavaExpression lhsFeature(JavaExpression receiver, Attribute f) {
+		val t = receiver.expressionType as JavaPojoInterface
+		val prop = t.findProperty(f.name)
+		JavaExpression.from('''«receiver».«prop.getOrCreateName»(«IF prop.type.isList»0«ENDIF»)''', prop.type.itemType)
 	}
 
-	private def dispatch StringConcatenationClient lhsExpand(RosettaSymbol c, JavaScope scope) {
+	private def dispatch JavaExpression lhsExpand(RosettaSymbol c, JavaScope scope) {
 		throw new IllegalStateException("No implementation for lhsExpand for " + c.class)
 	}
 
-	private def dispatch StringConcatenationClient lhsExpand(Attribute c, JavaScope scope) {
+	private def dispatch JavaExpression lhsExpand(Attribute c, JavaScope scope) {
 		val rAttribute = rTypeBuilderFactory.buildRAttribute(c)
-		'''«scope.getIdentifierOrThrow(rAttribute)»'''
+		new JavaVariable(scope.getIdentifierOrThrow(rAttribute), rAttribute.RMetaAnnotatedType.toJavaReferenceType)
 	}
 
 	private def StringConcatenationClient contributeCondition(Condition condition,

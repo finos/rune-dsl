@@ -12,7 +12,7 @@ import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
-import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 
 public class RosettaCustomConfigInjectorProvider implements IInjectorProvider, IRegistryConfigurator {
 	protected GlobalStateMemento stateBeforeInjectorCreation;
@@ -47,7 +47,7 @@ public class RosettaCustomConfigInjectorProvider implements IInjectorProvider, I
 		return new RosettaRuntimeModule() {
 			@Override
 			public ClassLoader bindClassLoaderToInstance() {
-				return RosettaInjectorProvider.class
+				return RosettaTestInjectorProvider.class
 						.getClassLoader();
 			}
 			

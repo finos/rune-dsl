@@ -63,10 +63,6 @@
             <groupId>org.eclipse.xtext</groupId>
             <artifactId>org.eclipse.xtext.generator</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.xsemantics</groupId>
-            <artifactId>org.eclipse.xsemantics.dsl</artifactId>
-        </dependency>
         <dependency> <!-- See issue https://github.com/eclipse/mwe/issues/255 -->
 	        <groupId>com.google.inject</groupId>
 	        <artifactId>guice</artifactId>

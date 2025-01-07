@@ -48,14 +48,12 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.QualifiedName
-import org.eclipse.xtext.resource.EObjectDescription
 import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.FilteringScope
 import org.eclipse.xtext.scoping.impl.ImportNormalizer
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
-import org.eclipse.xtext.scoping.impl.SimpleScope
 import org.eclipse.xtext.util.Strings
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -64,8 +62,8 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
-import com.regnosys.rosetta.rosetta.RosettaFeature
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.rosetta.simple.Attribute
 
 /**
  * This class contains custom scoping description.
@@ -112,13 +110,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case CHOICE_OPERATION__ATTRIBUTES: {
 					if (context instanceof ChoiceOperation) {
-						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument).RType.withEmptyMeta)
+						return createExtendedFeatureScope(context.argument, typeProvider.getRMetaAnnotatedType(context.argument).RType.withNoMeta)
 					}
 					return IScope.NULLSCOPE
 				}
 				case ROSETTA_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
 					if (context instanceof RosettaAttributeReference) {
-						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).withEmptyMeta)
+						return createExtendedFeatureScope(context.receiver, typeProvider.getRTypeOfAttributeReference(context.receiver).withNoMeta)
 					}
 					return IScope.NULLSCOPE
 				}
@@ -217,7 +215,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					if (context instanceof RosettaExternalRegularAttribute) {
 						val classRef = (context.eContainer as RosettaExternalClass).typeRef
 						if (classRef instanceof Data)
-							return Scopes.scopeFor(classRef.buildRDataType.allNonOverridenAttributes.map[EObject])
+							return Scopes.scopeFor(classRef.buildRDataType.allAttributes.map[EObject].filter(Attribute))
 					}
 					return IScope.NULLSCOPE
 				}			
@@ -255,10 +253,8 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						}
 					}
 					return IScope.NULLSCOPE
-
 				}
 			}
-			// LOGGER.warn('''No scope defined for «context.class.simpleName» referencing «reference.name».''')
 			return defaultScope(context, reference)
 		}
 		catch (Exception e) {
@@ -378,15 +374,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 			}
 		}
 		
-		val List<? extends RosettaFeature> foo = metaReceiverType.allFeatures(receiver).toList
-		
-		val List<IEObjectDescription> allPosibilities = newArrayList
-		allPosibilities.addAll(
-			foo
-				.map[new EObjectDescription(QualifiedName.create(name), it, null)]
-		)
-
-		return new SimpleScope(allPosibilities)
+		return Scopes.scopeFor(metaReceiverType.allFeatures(receiver))
 	}
 
 

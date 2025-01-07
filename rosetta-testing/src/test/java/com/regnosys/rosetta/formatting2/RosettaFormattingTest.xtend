@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.formatting2
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
@@ -12,7 +12,7 @@ import org.eclipse.xtext.testing.formatter.FormatterTestRequest
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaFormattingTest {
 	@Inject
 	extension FormatterTestHelper
@@ -22,7 +22,7 @@ class RosettaFormattingTest {
 		req.toBeFormatted = unformated
 		
 		// extra check to make sure we didn't miss any hidden region in our formatter:
-		req.allowUnformattedWhitespace = false 
+		req.allowUnformattedWhitespace = false
 		
 		// see issue https://github.com/eclipse/xtext-core/issues/2058
 		req.request.allowIdentityEdits = true

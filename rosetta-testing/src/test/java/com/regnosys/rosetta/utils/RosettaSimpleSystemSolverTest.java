@@ -37,14 +37,14 @@ import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver.SolutionSet;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
 import com.regnosys.rosetta.tests.util.RosettaValueHelper;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 
 @ExtendWith(InjectionExtension.class)
-@InjectWith(RosettaInjectorProvider.class)
+@InjectWith(RosettaTestInjectorProvider.class)
 public class RosettaSimpleSystemSolverTest {
 	@Inject
 	private RosettaSimpleSystemSolver solver;

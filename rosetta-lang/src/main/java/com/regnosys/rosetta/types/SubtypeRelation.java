@@ -105,9 +105,9 @@ public class SubtypeRelation {
 		RType t1RType = t1.getRType();
 		RType t2RType = t2.getRType();
 		if (t1RType.equals(t2RType)) {
-			return new RMetaAnnotatedType(t1RType, intersectMeta(t1, t2));
+			return RMetaAnnotatedType.withMeta(t1RType, intersectMeta(t1, t2));
 		}
-		return new RMetaAnnotatedType(join(t1RType, t2RType), List.of());
+		return RMetaAnnotatedType.withNoMeta(join(t1RType, t2RType));
 	}
 	
 	public RType join(RType t1, RType t2) {

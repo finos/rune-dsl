@@ -4,13 +4,22 @@
 package com.regnosys.rosetta.validation
 
 import org.eclipse.xtext.validation.ComposedChecks
+import com.regnosys.rosetta.validation.expression.ExpressionValidator
 
 /**
  * This class contains custom validation rules. 
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-@ComposedChecks(validators = #[RosettaSimpleValidator, StandaloneRosettaTypingValidator, EnumValidator, ChoiceValidator])
+@ComposedChecks(validators = #[
+	RosettaSimpleValidator,
+	ReportValidator,
+	TypeValidator,
+	AttributeValidator,
+	EnumValidator,
+	ChoiceValidator,
+	ExpressionValidator
+])
 class RosettaValidator extends AbstractRosettaValidator {
 
 	

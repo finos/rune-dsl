@@ -16,26 +16,20 @@
 
 package com.regnosys.rosetta.validation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
-import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
@@ -43,28 +37,17 @@ import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RListType;
 import com.regnosys.rosetta.types.RObjectFactory;
-import com.regnosys.rosetta.types.TypeFactory;
 import com.regnosys.rosetta.types.TypeSystem;
-import com.regnosys.rosetta.types.TypeValidationUtil;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.typing.validation.RosettaTypingCheckingValidator;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
-public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValidator {
+public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private TypeSystem ts;
-	
-	@Inject
-	private TypeFactory tf;
-	
-	@Inject
-	private TypeValidationUtil tu;
 	
 	@Inject
 	private RBuiltinTypeService builtins;
@@ -74,50 +57,6 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 	
 	@Inject
 	private RObjectFactory objectFactory;
-	
-	@Override
-	protected List<EPackage> getEPackages() {
-		List<EPackage> result = new ArrayList<EPackage>();
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaExpression"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaTranslate"));
-		return result;
-	}
-	
-	@Override
-	public void register(EValidatorRegistrar registrar) {
-	}
-	
-	/**
-	 * Xsemantics does not allow raising warnings. See https://github.com/eclipse/xsemantics/issues/149.
-	 */
-	@Check
-	public void checkOnlyElement(RosettaOnlyElement e) {
-		RListType t = ts.inferType(e.getArgument());
-		if (t != null) {
-			RosettaCardinality minimalConstraint = tf.createConstraint(1, 2);
-			if (!minimalConstraint.isSubconstraintOf(t.getConstraint())) {
-				warning(tu.notLooserConstraintMessage(minimalConstraint, t), e, ROSETTA_UNARY_OPERATION__ARGUMENT);
-			}
-		}
-	}
-	
-	/**
-	 * Xsemantics does not allow raising errors on a specific index of a multi-valued feature.
-	 * See https://github.com/eclipse/xsemantics/issues/64.
-	 */
-	@Check
-	public void checkChoiceOperationHasNoDuplicateAttributes(ChoiceOperation e) {
-		for (var i = 1; i < e.getAttributes().size(); i++) {
-			Attribute attr = e.getAttributes().get(i);
-			for (var j = 0; j < i; j++) {
-				if (attr.equals(e.getAttributes().get(j))) {
-					error("Duplicate attribute.", e, CHOICE_OPERATION__ATTRIBUTES, i);
-				}
-			}
-		}
-	}
 	
 	@Check
 	public void checkReport(RosettaReport report) {
@@ -159,19 +98,18 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 		} else {
 			current = builtins.ANY;
 		}
-		for (Attribute attr: data.getAttributes()) {
-			RosettaRuleReference ref = attr.getRuleReference();
-			if (ref != null) {
-				RosettaRule rule = ref.getReportingRule();
+		for (RAttribute attr: rData.getOwnAttributes()) {
+			RosettaRule rule = attr.getRuleReference();
+			if (rule != null) {
 				RType inputType = ts.typeCallToRType(rule.getInput());
 				RType newCurrent = ts.meet(current, inputType);
 				if (newCurrent.equals(builtins.NOTHING)) {
-					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", ref, ROSETTA_RULE_REFERENCE__REPORTING_RULE);
+					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr.getEObject().getRuleReference(), ROSETTA_RULE_REFERENCE__REPORTING_RULE);
 				} else {
 					current = newCurrent;
 				}
 			} else {
-				RType attrType = ts.stripFromTypeAliases(ts.typeCallToRType(attr.getTypeCall()));
+				RType attrType = ts.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
 				if (attrType instanceof RChoiceType) {
 					attrType = ((RChoiceType) attrType).asRDataType();
 				}
@@ -181,7 +119,7 @@ public class StandaloneRosettaTypingValidator extends RosettaTypingCheckingValid
 					if (!inputType.equals(builtins.NOTHING)) {
 						RType newCurrent = ts.meet(current, inputType);
 						if (newCurrent.equals(builtins.NOTHING)) {
-							error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr, null);
+							error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr.getEObject(), null);
 						} else {
 							current = newCurrent;
 						}
