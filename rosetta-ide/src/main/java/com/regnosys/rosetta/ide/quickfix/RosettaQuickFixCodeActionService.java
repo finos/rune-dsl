@@ -46,38 +46,47 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 
 	@Override
 	public List<Either<Command, CodeAction>> getCodeActions(Options options) {
-		boolean handleQuickfixes = options.getCodeActionParams().getContext().getOnly() == null
-				|| options.getCodeActionParams().getContext().getOnly().isEmpty()
-				|| options.getCodeActionParams().getContext().getOnly().contains(CodeActionKind.QuickFix);
+		CodeActionParams codeActionParams = options.getCodeActionParams();
+		boolean handleQuickfixes = codeActionParams.getContext().getOnly() == null
+				|| codeActionParams.getContext().getOnly().isEmpty()
+				|| codeActionParams.getContext().getOnly().contains(CodeActionKind.QuickFix);
 
 		if (!handleQuickfixes) {
 			return Collections.emptyList();
 		}
 
 		List<Either<Command, CodeAction>> result = new ArrayList<>();
-		for (Diagnostic diagnostic : options.getCodeActionParams().getContext().getDiagnostics()) {
+		for (Diagnostic diagnostic : codeActionParams.getContext().getDiagnostics()) {
 			Options diagnosticOptions = createOptionsForSingleDiagnostic(options, diagnostic);
+			
 			List<DiagnosticResolution> resolutions = quickfixes.getResolutions(diagnosticOptions, diagnostic).stream()
 					.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
 					.collect(Collectors.toList());
 			for (DiagnosticResolution resolution : resolutions) {
-				
-				
-				result.add(Either.forRight(createFix(resolution, diagnostic)));
+//				result.add(Either.forRight(createFix(resolution, diagnostic)));
+				result.add(Either.forRight(createUnresolvedFix(resolution.getLabel(), codeActionParams, diagnostic)));
 			}
 		}
 		return result;
 	}
 
+	private CodeAction createUnresolvedFix(String label, CodeActionParams codeActionParams, Diagnostic diagnostic) {
+		CodeAction codeAction = new CodeAction();
+		codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+		codeAction.setTitle(label);
+		codeAction.setData(codeActionParams);
+		codeAction.setKind(CodeActionKind.QuickFix);
+		return codeAction;
+	}
+	
 	private CodeAction createFix(DiagnosticResolution resolution, Diagnostic diagnostic) {
 		CodeAction codeAction = new CodeAction();
 		codeAction.setDiagnostics(Collections.singletonList(diagnostic));
 		codeAction.setTitle(resolution.getLabel());
 		// This causes very slow perf as the fix is applied in memory before needed.
-		// There needs to be another mechanism to do this. 
+		// There needs to be another mechanism to do this.
 		codeAction.setEdit(resolution.apply());
 		codeAction.setKind(CodeActionKind.QuickFix);
-
 		return codeAction;
 	}
 	
@@ -98,5 +107,5 @@ public class RosettaQuickFixCodeActionService implements ICodeActionService2 {
 		
 		return options;
 	}
-
+	
 }

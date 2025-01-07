@@ -12,6 +12,7 @@ import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +24,20 @@ public class ConstructorQuickFix {
     private RosettaTypeProvider types;
     @Inject
     private RosettaEcoreUtil extensions;
-    
+
+    public void modifyConstructorWithAllAttributes(RosettaConstructorExpression constructor) {
+        RosettaFeatureGroup rosettaFeatureGroup = groupConstructorFeatures(constructor);
+        List<RosettaFeature> allAttributes = rosettaFeatureGroup.allAttributes();
+
+        allAttributes.forEach(attr -> {
+            ConstructorKeyValuePair constructorKeyValuePair = ExpressionFactory.eINSTANCE.createConstructorKeyValuePair();
+            constructorKeyValuePair.setKey(attr);
+            constructorKeyValuePair.setValue(ExpressionFactory.eINSTANCE.createListLiteral());
+            constructor.getValues().add(constructorKeyValuePair);
+        });
+    }
+
+
     public void modifyConstructorWithMandatoryAttributes(RosettaConstructorExpression constructor) {
         RosettaFeatureGroup rosettaFeatureGroup = groupConstructorFeatures(constructor);
         List<RosettaFeature> requiredAbsentAttributes = rosettaFeatureGroup.requiredAbsentAttributes();
@@ -70,6 +84,10 @@ public class ConstructorQuickFix {
         private RosettaFeatureGroup(List<RosettaFeature> populated, List<RosettaFeature> all) {
             this.populated = populated;
             this.all = all;
+        }
+
+        private List<RosettaFeature> allAttributes() {
+            return all.stream().filter(x -> !populated.contains(x)).collect(Collectors.toList());
         }
 
         private List<RosettaFeature> requiredAbsentAttributes() {
