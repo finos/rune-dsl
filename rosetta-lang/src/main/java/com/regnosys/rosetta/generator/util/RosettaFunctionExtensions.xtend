@@ -168,4 +168,8 @@ class RosettaFunctionExtensions {
 	def getCreationAnnotations(Annotated element) {
 		element.annotations.filter["creation" == it.annotation.name].toList
 	}
+	
+	def getTransformAnnotations(Annotated element) {
+		element.annotations.filter["ingest" == it.annotation.name || "enrich" == it.annotation.name || "projection" == it.annotation.name].toList
+	}
 }

@@ -28,6 +28,30 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testTransformAnnotationShouldBeUsedOnFunction() {
+		val model1 = '''
+			type Foo:
+				[ingest]
+		'''.parseRosetta
+		
+		model1.assertError(ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.")
+
+		val model2 = '''
+			type Foo:
+				[enrich]
+		'''.parseRosetta
+		
+		model2.assertError(ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.")
+		
+		val model3 = '''
+			type Foo:
+				[projection]
+		'''.parseRosetta
+		
+		model3.assertError(ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.")
+	}
+	
+	@Test
 	def void testConditionShouldBeSingleCardinality() {
 		val model = '''
 			type Foo:

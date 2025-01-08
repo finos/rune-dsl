@@ -1004,6 +1004,19 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				ANNOTATION_QUALIFIER__QUAL_PATH)
 		}
 	}
+	
+	@Check
+	def checkTransformAnnotations(Annotated ele) {
+		val annotations = getTransformAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		
+		if (!(ele instanceof Function)) {
+			error('''Transformation annotations only allowed on a function.''', ROSETTA_NAMED__NAME)
+			return
+		}
+	}
 
 	@Check
 	def checkCreationAnnotation(Annotated ele) {
