@@ -1016,6 +1016,25 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			error('''Transformation annotations only allowed on a function.''', ROSETTA_NAMED__NAME)
 			return
 		}
+		
+		if (annotations.size > 1) {
+			error('''Only one transform annotation allowed.''', ROSETTA_NAMED__NAME)
+			return
+		}
+		
+		val annotationRef = annotations.get(0)
+		
+		if (annotationRef.annotation.name == "ingest") {
+			if (annotationRef.attribute == null) {
+				error('''The `ingest` annotation must have a source format such as JSON or XML''', annotationRef, ANNOTATION_REF__QUALIFIERS)
+			}
+		}
+		
+		if (annotationRef.annotation.name == "projection") {
+			if (annotationRef.attribute == null) {
+				error('''The `projection` annotation must have a target format such as JSON or XML''', annotationRef, ANNOTATION_REF__QUALIFIERS)
+			}
+		}
 	}
 
 	@Check
