@@ -1017,7 +1017,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 		
 		if (annotations.size > 1) {
-			error('''Only one transform annotation allowed.''', ROSETTA_NAMED__NAME)
+			annotations.stream.skip(1).forEach[error('''Only one transform annotation allowed.''', it, null)]
 		}
 		
 		val annotationRef = annotations.get(0)

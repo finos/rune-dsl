@@ -76,7 +76,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				[enrich]
 		'''.parseRosetta
 		
-		model2.assertError(ROSETTA_NAMED, null, "Only one transform annotation allowed.")
+		model2.assertError(ANNOTATION_REF, null, "Only one transform annotation allowed.")		
 	}
 	
 	@Test
