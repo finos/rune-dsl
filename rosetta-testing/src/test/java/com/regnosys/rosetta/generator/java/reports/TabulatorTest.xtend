@@ -47,15 +47,88 @@ class TabulatorTest {
 	with type Report
 	
 	eligibility rule IsReportableInput from ReportableInput:
-		filter True
+		filter True	
+	'''
+	
+	// Header with the projection annotation defined outside of the annotations.rosetta file
+	final StringConcatenationClient LEGACY_PROJECTION_HEADER = '''
+	«HEADER»
 	
 	annotation projection:
 	'''
 	
+	
+	@Test
+	def void generateTabulatorForNonLegacyProjectionAnnotation() {
+		val model = '''
+			«HEADER»
+			
+			func Projection:
+				[projection JSON]
+				inputs:
+					input ReportableInput (1..1)
+				output:
+					result Report (1..1)
+				
+				set result:
+					Report {
+						subreportList:
+							input -> values
+								extract v [
+									input
+										extract titles
+										then extract item + v to-string
+										then extract Subsubreport { subsubbasic: item }
+										then Subreport { subsubreportList: item }
+								]
+					}
+			
+			type ReportableInput:
+				titles string (0..*)
+				values int (0..*)
+			
+			type Report:
+				subreportList Subreport (0..*)
+			
+			type Subreport:
+				subsubreportList Subsubreport (0..*)
+			
+			type Subsubreport:
+				subsubbasic string (1..1)
+		'''
+		val code = model.generateCode
+
+		val tabulatorClass = new GeneratedJavaClass(DottedPath.splitOnDots("com.rosetta.test.model.projections"), "ReportProjectionTypeTabulator", Tabulator)
+		
+		val classes = code.compileToClasses
+		val tabulator = classes.<Tabulator<RosettaModelObject>>createInstance(tabulatorClass)
+		
+		val subsubreport1 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "1"})
+		val subsubreport2 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "2"})
+		val subsubreport3 = classes.createInstanceUsingBuilder("Subsubreport", #{"subsubbasic" -> "3"})
+		val subreport1 = classes.createInstanceUsingBuilder("Subreport", #{"subsubreportList" -> #[subsubreport1, subsubreport2]})
+		val subreport2 = classes.createInstanceUsingBuilder("Subreport", #{})
+		val subreport3 = classes.createInstanceUsingBuilder("Subreport", #{"subsubreportList" -> #[subsubreport3]})
+		val report = classes.createInstanceUsingBuilder("Report", #{"subreportList" -> #[subreport1, subreport2, subreport3]})
+		val flatReport = tabulator.tabulate(report)
+		val expectedValues =
+		'''
+		subreportList:
+			subsubreportList:
+				subsubbasic: 1
+				subsubbasic: 2
+			subsubreportList: <empty>
+			subsubreportList:
+				subsubbasic: 3
+		'''
+		assertFieldValuesEqual(expectedValues, flatReport)
+	}	
+
+	
 	@Test
 	def void generateTabulatorForReportWithoutLists() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			type ReportableInput:
 				title string (1..1)
@@ -224,7 +297,7 @@ class TabulatorTest {
 	@Test
 	def void generateTabulatorForReportWithLists() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			type ReportableInput:
 				title string (1..1)
@@ -358,7 +431,7 @@ class TabulatorTest {
 	@Test
 	def void generateTabulatorForReportWithDeeplyNestedLists() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			type ReportableInput:
 				titles string (0..*)
@@ -429,7 +502,7 @@ class TabulatorTest {
 	@Test
 	def void generateTabulatorForExtendedReport() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			type ReportableInput:
 				title string (1..1)
@@ -653,7 +726,7 @@ class TabulatorTest {
 	@Test
 	def void generateTabulatorForNonReportableType() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			type ReportableInput:
 				title string (1..1)
@@ -685,7 +758,7 @@ class TabulatorTest {
 	@Test
 	def void generateTabulatorForProjectionWithDeeplyNestedLists() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			func Projection:
 				[projection]
@@ -751,7 +824,7 @@ class TabulatorTest {
 	@Test
 	def void confirmToString() {
 		val model = '''
-			«HEADER»
+			«LEGACY_PROJECTION_HEADER»
 			
 			type ReportableInput:
 				title string (1..1)
