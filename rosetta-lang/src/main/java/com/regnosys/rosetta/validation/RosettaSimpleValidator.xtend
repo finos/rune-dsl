@@ -1024,13 +1024,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		
 		if (annotationRef.annotation.name == "ingest") {
 			if (annotationRef.attribute === null) {
-				error('''The `ingest` annotation must have a source format such as JSON or XML''', annotationRef, ANNOTATION_REF__QUALIFIERS)
+				error('''The `ingest` annotation must have a source format such as JSON or XML''', annotationRef, ANNOTATION_REF__ATTRIBUTE)
 			}
 		}
 		
 		if (annotationRef.annotation.name == "projection") {
 			if (annotationRef.attribute === null) {
-				error('''The `projection` annotation must have a target format such as JSON or XML''', annotationRef, ANNOTATION_REF__QUALIFIERS)
+				error('''The `projection` annotation must have a target format such as JSON or XML''', annotationRef, ANNOTATION_REF__ATTRIBUTE)
 			}
 		}
 	}
