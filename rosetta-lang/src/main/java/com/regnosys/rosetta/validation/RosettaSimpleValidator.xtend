@@ -1014,12 +1014,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		
 		if (!(ele instanceof Function)) {
 			error('''Transformation annotations only allowed on a function.''', ROSETTA_NAMED__NAME)
-			return
 		}
 		
 		if (annotations.size > 1) {
 			error('''Only one transform annotation allowed.''', ROSETTA_NAMED__NAME)
-			return
 		}
 		
 		val annotationRef = annotations.get(0)
