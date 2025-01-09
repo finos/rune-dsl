@@ -170,6 +170,8 @@ class RosettaFunctionExtensions {
 	}
 	
 	def getTransformAnnotations(Annotated element) {
-		element.annotations.filter["ingest" == it.annotation.name || "enrich" == it.annotation.name || "projection" == it.annotation.name].toList
+		element.annotations
+			.filter[it.annotation.model.name == "com.rosetta.model"]
+			.filter["ingest" == it.annotation.name || "enrich" == it.annotation.name || "projection" == it.annotation.name].toList
 	}
 }
