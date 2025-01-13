@@ -20,3 +20,14 @@ annotation qualification: <"Annotation that describes a func that is used for ev
 	BusinessEvent boolean (0..1)
 
 annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
+
+annotation ingest: <"Marks a function that performs ingestion operations with the in bound serialisation format">
+	JSON boolean (0..1)
+	XML boolean (0..1)
+
+annotation enrich: <"Marks a function that performs enrichment operations">
+	
+annotation projection: <"Marks a function that performs projection operations with the out bound serialisation format">
+	JSON boolean (0..1)
+	XML boolean (0..1)
+	
