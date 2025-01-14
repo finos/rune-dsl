@@ -38,7 +38,6 @@ import java.util.concurrent.CompletableFuture
 abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerTest {
 	@Inject RangeUtils ru
 	@Inject RosettaBuiltinsService builtins
-	@Inject RosettaLanguageServerImpl rosettaLanguageServer
 	
 	new() {
 		super("rosetta")
@@ -149,9 +148,7 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	}
 	
 	@Accessors static class TestCodeActionConfiguration extends TextDocumentPositionConfiguration {
-		String expectedCodeActions = ''
-
-		(CompletableFuture<CodeAction>)=>void assertCodeActionResolution= null
+		(List<CodeAction>)=>void assertCodeActionResolution= null
 	}
 
 	protected def void testResultCodeAction((TestCodeActionConfiguration)=>void configurator) {
@@ -169,21 +166,18 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 			context = new CodeActionContext => [
 				diagnostics = this.diagnostics.get(filePath)
 			]
-		])
+		]).get
 		
-		// Checking all diagnostics (?)
-		for (codeAction : codeActions.get) {
-    		val resolveResult = rosettaLanguageServer.resolveCodeAction(codeAction.getRight)
+		val resultCodeActionList = newArrayList
+		
+		// Add all resolved codeActions to result list
+		for (codeAction : codeActions) {
+    		val resolveResult = languageServer.resolveCodeAction(codeAction.getRight)
+    		resultCodeActionList.add(resolveResult.get)
 		}
 		
-
-
-//		Assertions.assertEquals(configuration.expectedCodeActions, resolveResult.get.toExpectation)
-
-//		if (configuration.assertNoCodeActions !== null) {
-//			configuration.assertNoCodeActions.apply(resolveResult)
-//		} else {
-//			assertEquals(configuration.expectedCodeActions, result.get.toExpectation)
-//		}
+		if (configuration.assertCodeActionResolution !== null) {
+			configuration.assertCodeActionResolution.apply(resultCodeActionList)
+		}
 	}
 }

@@ -83,9 +83,6 @@ import com.regnosys.rosetta.types.RChoiceType
 import java.util.Collection
 import org.eclipse.xtext.resource.IResourceDescriptions
 import com.regnosys.rosetta.types.RMetaAnnotatedType
-import com.regnosys.rosetta.rosetta.RosettaMetaType
-import com.regnosys.rosetta.rosetta.Import
-import java.util.HashSet
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
@@ -111,7 +108,7 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-
+import com.regnosys.rosetta.utils.ImportManagementService
 
 // TODO: split expression validator
 // TODO: type check type call arguments

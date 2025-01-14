@@ -38,6 +38,7 @@ public interface RosettaIssueCodes {
 	static final String INVALID_ELEMENT_NAME=PREFIX +"invalidElementName";
 	static final String UNUSED_IMPORT = PREFIX + "unusedImport";
 	static final String DUPLICATE_IMPORT = PREFIX + "duplicateImport";
+	static final String UNSORTED_IMPORTS = PREFIX + "unsortedImports";
 
 	static final String MANDATORY_SQUARE_BRACKETS = PREFIX + "mandatorySquareBrackets";
 	static final String REDUNDANT_SQUARE_BRACKETS = PREFIX + "redundantSquareBrackets";
