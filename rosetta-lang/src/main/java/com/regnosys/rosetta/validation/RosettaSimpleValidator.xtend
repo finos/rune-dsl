@@ -1008,6 +1008,36 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				ANNOTATION_QUALIFIER__QUAL_PATH)
 		}
 	}
+	
+	@Check
+	def checkTransformAnnotations(Annotated ele) {
+		val annotations = getTransformAnnotations(ele)
+		if (annotations.empty) {
+			return
+		}
+		
+		if (!(ele instanceof Function)) {
+			error('''Transformation annotations only allowed on a function.''', ROSETTA_NAMED__NAME)
+		}
+		
+		if (annotations.size > 1) {
+			annotations.stream.skip(1).forEach[error('''Only one transform annotation allowed.''', it, null)]
+		}
+		
+		val annotationRef = annotations.get(0)
+		
+		if (annotationRef.annotation.name == "ingest") {
+			if (annotationRef.attribute === null) {
+				error('''The `ingest` annotation must have a source format such as JSON or XML''', annotationRef, ANNOTATION_REF__ANNOTATION)
+			}
+		}
+		
+		if (annotationRef.annotation.name == "projection") {
+			if (annotationRef.attribute === null) {
+				error('''The `projection` annotation must have a target format such as JSON or XML''', annotationRef, ANNOTATION_REF__ANNOTATION)
+			}
+		}
+	}
 
 	@Check
 	def checkCreationAnnotation(Annotated ele) {

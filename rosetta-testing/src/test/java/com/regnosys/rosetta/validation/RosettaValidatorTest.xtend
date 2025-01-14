@@ -28,6 +28,82 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testProjectAnnotationHasTargetFormat() {
+		val model1 = '''
+			func Foo:
+				[projection XML]
+		'''.parseRosetta
+		
+		model1.assertNoIssues
+		
+		val model2 = '''
+			func Foo:
+				[projection]
+		'''.parseRosetta
+		
+		model2.assertError(ANNOTATION_REF, null, "The `projection` annotation must have a target format such as JSON or XML")		
+	}
+	
+	@Test
+	def void testIngestAnnotationHasSourceFormat() {
+		val model1 = '''
+			func Foo:
+				[ingest JSON]
+		'''.parseRosetta
+		
+		model1.assertNoIssues
+		
+		val model2 = '''
+			func Foo:
+				[ingest]
+		'''.parseRosetta
+		
+		model2.assertError(ANNOTATION_REF, null, "The `ingest` annotation must have a source format such as JSON or XML")		
+	}
+	
+	@Test
+	def void testMultipleTransformAnnotationsCanNotBeUsed() {
+		val model1 = '''
+			func Foo:
+				[ingest JSON]
+		'''.parseRosetta
+		
+		model1.assertNoIssues
+		
+		val model2 = '''
+			func Foo:
+				[ingest JSON]
+				[enrich]
+		'''.parseRosetta
+		
+		model2.assertError(ANNOTATION_REF, null, "Only one transform annotation allowed.")		
+	}
+	
+	@Test
+	def void testTransformAnnotationShouldBeUsedOnFunction() {
+		val model1 = '''
+			type Foo:
+				[ingest JSON]
+		'''.parseRosetta
+		
+		model1.assertError(ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.")
+
+		val model2 = '''
+			type Foo:
+				[enrich]
+		'''.parseRosetta
+		
+		model2.assertError(ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.")
+		
+		val model3 = '''
+			type Foo:
+				[projection]
+		'''.parseRosetta
+		
+		model3.assertError(ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.")
+	}
+	
+	@Test
 	def void testConditionShouldBeSingleCardinality() {
 		val model = '''
 			type Foo:
