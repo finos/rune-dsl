@@ -43,7 +43,7 @@ public class SwitchValidator extends ExpressionValidator {
 		for (int i=0; i<op.getCases().size()-1; i++) {
 			SwitchCaseOrDefault caseStatement = op.getCases().get(i);
 			if (caseStatement.isDefault()) {
-				errorKeyword("A default case is only allowed at the end.", caseStatement, grammar.getSwitchCaseOrDefaultAccess().getDefaultKeyword_0_0());
+				errorKeyword("A default case is only allowed at the end", caseStatement, grammar.getSwitchCaseOrDefaultAccess().getDefaultKeyword_0_0());
 			}
 		}
 		

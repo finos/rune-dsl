@@ -167,6 +167,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testSwitchDefaultMustComeAtTheEnd() {
+ 		'''
+		42 switch
+			default False,
+			42 then True
+		'''
+ 			.parseExpression
+ 			.assertError(SWITCH_CASE_OR_DEFAULT, null, "A default case is only allowed at the end")
+	}
+	
+	@Test
 	def void testSwitchOnChoiceCannotHaveLiteralGuard() {
  		val model = '''
 			choice Foo:
