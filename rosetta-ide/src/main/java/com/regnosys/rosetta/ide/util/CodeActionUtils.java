@@ -15,7 +15,6 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.json.MessageJsonHandler;
-import org.eclipse.xtext.ide.editor.quickfix.DiagnosticResolution;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
 
 import com.google.gson.Gson;
@@ -59,13 +58,21 @@ public class CodeActionUtils {
         return codeActionParams;
     }
 	
-	public CodeAction createUnresolvedFix(DiagnosticResolution resolution, CodeActionParams codeActionParams,
+	public CodeAction createUnresolvedFix(String resolutionLabel, CodeActionParams codeActionParams,
 			Diagnostic diagnostic) {
 		CodeAction codeAction = new CodeAction();
 		codeAction.setDiagnostics(Collections.singletonList(diagnostic));
-		codeAction.setTitle(resolution.getLabel());
+		codeAction.setTitle(resolutionLabel);
 		codeAction.setData(codeActionParams);
 		codeAction.setKind(CodeActionKind.QuickFix);
+
+		return codeAction;
+	}
+	
+	public CodeAction createUnresolvedCodeAction(String resolutionLabel, CodeActionParams codeActionParams,
+			Diagnostic diagnostic, String codeActionKind) {
+		CodeAction codeAction = createUnresolvedFix(resolutionLabel, codeActionParams, diagnostic);
+		codeAction.setKind(codeActionKind);
 
 		return codeAction;
 	}
@@ -83,7 +90,6 @@ public class CodeActionUtils {
 		return diagnostic;
 	}
 	
-	//TODO: should be moved to RangeUtils?
 	public Range getImportsRange(List<Import> imports) {
 		Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
 		Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();

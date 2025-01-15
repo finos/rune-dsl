@@ -18,10 +18,8 @@ package com.regnosys.rosetta.ide.server;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -30,7 +28,6 @@ import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeActionParams;
-import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InlayHint;
@@ -44,17 +41,16 @@ import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.xtext.ide.editor.quickfix.DiagnosticResolution;
 import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.util.CancelIndicator;
 
-import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
@@ -66,6 +62,7 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
 public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
 	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
 	@Inject CodeActionUtils codeActionUtils;
+	@Inject IResolveCodeActionService resolveCodeActionService;
 
 	@Override
 	protected ServerCapabilities createServerCapabilities(InitializeParams params) {
@@ -81,7 +78,7 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 		if (resourceServiceProvider.get(ICodeActionService2.class) != null) {
             CodeActionOptions codeActionProvider = new CodeActionOptions();
             codeActionProvider.setResolveProvider(true);
-            codeActionProvider.setCodeActionKinds(List.of(CodeActionKind.QuickFix));
+            codeActionProvider.setCodeActionKinds(List.of(CodeActionKind.QuickFix, CodeActionKind.SourceOrganizeImports));
             codeActionProvider.setWorkDoneProgress(true);
             serverCapabilities.setCodeActionProvider(codeActionProvider);
         }
@@ -220,41 +217,22 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 	
 	@Override
 	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved) {
-		return getRequestManager().runRead((cancelIndicator) -> resolveCodeAction(unresolved, cancelIndicator));
-	}
+		return getRequestManager().runRead((cancelIndicator) -> {
+			CodeActionParams codeActionParams = codeActionUtils.getCodeActionParams(unresolved);
 
-	protected CodeAction resolveCodeAction(CodeAction codeAction, CancelIndicator cancelIndicator) {
-		CodeActionParams codeActionParams = codeActionUtils.getCodeActionParams(codeAction);
+			if (codeActionParams.getTextDocument() == null) {
+				return null;
+			}
 
-		if (codeActionParams.getTextDocument() == null) {
-			return null;
-		}
-
-		URI uri = getURI(codeActionParams.getTextDocument());
-
-		IQuickFixProvider quickfixes = getService(uri, IQuickFixProvider.class);
-
-		return getWorkspaceManager().doRead(uri, (doc, resource) -> {
-			ICodeActionService2.Options baseOptions = new ICodeActionService2.Options();
-			baseOptions.setDocument(doc);
-			baseOptions.setResource(resource);
-			baseOptions.setLanguageServerAccess(getLanguageServerAccess());
-			baseOptions.setCodeActionParams(codeActionParams);
-			baseOptions.setCancelIndicator(cancelIndicator);
-
-			Diagnostic diagnostic = Iterables.getOnlyElement(codeAction.getDiagnostics());
-
-			ICodeActionService2.Options options = codeActionUtils.createOptionsForSingleDiagnostic(baseOptions,
-					diagnostic);
-
-			List<DiagnosticResolution> resolutions = quickfixes.getResolutions(options, diagnostic).stream()
-					.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
-					.filter(r -> r.getLabel().equals(codeAction.getTitle())).collect(Collectors.toList());
-
-			// since a CodeAction has only one diagnostic, only one resolution should be found
-			codeAction.setEdit(resolutions.get(0).apply());
-
-			return codeAction;
+			URI uri = getURI(codeActionParams.getTextDocument());
+			IQuickFixProvider quickfixes = getService(uri, IQuickFixProvider.class);
+			
+			return getWorkspaceManager().doRead(uri, (doc, resource) -> {
+				ICodeActionService2.Options baseOptions = resolveCodeActionService.createCodeActionBaseOptions(doc,
+						resource, getLanguageServerAccess(), codeActionParams, cancelIndicator);
+				return resolveCodeActionService.getCodeActionResolution(unresolved, quickfixes, baseOptions);
+			});
 		});
-	}	
+	}
+	
 }

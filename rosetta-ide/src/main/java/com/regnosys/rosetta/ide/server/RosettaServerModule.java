@@ -27,6 +27,8 @@ import org.eclipse.xtext.ide.server.concurrent.RequestManager;
 import org.eclipse.xtext.service.AbstractGenericModule;
 
 import com.google.inject.util.Modules;
+import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
+import com.regnosys.rosetta.ide.quickfix.RosettaResolveCodeActionService;
 import com.google.inject.Module;
 
 public class RosettaServerModule extends AbstractGenericModule {
@@ -69,6 +71,10 @@ public class RosettaServerModule extends AbstractGenericModule {
 	 */
 	public Class<? extends LanguageServerImpl> bindLanguageServerImpl() {
 		return RosettaLanguageServerImpl.class;
+	}
+	
+	public Class<? extends IResolveCodeActionService> bindIResolveCodeActionService() {
+		return RosettaResolveCodeActionService.class;
 	}
 	
 	public Class<? extends RequestManager> bindRequestManager() {

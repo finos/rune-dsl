@@ -22,7 +22,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
@@ -47,6 +46,8 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	private ImportManagementService importManagementService;
 	@Inject 
 	private CodeActionUtils codeActionUtils;
+	@Inject
+	private ICodeActionProvider codeActionProvider;
 
 	@QuickFix(RosettaIssueCodes.REDUNDANT_SQUARE_BRACKETS)
 	public void fixRedundantSquareBrackets(DiagnosticResolutionAcceptor acceptor) {
@@ -108,23 +109,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	@QuickFix(RosettaIssueCodes.UNSORTED_IMPORTS)
 	public void sortImports(DiagnosticResolutionAcceptor acceptor) {
 		acceptor.accept("Sort imports.", (Diagnostic diagnostic, EObject object, Document document) -> {
-			Import importObj = (Import) object;
-			EObject container = importObj.eContainer();
-
-			if (container instanceof RosettaModel) {
-				RosettaModel model = (RosettaModel) container;
-				EList<Import> imports = model.getImports();
-
-				Range importsRange = codeActionUtils.getImportsRange(imports);
-
-				importManagementService.sortImports(imports);
-				String sortedImportsText = importManagementService.toString(imports);
-
-				return List.of(new TextEdit(importsRange, sortedImportsText));
-			}
-
-			// if not model, return empty list of edits
-			return List.of();
+			return codeActionProvider.sortImportsResolution(object);
 		});
 	}
 
