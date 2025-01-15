@@ -74,7 +74,7 @@ public class RObjectFactory {
 	}
 	
 	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
-		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withEmptyMeta(type);
+		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withNoMeta(type);
 		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, null, this);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		

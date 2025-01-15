@@ -105,7 +105,7 @@ class DeepPathUtilGenerator {
 		for (a : attrs.reverseView) {
 			val currAcc = acc
 			acc = inputParameter
-					.attributeCall(choiceType.withEmptyMeta, a, false, a.toMetaJavaType, scope)
+					.attributeCall(choiceType.withNoMeta, a, false, a.toMetaJavaType, scope)
 					.declareAsVariable(true, a.name.toFirstLower, scope)
 					.mapExpression[attrVar|
 						attrVar.exists(ExistsModifier.NONE, scope)

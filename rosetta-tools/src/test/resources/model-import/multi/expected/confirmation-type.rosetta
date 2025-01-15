@@ -486,10 +486,10 @@ type CommodityBasketOption extends Option: <"Defines a commodity basket option p
 	premium CommodityPremium (1..*) <"The option premium payable by the buyer to the seller.">
 	commodityContentModel CommodityContentModel (0..1)
 
-	condition Choice:
+	condition Choice0:
 		required choice strikePriceUnderlyingReference, strikePriceBasketReference
 
-	condition Choice:
+	condition Choice1:
 		required choice commodityStrikePriceModel, commodityFloatingStrikePriceModel
 
 type CommodityDigitalOption extends Option: <"Defines a commodity digital option product. Defines the digital commodity option product type. Digital options exercise when a barrier is breached and are financially settled. The \'commodityDigitalOption\' type is an extension of the \'commodityOption\' product.">
@@ -589,10 +589,10 @@ type CommodityVarianceLeg extends CommodityPerformanceSwapLeg: <"Specifies the v
 	volatilityStrikePrice number (0..1) <"Specifies the volatility strike price when this strike is expressed in standard deviation units. Payments on the variance leg are equal to the national amount multiplied by the realized volatility squared minus the volatility strike price squared. Notional amount * (realized volatility^2 - volatility strike^2). Squaring the volatility strike price converts the volatility strike price into a variance strike price. Squaring the realized volatility converts realized volatility to realized variance.">
 	varianceCalculation CommodityVarianceCalculation (1..1) <"Specifies, in relation to each Payment Date, the variance percentage which, when multiplied times the notional amount is the amount to which the Payment Date relates. For purposes of this representation the realized variance is: (annualizationFactor / N) * signma from i = 1 to N (ln (S sub (i+1)) / (S sub i)), where: ln is the natural logarithm, N is the number of pricing dates, S sub i is the relevant price on the observation date i. If nAdjustment is \'true\' then the denominator of the annualization factor is (N - 1) rather than N. If realized volatility is the performance metric in a variance swap rather than realized variance then the square root of the formula above will appear in the confirmation.">
 
-	condition Choice:
+	condition Choice0:
 		required choice notionalAmount, notionalAmountReference
 
-	condition Choice:
+	condition Choice1:
 		required choice varianceStrikePrice, volatilityStrikePrice
 
 type ElectricityPhysicalLeg extends PhysicalSwapLeg: <"Physically settled electricity leg. Physically settled leg of a physically settled electricity transaction.">
@@ -655,13 +655,13 @@ type Repo extends Product: <"Global element representing a Repo. A Repo, modeled
 	bondEquityModel BondEquityModel (0..*)
 	triParty TriParty (0..1)
 
-	condition Choice:
+	condition Choice0:
 		required choice fixedRateSchedule, floatingRateCalculation
 
-	condition Choice:
+	condition Choice1:
 		required choice duration, repoSequence
 
-	condition Choice:
+	condition Choice2:
 		required choice bondEquityModel, triParty
 
 type RequestClearingEligibility extends CorrectableRequestMessage:
@@ -5097,7 +5097,7 @@ type GasPhysicalQuantity extends CommodityPhysicalQuantityBase: <"The quantity o
 	gasPhysicalQuantitySequence GasPhysicalQuantitySequence (0..1)
 
 	condition Choice:
-		one-of
+		required choice commodityFixedPhysicalQuantityModel, gasPhysicalQuantitySequence
 
 type GasPhysicalQuantitySequence:
 
@@ -8562,7 +8562,7 @@ type UnderlyerInterestLeg extends DirectionalLeg: <"A type describing interest p
 	spreadSchedule SpreadSchedule (0..*) <"The ISDA Spread or a Spread schedule expressed as explicit spreads and dates. In the case of a schedule, the step dates may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments. The spread is a per annum rate, expressed as a decimal. For purposes of determining a calculation period amount, if positive the spread will be added to the floating rate and if negative the spread will be subtracted from the floating rate. A positive 10 basis point (0.1%) spread would be represented as 0.001.">
 
 	condition Choice:
-		one-of
+		required choice fixedRate, spreadSchedule
 
 type Unit: <"A type used to record information about a unit, subdivision, desk, or other similar business entity.">
 
@@ -10450,7 +10450,7 @@ type TouchRateObservation extends TriggerRateObservation:
 	isExercisable boolean (0..1) <"If the touch or no touch event hasn\'t generated an exercise, then we specify whether the option is exercisable or not.">
 
 	condition Choice:
-		one-of
+		required choice touchRateObservationSequence, isExercisable
 
 type TouchRateObservationSequence:
 

@@ -2,7 +2,7 @@ package com.regnosys.rosetta.resource
 
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaFragmentProviderTest {
 	
 	@Inject extension ParseHelper<RosettaModel> 

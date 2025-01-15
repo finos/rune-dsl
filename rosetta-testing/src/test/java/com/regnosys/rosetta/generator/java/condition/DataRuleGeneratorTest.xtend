@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.condition
 
 import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import java.io.File
 import java.math.BigDecimal
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class DataRuleGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper
@@ -552,7 +552,7 @@ class DataRuleGeneratorTest {
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue all = 1.0"))
 	}
 	
 	@Test
@@ -568,7 +568,7 @@ class DataRuleGeneratorTest {
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue all = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue] [2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -589,7 +589,7 @@ class DataRuleGeneratorTest {
 				
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertTrue(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue all = 1.0"))
 	}
 	
 	@Test
@@ -606,7 +606,7 @@ class DataRuleGeneratorTest {
 			
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue all = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[0]->getBaz[1]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -625,7 +625,7 @@ class DataRuleGeneratorTest {
 			
 		val validationResult = classes.runCondition(fooInstance, 'FooListDataRule')
 		assertFalse(validationResult.isSuccess)
-		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue = 1.0"))
+		assertThat(validationResult.definition, is("if bar -> baz exists then bar -> baz -> bazValue all = 1.0"))
 		assertThat(validationResult.failureReason.orElse(""), is("[Foo->getBar[0]->getBaz[0]->getBazValue, Foo->getBar[1]->getBaz[0]->getBazValue] [1.0, 2.0] does not equal [BigDecimal] [1.0]"))
 	}
 	
@@ -636,7 +636,7 @@ class DataRuleGeneratorTest {
 				
 				condition ListDataRule:
 					if bar -> baz exists
-					then bar -> baz -> bazValue = 1.0
+					then bar -> baz -> bazValue all = 1.0
 			
 			type Bar:
 				baz Baz (0..*)

@@ -32,7 +32,7 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 		// There should be a type error in func `Foo`
 		val issues = diagnostics.get(funcsURI)
 		assertEquals(1, issues.size)
-		assertEquals("Expected type 'int' but was 'string'", issues.head.message)
+		assertEquals("Expected type `int`, but got `string` instead. Cannot assign `string` to output `result`", issues.head.message)
 	}
 	
 	@Test
@@ -62,7 +62,7 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 		// There should be a cardinality error in func `Foo`
 		val issues = diagnostics.get(funcsURI)
 		assertEquals(1, issues.size)
-		assertEquals("Cardinality mismatch - cannot assign list to a single value.", issues.head.message)
+		assertEquals("Expecting single cardinality. Cannot assign a list to a single value", issues.head.message)
 	}
 	
 	@Test
@@ -107,7 +107,7 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 		// There should be a type error in func `Foo`
 		val issues = diagnostics.get(funcsURI)
 		assertEquals(1, issues.size)
-		assertEquals("Expected type 'MyType' but was 'MyType'", issues.head.message)
+		assertEquals("Expected type `foo.MyType`, but got `bar.MyType` instead. Cannot assign `bar.MyType` to output `result`", issues.head.message)
 	}
 	
 	@Test
@@ -133,8 +133,8 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 		
 		// There should be a type error in rule B
 		val issues = diagnostics.get(ruleBURI)
-		assertEquals(2, issues.size)
-		assertEquals("Expected type 'int' but was 'string'", issues.head.message)
+		assertEquals(1, issues.size)
+		assertEquals("Expected type `int`, but got `string` instead. Rule `A` cannot be called with type `string`", issues.head.message)
 	}
 	
 	@Test
@@ -164,6 +164,6 @@ class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 		// There should be a type error in func Foo
 		val issues = diagnostics.get(funcURI)
 		assertEquals(1, issues.size)
-		assertEquals("Expected type 'int' but was 'string'", issues.head.message)
+		assertEquals("Expected type `int`, but got `string` instead. Cannot assign `string` to output `result`", issues.head.message)
 	}
 }

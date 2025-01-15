@@ -3,7 +3,7 @@ package com.regnosys.rosetta.generator.java.condition
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*
 import com.rosetta.model.lib.records.Date
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ConditionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ConditionTestHelper

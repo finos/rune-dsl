@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import org.eclipse.xtext.testing.InjectWith
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Disabled
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaObjectInheritanceGeneratorTest {
 
 	@Inject extension CodeGeneratorTestHelper

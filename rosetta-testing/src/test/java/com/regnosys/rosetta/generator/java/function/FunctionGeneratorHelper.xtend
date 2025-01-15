@@ -21,6 +21,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
 import com.regnosys.rosetta.utils.ModelIdProvider
+import com.rosetta.util.DottedPath
 
 class FunctionGeneratorHelper {
 
@@ -42,11 +43,10 @@ class FunctionGeneratorHelper {
 	}
 	
 	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		createFunc(classes, rootPackage.functions.toString, funcName)
+		createFunc(classes, funcName, rootPackage.functions)
 	}
-	
-	def createFunc(Map<String, Class<?>> classes, String namespace, String funcName) {
-		injector.getInstance(classes.get(namespace + '.' + funcName)) as RosettaFunction
+	def createFunc(Map<String, Class<?>> classes, String funcName, DottedPath packageName) {
+		injector.getInstance(classes.get(packageName + '.' + funcName)) as RosettaFunction
 	}
 	
 	def <T> invokeFunc(RosettaFunction func, Class<T> resultClass, Object... inputs) {

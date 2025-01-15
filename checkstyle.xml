@@ -25,4 +25,8 @@
 				value="com.google.inject.Inject, com.google.inject.name.Named, com.google.inject.Provider" />
 		</module>
 	</module>
+	<module name="BeforeExecutionExclusionFileFilter">
+		<!-- Exclude any generated source folders -->
+		<property name="fileNamePattern" value=".*-gen[\\/].*$" />
+	</module>
 </module>

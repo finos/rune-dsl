@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.expression
 
 import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.records.Date
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ListOperationTest {
 
 	@Inject extension FunctionGeneratorHelper
@@ -961,7 +961,7 @@ class ListOperationTest {
 				
 				set foos:
 					bar -> foos 
-						map [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
+						extract [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1073,7 +1073,7 @@ class ListOperationTest {
 				
 				add updatedBar -> foos:
 					bar -> foos 
-						map [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
+						extract [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
 			
 			func Create_Foo:
 				inputs:
@@ -1266,7 +1266,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapList() {
+	def void shouldGenerateFunctionWithExtractList() {
 		val model = '''
 			type Foo:
 				attr string (1..1)
@@ -1279,7 +1279,7 @@ class ListOperationTest {
 				
 				set strings:
 					foos 
-						map [ item -> attr ]
+						extract [ item -> attr ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1350,7 +1350,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapList2() {
+	def void shouldGenerateFunctionWithExtractList2() {
 		val model = '''
 			type Foo:
 				attr string (1..1)
@@ -1363,7 +1363,7 @@ class ListOperationTest {
 				
 				set strings:
 					foos 
-						map foo [ foo -> attr ]
+						extract foo [ foo -> attr ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1384,7 +1384,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListOfListThenMapToListOfCounts() {
+	def void shouldGenerateFunctionWithExtractListOfListThenExtractToListOfCounts() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1400,8 +1400,8 @@ class ListOperationTest {
 				
 				set fooCounts:
 					bars 
-						map bar [ bar -> foos ]
-						then map fooListItem [ fooListItem count ]
+						extract bar [ bar -> foos ]
+						then extract fooListItem [ fooListItem count ]
 		'''
 		val code = model.generateCode
 		val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1476,7 +1476,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListOfListThenMapToListOfCounts2() {
+	def void shouldGenerateFunctionWithExtractListOfListThenExtractToListOfCounts2() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1492,8 +1492,8 @@ class ListOperationTest {
 				
 				set fooCounts:
 					bars 
-						map [ item -> foos ]
-						then map [ item count ]
+						extract [ item -> foos ]
+						then extract [ item count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1513,7 +1513,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListOfListThenFilterOnCount() {
+	def void shouldGenerateFunctionWithExtractListOfListThenFilterOnCount() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1529,9 +1529,9 @@ class ListOperationTest {
 				
 				set fooCounts:
 					bars 
-						map [ item -> foos ]
+						extract [ item -> foos ]
 						then filter [ item count > 1 ]
-						then map [ item count ]
+						then extract [ item count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1567,9 +1567,9 @@ class ListOperationTest {
 				
 				set fooCounts:
 					bars 
-						map a [ a -> foos ]
+						extract a [ a -> foos ]
 						then filter b [ b count > 1 ]
-						then map c [ c count ]
+						then extract c [ c count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1589,7 +1589,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListOfListsThenFlatten() {
+	def void shouldGenerateFunctionWithExtractListOfListsThenFlatten() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1605,7 +1605,7 @@ class ListOperationTest {
 				
 				set foos:
 					bars 
-						map bar [ bar -> foos ]
+						extract bar [ bar -> foos ]
 						then flatten
 		'''
 		val code = model.generateCode
@@ -1700,7 +1700,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListOfListsThenFlatten2() {
+	def void shouldGenerateFunctionWithExtractListOfListsThenFlatten2() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1716,7 +1716,7 @@ class ListOperationTest {
 				
 				set foos:
 					bars 
-						map [ item -> foos ]
+						extract [ item -> foos ]
 						then flatten
 		'''
 		val code = model.generateCode
@@ -1740,7 +1740,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListOfListsThenFlatten3() {
+	def void shouldGenerateFunctionWithExtractListOfListsThenFlatten3() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1756,9 +1756,9 @@ class ListOperationTest {
 				
 				set attrs:
 					bars 
-						map [ item -> foos ]
+						extract [ item -> foos ]
 						then flatten
-						then map [ item -> attr ]
+						then extract [ item -> attr ]
 		'''
 		val code = model.generateCode
 				val f = code.get("com.rosetta.test.model.functions.FuncFoo")
@@ -1837,7 +1837,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListCount() {
+	def void shouldGenerateFunctionWithExtractListCount() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1853,7 +1853,7 @@ class ListOperationTest {
 				
 				set fooCounts:
 					bars 
-						map [ item -> foos count ]
+						extract [ item -> foos count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1889,7 +1889,7 @@ class ListOperationTest {
 				
 				set fooCounts:
 					bars 
-						map bar [ bar -> foos count ]
+						extract bar [ bar -> foos count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -1909,7 +1909,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithNestedMaps() {
+	def void shouldGenerateFunctionWithNestedExtracts() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -1925,10 +1925,10 @@ class ListOperationTest {
 				
 				set updatedBars:
 					bars 
-						map bar [ bar -> foos 
-							map foo [ NewFoo( foo -> attr + "_bar" ) ]
+						extract bar [ bar -> foos 
+							extract foo [ NewFoo( foo -> attr + "_bar" ) ]
 						]
-						then map updatedFoos [ NewBar( updatedFoos ) ]
+						then extract updatedFoos [ NewBar( updatedFoos ) ]
 			
 			func NewBar:
 			 	inputs:
@@ -2070,9 +2070,9 @@ class ListOperationTest {
 				
 				set updatedBars:
 					bars 
-						map bar [ 
+						extract bar [ 
 							NewBar( bar -> foos 
-								map foo [ NewFoo( foo -> attr + "_bar" ) ] )
+								extract foo [ NewFoo( foo -> attr + "_bar" ) ] )
 						]
 			
 			func NewBar:
@@ -2196,7 +2196,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithMapListModifyItemFunc() {
+	def void shouldGenerateFunctionWithExtractListModifyItemFunc() {
 		val model = '''
 			type Foo:
 				attr string (1..1)
@@ -2209,7 +2209,7 @@ class ListOperationTest {
 				
 				set updatedFoos:
 					foos 
-						map [ NewFoo( item -> attr + "_1" ) ]
+						extract [ NewFoo( item -> attr + "_1" ) ]
 			
 			func NewFoo:
 			 	inputs:
@@ -2244,7 +2244,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateFunctionWithFilterThenMap() {
+	def void shouldGenerateFunctionWithFilterThenExtract() {
 		val model = '''
 			type Foo:
 				include boolean (1..1)
@@ -2259,7 +2259,7 @@ class ListOperationTest {
 				set newFoos:
 					foos 
 						filter [ item -> include = True ]
-						then map [ item -> attr ]
+						then extract [ item -> attr ]
 
 		'''
 		val code = model.generateCode
@@ -2360,8 +2360,8 @@ class ListOperationTest {
 				
 				set strings:
 					bars 
-						map [ GetFoo( item -> barAttr ) ]
-						then map [ item -> fooAttr ]
+						extract [ GetFoo( item -> barAttr ) ]
+						then extract [ item -> fooAttr ]
 		'''
 		val code = model.generateCode
 		val f = code.get("ns1.functions.FuncFoo")
@@ -2449,9 +2449,9 @@ class ListOperationTest {
 				
 				set strings:
 					bars 
-						map [ item -> foos ]
+						extract [ item -> foos ]
 						then flatten
-						then map [ item -> attr ]
+						then extract [ item -> attr ]
 		''']
 		val code = model.generateCode
 		val f = code.get("ns2.functions.FuncFoo")
@@ -2542,8 +2542,8 @@ class ListOperationTest {
 				
 				set strings:
 					bars 
-						map [ GetFoo( item -> barAttr ) ]
-						then map [ item -> fooAttr ]
+						extract [ GetFoo( item -> barAttr ) ]
+						then extract [ item -> fooAttr ]
 		''']
 		val code = model.generateCode
 		val f = code.get("ns2.functions.FuncFoo")
@@ -2647,8 +2647,8 @@ class ListOperationTest {
 				
 				set strings:
 					bars 
-						map [ GetFoo( GetBaz( item -> barAttr ) ) ]
-						then map [ item -> fooAttr ]
+						extract [ GetFoo( GetBaz( item -> barAttr ) ) ]
+						then extract [ item -> fooAttr ]
 		''']
 		val code = model.generateCode
 		val f = code.get("ns2.functions.FuncFoo")
@@ -2731,11 +2731,11 @@ class ListOperationTest {
 				
 				set strings:
 					if test = "a"
-					then foos map [ item -> attr + "_a" ]
+					then foos extract [ item -> attr + "_a" ]
 					else if test = "b"
-					then foos map [ item -> attr + "_b" ]
+					then foos extract [ item -> attr + "_b" ]
 					else if test = "c"
-					then foos map [ item -> attr + "_c" ]
+					then foos extract [ item -> attr + "_c" ]
 					// default else
 		'''
 		val code = model.generateCode
@@ -3475,7 +3475,7 @@ class ListOperationTest {
 				set fooCount:
 					bars
 						reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ]
-						then map [ item -> foos count ]
+						then extract [ item -> foos count ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses
@@ -3502,7 +3502,7 @@ class ListOperationTest {
 	}
 	
 	@Test
-	def void shouldGenerateListReduceThenMapList() {
+	def void shouldGenerateListReduceThenExtractList() {
 		val model = '''
 			type Bar:
 				foos Foo (0..*)
@@ -3519,8 +3519,8 @@ class ListOperationTest {
 				set attrs:
 					bars
 						reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ] // max by foo count
-						then map [ item -> foos ]
-						then map [ item -> attr ]
+						then extract [ item -> foos ]
+						then extract [ item -> attr ]
 		'''
 		val code = model.generateCode
 		val classes = code.compileToClasses

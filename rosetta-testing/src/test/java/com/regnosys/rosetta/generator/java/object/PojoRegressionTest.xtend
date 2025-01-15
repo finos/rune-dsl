@@ -3,7 +3,7 @@ package com.regnosys.rosetta.generator.java.object
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import org.junit.jupiter.api.Test
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
  * through, please add to this test so it does not happen again.
  */
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 @TestInstance(Lifecycle.PER_CLASS)
 class PojoRegressionTest {
 	@Inject extension CodeGeneratorTestHelper
@@ -79,6 +79,9 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
+		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneMetaType;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.AttributeMeta;
@@ -111,6 +114,7 @@ class PojoRegressionTest {
 		 * @version test
 		 */
 		@RosettaDataType(value="Pojo", builder=Pojo.PojoBuilderImpl.class, version="test")
+		@RuneDataType(value="Pojo", model="My test model", builder=Pojo.PojoBuilderImpl.class, version="test")
 		public interface Pojo extends RosettaModelObject, GlobalKey {
 		
 			PojoMeta metaData = new PojoMeta();
@@ -144,6 +148,7 @@ class PojoRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends Pojo> getType() {
 				return Pojo.class;
 			}
@@ -284,66 +289,78 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttr")
+				@RuneAttribute("simpleAttr")
 				public String getSimpleAttr() {
 					return simpleAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttr")
+				@RuneAttribute("multiSimpleAttr")
 				public List<String> getMultiSimpleAttr() {
 					return multiSimpleAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithMeta")
+				@RuneAttribute("simpleAttrWithMeta")
 				public FieldWithMetaString getSimpleAttrWithMeta() {
 					return simpleAttrWithMeta;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithMeta")
+				@RuneAttribute("multiSimpleAttrWithMeta")
 				public List<? extends FieldWithMetaString> getMultiSimpleAttrWithMeta() {
 					return multiSimpleAttrWithMeta;
 				}
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithId")
+				@RuneAttribute("simpleAttrWithId")
 				public FieldWithMetaString getSimpleAttrWithId() {
 					return simpleAttrWithId;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithId")
+				@RuneAttribute("multiSimpleAttrWithId")
 				public List<? extends FieldWithMetaString> getMultiSimpleAttrWithId() {
 					return multiSimpleAttrWithId;
 				}
 				
 				@Override
 				@RosettaAttribute("complexAttr")
+				@RuneAttribute("complexAttr")
 				public Foo getComplexAttr() {
 					return complexAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("multiComplexAttr")
+				@RuneAttribute("multiComplexAttr")
 				public List<? extends Foo> getMultiComplexAttr() {
 					return multiComplexAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("complexAttrWithRef")
+				@RuneAttribute("complexAttrWithRef")
 				public ReferenceWithMetaFoo getComplexAttrWithRef() {
 					return complexAttrWithRef;
 				}
 				
 				@Override
 				@RosettaAttribute("multiComplexAttrWithRef")
+				@RuneAttribute("multiComplexAttrWithRef")
 				public List<? extends ReferenceWithMetaFoo> getMultiComplexAttrWithRef() {
 					return multiComplexAttrWithRef;
 				}
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
+				@RuneMetaType
 				public MetaFields getMeta() {
 					return meta;
 				}
@@ -447,18 +464,21 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttr")
+				@RuneAttribute("simpleAttr")
 				public String getSimpleAttr() {
 					return simpleAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttr")
+				@RuneAttribute("multiSimpleAttr")
 				public List<String> getMultiSimpleAttr() {
 					return multiSimpleAttr;
 				}
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithMeta")
+				@RuneAttribute("simpleAttrWithMeta")
 				public FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithMeta() {
 					return simpleAttrWithMeta;
 				}
@@ -478,6 +498,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithMeta")
+				@RuneAttribute("multiSimpleAttrWithMeta")
 				public List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithMeta() {
 					return multiSimpleAttrWithMeta;
 				}
@@ -497,6 +518,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithId")
+				@RuneAttribute("simpleAttrWithId")
 				public FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithId() {
 					return simpleAttrWithId;
 				}
@@ -516,6 +538,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithId")
+				@RuneAttribute("multiSimpleAttrWithId")
 				public List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithId() {
 					return multiSimpleAttrWithId;
 				}
@@ -535,6 +558,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("complexAttr")
+				@RuneAttribute("complexAttr")
 				public Foo.FooBuilder getComplexAttr() {
 					return complexAttr;
 				}
@@ -554,6 +578,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiComplexAttr")
+				@RuneAttribute("multiComplexAttr")
 				public List<? extends Foo.FooBuilder> getMultiComplexAttr() {
 					return multiComplexAttr;
 				}
@@ -573,6 +598,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("complexAttrWithRef")
+				@RuneAttribute("complexAttrWithRef")
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getComplexAttrWithRef() {
 					return complexAttrWithRef;
 				}
@@ -592,6 +618,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiComplexAttrWithRef")
+				@RuneAttribute("multiComplexAttrWithRef")
 				public List<? extends ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> getMultiComplexAttrWithRef() {
 					return multiComplexAttrWithRef;
 				}
@@ -611,6 +638,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
+				@RuneMetaType
 				public MetaFields.MetaFieldsBuilder getMeta() {
 					return meta;
 				}
@@ -630,6 +659,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttr")
+				@RuneAttribute("simpleAttr")
 				public Pojo.PojoBuilder setSimpleAttr(String _simpleAttr) {
 					this.simpleAttr = _simpleAttr == null ? null : _simpleAttr;
 					return this;
@@ -637,6 +667,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttr")
+				@RuneAttribute("multiSimpleAttr")
 				public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr) {
 					if (_multiSimpleAttr != null) {
 						this.multiSimpleAttr.add(_multiSimpleAttr);
@@ -661,6 +692,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiSimpleAttr")
 				public Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttrs) {
 					if (multiSimpleAttrs == null) {
 						this.multiSimpleAttr = new ArrayList<>();
@@ -673,6 +705,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithMeta")
+				@RuneAttribute("simpleAttrWithMeta")
 				public Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString _simpleAttrWithMeta) {
 					this.simpleAttrWithMeta = _simpleAttrWithMeta == null ? null : _simpleAttrWithMeta.toBuilder();
 					return this;
@@ -686,6 +719,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithMeta")
+				@RuneAttribute("multiSimpleAttrWithMeta")
 				public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta) {
 					if (_multiSimpleAttrWithMeta != null) {
 						this.multiSimpleAttrWithMeta.add(_multiSimpleAttrWithMeta.toBuilder());
@@ -722,6 +756,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiSimpleAttrWithMeta")
 				public Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 					if (multiSimpleAttrWithMetas == null) {
 						this.multiSimpleAttrWithMeta = new ArrayList<>();
@@ -754,6 +789,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("simpleAttrWithId")
+				@RuneAttribute("simpleAttrWithId")
 				public Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString _simpleAttrWithId) {
 					this.simpleAttrWithId = _simpleAttrWithId == null ? null : _simpleAttrWithId.toBuilder();
 					return this;
@@ -767,6 +803,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiSimpleAttrWithId")
+				@RuneAttribute("multiSimpleAttrWithId")
 				public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId) {
 					if (_multiSimpleAttrWithId != null) {
 						this.multiSimpleAttrWithId.add(_multiSimpleAttrWithId.toBuilder());
@@ -803,6 +840,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiSimpleAttrWithId")
 				public Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 					if (multiSimpleAttrWithIds == null) {
 						this.multiSimpleAttrWithId = new ArrayList<>();
@@ -835,6 +873,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("complexAttr")
+				@RuneAttribute("complexAttr")
 				public Pojo.PojoBuilder setComplexAttr(Foo _complexAttr) {
 					this.complexAttr = _complexAttr == null ? null : _complexAttr.toBuilder();
 					return this;
@@ -842,6 +881,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiComplexAttr")
+				@RuneAttribute("multiComplexAttr")
 				public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr) {
 					if (_multiComplexAttr != null) {
 						this.multiComplexAttr.add(_multiComplexAttr.toBuilder());
@@ -866,6 +906,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiComplexAttr")
 				public Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 					if (multiComplexAttrs == null) {
 						this.multiComplexAttr = new ArrayList<>();
@@ -879,6 +920,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("complexAttrWithRef")
+				@RuneAttribute("complexAttrWithRef")
 				public Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo _complexAttrWithRef) {
 					this.complexAttrWithRef = _complexAttrWithRef == null ? null : _complexAttrWithRef.toBuilder();
 					return this;
@@ -892,6 +934,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("multiComplexAttrWithRef")
+				@RuneAttribute("multiComplexAttrWithRef")
 				public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef) {
 					if (_multiComplexAttrWithRef != null) {
 						this.multiComplexAttrWithRef.add(_multiComplexAttrWithRef.toBuilder());
@@ -928,6 +971,7 @@ class PojoRegressionTest {
 				}
 				
 				@Override 
+				@RuneAttribute("multiComplexAttrWithRef")
 				public Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 					if (multiComplexAttrWithRefs == null) {
 						this.multiComplexAttrWithRef = new ArrayList<>();
@@ -960,6 +1004,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
+				@RuneMetaType
 				public Pojo.PojoBuilder setMeta(MetaFields _meta) {
 					this.meta = _meta == null ? null : _meta.toBuilder();
 					return this;
@@ -1282,6 +1328,9 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
+		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneMetaType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.FieldWithMeta;
 		import com.rosetta.model.lib.meta.FieldWithMeta.FieldWithMetaBuilder;
@@ -1298,6 +1347,7 @@ class PojoRegressionTest {
 		 * @version 1
 		 */
 		@RosettaDataType(value="FieldWithMetaString", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
+		@RuneDataType(value="FieldWithMetaString", model="My test model", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
 		public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<String>, GlobalKey {
 		
 			FieldWithMetaStringMeta metaData = new FieldWithMetaStringMeta();
@@ -1322,6 +1372,7 @@ class PojoRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends FieldWithMetaString> getType() {
 				return FieldWithMetaString.class;
 			}
@@ -1368,12 +1419,15 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
 				public String getValue() {
 					return value;
 				}
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
+				@RuneMetaType
 				public MetaFields getMeta() {
 					return meta;
 				}
@@ -1432,12 +1486,15 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
 				public String getValue() {
 					return value;
 				}
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
+				@RuneMetaType
 				public MetaFields.MetaFieldsBuilder getMeta() {
 					return meta;
 				}
@@ -1457,6 +1514,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
 				public FieldWithMetaString.FieldWithMetaStringBuilder setValue(String _value) {
 					this.value = _value == null ? null : _value;
 					return this;
@@ -1464,6 +1522,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("meta")
+				@RuneAttribute("meta")
+				@RuneMetaType
 				public FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields _meta) {
 					this.meta = _meta == null ? null : _meta.toBuilder();
 					return this;
@@ -1548,6 +1608,9 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RuneAttribute;
+		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneMetaType;
 		import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 		import com.rosetta.model.lib.meta.Reference;
 		import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
@@ -1569,6 +1632,7 @@ class PojoRegressionTest {
 		 * @version 1
 		 */
 		@RosettaDataType(value="ReferenceWithMetaFoo", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
+		@RuneDataType(value="ReferenceWithMetaFoo", model="My test model", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
 		public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithMeta<Foo> {
 		
 			ReferenceWithMetaFooMeta metaData = new ReferenceWithMetaFooMeta();
@@ -1595,6 +1659,7 @@ class PojoRegressionTest {
 			}
 			
 			@Override
+			@RuneAttribute("@type")
 			default Class<? extends ReferenceWithMetaFoo> getType() {
 				return ReferenceWithMetaFoo.class;
 			}
@@ -1654,24 +1719,30 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
+				@RuneMetaType
 				public Foo getValue() {
 					return value;
 				}
 				
 				@Override
 				@RosettaAttribute("globalReference")
+				@RuneAttribute("@ref")
 				public String getGlobalReference() {
 					return globalReference;
 				}
 				
 				@Override
 				@RosettaAttribute("externalReference")
+				@RuneAttribute("@ref:external")
 				public String getExternalReference() {
 					return externalReference;
 				}
 				
 				@Override
 				@RosettaAttribute("address")
+				@RuneAttribute("@ref:scoped")
+				@RuneMetaType
 				public Reference getReference() {
 					return reference;
 				}
@@ -1740,6 +1811,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
+				@RuneMetaType
 				public Foo.FooBuilder getValue() {
 					return value;
 				}
@@ -1759,18 +1832,22 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("globalReference")
+				@RuneAttribute("@ref")
 				public String getGlobalReference() {
 					return globalReference;
 				}
 				
 				@Override
 				@RosettaAttribute("externalReference")
+				@RuneAttribute("@ref:external")
 				public String getExternalReference() {
 					return externalReference;
 				}
 				
 				@Override
 				@RosettaAttribute("address")
+				@RuneAttribute("@ref:scoped")
+				@RuneMetaType
 				public Reference.ReferenceBuilder getReference() {
 					return reference;
 				}
@@ -1790,6 +1867,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("value")
+				@RuneAttribute("@data")
+				@RuneMetaType
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo _value) {
 					this.value = _value == null ? null : _value.toBuilder();
 					return this;
@@ -1797,6 +1876,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("globalReference")
+				@RuneAttribute("@ref")
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String _globalReference) {
 					this.globalReference = _globalReference == null ? null : _globalReference;
 					return this;
@@ -1804,6 +1884,7 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("externalReference")
+				@RuneAttribute("@ref:external")
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setExternalReference(String _externalReference) {
 					this.externalReference = _externalReference == null ? null : _externalReference;
 					return this;
@@ -1811,6 +1892,8 @@ class PojoRegressionTest {
 				
 				@Override
 				@RosettaAttribute("address")
+				@RuneAttribute("@ref:scoped")
+				@RuneMetaType
 				public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setReference(Reference _reference) {
 					this.reference = _reference == null ? null : _reference.toBuilder();
 					return this;

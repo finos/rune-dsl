@@ -98,7 +98,6 @@ import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.RShortcut
-import com.regnosys.rosetta.types.RosettaOperators
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.TypeSystem
 import com.regnosys.rosetta.types.builtin.RBasicType
@@ -136,9 +135,9 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.xbase.lib.Functions.Function3
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withEmptyMeta
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -148,7 +147,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	@Inject protected RosettaTypeProvider typeProvider
-	@Inject RosettaOperators operators
 	@Inject extension CardinalityProvider cardinalityProvider
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension RosettaEcoreUtil
@@ -225,10 +223,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						argCode
 							.mapExpressionIfNotNull[JavaExpression.from('''new «callable.toFunctionJavaClass»().execute(«it»)''', argAndReturnType)]
 					} else {
-						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.withEmptyMeta.toJavaReferenceType, scope)
+						argCode = arguments.head.javaCode(callable.parameters.head.typeCall.typeCallToRType.withNoMeta.toJavaReferenceType, scope)
 						for (var i = 1; i < arguments.size; i++) {
 							argCode = argCode.then(
-								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.withEmptyMeta.toJavaReferenceType, scope),
+								arguments.get(i).javaCode(callable.parameters.get(i).typeCall.typeCallToRType.withNoMeta.toJavaReferenceType, scope),
 								[argList, newArg|JavaExpression.from('''«argList», «newArg»''', null)],
 								scope
 							)
@@ -351,7 +349,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
 		val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
 		val joined = leftRtype.join(rightRtype).toJavaReferenceType
-		val resultType = operators.resultType(expr.operator, leftRtype, rightRtype).withEmptyMeta.toJavaReferenceType
+		val resultType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
 		val leftType = leftRtype.toJavaReferenceType
 		val rightType = rightRtype.toJavaReferenceType
 
@@ -1178,7 +1176,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val lambdaScope = scope.lambdaScope
 				val r = lambdaScope.createUniqueIdentifier("r")
 				val m = lambdaScope.createUniqueIdentifier("m")
-				value.javaCode(typeProvider.getRMetaAnnotatedType(value).RType.withEmptyMeta.toJavaReferenceType, scope)
+				value.javaCode(typeProvider.getRMetaAnnotatedType(value).RType.withNoMeta.toJavaReferenceType, scope)
 					.declareAsVariable(true, feature.name, scope)
 					.mapExpression[
 						JavaExpression.from(
@@ -1198,7 +1196,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature, value).RType.withEmptyMeta.toJavaReferenceType
+			val clazz = typeProvider.getRTypeOfFeature(feature, value).RType.withNoMeta.toJavaReferenceType
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
@@ -1226,7 +1224,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				
 				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, choiceOption.type.RType.name.toFirstLower)
 				val optionExpr = optionPath.fold(switchArg as JavaStatementBuilder, [pathAcc,opt|
-					pathAcc.attributeCall(opt.choiceType.withEmptyMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
+					pathAcc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
 				])
 				optionExpr
 					.collapseToSingleExpression(context.scope)

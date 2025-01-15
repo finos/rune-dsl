@@ -8,12 +8,12 @@ import com.rosetta.model.lib.RosettaModelObject
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.InjectWith
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 
 import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class RosettaProcessorTest {
 	@Inject extension CodeGeneratorTestHelper
 	

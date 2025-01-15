@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.List;
 
 import com.google.common.io.Resources;
-import com.regnosys.rosetta.tests.RosettaInjectorProvider;
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 
 @ExtendWith(InjectionExtension.class)
-@InjectWith(RosettaInjectorProvider.class)
+@InjectWith(RosettaTestInjectorProvider.class)
 public class ResourceFormatterServiceTest {
 	@Inject
 	ResourceFormatterService formatterService;

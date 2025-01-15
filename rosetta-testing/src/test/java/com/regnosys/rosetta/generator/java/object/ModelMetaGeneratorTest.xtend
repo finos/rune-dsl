@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
-import com.regnosys.rosetta.tests.RosettaInjectorProvider
+import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
-@InjectWith(RosettaInjectorProvider)
+@InjectWith(RosettaTestInjectorProvider)
 class ModelMetaGeneratorTest {
 	
 	@Inject extension ModelHelper

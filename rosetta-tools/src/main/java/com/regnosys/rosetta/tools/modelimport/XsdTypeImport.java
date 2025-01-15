@@ -28,7 +28,9 @@ import org.xmlet.xsdparser.xsdelements.*;
 import org.xmlet.xsdparser.xsdelements.enums.UsageEnum;
 import org.xmlet.xsdparser.xsdelements.visitors.AttributesVisitor;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -50,11 +52,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 	public final String SIMPLE_EXTENSION_ATTRIBUTE_NAME = "value";
 
 	private final XsdUtil util;
+	private final RosettaEcoreUtil ecoreUtil;
 	
 	@Inject
-	public XsdTypeImport(XsdUtil util) {
+	public XsdTypeImport(XsdUtil util, RosettaEcoreUtil ecoreUtil) {
 		super(XsdNamedElements.class);
 		this.util = util;
+		this.ecoreUtil = ecoreUtil;
 	}
 
     @Override
@@ -126,7 +130,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		
 		if (xsdType instanceof XsdGroup group) {
             xsdMapping.registerGroup(group, data);
-        	completeData(data, Stream.of(group.getChildElement()), null, xsdMapping, result, targetConfig);
+            initialCompleteData(data, Stream.of(group.getChildElement()), null, xsdMapping, result, targetConfig);
         } else {
         	XsdComplexType ct = (XsdComplexType)xsdType;
             xsdMapping.registerComplexType(ct, data);
@@ -139,14 +143,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 xsdMapping.registerAttribute(ct, valueAttr);
             }
             
-	    	completeData(data, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping, result, targetConfig);
+            initialCompleteData(data, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping, result, targetConfig);
         }
 
         // Post process: make sure all names are unique:
         util.makeNamesUnique(result);
         result.forEach(d -> {
             util.makeNamesUnique(d.getAttributes());
-            util.makeNamesUnique(d.getConditions());
         });
 
 		elementType.ifPresent(d -> util.makeNamesUnique(d.getAttributes()));
@@ -212,47 +215,24 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         data.setName(name);
         result.add(data);
 
-        completeData(data, abstractElements, initialChoiceGroup, xsdMapping, result, config);
+        initialCompleteData(data, abstractElements, initialChoiceGroup, xsdMapping, result, config);
 
         return data;
     }
-    private void completeData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
+    private void initialCompleteData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         // Add attributes
         List<ChoiceGroup> choiceGroups = new ArrayList<>();
         if (initialChoiceGroup != null) {
             choiceGroups.add(initialChoiceGroup);
         }
         abstractElements.forEach(elem -> registerXsdElementsRecursively(data, elem, initialChoiceGroup, choiceGroups, xsdMapping, result, config));
-
-        // Add conditions
-        choiceGroups.forEach(choiceGroup -> {
-			if (choiceGroup.attributes.size() > 1) {
-				Condition choice = SimpleFactory.eINSTANCE.createCondition();
-				choice.setName("Choice");
-				// TODO: shouldn't the count of parent attributes also be taken into account?
-				if (choiceGroup.attributes.size() == data.getAttributes().size() && choiceGroup.required) {
-					OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
-					oneOf.setOperator("one-of");
-					choice.setExpression(oneOf);
-				} else {
-					ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
-					op.setOperator("choice");
-					op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
-					op.getAttributes().addAll(choiceGroup.attributes);
-					choice.setExpression(op);
-				}
-				data.getConditions().add(choice);
-			} else if (choiceGroup.attributes.size() == 1 && choiceGroup.required) {
-				Attribute attr = choiceGroup.attributes.get(0);
-				attr.getCard().setInf(1);
-			}
-        });
     }
 
 	@Override
 	public void completeType(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping) {
 		if (xsdType instanceof XsdGroup group) {
-			completeXsdElementsRecursively(group.getChildElement(), false, xsdMapping);
+			Data data = xsdMapping.getRosettaTypeFromGroup(group);
+			completeData(data, Stream.of(group.getChildElement()), null, xsdMapping);
 		} else {
 			XsdComplexType ct = (XsdComplexType)xsdType;
             Data data = xsdMapping.getRosettaTypeFromComplex(ct);
@@ -272,11 +252,10 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 					attr.setTypeCall(xsdMapping.getRosettaTypeCall(base));
 				});
 			
-			Stream.concat(getChildElement(ct).stream(), getAttributes(ct))
-				.forEach(content -> completeXsdElementsRecursively(content, false, xsdMapping));
+			completeData(data, Stream.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping);
 		}
 	}
-	private void completeXsdElementsRecursively(XsdAbstractElement abstractElement, boolean isChoiceGroup, RosettaXsdMapping xsdMapping) {
+	private void completeXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping) {
         if (abstractElement instanceof XsdElement elem) {
         	Attribute attr = xsdMapping.getAttribute(elem);
 			if (elem.getTypeAsXsd() != null) {
@@ -285,9 +264,15 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				// TODO
 				attr.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));
 			}
+			if (currentChoiceGroup != null) {
+				currentChoiceGroup.attributes.add(attr);
+			}
         } else if (abstractElement instanceof XsdGroup group) {
         	Attribute attr = xsdMapping.getAttribute(group);
 			attr.setTypeCall(xsdMapping.getRosettaTypeCall(group));
+			if (currentChoiceGroup != null) {
+				currentChoiceGroup.attributes.add(attr);
+			}
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
         	Attribute attr = xsdMapping.getAttribute(xsdAttr);
 			if (xsdAttr.getXsdSimpleType() != null) {
@@ -298,33 +283,87 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				// TODO
 				attr.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));
 			}
+			if (currentChoiceGroup != null) {
+				currentChoiceGroup.attributes.add(attr);
+			}
         } else if (abstractElement instanceof XsdSequence seq) {
-            if (isChoiceGroup || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
-            	seq.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, false, xsdMapping));
+            if (currentChoiceGroup != null || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
+            	Data newData = xsdMapping.getRosettaTypeFromComplex(seq);
+            	completeData(newData, seq.getXsdElements(), null, xsdMapping);
+            	
             	Attribute attr = xsdMapping.getAttribute(seq);
     			attr.setTypeCall(xsdMapping.getRosettaTypeCall(seq));
+    			if (currentChoiceGroup != null) {
+    				currentChoiceGroup.attributes.add(attr);
+    			}
             } else {
-            	seq.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, isChoiceGroup, xsdMapping));
+            	seq.getXsdElements().forEach(elem -> completeXsdElementsRecursively(currentData, elem, null, currentChoiceGroups, xsdMapping));
             }
         } else if (abstractElement instanceof XsdAll all) {
-            if (isChoiceGroup || all.getMinOccurs() == 0) {
-            	all.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, false, xsdMapping));
+            if (currentChoiceGroup != null || all.getMinOccurs() == 0) {
+            	Data newData = xsdMapping.getRosettaTypeFromComplex(all);
+            	completeData(newData, all.getXsdElements(), null, xsdMapping);
+            	
             	Attribute attr = xsdMapping.getAttribute(all);
     			attr.setTypeCall(xsdMapping.getRosettaTypeCall(all));
+    			if (currentChoiceGroup != null) {
+    				currentChoiceGroup.attributes.add(attr);
+    			}
             } else {
-            	all.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, isChoiceGroup, xsdMapping));
+            	all.getXsdElements().forEach(elem -> completeXsdElementsRecursively(currentData, elem, null, currentChoiceGroups, xsdMapping));
             }
         } else if (abstractElement instanceof XsdChoice choice) {
-            if (isChoiceGroup || isMulti(choice.getMaxOccurs())) {
-            	choice.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, true, xsdMapping));
-            	Attribute attr = xsdMapping.getAttribute(choice);
+            if (currentChoiceGroup != null || isMulti(choice.getMaxOccurs())) {
+            	boolean required = choice.getMinOccurs() > 0 && choice.getXsdElements().allMatch(elem -> Integer.parseInt(elem.getAttributesMap().getOrDefault(MIN_OCCURS_TAG, "1")) > 0);
+                ChoiceGroup initialChoiceGroup = new ChoiceGroup(new ArrayList<>(), required);
+                Data newData = xsdMapping.getRosettaTypeFromComplex(choice);
+                completeData(newData, choice.getXsdElements(), initialChoiceGroup, xsdMapping);
+            	
+                Attribute attr = xsdMapping.getAttribute(choice);
     			attr.setTypeCall(xsdMapping.getRosettaTypeCall(choice));
+    			if (currentChoiceGroup != null) {
+    				currentChoiceGroup.attributes.add(attr);
+    			}
             } else {
-            	choice.getXsdElements().forEach(child -> completeXsdElementsRecursively(child, true, xsdMapping));
+            	ChoiceGroup newChoiceGroup = new ChoiceGroup(new ArrayList<>(), choice.getMinOccurs() > 0);
+                currentChoiceGroups.add(newChoiceGroup);
+            	choice.getXsdElements().forEach(child -> completeXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping));
             }
-        } else {
-        	return;
         }
+    }
+	private void completeData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping) {
+        List<ChoiceGroup> choiceGroups = new ArrayList<>();
+        if (initialChoiceGroup != null) {
+            choiceGroups.add(initialChoiceGroup);
+        }
+		
+        // Complete attributes
+        abstractElements.forEach(elem -> completeXsdElementsRecursively(data, elem, initialChoiceGroup, choiceGroups, xsdMapping));
+
+        // Add conditions
+        choiceGroups.forEach(choiceGroup -> {
+			if (choiceGroup.attributes.size() > 1) {
+				Condition choice = SimpleFactory.eINSTANCE.createCondition();
+				choice.setName("Choice");
+				if (choiceGroup.attributes.size() == Iterables.size(ecoreUtil.getAllAttributes(data)) && choiceGroup.required) {
+					OneOfOperation oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation();
+					oneOf.setOperator("one-of");
+					choice.setExpression(oneOf);
+				} else {
+					ChoiceOperation op = ExpressionFactory.eINSTANCE.createChoiceOperation();
+					op.setOperator("choice");
+					op.setNecessity(choiceGroup.required ? Necessity.REQUIRED : Necessity.OPTIONAL);
+					op.getAttributes().addAll(choiceGroup.attributes);
+					choice.setExpression(op);
+				}
+				data.getConditions().add(choice);
+			} else if (choiceGroup.attributes.size() == 1 && choiceGroup.required) {
+				Attribute attr = choiceGroup.attributes.get(0);
+				attr.getCard().setInf(1);
+			}
+        });
+        
+        util.makeNamesUnique(data.getConditions());
     }
 	
 	public Map<Data, TypeXMLConfiguration> getXMLConfiguration(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, String schemaTargetNamespace) {

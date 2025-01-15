@@ -27,6 +27,10 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.rosetta.model.lib.annotations.RuneDataType
+import com.regnosys.rosetta.config.RosettaConfiguration
+import com.rosetta.model.lib.annotations.RuneAttribute
+import com.rosetta.model.lib.annotations.RuneMetaType
 
 class ModelObjectGenerator {
 	
@@ -36,6 +40,7 @@ class ModelObjectGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 	@Inject extension TypeCoercionService
+	@Inject RosettaConfiguration rosettaConfiguration
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,
@@ -58,6 +63,7 @@ class ModelObjectGenerator {
 		'''
 			«javaType.javadoc»
 			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
+			@«RuneDataType»(value="«javaType.rosettaName»", model="«rosettaConfiguration.model.name»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
 			public interface «javaType» extends «implementsClause(javaType)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
@@ -165,6 +171,7 @@ class ModelObjectGenerator {
 		}
 
 		@Override
+		@«RuneAttribute»("@type")
 		default Class<? extends «javaType»> getType() {
 			return «javaType».class;
 		}
@@ -227,6 +234,8 @@ class ModelObjectGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
+			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			public «prop.type» «prop.getterName»() «field.completeAsReturn.toBlock»
 			
 			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, scope)»«ENDIF»

@@ -2,7 +2,6 @@ package com.regnosys.rosetta.tests.util
 
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.validation.AbstractRosettaValidator
-import com.regnosys.rosetta.validation.StandaloneRosettaTypingValidator
 import java.util.List
 import org.eclipse.emf.common.util.BasicDiagnostic
 import org.eclipse.emf.common.util.Diagnostic
@@ -16,10 +15,11 @@ import static com.google.common.collect.Iterables.isEmpty
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 import javax.inject.Named
+import com.regnosys.rosetta.validation.ReportValidator
 
 class ExpressionValidationHelper {
 	@Inject
-	extension StandaloneRosettaTypingValidator // TODO: replace this with RosettaValidator once old type system has been removed
+	extension ReportValidator // TODO: replace this with RosettaValidator once old type system has been removed
 	@Inject@Named(Constants.LANGUAGE_NAME) 
 	String languageName;
 	
