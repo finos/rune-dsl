@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import org.eclipse.emf.common.util.BasicEList
@@ -141,7 +142,7 @@ class RosettaSymbolReference extends RosettaReference {
 	}
 }
 
-class RosettaImplicitVariable extends RosettaReference, RosettaNamed {
+class RosettaImplicitVariable extends RosettaReference, RosettaNamed, AnnotationPathExpression {
 }
 
 class RosettaFeatureCall extends RosettaExpression {

@@ -36,6 +36,39 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testLabelAnnotation() {
+		'''
+			type Foo:
+				attr1 string (1..1)
+					[label as "My Attribute"]
+				attr2 string (1..1)
+					[label item as "My Attribute"]
+				bar Bar (1..1)
+					[label barAttr as "Bar Attribute"]
+					[label item -> nestedBar -> barAttr as "Nested Bar Attribute"]
+«««				qux Qux (1..1)
+«««					[label item ->> id as "Qux ID"]
+			
+			
+			type Bar:
+				barAttr string (1..1)
+				nestedBar Bar (0..1)
+			
+			choice Qux:
+				Opt1
+				Opt2
+			
+			type Opt1:
+				id string (1..1)
+				opt1Attr int (1..1)
+			
+			type Opt2:
+				id string (1..1)
+				opt2Attribute int (1..1)
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testCannotOverrideAttributeOfItself() {
 		'''
 			type Foo:
