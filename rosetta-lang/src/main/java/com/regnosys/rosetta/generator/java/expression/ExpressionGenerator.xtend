@@ -72,7 +72,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.SortOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
@@ -248,7 +248,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val JavaType actualType = if (definingContainer instanceof Data || definingContainer instanceof RosettaRule) {
 			// For conditions and rules
 			itemType
-		} else if (definingContainer instanceof SwitchCase) {
+		} else if (definingContainer instanceof SwitchCaseOrDefault) {
 			// For choice switch cases
 			MAPPER_S.wrap(itemType)
 		} else {
@@ -1283,12 +1283,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		result
  	}
 
- 	private def JavaStatementBuilder createSwitchJavaExpression(SwitchOperation expr, JavaStatementBuilder switchArgument, Function3<JavaStatementBuilder, SwitchCase, JavaExpression, JavaStatementBuilder> fold, Context context) {
+ 	private def JavaStatementBuilder createSwitchJavaExpression(SwitchOperation expr, JavaStatementBuilder switchArgument, Function3<JavaStatementBuilder, SwitchCaseOrDefault, JavaExpression, JavaStatementBuilder> fold, Context context) {
  		val defaultExpr = expr.^default === null ? JavaExpression.NULL : expr.^default.javaCode(context.expectedType, context.scope)
  		switchArgument
 				.declareAsVariable(true, "switchArgument", context.scope)
 				.mapExpression[switchArg|
-					val javaSwitchExpr = expr.cases.reverseView
+					val javaSwitchExpr = expr.cases.filter[!isDefault].toList.reverseView
 						.fold(defaultExpr, [acc,^case|fold.apply(acc, ^case, switchArg)])
 					typeCoercionService.addCoercions(switchArg, switchArg.expressionType.itemType, context.scope)
 						.mapExpression[JavaExpression.from('''«it» == null''', JavaPrimitiveType.BOOLEAN)]
