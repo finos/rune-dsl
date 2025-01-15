@@ -148,7 +148,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 	}
-	
+
 	@Check
 	def void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
 		if (rule.input === null) {
