@@ -302,7 +302,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 		namespace foo.bar
 		
 		import dsl.foo.*
-		import dsl.aaa.*
+		import asl.aaa.*
 		
 		func Bar:
 			inputs: foo Foo (1..1)
@@ -320,7 +320,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				type Foo:
 					a int (1..1)
 			''', "ach.rosetta" -> '''
-				namespace dsl.aaa
+				namespace asl.aaa
 								
 				type Aaa:
 					a int (1..1)
@@ -333,7 +333,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				sorted.get(0) => [
 					assertEquals("Sort imports.", title)
 					edit.changes.values.head.head => [
-						assertEquals("import dsl.aaa.*\nimport dsl.foo.*", newText) // imports are sorted
+						assertEquals("import asl.aaa.*\n\nimport dsl.foo.*", newText) // imports are sorted
 						assertEquals(new Position(2, 0), range.start)
 						assertEquals(new Position(3, 16), range.end)
 					]

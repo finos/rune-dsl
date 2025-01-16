@@ -95,12 +95,25 @@ public class ImportManagementService {
 
 	public String toString(List<Import> imports) {
 		StringBuilder sortedImportsText = new StringBuilder();
+		
+		Import previousImport = null;
 		for (Import imp : imports) {
+			//if previous import comes from a different package, insert new line
+			if (previousImport != null) {
+				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
+				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
+				if(!previousFirstSegment.equals(currentFirstSegment)) {
+					sortedImportsText.append("\n");
+				}
+			}
 			sortedImportsText.append("import ").append(imp.getImportedNamespace());
 			if (imp.getNamespaceAlias() != null) {
 				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
 			}
 			sortedImportsText.append("\n");
+			
+			
+			previousImport = imp;
 		}
 
 		return sortedImportsText.toString().strip();
