@@ -71,7 +71,7 @@ import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.DefaultOperation
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault
 import com.regnosys.rosetta.rosetta.RosettaParameter
 
 class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
@@ -166,7 +166,7 @@ class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Boolean> {
 				isClosureParameterMulti(it.function)
 			} else if (it instanceof RosettaRule) {
 				false
-			} else if (it instanceof SwitchCase) {
+			} else if (it instanceof SwitchCaseOrDefault) {
 				false
 			} else {
 				false

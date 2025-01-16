@@ -19,9 +19,10 @@ import com.regnosys.rosetta.interpreter.RosettaInterpreter;
 import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.expression.RosettaLiteral;
-import com.regnosys.rosetta.rosetta.expression.SwitchCase;
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault;
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
+import com.regnosys.rosetta.services.RosettaGrammarAccess;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
@@ -31,13 +32,26 @@ import com.regnosys.rosetta.types.builtin.RBasicType;
 public class SwitchValidator extends ExpressionValidator {
 	@Inject
 	private RosettaInterpreter interpreter;
+	@Inject
+	private RosettaGrammarAccess grammar;
 	
 	@Check
 	public void checkSwitch(SwitchOperation op) {
 		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, op);
+		
+		// Check `default` is the last case
+		for (int i=0; i<op.getCases().size()-1; i++) {
+			SwitchCaseOrDefault caseStatement = op.getCases().get(i);
+			if (caseStatement.isDefault()) {
+				errorKeyword("A default case is only allowed at the end", caseStatement, grammar.getSwitchCaseOrDefaultAccess().getDefaultKeyword_0_0());
+			}
+		}
+		
 		RMetaAnnotatedType argumentType = typeProvider.getRMetaAnnotatedType(op.getArgument());
 		RType rType = typeSystem.stripFromTypeAliases(argumentType.getRType());
-		if (rType instanceof REnumType) {
+		if (rType.equals(builtins.NOTHING)) {
+			// If there is an error within the argument, do not check further
+		} else if (rType instanceof REnumType) {
 			checkEnumSwitch((REnumType) rType, op);
 		} else if (rType instanceof RBasicType) {
 			checkBasicTypeSwitch((RBasicType) rType, op);
@@ -53,13 +67,16 @@ public class SwitchValidator extends ExpressionValidator {
 		// - there are no duplicate cases,
 		// - all enum values must be covered.
 		Set<RosettaEnumValue> seenValues = new HashSet<>();
-		for (SwitchCase caseStatement : op.getCases()) {
+		for (SwitchCaseOrDefault caseStatement : op.getCases()) {
+			if (caseStatement.isDefault()) {
+				continue;
+			}
 			RosettaEnumValue guard = caseStatement.getGuard().getEnumGuard();
  			if (guard == null) {
- 				error("Case should match an enum value of " + argumentType, caseStatement, SWITCH_CASE__GUARD);
+ 				error("Case should match an enum value of " + argumentType, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  			} else {
  				if (!seenValues.add(guard)) {
- 					error("Duplicate case " + guard.getName(), caseStatement, SWITCH_CASE__GUARD);
+ 					error("Duplicate case " + guard.getName(), caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  				}
  			}
  		}
@@ -80,17 +97,20 @@ public class SwitchValidator extends ExpressionValidator {
 		// - all guards should be comparable to the input.
 		Set<RosettaValue> seenValues = new HashSet<>();
 		RMetaAnnotatedType argumentTypeWithoutMeta = RMetaAnnotatedType.withNoMeta(argumentType);
- 		for (SwitchCase caseStatement : op.getCases()) {
+ 		for (SwitchCaseOrDefault caseStatement : op.getCases()) {
+ 			if (caseStatement.isDefault()) {
+				continue;
+			}
  			RosettaLiteral guard = caseStatement.getGuard().getLiteralGuard();
  			if (guard == null) {
- 				error("Case should match a literal of type " + argumentType, caseStatement, SWITCH_CASE__GUARD);
+ 				error("Case should match a literal of type " + argumentType, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  			} else {
  				if (!seenValues.add(interpreter.interpret(guard))) {
- 					error("Duplicate case", caseStatement, SWITCH_CASE__GUARD);
+ 					error("Duplicate case", caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  				}
  				RMetaAnnotatedType conditionType = typeProvider.getRMetaAnnotatedType(guard);
 	 			if (!typeSystem.isComparable(conditionType, argumentTypeWithoutMeta)) {
- 					error("Invalid case: " + notComparableMessage(conditionType, argumentTypeWithoutMeta), caseStatement, SWITCH_CASE__GUARD);
+ 					error("Invalid case: " + notComparableMessage(conditionType, argumentTypeWithoutMeta), caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  				}
  			}
  		}
@@ -101,14 +121,17 @@ public class SwitchValidator extends ExpressionValidator {
 		// - all cases should be reachable,
 		// - all choice options should be covered.
 		Map<ChoiceOption, RMetaAnnotatedType> includedOptions = new HashMap<>();
-		for (SwitchCase caseStatement : op.getCases()) {
+		for (SwitchCaseOrDefault caseStatement : op.getCases()) {
+			if (caseStatement.isDefault()) {
+				continue;
+			}
 			ChoiceOption guard = caseStatement.getGuard().getChoiceOptionGuard();
  			if (guard == null) {
- 				error("Case should match a choice option of type " + argumentType, caseStatement, SWITCH_CASE__GUARD);
+ 				error("Case should match a choice option of type " + argumentType, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  			} else {
  				RMetaAnnotatedType alreadyCovered = includedOptions.get(guard);
  				if (alreadyCovered != null) {
- 					error("Case already covered by " + alreadyCovered, caseStatement, SWITCH_CASE__GUARD);
+ 					error("Case already covered by " + alreadyCovered, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
  				} else {
  					RMetaAnnotatedType guardType = typeProvider.getRTypeOfSymbol(guard);
  					includedOptions.put(guard, guardType);
