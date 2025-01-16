@@ -678,7 +678,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(TYPE_CALL, null,
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT,
 			"Missing attributes `b`, `c`. Perhaps you forgot a `...` at the end of the constructor?"
 		)
 	}
@@ -775,7 +775,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(TYPE_CALL, null,
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT,
 			"Missing attributes `month`, `year`."
 		)
 	}

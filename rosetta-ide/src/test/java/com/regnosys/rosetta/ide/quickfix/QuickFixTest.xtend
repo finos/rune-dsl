@@ -296,7 +296,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 		]
 	}
 
-@Test
+	@Test
 	def testResolveUnsortedImports() {
 		val model = '''
 		namespace foo.bar
@@ -336,6 +336,194 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 						assertEquals("import dsl.aaa.*\nimport dsl.foo.*", newText) // imports are sorted
 						assertEquals(new Position(2, 0), range.start)
 						assertEquals(new Position(3, 16), range.end)
+					]
+				]
+			]
+		]
+	}
+	
+	
+	@Test
+    def testQuickFixConstructorAttributes() {
+    	val model = '''
+		namespace test
+		
+		type T:
+			a string (1..1)
+		func F:
+			output: t T (1..1)
+			set t : T {}
+		'''
+		
+		testCodeAction[
+			it.model = model
+			assertCodeActions = [
+				assertEquals(2, size) // mandatory attributes + all attributes quickfixes
+				
+				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
+
+				sorted.get(0).getRight => [
+					assertEquals("Auto add all attributes.", title)
+					assertEquals(edit, null) // make sure no edits are made at this point
+				]
+				
+				sorted.get(1).getRight => [
+					assertEquals("Auto add mandatory attributes.", title)
+					assertEquals(edit, null) // make sure no edits are made at this point
+				]
+			]
+		]
+    }
+    
+    
+    @Test
+	def testResolveConstructorAttributes() {
+		val model = '''
+		namespace test
+		
+		type T:
+			a string (1..1)
+			b string (0..1)
+		func F:
+			output: t T (1..1)
+			set t : T {}
+		'''
+		
+		testResultCodeAction[	
+			it.model = model
+			it.assertCodeActionResolution = [
+				assertEquals(2, size) // mandatory attributes + all attributes quickfixes
+				
+				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
+				
+				sorted.get(0) => [
+					assertEquals("Auto add all attributes.", title)
+					edit.changes.values.head.head => [
+						val expectedResult = '''
+						T {
+						            a: empty,
+						            b: empty
+						        }
+						'''
+						assertEquals(expectedResult, newText) // all attributes are added
+						assertEquals(new Position(7, 9), range.start)
+						assertEquals(new Position(8, 0), range.end)
+					]
+				]
+				
+				sorted.get(1) => [
+					assertEquals("Auto add mandatory attributes.", title)
+					edit.changes.values.head.head => [
+						val expectedResult = '''
+						T {
+						            a: empty,
+						            ...
+						        }
+						'''
+						assertEquals(expectedResult, newText) // mandatory attribute is added
+						assertEquals(new Position(7, 9), range.start)
+						assertEquals(new Position(8, 0), range.end)
+					]
+				]
+			]
+		]
+	}
+	
+	@Test
+    def testQuickFixChoiceAttributes() {
+    	val model = '''
+		namespace test
+		
+		type A:
+			n string (0..1)
+		
+		type B:
+			m string (0..1)
+		
+		choice C:
+			A
+			B
+		
+		func F:
+			output: c C (1..1)
+			set c : C {}
+		'''
+		
+		testCodeAction[
+			it.model = model
+			assertCodeActions = [
+				assertEquals(2, size) // mandatory attributes + all attributes quickfixes
+				
+				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
+
+				sorted.get(0).getRight => [
+					assertEquals("Auto add all attributes.", title)
+					assertEquals(edit, null) // make sure no edits are made at this point
+				]
+				
+				sorted.get(1).getRight => [
+					assertEquals("Auto add mandatory attributes.", title)
+					assertEquals(edit, null) // make sure no edits are made at this point
+				]
+			]
+		]
+    }
+    
+    
+    @Test
+	def testResolveChoiceAttributes() {
+		val model = '''
+		namespace test
+		
+		type A:
+			n string (0..1)
+		
+		type B:
+			m string (0..1)
+		
+		choice C:
+			A
+			B
+		
+		func F:
+			output: c C (1..1)
+			set c : C {}
+		'''
+		
+		testResultCodeAction[	
+			it.model = model
+			it.assertCodeActionResolution = [
+				assertEquals(2, size) // mandatory attributes + all attributes quickfixes
+				
+				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
+				
+				sorted.get(0) => [
+					assertEquals("Auto add all attributes.", title)
+					edit.changes.values.head.head => [
+						val expectedResult = '''
+						C {
+						            A: empty,
+						            B: empty
+						        }
+						'''
+						assertEquals(expectedResult, newText) // all attributes are added
+						assertEquals(new Position(14, 9), range.start)
+						assertEquals(new Position(15, 0), range.end)
+					]
+				]
+				
+				sorted.get(1) => [
+					assertEquals("Auto add mandatory attributes.", title)
+					edit.changes.values.head.head => [
+						val expectedResult = '''
+						C {
+						            A: empty,
+						            B: empty
+						        }
+						'''
+						assertEquals(expectedResult, newText) // mandatory attribute is added
+						assertEquals(new Position(14, 9), range.start)
+						assertEquals(new Position(15, 0), range.end)
 					]
 				]
 			]

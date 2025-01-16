@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.ide.quickfix;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR;
+import static org.eclipse.xtext.EcoreUtil2.getContainerOfType;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.xtext.ide.editor.quickfix.AbstractDeclarativeIdeQuickfixProvider;
 import org.eclipse.xtext.ide.editor.quickfix.DiagnosticResolutionAcceptor;
+import org.eclipse.xtext.ide.editor.quickfix.ISemanticModification;
 import org.eclipse.xtext.ide.editor.quickfix.QuickFix;
 import org.eclipse.xtext.ide.server.Document;
 
@@ -35,6 +37,7 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
 import com.regnosys.rosetta.ide.util.RangeUtils;
 import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.utils.ImportManagementService;
 import com.regnosys.rosetta.validation.RosettaIssueCodes;
@@ -48,6 +51,8 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	private CodeActionUtils codeActionUtils;
 	@Inject
 	private ICodeActionProvider codeActionProvider;
+	@Inject
+	private ConstructorQuickFix constructorQuickFix;
 
 	@QuickFix(RosettaIssueCodes.REDUNDANT_SQUARE_BRACKETS)
 	public void fixRedundantSquareBrackets(DiagnosticResolutionAcceptor acceptor) {
@@ -112,5 +117,19 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 			return codeActionProvider.sortImportsResolution(object);
 		});
 	}
+	
+    @QuickFix(RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
+    public void missingAttributes(DiagnosticResolutionAcceptor acceptor) {
+        ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) ->
+                context -> constructorQuickFix.modifyConstructorWithMandatoryAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
+        acceptor.accept("Auto add mandatory attributes.", semanticModification);
+    }
+
+    @QuickFix(RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
+    public void addAllMissingAttributes(DiagnosticResolutionAcceptor acceptor) {
+        ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) ->
+                context -> constructorQuickFix.modifyConstructorWithAllAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
+        acceptor.accept("Auto add all attributes.", semanticModification);
+    }
 
 }
