@@ -50,8 +50,6 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	@Inject 
 	private CodeActionUtils codeActionUtils;
 	@Inject
-	private ICodeActionProvider codeActionProvider;
-	@Inject
 	private ConstructorQuickFix constructorQuickFix;
 
 	@QuickFix(RosettaIssueCodes.REDUNDANT_SQUARE_BRACKETS)
@@ -111,13 +109,6 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 		});
 	}
 
-	@QuickFix(RosettaIssueCodes.UNSORTED_IMPORTS)
-	public void sortImports(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Sort imports.", (Diagnostic diagnostic, EObject object, Document document) -> {
-			return codeActionProvider.sortImportsResolution(object);
-		});
-	}
-	
     @QuickFix(RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
     public void missingAttributes(DiagnosticResolutionAcceptor acceptor) {
         ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) ->

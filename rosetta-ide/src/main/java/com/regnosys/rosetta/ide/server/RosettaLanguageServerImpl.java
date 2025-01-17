@@ -42,9 +42,13 @@ import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
+import org.eclipse.xtext.ide.server.Document;
+import org.eclipse.xtext.ide.server.ILanguageServerAccess;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
+import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
@@ -225,14 +229,26 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 			}
 
 			URI uri = getURI(codeActionParams.getTextDocument());
-			IQuickFixProvider quickfixes = getService(uri, IQuickFixProvider.class);
 			
 			return getWorkspaceManager().doRead(uri, (doc, resource) -> {
-				ICodeActionService2.Options baseOptions = resolveCodeActionService.createCodeActionBaseOptions(doc,
+				ICodeActionService2.Options baseOptions = createCodeActionBaseOptions(doc,
 						resource, getLanguageServerAccess(), codeActionParams, cancelIndicator);
-				return resolveCodeActionService.getCodeActionResolution(unresolved, quickfixes, baseOptions);
+				return resolveCodeActionService.getCodeActionResolution(unresolved, baseOptions);
 			});
 		});
+	}
+
+	private Options createCodeActionBaseOptions(Document doc, XtextResource resource,
+			ILanguageServerAccess languageServerAcces, CodeActionParams codeActionParams,
+			CancelIndicator cancelIndicator) {
+		Options baseOptions = new ICodeActionService2.Options();
+		baseOptions.setDocument(doc);
+		baseOptions.setResource(resource);
+		baseOptions.setLanguageServerAccess(languageServerAcces);
+		baseOptions.setCodeActionParams(codeActionParams);
+		baseOptions.setCancelIndicator(cancelIndicator);
+
+		return baseOptions;
 	}
 	
 }
