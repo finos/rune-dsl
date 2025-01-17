@@ -46,8 +46,8 @@ class RosettaParsingTest {
 				bar Bar (1..1)
 					[label barAttr as "Bar Attribute"]
 					[label item -> nestedBar -> barAttr as "Nested Bar Attribute"]
-«««				qux Qux (1..1)
-«««					[label item ->> id as "Qux ID"]
+				qux Qux (1..1)
+					[label item ->> id as "Qux ID"]
 			
 			
 			type Bar:
@@ -69,6 +69,20 @@ class RosettaParsingTest {
 	}
 	
 	@Test
+	def void canSwitchWithSingleCase() {
+		val context = '''			
+			choice NumberChoice:
+			    number
+		'''.parseRosettaWithNoIssues
+		
+		'''
+		x switch
+			number then 42
+		'''
+			.parseExpression(#[context], #["x NumberChoice (1..1)"])
+			.assertNoIssues
+	}
+	
 	def void testCannotOverrideAttributeOfItself() {
 		'''
 			type Foo:
