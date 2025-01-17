@@ -553,7 +553,7 @@ class RosettaParsingTest {
                
                condition C:
                    [deprecated] // the parser should parse this as an annotation, not a list
-                   extract it -> a
+                   extract item -> a
                    then exists
            
            func F:

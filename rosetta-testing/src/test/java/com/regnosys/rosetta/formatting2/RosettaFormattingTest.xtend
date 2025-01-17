@@ -536,7 +536,7 @@ class RosettaFormattingTest {
 				type AllocationOutcome:
 					condition C1:
 						if True
-						then True extract [it = False] = True
+						then True extract [item = False] = True
 					condition C2:
 						True
 			''', '''
@@ -548,7 +548,7 @@ class RosettaFormattingTest {
 						if True
 						then True
 								extract [
-									it = False
+									item = False
 								] = True
 				
 					condition C2:
