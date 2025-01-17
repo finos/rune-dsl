@@ -83,6 +83,7 @@ class RosettaParsingTest {
 			.assertNoIssues
 	}
 	
+	@Test
 	def void testCannotOverrideAttributeOfItself() {
 		'''
 			type Foo:

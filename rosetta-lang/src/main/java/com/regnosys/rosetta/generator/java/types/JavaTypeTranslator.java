@@ -58,6 +58,7 @@ import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.model.lib.reports.Tabulator;
@@ -127,6 +128,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		default:
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 
+	}
+	public GeneratedJavaClass<LabelProvider> toLabelProviderJavaClass(RFunction function) {
+		DottedPath packageName = function.getNamespace().child("labels");
+		String simpleName = function.getAlphanumericName() + "LabelProvider";
+		return new GeneratedJavaClass<>(packageName, simpleName, LabelProvider.class);
 	}
 	public JavaClass<RosettaFunction> toFunctionJavaClass(Function func) {
 		return generatedJavaClassService.toJavaFunction(modelIdProvider.getSymbolId(func));

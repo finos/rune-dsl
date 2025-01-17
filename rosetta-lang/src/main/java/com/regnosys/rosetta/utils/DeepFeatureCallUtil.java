@@ -1,8 +1,11 @@
 package com.regnosys.rosetta.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -14,7 +17,36 @@ import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
 
-public class DeepFeatureCallUtil {	
+public class DeepFeatureCallUtil {
+	public List<List<RAttribute>> findDeepFeaturePaths(RDataType type, RAttribute deepFeature) {
+		List<List<RAttribute>> result = new ArrayList<>();
+		findDeepFeaturePaths(type, new ArrayList<>(), deepFeature, result);
+		return result;
+	}
+	private void findDeepFeaturePaths(RDataType currentType, List<RAttribute> currentPath, RAttribute deepFeature, List<List<RAttribute>> paths) {
+		Collection<RAttribute> allAttrs = currentType.getAllAttributes();
+		Optional<RAttribute> matchingAttribute = allAttrs.stream().filter(a -> match(a, deepFeature)).findAny();
+		matchingAttribute
+			.ifPresentOrElse(
+				a -> {
+					currentPath.add(a);
+					paths.add(currentPath);
+				},
+				() -> {
+					allAttrs.forEach(a -> {
+						RType attrType = a.getRMetaAnnotatedType().getRType();
+						if (attrType instanceof RChoiceType) {
+							attrType = ((RChoiceType) attrType).asRDataType();
+						}
+						if (attrType instanceof RDataType) {
+							List<RAttribute> newPath = new ArrayList<>(currentPath);
+							newPath.add(a);
+							findDeepFeaturePaths((RDataType) attrType, newPath, deepFeature, paths);
+						}
+					});
+				});
+	}
+	
 	public Collection<RAttribute> findDeepFeatures(RDataType type) {
 		return findDeepFeatureMap(type).values();
 	}
