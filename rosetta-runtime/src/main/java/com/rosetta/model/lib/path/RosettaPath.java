@@ -172,6 +172,25 @@ public class RosettaPath implements Comparable<RosettaPath> {
     	if (parent==null) return false;
     	return parent.containsPath(subPath);
     }
+
+    public boolean startsWith(RosettaPath other) {
+        LinkedList<RosettaPath.Element> list = this.allElements();
+        LinkedList<RosettaPath.Element> prefix = other.allElements();
+        if (prefix == null || prefix.isEmpty()) {
+            return true;
+        }
+        if (list == null || list.size() < prefix.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < prefix.size(); i++) {
+            if (!list.get(i).equals(prefix.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     
     @Override
     public boolean equals(Object o) {
