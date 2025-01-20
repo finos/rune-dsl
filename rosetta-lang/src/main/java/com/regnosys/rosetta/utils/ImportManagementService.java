@@ -65,8 +65,16 @@ public class ImportManagementService {
 				// Check if the import is used
 				boolean isUsed;
 				if (isWildcard) {
-					isUsed = usedNames.stream().anyMatch(name -> name.skipLast(1).equals(qn.skipLast(1))
-							&& name.getSegmentCount() == qn.getSegmentCount());
+					QualifiedName importNamespace = qn.skipLast(1);
+					isUsed = usedNames.stream().anyMatch(name -> {
+	                    if (name.getSegmentCount() < importNamespace.getSegmentCount()) {
+	                        return false; // Used name is too short to match
+	                    }
+	                    // compare first segments of the used name with the import namespace
+	                    return name.skipLast(name.getSegmentCount() - importNamespace.getSegmentCount())
+	                            .equals(importNamespace);
+	                });
+					
 				} else {
 					isUsed = usedNames.contains(qn);
 				}

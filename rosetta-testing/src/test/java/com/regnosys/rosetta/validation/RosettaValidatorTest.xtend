@@ -3549,4 +3549,46 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		models.forEach[assertNoIssues]
 	}
+	
+	@Test
+	def void shouldNotWarnForUsedImports() {
+		val models = newArrayList('''
+			namespace dsl.test
+			
+			import foo.bar.* 
+			
+			type A:
+			  a qux.MyType (1..1)
+		''',
+		'''
+			namespace foo.bar.qux
+			
+			
+			type MyType:
+				a int (0..1)
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
+	
+	@Test
+	def void shouldNotWarnForUsedImportsWithAlias() {
+		val models = newArrayList('''
+			namespace dsl.test
+			
+			import foo.bar.* as bar
+			
+			type A:
+			  a bar.qux.MyType (1..1)
+		''',
+		'''
+			namespace foo.bar.qux
+			
+			
+			type MyType:
+				a int (0..1)
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
 }
