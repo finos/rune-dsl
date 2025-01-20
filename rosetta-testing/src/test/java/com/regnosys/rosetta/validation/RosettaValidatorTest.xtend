@@ -167,6 +167,17 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
+	def void testSwitchDefaultMustComeAtTheEnd() {
+ 		'''
+		42 switch
+			default False,
+			42 then True
+		'''
+ 			.parseExpression
+ 			.assertError(SWITCH_CASE_OR_DEFAULT, null, "A default case is only allowed at the end")
+	}
+	
+	@Test
 	def void testSwitchOnChoiceCannotHaveLiteralGuard() {
  		val model = '''
 			choice Foo:
@@ -184,7 +195,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			"Hello" then 2
 		'''
  			.parseExpression(#[model], #["foo Foo (1..1)"])
- 			.assertError(SWITCH_CASE, null, "Case should match a choice option of type Foo")
+ 			.assertError(SWITCH_CASE_OR_DEFAULT, null, "Case should match a choice option of type Foo")
 	}
 	
 	@Test
@@ -239,7 +250,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			Opt2 then 3
 		'''
  			.parseExpression(#[model], #["foo Foo (1..1)"])
- 			.assertError(SWITCH_CASE, null, "Case already covered by Bar")
+ 			.assertError(SWITCH_CASE_OR_DEFAULT, null, "Case already covered by Bar")
 	}
 	
 	@Test
@@ -336,7 +347,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			0 then 3
 		'''
  			.parseExpression
- 			.assertError(SWITCH_CASE, null, "Duplicate case")
+ 			.assertError(SWITCH_CASE_OR_DEFAULT, null, "Duplicate case")
 	}
 
 	@Test
@@ -427,7 +438,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  			default "defaultValue"
  		'''
  			.parseExpression(#[model], #["inEnum SomeEnum (1..1)"])
- 			.assertError(SWITCH_CASE, null, '''Case should match an enum value of SomeEnum''')
+ 			.assertError(SWITCH_CASE_OR_DEFAULT, null, '''Case should match an enum value of SomeEnum''')
  	}
 
 	@Test

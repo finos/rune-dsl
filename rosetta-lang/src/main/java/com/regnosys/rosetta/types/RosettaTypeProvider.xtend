@@ -81,7 +81,9 @@ import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Provider
 import org.eclipse.emf.ecore.EObject
-import com.regnosys.rosetta.rosetta.expression.SwitchCase
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.types.builtin.RStringType
@@ -271,9 +273,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType?.withNoMeta ?: NOTHING_WITH_NO_META
-			} else if (it instanceof SwitchCase) {
-				guard.choiceOptionGuard.RTypeOfSymbol
+				input?.typeCallToRType.withNoMeta ?: NOTHING_WITH_NO_META
+			} else if (it instanceof SwitchCaseOrDefault) {
+				guard?.choiceOptionGuard?.RTypeOfSymbol ?: NOTHING_WITH_NO_META
 			}
 		].orElse(NOTHING_WITH_NO_META)
 	}
