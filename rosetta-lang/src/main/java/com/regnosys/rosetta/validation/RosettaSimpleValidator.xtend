@@ -109,6 +109,7 @@ import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.utils.ImportManagementService
+import com.regnosys.rosetta.utils.ConstructorManagementService
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -131,6 +132,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RObjectFactory objectFactory
 	
 	@Inject ImportManagementService importManagementService;
+	@Inject ConstructorManagementService constructorManagementService;
 
 	
 	@Check
@@ -852,25 +854,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 					CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
 			}
 		}
-		val absentAttributes = rType
-			.allFeatures(ele)
-			.filter[!seenFeatures.contains(it)]
-		val requiredAbsentAttributes = absentAttributes
-			.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
+		
+		val featureGroup = constructorManagementService.groupConstructorFeatures(ele)
+		val requiredAbsentAttributes = featureGroup.requiredAbsentAttributes
+    	val optionalAbsentAttributes = featureGroup.optionalAbsentAttributes
 		if (ele.implicitEmpty) {
-			if (!requiredAbsentAttributes.empty) {
-			    // Already have a ... and still missing mandatory attributes
-				error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele, null, MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
-			}
-			if (absentAttributes.size === requiredAbsentAttributes.size) {
-				error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
-			}
-		} else {
-			// Do not have a ... and still missing mandatory/optional attributes 
-			if (!absentAttributes.empty) {
-				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele, null, MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
-			}
-		}
+	        if (!requiredAbsentAttributes.isEmpty) {
+	            error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele, null, MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
+	        }
+	        if (optionalAbsentAttributes.isEmpty) {
+	            error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
+	        }
+	    } else {
+	        val allAbsentAttributes = requiredAbsentAttributes + optionalAbsentAttributes
+	        if (!allAbsentAttributes.isEmpty) {
+	            error('''Missing attributes «FOR attr : allAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.isEmpty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele, null, MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
+	        }
+	    }
 	}
 
 	@Check

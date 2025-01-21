@@ -41,7 +41,6 @@ import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
 import org.eclipse.xtext.ide.server.Document;
 import org.eclipse.xtext.ide.server.ILanguageServerAccess;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
@@ -66,7 +65,6 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
 public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
 	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
 	@Inject CodeActionUtils codeActionUtils;
-	@Inject IResolveCodeActionService resolveCodeActionService;
 
 	@Override
 	protected ServerCapabilities createServerCapabilities(InitializeParams params) {
@@ -221,22 +219,28 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 	
 	@Override
 	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved) {
-		return getRequestManager().runRead((cancelIndicator) -> {
-			CodeActionParams codeActionParams = codeActionUtils.getCodeActionParams(unresolved);
+		return getRequestManager().runRead((cancelIndicator) -> this.resolveCodeAction(unresolved, cancelIndicator));
+	}
+	
+	protected CodeAction resolveCodeAction(CodeAction codeAction, CancelIndicator cancelIndicator) {
+		CodeActionParams codeActionParams = codeActionUtils.getCodeActionParams(codeAction);
 
-			if (codeActionParams.getTextDocument() == null) {
-				return null;
-			}
+		if (codeActionParams.getTextDocument() == null) {
+			return null;
+		}
 
-			URI uri = getURI(codeActionParams.getTextDocument());
+		URI uri = getURI(codeActionParams.getTextDocument());
+		
+		return getWorkspaceManager().doRead(uri, (doc, resource) -> {
+			ICodeActionService2.Options baseOptions = createCodeActionBaseOptions(doc,
+					resource, getLanguageServerAccess(), codeActionParams, cancelIndicator);
 			
-			return getWorkspaceManager().doRead(uri, (doc, resource) -> {
-				ICodeActionService2.Options baseOptions = createCodeActionBaseOptions(doc,
-						resource, getLanguageServerAccess(), codeActionParams, cancelIndicator);
-				return resolveCodeActionService.getCodeActionResolution(unresolved, baseOptions);
-			});
+			IResolveCodeActionService resolveCodeActionService = getService(uri, IResolveCodeActionService.class);
+			return resolveCodeActionService.getCodeActionResolution(codeAction, baseOptions);
 		});
 	}
+	
+	
 
 	private Options createCodeActionBaseOptions(Document doc, XtextResource resource,
 			ILanguageServerAccess languageServerAcces, CodeActionParams codeActionParams,

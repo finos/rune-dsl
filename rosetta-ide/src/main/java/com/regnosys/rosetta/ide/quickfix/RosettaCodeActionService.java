@@ -33,8 +33,6 @@ import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
-import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.utils.ImportManagementService;
 
 public class RosettaCodeActionService implements ICodeActionService2 {
 
@@ -47,10 +45,6 @@ public class RosettaCodeActionService implements ICodeActionService2 {
 
 	@Override
 	public List<Either<Command, CodeAction>> getCodeActions(Options options) {
-		boolean handleQuickfixes = options.getCodeActionParams().getContext().getOnly() == null
-				|| options.getCodeActionParams().getContext().getOnly().isEmpty()
-				|| options.getCodeActionParams().getContext().getOnly().contains(CodeActionKind.QuickFix);
-
 		List<Either<Command, CodeAction>> result = new ArrayList<>();
 		
 		//Handle Code Actions
@@ -58,6 +52,10 @@ public class RosettaCodeActionService implements ICodeActionService2 {
 				.map(action -> Either.<Command, CodeAction>forRight(action))
 				.collect(Collectors.toList());
 		result.addAll(codeActions);
+		
+		boolean handleQuickfixes = options.getCodeActionParams().getContext().getOnly() == null
+				|| options.getCodeActionParams().getContext().getOnly().isEmpty()
+				|| options.getCodeActionParams().getContext().getOnly().contains(CodeActionKind.QuickFix);
 		
 		if (handleQuickfixes) {
 			List<Diagnostic> diagnostics = options.getCodeActionParams().getContext().getDiagnostics();

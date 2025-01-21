@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.ide.quickfix;
+package com.regnosys.rosetta.utils;
 
 import com.google.common.collect.Lists;
 import com.regnosys.rosetta.RosettaEcoreUtil;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 
-public class ConstructorQuickFix {
+public class ConstructorManagementService {
     @Inject
     private RosettaTypeProvider types;
     @Inject
@@ -53,7 +53,7 @@ public class ConstructorQuickFix {
         }
     }
 
-    private RosettaFeatureGroup groupConstructorFeatures(RosettaConstructorExpression constructor) {
+    public RosettaFeatureGroup groupConstructorFeatures(RosettaConstructorExpression constructor) {
         if (constructor != null) {
             RMetaAnnotatedType metaAnnotatedType = types.getRMetaAnnotatedType(constructor);
             if (metaAnnotatedType != null && metaAnnotatedType.getRType() != null) {
@@ -71,7 +71,7 @@ public class ConstructorQuickFix {
                 .collect(Collectors.toList());
     }
 
-    private static class RosettaFeatureGroup {
+    public static class RosettaFeatureGroup {
         private final List<? extends RosettaFeature> populated;
         private final List<? extends RosettaFeature> all;
 
@@ -89,14 +89,14 @@ public class ConstructorQuickFix {
             return all.stream().filter(x -> !populated.contains(x)).collect(Collectors.toList());
         }
 
-        private List<RosettaFeature> requiredAbsentAttributes() {
+        public List<RosettaFeature> requiredAbsentAttributes() {
             return all.stream()
                     .filter(x -> !populated.contains(x))
                     .filter(RosettaFeatureGroup::isRequired)
                     .collect(Collectors.toList());
         }
 
-        private List<RosettaFeature> optionalAbsentAttributes() {
+        public List<RosettaFeature> optionalAbsentAttributes() {
             return all.stream()
                     .filter(x -> !populated.contains(x))
                     .filter(not(RosettaFeatureGroup::isRequired))

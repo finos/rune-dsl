@@ -20,24 +20,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
 import org.eclipse.xtext.ide.server.ILanguageServerShutdownAndExitHandler;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.ServerModule;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.service.AbstractGenericModule;
 
-import com.google.inject.util.Modules;
-import com.regnosys.rosetta.cache.IRequestScopedCache;
-import com.regnosys.rosetta.cache.RequestScopedCache;
-import com.regnosys.rosetta.ide.quickfix.ICodeActionProvider;
-import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
-import com.regnosys.rosetta.ide.quickfix.RosettaCodeActionProvider;
-import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixProvider;
-import com.regnosys.rosetta.ide.quickfix.RosettaResolveCodeActionService;
-import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 public class RosettaServerModule extends AbstractGenericModule {
 	/**
@@ -79,26 +69,6 @@ public class RosettaServerModule extends AbstractGenericModule {
 	 */
 	public Class<? extends LanguageServerImpl> bindLanguageServerImpl() {
 		return RosettaLanguageServerImpl.class;
-	}
-	
-	public Class<? extends IResolveCodeActionService> bindIResolveCodeActionService() {
-		return RosettaResolveCodeActionService.class;
-	}
-	
-	public Class<? extends ICodeActionProvider> bindICodeActionProvider() {
-		return RosettaCodeActionProvider.class;
-	}
-	
-	public Class<? extends IQuickFixProvider> bindIQuickFixProvider() {
-		return RosettaQuickFixProvider.class;
-	}
-	
-	public Class<? extends IRequestScopedCache> bindIRequestScopedCache() {
-		return RequestScopedCache.class;
-	}
-	
-	public Class<? extends IQualifiedNameProvider> bindIQualifiedNamePRovider() {
-		return RosettaQualifiedNameProvider.class;
 	}
 	
 	public Class<? extends RequestManager> bindRequestManager() {

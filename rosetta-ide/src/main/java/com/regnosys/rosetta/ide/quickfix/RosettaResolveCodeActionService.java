@@ -27,28 +27,23 @@ public class RosettaResolveCodeActionService implements IResolveCodeActionServic
 
 	@Override
 	public CodeAction getCodeActionResolution(CodeAction codeAction, Options baseOptions) {
-		Diagnostic diagnostic = Iterables.getOnlyElement(codeAction.getDiagnostics());
+		switch (codeAction.getKind()) {
+		case CodeActionKind.QuickFix: // handling resolutions for quickFixes
+			Diagnostic diagnostic = Iterables.getOnlyElement(codeAction.getDiagnostics());
+			ICodeActionService2.Options options = codeActionUtils.createOptionsForSingleDiagnostic(baseOptions,
+					diagnostic);
 
-		ICodeActionService2.Options options = codeActionUtils.createOptionsForSingleDiagnostic(baseOptions, diagnostic);
-		
-		List<DiagnosticResolution> resolutions = null;
-		switch(codeAction.getKind()) {
-			case CodeActionKind.QuickFix: //handling resolutions for quickFixes
-				resolutions = resolutionProvider.getResolutions(options, diagnostic).stream()
+			List<DiagnosticResolution> resolutions = resolutionProvider.getResolutions(options, diagnostic).stream()
 					.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
 					.filter(r -> r.getLabel().equals(codeAction.getTitle())).collect(Collectors.toList());
-				break;
-			default: //handling resolutions for all other types of codeActions
-				resolutions = codeActionProvider.getResolutions(options, diagnostic).stream()
-					.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
-					.filter(r -> r.getLabel().equals(codeAction.getTitle())).collect(Collectors.toList());
-				
+
+			// since a CodeAction has only one diagnostic, only one resolution should be found
+			codeAction.setEdit(resolutions.get(0).apply());
+
+			return codeAction;
+		default: // handling resolutions for all other types of codeActions
+			return codeActionProvider.getResolutions(codeAction, baseOptions);
 		}
-
-		// since a CodeAction has only one diagnostic, only one resolution should be found
-		codeAction.setEdit(resolutions.get(0).apply());
-
-		return codeAction;
 	}
 
 }

@@ -35,12 +35,12 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
 				
 				sorted.get(0).getRight => [
-					assertEquals("Add `then`.", title)
+					assertEquals("Add `then`", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 				
 				sorted.get(1).getRight => [
-					assertEquals("Remove square brackets.", title)
+					assertEquals("Remove square brackets", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 
 				]
@@ -73,7 +73,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
 				sorted.get(0)=> [
-					assertEquals("Add `then`.", title)
+					assertEquals("Add `then`", title)
 					edit.changes.values.head.head => [
 						assertEquals("then extract", newText)
 						assertEquals(new Position(12, 3), range.start)
@@ -81,7 +81,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 					]
 				]
 				sorted.get(1)=> [
-					assertEquals("Remove square brackets.", title)
+					assertEquals("Remove square brackets", title)
 					edit.changes.values.head.head => [
 						assertEquals("42", newText)
 						assertEquals(new Position(12, 11), range.start)
@@ -120,7 +120,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
 				
 				sorted.get(0).getRight => [
-					assertEquals("Optimize imports.", title)
+					assertEquals("Optimize imports", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 			]
@@ -156,7 +156,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
 				sorted.get(0) => [
-					assertEquals("Optimize imports.", title)
+					assertEquals("Optimize imports", title)
 					edit.changes.values.head.head => [
 						assertEquals("import dsl.foo.*", newText) // second import is deleted
 						assertEquals(new Position(2, 0), range.start)
@@ -192,16 +192,16 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 			assertCodeActions = [
 				assertEquals(2, size) //one unused, one 'Sort Imports' codeAction
 				
-				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
+				val sorted = it.sortWith[a,b| a.getRight.title.compareTo(b.getRight.title)]
 				
 				sorted.get(0).getRight => [
-					assertEquals("Sort imports.", title)
+					assertEquals("Optimize imports", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 				sorted.get(1).getRight => [
-					assertEquals("Optimize imports.", title)
+					assertEquals("Sort imports", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
-				]
+				]	
 			]
 		]
 	}
@@ -232,20 +232,20 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 			it.assertCodeActionResolution = [
 				assertEquals(2, size) //one unused, one 'Sort Imports' codeAction
 				
-				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
+				val sorted = it.sortWith[a,b| a.title.compareTo(b.title)]
 			
 				sorted.get(0)=> [
-					assertEquals("Sort imports.", title)
+					assertEquals("Optimize imports", title)
 					edit.changes.values.head.head => [
-						assertEquals("import dsl.bar.*\nimport dsl.foo.*", newText) // imports are sorted
+						assertEquals("import dsl.foo.*", newText) // second import is deleted
 						assertEquals(new Position(2, 0), range.start)
 						assertEquals(new Position(3, 16), range.end)
 					]
 				]
 				sorted.get(1)=> [
-					assertEquals("Optimize imports.", title)
+					assertEquals("Sort imports", title)
 					edit.changes.values.head.head => [
-						assertEquals("import dsl.foo.*", newText) // second import is deleted
+						assertEquals("import dsl.bar.*\nimport dsl.foo.*", newText) // imports are sorted
 						assertEquals(new Position(2, 0), range.start)
 						assertEquals(new Position(3, 16), range.end)
 					]
@@ -289,7 +289,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
 				
 				sorted.get(0).getRight => [
-					assertEquals("Sort imports.", title)
+					assertEquals("Sort imports", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 			]
@@ -331,7 +331,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
 				sorted.get(0) => [
-					assertEquals("Sort imports.", title)
+					assertEquals("Sort imports", title)
 					edit.changes.values.head.head => [
 						assertEquals("import asl.aaa.*\n\nimport dsl.foo.*", newText) // imports are sorted
 						assertEquals(new Position(2, 0), range.start)
@@ -363,12 +363,12 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
 
 				sorted.get(0).getRight => [
-					assertEquals("Auto add all attributes.", title)
+					assertEquals("Add all attributes", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 				
 				sorted.get(1).getRight => [
-					assertEquals("Auto add mandatory attributes.", title)
+					assertEquals("Add mandatory attributes", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 			]
@@ -397,7 +397,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
 				sorted.get(0) => [
-					assertEquals("Auto add all attributes.", title)
+					assertEquals("Add all attributes", title)
 					edit.changes.values.head.head => [
 						val expectedResult = '''
 						T {
@@ -412,7 +412,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				]
 				
 				sorted.get(1) => [
-					assertEquals("Auto add mandatory attributes.", title)
+					assertEquals("Add mandatory attributes", title)
 					edit.changes.values.head.head => [
 						val expectedResult = '''
 						T {
@@ -457,12 +457,12 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.getRight.diagnostics.head.range.start, b.getRight.diagnostics.head.range.start)]
 
 				sorted.get(0).getRight => [
-					assertEquals("Auto add all attributes.", title)
+					assertEquals("Add all attributes", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 				
 				sorted.get(1).getRight => [
-					assertEquals("Auto add mandatory attributes.", title)
+					assertEquals("Add mandatory attributes", title)
 					assertEquals(edit, null) // make sure no edits are made at this point
 				]
 			]
@@ -498,7 +498,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
 				sorted.get(0) => [
-					assertEquals("Auto add all attributes.", title)
+					assertEquals("Add all attributes", title)
 					edit.changes.values.head.head => [
 						val expectedResult = '''
 						C {
@@ -513,7 +513,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				]
 				
 				sorted.get(1) => [
-					assertEquals("Auto add mandatory attributes.", title)
+					assertEquals("Add mandatory attributes", title)
 					edit.changes.values.head.head => [
 						val expectedResult = '''
 						C {

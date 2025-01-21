@@ -39,6 +39,7 @@ import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
+import com.regnosys.rosetta.utils.ConstructorManagementService;
 import com.regnosys.rosetta.utils.ImportManagementService;
 import com.regnosys.rosetta.validation.RosettaIssueCodes;
 
@@ -50,11 +51,11 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	@Inject 
 	private CodeActionUtils codeActionUtils;
 	@Inject
-	private ConstructorQuickFix constructorQuickFix;
+	private ConstructorManagementService constructorManagementService;
 
 	@QuickFix(RosettaIssueCodes.REDUNDANT_SQUARE_BRACKETS)
 	public void fixRedundantSquareBrackets(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Remove square brackets.", (Diagnostic diagnostic, EObject object, Document document) -> {
+		acceptor.accept("Remove square brackets", (Diagnostic diagnostic, EObject object, Document document) -> {
 			Range range = rangeUtils.getRange(object);
 			String original = document.getSubstring(range);
 			String edited = original.replaceAll("^\\[ +|\\s+\\]$", "");
@@ -64,7 +65,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 
 	@QuickFix(RosettaIssueCodes.MANDATORY_SQUARE_BRACKETS)
 	public void fixMandatorySquareBrackets(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Add square brackets.", (Diagnostic diagnostic, EObject object, Document document) -> {
+		acceptor.accept("Add square brackets", (Diagnostic diagnostic, EObject object, Document document) -> {
 			Range range = rangeUtils.getRange(object);
 			String original = document.getSubstring(range);
 			String edited = "[ " + original + " ]";
@@ -74,7 +75,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 
 	@QuickFix(RosettaIssueCodes.MANDATORY_THEN)
 	public void fixMandatoryThen(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Add `then`.", (Diagnostic diagnostic, EObject object, Document document) -> {
+		acceptor.accept("Add `then`", (Diagnostic diagnostic, EObject object, Document document) -> {
 			RosettaUnaryOperation op = (RosettaUnaryOperation) object;
 			Range range = rangeUtils.getRange(op, ROSETTA_OPERATION__OPERATOR);
 			String original = document.getSubstring(range);
@@ -87,7 +88,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	@QuickFix(RosettaIssueCodes.UNUSED_IMPORT)
 	@QuickFix(RosettaIssueCodes.DUPLICATE_IMPORT)
 	public void fixUnoptimizedImports(DiagnosticResolutionAcceptor acceptor) {
-		acceptor.accept("Optimize imports.", (Diagnostic diagnostic, EObject object, Document document) -> {
+		acceptor.accept("Optimize imports", (Diagnostic diagnostic, EObject object, Document document) -> {
 			Import importObj = (Import) object;
 			EObject container = importObj.eContainer();
 
@@ -112,15 +113,15 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
     @QuickFix(RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
     public void missingAttributes(DiagnosticResolutionAcceptor acceptor) {
         ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) ->
-                context -> constructorQuickFix.modifyConstructorWithMandatoryAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
-        acceptor.accept("Auto add mandatory attributes.", semanticModification);
+                context -> constructorManagementService.modifyConstructorWithMandatoryAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
+        acceptor.accept("Add mandatory attributes", semanticModification);
     }
 
     @QuickFix(RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
     public void addAllMissingAttributes(DiagnosticResolutionAcceptor acceptor) {
         ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) ->
-                context -> constructorQuickFix.modifyConstructorWithAllAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
-        acceptor.accept("Auto add all attributes.", semanticModification);
+                context -> constructorManagementService.modifyConstructorWithAllAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
+        acceptor.accept("Add all attributes", semanticModification);
     }
 
 }

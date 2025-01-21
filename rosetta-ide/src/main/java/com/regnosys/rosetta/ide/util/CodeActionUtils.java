@@ -45,6 +45,41 @@ public class CodeActionUtils {
 		return options;
 	}
 	
+	public Options createOptionsForCodeAction(Options base, String title) {
+		
+		Options options = new Options();
+		options.setCancelIndicator(base.getCancelIndicator());
+		options.setDocument(base.getDocument());
+		options.setLanguageServerAccess(base.getLanguageServerAccess());
+		options.setResource(base.getResource());
+
+		CodeActionParams baseParams = base.getCodeActionParams();
+		CodeActionContext baseContext = baseParams.getContext();
+		
+		
+		CodeActionParams params;
+		
+		switch (title) {
+		case "Sort imports":
+			RosettaModel model = (RosettaModel) (base.getResource().getContents().get(0));
+			Diagnostic fakeDiagnostic = createSortImportsDiagnostic(model);
+			
+			CodeActionContext context = new CodeActionContext(List.of(fakeDiagnostic), baseContext.getOnly());
+			context.setTriggerKind(baseContext.getTriggerKind());
+			
+			Range range = getImportsRange(model.getImports());
+			params = new CodeActionParams(baseParams.getTextDocument(), range, context);
+			break;
+
+		default:
+			params = null;
+		}
+
+		options.setCodeActionParams(params);
+
+		return options;
+	}
+	
 	public CodeActionParams getCodeActionParams(CodeAction codeAction) {
         Object data = codeAction.getData();
         CodeActionParams codeActionParams = null;
@@ -61,7 +96,12 @@ public class CodeActionUtils {
 	public CodeAction createUnresolvedFix(String resolutionLabel, CodeActionParams codeActionParams,
 			Diagnostic diagnostic) {
 		CodeAction codeAction = new CodeAction();
-		codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+		if(diagnostic == null) {
+			codeAction.setDiagnostics(null);
+		}
+		else {
+			codeAction.setDiagnostics(Collections.singletonList(diagnostic));
+		}
 		codeAction.setTitle(resolutionLabel);
 		codeAction.setData(codeActionParams);
 		codeAction.setKind(CodeActionKind.QuickFix);
@@ -70,8 +110,8 @@ public class CodeActionUtils {
 	}
 	
 	public CodeAction createUnresolvedCodeAction(String resolutionLabel, CodeActionParams codeActionParams,
-			Diagnostic diagnostic, String codeActionKind) {
-		CodeAction codeAction = createUnresolvedFix(resolutionLabel, codeActionParams, diagnostic);
+			String codeActionKind) {
+		CodeAction codeAction = createUnresolvedFix(resolutionLabel, codeActionParams, null);
 		codeAction.setKind(codeActionKind);
 
 		return codeAction;
