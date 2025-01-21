@@ -3,8 +3,6 @@
  */
 package com.regnosys.rosetta.ide
 
-import com.regnosys.rosetta.cache.IRequestScopedCache
-import com.regnosys.rosetta.cache.RequestScopedCache
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
 import com.regnosys.rosetta.ide.contentassist.RosettaContentProposalProvider
 import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableContentAssistService
@@ -31,7 +29,6 @@ import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
 import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
 import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
 import com.regnosys.rosetta.ide.util.RangeUtils
-import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider
@@ -40,7 +37,6 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2
 import org.eclipse.xtext.ide.server.contentassist.ContentAssistService
 import org.eclipse.xtext.ide.server.formatting.FormattingService
 import org.eclipse.xtext.ide.server.hover.IHoverService
-import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.service.OperationCanceledManager
 
 /**
@@ -122,13 +118,5 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends IdeContentProposalProvider> bindIdeContentProposalProvider() {
 		RosettaContentProposalProvider
-	}
-	
-	def Class<? extends IRequestScopedCache> bindIRequestScopedCache() {
-		return RequestScopedCache;
-	}
-	
-	def Class<? extends IQualifiedNameProvider> bindIQualifiedNamePRovider() {
-		return RosettaQualifiedNameProvider;
 	}
 }

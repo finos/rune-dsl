@@ -8,5 +8,5 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
 public interface ICodeActionProvider {
 	List<CodeAction> getCodeActions(Options options);
 
-	CodeAction getResolutions(CodeAction unresolved, Options options);
+	CodeAction resolve(CodeAction unresolved, Options options);
 }

@@ -42,7 +42,7 @@ public class RosettaResolveCodeActionService implements IResolveCodeActionServic
 
 			return codeAction;
 		default: // handling resolutions for all other types of codeActions
-			return codeActionProvider.getResolutions(codeAction, baseOptions);
+			return codeActionProvider.resolve(codeAction, baseOptions);
 		}
 	}
 

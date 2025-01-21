@@ -8,5 +8,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
 public @interface CodeActionResolution {
+	/**
+     * Specifies the title of the code action for which the annotated method provides a resolution.
+     * 
+     * @return the title of the associated code action.
+     */
 	String value();
 }

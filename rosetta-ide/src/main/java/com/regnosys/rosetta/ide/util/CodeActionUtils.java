@@ -11,7 +11,6 @@ import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.json.MessageJsonHandler;
@@ -20,8 +19,6 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.regnosys.rosetta.rosetta.Import;
-import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.validation.RosettaIssueCodes;
 
 public class CodeActionUtils {
 	@Inject
@@ -39,41 +36,6 @@ public class CodeActionUtils {
 		CodeActionContext context = new CodeActionContext(List.of(diagnostic), baseContext.getOnly());
 		context.setTriggerKind(baseContext.getTriggerKind());
 		CodeActionParams params = new CodeActionParams(baseParams.getTextDocument(), diagnostic.getRange(), context);
-
-		options.setCodeActionParams(params);
-
-		return options;
-	}
-	
-	public Options createOptionsForCodeAction(Options base, String title) {
-		
-		Options options = new Options();
-		options.setCancelIndicator(base.getCancelIndicator());
-		options.setDocument(base.getDocument());
-		options.setLanguageServerAccess(base.getLanguageServerAccess());
-		options.setResource(base.getResource());
-
-		CodeActionParams baseParams = base.getCodeActionParams();
-		CodeActionContext baseContext = baseParams.getContext();
-		
-		
-		CodeActionParams params;
-		
-		switch (title) {
-		case "Sort imports":
-			RosettaModel model = (RosettaModel) (base.getResource().getContents().get(0));
-			Diagnostic fakeDiagnostic = createSortImportsDiagnostic(model);
-			
-			CodeActionContext context = new CodeActionContext(List.of(fakeDiagnostic), baseContext.getOnly());
-			context.setTriggerKind(baseContext.getTriggerKind());
-			
-			Range range = getImportsRange(model.getImports());
-			params = new CodeActionParams(baseParams.getTextDocument(), range, context);
-			break;
-
-		default:
-			params = null;
-		}
 
 		options.setCodeActionParams(params);
 
@@ -115,19 +77,6 @@ public class CodeActionUtils {
 		codeAction.setKind(codeActionKind);
 
 		return codeAction;
-	}
-	
-	public Diagnostic createSortImportsDiagnostic(RosettaModel model) {
-		// Create a diagnostic for unsorted imports
-		Diagnostic diagnostic = new Diagnostic();
-		diagnostic.setCode(RosettaIssueCodes.UNSORTED_IMPORTS);
-		diagnostic.setMessage("Imports are not sorted.");
-		diagnostic.setSeverity(DiagnosticSeverity.Warning);
-
-		Range range = getImportsRange(model.getImports());
-		diagnostic.setRange(range);
-
-		return diagnostic;
 	}
 	
 	public Range getImportsRange(List<Import> imports) {
