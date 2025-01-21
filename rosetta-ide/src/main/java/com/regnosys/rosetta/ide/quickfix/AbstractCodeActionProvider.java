@@ -40,7 +40,6 @@ public abstract class AbstractCodeActionProvider implements ICodeActionProvider 
 				
 				editAcceptor.accept(uri, options.getDocument(), edits);
 				unresolved.setEdit(workspaceEdit);
-				unresolved.setDiagnostics(null);
 				return unresolved;
 			} catch (Exception e) {
 				LOG.error("Error resolving code action: " + title, e);
