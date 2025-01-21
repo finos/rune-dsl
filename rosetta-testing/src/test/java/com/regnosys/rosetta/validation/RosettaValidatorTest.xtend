@@ -689,7 +689,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(TYPE_CALL, null,
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT,
 			"Missing attributes `b`, `c`. Perhaps you forgot a `...` at the end of the constructor?"
 		)
 	}
@@ -786,7 +786,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(TYPE_CALL, null,
+		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT,
 			"Missing attributes `month`, `year`."
 		)
 	}
@@ -3545,6 +3545,48 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					foo1x Foo1 (1..1)
 				
 				alias a: foo1 -> attr
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
+	
+	@Test
+	def void shouldNotWarnForUsedImports() {
+		val models = newArrayList('''
+			namespace dsl.test
+			
+			import foo.bar.* 
+			
+			type A:
+			  a qux.MyType (1..1)
+		''',
+		'''
+			namespace foo.bar.qux
+			
+			
+			type MyType:
+				a int (0..1)
+		''').parseRosetta
+		
+		models.forEach[assertNoIssues]
+	}
+	
+	@Test
+	def void shouldNotWarnForUsedImportsWithAlias() {
+		val models = newArrayList('''
+			namespace dsl.test
+			
+			import foo.bar.* as bar
+			
+			type A:
+			  a bar.qux.MyType (1..1)
+		''',
+		'''
+			namespace foo.bar.qux
+			
+			
+			type MyType:
+				a int (0..1)
 		''').parseRosetta
 		
 		models.forEach[assertNoIssues]
