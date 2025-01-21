@@ -272,7 +272,8 @@ RosettaCalculationType returns RosettaBasicType:
  */
 RosettaTypeAlias:
 	'typeAlias' RosettaNamed TypeParameters?
-	':' RosettaDefinable? RosettaTyped 
+	':' RosettaDefinable? RosettaTyped
+	conditions += Condition*
 ;
 
 

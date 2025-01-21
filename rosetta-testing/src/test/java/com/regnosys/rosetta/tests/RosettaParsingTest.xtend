@@ -337,6 +337,8 @@ class RosettaParsingTest {
 			basicType int(digits int, min int, max int)
 			basicType number(digits int, fractionalDigits int, min number, max number)
 			basicType string(minLength int, maxLength int, pattern pattern)
+			typeAlias DomainCodeList (domain string): string
+				condition IsValidCode: F(item, domain)
 		'''.parseRosettaWithNoIssues
 	}
 	
