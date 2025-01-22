@@ -407,7 +407,6 @@ class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 			flatten -> flatten [[19, 2] .. [19, 2]]
 			if -> if [[19, 2] .. [19, 2]]
 			is -> is [[19, 2] .. [19, 2]]
-			it -> it [[19, 2] .. [19, 2]]
 			item -> item [[19, 2] .. [19, 2]]
 			join -> join [[19, 2] .. [19, 2]]
 			last -> last [[19, 2] .. [19, 2]]
