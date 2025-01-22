@@ -1,0 +1,12 @@
+namespace test
+
+type Foo:
+	attr string (1..1)
+		[label as "My attribute"]
+
+annotation myAnn:
+
+func MyFunc:
+	[myAnn]
+	output:
+		foo Foo (1..1)

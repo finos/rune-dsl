@@ -1,0 +1,28 @@
+namespace test
+
+body Authority Body
+corpus Regulation "Description" Corpus
+
+report Body Corpus in T+1
+	from int
+	when IsEligible
+	with type Foo
+
+eligibility rule IsEligible from int:
+	item
+
+type Foo:
+	attr string (1..1)
+		[ruleReference FooAttr]
+		[label as "My attribute"]
+	other int (1..1)
+		[ruleReference FooOther]
+
+
+reporting rule FooAttr from int:
+	to-string
+	as "My attribute from rule"
+
+reporting rule FooOther from int:
+	item
+	as "Other from rule"

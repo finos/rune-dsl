@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.function
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.RosettaReport
@@ -31,6 +30,7 @@ import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.RChoiceType
 import java.util.HashMap
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
+import org.apache.commons.text.StringEscapeUtils
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -38,19 +38,19 @@ class LabelProviderGenerator {
 	@Inject RosettaTypeProvider typeProvider
 	@Inject JavaTypeTranslator typeTranslator
 	@Inject DeepFeatureCallUtil deepPathUtil
-	@Inject RosettaFunctionExtensions funcExtensions
+	@Inject LabelProviderGeneratorUtil util
 	
-	def void generateForFunctionIfApplicable(RootPackage root, IFileSystemAccess2 fsa, Function func) {
-		if (!funcExtensions.getTransformAnnotations(func).isEmpty) {
+	def void generateForFunctionIfApplicable(IFileSystemAccess2 fsa, Function func) {
+		if (util.shouldGenerateLabelProvider(func)) {
 			val rFunction = rObjectFactory.buildRFunction(func)
-			generate(root, fsa, rFunction)
+			generate(fsa, rFunction)
 		}
 	}
-	def void generateForReport(RootPackage root, IFileSystemAccess2 fsa, RosettaReport report) {
+	def void generateForReport(IFileSystemAccess2 fsa, RosettaReport report) {
 		val rFunction = rObjectFactory.buildRFunction(report)
-		generate(root, fsa, rFunction)
+		generate(fsa, rFunction)
 	}
-	private def void generate(RootPackage root, IFileSystemAccess2 fsa, RFunction f) {
+	private def void generate(IFileSystemAccess2 fsa, RFunction f) {
 		val javaClass = typeTranslator.toLabelProviderJavaClass(f)
 		val fileName = javaClass.canonicalName.withForwardSlashes + '.java'
 		
@@ -79,7 +79,7 @@ class LabelProviderGenerator {
 					labelMap = new «HashMap»<>();
 					
 					«FOR path : labelMap.keySet»
-						labelMap.put(«RosettaPath».valueOf("«path.withDots»"), «labelMap.get(path)»)
+						labelMap.put(«RosettaPath».valueOf("«path.withDots»"), "«StringEscapeUtils.escapeJava(labelMap.get(path))»");
 					«ENDFOR»
 				}
 				
@@ -100,7 +100,7 @@ class LabelProviderGenerator {
 		}
 		if (t instanceof RDataType) {
 			for (attr : t.allAttributes) {
-				val attrPath = currentPath.child(attr.name)
+				val attrPath = currentPath === null ? DottedPath.of(attr.name) : currentPath.child(attr.name)
 				// 1. Register labels on the type of this attribute
 				var attrType = attr.RMetaAnnotatedType.RType
 				gatherLabels(attrType, attrPath, labels)
@@ -133,28 +133,29 @@ class LabelProviderGenerator {
 	private def List<DottedPath> evaluateAnnotationPathExpression(List<DottedPath> currentPaths, AnnotationPathExpression expr) {
 		if (expr === null) {
 			currentPaths
-		} else switch expr {
-			AnnotationPathAttributeReference: currentPaths.map[child(expr.attribute.name)],
-			RosettaImplicitVariable: currentPaths,
-			AnnotationPath: currentPaths.evaluateAnnotationPathExpression(expr.receiver).map[child(expr.attribute.name)],
-			AnnotationDeepPath: {
-				val rawType = typeProvider.getRMetaAnnotatedType(expr.receiver).RType
-				val t = if (rawType instanceof RChoiceType) {
-						rawType.asRDataType
-					} else {
-						rawType
-					}
-				if (t instanceof RDataType) {
-					currentPaths.evaluateAnnotationPathExpression(expr.receiver).flatMap[p|
-						deepPathUtil.findDeepFeaturePaths(t, rObjectFactory.buildRAttribute(expr.attribute))
-							.map[deepPath|
-								p.concat(DottedPath.of(deepPath.map[name]))
-							]
-					].toList
+		} else if (expr instanceof AnnotationPathAttributeReference) {
+			currentPaths.map[child(expr.attribute.name)]
+		} else if (expr instanceof RosettaImplicitVariable) {
+			currentPaths
+		} else if (expr instanceof AnnotationPath) {
+			currentPaths.evaluateAnnotationPathExpression(expr.receiver).map[child(expr.attribute.name)]
+		} else if (expr instanceof AnnotationDeepPath) {
+			val rawType = typeProvider.getRMetaAnnotatedType(expr.receiver).RType
+			val t = if (rawType instanceof RChoiceType) {
+					rawType.asRDataType
 				} else {
-					#[]
+					rawType
 				}
-			} 
+			if (t instanceof RDataType) {
+				currentPaths.evaluateAnnotationPathExpression(expr.receiver).flatMap[p|
+					deepPathUtil.findDeepFeaturePaths(t, rObjectFactory.buildRAttribute(expr.attribute))
+						.map[deepPath|
+							p.concat(DottedPath.of(deepPath.map[name]))
+						]
+				].toList
+			} else {
+				#[]
+			}
 		}
 	}
 }

@@ -1139,7 +1139,7 @@ repository:
           - include: '#comment'
         - include: '#literal'
         - name: constant.language.rosetta
-          match: '{{wordStart}}(item|it){{wordEnd}}'
+          match: '{{wordStart}}item{{wordEnd}}'
         - name: meta.if-then.rosetta
           begin: '{{wordStart}}if{{wordEnd}}'
           beginCaptures:

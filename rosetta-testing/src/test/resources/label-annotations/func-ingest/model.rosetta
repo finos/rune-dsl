@@ -1,0 +1,11 @@
+namespace test
+
+type Foo:
+	attr string (1..1)
+		[label as "My attribute"]
+	other int (1..1)
+
+func MyFunc:
+	[ingest JSON]
+	output:
+		foo Foo (1..1)

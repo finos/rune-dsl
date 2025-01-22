@@ -1,0 +1,50 @@
+namespace test
+
+body Authority Body
+corpus Regulation "Description" Corpus
+
+report Body Corpus in T+1
+	from int
+	when IsEligible
+	with type Foo
+
+eligibility rule IsEligible from int:
+	item
+
+type Foo:
+	attr1 string (1..1)
+		[metadata scheme]
+		[label as "My Label"]
+	attr2 string (1..1)
+		[label item as "Label with item"]
+	bar Bar (1..1)
+		[label barAttr as "Bar attribute using path"]
+		[label item -> nestedBarList -> nestedAttr as "Nested bar attribute $"]
+	qux Qux (1..1)
+		[label item ->> id as "Deep path ID"]
+
+type Bar:
+	barAttr string (1..1)
+		[ruleReference BarAttr]
+	nestedBarList NestedBar (0..*)
+
+type NestedBar:
+	nestedAttr string (1..1)
+
+choice Qux:
+	Opt1
+	Opt2
+
+type Opt1:
+	id string (1..1)
+	opt1Attr int (1..1)
+		[label as "Option 1 Attribute"]
+
+type Opt2:
+	id string (1..1)
+	opt2Attribute int (1..1)
+
+
+reporting rule BarAttr from int:
+	to-string
+	as "Bar attribute from rule"

@@ -82,15 +82,13 @@ Choice:
 
 ChoiceOption:
 	RosettaTyped RosettaDefinable?
-	(References|Annotations|Synonyms|labels+=LabelAnnotation)*
-	RuleReference?
+	(References|Annotations|Synonyms|labels+=LabelAnnotation|RuleReference)*
 ;
 
 Attribute:
 	override?='override'? RosettaNamed RosettaTyped card=RosettaCardinality
 	RosettaDefinable?
-	(References|Annotations|Synonyms|labels+=LabelAnnotation)*
-	RuleReference?
+	(References|Annotations|Synonyms|labels+=LabelAnnotation|RuleReference)*
 ;
 
 Enumeration returns RosettaEnumeration:

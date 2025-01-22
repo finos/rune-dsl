@@ -178,6 +178,7 @@ public class InMemoryJavacCompiler {
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
+		sourceCodes.clear();
 		return classes;
 	}
 
