@@ -1,20 +1,24 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.rosetta.simple.SimplePackage
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.validation.RosettaIssueCodes
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.meta.Key
+import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.records.Date
+import com.rosetta.model.metafields.MetaFields
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Arrays
 import java.util.List
 import java.util.Map
+import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -26,14 +30,8 @@ import static com.google.common.collect.ImmutableMap.*
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
-import static org.junit.jupiter.api.Assertions.*
 import static org.junit.Assert.assertThrows
-import javax.inject.Inject
-import java.time.LocalDateTime
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.rosetta.model.lib.meta.Key
-import com.rosetta.model.lib.meta.Reference
-import com.rosetta.model.metafields.MetaFields
+import static org.junit.jupiter.api.Assertions.*
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -43,6 +41,29 @@ class FunctionGeneratorTest {
 	@Inject extension CodeGeneratorTestHelper
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
+	
+	@Test
+	def void canSetMetaOnFunctionOutput() {
+		val code = '''
+		func MyFunc:
+			output:
+				result string (1..1)
+					[metadata scheme]
+			set result:  "someValue"
+			set result -> scheme: "someScheme"	
+		'''.generateCode
+		
+//		code.compileToClasses
+// 		val classes = code.compileToClasses
+//		
+//		val myFunc = classes.createFunc("MyFunc")
+//		
+//		val result = myFunc.invokeFunc(FieldWithMeta)
+//		
+//		val expected = classes.createFieldWithMetaString("someValue", "someScheme")
+//		
+//		assertEquals(expected, result)
+	}
 	
 	@Test
 	def void reportingRuleSupportsRecursion() {
