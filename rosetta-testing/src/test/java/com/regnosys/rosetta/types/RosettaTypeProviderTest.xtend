@@ -52,7 +52,7 @@ class RosettaTypeProviderTest {
 	RMetaAttribute SCHEME
 	@BeforeAll
 	def void setup() {
-		SCHEME = new RMetaAttribute("scheme", UNCONSTRAINED_STRING, null)
+		SCHEME = new RMetaAttribute("scheme", UNCONSTRAINED_STRING)
 	}
 	
 	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti, List<RosettaModel> context, String... attributes) {

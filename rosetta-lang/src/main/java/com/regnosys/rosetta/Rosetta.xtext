@@ -141,7 +141,7 @@ Operation:
 ;
 
 Segment:
-	'->' attribute = [Attribute|ValidID] (next = Segment)?;
+	'->' feature = [RosettaTypedFeature|ValidID] (next = Segment)?;
 
 EnumValueReference returns RosettaEnumValueReference:
 	enumeration=[RosettaEnumeration|QualifiedName] '->' value=[RosettaEnumValue|ValidID]

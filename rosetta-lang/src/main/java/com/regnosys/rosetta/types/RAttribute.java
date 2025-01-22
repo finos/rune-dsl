@@ -24,7 +24,7 @@ import com.regnosys.rosetta.rosetta.RosettaDocReference;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 
-public class RAttribute implements RAssignedRoot {
+public class RAttribute implements RAssignedRoot, RFeature {
 	private final boolean isOverride;
 	private final String name;
 	private final String definition;

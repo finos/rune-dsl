@@ -29,6 +29,7 @@ import javax.inject.Inject;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -40,8 +41,10 @@ import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.REnumType;
+import com.regnosys.rosetta.types.RFeature;
 import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
+import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.types.ROperation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
@@ -58,6 +61,7 @@ import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.RosettaMetaAttribute;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.model.lib.reports.Tabulator;
@@ -230,36 +234,45 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
+	public JavaClass<?> toJavaType(RFeature feature) {
+		if (feature instanceof RAttribute) {
+			return toJavaType((RAttribute) feature);
+		} else if (feature instanceof RMetaAttribute) {
+			return toJavaReferenceType(((RMetaAttribute)feature).getRType());
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
 	public JavaClass<?> operationToReferenceWithMetaType(Operation op) {
-		Attribute attr;
+		RosettaFeature feature;
 		if (op.getPath() == null) {
-			attr = (Attribute)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
+			feature = (Attribute)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
 		} else {
 			List<Segment> segments = op.pathAsSegmentList();
-			attr = segments.get(segments.size() - 1).getAttribute();
+			feature = segments.get(segments.size() - 1).getFeature();
 		}
-		return toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr));
+		return toJavaReferenceType(typeProvider.getRTypeOfFeature(feature, null));
 	}
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
-		RAttribute attr;
+		RFeature attr;
 		if (op.getPathTail().isEmpty()) {
 			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<RAttribute> segments = op.getPathTail();
+			List<RFeature> segments = op.getPathTail();
 			attr = segments.get(segments.size() - 1);
 		}
 		return toJavaType(attr);
 	}
 	public JavaClass<?> operationToReferenceWithMetaType(ROperation op) {
-		RAttribute attr;
+		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
-			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+			feature = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<RAttribute> segments = op.getPathTail();
-			attr = segments.get(segments.size() - 1);
+			List<RFeature> segments = op.getPathTail();
+			feature = segments.get(segments.size() - 1);
 		}
-		return toJavaReferenceType(attr.getRMetaAnnotatedType());
+		return toJavaType(feature);
 	}
 	
 	private String getTypeDebugInfo(RType type) {

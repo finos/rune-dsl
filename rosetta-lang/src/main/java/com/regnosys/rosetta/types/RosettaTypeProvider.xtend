@@ -2,6 +2,7 @@ package com.regnosys.rosetta.types
 
 import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.cache.IRequestScopedCache
+import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
@@ -10,6 +11,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
@@ -56,6 +58,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.SortOperation
 import com.regnosys.rosetta.rosetta.expression.SumOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation
@@ -68,31 +71,26 @@ import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.types.builtin.RNumberType
+import com.regnosys.rosetta.types.builtin.RStringType
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
+import com.regnosys.rosetta.utils.OptionalUtil
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import java.math.BigInteger
 import java.util.List
+import java.util.Map
 import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Provider
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.naming.IQualifiedNameProvider
-import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
-import com.regnosys.rosetta.rosetta.RosettaParameter
-import com.regnosys.rosetta.types.builtin.RStringType
-import com.regnosys.rosetta.types.builtin.RNumberType
-import com.regnosys.rosetta.utils.OptionalUtil
-import java.util.Map
-import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.rosetta.simple.Attribute
 
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
+import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -163,7 +161,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	def List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {
 		annotations
 			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
-			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType, it.attribute)]
+			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType)]
 			.toList
 	}
 	

@@ -84,10 +84,10 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			error("Assign expression contains a list of lists, use flatten to create a list", op, OPERATION__EXPRESSION);
 		}
 		List<Segment> segments = op.pathAsSegmentList();
-		AssignPathRoot attr = op.getPath() != null
-				? segments.get(segments.size() - 1).getAttribute()
+		RosettaSymbol attr = op.getPath() != null
+				? (RosettaSymbol) segments.get(segments.size() - 1).getFeature()
 				: op.getAssignRoot();
-		subtypeCheck(typeProvider.getRTypeOfSymbol(attr), expr, op, OPERATION__EXPRESSION, actual -> "Cannot assign `" + actual + "` to output `" + attr.getName() + "`");
+		subtypeCheck(typeProvider.getRTypeOfSymbol(attr, null), expr, op, OPERATION__EXPRESSION, actual -> "Cannot assign `" + actual + "` to output `" + attr.getName() + "`");
 		boolean isList = cardinalityProvider.isSymbolMulti(attr);
 		if (op.isAdd() && !isList) {
 			error("`add` must be used with a list", op, OPERATION__ASSIGN_ROOT);

@@ -108,6 +108,7 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
+import com.regnosys.rosetta.types.RMetaAttribute
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -1212,11 +1213,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				return
 			}
 			val segments = container.path.asSegmentList(container.path)
-			val attr = segments?.last?.attribute
-			if (!attr.hasReferenceAnnotation) {
-				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
-					o, ROSETTA_OPERATION__OPERATOR)
+			val feature = segments?.last?.feature
+			if (feature instanceof Attribute) {
+				if (!feature.hasReferenceAnnotation) {
+					error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
+						o, ROSETTA_OPERATION__OPERATOR)
+				}
 			}
+			
+
 		} else if (container instanceof ConstructorKeyValuePair) {
 			val attr = container.key
 			if (!(attr instanceof Attribute) || !(attr as Attribute).hasReferenceAnnotation) {
