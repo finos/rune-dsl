@@ -21,10 +21,6 @@ public class RosettaPathValue {
         return path;
     }
 
-    public String getArrowPath() {
-        return String.join(" -> ", path.allElementPaths());
-    }
-
     public Object getValue() {
         return value;
     }

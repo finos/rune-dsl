@@ -1,4 +1,4 @@
-namespace test.tabulator
+namespace test
 
 type Root:
     r1 string (0..1)
@@ -9,10 +9,13 @@ type Foo:
     f1 string (0..1)
     bar Bar (0..1)
         [metadata reference]
+    bars Bar (0..*)
+   		[metadata reference]
 
 type Bar:
     [metadata key]
     b1 string (0..1)
+    	[metadata scheme]
     b2 string (0..*)
     b3 string (0..*)
         [metadata scheme]
@@ -30,17 +33,30 @@ func Data:
                     b1: "VALUE3",
                     b3: ["VALUE4"],
                     ...
-            }},
+                },
+                bars: [
+                	Bar {
+	                    b1: "VALUE5",
+	                    b2: ["VALUE6", "VALUE7"],
+	                    ...
+	                },
+	                Bar {
+	                    b1: "VALUE8",
+	                    b2: ["VALUE9", "VALUE10"],
+	                    b3: ["VALUE11", "VALUE12"],
+	                }
+                ]
+            },
             bar: [
                 Bar {
-                    b1: "VALUE5",
-                    b2: ["VALUE6", "VALUE7"],
+                    b1: "VALUE13",
+                    b2: ["VALUE14", "VALUE15"],
                     ...
                 },
                 Bar {
-                    b1: "VALUE8",
-                    b2: ["VALUE9", "VALUE10"],
-                    b3: ["VALUE11", "VALUE12"],
+                    b1: "VALUE16",
+                    b2: ["VALUE17", "VALUE18"],
+                    b3: ["VALUE19", "VALUE20"],
                 }
             ]
         }

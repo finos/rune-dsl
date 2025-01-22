@@ -51,7 +51,7 @@ public class LabelProviderGeneratorTest {
 	
 	
 	private RosettaTestModel loadModel(String rootFolderName) throws IOException {
-		return testModelService.loadTestModelFromResourceFolder("/label-annotations/" + rootFolderName);
+		return testModelService.loadTestModelFromResources("/label-annotations/" + rootFolderName);
 	}
 	private void generateLabelProviderForFunction(RosettaTestModel model, String functionName) {
 		labelProviderGenerator.generateForFunctionIfApplicable(fsa, model.getFunction(functionName));

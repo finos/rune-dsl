@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.stream.Streams;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -29,6 +30,13 @@ import com.regnosys.rosetta.tests.util.ExpressionJavaEvaluatorService;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.regnosys.rosetta.types.RObjectFactory;
 
+/**
+ * A utility to create or load Rosetta models.
+ * 
+ * The result is wrapped in a `RosettaTestModel` or `JavaTestModel`
+ * to allow easy access to Ecore objects or generated Java based on
+ * the name of the object in the model.
+ */
 public class RosettaTestModelService {
 	@Inject
 	private ModelHelper modelHelper;
@@ -45,9 +53,15 @@ public class RosettaTestModelService {
 	@Inject
 	private Injector injector;
 	
+	/**
+	 * Load a test model from a character sequence. It will assert that there are no issues in the model.
+	 */
 	public RosettaTestModel toTestModel(CharSequence source) {
 		return toTestModel(source, true);
 	}
+	/**
+	 * Load a test model from a character sequence, optionally asserting that there are no issues in the model.
+	 */
 	public RosettaTestModel toTestModel(CharSequence source, boolean assertNoIssues) {
 		RosettaModel model;
 		if (assertNoIssues) {
@@ -57,32 +71,35 @@ public class RosettaTestModelService {
 		}
 		return new RosettaTestModel(source, model);
 	}
-	public RosettaTestModel loadTestModelFromResourceFolder(String resourceFolder) throws IOException {
+	/**
+	 * Load a test model from a file or folder on the classpath. It will assert that there are no issues in the model.
+	 */
+	public RosettaTestModel loadTestModelFromResources(String resourceFolderOrFile) throws IOException {
 		ResourceSet resourceSet = modelHelper.testResourceSet();
 		
 		List<Resource> resources = new ArrayList<>();
-		URL folderUrl = getClass().getResource(resourceFolder);
-	    Path folderPath;
+		URL resourceURL = getClass().getResource(resourceFolderOrFile);
+	    Path resourcePath;
 		try {
-			folderPath = Path.of(folderUrl.toURI());
+			resourcePath = Path.of(resourceURL.toURI());
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
-	    Files.walk(folderPath, 1)
-	    		.filter(p -> !Files.isDirectory(p))
-	    		.map(p -> URI.createURI(p.toUri().toString()))
-	    		.filter(uri -> uri.fileExtension().equals("rosetta"))
-	    		.forEach(uri -> {
-	    			Resource res = resourceSet.getResource(uri, true);
-	    			resources.add(res);
-	    		});
+		(Files.isDirectory(resourcePath) ? Files.walk(resourcePath, 1) : Streams.of(new Path[] {resourcePath}))
+    		.filter(p -> !Files.isDirectory(p))
+    		.map(p -> URI.createURI(p.toUri().toString()))
+    		.filter(uri -> uri.fileExtension().equals("rosetta"))
+    		.forEach(uri -> {
+    			Resource res = resourceSet.getResource(uri, true);
+    			resources.add(res);
+    		});
 	    resources.forEach(res -> {
 	    	EcoreUtil2.resolveAll(res);
 	    	validationHelper.assertNoIssues(res);
 	    });
 	    
 	    if (resources.size() != 1) {
-	    	throw new IllegalArgumentException("Expecting 1 rosetta file in folder" + resourceFolder + ", but found " + resources.size());
+	    	throw new IllegalArgumentException("Expecting 1 rosetta file at " + resourceFolderOrFile + ", but found " + resources.size());
 	    }
 	    XtextResource resource = (XtextResource) resources.get(0);
 	    
@@ -91,8 +108,20 @@ public class RosettaTestModelService {
 	    return new RosettaTestModel(source, model);
 	}
 	
+	/**
+	 * Load a test model from a character sequence, and generate Java code.
+	 */
 	public JavaTestModel toJavaTestModel(CharSequence source) {
 		RosettaTestModel rosettaModel = toTestModel(source);
+		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getModel());
+		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
+	}
+	
+	/**
+	 * Load a test model from a file or folder on the classpath, and generate Java code.
+	 */
+	public JavaTestModel loadJavaTestModelFromResources(String resourceFolderOrFile) throws IOException {
+		RosettaTestModel rosettaModel = loadTestModelFromResources(resourceFolderOrFile);
 		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getModel());
 		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
 	}
