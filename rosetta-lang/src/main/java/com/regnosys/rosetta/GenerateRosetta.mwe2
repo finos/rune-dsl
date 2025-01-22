@@ -31,10 +31,10 @@ Workflow {
 				}
 				runtimeTest = {
 					enabled = true
-					name = "rosetta-testing"
-					root = "${parentDir}/rosetta-testing"
-					src = "${parentDir}/rosetta-testing/src/test/java"
-					srcGen = "${parentDir}/rosetta-testing/src-gen/main/java"
+					name = "rosetta-integration-tests"
+					root = "${parentDir}/rosetta-integration-tests"
+					src = "${parentDir}/rosetta-integration-tests/src/test/java"
+					srcGen = "${parentDir}/rosetta-integration-tests/src-gen/main/java"
 				}
 				genericIde = {
                     enabled = true

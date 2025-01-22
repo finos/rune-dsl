@@ -144,6 +144,7 @@
 		<module>rosetta-testing</module>
 		<module>rosetta-maven-plugin</module>
 		<module>rosetta-profiling</module>
+		<module>rosetta-integration-tests</module>
 	</modules>
 
 	<dependencyManagement>
