@@ -806,7 +806,7 @@ RosettaOnlyExistsElement returns RosettaExpression:
 
 RosettaOnlyExistsElementRoot returns RosettaReference:
 	{RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
-	| {RosettaImplicitVariable} name=('item' | 'it')
+	| RosettaImplicitVariable
 ;
 
 /*****************************************
