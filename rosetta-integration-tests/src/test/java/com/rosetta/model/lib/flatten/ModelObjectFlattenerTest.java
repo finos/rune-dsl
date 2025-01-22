@@ -18,26 +18,23 @@ import java.util.stream.Collectors;
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 class ModelObjectFlattenerTest {
-    @Inject
-    private ModelInstanceCreator creator;
-    @Inject
-    private ModelObjectFlattener modelObjectFlattener;
+	@Inject
+	private ModelInstanceCreator creator;
+	@Inject
+	private ModelObjectFlattener modelObjectFlattener;
 
-    private void assertFlattenedValues(RosettaModelObject instance, String expected) {
-    	List<RosettaPathValue> table = modelObjectFlattener.flatten(instance);
-    	String actual = table.stream()
-    			.map(pv -> pv.getPath() + ": " + pv.getValue())
-    			.collect(Collectors.joining("\n"));
-    	Assertions.assertEquals(expected.trim(), actual);
-    }
-    
-    @Test
-    void flattenTest1() throws IOException {
-        RosettaModelObject instance = creator.create("Data()", "/model-object-flattener-test/test-1.rosetta");
-        
-        assertFlattenedValues(instance,
-        		"""
-        		r1: VALUE1
+	private void assertFlattenedValues(RosettaModelObject instance, String expected) {
+		List<RosettaPathValue> table = modelObjectFlattener.flatten(instance);
+		String actual = table.stream().map(pv -> pv.getPath() + ": " + pv.getValue()).collect(Collectors.joining("\n", "", "\n"));
+		Assertions.assertEquals(expected, actual);
+	}
+
+	@Test
+	void flattenTest1() throws IOException {
+		RosettaModelObject instance = creator.create("Data()", "/model-object-flattener-test/test-1.rosetta");
+
+		assertFlattenedValues(instance, """
+				r1: VALUE1
 				foo.f1: VALUE2
 				foo.bar.b1: VALUE3
 				foo.bar.b3(0): VALUE4
@@ -57,20 +54,19 @@ class ModelObjectFlattenerTest {
 				bar(1).b2(1): VALUE18
 				bar(1).b3(0): VALUE19
 				bar(1).b3(1): VALUE20
-        		""");
-    }
-    
-    @Test
-    void flattenTest2() throws IOException {
-        RosettaModelObject instance = creator.create("Data()", "/model-object-flattener-test/test-2.rosetta");
-        
-        assertFlattenedValues(instance,
-        		"""
-        		attr: 42
+				""");
+	}
+
+	@Test
+	void flattenTest2() throws IOException {
+		RosettaModelObject instance = creator.create("Data()", "/model-object-flattener-test/test-2.rosetta");
+
+		assertFlattenedValues(instance, """
+				attr: 42
 				numberAttr: 10
 				parent.subAttr: true
 				parentList.subAttr: false
 				stringAttr: My string
-        		""");
-    }
+				""");
+	}
 }

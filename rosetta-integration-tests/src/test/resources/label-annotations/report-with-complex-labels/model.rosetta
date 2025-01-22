@@ -11,17 +11,24 @@ report Body Corpus in T+1
 eligibility rule IsEligible from int:
 	item
 
-type Foo:
+type SuperFoo:
 	attr1 string (1..1)
 		[metadata scheme]
 		[label as "My Label"]
+	qux Qux (1..1)
+		[label Opt1 -> opt1Attr as "Super option 1 Attribute"]
+
+type Foo extends SuperFoo:
+	override attr1 string (1..1)
+		[metadata scheme]
+		[label as "My Overridden Label"]
+	override qux Qux (1..1)
+		[label item ->> id as "Deep path ID"]
 	attr2 string (1..1)
 		[label item as "Label with item"]
 	bar Bar (1..1)
 		[label barAttr as "Bar attribute using path"]
 		[label item -> nestedBarList -> nestedAttr as "Nested bar attribute $"]
-	qux Qux (1..1)
-		[label item ->> id as "Deep path ID"]
 
 type Bar:
 	barAttr string (1..1)

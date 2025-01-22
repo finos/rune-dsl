@@ -152,12 +152,13 @@ public class LabelProviderGeneratorTest {
 		
 		assertSingleGeneratedFile("report-with-complex-labels/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
 		assertLabels(
-			"attr1:My Label",
+			"attr1:My Overridden Label",
 			"attr2:Label with item",
 			"bar.barAttr:Bar attribute using path",
 			"bar.nestedBarList(0).nestedAttr:Nested bar attribute $",
 			"bar.nestedBarList(1).nestedAttr:Nested bar attribute $",
 			"qux.Opt1.id:Deep path ID",
+			"qux.Opt1.opt1Attr:Super option 1 Attribute",
 			"qux.Opt2.id:Deep path ID"
 		);
 	}

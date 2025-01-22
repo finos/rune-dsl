@@ -12,13 +12,13 @@ public class BodyCorpusLabelProvider implements LabelProvider {
 	public BodyCorpusLabelProvider() {
 		labelMap = new HashMap<>();
 		
-		labelMap.put(RosettaPath.valueOf("attr1"), "My Label");
+		labelMap.put(RosettaPath.valueOf("attr1"), "My Overridden Label");
+		labelMap.put(RosettaPath.valueOf("qux.Opt1.opt1Attr"), "Super option 1 Attribute");
+		labelMap.put(RosettaPath.valueOf("qux.Opt1.id"), "Deep path ID");
+		labelMap.put(RosettaPath.valueOf("qux.Opt2.id"), "Deep path ID");
 		labelMap.put(RosettaPath.valueOf("attr2"), "Label with item");
 		labelMap.put(RosettaPath.valueOf("bar.barAttr"), "Bar attribute using path");
 		labelMap.put(RosettaPath.valueOf("bar.nestedBarList.nestedAttr"), "Nested bar attribute $");
-		labelMap.put(RosettaPath.valueOf("qux.Opt1.opt1Attr"), "Option 1 Attribute");
-		labelMap.put(RosettaPath.valueOf("qux.Opt1.id"), "Deep path ID");
-		labelMap.put(RosettaPath.valueOf("qux.Opt2.id"), "Deep path ID");
 	}
 	
 	@Override
