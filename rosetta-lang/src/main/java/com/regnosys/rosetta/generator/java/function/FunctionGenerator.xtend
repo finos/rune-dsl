@@ -74,6 +74,7 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.types.RMetaAttribute
 import com.rosetta.model.metafields.MetaFields
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 
 class FunctionGenerator {
 
@@ -449,7 +450,11 @@ class FunctionGenerator {
 						val prop = if (segmentRFeature instanceof RMetaAttribute) {
 							(expr.expressionType as JavaPojoInterface).findProperty("meta")
 						} else {
-							(expr.expressionType as JavaPojoInterface).findProperty(segmentRFeature.name)
+							if (seg.key === 0 && expr.expressionType.itemType instanceof RJavaWithMetaValue) {
+								new JavaPojoProperty("FieldWithMeta", "FieldWithMeta", "FieldWithMeta", expr.expressionType, null, null, false)
+							} else {
+								(expr.expressionType as JavaPojoInterface).findProperty(segmentRFeature.name)
+							}
 						}
 						val itemType = prop.type.itemType
 						if (seg.key < op.pathTail.size - 1) {

@@ -44,7 +44,24 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
-	def void canSetMetaOnFunctionOutput() {
+	def void canSetMetaOnFunctionObjectOutput() {
+		val code = '''
+		type Foo:
+			field string (1..1)
+		
+		func MyFunc:
+			output:
+				result Foo (1..1)
+					[metadata scheme]
+			//set result -> scheme: "outerScheme"
+			set result -> field:  "someValue"
+		'''.generateCode
+		
+		//TODO: finish this
+	}
+	
+	@Test
+	def void canSetMetaOnFunctionBasicOutput() {
 		val code = '''
 		func MyFunc:
 			output:
