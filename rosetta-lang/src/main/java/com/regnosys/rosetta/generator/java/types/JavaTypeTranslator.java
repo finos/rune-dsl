@@ -240,7 +240,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		} else if (feature instanceof RMetaAttribute) {
 			return toJavaReferenceType(((RMetaAttribute)feature).getRType());
 		} else {
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
 		}
 	}
 	public JavaClass<?> operationToReferenceWithMetaType(Operation op) {
@@ -255,14 +255,14 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	
 	public JavaReferenceType operationToJavaType(ROperation op) {
-		RFeature attr;
+		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
-			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
 			List<RFeature> segments = op.getPathTail();
-			attr = segments.get(segments.size() - 1);
+			feature = segments.get(segments.size() - 1);
 		}
-		return toJavaType(attr);
+		return toJavaType(feature);
 	}
 	public JavaClass<?> operationToReferenceWithMetaType(ROperation op) {
 		RFeature feature;

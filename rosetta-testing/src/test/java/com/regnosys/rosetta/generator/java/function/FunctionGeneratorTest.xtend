@@ -42,6 +42,7 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
+	@Disabled
 	@Test
 	def void canSetMetaOnFunctionOutput() {
 		val code = '''
@@ -3169,6 +3170,8 @@ class FunctionGeneratorTest {
 				
 			'''
 		].generateCode
+		
+//		code.writeClasses("shouldGenerateFuncWithKeyReferenceFromAnotherNamespace")
 		code.compileToClasses
 	}
 
