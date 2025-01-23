@@ -50,8 +50,8 @@ public class LabelProviderGeneratorTest {
 	}
 	
 	
-	private RosettaTestModel loadModel(String rootFolderName) throws IOException {
-		return testModelService.loadTestModelFromResources("/label-annotations/" + rootFolderName);
+	private RosettaTestModel loadModel(String runeSourceCode) throws IOException {
+		return testModelService.toTestModel(runeSourceCode);
 	}
 	private void generateLabelProviderForFunction(RosettaTestModel model, String functionName) {
 		labelProviderGenerator.generateForFunctionIfApplicable(fsa, model.getFunction(functionName));
@@ -111,7 +111,20 @@ public class LabelProviderGeneratorTest {
 	
 	@Test
 	void testFunctionWithoutAnnotationDoesNotGenerateLabelProvider() throws IOException {
-		RosettaTestModel model = loadModel("func-without-transform-annotation");
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				type Foo:
+					attr string (1..1)
+						[label as "My attribute"]
+				
+				annotation myAnn:
+				
+				func MyFunc:
+					[myAnn]
+					output:
+						foo Foo (1..1)
+				""");
 		
 		generateLabelProviderForFunction(model, "MyFunc");
 		
@@ -120,7 +133,19 @@ public class LabelProviderGeneratorTest {
 	
 	@Test
 	void testFunctionWithIngestAnnotationGeneratesLabelProvider() throws IOException {
-		RosettaTestModel model = loadModel("func-ingest");
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				type Foo:
+					attr string (1..1)
+						[label as "My attribute"]
+					other int (1..1)
+				
+				func MyFunc:
+					[ingest JSON]
+					output:
+						foo Foo (1..1)
+				""");
 		
 		generateLabelProviderForFunction(model, "MyFunc");
 		
@@ -133,7 +158,36 @@ public class LabelProviderGeneratorTest {
 	
 	@Test
 	void testReportLabelOverridesRuleReferenceLabel() throws IOException {
-		RosettaTestModel model = loadModel("report-with-rule-references");
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				body Authority Body
+				corpus Regulation "Description" Corpus
+				
+				report Body Corpus in T+1
+					from int
+					when IsEligible
+					with type Foo
+				
+				eligibility rule IsEligible from int:
+					item
+				
+				type Foo:
+					attr string (1..1)
+						[ruleReference FooAttr]
+						[label as "My attribute"]
+					other int (1..1)
+						[ruleReference FooOther]
+				
+				
+				reporting rule FooAttr from int:
+					to-string
+					as "My attribute from rule"
+				
+				reporting rule FooOther from int:
+					item
+					as "Other from rule"
+				""");
 		
 		generateLabelProviderForReport(model, "Body", "Corpus");
 		
@@ -146,7 +200,65 @@ public class LabelProviderGeneratorTest {
 	
 	@Test
 	void testComplexReportLabels() throws IOException {
-		RosettaTestModel model = loadModel("report-with-complex-labels");
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				body Authority Body
+				corpus Regulation "Description" Corpus
+				
+				report Body Corpus in T+1
+					from int
+					when IsEligible
+					with type Foo
+				
+				eligibility rule IsEligible from int:
+					item
+				
+				type SuperFoo:
+					attr1 string (1..1)
+						[metadata scheme]
+						[label as "My Label"]
+					qux Qux (1..1)
+						[label Opt1 -> opt1Attr as "Super option 1 Attribute"]
+				
+				type Foo extends SuperFoo:
+					override attr1 string (1..1)
+						[metadata scheme]
+						[label as "My Overridden Label"]
+					override qux Qux (1..1)
+						[label item ->> id as "Deep path ID"]
+					attr2 string (1..1)
+						[label item as "Label with item"]
+					bar Bar (1..1)
+						[label barAttr as "Bar attribute using path"]
+						[label item -> nestedBarList -> nestedAttr as "Nested bar attribute $"]
+				
+				type Bar:
+					barAttr string (1..1)
+						[ruleReference BarAttr]
+					nestedBarList NestedBar (0..*)
+				
+				type NestedBar:
+					nestedAttr string (1..1)
+				
+				choice Qux:
+					Opt1
+					Opt2
+				
+				type Opt1:
+					id string (1..1)
+					opt1Attr int (1..1)
+						[label as "Option 1 Attribute"]
+				
+				type Opt2:
+					id string (1..1)
+					opt2Attribute int (1..1)
+				
+				
+				reporting rule BarAttr from int:
+					to-string
+					as "Bar attribute from rule"
+				""");
 		
 		generateLabelProviderForReport(model, "Body", "Corpus");
 		
