@@ -26,8 +26,8 @@ import org.eclipse.xtext.ide.server.ServerModule;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
 import org.eclipse.xtext.service.AbstractGenericModule;
 
-import com.google.inject.util.Modules;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 public class RosettaServerModule extends AbstractGenericModule {
 	/**

@@ -25,9 +25,13 @@
 		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
 
-	<name>Rosetta DSL Test Project</name>
+	<name>Rosetta DSL Testing Utilities</name>
 	<artifactId>com.regnosys.rosetta.tests</artifactId>
 
+	<properties>
+		<maven.compiler.release>17</maven.compiler.release>
+
+	</properties>
 	<dependencies>
 		<!-- Inter-project dependencies -->
 		<dependency>

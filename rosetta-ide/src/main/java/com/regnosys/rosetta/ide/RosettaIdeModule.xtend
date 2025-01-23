@@ -4,36 +4,40 @@
 package com.regnosys.rosetta.ide
 
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider
-import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider
-import org.eclipse.xtext.documentation.IEObjectDocumentationProvider
-import com.regnosys.rosetta.ide.hover.RosettaDocumentationProvider
-import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver
-import com.regnosys.rosetta.ide.inlayhints.RosettaInlayHintsService
-import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService
-import com.regnosys.rosetta.ide.util.RangeUtils
-import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenTypesProvider
-import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenModifiersProvider
-import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
-import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
-import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
-import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
-import org.eclipse.xtext.ide.server.formatting.FormattingService
-import com.regnosys.rosetta.ide.formatting.RosettaFormattingService
-import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider
-import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixProvider
-import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2
-import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixCodeActionService
-import org.eclipse.xtext.ide.server.contentassist.ContentAssistService
-import org.eclipse.xtext.service.OperationCanceledManager
-import com.regnosys.rosetta.ide.contentassist.cancellable.ICancellableContentAssistParser
-import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableRosettaParser
-import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableContentAssistService
-import com.regnosys.rosetta.ide.contentassist.cancellable.RosettaOperationCanceledManager
-import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenModifiersProvider
-import org.eclipse.xtext.ide.server.hover.IHoverService
-import com.regnosys.rosetta.ide.hover.RosettaHoverService
-import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider
 import com.regnosys.rosetta.ide.contentassist.RosettaContentProposalProvider
+import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableContentAssistService
+import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableRosettaParser
+import com.regnosys.rosetta.ide.contentassist.cancellable.ICancellableContentAssistParser
+import com.regnosys.rosetta.ide.contentassist.cancellable.RosettaOperationCanceledManager
+import com.regnosys.rosetta.ide.formatting.RosettaFormattingService
+import com.regnosys.rosetta.ide.hover.RosettaDocumentationProvider
+import com.regnosys.rosetta.ide.hover.RosettaHoverService
+import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver
+import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService
+import com.regnosys.rosetta.ide.inlayhints.RosettaInlayHintsService
+import com.regnosys.rosetta.ide.quickfix.ICodeActionProvider
+import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService
+import com.regnosys.rosetta.ide.quickfix.RosettaCodeActionProvider
+import com.regnosys.rosetta.ide.quickfix.RosettaCodeActionService
+import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixProvider
+import com.regnosys.rosetta.ide.quickfix.RosettaResolveCodeActionService
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenModifiersProvider
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenTypesProvider
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService
+import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenModifiersProvider
+import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokenTypesProvider
+import com.regnosys.rosetta.ide.semantictokens.RosettaSemanticTokensService
+import com.regnosys.rosetta.ide.textmate.RosettaTextMateGrammarUtil
+import com.regnosys.rosetta.ide.util.RangeUtils
+import org.eclipse.xtext.documentation.IEObjectDocumentationProvider
+import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider
+import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider
+import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider
+import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2
+import org.eclipse.xtext.ide.server.contentassist.ContentAssistService
+import org.eclipse.xtext.ide.server.formatting.FormattingService
+import org.eclipse.xtext.ide.server.hover.IHoverService
+import org.eclipse.xtext.service.OperationCanceledManager
 
 /**
  * Use this class to register ide components.
@@ -85,7 +89,15 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	}
 	
 	def Class<? extends ICodeActionService2> bindICodeActionService2() {
-		RosettaQuickFixCodeActionService
+		RosettaCodeActionService
+	}
+	
+	def Class<? extends IResolveCodeActionService> bindIResolveCodeActionService() {
+		RosettaResolveCodeActionService
+	}
+	
+	def Class<? extends ICodeActionProvider> bindICodeActionProvider() {
+		RosettaCodeActionProvider
 	}
 	
 	def Class<? extends ICancellableContentAssistParser> bindICancellableContentAssistParser() {

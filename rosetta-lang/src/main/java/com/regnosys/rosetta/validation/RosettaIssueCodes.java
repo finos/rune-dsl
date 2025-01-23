@@ -37,8 +37,10 @@ public interface RosettaIssueCodes {
 	static final String CARDINALITY_ERROR=PREFIX +"cardinalityError";
 	static final String INVALID_ELEMENT_NAME=PREFIX +"invalidElementName";
 	static final String UNUSED_IMPORT = PREFIX + "unusedImport";
+	static final String DUPLICATE_IMPORT = PREFIX + "duplicateImport";
 
 	static final String MANDATORY_SQUARE_BRACKETS = PREFIX + "mandatorySquareBrackets";
 	static final String REDUNDANT_SQUARE_BRACKETS = PREFIX + "redundantSquareBrackets";
 	static final String MANDATORY_THEN = PREFIX + "mandatoryThen";
+	static final String MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT = PREFIX + "missingAttributes";
 }

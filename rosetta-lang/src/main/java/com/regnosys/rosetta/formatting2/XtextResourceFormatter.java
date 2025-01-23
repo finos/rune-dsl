@@ -11,10 +11,16 @@ import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionRewriter;
 import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.util.ITextRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.regnosys.rosetta.rosetta.Import;
+import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.utils.ImportManagementService;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -29,6 +35,9 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 
 	@Inject
 	private TextRegionAccessBuilder regionBuilder;
+
+	@Inject
+	private ImportManagementService importManagementService;
 
 	@Override
 	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
@@ -70,12 +79,49 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 			replacements = new ArrayList<>();
 		}
 
+		// get text replacement for optimized imports
+		ITextReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
+		if (importsReplacement != null)
+			replacements.add(importsReplacement);
+
 		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
 		// Perform handler operation
 		acceptor.accept(resource, formattedString);
+	}
+
+	public ITextReplacement formattedImportsReplacement(XtextResource resource, ITextRegionAccess regionAccess) {
+		RosettaModel model = (RosettaModel) resource.getContents().get(0);
+		ITextRegion importsRegion = getImportsTextRegion(model.getImports());
+
+		if (importsRegion == null)
+			return null;
+
+		importManagementService.cleanupImports(model);
+		String sortedImportsText = importManagementService.toString(model.getImports());
+		return regionAccess.getRewriter().createReplacement(importsRegion.getOffset(), importsRegion.getLength(),
+				sortedImportsText);
+	}
+
+	/**
+	 * Return a ITextRegion of all imports
+	 * 
+	 * @param imports
+	 * @return ITextRegion text region of imports
+	 */
+	private ITextRegion getImportsTextRegion(List<Import> imports) {
+		if (imports.isEmpty()) {
+			return null;
+		}
+
+		Import firstImport = imports.get(0);
+		Import lastImport = imports.get(imports.size() - 1);
+		ITextRegion firstRegion = NodeModelUtils.getNode(firstImport).getTextRegion();
+		ITextRegion lastRegion = NodeModelUtils.getNode(lastImport).getTextRegion();
+
+		return firstRegion.merge(lastRegion);
 	}
 
 }
