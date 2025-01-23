@@ -197,6 +197,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = typeId.getName() + "DeepPathUtil";
 		return new GeneratedJavaClass<>(packageName, simpleName, Object.class);
 	}
+	public JavaClass<?> toItemJavaType(RMetaAttribute attr) {
+		return toJavaReferenceType(attr.getRType());
+	}
 	public JavaClass<?> toItemJavaType(RAttribute attr) {
 		return toJavaReferenceType(attr.getRMetaAnnotatedType().getRType());
 	}
@@ -237,8 +240,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toJavaType(RFeature feature) {
 		if (feature instanceof RAttribute) {
 			return toJavaType((RAttribute) feature);
-		} else if (feature instanceof RMetaAttribute) {
-			return toJavaReferenceType(((RMetaAttribute)feature).getRType());
+		} else if (feature instanceof RMetaAttribute) { 
+			return toItemJavaType((RMetaAttribute) feature);
 		} else {
 			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
 		}
@@ -253,7 +256,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return toJavaReferenceType(typeProvider.getRTypeOfFeature(feature, null));
 	}
-	
 	public JavaReferenceType operationToJavaType(ROperation op) {
 		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
@@ -272,7 +274,13 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<RFeature> segments = op.getPathTail();
 			feature = segments.get(segments.size() - 1);
 		}
-		return toJavaType(feature);
+		if (feature instanceof RAttribute) {
+			return toJavaReferenceType(((RAttribute)feature).getRMetaAnnotatedType());
+		} else if (feature instanceof RMetaAttribute) {
+			return toJavaReferenceType(((RMetaAttribute)feature).getRType());
+		} else {
+			throw new UnsupportedOperationException("No JavaReferenceType exists for feature: " + feature.getName());
+		}
 	}
 	
 	private String getTypeDebugInfo(RType type) {

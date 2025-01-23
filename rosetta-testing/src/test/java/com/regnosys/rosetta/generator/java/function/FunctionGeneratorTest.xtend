@@ -3171,7 +3171,6 @@ class FunctionGeneratorTest {
 			'''
 		].generateCode
 		
-//		code.writeClasses("shouldGenerateFuncWithKeyReferenceFromAnotherNamespace")
 		code.compileToClasses
 	}
 
