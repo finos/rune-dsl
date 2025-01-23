@@ -32,6 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.Assert.assertThrows
 import static org.junit.jupiter.api.Assertions.*
+import com.rosetta.model.lib.meta.FieldWithMeta
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -42,7 +43,6 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled
 	@Test
 	def void canSetMetaOnFunctionOutput() {
 		val code = '''
@@ -53,17 +53,16 @@ class FunctionGeneratorTest {
 			set result:  "someValue"
 			set result -> scheme: "someScheme"	
 		'''.generateCode
+				
+ 		val classes = code.compileToClasses
 		
-//		code.compileToClasses
-// 		val classes = code.compileToClasses
-//		
-//		val myFunc = classes.createFunc("MyFunc")
-//		
-//		val result = myFunc.invokeFunc(FieldWithMeta)
-//		
-//		val expected = classes.createFieldWithMetaString("someValue", "someScheme")
-//		
-//		assertEquals(expected, result)
+		val myFunc = classes.createFunc("MyFunc")
+		
+		val result = myFunc.invokeFunc(FieldWithMeta)
+		
+		val expected = classes.createFieldWithMetaString("someValue", "someScheme")
+		
+		assertEquals(expected, result)
 	}
 	
 	@Test
