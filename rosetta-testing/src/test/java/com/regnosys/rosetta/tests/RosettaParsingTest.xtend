@@ -327,6 +327,15 @@ class RosettaParsingTest {
 		'''
 			typeAlias int(digits int, min int, max int): number(digits: digits, fractionalDigits: 0, min: min, max: max)
 			typeAlias max4String: string(minLength: 1, maxLength: 4)
+			
+			func F:
+				inputs:
+					code DomainCodeList (1..1)
+					domain string (1..1)
+				output: result boolean (1..1)
+				set result: True
+			typeAlias DomainCodeList (domain string): string
+				condition IsValidCode: F(item, domain)
 		'''.parseRosettaWithNoIssues
 	}
 	
@@ -337,8 +346,6 @@ class RosettaParsingTest {
 			basicType int(digits int, min int, max int)
 			basicType number(digits int, fractionalDigits int, min number, max number)
 			basicType string(minLength int, maxLength int, pattern pattern)
-			typeAlias DomainCodeList (domain string): string
-				condition IsValidCode: F(item, domain)
 		'''.parseRosettaWithNoIssues
 	}
 	
