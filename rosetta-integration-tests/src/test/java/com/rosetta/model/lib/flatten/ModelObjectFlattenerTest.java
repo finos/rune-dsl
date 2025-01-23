@@ -55,7 +55,7 @@ class ModelObjectFlattenerTest {
 				    b2 string (0..*)
 				    b3 string (0..*)
 				        [metadata scheme]
-				""");
+				""").compile();
 		
 		RosettaModelObject instance = model.evaluateExpression(RosettaModelObject.class, """
 				Root {
@@ -150,7 +150,7 @@ class ModelObjectFlattenerTest {
 					[metadata key]
 				
 				type GrandChild extends Child:
-				""");
+				""").compile();
 		
 		RosettaModelObject instance = model.evaluateExpression(RosettaModelObject.class, """
 				Foo3 {
