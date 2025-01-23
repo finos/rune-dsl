@@ -27,6 +27,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ExpressionJavaEvaluatorService;
+import com.regnosys.rosetta.tests.util.ExpressionParser;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.regnosys.rosetta.types.RObjectFactory;
 
@@ -42,6 +43,8 @@ public class RosettaTestModelService {
 	private ModelHelper modelHelper;
 	@Inject 
     private ValidationTestHelper validationHelper;
+	@Inject
+	private ExpressionParser expressionParser;
 	@Inject
 	private CodeGeneratorTestHelper codeGeneratorHelper;
 	@Inject
@@ -69,7 +72,7 @@ public class RosettaTestModelService {
 		} else {
 			model = modelHelper.parseRosetta(source);
 		}
-		return new RosettaTestModel(source, model);
+		return new RosettaTestModel(source, model, expressionParser);
 	}
 	/**
 	 * Load a test model from a file or folder on the classpath. It will assert that there are no issues in the model.
@@ -105,7 +108,7 @@ public class RosettaTestModelService {
 	    
 	    String source = CharStreams.toString(new InputStreamReader(resourceSet.getURIConverter().createInputStream(resource.getURI(), resourceSet.getLoadOptions()), Charsets.UTF_8));
 	    RosettaModel model = (RosettaModel) resource.getContents().get(0);
-	    return new RosettaTestModel(source, model);
+	    return new RosettaTestModel(source, model, expressionParser);
 	}
 	
 	/**
