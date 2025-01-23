@@ -594,6 +594,7 @@ repository:
         - include: '#synonymAnnotationBody'
         - include: '#referenceAnnotationBody'
         - include: '#ruleReferenceAnnotationBody'
+        - include: '#labelAnnotationBody'
         - include: '#customAnnotationBody'
 
       prefixAnnotationBody:
@@ -714,6 +715,28 @@ repository:
         - include: '#comment'
         - name: entity.name.rule.rosetta
           match: '{{identifier}}'
+
+      labelAnnotationBody:
+        name: meta.annotated.label.rosetta
+        begin: '{{wordStart}}label{{wordEnd}}'
+        beginCaptures:
+          0: { name: variable.annotation.label.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - name: meta.annotated.label.path.rosetta
+          begin: '(?<={{wordStart}}label{{wordEnd}})'
+          end: '{{wordStart}}as{{wordEnd}}'
+          endCaptures:
+            0: { name: keyword.other.rosetta }
+          patterns:
+          - include: '#comment'
+          - include: '#implicitVariable'
+          - name: keyword.operator.rosetta
+            match: ->
+          - name: variable.other.member.rosetta
+            match: '{{identifier}}'
+        - include: '#string'
 
       customAnnotationBody:
         name: meta.annotated.rosetta
@@ -1138,8 +1161,7 @@ repository:
           patterns:
           - include: '#comment'
         - include: '#literal'
-        - name: constant.language.rosetta
-          match: '{{wordStart}}(item|it){{wordEnd}}'
+        - include: '#implicitVariable'
         - name: meta.if-then.rosetta
           begin: '{{wordStart}}if{{wordEnd}}'
           beginCaptures:
@@ -1199,6 +1221,10 @@ repository:
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable
           match: '{{identifier}}'
+
+      implicitVariable:
+        name: constant.language.rosetta
+        match: '{{wordStart}}item{{wordEnd}}'
 
       constructorExpression:
         name: meta.constructor.rosetta
@@ -1296,6 +1322,7 @@ repository:
             - include: '#synonymAnnotationBody'
             - include: '#referenceAnnotationBody'
             - include: '#ruleReferenceAnnotationBody'
+            - include: '#labelAnnotationBody'
             - include: '#customAnnotationBody'
           - include: '#annotationsFollowedByExpression'
         - include: '#expression'

@@ -122,7 +122,7 @@ class TabulatorTest {
 				subsubbasic: 3
 		'''
 		assertFieldValuesEqual(expectedValues, flatReport)
-	}	
+	}
 
 	
 	@Test

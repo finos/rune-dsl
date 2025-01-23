@@ -37,16 +37,6 @@ class ModelHelper {
 		segment section
 		segment field
 		
-		stereotype entityReferenceData
-		stereotype productReferenceData
-		stereotype commondReferenceData
-		stereotype preExecutionActivity
-		stereotype executionActivity
-		stereotype postExecutionActivity
-		stereotype contractualProduct
-		stereotype regulatoryEligibility
-		stereotype regulatoryReporting
-		
 		synonym source FIX
 		synonym source FpML
 		synonym source DTCC

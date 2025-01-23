@@ -80,7 +80,7 @@ class ConditionGeneratorTest {
 				a int (0..1)
 				
 				condition C:
-				    it -> a exists and [it, it] any = it
+				    item -> a exists and [item, item] any = item
 		'''.generateCode
 		val classes = code.compileToClasses
 		

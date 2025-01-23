@@ -144,16 +144,19 @@ class RosettaRuleGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -290,17 +293,20 @@ class RosettaRuleGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -430,16 +436,19 @@ class RosettaRuleGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -560,16 +569,19 @@ class RosettaRuleGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -699,16 +711,19 @@ class RosettaRuleGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
@@ -809,16 +824,19 @@ class RosettaRuleGeneratorTest {
 				
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.annotations.RosettaReport;
+				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
+				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+				@RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
 				@ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
 				public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
 					
