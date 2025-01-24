@@ -91,9 +91,7 @@ class FunctionGeneratorTest {
 			set result:  "someValue"
 			set result -> scheme: "someScheme"	
 		'''.generateCode
-		
-		code.writeClasses("canSetMetaOnFunctionBasicOutput")
-										
+												
  		val classes = code.compileToClasses
 		
 		val myFunc = classes.createFunc("MyFunc")

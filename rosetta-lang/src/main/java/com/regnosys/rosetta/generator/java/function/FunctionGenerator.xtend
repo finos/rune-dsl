@@ -483,7 +483,7 @@ class FunctionGenerator {
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
-								.toBuilder().«prop.getOrCreateName»().set«seg.name.toFirstUpper»(«it»)''',
+								.«prop.getOrCreateName»().set«seg.name.toFirstUpper»(«it»)''',
 							JavaPrimitiveType.VOID
 						)
 					} else {
