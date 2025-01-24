@@ -354,7 +354,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testSwitchInputRecordTypesAreNotValid() {
  		"someDate switch default \"someResult\""
  			.parseExpression(#["someDate date (1..1)"])
- 			.assertError(SWITCH_OPERATION, null, "Operator `switch` is not supported for type date. Supported argument types are basic types, enumerations, and choice types")	
+ 			.assertError(SWITCH_OPERATION, null, "Operator `switch` is not supported for type `date`. Supported argument types are basic types, enumerations, and choice types")	
  	}
 
 	@Test
@@ -450,7 +450,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
  		
  		"inFoo switch default 42"
 			.parseExpression(#[model], #["inFoo Foo (1..1)"])
- 			.assertError(SWITCH_OPERATION, null, "Operator `switch` is not supported for type Foo. Supported argument types are basic types, enumerations, and choice types")
+ 			.assertError(SWITCH_OPERATION, null, "Operator `switch` is not supported for type `Foo`. Supported argument types are basic types, enumerations, and choice types")
  	}
 
  	@Test
@@ -712,7 +712,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null,
-			"There are no optional attributes left."
+			"There are no optional attributes left"
 		)
 	}
 	
@@ -735,7 +735,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, null,
-			"Duplicate attribute `a`."
+			"Duplicate attribute `a`"
 		)
 	}
 	
@@ -756,8 +756,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				}
 		'''.parseRosetta
 		
-		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, TYPE_ERROR,
-			"Expected type 'int' but was 'string'"
+		model.assertError(CONSTRUCTOR_KEY_VALUE_PAIR, null,
+			"Expected type `int`, but got `string` instead. Cannot assign `string` to attribute `a`"
 		)
 	}
 	
@@ -787,7 +787,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT,
-			"Missing attributes `month`, `year`."
+			"Missing attributes `month`, `year`"
 		)
 	}
 	
@@ -804,7 +804,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(ROSETTA_CONSTRUCTOR_EXPRESSION, null,
-			"There are no optional attributes left."
+			"There are no optional attributes left"
 		)
 	}
 	
@@ -1723,7 +1723,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				if id = True
 				then id < 1
 		'''.parseRosetta
-		model.assertError(COMPARISON_OPERATION, null, "Operator `<` is not supported for type boolean. Supported types are number, date and zonedDateTime")
+		model.assertError(COMPARISON_OPERATION, null, "Operator `<` is not supported for type `boolean`. Supported types are `number`, `date` and `zonedDateTime`")
 	}
 	
 	@Test
