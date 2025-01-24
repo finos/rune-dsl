@@ -56,15 +56,20 @@ class FunctionGeneratorTest {
 			set result -> scheme: "outerScheme"
 			set result -> a:  "someValue"
 		'''.generateCode
-		
-//		code.writeClasses("canSetMetaOnFunctionObjectOutput")
-		
+				
 		val classes = code.compileToClasses
 		val myFunc = classes.createFunc("MyFunc")
 		
 		val result = myFunc.invokeFunc(RosettaModelObject)
 		
-		//TODO: finish this
+		val expected = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+        		"a" -> "someValue"
+			}),
+			"meta" -> MetaFields.builder.setScheme("outerScheme")
+		})
+		
+		assertEquals(expected, result)
 	}
 	
 	@Test
@@ -77,7 +82,7 @@ class FunctionGeneratorTest {
 			set result:  "someValue"
 			set result -> scheme: "someScheme"	
 		'''.generateCode
-				
+								
  		val classes = code.compileToClasses
 		
 		val myFunc = classes.createFunc("MyFunc")
