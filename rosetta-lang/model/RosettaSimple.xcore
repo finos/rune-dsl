@@ -32,6 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaPackage.Literals
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
 
+/* ANNOTATIONS */
 class Annotation extends RootElement, RosettaNamed {
 	String prefix
 	contains Attribute[] attributes
@@ -54,6 +55,28 @@ class AnnotationRef {
 	contains AnnotationQualifier[] qualifiers
 }
 
+interface BuiltinAnnotation extends RosettaNamed {
+}
+class LabelAnnotation extends BuiltinAnnotation {
+	contains AnnotationPathExpression path
+	String label
+}
+
+interface AnnotationPathExpression {
+}
+class AnnotationPathAttributeReference extends AnnotationPathExpression {
+	refers Attribute attribute
+}
+class AnnotationPath extends AnnotationPathExpression {
+	contains AnnotationPathExpression receiver
+	refers Attribute attribute
+}
+class AnnotationDeepPath extends AnnotationPathExpression {
+	contains AnnotationPathExpression receiver
+	refers Attribute attribute
+}
+/* END ANNOTATIONS */
+
 interface AssignPathRoot extends RosettaSymbol {
 }
 
@@ -62,6 +85,7 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 	contains RosettaCardinality card
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference
+	contains LabelAnnotation[] labels
 }
 
 

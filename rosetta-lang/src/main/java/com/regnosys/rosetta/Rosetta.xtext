@@ -82,15 +82,13 @@ Choice:
 
 ChoiceOption:
 	RosettaTyped RosettaDefinable?
-	(References|Annotations|Synonyms)*
-	RuleReference?
+	(References|Annotations|Synonyms|labels+=LabelAnnotation|RuleReference)*
 ;
 
 Attribute:
 	override?='override'? RosettaNamed RosettaTyped card=RosettaCardinality
 	RosettaDefinable?
-	(References|Annotations|Synonyms)*
-	RuleReference?
+	(References|Annotations|Synonyms|labels+=LabelAnnotation|RuleReference)*
 ;
 
 Enumeration returns RosettaEnumeration:
@@ -474,7 +472,11 @@ RosettaSegment:
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
 	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (rawArgs+=RosettaCalcExpression (',' rawArgs+=RosettaCalcExpression)*)? ')')?
-	| {RosettaImplicitVariable} name=('item' | 'it')
+	| RosettaImplicitVariable
+;
+
+RosettaImplicitVariable:
+	name='item'
 ;
 
 RosettaLiteral:
@@ -804,7 +806,7 @@ RosettaOnlyExistsElement returns RosettaExpression:
 
 RosettaOnlyExistsElementRoot returns RosettaReference:
 	{RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
-	| {RosettaImplicitVariable} name=('item' | 'it')
+	| RosettaImplicitVariable
 ;
 
 /*****************************************
@@ -914,4 +916,24 @@ RosettaRule:
 		(expression = RosettaCalcExpression
 		('as' identifier=STRING)?)
  	)
+;
+
+/**********************************
+ * Labels
+ */
+LabelAnnotation:
+	'[' name='label' path=AnnotationPathExpression? 'as' label=STRING ']'
+;
+AnnotationPathExpression:
+	NestedAnnotationPath
+;
+NestedAnnotationPath returns AnnotationPathExpression:
+	PrimaryAnnotationPath ->(
+			 ({AnnotationPath.receiver=current} '->' (=>attribute=[Attribute|ValidID])?)
+			|({AnnotationDeepPath.receiver=current} '->>' (=>attribute=[Attribute|ValidID])?)
+		)*
+;
+PrimaryAnnotationPath returns AnnotationPathExpression:
+	{AnnotationPathAttributeReference} attribute=[Attribute|ValidID]
+	| RosettaImplicitVariable
 ;

@@ -75,6 +75,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.types.RMetaAttribute
 import com.rosetta.model.metafields.MetaFields
 import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
+import com.rosetta.model.lib.annotations.RuneLabelProvider
 
 class FunctionGenerator {
 
@@ -93,6 +94,7 @@ class FunctionGenerator {
 	@Inject extension JavaTypeUtil
 	@Inject TypeCoercionService coercionService
 	@Inject extension ModelIdProvider
+	@Inject LabelProviderGeneratorUtil labelProviderUtil
 
 	def void generate(RootPackage root, IFileSystemAccess2 fsa, Function func, String version) {
 		val fileName = root.functions.withForwardSlashes + '/' + func.name + '.java'
@@ -111,14 +113,19 @@ class FunctionGenerator {
 					overridesEvaluate = true
 					functionInterfaces.add(getQualifyingFunctionInterface(rFunction.inputs))
 				}
-				rBuildClass(rFunction, false, functionInterfaces, emptyMap, overridesEvaluate, topScope)
+				val Map<Class<?>, StringConcatenationClient> annotations = newLinkedHashMap
+				if (labelProviderUtil.shouldGenerateLabelProvider(func)) {
+					val labelProviderClass = rFunction.toLabelProviderJavaClass
+					annotations.put(RuneLabelProvider, '''labelProvider=«labelProviderClass».class''' )
+				}
+				rBuildClass(rFunction, false, functionInterfaces, annotations, overridesEvaluate, topScope)
 			}
 
 		val content = buildClass(root.functions, classBody, topScope)
 		fsa.generateFile(fileName, content)
 	}
 	
-	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, Map<Class<?>, String> annotations, boolean overridesEvaluate, JavaScope topScope) {
+	def rBuildClass(RFunction rFunction, boolean isStatic, List<JavaType> functionInterfaces, Map<Class<?>, StringConcatenationClient> annotations, boolean overridesEvaluate, JavaScope topScope) {
 		val dependencies = collectFunctionDependencies(rFunction)
 		rFunction.classBody(isStatic, overridesEvaluate, dependencies, functionInterfaces, annotations, topScope)
 	}
@@ -150,7 +157,7 @@ class FunctionGenerator {
 		boolean overridesEvaluate,
 		List<JavaClass<?>> dependencies,
 		List<JavaType> functionInterfaces,
-		Map<Class<?>, String> annotations,
+		Map<Class<?>, StringConcatenationClient> annotations,
 		JavaScope scope
 	) {
 		val className = scope.createIdentifier(function, function.toFunctionJavaClass.simpleName)
@@ -439,7 +446,7 @@ class FunctionGenerator {
 				} 	
 			}
 
-		} else { // assign an attribute of the function output object			
+		} else { // assign an attribute of the function output object
 			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[

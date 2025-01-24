@@ -16,6 +16,30 @@
 
 package com.regnosys.rosetta.generator.java.types;
 
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
+import com.regnosys.rosetta.rosetta.RosettaReport;
+import com.regnosys.rosetta.rosetta.simple.*;
+import com.regnosys.rosetta.types.*;
+import com.regnosys.rosetta.types.builtin.*;
+import com.regnosys.rosetta.utils.ModelIdProvider;
+import com.regnosys.rosetta.utils.RosettaTypeSwitch;
+import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.functions.LabelProvider;
+import com.rosetta.model.lib.functions.RosettaFunction;
+import com.rosetta.model.lib.reports.ReportFunction;
+import com.rosetta.model.lib.reports.Tabulator;
+import com.rosetta.util.DottedPath;
+import com.rosetta.util.types.*;
+import com.rosetta.util.types.generated.GeneratedJavaClass;
+import com.rosetta.util.types.generated.GeneratedJavaClassService;
+import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration;
+
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -23,57 +47,6 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import javax.inject.Inject;
-
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
-import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.Function;
-import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.Segment;
-import com.regnosys.rosetta.types.RAliasType;
-import com.regnosys.rosetta.types.RAttribute;
-import com.regnosys.rosetta.types.RChoiceType;
-import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RFeature;
-import com.regnosys.rosetta.types.RFunction;
-import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.RMetaAttribute;
-import com.regnosys.rosetta.types.ROperation;
-import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
-import com.regnosys.rosetta.types.TypeSystem;
-import com.regnosys.rosetta.types.builtin.RBasicType;
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.types.builtin.RDateTimeType;
-import com.regnosys.rosetta.types.builtin.RDateType;
-import com.regnosys.rosetta.types.builtin.RNumberType;
-import com.regnosys.rosetta.types.builtin.RStringType;
-import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
-import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.regnosys.rosetta.utils.RosettaTypeSwitch;
-import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
-import com.rosetta.model.lib.annotations.RosettaMetaAttribute;
-import com.rosetta.model.lib.functions.RosettaFunction;
-import com.rosetta.model.lib.reports.ReportFunction;
-import com.rosetta.model.lib.reports.Tabulator;
-import com.rosetta.util.DottedPath;
-import com.rosetta.util.types.JavaClass;
-import com.rosetta.util.types.JavaParameterizedType;
-import com.rosetta.util.types.JavaPrimitiveType;
-import com.rosetta.util.types.JavaReferenceType;
-import com.rosetta.util.types.JavaType;
-import com.rosetta.util.types.generated.GeneratedJavaClass;
-import com.rosetta.util.types.generated.GeneratedJavaClassService;
-import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
@@ -131,6 +104,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		default:
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 
+	}
+	public GeneratedJavaClass<LabelProvider> toLabelProviderJavaClass(RFunction function) {
+		DottedPath packageName = function.getNamespace().child("labels");
+		String simpleName = function.getAlphanumericName() + "LabelProvider";
+		return new GeneratedJavaClass<>(packageName, simpleName, LabelProvider.class);
 	}
 	public JavaClass<RosettaFunction> toFunctionJavaClass(Function func) {
 		return generatedJavaClassService.toJavaFunction(modelIdProvider.getSymbolId(func));
@@ -240,7 +218,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> toJavaType(RFeature feature) {
 		if (feature instanceof RAttribute) {
 			return toJavaType((RAttribute) feature);
-		} else if (feature instanceof RMetaAttribute) { 
+		} else if (feature instanceof RMetaAttribute) {
 			return toItemJavaType((RMetaAttribute) feature);
 		} else {
 			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());

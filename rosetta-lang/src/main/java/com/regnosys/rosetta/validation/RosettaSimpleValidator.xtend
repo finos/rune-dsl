@@ -838,21 +838,23 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (baseRType instanceof RChoiceType) {
 			baseRType = baseRType.asRDataType
 		}
-		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
+		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType || baseRType == NOTHING)) {
 			error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
 		}
 		
 		val seenFeatures = newHashSet
 		for (pair : ele.values) {
 			val feature = pair.key
-			val expr = pair.value
-			if (!seenFeatures.add(feature)) {
-				error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
-			}
-			checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
-			if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
-				error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
-					CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+			if (feature.isResolved) {
+				val expr = pair.value
+				if (!seenFeatures.add(feature)) {
+					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
+				}
+				checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
+				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
+					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
+						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
+				}
 			}
 		}
 

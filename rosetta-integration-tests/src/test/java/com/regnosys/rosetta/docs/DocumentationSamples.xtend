@@ -127,6 +127,7 @@ class DocumentationSamples {
 			
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.annotations.RosettaReport;
+			import com.rosetta.model.lib.annotations.RuneLabelProvider;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.reports.ReportFunction;
 			import java.util.Optional;
@@ -134,9 +135,11 @@ class DocumentationSamples {
 			import test.reg.EuropeanParliamentReport;
 			import test.reg.EuropeanParliamentReport.EuropeanParliamentReportBuilder;
 			import test.reg.VehicleOwnership;
+			import test.reg.labels.EuropeanParliamentEmissionPerformanceStandardsEULabelProvider;
 			
 			
 			@RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
+			@RuneLabelProvider(labelProvider=EuropeanParliamentEmissionPerformanceStandardsEULabelProvider.class)
 			@ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
 			public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
 				

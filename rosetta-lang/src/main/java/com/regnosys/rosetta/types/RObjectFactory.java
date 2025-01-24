@@ -77,7 +77,7 @@ public class RObjectFactory {
 	
 	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withNoMeta(type);
-		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, null, this);
+		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, Collections.emptyList(), null, this);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
@@ -179,7 +179,7 @@ public class RObjectFactory {
 		RosettaRuleReference ruleRef = attr.getRuleReference();
 
 		return new RAttribute(attr.isOverride(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
-				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr, this);
+				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr.getLabels(), attr, this);
 	}
 	public RAttribute buildRAttributeOfParent(Attribute attr) {
 		Attribute parent = ecoreUtil.getParentAttribute(attr);

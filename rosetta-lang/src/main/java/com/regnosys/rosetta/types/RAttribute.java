@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.regnosys.rosetta.rosetta.RosettaDocReference;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.LabelAnnotation;
 
 public class RAttribute implements RAssignedRoot, RFeature {
 	private final boolean isOverride;
@@ -32,6 +33,7 @@ public class RAttribute implements RAssignedRoot, RFeature {
 	private final RMetaAnnotatedType rMetaAnnotatedType;
 	private final RCardinality cardinality;
 	private final RosettaRule ruleReference;
+	private final List<LabelAnnotation> labelAnnotations;
 	private final Attribute origin;
 	
 	private final RObjectFactory rObjectFactory;
@@ -39,7 +41,7 @@ public class RAttribute implements RAssignedRoot, RFeature {
 
 	public RAttribute(boolean isOverride, String name, String definition, List<RosettaDocReference> docReferences,
 			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality,
-			RosettaRule ruleReference, Attribute origin, RObjectFactory rObjectFactory) {
+			RosettaRule ruleReference, List<LabelAnnotation> labelAnnotations, Attribute origin, RObjectFactory rObjectFactory) {
 		this.isOverride = isOverride;
 		this.name = name;
 		this.definition = definition;
@@ -47,6 +49,7 @@ public class RAttribute implements RAssignedRoot, RFeature {
 		this.rMetaAnnotatedType = rMetaAnnotatedType;
 		this.cardinality = cardinality;
 		this.ruleReference = ruleReference;
+		this.labelAnnotations = labelAnnotations;
 		this.origin = origin;
 		this.rObjectFactory = rObjectFactory;
 	}
@@ -102,6 +105,18 @@ public class RAttribute implements RAssignedRoot, RFeature {
 			return p.getRuleReference();
 		}
 		return null;
+	}
+	
+	public List<LabelAnnotation> getLabelAnnotations() {
+		RAttribute p = getParentAttribute();
+		List<LabelAnnotation> parentLabels;
+		if (p == null || (parentLabels = p.getLabelAnnotations()).isEmpty()) {
+			return labelAnnotations;
+		}
+		List<LabelAnnotation> labels = new ArrayList<>(docReferences.size() + parentLabels.size());
+		labels.addAll(parentLabels);
+		labels.addAll(labelAnnotations);
+		return labels;
 	}
 	
 	public RAttribute getParentAttribute() {

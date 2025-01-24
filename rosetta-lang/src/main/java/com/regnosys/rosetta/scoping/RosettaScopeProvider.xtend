@@ -64,6 +64,8 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.AnnotationPath
+import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
 
 /**
  * This class contains custom scoping description.
@@ -161,6 +163,26 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						default:
 							return defaultScope(context, reference)
 					}
+				}
+				case ANNOTATION_PATH_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
+					if (context instanceof Attribute) {
+						val t = typeProvider.getRTypeOfSymbol(context)
+						return Scopes.scopeFor(t.allFeatures(context))
+					}
+				}
+				case ANNOTATION_PATH__ATTRIBUTE: {
+					if (context instanceof AnnotationPath) {
+						val t = typeProvider.getRMetaAnnotatedType(context.receiver)
+						return Scopes.scopeFor(t.allFeatures(context))
+					}
+					return IScope.NULLSCOPE
+				}
+				case ANNOTATION_DEEP_PATH__ATTRIBUTE: {
+					if (context instanceof AnnotationDeepPath) {
+						val t = typeProvider.getRMetaAnnotatedType(context.receiver)
+						return createDeepFeatureScope(t.RType)
+					}
+					return IScope.NULLSCOPE
 				}
 				case ROSETTA_SYMBOL_REFERENCE__SYMBOL: {
 					if (context instanceof Operation) {

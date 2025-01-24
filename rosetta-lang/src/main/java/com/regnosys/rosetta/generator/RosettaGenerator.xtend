@@ -45,6 +45,7 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
 
 /**
  * Generates code from your model files on save.
@@ -70,6 +71,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject FunctionGenerator funcGenerator
 	@Inject ReportGenerator reportGenerator
 	@Inject DeepPathUtilGenerator deepPathUtilGenerator
+	@Inject LabelProviderGenerator labelProviderGenerator
 	
 	@Inject DeepFeatureCallUtil deepFeatureCallUtil
 
@@ -212,6 +214,7 @@ class RosettaGenerator implements IGenerator2 {
 					funcGenerator.generate(packages, fsa, elem, version)
 				}
 				tabulatorGenerator.generateTabulatorForFunction(fsa, elem)
+				labelProviderGenerator.generateForFunctionIfApplicable(fsa, elem)
 			}
 			RosettaRule: {
 				ruleGenerator.generate(packages, fsa, elem, version)
@@ -219,6 +222,7 @@ class RosettaGenerator implements IGenerator2 {
 			RosettaReport: {
 				reportGenerator.generate(packages, fsa, elem, version)
 				tabulatorGenerator.generateTabulatorForReport(fsa, elem)
+				labelProviderGenerator.generateForReport(fsa, elem)
 			}
 			RosettaExternalRuleSource: {
 				elem.externalClasses.forEach [ externalClass |

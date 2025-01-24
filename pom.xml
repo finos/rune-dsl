@@ -139,12 +139,12 @@
 		<module>rosetta-xcore-plugin-dependencies</module>
 		<module>rosetta-runtime</module>
 		<module>rosetta-lang</module>
+		<module>rosetta-testing</module>
+		<module>rosetta-integration-tests</module>
 		<module>rosetta-ide</module>
 		<module>rosetta-tools</module>
-		<module>rosetta-testing</module>
 		<module>rosetta-maven-plugin</module>
 		<module>rosetta-profiling</module>
-		<module>rosetta-integration-tests</module>
 	</modules>
 
 	<dependencyManagement>
