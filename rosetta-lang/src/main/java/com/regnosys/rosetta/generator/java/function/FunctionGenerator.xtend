@@ -405,7 +405,6 @@ class FunctionGenerator {
 	}
 
 	private def JavaStatement assign(JavaScope scope, ROperation op, RFunction function, Map<RShortcut, Boolean> outs, RAttribute attribute) {
-
 		if (op.pathTail.isEmpty) {
 			// assign function output object
 			val expressionType = attribute.toMetaJavaType
@@ -479,7 +478,7 @@ class FunctionGenerator {
 					val prop = generatePojoProperty(seg, expr.expressionType)
 					val oldExpr = expr
 					val itemType = prop.type.itemType
-					if (seg instanceof RMetaAttribute) {
+					if (seg instanceof RMetaAttribute || expr.expressionType instanceof RJavaWithMetaValue) {
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
@@ -501,16 +500,10 @@ class FunctionGenerator {
 	}
 	
 	private def JavaPojoProperty generatePojoProperty(RFeature seg, JavaType expressionType) {
-		if (seg instanceof RMetaAttribute) {
-			if (expressionType instanceof RJavaFieldWithMeta) {
-				(expressionType as JavaPojoInterface).findProperty("meta")
-			} else {
-				new JavaPojoProperty(seg.name, seg.name, seg.name, expressionType, null, null, false)
-			}
-			
+		if (seg instanceof RMetaAttribute && expressionType instanceof RJavaFieldWithMeta) {
+			(expressionType as JavaPojoInterface).findProperty("meta")
 		} else  if (expressionType.itemType instanceof RJavaWithMetaValue) {
-			val javaWithMetaValue = expressionType.itemType as RJavaWithMetaValue
-			(javaWithMetaValue.valueType as JavaPojoInterface).findProperty(seg.name)
+			(expressionType as JavaPojoInterface).findProperty("value")
 		} else {
 			(expressionType as JavaPojoInterface).findProperty(seg.name)
 		}

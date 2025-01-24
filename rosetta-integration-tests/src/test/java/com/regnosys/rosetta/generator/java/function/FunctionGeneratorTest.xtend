@@ -45,7 +45,7 @@ class FunctionGeneratorTest {
 	
 	@Disabled
 	@Test
-	def void canSetMetaOnFunctionObjectOutput() {
+	def void canSetMetaOnFunctionObjectOutputAndInternalField() {
 		val code = '''
 		type Foo:
 			a string (1..1)
@@ -82,7 +82,39 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	def void canSetMetaOnFunctionBasicOutput() {
+	def void canSetMetaOnFunctionObjectOutput() {
+		val code = '''
+		type Foo:
+			a string (1..1)
+			b string (1..1)
+		
+		func MyFunc:
+			output:
+				result Foo (1..1)
+					[metadata scheme]
+			set result -> scheme: "outerScheme"
+			set result -> a:  "someValueA"
+			set result -> b: "someValueB"
+		'''.generateCode
+								
+		val classes = code.compileToClasses
+		val myFunc = classes.createFunc("MyFunc")
+		
+		val result = myFunc.invokeFunc(RosettaModelObject)
+		
+		val expected = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
+			"value" -> classes.createInstanceUsingBuilder("Foo", #{
+        		"a" -> "someValueA",
+        		"b" ->  "someValueB"
+			}),
+			"meta" -> MetaFields.builder.setScheme("outerScheme")
+		})
+		
+		assertEquals(expected, result)
+	}
+	
+	@Test
+	def void canSetMetaSchemeOnFunctionBasicOutput() {
 		val code = '''
 		func MyFunc:
 			output:
