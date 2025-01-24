@@ -44,18 +44,25 @@ class FunctionGeneratorTest {
 	@Inject extension ValidationTestHelper
 	
 	@Test
-	def void canSetMetaOnFunctionObjectOutput() {
+	def void canSµetMetaOnFunctionObjectOutput() {
 		val code = '''
 		type Foo:
-			field string (1..1)
+			a string (1..1)
 		
 		func MyFunc:
 			output:
 				result Foo (1..1)
 					[metadata scheme]
-			//set result -> scheme: "outerScheme"
-			set result -> field:  "someValue"
+			set result -> scheme: "outerScheme"
+			set result -> a:  "someValue"
 		'''.generateCode
+		
+//		code.writeClasses("canSetMetaOnFunctionObjectOutput")
+		
+		val classes = code.compileToClasses
+		val myFunc = classes.createFunc("MyFunc")
+		
+		val result = myFunc.invokeFunc(RosettaModelObject)
 		
 		//TODO: finish this
 	}

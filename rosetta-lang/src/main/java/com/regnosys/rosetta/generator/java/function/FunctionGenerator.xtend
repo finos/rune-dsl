@@ -291,7 +291,7 @@ class FunctionGenerator {
 							«doEvaluateScope.getIdentifierOrThrow(input)» = «Collections».emptyList();
 						}
 						«ENDFOR»
-						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RMetaAnnotatedType.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
+						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RMetaAnnotatedType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
 						return assignOutput(«doEvaluateScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsArguments(doEvaluateScope)»);
 					}
 					
@@ -439,23 +439,26 @@ class FunctionGenerator {
 				} 	
 			}
 
-		} else { // assign an attribute of the function output object
+		} else { // assign an attribute of the function output object			
 			assignValue(scope, op, op.assignAsKey)
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					var expr = op.assignTarget(function, outs, scope)
 					for (seg : op.pathTail.indexed) {
-						val oldExpr = expr
 						val segmentRFeature = seg.value
 						val prop = if (segmentRFeature instanceof RMetaAttribute) {
 							(expr.expressionType as JavaPojoInterface).findProperty("meta")
 						} else {
-							if (seg.key === 0 && expr.expressionType.itemType instanceof RJavaWithMetaValue) {
-								new JavaPojoProperty("FieldWithMeta", "FieldWithMeta", "FieldWithMeta", expr.expressionType, null, null, false)
+							if (seg.key == op.pathTail.size - 1 && expr.expressionType.itemType instanceof RJavaWithMetaValue) {
+								val javaWithMetaValue = expr.expressionType.itemType as RJavaWithMetaValue
+								val oldExpr = expr
+								expr = JavaExpression.from('''«oldExpr».getOrCreateValue()''', oldExpr.expressionType.itemType)
+								(javaWithMetaValue.valueType as JavaPojoInterface).findProperty(segmentRFeature.name)
 							} else {
 								(expr.expressionType as JavaPojoInterface).findProperty(segmentRFeature.name)
 							}
 						}
+						val oldExpr = expr
 						val itemType = prop.type.itemType
 						if (seg.key < op.pathTail.size - 1) {
 							expr = JavaExpression.from(
