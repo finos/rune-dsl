@@ -113,7 +113,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
     @QuickFix(RosettaIssueCodes.MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
     public void missingAttributes(DiagnosticResolutionAcceptor acceptor) {
         ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) ->
-                context -> constructorManagementService.modifyConstructorWithMandatoryAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
+                context -> constructorManagementService.modifyConstructorWithRequiredAttributes(getContainerOfType(object, RosettaConstructorExpression.class));
         acceptor.accept("Add mandatory attributes", semanticModification);
     }
 

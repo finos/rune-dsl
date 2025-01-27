@@ -6,7 +6,6 @@ import java.io.StringReader
 import org.eclipse.xtext.parser.IParseResult
 import org.eclipse.xtext.parser.IParser
 
-import static org.junit.jupiter.api.Assertions.*
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer
@@ -32,6 +31,9 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.emf.ecore.util.InternalEList
 import org.eclipse.xtext.linking.lazy.LazyLinkingResource
 import org.eclipse.xtext.linking.impl.DefaultLinkingService
+import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
+import org.eclipse.xtext.resource.XtextSyntaxDiagnosticWithRange
+import org.eclipse.xtext.diagnostics.Diagnostic
 
 class ExpressionParser {
 	@Inject IParser parser
@@ -60,9 +62,8 @@ class ExpressionParser {
 	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Attribute... attributes) {
 		val cont = context.isEmpty ? defaultContext : context
 		val IParseResult result = parser.parse(grammar.rosettaCalcExpressionRule, new StringReader(expr.toString()))
-		assertFalse(result.hasSyntaxErrors)
 		val expression = result.rootASTElement as RosettaExpression
-		createResource("expr", expression, cont)
+		addSyntaxDiagnostics(createResource("expr", expression, cont), result)
 		link(expression, cont, attributes)
 		return expression
 	}
@@ -74,11 +75,26 @@ class ExpressionParser {
 	def Attribute parseAttribute(CharSequence attr, List<RosettaModel> context) {
 		val cont = context.isEmpty ? defaultContext : context
 		val IParseResult result = parser.parse(grammar.attributeRule, new StringReader(attr.toString()))
-		assertFalse(result.hasSyntaxErrors)
 		val attribute = result.rootASTElement as Attribute
-		createResource("attribute", attribute, cont)
+		addSyntaxDiagnostics(createResource("attribute", attribute, cont), result)
 		link(attribute, context, emptyList)
 		return attribute
+	}
+	
+	private def void addSyntaxDiagnostics(Resource resource, IParseResult parseResult) {
+		for (INode error : parseResult.getSyntaxErrors()) {
+			val syntaxErrorMessage = error.getSyntaxErrorMessage()
+			if (Diagnostic.SYNTAX_DIAGNOSTIC_WITH_RANGE.equals(syntaxErrorMessage.getIssueCode())) {
+				val issueData = syntaxErrorMessage.getIssueData()
+				if (issueData.length === 1) {
+					val data = issueData.get(0)
+					val colon = data.indexOf(':')
+					resource.errors.add(new XtextSyntaxDiagnosticWithRange(error, Integer.valueOf(data.substring(0, colon)), Integer.valueOf(data.substring(colon + 1)), null))
+					return;
+				}
+			}
+			resource.errors.add(new XtextSyntaxDiagnostic(error))
+		}
 	}
 	
 	private def Resource createResource(String name, EObject content, List<RosettaModel> context) {

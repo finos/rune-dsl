@@ -828,53 +828,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
 	}
-	
-	@Check
-	def checkConstructorExpression(RosettaConstructorExpression ele) {
-
-		val rType = ele.RMetaAnnotatedType.RType
-			
-		var baseRType = rType.stripFromTypeAliases
-		if (baseRType instanceof RChoiceType) {
-			baseRType = baseRType.asRDataType
-		}
-		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType || baseRType == NOTHING)) {
-			error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
-		}
-		
-		val seenFeatures = newHashSet
-		for (pair : ele.values) {
-			val feature = pair.key
-			if (feature.isResolved) {
-				val expr = pair.value
-				if (!seenFeatures.add(feature)) {
-					error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
-				}
-				checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
-				if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
-					error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
-						CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
-				}
-			}
-		}
-
-		val featureGroup = constructorManagementService.groupConstructorFeatures(ele)
-		val requiredAbsentAttributes = featureGroup.requiredAbsentAttributes
-    	val optionalAbsentAttributes = featureGroup.optionalAbsentAttributes
-		if (ele.implicitEmpty) {
-	        if (!requiredAbsentAttributes.isEmpty) {
-	            error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele, null, MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
-	        }
-	        if (optionalAbsentAttributes.isEmpty) {
-	            error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
-	        }
-	    } else {
-	        val allAbsentAttributes = requiredAbsentAttributes + optionalAbsentAttributes
-	        if (!allAbsentAttributes.isEmpty) {
-	            error('''Missing attributes «FOR attr : allAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.isEmpty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele, null, MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT)
-	        }
-	    }
-	}
 
 	@Check
 	def checkSynonymMapPath(RosettaMapPathValue ele) {

@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.tests.testmodel;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -15,8 +16,10 @@ import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.tests.util.ExpressionParser;
 
 /**
  * A test utility for accessing elements in a Rune model by name.
@@ -25,9 +28,13 @@ public class RosettaTestModel {
 	private final String source;
 	private final RosettaModel model;
 	
-	public RosettaTestModel(CharSequence source, RosettaModel model) {
+	private final ExpressionParser expressionParser;
+	
+	public RosettaTestModel(CharSequence source, RosettaModel model, ExpressionParser expressionParser) {
 		this.source = source.toString();
 		this.model = model;
+		
+		this.expressionParser = expressionParser;
 	}
 	
 	public RosettaModel getModel() {
@@ -48,6 +55,10 @@ public class RosettaTestModel {
 			throw new ClassCastException("The element named '" + name + "' is of type " + elem.getClass().getSimpleName() + ", not " + clazz.getSimpleName() + ".\n\n" + source);
 		}
 		return clazz.cast(elem);
+	}
+	
+	public RosettaExpression parseExpression(CharSequence expressionSource, String... attributes) {
+		return expressionParser.parseExpression(expressionSource, List.of(model), List.of(attributes));
 	}
 	
 	public Data getType(String name) {

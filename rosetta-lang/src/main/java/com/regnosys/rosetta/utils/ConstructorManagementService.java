@@ -7,7 +7,6 @@ import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 
@@ -26,9 +25,9 @@ public class ConstructorManagementService {
 
     public void modifyConstructorWithAllAttributes(RosettaConstructorExpression constructor) {
         RosettaFeatureGroup rosettaFeatureGroup = groupConstructorFeatures(constructor);
-        List<RosettaFeature> allAttributes = rosettaFeatureGroup.allAttributes();
+        List<RosettaFeature> absentAttributes = rosettaFeatureGroup.getAbsentAttributes();
 
-        allAttributes.forEach(attr -> {
+        absentAttributes.forEach(attr -> {
             ConstructorKeyValuePair constructorKeyValuePair = ExpressionFactory.eINSTANCE.createConstructorKeyValuePair();
             constructorKeyValuePair.setKey(attr);
             constructorKeyValuePair.setValue(ExpressionFactory.eINSTANCE.createListLiteral());
@@ -37,10 +36,10 @@ public class ConstructorManagementService {
     }
 
 
-    public void modifyConstructorWithMandatoryAttributes(RosettaConstructorExpression constructor) {
+    public void modifyConstructorWithRequiredAttributes(RosettaConstructorExpression constructor) {
         RosettaFeatureGroup rosettaFeatureGroup = groupConstructorFeatures(constructor);
-        List<RosettaFeature> requiredAbsentAttributes = rosettaFeatureGroup.requiredAbsentAttributes();
-        List<RosettaFeature> optionalAbsentAttributes = rosettaFeatureGroup.optionalAbsentAttributes();
+        List<RosettaFeature> requiredAbsentAttributes = rosettaFeatureGroup.getAbsentRequiredAttributes();
+        List<RosettaFeature> optionalAbsentAttributes = rosettaFeatureGroup.getAbsentOptionalAttributes();
 
         requiredAbsentAttributes.forEach(attr -> {
             ConstructorKeyValuePair constructorKeyValuePair = ExpressionFactory.eINSTANCE.createConstructorKeyValuePair();
@@ -56,11 +55,9 @@ public class ConstructorManagementService {
     public RosettaFeatureGroup groupConstructorFeatures(RosettaConstructorExpression constructor) {
         if (constructor != null) {
             RMetaAnnotatedType metaAnnotatedType = types.getRMetaAnnotatedType(constructor);
-            if (metaAnnotatedType != null && metaAnnotatedType.getRType() != null) {
-                List<RosettaFeature> populatedFeatures = populatedFeaturesInConstructor(constructor);
-                List<RosettaFeature> allFeatures = Lists.newArrayList(extensions.allFeatures(metaAnnotatedType.getRType(), constructor));
-                return new RosettaFeatureGroup(populatedFeatures, allFeatures);
-            }
+            List<RosettaFeature> populatedFeatures = populatedFeaturesInConstructor(constructor);
+            List<RosettaFeature> allFeatures = Lists.newArrayList(extensions.allFeatures(metaAnnotatedType.getRType(), constructor));
+            return new RosettaFeatureGroup(populatedFeatures, allFeatures);
         }
         return new RosettaFeatureGroup();
     }
@@ -85,18 +82,18 @@ public class ConstructorManagementService {
             this.all = all;
         }
 
-        private List<RosettaFeature> allAttributes() {
+        public List<RosettaFeature> getAbsentAttributes() {
             return all.stream().filter(x -> !populated.contains(x)).collect(Collectors.toList());
         }
 
-        public List<RosettaFeature> requiredAbsentAttributes() {
+        public List<RosettaFeature> getAbsentRequiredAttributes() {
             return all.stream()
                     .filter(x -> !populated.contains(x))
                     .filter(RosettaFeatureGroup::isRequired)
                     .collect(Collectors.toList());
         }
 
-        public List<RosettaFeature> optionalAbsentAttributes() {
+        public List<RosettaFeature> getAbsentOptionalAttributes() {
             return all.stream()
                     .filter(x -> !populated.contains(x))
                     .filter(not(RosettaFeatureGroup::isRequired))
@@ -104,7 +101,7 @@ public class ConstructorManagementService {
         }
 
         private static boolean isRequired(RosettaFeature it) {
-            return !(it instanceof Attribute) || ((Attribute) it).getCard().getInf() != 0 || (it instanceof ChoiceOption);
+            return !(it instanceof Attribute) || ((Attribute) it).getCard().getInf() != 0;
         }
     }
 }

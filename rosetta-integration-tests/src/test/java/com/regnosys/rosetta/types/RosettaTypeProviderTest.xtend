@@ -496,7 +496,7 @@ class RosettaTypeProviderTest {
 		'''.parseRosetta;
 		
 		(model.elements.get(0) as Data).conditions.head.expression
-			.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Operator `only exists` is not supported for type Foo. All attributes of input type should be optional");
+			.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Operator `only exists` is not supported for type `Foo`. All attributes of input type should be optional");
 		
 		(model.elements.get(1) as Data).conditions => [
 			get(0).expression as LogicalOperation => [
@@ -513,7 +513,7 @@ class RosettaTypeProviderTest {
 			get(0).expression.assertWarning(ROSETTA_SYMBOL_REFERENCE, null, "Expecting single cardinality. The `only exists` operator requires a single cardinality input")
 			get(1).expression.assertError(ROSETTA_ONLY_EXISTS_EXPRESSION, null, "Object must have a parent object")
 			get(2).expression.assertError(ROSETTA_SYMBOL_REFERENCE, null, "All parent paths must be equal")
-			get(3).expression.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Operator `only exists` is not supported for type Foo. All attributes of input type should be optional")
+			get(3).expression.assertError(ROSETTA_SYMBOL_REFERENCE, null, "Operator `only exists` is not supported for type `Foo`. All attributes of input type should be optional")
 		]
 	}
 	

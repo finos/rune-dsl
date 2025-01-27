@@ -60,7 +60,7 @@ import java.util.List;
 import java.util.Set;
 
 // TODO: move over expression validations from RosettaSimpleValidator
-@ComposedChecks(validators = { SwitchValidator.class })
+@ComposedChecks(validators = { ConstructorValidator.class, SwitchValidator.class })
 public class ExpressionValidator extends AbstractExpressionValidator {
 	@Inject
 	private ExpressionHelper exprHelper;

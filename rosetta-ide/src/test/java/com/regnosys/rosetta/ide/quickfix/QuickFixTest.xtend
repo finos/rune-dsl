@@ -517,8 +517,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 					edit.changes.values.head.head => [
 						val expectedResult = '''
 						C {
-						            A: empty,
-						            B: empty
+						            ...
 						        }
 						'''
 						assertEquals(expectedResult, newText) // mandatory attribute is added
