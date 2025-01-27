@@ -31,17 +31,17 @@ public class FunctionGeneratorMetaTest {
     void canSetExternalKeyOnFunctionObjectOutput() {
         var model = """
         type Foo:
-            [metadata key]
-        a string (1..1)
+          [metadata key]
+            a string (1..1)
 
         func MyFunc:
-        inputs:
-        myKey string (1..1)
+            inputs:
+                myKey string (1..1)
 
-        output:
-        result Foo (1..1)
-            [metadata reference]
-        set result -> reference: myKey
+            output:
+                result Foo (1..1)
+                  [metadata reference]
+            set result -> reference: myKey
         """;
 
         var code = generatorTestHelper.generateCode(model);
@@ -57,11 +57,11 @@ public class FunctionGeneratorMetaTest {
         metaType address string
 
         func MyFunc:
-        output:
-        result string (1..1)
-            [metadata address]
-        set result:  "someValue"
-        set result -> address: "someAddress"
+            output:
+                result string (1..1)
+                    [metadata address]
+            set result:  "someValue"
+            set result -> address: "someAddress"
        """;
 
         var code = generatorTestHelper.generateCode(model);
@@ -83,18 +83,18 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaOnFunctionObjectOutputAndNestedMetaField() {
         var model = """
         type Foo:
-        a string (1..1)
-        b string (1..1)
-            [metadata scheme]
+            a string (1..1)
+            b string (1..1)
+                [metadata scheme]
 
         func MyFunc:
-        output:
-        result Foo (1..1)
-            [metadata scheme]
-        set result -> scheme: "outerScheme"
-        set result -> a:  "someValueA"
-        set result -> b: "someValueB"
-        set result -> b -> scheme: "innerScheme"
+            output:
+                result Foo (1..1)
+                    [metadata scheme]
+            set result -> scheme: "outerScheme"
+            set result -> a:  "someValueA"
+            set result -> b: "someValueB"
+            set result -> b -> scheme: "innerScheme"
         """;
 
         var code = generatorTestHelper.generateCode(model);
@@ -121,16 +121,16 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaSchemeOnFunctionObjectOutput() {
         var model = """
         type Foo:
-        a string (1..1)
-        b string (1..1)
+            a string (1..1)
+            b string (1..1)
 
         func MyFunc:
-        output:
-        result Foo (1..1)
-            [metadata scheme]
-        set result -> scheme: "outerScheme"
-        set result -> a:  "someValueA"
-        set result -> b: "someValueB"
+            output:
+                result Foo (1..1)
+                    [metadata scheme]
+            set result -> scheme: "outerScheme"
+            set result -> a:  "someValueA"
+            set result -> b: "someValueB"
         """;
 
         var code = generatorTestHelper.generateCode(model);
@@ -154,11 +154,11 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaSchemeOnFunctionBasicOutput() {
         var model = """
         func MyFunc:
-        output:
-        result string (1..1)
-            [metadata scheme]
-        set result:  "someValue"
-        set result -> scheme: "someScheme"
+            output:
+                result string (1..1)
+                  [metadata scheme]
+            set result:  "someValue"
+            set result -> scheme: "someScheme"
         """;
 
         var code = generatorTestHelper.generateCode(model);
