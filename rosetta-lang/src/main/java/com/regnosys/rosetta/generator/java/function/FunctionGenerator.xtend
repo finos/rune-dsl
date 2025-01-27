@@ -77,6 +77,7 @@ import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 
 class FunctionGenerator {
 
@@ -478,11 +479,11 @@ class FunctionGenerator {
 					val prop = generatePojoProperty(seg, expr.expressionType)
 					val oldExpr = expr
 					val itemType = prop.type.itemType
-					if (seg instanceof RMetaAttribute || expr.expressionType.itemType instanceof RJavaWithMetaValue) {
+					if (expr.expressionType.itemType instanceof RJavaWithMetaValue) {
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
-								.«prop.getOrCreateName»().set«seg.name.toFirstUpper»(«it»)''',
+								.«prop.getOrCreateName»().«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.name.toFirstUpper»(«it»)''',
 							JavaPrimitiveType.VOID
 						)
 					} else {
@@ -499,13 +500,30 @@ class FunctionGenerator {
 		}
 	}
 	
+	//TODO: use this inside end of path setter
+	private def StringConcatenationClient generateMetaWrapperCreator(JavaPojoProperty prop, RJavaWithMetaValue outputExpressionType) {
+		switch (outputExpressionType) {
+			RJavaFieldWithMeta: '''.«prop.getOrCreateName»()'''
+			RJavaReferenceWithMeta: ''''''
+		}
+	}
+	
 	private def JavaPojoProperty generatePojoProperty(RFeature seg, JavaType expressionType) {
-		if (seg instanceof RMetaAttribute && expressionType instanceof RJavaFieldWithMeta) {
+		if (seg instanceof RMetaAttribute && expressionType.itemType instanceof RJavaFieldWithMeta) {
 			(expressionType as JavaPojoInterface).findProperty("meta")
+		} else if (seg instanceof RMetaAttribute && expressionType.itemType instanceof RJavaReferenceWithMeta) {
+			(expressionType as JavaPojoInterface).findProperty(mapReferencesToPojoPropertyNames(seg))
 		} else  if (expressionType.itemType instanceof RJavaWithMetaValue) {
 			(expressionType as JavaPojoInterface).findProperty("value")
 		} else {
 			(expressionType as JavaPojoInterface).findProperty(seg.name)
+		}
+	}
+	
+	private def String mapReferencesToPojoPropertyNames(RFeature seg) {
+		return switch(seg.name) {
+			case "reference": "externalReference"
+			default: seg.name
 		}
 	}
 	

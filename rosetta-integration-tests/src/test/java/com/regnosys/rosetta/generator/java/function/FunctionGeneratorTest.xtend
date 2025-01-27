@@ -43,10 +43,13 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled //TODO: implement setting external key reference
+	@Disabled
 	@Test
-	def void canSetExeternalKey() {
+	def void canSetExeternalKeyOnFunctionObjectOutput() {
 		val code = '''
+		metaType reference string
+		metaType key string
+		
 		type Foo:
 			[metadata key]
 			a string (1..1)
