@@ -26,10 +26,13 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
-    @Disabled //TODO: implement setting external key reference
+    @Disabled
     @Test
     void canSetExternalKeyOnFunctionObjectOutput() {
         var model = """
+        metaType key string
+        metaType reference string
+        
         type Foo:
           [metadata key]
             a string (1..1)
