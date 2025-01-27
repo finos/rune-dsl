@@ -478,7 +478,7 @@ class FunctionGenerator {
 					val prop = generatePojoProperty(seg, expr.expressionType)
 					val oldExpr = expr
 					val itemType = prop.type.itemType
-					if (seg instanceof RMetaAttribute || expr.expressionType.itemType instanceof RJavaWithMetaValue) {
+					if (expr.expressionType.itemType instanceof RJavaWithMetaValue) {
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
