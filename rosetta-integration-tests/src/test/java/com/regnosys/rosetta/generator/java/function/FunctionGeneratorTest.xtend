@@ -6,6 +6,7 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
+import com.rosetta.model.lib.meta.FieldWithMeta
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.records.Date
@@ -32,7 +33,6 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.Assert.assertThrows
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.model.lib.meta.FieldWithMeta
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -43,7 +43,58 @@ class FunctionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension ValidationTestHelper
 	
-	@Disabled
+	@Disabled //TODO: implement setting external key reference
+	@Test
+	def void canSetExeternalKey() {
+		val code = '''
+		type Foo:
+			[metadata key]
+			a string (1..1)
+
+		func MyFunc:
+			inputs:
+				myKey string (1..1)
+		
+			output:
+				result Foo (1..1)
+					[metadata reference]
+			set result -> reference: myKey
+		'''.generateCode
+		
+		code.compileToClasses
+		
+		
+	}
+	
+	@Disabled //TODO: implement setting meta address
+	@Test
+	def void canSetMetaAddressOnFunctionBasicOutput() {
+		val code = '''
+		metaType address string
+		
+		func MyFunc:
+			output:
+				result string (1..1)
+					[metadata address]
+			set result:  "someValue"
+			set result -> address: "someAddress"	
+		'''.generateCode
+														
+ 		val classes = code.compileToClasses
+		
+		val myFunc = classes.createFunc("MyFunc")
+		
+		val result = myFunc.invokeFunc(FieldWithMeta)
+		
+		val expected = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaString", #{
+			"value" -> "someValue",
+			"meta" -> MetaFields.builder.setAddress("someAddress")
+		})
+		
+		assertEquals(expected, result)
+	}
+	
+	@Disabled  //TODO: implement setting nested meta
 	@Test
 	def void canSetMetaOnFunctionObjectOutputAndInternalField() {
 		val code = '''
@@ -82,7 +133,7 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
-	def void canSetMetaOnFunctionObjectOutput() {
+	def void canSetMetaSchemeOnFunctionObjectOutput() {
 		val code = '''
 		type Foo:
 			a string (1..1)
@@ -101,7 +152,7 @@ class FunctionGeneratorTest {
 		val myFunc = classes.createFunc("MyFunc")
 		
 		val result = myFunc.invokeFunc(RosettaModelObject)
-		
+	
 		val expected = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
         		"a" -> "someValueA",
@@ -112,6 +163,7 @@ class FunctionGeneratorTest {
 		
 		assertEquals(expected, result)
 	}
+
 	
 	@Test
 	def void canSetMetaSchemeOnFunctionBasicOutput() {
