@@ -486,7 +486,7 @@ class FunctionGenerator {
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
-								«generateMetaWrapperCreator(prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.name.toFirstUpper»(«it»)''',
+								«generateMetaWrapperCreator(prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»(«it»)''',
 							JavaPrimitiveType.VOID
 						)
 					} else {
@@ -506,7 +506,7 @@ class FunctionGenerator {
 	private def StringConcatenationClient generateMetaWrapperCreator(JavaPojoProperty prop, RJavaWithMetaValue outputExpressionType) {
 		switch (outputExpressionType) {
 			RJavaFieldWithMeta: '''.«prop.getOrCreateName»()'''
-			RJavaReferenceWithMeta: ''''''
+			RJavaReferenceWithMeta: '''«IF prop.name === "reference"».«prop.getOrCreateName»()«ENDIF»'''
 		}
 	}
 	
@@ -515,7 +515,7 @@ class FunctionGenerator {
 		if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaFieldWithMeta) {
 			(outputExpressionType as JavaPojoInterface).findProperty("meta")
 		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {
-			(outputExpressionType as JavaPojoInterface).findProperty(mapReferencesToPojoPropertyNames(seg))
+			(outputExpressionType as JavaPojoInterface).findProperty(toPojoPropertyNames(seg))
 		} else  if (outputExpressionType.itemType instanceof RJavaWithMetaValue) {
 			(outputExpressionType as JavaPojoInterface).findProperty("value")
 		} else {
@@ -523,9 +523,11 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def String mapReferencesToPojoPropertyNames(RFeature seg) {
+	private def String toPojoPropertyNames(RFeature seg) {
 		return switch(seg.name) {
 			case "reference": "externalReference"
+			case "id": "externalKey"
+			case "address": "reference"
 			default: seg.name
 		}
 	}
