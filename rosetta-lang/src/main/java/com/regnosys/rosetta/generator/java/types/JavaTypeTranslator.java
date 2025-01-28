@@ -227,7 +227,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> operationToReferenceWithMetaType(Operation op) {
 		RosettaFeature feature;
 		if (op.getPath() == null) {
-			feature = (Attribute)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
+			feature = (RosettaFeature)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
 		} else {
 			List<Segment> segments = op.pathAsSegmentList();
 			feature = segments.get(segments.size() - 1).getFeature();
@@ -247,7 +247,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<?> operationToReferenceWithMetaType(ROperation op) {
 		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
-			feature = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
 			List<RFeature> segments = op.getPathTail();
 			feature = segments.get(segments.size() - 1);
