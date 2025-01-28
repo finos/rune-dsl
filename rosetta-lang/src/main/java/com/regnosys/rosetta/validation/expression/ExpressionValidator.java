@@ -58,6 +58,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 // TODO: move over expression validations from RosettaSimpleValidator
 @ComposedChecks(validators = { ConstructorValidator.class, SwitchValidator.class })
@@ -83,11 +84,19 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		if (expr != null && cardinalityProvider.isOutputListOfLists(expr)) {
 			error("Assign expression contains a list of lists, use flatten to create a list", op, OPERATION__EXPRESSION);
 		}
-		List<Segment> segments = op.pathAsSegmentList();
-		AssignPathRoot attr = op.getPath() != null
-				? segments.get(segments.size() - 1).getAttribute()
+		
+		//Any segments that are not symbols will be picked up by the syntax checker, this is to stop noisy errors
+		List<RosettaSymbol> segmentsAsSymbols = op.pathAsSegmentList()
+				.stream()
+				.map(s -> s.getFeature())
+				.filter(f -> f instanceof RosettaSymbol)
+				.map(f -> (RosettaSymbol)f)
+				.collect(Collectors.toList());
+		
+		RosettaSymbol attr = op.getPath() != null && !segmentsAsSymbols.isEmpty()
+				? segmentsAsSymbols.get(segmentsAsSymbols.size() - 1)
 				: op.getAssignRoot();
-		subtypeCheck(typeProvider.getRTypeOfSymbol(attr), expr, op, OPERATION__EXPRESSION, actual -> "Cannot assign `" + actual + "` to output `" + attr.getName() + "`");
+		subtypeCheck(typeProvider.getRTypeOfSymbol(attr, null), expr, op, OPERATION__EXPRESSION, actual -> "Cannot assign `" + actual + "` to output `" + attr.getName() + "`");
 		boolean isList = cardinalityProvider.isSymbolMulti(attr);
 		if (op.isAdd() && !isList) {
 			error("`add` must be used with a list", op, OPERATION__ASSIGN_ROOT);

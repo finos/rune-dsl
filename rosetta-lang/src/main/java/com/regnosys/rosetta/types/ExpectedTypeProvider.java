@@ -131,7 +131,7 @@ public interface ExpectedTypeProvider {
 						return typeProvider.getRTypeOfSymbol(op.getAssignRoot());
 					}
 					List<Segment> path = op.pathAsSegmentList();
-					return typeProvider.getRTypeOfSymbol(path.get(path.size() - 1).getAttribute());
+					return typeProvider.getRTypeOfFeature(path.get(path.size() - 1).getFeature(), null);
 				} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
 					ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
 					return typeProvider.getRTypeOfFeature(pair.getKey(), null);

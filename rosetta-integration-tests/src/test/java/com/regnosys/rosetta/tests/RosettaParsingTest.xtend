@@ -36,6 +36,21 @@ class RosettaParsingTest {
 	@Inject extension ExpressionParser
 	
 	@Test
+	def void testCannotSetEnumAttribute() {
+		'''
+			enum FooEnum: 
+				VALUE1 
+				VALUE2
+
+			func MyFunc:
+				output: 
+					result FooEnum (0..1) 
+				set result -> VALUE1: empty
+		'''.parseRosetta
+		.assertError(SEGMENT, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'VALUE1'.")
+	}
+	
+	@Test
 	def void testLabelAnnotation() {
 		'''
 			type Foo:

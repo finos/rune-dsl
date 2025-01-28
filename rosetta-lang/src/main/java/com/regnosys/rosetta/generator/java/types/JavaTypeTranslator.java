@@ -16,43 +16,14 @@
 
 package com.regnosys.rosetta.generator.java.types;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.Function;
-import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.Segment;
-import com.regnosys.rosetta.types.RAliasType;
-import com.regnosys.rosetta.types.RAttribute;
-import com.regnosys.rosetta.types.RChoiceType;
-import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RFunction;
-import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.ROperation;
-import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
-import com.regnosys.rosetta.types.TypeSystem;
-import com.regnosys.rosetta.types.builtin.RBasicType;
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.types.builtin.RDateTimeType;
-import com.regnosys.rosetta.types.builtin.RDateType;
-import com.regnosys.rosetta.types.builtin.RNumberType;
-import com.regnosys.rosetta.types.builtin.RStringType;
-import com.regnosys.rosetta.types.builtin.RZonedDateTimeType;
+import com.regnosys.rosetta.rosetta.simple.*;
+import com.regnosys.rosetta.types.*;
+import com.regnosys.rosetta.types.builtin.*;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -63,14 +34,19 @@ import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.model.lib.reports.Tabulator;
 import com.rosetta.util.DottedPath;
-import com.rosetta.util.types.JavaClass;
-import com.rosetta.util.types.JavaParameterizedType;
-import com.rosetta.util.types.JavaPrimitiveType;
-import com.rosetta.util.types.JavaReferenceType;
-import com.rosetta.util.types.JavaType;
+import com.rosetta.util.types.*;
 import com.rosetta.util.types.generated.GeneratedJavaClass;
 import com.rosetta.util.types.generated.GeneratedJavaClassService;
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration;
+
+import javax.inject.Inject;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Inject
@@ -199,6 +175,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = typeId.getName() + "DeepPathUtil";
 		return new GeneratedJavaClass<>(packageName, simpleName, Object.class);
 	}
+	public JavaClass<?> toItemJavaType(RMetaAttribute attr) {
+		return toJavaReferenceType(attr.getRType());
+	}
 	public JavaClass<?> toItemJavaType(RAttribute attr) {
 		return toJavaReferenceType(attr.getRMetaAnnotatedType().getRType());
 	}
@@ -236,36 +215,50 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
+	public JavaClass<?> toJavaType(RFeature feature) {
+		if (feature instanceof RAttribute) {
+			return toJavaType((RAttribute) feature);
+		} else if (feature instanceof RMetaAttribute) {
+			return toItemJavaType((RMetaAttribute) feature);
+		} else {
+			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
+		}
+	}
 	public JavaClass<?> operationToReferenceWithMetaType(Operation op) {
-		Attribute attr;
+		RosettaFeature feature;
 		if (op.getPath() == null) {
-			attr = (Attribute)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
+			feature = (RosettaFeature)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
 		} else {
 			List<Segment> segments = op.pathAsSegmentList();
-			attr = segments.get(segments.size() - 1).getAttribute();
+			feature = segments.get(segments.size() - 1).getFeature();
 		}
-		return toJavaReferenceType(typeProvider.getRTypeOfSymbol(attr));
+		return toJavaReferenceType(typeProvider.getRTypeOfFeature(feature, null));
 	}
-	
 	public JavaReferenceType operationToJavaType(ROperation op) {
-		RAttribute attr;
+		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
-			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<RAttribute> segments = op.getPathTail();
-			attr = segments.get(segments.size() - 1);
+			List<RFeature> segments = op.getPathTail();
+			feature = segments.get(segments.size() - 1);
 		}
-		return toJavaType(attr);
+		return toJavaType(feature);
 	}
 	public JavaClass<?> operationToReferenceWithMetaType(ROperation op) {
-		RAttribute attr;
+		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
-			attr = (RAttribute)op.getPathHead(); // TODO: this won't work when assigning to an alias
+			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<RAttribute> segments = op.getPathTail();
-			attr = segments.get(segments.size() - 1);
+			List<RFeature> segments = op.getPathTail();
+			feature = segments.get(segments.size() - 1);
 		}
-		return toJavaReferenceType(attr.getRMetaAnnotatedType());
+		if (feature instanceof RAttribute) {
+			return toJavaReferenceType(((RAttribute)feature).getRMetaAnnotatedType());
+		} else if (feature instanceof RMetaAttribute) {
+			return toJavaReferenceType(((RMetaAttribute)feature).getRType());
+		} else {
+			throw new UnsupportedOperationException("No JavaReferenceType exists for feature: " + feature.getName());
+		}
 	}
 	
 	private String getTypeDebugInfo(RType type) {

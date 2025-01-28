@@ -12,8 +12,13 @@ import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.JavaStatement
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
@@ -33,8 +38,10 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RFeature
 import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.types.RFunctionOrigin
+import com.regnosys.rosetta.types.RMetaAttribute
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.types.ROperation
 import com.regnosys.rosetta.types.ROperationType
@@ -44,6 +51,7 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.model.lib.ModelSymbolId
+import com.rosetta.model.lib.annotations.RuneLabelProvider
 import com.rosetta.model.lib.functions.ConditionValidator
 import com.rosetta.model.lib.functions.IQualifyFunctionExtension
 import com.rosetta.model.lib.functions.ModelObjectValidator
@@ -69,10 +77,7 @@ import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
-import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
-import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
-import com.rosetta.model.lib.annotations.RuneLabelProvider
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 
 class FunctionGenerator {
 
@@ -295,7 +300,7 @@ class FunctionGenerator {
 							«doEvaluateScope.getIdentifierOrThrow(input)» = «Collections».emptyList();
 						}
 						«ENDFOR»
-						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RMetaAnnotatedType.RType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
+						«output.toBuilderType» «doEvaluateScope.getIdentifierOrThrow(output)» = «IF output.multi»new «ArrayList»<>()«ELSEIF output.needsBuilder»«output.RMetaAnnotatedType.toListOrSingleJavaType(output.multi)».builder()«ELSE»null«ENDIF»;
 						return assignOutput(«doEvaluateScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsArguments(doEvaluateScope)»);
 					}
 					
@@ -401,7 +406,6 @@ class FunctionGenerator {
 	}
 
 	private def JavaStatement assign(JavaScope scope, ROperation op, RFunction function, Map<RShortcut, Boolean> outs, RAttribute attribute) {
-
 		if (op.pathTail.isEmpty) {
 			// assign function output object
 			val expressionType = attribute.toMetaJavaType
@@ -448,34 +452,86 @@ class FunctionGenerator {
 				.collapseToSingleExpression(scope)
 				.mapExpression[
 					var expr = op.assignTarget(function, outs, scope)
-					for (seg : op.pathTail.indexed) {
+
+					// path intermediary
+					val intermediarySegmentSize =  op.pathTail.length - 1
+					for (var pathIndex=0; pathIndex < intermediarySegmentSize; pathIndex++) {
+						
+						val seg = op.pathTail.get(pathIndex)
+						val prop = findPojoProperty(seg, expr.expressionType.itemType)
+						
 						val oldExpr = expr
-						val prop = (expr.expressionType as JavaPojoInterface).findProperty(seg.value.name)
 						val itemType = prop.type.itemType
-						if (seg.key < op.pathTail.size - 1) {
-							expr = JavaExpression.from(
-								'''
-								«oldExpr»
-									.«prop.getOrCreateName»(«IF prop.type.isList»0«ENDIF»)''',
-								itemType
-							)
-							if (itemType instanceof RJavaWithMetaValue) {
-								val metaExpr = expr
-								expr = JavaExpression.from('''«metaExpr».getOrCreateValue()''', itemType.valueType)
-							}
-						} else {
-							expr = JavaExpression.from(
-								'''
-								«oldExpr»
-									.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«prop.name.toFirstUpper»«IF itemType instanceof RJavaWithMetaValue && !op.assignAsKey»Value«ENDIF»(«it»)''',
-								JavaPrimitiveType.VOID
-							)
+						expr = JavaExpression.from(
+							'''
+							«oldExpr»
+								.«prop.getOrCreateName»(«IF prop.type.isList»0«ENDIF»)''',
+							itemType
+						)
+						if (itemType instanceof RJavaWithMetaValue) {
+							val metaExpr = expr
+							expr = JavaExpression.from('''«metaExpr».getOrCreateValue()''', itemType.valueType)
 						}
 					}
+					
+					//end of path
+					val seg = op.pathTail.get(op.pathTail.length - 1)
+	
+					val oldExpr = expr
+					val outputExpressionType = expr.expressionType.itemType
+					val prop = findPojoProperty(seg, outputExpressionType)
+					val pojoPropertyType = prop.type.itemType
+					
+					if (outputExpressionType instanceof RJavaWithMetaValue) {
+						expr = JavaExpression.from(
+							'''
+							«oldExpr»
+								«generateMetaWrapperCreator(prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»(«it»)''',
+							JavaPrimitiveType.VOID
+						)
+					} else {
+						expr = JavaExpression.from(
+							'''
+							«oldExpr»
+								.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«prop.name.toFirstUpper»«IF pojoPropertyType instanceof RJavaWithMetaValue && !op.assignAsKey»Value«ENDIF»(«it»)''',
+							JavaPrimitiveType.VOID
+						)
+					}
+					
 					expr
 				].completeAsExpressionStatement
 		}
 	}
+	
+	private def StringConcatenationClient generateMetaWrapperCreator(JavaPojoProperty prop, RJavaWithMetaValue outputExpressionType) {
+		switch (outputExpressionType) {
+			RJavaFieldWithMeta: '''.«prop.getOrCreateName»()'''
+			RJavaReferenceWithMeta: '''«IF prop.name === "reference"».«prop.getOrCreateName»()«ENDIF»'''
+		}
+	}
+	
+	//The type of the output expression to be set and the pojo property type are not the same when working with meta
+	private def JavaPojoProperty findPojoProperty(RFeature seg, JavaType outputExpressionType) {
+		if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaFieldWithMeta) {
+			(outputExpressionType as JavaPojoInterface).findProperty("meta")
+		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {
+			(outputExpressionType as JavaPojoInterface).findProperty(toPojoPropertyNames(seg))
+		} else  if (outputExpressionType.itemType instanceof RJavaWithMetaValue) {
+			(outputExpressionType as JavaPojoInterface).findProperty("value")
+		} else {
+			(outputExpressionType as JavaPojoInterface).findProperty(seg.name)
+		}
+	}
+	
+	private def String toPojoPropertyNames(RFeature seg) {
+		return switch(seg.name) {
+			case "reference": "externalReference"
+			case "id": "externalKey"
+			case "address": "reference"
+			default: seg.name
+		}
+	}
+	
 
 	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
 		if (assignAsKey) {
@@ -636,7 +692,7 @@ class FunctionGenerator {
 	
 	private def JavaType toBuilderItemType(RAttribute rAttribute) {
 		var javaType = rAttribute.RMetaAnnotatedType.toJavaReferenceType as JavaClass<?>
-		if(rAttribute.needsBuilder) javaType = javaType.toBuilderType
+		if(javaType.needsBuilder) javaType = javaType.toBuilderType
 		javaType
 	}
 	private def JavaType toBuilderType(RAttribute rAttribute) {
@@ -645,6 +701,18 @@ class FunctionGenerator {
 			return LIST.wrap(javaType)
 		} else {
 			return javaType
+		}
+	}
+	
+	private def needsBuilder(RAttribute rAttribute) {
+		var javaType = rAttribute.RMetaAnnotatedType.toJavaReferenceType as JavaClass<?>
+		javaType.needsBuilder
+	}
+	
+	private def boolean needsBuilder(JavaClass<?> javaClass) {
+		switch (javaClass) {
+			JavaPojoInterface: true
+			default: false
 		}
 	}
 }
