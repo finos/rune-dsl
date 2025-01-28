@@ -25,12 +25,10 @@ import org.eclipse.xtext.testing.FileInfo
 import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.TextDocumentPositionConfiguration
 import org.junit.jupiter.api.Assertions
-import org.eclipse.lsp4j.jsonrpc.messages.Either
-import org.eclipse.lsp4j.Command
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.CodeActionParams
 import org.eclipse.lsp4j.CodeActionContext
-import java.util.concurrent.CompletableFuture
+import java.nio.file.Files
 
 /**
  * TODO: contribute to Xtext.
@@ -55,6 +53,14 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 				severity <= DiagnosticSeverity.Warning
 			].toList
 		Assertions.assertEquals(0, problems.size(), "There were issues found:\n" + problems.join('\n'));
+	}
+	
+	protected def String readGeneratedFile(String relativePath) {
+		val path = testRootPath.resolve("src/generated/java").resolve(relativePath)
+		if (Files.exists(path)) {
+			return Files.readString(path)
+		}
+		return null
 	}
 	
 	@Accessors static class TestInlayHintsConfiguration extends TextDocumentPositionConfiguration {

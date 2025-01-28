@@ -1,9 +1,12 @@
 package com.regnosys.rosetta.resource;
 
+import java.util.stream.Collectors;
+
 import org.apache.log4j.Logger;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
@@ -48,7 +51,8 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
         QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(attr);
         String typeCall = serialize(attr.getTypeCall());
         String cardinality = serialize(attr.getCard());
-        acceptor.accept(new AttributeDescription(qualifiedName, attr, typeCall, cardinality));
+        String labels = serialize(attr.getLabels());
+        acceptor.accept(new AttributeDescription(qualifiedName, attr, typeCall, cardinality, labels));
         return false;
     }
 
@@ -71,5 +75,14 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
             return node.getText();
         }
         return null;
+    }
+    private String serialize(EList<? extends EObject> list) {
+    	if (list.isEmpty()) {
+    		return null;
+    	}
+        return list.stream()
+        		.map(e -> serialize(e))
+        		.filter(s -> s != null)
+        		.collect(Collectors.joining(","));
     }
 }
