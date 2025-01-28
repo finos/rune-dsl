@@ -6,15 +6,13 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 
-public class RMetaAttribute implements RObject {
+public class RMetaAttribute implements RFeature {
 	private final String name;
 	private final RType type;
-	private Attribute attribute;
 
-	public RMetaAttribute(String name, RType type, Attribute attribute) {
+	public RMetaAttribute(String name, RType type) {
 		this.name = name;
 		this.type = type;
-		this.attribute = attribute;
 	}
 
 	public String getName() {
@@ -47,10 +45,5 @@ public class RMetaAttribute implements RObject {
 		return "RMetaAttribute [name=" + name + ", type=" + type + "]";
 	}
 
-	@Override
-	public EObject getEObject() {
-		return attribute;
-	}
-	
 	
 }
