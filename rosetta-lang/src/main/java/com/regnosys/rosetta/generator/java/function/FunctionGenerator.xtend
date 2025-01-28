@@ -458,7 +458,7 @@ class FunctionGenerator {
 					for (var pathIndex=0; pathIndex < intermediarySegmentSize; pathIndex++) {
 						
 						val seg = op.pathTail.get(pathIndex)
-						val prop = generatePojoProperty(seg, expr.expressionType.itemType)
+						val prop = findPojoProperty(seg, expr.expressionType.itemType)
 						
 						val oldExpr = expr
 						val itemType = prop.type.itemType
@@ -479,7 +479,7 @@ class FunctionGenerator {
 	
 					val oldExpr = expr
 					val outputExpressionType = expr.expressionType.itemType
-					val prop = generatePojoProperty(seg, outputExpressionType)
+					val prop = findPojoProperty(seg, outputExpressionType)
 					val pojoPropertyType = prop.type.itemType
 					
 					if (outputExpressionType instanceof RJavaWithMetaValue) {
@@ -511,7 +511,7 @@ class FunctionGenerator {
 	}
 	
 	//The type of the output expression to be set and the pojo property type are not the same when working with meta
-	private def JavaPojoProperty generatePojoProperty(RFeature seg, JavaType outputExpressionType) {
+	private def JavaPojoProperty findPojoProperty(RFeature seg, JavaType outputExpressionType) {
 		if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaFieldWithMeta) {
 			(outputExpressionType as JavaPojoInterface).findProperty("meta")
 		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {

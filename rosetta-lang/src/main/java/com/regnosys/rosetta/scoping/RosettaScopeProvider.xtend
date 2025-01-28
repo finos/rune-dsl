@@ -143,16 +143,19 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case SEGMENT__FEATURE: {
 					switch (context) {
+						// Case handles the head of the segment
 						Operation: {
 							val receiverType = typeProvider.getRTypeOfSymbol(context.assignRoot)
-							return Scopes.scopeFor(receiverType.allFeatures(context))
+							val features = receiverType.allFeatures(context, [t| t instanceof RDataType])
+							return Scopes.scopeFor(features)  //TODO: don't get all features (i.e enum atrs)
 						}
+						// Case handles the tail of the segment
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
 								if (prev.feature.isResolved) {
 									val receiverType = typeProvider.getRTypeOfFeature(prev.feature, context)
-									return Scopes.scopeFor(receiverType.allFeatures(context))
+									return Scopes.scopeFor(receiverType.allFeatures(context, [t| t instanceof RDataType])) //TODO: don't get all features (i.e enum atrs)
 								}
 							}
 							if (context.eContainer instanceof Operation) {

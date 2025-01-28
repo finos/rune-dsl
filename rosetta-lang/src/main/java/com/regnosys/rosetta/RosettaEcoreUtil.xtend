@@ -30,6 +30,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import java.util.function.Predicate
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -46,9 +47,19 @@ class RosettaEcoreUtil {
 		allFeatures(t.RType, context?.eResource?.resourceSet) + metas
 	}
 	
+	def Iterable<? extends RosettaFeature> allFeatures(RMetaAnnotatedType t, EObject context, Predicate<RType> restrictType) {
+		val List<RosettaFeature>  metas = getMetaDescriptions(t, context)
+		allFeatures(t.RType, context, restrictType) + metas
+	}
+	
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context) {
 		allFeatures(t, context?.eResource?.resourceSet)
 	}
+	
+	def Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context, Predicate<RType> restrictType) {
+		restrictType.test(t) ? allFeatures(t, context?.eResource?.resourceSet) : #[]
+	}
+	
 	def Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
 		switch t {
 			RDataType:
