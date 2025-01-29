@@ -27,6 +27,39 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetMetaLocationOnFunctionObjectOutput() {
+        var model = """
+        metaType location string
+        
+        type Foo:
+            field string (1..1)
+            
+        func MyFunc:
+            output:
+                result Foo (1..1)
+                    [metadata location]
+            set result -> field:  "someValue"
+            set result -> location: "someAddress"
+       """;
+
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"field", "someValue"
+            		)),
+                "meta", MetaFields.builder().setLocation("someAddress")
+        ));
+
+        assertEquals(expected, result);    	
+    }   
         
     @Test
     void canSetMetaLocationOnFunctionBasicOutput() {
