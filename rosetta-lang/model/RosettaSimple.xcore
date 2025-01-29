@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+import com.regnosys.rosetta.rosetta.RosettaFeature
 
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.emf.common.util.EList
@@ -183,7 +184,7 @@ class Operation extends RosettaDefinable {
 }
 
 class Segment {
-	refers Attribute attribute
+	refers RosettaFeature feature
 	contains Segment next opposite prev
 	container Segment prev opposite next
 	

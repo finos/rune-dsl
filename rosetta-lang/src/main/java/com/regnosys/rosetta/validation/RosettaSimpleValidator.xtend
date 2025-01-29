@@ -108,8 +108,10 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
+import com.regnosys.rosetta.types.RMetaAttribute
 import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.utils.ConstructorManagementService
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -134,7 +136,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject ImportManagementService importManagementService;
 	@Inject ConstructorManagementService constructorManagementService;
 
-	
+
 	@Check
 	def void deprecatedWarning(EObject object) {
 		val crossRefs = (object.eClass.EAllStructuralFeatures as EClassImpl.FeatureSubsetSupplier).crossReferences as List<EReference>
@@ -1173,11 +1175,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				return
 			}
 			val segments = container.path.asSegmentList(container.path)
-			val attr = segments?.last?.attribute
-			if (!attr.hasReferenceAnnotation) {
+			val feature = segments?.last?.feature
+			if ((feature instanceof RosettaMetaType || !(feature as Attribute).hasReferenceAnnotation)) {
 				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
 					o, ROSETTA_OPERATION__OPERATOR)
 			}
+
+
 		} else if (container instanceof ConstructorKeyValuePair) {
 			val attr = container.key
 			if (!(attr instanceof Attribute) || !(attr as Attribute).hasReferenceAnnotation) {
@@ -1201,13 +1205,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  				}
 			}
 		}
-		
-		val unused = importManagementService.findUnused(model);	
+
+		val unused = importManagementService.findUnused(model);
 		for (ns: unused) {
 			warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
 		}
-		
-		val duplicates = importManagementService.findDuplicates(model.imports);		
+
+		val duplicates = importManagementService.findDuplicates(model.imports);
 		for (imp : duplicates) {
 			warning('''Duplicate import «imp.importedNamespace»''', imp, IMPORT__IMPORTED_NAMESPACE, DUPLICATE_IMPORT)
 		}

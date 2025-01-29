@@ -222,9 +222,9 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 			}
 		}
 		for (Segment seg : operation.pathAsSegmentList()) {
-			Attribute segAttr = seg.getAttribute();
+			RosettaFeature segAttr = seg.getFeature();
 			if (extensions.isResolved(segAttr)) {
-				SemanticToken segmentToken = markAttribute(seg, SEGMENT__ATTRIBUTE, segAttr, AttributeType.OUTPUT);
+				SemanticToken segmentToken = markFeature(seg, SEGMENT__FEATURE, segAttr, AttributeType.OUTPUT);
 				if (segmentToken != null) {
 					result.add(segmentToken);
 				}
