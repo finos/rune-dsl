@@ -111,6 +111,7 @@ import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.types.RMetaAttribute
 import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.utils.ConstructorManagementService
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -1175,11 +1176,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			}
 			val segments = container.path.asSegmentList(container.path)
 			val feature = segments?.last?.feature
-			if (feature instanceof Attribute) {
-				if (!feature.hasReferenceAnnotation) {
-					error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
-						o, ROSETTA_OPERATION__OPERATOR)
-				}
+			if ((feature instanceof RosettaMetaType || !(feature as Attribute).hasReferenceAnnotation)) {
+				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
+					o, ROSETTA_OPERATION__OPERATOR)
 			}
 
 
