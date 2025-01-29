@@ -486,7 +486,7 @@ class FunctionGenerator {
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
-								«generateMetaWrapperCreator(prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»(«it»)''',
+								«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»(«it»)''',
 							JavaPrimitiveType.VOID
 						)
 					} else {
@@ -503,10 +503,12 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def StringConcatenationClient generateMetaWrapperCreator(JavaPojoProperty prop, RJavaWithMetaValue outputExpressionType) {
+	private def StringConcatenationClient generateMetaWrapperCreator(RFeature seg, JavaPojoProperty prop, RJavaWithMetaValue outputExpressionType) {
 		switch (outputExpressionType) {
-			RJavaFieldWithMeta: '''.«prop.getOrCreateName»()'''
-			RJavaReferenceWithMeta: '''«IF prop.name === "reference"».«prop.getOrCreateName»()«ENDIF»'''
+			RJavaFieldWithMeta: '''«IF seg instanceof RMetaAttribute».getOrCreateMeta()«ELSE».«prop.getOrCreateName»()«ENDIF»'''
+			RJavaReferenceWithMeta case seg instanceof RMetaAttribute && seg.name == "address": '''.«prop.getOrCreateName»()'''
+			RJavaReferenceWithMeta case !(seg instanceof RMetaAttribute): '''.getOrCreateValue()'''
+			default: ''''''
 		}
 	}
 	
@@ -515,7 +517,7 @@ class FunctionGenerator {
 		if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaFieldWithMeta) {
 			(outputExpressionType as JavaPojoInterface).findProperty("meta")
 		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {
-			(outputExpressionType as JavaPojoInterface).findProperty(toPojoPropertyNames(seg))
+			(outputExpressionType as JavaPojoInterface).findProperty("reference")
 		} else  if (outputExpressionType.itemType instanceof RJavaWithMetaValue) {
 			(outputExpressionType as JavaPojoInterface).findProperty("value")
 		} else {
