@@ -11,6 +11,9 @@
     
     <name>Rosetta DSL Integration Test Project</name>
     <artifactId>rosetta-integration-tests</artifactId>
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
     
     <dependencies>
         <!-- Inter-project dependencies -->
