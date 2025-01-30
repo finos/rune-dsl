@@ -186,7 +186,7 @@ public class FunctionGeneratorMetaTest {
     }
    
 
-    @Disabled //TODO: implement nested setting of meta and then complete this
+    @Disabled //TODO: is this syntax needed? if so we need to find a way to get key as a feature from a Data type
     @Test
     void canSetExternalKeyOnFunctionObjectOutput() {
         var model = """
@@ -209,7 +209,7 @@ public class FunctionGeneratorMetaTest {
         
       var code = generatorTestHelper.generateCode(model);
     }
-
+    
     @Test
     void canSetExternalReferenceOnFunctionObjectOutput() {
         var model = """
