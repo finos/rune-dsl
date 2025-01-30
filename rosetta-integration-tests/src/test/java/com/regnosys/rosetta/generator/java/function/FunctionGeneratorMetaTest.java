@@ -107,8 +107,6 @@ public class FunctionGeneratorMetaTest {
 
         var code = generatorTestHelper.generateCode(model);
         
-        generatorTestHelper.writeClasses(code, "canSetMetaAddressOnFunctionObjectOutput");
-
         var classes = generatorTestHelper.compileToClasses(code);        
         
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
@@ -231,7 +229,7 @@ public class FunctionGeneratorMetaTest {
                   [metadata reference]
             set result -> reference: myKey
         """;
-
+        
         var code = generatorTestHelper.generateCode(model);
                 
         var classes = generatorTestHelper.compileToClasses(code);
@@ -246,10 +244,9 @@ public class FunctionGeneratorMetaTest {
         assertEquals(expected, result);
     }
 
-    @Disabled  //TODO: implement setting nested meta
     @Test
     void canSetMetaOnFunctionObjectOutputAndNestedBasicMetaField() {
-        var model = """
+        var model = """       
         type Foo:
             a string (1..1)
             b string (1..1)
@@ -265,7 +262,15 @@ public class FunctionGeneratorMetaTest {
             set result -> b -> scheme: "innerScheme"
         """;
 
+        // set result -> b -> scheme: "innerScheme"
+        //result.getOrCreateValue().getOrCreateB().getOrCreateMeta().setScheme("innerScheme")
+        
+        // set result -> b: "someValueB"
+        //result.getOrCreateValue().setBValue("someValueB")
+
         var code = generatorTestHelper.generateCode(model);
+        generatorTestHelper.writeClasses(code, "canSetMetaOnFunctionObjectOutputAndNestedBasicMetaField");
+        
         var classes = generatorTestHelper.compileToClasses(code);
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
