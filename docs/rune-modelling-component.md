@@ -2152,12 +2152,13 @@ report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
   with type <ReportType>
 ```
 
-The report type is istelf defined as a [data type](#data-type) component whose attributes are the reportable fields. Each attribute can be associated to a reporting rule containing the logic for extracting or calculating that field, using the `ruleReference` keyword:
+The report type is istelf defined as a [data type](#data-type) component whose attributes are the reportable fields. Each attribute can be associated to a reporting rule containing the logic for extracting or calculating that field, using the `ruleReference` keyword. Additionaly, the `label` annotation sets a label onto the report attribute to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
 
 ``` Haskell
 type <ReportType>:
   <field1> <Type1> (x..y)
     [ ruleReference <RuleName1> ]
+    [ label <optional path> as "My label name"]
   <...>
 ```
 
@@ -2171,18 +2172,24 @@ report EuropeanParliament EmissionPerformanceStandardsEU in real-time
 ```
 
 ``` Haskell
-type EmissionPerformanceStandardsReport:
+type EuropeanParliamentReport:
     vehicleRegistrationID string (1..1)
+        [label as "Vehicle Registration ID"]
         [ruleReference VehicleRegistrationID]
     firstRegistrationDate date (1..1)
+        [label as "First Registration Date"]
         [ruleReference FirstRegistrationDate]
     vehicleClassificationType VehicleClassificationEnum (1..1)
+        [label as "Vehicle Classification Type"]
         [ruleReference VehicleClassificationType]
     engineType EngineTypeEnum (1..1)
+        [label as "Engine Type"]
         [ruleReference EngineType]
-    euroEmissionStandard string (1..1)
+    euroEmissionStandard EuroEmissionStandardEnum (1..1)
+        [label as "Emission Standards"]
         [ruleReference EuroEmissionStandard]
-    carbonMonoxide int (1..1)
+    carbonMonoxide number (1..1)
+        [label as "Carbon Monoxide"]
         [ruleReference CarbonMonoxide]
 ```
 
@@ -2232,7 +2239,6 @@ reporting rule EuroEmissionStandard from ReportableEvent:
   then Euro1Standard
   else if Euro2Standard exists
   then Euro2Standard
-    as "Emission Standards"
 ```
 
 The expressions may use any type of [expression component](#expression-component) available in the Rune DSL, from simple path expressions or constants to more complex conditional statements, as illustrated below:
@@ -2263,14 +2269,6 @@ reporting rule VehicleClassification from VehicleOwnership:
         then extract vehicleClassification
     // This is equivalent to writing directly:
     // extract VehicleOwnership -> vehicle -> vehicleClassification
-```
-
-An extraction instruction followed by `as` sets a label onto the value to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
-
-``` Haskell
-reporting rule FirstRegistrationDate from VehicleOwnership: <"Date of first registration of the vehicle">
-    extract vehicle -> specification -> dateOfFirstRegistration
-        as "First Registration Date"
 ```
 
 The example below extracts the date of first registration for a list of passenger-type vehicles only:
@@ -2336,32 +2334,43 @@ reporting rule NotionalAmountScheduleLeg1Amount from DatedValue: <"Notional amou
                 The initial notional amount and associated unadjusted effective and end date are reported as the first values of the schedule.
                 This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
 	CDENotionalAmountScheduleAmount
-		  as "33/35-$ 33 Notional amount leg 1"
 
 reporting rule NotionalAmountScheduleLeg1EffectiveDate from DatedValue: <"Effective date of the notional amount of leg 1">
   [regulatoryReference CFTC Part45 appendix "1" dataElement "34" field "Effective date of the notional amount of leg 1"
     provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:     Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
   CDENotionalAmountScheduleEffectiveDate
-  		as "33/35-$ 34 Effective date leg 1"
 ```
 
-{{< notice info "Note" >}}
-The `-$` symbol in the label is used to index the repeatable group, to ensure that they appear in logical order in the report.
-{{< /notice >}}
+### Label Annotations
 
-In order for the labels to be linked to the right attributes, they should be specified as `ruleReference` annotations on the `NotionalAmountScheduleLeg1Report` type, i.e.,
+In a previous section, we saw how we can define a label for a report attribute to appear as the column name in a computed report:
 
+``` Haskell
+type EuropeanParliamentReport:
+    vehicleRegistrationID string (1..1)
+        [label as "Vehicle Registration ID"]
+        [ruleReference VehicleRegistrationID]
+    ...
 ```
-type CFTCPart43TransactionReport:
-    [rootType]
-    ...
-    notionalAmountScheduleLeg1 NotionalAmountScheduleLeg1Report (0..*)
-      [ruleReference NotionalAmountScheduleLeg1] // this rule reference is used to compute the value of the `notionalAmountScheduleLeg1` attribute
-    ...
 
-type NotionalAmountScheduleLeg1Report:
-    amount number (1..1)
-        [ruleReference NotionalAmountScheduleLeg1Amount] // this rule reference is used to link the label "33/35-$ 33 Notional amount leg 1" to this attribute
-    effectiveDate date (1..1)
-        [ruleReference NotionalAmountScheduleLeg1EffectiveDate]
+In some cases though, the report attribute might be of a complex type, and the label should actually be placed on a nested attribute. To accomodate for that, an optional path can be used, e.g.,
+``` haskell
+[label subattribute -> subsubattribute -> ... as "Nested attribute label"]
+```
+A label path supports accessing attributes with the path operator `->`, the `item` keyword (which refers to the attribute the annotation is placed on), and also supports the deep path operator `->>` to label common attributes of choice types.
+
+For multi-cardinality attributes of complex type, the dollar symbol `$` can be used to represent the index of the result. If not present, the index is implicitly appended to the end of the label.
+
+``` Haskell
+type Report:
+    components ReportComponent (0..*)
+        // label the id as "Component ID nr 0", "Component ID nr 1", "Component ID nr 2", ...
+        [label componentID as "Component ID nr $"]
+        // label the price using an implicit index: "Component Price (0)", "Component Price (1)", "Component Price (2)", ...
+        [label componentPrice as "Component Price"]
+        [ruleReference ReportComponentRule]
+
+type ReportComponent:
+    componentID string (1..1)
+    componentPrice number (1..1)
 ```
