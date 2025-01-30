@@ -483,12 +483,11 @@ class FunctionGenerator {
 					val pojoPropertyType = prop.type.itemType
 					
 					if (outputExpressionType instanceof RJavaWithMetaValue) {
-						val innerProp = createInnerProp(prop, seg)
-						val innerPropType = innerProp.type.itemType
+						val requiresValueSetter = requiresValueSetter(prop, seg, op)
 						expr = JavaExpression.from(
 							'''
 							«oldExpr»
-								«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»«IF innerPropType instanceof RJavaWithMetaValue && !op.assignAsKey»Value«ENDIF»(«it»)''',
+								«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»«IF requiresValueSetter»Value«ENDIF»(«it»)''',
 							JavaPrimitiveType.VOID
 						)						
 					} else {
@@ -503,6 +502,18 @@ class FunctionGenerator {
 					expr
 				].completeAsExpressionStatement
 		}
+	}
+	
+	def boolean requiresValueSetter(JavaPojoProperty outerPojoProperty, RFeature segment, ROperation op) {
+		val outerPropertyType = outerPojoProperty.type.itemType
+		val innerProp = if (outerPropertyType instanceof JavaPojoInterface) {
+			findPojoProperty(segment, outerPropertyType)
+		} else {
+			outerPojoProperty
+		}
+		
+		val innerPropType = innerProp.type.itemType
+		innerPropType instanceof RJavaWithMetaValue && !op.assignAsKey
 	}
 	
 	def JavaPojoProperty createInnerProp(JavaPojoProperty outerPojoProperty, RFeature segment) {
