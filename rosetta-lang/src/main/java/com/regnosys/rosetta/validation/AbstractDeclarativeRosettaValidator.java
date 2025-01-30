@@ -130,7 +130,7 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 	}
 	
 	protected void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EStructuralFeature ref, int index) {
-		if (annotated.getAnnotations().stream().anyMatch(ann -> ann.getAnnotation() != null && ann.getAnnotation().getName().equals("deprecated"))) {
+		if (annotated.getAnnotations().stream().anyMatch(ann -> ecoreUtil.isResolved(ann.getAnnotation()) && "deprecated".equals(ann.getAnnotation().getName()))) {
 			String msg;
 			if (annotated instanceof RosettaNamed) {
 				msg = ((RosettaNamed)annotated).getName() + " is deprecated";
