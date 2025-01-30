@@ -262,14 +262,7 @@ public class FunctionGeneratorMetaTest {
             set result -> b -> scheme: "innerScheme"
         """;
 
-        // set result -> b -> scheme: "innerScheme"
-        //result.getOrCreateValue().getOrCreateB().getOrCreateMeta().setScheme("innerScheme")
-        
-        // set result -> b: "someValueB"
-        //result.getOrCreateValue().setBValue("someValueB")
-
         var code = generatorTestHelper.generateCode(model);
-        generatorTestHelper.writeClasses(code, "canSetMetaOnFunctionObjectOutputAndNestedBasicMetaField");
         
         var classes = generatorTestHelper.compileToClasses(code);
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
