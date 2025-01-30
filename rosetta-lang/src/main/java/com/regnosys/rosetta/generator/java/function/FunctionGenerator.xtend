@@ -495,7 +495,7 @@ class FunctionGenerator {
 		}
 	}
 	
-	def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment) {
+	private def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment) {
 		if (outputExpressionType instanceof RJavaWithMetaValue) {
 			segment.toPojoPropertyNames.toFirstUpper
 		} else {
@@ -503,7 +503,7 @@ class FunctionGenerator {
 		}
 	}
 	
-	def boolean requiresValueSetter(JavaType outputExpressionType, JavaPojoProperty outerPojoProperty, RFeature segment, ROperation op) {
+	private def boolean requiresValueSetter(JavaType outputExpressionType, JavaPojoProperty outerPojoProperty, RFeature segment, ROperation op) {
 		val outerPropertyType = outerPojoProperty.type.itemType
 		val innerProp = if (outputExpressionType instanceof RJavaWithMetaValue && outerPropertyType instanceof JavaPojoInterface) {
 			findPojoProperty(segment, outerPropertyType)
@@ -513,16 +513,6 @@ class FunctionGenerator {
 		
 		val innerPropType = innerProp.type.itemType
 		innerPropType instanceof RJavaWithMetaValue && !op.assignAsKey
-	}
-	
-	def JavaPojoProperty createInnerProp(JavaPojoProperty outerPojoProperty, RFeature segment) {
-		val outerPropertyType = outerPojoProperty.type.itemType
-		if (outerPropertyType instanceof JavaPojoInterface) {
-			findPojoProperty(segment, outerPropertyType)
-		} else {
-			outerPojoProperty
-		}
-		
 	}
 	
 	private def StringConcatenationClient generateMetaWrapperCreator(RFeature seg, JavaPojoProperty prop, JavaType expressionType) {
