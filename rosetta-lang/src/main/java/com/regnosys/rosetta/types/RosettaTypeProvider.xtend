@@ -89,10 +89,8 @@ import javax.inject.Inject
 import javax.inject.Provider
 import org.eclipse.emf.ecore.EObject
 
-import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
 import com.regnosys.rosetta.rosetta.simple.AnnotationPath
@@ -175,7 +173,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 
 	def List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {
 		annotations
-			.filter[it.annotation.name.equals("metadata") && it.attribute !== null]
+			.filter[extensions.isResolved(annotation) && "metadata" == annotation.name && extensions.isResolved(attribute)]
 			.map[new RMetaAttribute(it.attribute.name, it.attribute.RTypeOfSymbol.RType)]
 			.toList
 	}
