@@ -21,14 +21,6 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 	
 	override Injector createInjectorAndDoEMFRegistration() {
 		EValidator.Registry.INSTANCE.clear // This line is to ensure tests don't use the same validator instance.
-		return super.createInjectorAndDoEMFRegistration()
-	}
-
-	/**
-	 * Register xcore model in standalone setup. 
-	 */
-	override register(Injector injector) {
-
 		if (!EPackage.Registry.INSTANCE.containsKey(RosettaPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(RosettaPackage.eNS_URI, RosettaPackage.eINSTANCE);
 		}
@@ -38,6 +30,6 @@ class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 		if (!EPackage.Registry.INSTANCE.containsKey(ExpressionPackage.eNS_URI)) {
 			EPackage.Registry.INSTANCE.put(ExpressionPackage.eNS_URI, ExpressionPackage.eINSTANCE);
 		}
-		super.register(injector)
+		return super.createInjectorAndDoEMFRegistration()
 	}
 }
