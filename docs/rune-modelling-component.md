@@ -2155,11 +2155,6 @@ report <Authority> <Corpus1> <Corpus2> <...> in <TimingRule>
 The report type is istelf defined as a [data type](#data-type) component whose attributes are the reportable fields. Each attribute can be associated to a reporting rule containing the logic for extracting or calculating that field, using the `ruleReference` keyword. Additionaly, the `label` annotation sets a label onto the report attribute to appear as the column name in a computed report. The label is an arbitrary, non-functional string and should generally be aligned with the name of the reportable field as per the regulation.
 
 ``` Haskell
-reporting rule FirstRegistrationDate from VehicleOwnership: <"Date of first registration of the vehicle">
-    extract vehicle -> specification -> dateOfFirstRegistration
-```
-
-``` Haskell
 type <ReportType>:
   <field1> <Type1> (x..y)
     [ ruleReference <RuleName1> ]
