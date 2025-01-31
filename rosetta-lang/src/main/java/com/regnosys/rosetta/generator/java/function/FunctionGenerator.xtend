@@ -464,7 +464,7 @@ class FunctionGenerator {
 							expr = JavaExpression.from('''«metaExpr».getOrCreateValue()''', (expr.expressionType.itemType as RJavaWithMetaValue).valueType)							
 						}
 						
-						val prop = findPojoProperty(seg, expr.expressionType.itemType)
+						val prop = getPojoProperty(seg, expr.expressionType.itemType)
 						val oldExpr = expr
 						val itemType = prop.type.itemType
 						expr = JavaExpression.from(
@@ -479,7 +479,7 @@ class FunctionGenerator {
 					val seg = op.pathTail.get(op.pathTail.length - 1)
 					val oldExpr = expr				
 					val outputExpressionType = expr.expressionType.itemType
-					val prop = findPojoProperty(seg, outputExpressionType)
+					val prop = getPojoProperty(seg, outputExpressionType)
 					
 					val propertySetterName = getPropertySetterName(outputExpressionType, prop, seg)
 					val requiresValueSetter = requiresValueSetter(outputExpressionType, prop, seg, op)
@@ -506,7 +506,7 @@ class FunctionGenerator {
 	private def boolean requiresValueSetter(JavaType outputExpressionType, JavaPojoProperty outerPojoProperty, RFeature segment, ROperation op) {
 		val outerPropertyType = outerPojoProperty.type.itemType
 		val innerProp = if (outputExpressionType instanceof RJavaWithMetaValue && outerPropertyType instanceof JavaPojoInterface) {
-			findPojoProperty(segment, outerPropertyType)
+			getPojoProperty(segment, outerPropertyType)
 		} else {
 			outerPojoProperty
 		}
@@ -525,7 +525,7 @@ class FunctionGenerator {
 	}
 	
 	//The type of the output expression to be set and the pojo property type are not the same when working with meta
-	private def JavaPojoProperty findPojoProperty(RFeature seg, JavaType outputExpressionType) {
+	private def JavaPojoProperty getPojoProperty(RFeature seg, JavaType outputExpressionType) {
 		if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaFieldWithMeta) {
 			(outputExpressionType as JavaPojoInterface).findProperty("meta")
 		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {
