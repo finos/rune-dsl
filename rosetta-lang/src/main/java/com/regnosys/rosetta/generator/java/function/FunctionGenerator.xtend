@@ -458,8 +458,13 @@ class FunctionGenerator {
 					for (var pathIndex=0; pathIndex < intermediarySegmentSize; pathIndex++) {
 						
 						val seg = op.pathTail.get(pathIndex)
-						val prop = findPojoProperty(seg, expr.expressionType.itemType)
 						
+						if (expr.expressionType.itemType instanceof RJavaWithMetaValue) {
+							val metaExpr = expr
+							expr = JavaExpression.from('''«metaExpr».getOrCreateValue()''', (expr.expressionType.itemType as RJavaWithMetaValue).valueType)							
+						}
+						
+						val prop = getPojoProperty(seg, expr.expressionType.itemType)
 						val oldExpr = expr
 						val itemType = prop.type.itemType
 						expr = JavaExpression.from(
@@ -468,43 +473,50 @@ class FunctionGenerator {
 								.«prop.getOrCreateName»(«IF prop.type.isList»0«ENDIF»)''',
 							itemType
 						)
-						if (itemType instanceof RJavaWithMetaValue) {
-							val metaExpr = expr
-							expr = JavaExpression.from('''«metaExpr».getOrCreateValue()''', itemType.valueType)
-						}
 					}
 					
 					//end of path
 					val seg = op.pathTail.get(op.pathTail.length - 1)
-	
-					val oldExpr = expr
+					val oldExpr = expr				
 					val outputExpressionType = expr.expressionType.itemType
-					val prop = findPojoProperty(seg, outputExpressionType)
-					val pojoPropertyType = prop.type.itemType
+					val prop = getPojoProperty(seg, outputExpressionType)
 					
-					if (outputExpressionType instanceof RJavaWithMetaValue) {
-						expr = JavaExpression.from(
-							'''
-							«oldExpr»
-								«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«seg.toPojoPropertyNames.toFirstUpper»(«it»)''',
-							JavaPrimitiveType.VOID
-						)
-					} else {
-						expr = JavaExpression.from(
-							'''
-							«oldExpr»
-								.«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«prop.name.toFirstUpper»«IF pojoPropertyType instanceof RJavaWithMetaValue && !op.assignAsKey»Value«ENDIF»(«it»)''',
-							JavaPrimitiveType.VOID
-						)
-					}
+					val propertySetterName = getPropertySetterName(outputExpressionType, prop, seg)
+					val requiresValueSetter = requiresValueSetter(outputExpressionType, prop, seg, op)
+					expr = JavaExpression.from(
+						'''
+						«oldExpr»
+							«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«propertySetterName»«IF requiresValueSetter»Value«ENDIF»(«it»)''',
+						JavaPrimitiveType.VOID
+					)
 					
 					expr
 				].completeAsExpressionStatement
 		}
 	}
 	
-	private def StringConcatenationClient generateMetaWrapperCreator(RFeature seg, JavaPojoProperty prop, RJavaWithMetaValue outputExpressionType) {
-		switch (outputExpressionType) {
+	private def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment) {
+		if (outputExpressionType instanceof RJavaWithMetaValue) {
+			segment.toPojoPropertyNames.toFirstUpper
+		} else {
+			prop.name.toFirstUpper
+		}
+	}
+	
+	private def boolean requiresValueSetter(JavaType outputExpressionType, JavaPojoProperty outerPojoProperty, RFeature segment, ROperation op) {
+		val outerPropertyType = outerPojoProperty.type.itemType
+		val innerProp = if (outputExpressionType instanceof RJavaWithMetaValue && outerPropertyType instanceof JavaPojoInterface) {
+			getPojoProperty(segment, outerPropertyType)
+		} else {
+			outerPojoProperty
+		}
+		
+		val innerPropType = innerProp.type.itemType
+		innerPropType instanceof RJavaWithMetaValue && !op.assignAsKey
+	}
+	
+	private def StringConcatenationClient generateMetaWrapperCreator(RFeature seg, JavaPojoProperty prop, JavaType expressionType) {
+		switch (expressionType) {
 			RJavaFieldWithMeta: '''«IF seg instanceof RMetaAttribute».getOrCreateMeta()«ELSE».«prop.getOrCreateName»()«ENDIF»'''
 			RJavaReferenceWithMeta case seg instanceof RMetaAttribute && seg.name == "address": '''.«prop.getOrCreateName»()'''
 			RJavaReferenceWithMeta case !(seg instanceof RMetaAttribute): '''.getOrCreateValue()'''
@@ -513,7 +525,7 @@ class FunctionGenerator {
 	}
 	
 	//The type of the output expression to be set and the pojo property type are not the same when working with meta
-	private def JavaPojoProperty findPojoProperty(RFeature seg, JavaType outputExpressionType) {
+	private def JavaPojoProperty getPojoProperty(RFeature seg, JavaType outputExpressionType) {
 		if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaFieldWithMeta) {
 			(outputExpressionType as JavaPojoInterface).findProperty("meta")
 		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {
