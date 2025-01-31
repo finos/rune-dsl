@@ -541,6 +541,7 @@ class FunctionGenerator {
 		return switch(seg.name) {
 			case "reference": "externalReference"
 			case "id": "externalKey"
+			case "key": "externalKey"
 			case "address": "reference"
 			default: seg.name
 		}

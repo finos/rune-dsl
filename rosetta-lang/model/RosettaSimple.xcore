@@ -89,7 +89,7 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 }
 
 
-class Data extends RosettaType, RootElement, References {
+class Data extends RosettaType, RootElement, References, Annotated {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes

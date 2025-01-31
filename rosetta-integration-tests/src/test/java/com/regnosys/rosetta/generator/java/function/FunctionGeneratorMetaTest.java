@@ -185,8 +185,9 @@ public class FunctionGeneratorMetaTest {
         assertEquals(expected, result);
     }
    
+    
+    //TODO: read key from an object
 
-    @Disabled //TODO: is this syntax needed? if so we need to find a way to get key as a feature from a Data type
     @Test
     void canSetExternalKeyOnFunctionObjectOutput() {
         var model = """
@@ -204,10 +205,24 @@ public class FunctionGeneratorMetaTest {
 
             output:
                 result Foo (1..1)
+            set result -> a: "someA"
             set result -> key: myReference
         """;
         
       var code = generatorTestHelper.generateCode(model);
+      var classes = generatorTestHelper.compileToClasses(code);
+      var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+      
+      var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, "someExternalReference");
+      
+      var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+              "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+          			"a", "someA"
+          		)),
+              "meta", MetaFields.builder().setExternalKey("someExternalReference")
+      ));
+      
+      assertEquals(expected, result);
     }
     
     @Test

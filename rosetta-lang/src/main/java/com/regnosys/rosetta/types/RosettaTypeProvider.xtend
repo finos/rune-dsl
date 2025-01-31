@@ -156,7 +156,16 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			}
 		}
 		if (symbol instanceof Annotated) {
-			return symbol.annotations.RMetaAttributes
+			var List<RMetaAttribute> typeMetaAttributes = #[]
+			
+			if (symbol instanceof Attribute) {
+				val attributeType = symbol.typeCall.typeCallToRType
+				if (attributeType instanceof RDataType) {
+					typeMetaAttributes = attributeType.metaAttributes
+				}
+			} 
+			
+			return (symbol.annotations.RMetaAttributes + typeMetaAttributes).toList
 		}
 		#[]
 	}
