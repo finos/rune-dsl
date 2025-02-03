@@ -187,11 +187,9 @@ public class FunctionGeneratorMetaTest {
         assertEquals(expected, result);
     }
    
-    @Disabled
     @Test
     void canSetExternalKeyOnFunctionObjectOutput() {
         var model = """
-        	
         metaType key string
         metaType reference string
         
