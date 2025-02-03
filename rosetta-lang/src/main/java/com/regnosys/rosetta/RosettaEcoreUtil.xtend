@@ -31,6 +31,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import java.util.function.Predicate
+import com.regnosys.rosetta.types.RMetaAttribute
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -253,7 +254,11 @@ class RosettaEcoreUtil {
 	 * 
 	 */
  	private def List<RosettaFeature> getMetaDescriptions(RMetaAnnotatedType type, EObject context) {
- 		val metas = type.metaAttributes.map[it.name].toList
+ 		type.metaAttributes.getMetaDescriptions(context)
+ 	}
+ 	
+    def List<RosettaFeature> getMetaDescriptions(List<RMetaAttribute> metaAttributes, EObject context) {
+ 		val metas = metaAttributes.map[it.name].toList
  		if (!metas.isEmpty) {
  			configs.findMetaTypes(context).filter[
  				metas.contains(it.name.lastSegment.toString)

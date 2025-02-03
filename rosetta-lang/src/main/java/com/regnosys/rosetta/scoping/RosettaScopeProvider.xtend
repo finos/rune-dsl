@@ -66,6 +66,8 @@ import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.AnnotationPath
 import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
+import java.util.Random
+import com.regnosys.rosetta.types.RAttribute
 
 /**
  * This class contains custom scoping description.
@@ -146,7 +148,16 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						// Case handles the head of the segment
 						Operation: {
 							val receiverType = typeProvider.getRTypeOfSymbol(context.assignRoot)
-							return Scopes.scopeFor(receiverType.allFeatures(context, [t| !(t instanceof REnumType)]))
+							
+							// All features accessible from reciever type including meta attributes
+							var features = receiverType.allFeatures(context, [t| !(t instanceof REnumType)])
+							
+							// We also want to allow the scope provider to return the meta for type of the attribute (e.g. metatda key)
+							if (receiverType.RType instanceof RDataType) {
+								features = features + (receiverType.RType as RDataType).metaAttributes.getMetaDescriptions(context)
+							}
+							
+							return Scopes.scopeFor(features)
 						}
 						// Case handles the tail of the segment
 						Segment: {
