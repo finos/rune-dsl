@@ -15,6 +15,8 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
 
+import com.regnosys.rosetta.rosetta.simple.Condition;
+
 /**
  * An implementation of Rune's subtype relation. This class
  * allows you to check whether one type is a subtype of the other,
@@ -159,7 +161,10 @@ public class SubtypeRelation {
 			RTypeFunction typeFunc = t1.getTypeFunction();
 			RType underlyingJoin = join(t1.getRefersTo(), t2.getRefersTo());
 			Optional<LinkedHashMap<String, RosettaValue>> aliasParams = typeFunc.reverse(underlyingJoin);
-			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin))
+			List<Condition> conditions = new ArrayList<>();
+			conditions.addAll(t1.getConditions());
+			conditions.addAll(t2.getConditions());
+			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, conditions))
 				.orElse(underlyingJoin);
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);

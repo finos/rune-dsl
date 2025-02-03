@@ -38,6 +38,10 @@ import com.regnosys.rosetta.types.RCardinality
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 
+import com.regnosys.rosetta.rosetta.simple.Condition;
+import com.regnosys.rosetta.types.RAliasType
+import java.util.Collections
+
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
@@ -121,6 +125,9 @@ class ValidatorsGenerator {
 						«FOR attrCheck : attributes.map[checkTypeFormat(javaType, it)].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
 						«ENDFOR»
+						«FOR condCheck : attributes.map[checkTypeAliasFormat(javaType, it)].filter[it !== null] SEPARATOR ", "»
+							«condCheck»
+						«ENDFOR»
 					);
 			}
 		
@@ -202,9 +209,41 @@ class ValidatorsGenerator {
 			'''
 		}
 	}
+	
+	private def StringConcatenationClient checkTypeAliasFormat(JavaPojoInterface javaType, RAttribute attr) {
+		//TH Review op2: Collect conditions from typeAliases and generate mock validators. try/catch to avoid unexpected beaviours
+		val conditions = attr.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases
+		val args = attr.RMetaAnnotatedType.RType.collectArgumentsFromTypeAliases
+		
+		if (conditions.size() == 0) {
+			null
+		} else {
+			val prop = javaType.findProperty(attr.name)
+			val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
+			//
+			'''
+			«FOR cond : conditions»
+				//«cond.getName()» «attr.name» «javaType.getAttributeValue(attr)» «args.get("domain")»
+				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme")»
+					«IF attr.isMulti»
+						«IF !attr.RMetaAnnotatedType.hasMeta»
+							«method(ExpressionOperators, "checkCodeByDomain")»(«method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»()).stream().collect(«Collectors».toList()), "«args.get("domain").getSingle()»")
+						«ELSE»
+							«method(ExpressionOperators, "checkCodeByDomain")»(«method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»()).stream().map(«prop.type.itemType»::getValue).collect(«Collectors».toList()), "«args.get("domain").getSingle()»")
+						«ENDIF»
+					«ELSE»
+						«method(ExpressionOperators, "checkCodeByDomain")»(«javaType.getAttributeValue(attr)», "«args.get("domain").getSingle()»")
+					«ENDIF»
+				«ENDIF»
+			«ENDFOR»
+			'''
+		}
+		
+	}
 		
 	private def StringConcatenationClient checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {
 		val t = attr.RMetaAnnotatedType.RType.stripFromTypeAliases
+		
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
 				val min = t.interval.minBound
