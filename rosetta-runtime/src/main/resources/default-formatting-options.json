@@ -2,7 +2,5 @@
 	"tabSize":4,
 	"insertSpaces":true,
 	"maxLineWidth":92,
-	"conditionalMaxLineWidth":70,
-	"optimizeImports":true
-
+	"conditionalMaxLineWidth":70
 }

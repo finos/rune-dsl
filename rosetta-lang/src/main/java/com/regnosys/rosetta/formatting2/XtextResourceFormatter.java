@@ -13,8 +13,6 @@ import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
-import org.eclipse.xtext.preferences.PreferenceKey;
-import org.eclipse.xtext.preferences.TypedPreferenceKey;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.ITextRegion;
 import org.slf4j.Logger;
@@ -26,8 +24,6 @@ import com.regnosys.rosetta.utils.ImportManagementService;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import static com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor.OPTIMIZE_IMPORTS;
 
 public class XtextResourceFormatter implements ResourceFormatterService {
 	private static Logger LOGGER = LoggerFactory.getLogger(XtextResourceFormatter.class);
@@ -82,12 +78,11 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage(), e);
 			replacements = new ArrayList<>();
 		}
-		preferenceValues.getPreference(OPTIMIZE_IMPORTS)
 
 		// get text replacement for optimized imports
-		ITextReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
+		/*ITextReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
 		if (importsReplacement != null)
-			replacements.add(importsReplacement);
+			replacements.add(importsReplacement);*/
 
 		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();

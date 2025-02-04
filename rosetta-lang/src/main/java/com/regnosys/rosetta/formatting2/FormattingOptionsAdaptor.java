@@ -17,7 +17,6 @@ public class FormattingOptionsAdaptor {
 	public static String PREFERENCE_INDENTATION_KEY = "indentation";
 	public static String PREFERENCE_MAX_LINE_WIDTH_KEY = "maxLineWidth";
 	public static String PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY = "conditionalMaxLineWidth";
-	public static String OPTIMIZE_IMPORTS ="optimizeImports";
 
 	private static final String DEFAULT_FORMATTING_OPTIONS_PATH = "default-formatting-options.json";
 
@@ -53,10 +52,6 @@ public class FormattingOptionsAdaptor {
 						(int) (maxLineWidth.doubleValue() * defaultRatio));
 			}
 		}
-
-		Boolean optimizeImports = options.getBoolean(OPTIMIZE_IMPORTS);
-
-		preferences.put(OPTIMIZE_IMPORTS, String.valueOf(optimizeImports));
 
 		return preferences;
 	}
