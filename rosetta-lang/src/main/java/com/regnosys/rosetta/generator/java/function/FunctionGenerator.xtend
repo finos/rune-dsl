@@ -529,11 +529,11 @@ class FunctionGenerator {
 	
 	//The type of the output expression to be set and the pojo property type are not the same when working with meta
 	private def JavaPojoProperty getPojoProperty(RFeature seg, JavaType outputExpressionType) {
-		if (seg instanceof RMetaAttribute && (outputExpressionType.itemType instanceof RJavaFieldWithMeta || seg.name == "key")) {
+		if (seg instanceof RMetaAttribute && (outputExpressionType instanceof RJavaFieldWithMeta || outputExpressionType instanceof RJavaPojoInterface)) {
 			(outputExpressionType as JavaPojoInterface).findProperty("meta")
-		} else if (seg instanceof RMetaAttribute && outputExpressionType.itemType instanceof RJavaReferenceWithMeta) {
+		} else if (seg instanceof RMetaAttribute && outputExpressionType instanceof RJavaReferenceWithMeta) {
 			(outputExpressionType as JavaPojoInterface).findProperty("reference")
-		} else  if (outputExpressionType.itemType instanceof RJavaWithMetaValue) {
+		} else  if (outputExpressionType instanceof RJavaWithMetaValue) {
 			(outputExpressionType as JavaPojoInterface).findProperty("value")
 		} else {
 			(outputExpressionType as JavaPojoInterface).findProperty(seg.name)
