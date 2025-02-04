@@ -1,5 +1,16 @@
 package com.regnosys.rosetta.generator.java.function;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import org.eclipse.xtext.testing.InjectWith;
+import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
@@ -8,16 +19,6 @@ import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.model.metafields.MetaFields;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import javax.inject.Inject;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
@@ -185,12 +186,9 @@ public class FunctionGeneratorMetaTest {
         assertEquals(expected, result);
     }
    
-
-    @Disabled //TODO: is this syntax needed? if so we need to find a way to get key as a feature from a Data type
     @Test
     void canSetExternalKeyOnFunctionObjectOutput() {
         var model = """
-        	
         metaType key string
         metaType reference string
         
@@ -204,10 +202,25 @@ public class FunctionGeneratorMetaTest {
 
             output:
                 result Foo (1..1)
+            set result -> a: "someA"
             set result -> key: myReference
         """;
         
       var code = generatorTestHelper.generateCode(model);
+      
+      generatorTestHelper.writeClasses(code, "canSetExternalKeyOnFunctionObjectOutput");
+      
+      var classes = generatorTestHelper.compileToClasses(code);
+      var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+      
+      var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, "someExternalReference");
+      
+      var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+    			"a", "someA",
+    			"meta", MetaFields.builder().setExternalKey("someExternalReference")
+    		));
+      
+      assertEquals(expected, result);
     }
     
     @Test

@@ -31,6 +31,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import java.util.function.Predicate
+import com.regnosys.rosetta.types.RMetaAttribute
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -79,6 +80,30 @@ class RosettaEcoreUtil {
 				#[]
 		}
 	}
+	
+	/*
+	 * This method is resolving references during scoping which is not an advised approach.
+	 * It could lead to poor performance as it is possible that it could be called upon to
+	 * resolve across multiple files. For now this is acceptable as in reality it's not going
+	 * going to get called to run across multiple files.
+	 * 
+	 * TODO: find an alternative approach to this.
+	 * 
+	 */
+    def List<RosettaFeature> getMetaDescriptions(List<RMetaAttribute> metaAttributes, EObject context) {
+ 		val metas = metaAttributes.map[it.name].toList
+ 		if (!metas.isEmpty) {
+ 			configs.findMetaTypes(context).filter[
+ 				metas.contains(it.name.lastSegment.toString)
+ 			]
+ 			.map[it.EObjectOrProxy]
+			.map[EcoreUtil.resolve(it, context)]
+ 			.filter(RosettaFeature)
+ 			.toList
+ 		} else {
+ 			emptyList
+ 		}
+ 	}
 	
 	@Deprecated // Use RDataType#getAllSuperTypes instead
 	def List<Data> getAllSuperTypes(Data data) {
@@ -243,28 +268,8 @@ class RosettaEcoreUtil {
 		return '''«containerName»«name»'''
 	}
 	
-	/*
-	 * This method is resolving references during scoping which is not an advised approach.
-	 * It could lead to poor performance as it is possible that it could be called upon to
-	 * resolve across multiple files. For now this is acceptable as in reality it's not going
-	 * going to get called to run across multiple files.
-	 * 
-	 * TODO: find an alternative approach to this.
-	 * 
-	 */
  	private def List<RosettaFeature> getMetaDescriptions(RMetaAnnotatedType type, EObject context) {
- 		val metas = type.metaAttributes.map[it.name].toList
- 		if (!metas.isEmpty) {
- 			configs.findMetaTypes(context).filter[
- 				metas.contains(it.name.lastSegment.toString)
- 			]
- 			.map[it.EObjectOrProxy]
-			.map[EcoreUtil.resolve(it, context)]
- 			.filter(RosettaFeature)
- 			.toList
- 		} else {
- 			emptyList
- 		}
+ 		type.metaAttributes.getMetaDescriptions(context)
  	}
 	
 	@Deprecated
