@@ -28,7 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,8 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
-import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
+import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
@@ -508,18 +507,5 @@ public class ExpressionOperators {
 		String errorMessage = definition + (populatedFieldNames.isEmpty() ? "No fields are set." :
 			populatedFieldNames.stream().collect(Collectors.joining("', '", "Set fields are '", "'.")));
 		return ComparisonResult.failure(errorMessage);
-	}
-	
-	//TH Review op2: Static type format check for external code list validation
-	public static <T> ComparisonResult checkCodeByDomain(String value, String domain) {
-		if (value == null || value.isEmpty())
-			return ComparisonResult.success();
-		else
-			return ComparisonResult.failure("Code list validation mock '" + value + "'(" + domain + ")");
-	}
-	
-	public static <T> ComparisonResult checkCodeByDomain(List<String> values, String domain) {
-		String errors = values.stream().filter(it -> !checkCodeByDomain(it, domain).get().booleanValue()).collect(Collectors.joining(", "));
-		return errors.isEmpty()? ComparisonResult.success():ComparisonResult.failure("Code list validation mock '" + errors + "'(" + domain + ")");
 	}
 }

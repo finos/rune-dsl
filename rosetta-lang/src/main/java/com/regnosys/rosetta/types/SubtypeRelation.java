@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -161,9 +163,9 @@ public class SubtypeRelation {
 			RTypeFunction typeFunc = t1.getTypeFunction();
 			RType underlyingJoin = join(t1.getRefersTo(), t2.getRefersTo());
 			Optional<LinkedHashMap<String, RosettaValue>> aliasParams = typeFunc.reverse(underlyingJoin);
-			List<Condition> conditions = new ArrayList<>();
-			conditions.addAll(t1.getConditions());
-			conditions.addAll(t2.getConditions());
+			//GEM-TH: cdm-ref-data - concatenate typeAliases existing conditions
+			List<Condition> conditions = Stream.concat(t1.getConditions().stream(), t2.getConditions().stream())
+                    .collect(Collectors.toList());
 			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, conditions))
 				.orElse(underlyingJoin);
 		} else {

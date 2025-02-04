@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -303,9 +304,9 @@ public class TypeSystem {
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
-				List<Condition> conditions = new ArrayList<>();
-				conditions.addAll(alias1.getConditions());
-				conditions.addAll(alias2.getConditions());
+				//GEM-TH: cdm-ref-data - concatenate typeAliases existing conditions
+				List<Condition> conditions = Stream.concat(alias1.getConditions().stream(), alias2.getConditions().stream())
+	                    .collect(Collectors.toList());
 				return typeFunc.reverse(underlier)
 					.<RType>map(args -> new RAliasType(typeFunc, args, underlier, conditions))
 					.orElse(underlier);
@@ -341,7 +342,14 @@ public class TypeSystem {
 		return combineUnderlyingTypes.apply(t1, t2);
 	}
 
-	//TH Review op2: Catch the typeAliases conditions
+	public RType stripFromTypeAliases(RType t) {
+		while (t instanceof RAliasType) {
+			t = ((RAliasType)t).getRefersTo();
+		}
+		return t;
+	}
+	
+	//GEM-TH: cdm-ref-data - Collect typeAliase conditions and arguments for domain validation generation
 	public List<Condition> collectConditionsFromTypeAliases(RType t) {
 		List<Condition> conditions = new ArrayList<>();
 		while (t instanceof RAliasType) {
@@ -350,7 +358,7 @@ public class TypeSystem {
 		}
 		return conditions;
 	}
-	
+		
 	public Map<String, RosettaValue> collectArgumentsFromTypeAliases(RType t) {
 		Map<String, RosettaValue> args = new HashMap<>();
 		while (t instanceof RAliasType) {
@@ -358,12 +366,5 @@ public class TypeSystem {
 			t = ((RAliasType)t).getRefersTo();
 		}
 		return args;
-	}
-
-	public RType stripFromTypeAliases(RType t) {
-		while (t instanceof RAliasType) {
-			t = ((RAliasType)t).getRefersTo();
-		}
-		return t;
 	}
 }

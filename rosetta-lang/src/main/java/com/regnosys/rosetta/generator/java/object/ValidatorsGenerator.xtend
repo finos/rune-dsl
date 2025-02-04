@@ -41,6 +41,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.types.RAliasType
 import java.util.Collections
+import java.util.ArrayList
 
 class ValidatorsGenerator {
 
@@ -117,8 +118,17 @@ class ValidatorsGenerator {
 		}
 	'''
 	
-	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) '''
+	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
+		val conditions = attributes.map[it.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases].flatten
+			
+		'''
 		public class «javaType.toTypeFormatValidatorClass» implements «Validator»<«javaType»> {
+			«IF conditions.size() > 0»
+				«IF conditions.map[it.name].filter[it.equalsIgnoreCase("IsValidCodingScheme")].size > 0»
+					//GEM-TH: cdm-ref-data validation mock impl
+					protected cdm.base.staticdata.codelist.functions.ValidateFpMLCodingSchemeDomain func = new cdm.base.staticdata.codelist.ValidateFpMLCodingSchemeImpl();
+				«ENDIF»
+			«ENDIF»
 		
 			private «List»<«ComparisonResult»> getComparisonResults(«javaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
@@ -159,7 +169,8 @@ class ValidatorsGenerator {
 			}
 		
 		}
-	'''
+		'''
+	}
 
 	def private StringConcatenationClient onlyExistsClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
 		
@@ -210,8 +221,8 @@ class ValidatorsGenerator {
 		}
 	}
 	
+	//GEM-TH: Collect conditions and arguments from typeAliases to generate external domain validators.
 	private def StringConcatenationClient checkTypeAliasFormat(JavaPojoInterface javaType, RAttribute attr) {
-		//TH Review op2: Collect conditions from typeAliases and generate mock validators. try/catch to avoid unexpected beaviours
 		val conditions = attr.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases
 		val args = attr.RMetaAnnotatedType.RType.collectArgumentsFromTypeAliases
 		
@@ -220,25 +231,35 @@ class ValidatorsGenerator {
 		} else {
 			val prop = javaType.findProperty(attr.name)
 			val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
-			//
 			'''
 			«FOR cond : conditions»
-				//«cond.getName()» «attr.name» «javaType.getAttributeValue(attr)» «args.get("domain")»
 				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme")»
 					«IF attr.isMulti»
 						«IF !attr.RMetaAnnotatedType.hasMeta»
-							«method(ExpressionOperators, "checkCodeByDomain")»(«method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»()).stream().collect(«Collectors».toList()), "«args.get("domain").getSingle()»")
+							(ComparisonResult) «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
+								.stream()
+								.filter(it -> !func.evaluate(it, "«args.get("domain").getSingle()»"))
+								.collect(«Collectors».collectingAndThen(
+									«Collectors».joining(", "), 
+									it -> it.isEmpty() ? ComparisonResult.success() : ComparisonResult.failure(it + " code not found in domain '«args.get("domain").getSingle()»'")
+								))
 						«ELSE»
-							«method(ExpressionOperators, "checkCodeByDomain")»(«method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»()).stream().map(«prop.type.itemType»::getValue).collect(«Collectors».toList()), "«args.get("domain").getSingle()»")
+							(ComparisonResult) «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
+								.stream().map(«prop.type.itemType»::getValue)
+								.filter(it -> !func.evaluate(it, "«args.get("domain").getSingle()»"))
+								.collect(«Collectors».collectingAndThen(
+									«Collectors».joining(", "), 
+									it -> it.isEmpty() ? ComparisonResult.success() : ComparisonResult.failure(it + " code not found in domain '«args.get("domain").getSingle()»'")
+								))
 						«ENDIF»
 					«ELSE»
-						«method(ExpressionOperators, "checkCodeByDomain")»(«javaType.getAttributeValue(attr)», "«args.get("domain").getSingle()»")
+						func.evaluate(«javaType.getAttributeValue(attr)», "«args.get("domain").getSingle()»")?
+							ComparisonResult.success() : ComparisonResult.failure(«javaType.getAttributeValue(attr)» + " code not found in domain '«args.get("domain").getSingle()»'")
 					«ENDIF»
 				«ENDIF»
 			«ENDFOR»
 			'''
 		}
-		
 	}
 		
 	private def StringConcatenationClient checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {

@@ -27,6 +27,8 @@ import com.rosetta.model.lib.ModelSymbolId;
 public class RAliasType extends RParametrizedType {
 	private final RTypeFunction typeFunction;
 	private final RType refersTo;
+	
+	//GEM-TH: cdm-ref-data - concatenate typeAliases existing conditions
 	private final List<Condition> conditions;
 
 	public RAliasType(RTypeFunction typeFunction, LinkedHashMap<String, RosettaValue> params, RType refersTo, List<Condition> conditions) {
