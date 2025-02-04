@@ -81,6 +81,30 @@ class RosettaEcoreUtil {
 		}
 	}
 	
+	/*
+	 * This method is resolving references during scoping which is not an advised approach.
+	 * It could lead to poor performance as it is possible that it could be called upon to
+	 * resolve across multiple files. For now this is acceptable as in reality it's not going
+	 * going to get called to run across multiple files.
+	 * 
+	 * TODO: find an alternative approach to this.
+	 * 
+	 */
+    def List<RosettaFeature> getMetaDescriptions(List<RMetaAttribute> metaAttributes, EObject context) {
+ 		val metas = metaAttributes.map[it.name].toList
+ 		if (!metas.isEmpty) {
+ 			configs.findMetaTypes(context).filter[
+ 				metas.contains(it.name.lastSegment.toString)
+ 			]
+ 			.map[it.EObjectOrProxy]
+			.map[EcoreUtil.resolve(it, context)]
+ 			.filter(RosettaFeature)
+ 			.toList
+ 		} else {
+ 			emptyList
+ 		}
+ 	}
+	
 	@Deprecated // Use RDataType#getAllSuperTypes instead
 	def List<Data> getAllSuperTypes(Data data) {
 		val reversedResult = newLinkedHashSet
@@ -244,32 +268,8 @@ class RosettaEcoreUtil {
 		return '''«containerName»«name»'''
 	}
 	
-	/*
-	 * This method is resolving references during scoping which is not an advised approach.
-	 * It could lead to poor performance as it is possible that it could be called upon to
-	 * resolve across multiple files. For now this is acceptable as in reality it's not going
-	 * going to get called to run across multiple files.
-	 * 
-	 * TODO: find an alternative approach to this.
-	 * 
-	 */
  	private def List<RosettaFeature> getMetaDescriptions(RMetaAnnotatedType type, EObject context) {
  		type.metaAttributes.getMetaDescriptions(context)
- 	}
- 	
-    def List<RosettaFeature> getMetaDescriptions(List<RMetaAttribute> metaAttributes, EObject context) {
- 		val metas = metaAttributes.map[it.name].toList
- 		if (!metas.isEmpty) {
- 			configs.findMetaTypes(context).filter[
- 				metas.contains(it.name.lastSegment.toString)
- 			]
- 			.map[it.EObjectOrProxy]
-			.map[EcoreUtil.resolve(it, context)]
- 			.filter(RosettaFeature)
- 			.toList
- 		} else {
- 			emptyList
- 		}
  	}
 	
 	@Deprecated
