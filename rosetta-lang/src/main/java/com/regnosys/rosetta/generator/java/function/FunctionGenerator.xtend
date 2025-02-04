@@ -522,7 +522,7 @@ class FunctionGenerator {
 			RJavaFieldWithMeta: '''«IF seg instanceof RMetaAttribute».getOrCreateMeta()«ELSE».«prop.getOrCreateName»()«ENDIF»'''
 			RJavaReferenceWithMeta case seg instanceof RMetaAttribute && seg.name == "address": '''.«prop.getOrCreateName»()'''
 			RJavaReferenceWithMeta case !(seg instanceof RMetaAttribute): '''.getOrCreateValue()'''
-			RJavaPojoInterface case seg instanceof RMetaAttribute && seg.name == "key": '''.«prop.getOrCreateName»()'''
+			RJavaPojoInterface case seg instanceof RMetaAttribute: '''.«prop.getOrCreateName»()'''
 			default: ''''''
 		}
 	}
