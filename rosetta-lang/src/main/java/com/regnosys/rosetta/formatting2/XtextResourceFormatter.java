@@ -80,9 +80,9 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		}
 
 		// get text replacement for optimized imports
-		/*ITextReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
+		ITextReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
 		if (importsReplacement != null)
-			replacements.add(importsReplacement);*/
+			replacements.add(importsReplacement);
 
 		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();

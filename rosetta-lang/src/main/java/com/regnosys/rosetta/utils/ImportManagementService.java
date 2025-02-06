@@ -32,8 +32,8 @@ public class ImportManagementService {
 		EList<Import> imports = model.getImports();
 
 		// remove all duplicate/unused imports
-		List<Import> unusedImports = findUnused(model);
-		imports.removeAll(unusedImports);
+		/*List<Import> unusedImports = findUnused(model);
+		imports.removeAll(unusedImports);*/
 
 		List<Import> duplicateImports = findDuplicates(imports);
 		imports.removeAll(duplicateImports);
