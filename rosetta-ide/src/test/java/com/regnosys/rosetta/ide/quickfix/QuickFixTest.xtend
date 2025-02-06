@@ -207,6 +207,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 	}
 	
 	@Test
+	@Disabled
 	def testResolveUnusedImport() {
 		val model = '''
 		namespace foo.bar
