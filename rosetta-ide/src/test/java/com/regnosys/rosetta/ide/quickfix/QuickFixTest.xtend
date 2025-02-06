@@ -237,7 +237,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 				sorted.get(0)=> [
 					assertEquals("Optimize imports", title)
 					edit.changes.values.head.head => [
-						assertEquals("import dsl.bar.*\n\nimport dsl.foo.*", newText) // second import is deleted
+						assertEquals("import dsl.bar.*\nimport dsl.foo.*", newText) // second import is deleted
 						assertEquals(new Position(2, 0), range.start)
 						assertEquals(new Position(3, 16), range.end)
 					]
