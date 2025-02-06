@@ -31,9 +31,10 @@ public class ImportManagementService {
 	public void cleanupImports(RosettaModel model) {
 		EList<Import> imports = model.getImports();
 
+		//TODO need to rework on findUnused so that it can work on parent model imports as well
 		// remove all duplicate/unused imports
-		List<Import> unusedImports = findUnused(model);
-		imports.removeAll(unusedImports);
+		/*List<Import> unusedImports = findUnused(model);
+		imports.removeAll(unusedImports);*/
 
 		List<Import> duplicateImports = findDuplicates(imports);
 		imports.removeAll(duplicateImports);
