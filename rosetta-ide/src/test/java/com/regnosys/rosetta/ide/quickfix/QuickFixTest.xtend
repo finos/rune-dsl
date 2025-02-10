@@ -126,14 +126,17 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 			]
 		]
 	}
-	
+
+	//This feature to remove duplicate is removed temperately
 	@Test
 	def testResolveDuplicateImport() {
 		val model = '''
 		namespace foo.bar
 		
-		import dsl.foo.*
-		import dsl.foo.*
+		import dsl.foo.* as foo
+		import dsl.foo.* as foo
+        import dsl.foo.*
+        import dsl.foo.*
 		
 		func Bar:
 			inputs: foo Foo (1..1)
@@ -151,16 +154,16 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 					a int (1..1)
 			'''}
 			it.assertCodeActionResolution = [
-				assertEquals(1, size) //duplicate import
+				assertEquals(7, size) //duplicate import
 			
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
 				sorted.get(0) => [
 					assertEquals("Optimize imports", title)
 					edit.changes.values.head.head => [
-						assertEquals("import dsl.foo.*", newText) // second import is deleted
+						assertEquals("import dsl.foo.* as foo\nimport dsl.foo.* as foo\nimport dsl.foo.*\nimport dsl.foo.*", newText) // second import is deleted
 						assertEquals(new Position(2, 0), range.start)
-						assertEquals(new Position(3, 16), range.end)
+						assertEquals(new Position(5, 24), range.end)
 					]
 				]
 			]
