@@ -36,8 +36,10 @@ public class ImportManagementService {
 		/*List<Import> unusedImports = findUnused(model);
 		imports.removeAll(unusedImports);*/
 
-		List<Import> duplicateImports = findDuplicates(imports);
-		imports.removeAll(duplicateImports);
+		//Removing duplicate import causes problems as some of the imports are needed
+		//as duplicate with use of ... as common etc
+		/*List<Import> duplicateImports = findDuplicates(imports);
+		imports.removeAll(duplicateImports);*/
 
 		sortImports(imports);
 	}
