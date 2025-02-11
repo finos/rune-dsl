@@ -200,27 +200,11 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
     }
 	
 	public boolean isItemMulti(InlineFunction op) {
-		return safeIsClosureParameterMulti(op, new HashMap<>());
+		return safeIsItemMulti(op, new HashMap<>());
 	}
-	
-	/**
-	 * Does the body of the previous list operation result in a list.
-	 */
-	private boolean safeIsPreviousOperationBodyMulti(RosettaUnaryOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-        RosettaExpression previousOperation = expr.getArgument();
-        if (previousOperation instanceof RosettaUnaryOperation) {
-            if (previousOperation instanceof ThenOperation) {
-                return safeIsMulti(previousOperation, cycleTracker);
-            } else if (previousOperation instanceof MapOperation) {
-                return safeIsMulti(((MapOperation) previousOperation).getFunction().getBody(), cycleTracker);
-            } else if (previousOperation instanceof FlattenOperation) {
-                return false;
-            }
-            return safeIsPreviousOperationBodyMulti((RosettaUnaryOperation) previousOperation, cycleTracker);
-        }
-        return false;
-    }
-	
+	private boolean safeIsItemMulti(InlineFunction op, Map<RosettaSymbol, Boolean> cycleTracker) {
+		return safeIsClosureParameterMulti(op, cycleTracker);
+	}
 	
 	/**
 	 * List MAP/FILTER/Extract-all operations can handle a list of lists, however it cannot be handled anywhere else (e.g. a list of list cannot be assigned to a func output or alias)
@@ -235,10 +219,10 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
             MapOperation mapOperation = (MapOperation) expr;
             if (mapOperation.getFunction() == null) {
                 return false;
-            } else if (safeIsClosureParameterMulti(mapOperation.getFunction(), cycleTracker)) {
+            } else if (safeIsItemMulti(mapOperation.getFunction(), cycleTracker)) {
                 return safeIsBodyExpressionMulti(mapOperation.getFunction(), cycleTracker);
             } else {
-                return safeIsBodyExpressionMulti(mapOperation.getFunction(), cycleTracker) && safeIsPreviousOperationBodyMulti(mapOperation, cycleTracker);
+                return safeIsBodyExpressionMulti(mapOperation.getFunction(), cycleTracker) && safeIsPreviousOperationMulti(mapOperation, cycleTracker);
             }
         } else if (expr instanceof ThenOperation) {
             InlineFunction function = ((ThenOperation) expr).getFunction();
@@ -267,7 +251,10 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
     }
 	
 	public boolean isPreviousOperationMulti(RosettaUnaryOperation op) {
-		return isMulti(op.getArgument());
+		return safeIsPreviousOperationMulti(op, new HashMap<>());
+	}
+	private boolean safeIsPreviousOperationMulti(RosettaUnaryOperation op, Map<RosettaSymbol, Boolean> cycleTracker) {
+		return safeIsMulti(op.getArgument(), cycleTracker);
 	}
 	
 	public boolean isBodyExpressionMulti(InlineFunction op) {
