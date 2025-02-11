@@ -18,7 +18,7 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
-public class RosettaTypeProviderTest2 {
+public class RosettaTypeProviderTest {
 	@Inject
 	private RosettaTestModelService modelService;
 	@Inject
