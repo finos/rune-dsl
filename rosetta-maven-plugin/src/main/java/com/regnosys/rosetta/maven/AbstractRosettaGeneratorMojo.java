@@ -17,9 +17,12 @@
 package com.regnosys.rosetta.maven;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
@@ -37,6 +40,9 @@ import com.google.inject.Module;
 // TODO: decouple from `AbstractXtextGeneratorMojo`/`xtext-maven-plugin`. They differ too much,
 // which makes this implementation too hacky.
 public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGeneratorMojo {
+
+	@Parameter(property = "rosetta.config.file")
+	private String rosettaConfigFile;
 
 	@Parameter(defaultValue = "true")
 	boolean addOutputDirectoriesToCompileSourceRoots = Boolean.TRUE;
@@ -76,6 +82,9 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 	
 	@Override
 	protected void internalExecute() throws MojoExecutionException {
+		if (rosettaConfigFile != null) {
+			System.setProperty(RosettaConfigurationFileProvider.ROSETTA_CONFIG_FILE_PROPERTY, rosettaConfigFile);
+		}
 		if (addOutputDirectoriesToCompileSourceRoots) {
 			configureMavenOutputs();
 		}
