@@ -274,4 +274,58 @@ public class LabelProviderGeneratorTest {
 			"qux.Opt2.id:Deep path ID"
 		);
 	}
+	
+	@Test
+	void testCircularReferenceInTypesAreSupported() throws IOException {
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				type Foo:
+					bar Bar (1..1)
+					fooAttr int (1..1)
+						[label as "Foo attribute"]
+					nested A (1..1)
+						[label b -> bAttr as "Overridden B attribute"]
+						[label b -> a -> b -> c -> b -> bAttr as "Random path B attribute"]
+				
+				type Bar:
+					foos Foo (0..*)
+					barAttr int (1..1)
+						[label as "Bar attribute"]
+				
+				type A:
+					b B (1..1)
+						[label c -> b -> bAttr as "A -> B -> C -> B attribute"]
+				
+				type B:
+					a A (0..1)
+					c C (1..1)
+					bAttr int (1..1)
+						[label as "Default B attribute"]
+				
+				type C:
+					b B (0..1)
+				
+				func MyFunc:
+					[ingest JSON]
+					output:
+						foo Foo (1..1)
+				""");
+		
+		generateLabelProviderForFunction(model, "MyFunc");
+		
+		assertSingleGeneratedFile("func-circular/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
+		assertLabels(
+			"fooAttr:Foo attribute",
+			"bar.barAttr:Bar attribute",
+			"bar.foos(0).fooAttr:Foo attribute",
+			"bar.foos(1).bar.barAttr:Bar attribute",
+			"bar.foos(2).bar.foos(1).fooAttr:Foo attribute",
+			"nested.b.bAttr:Overridden B attribute",
+			"nested.b.a.b.bAttr:Default B attribute",
+			"nested.b.c.b.a.b.bAttr:Default B attribute",
+			"nested.b.a.b.c.b.bAttr:Random path B attribute",
+			"nested.b.a.b.a.b.c.b.bAttr:A -> B -> C -> B attribute"
+		);
+	}
 }

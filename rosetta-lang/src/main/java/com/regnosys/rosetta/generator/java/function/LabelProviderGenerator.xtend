@@ -12,9 +12,7 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.rosetta.util.types.JavaClass
 import com.rosetta.model.lib.functions.LabelProvider
-import com.rosetta.model.lib.path.RosettaPath
 import java.util.Map
-import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.types.RDataType
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
@@ -28,9 +26,13 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.RChoiceType
-import java.util.HashMap
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import org.apache.commons.text.StringEscapeUtils
+import com.regnosys.rosetta.lib.labelprovider.GraphBasedLabelProvider
+import com.regnosys.rosetta.lib.labelprovider.LabelNode
+import java.util.Set
+import java.util.Arrays
+import java.util.stream.Collectors
+import java.util.HashSet
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -67,52 +69,128 @@ class LabelProviderGenerator {
 		JavaScope topScope
 	) {
 		val className = topScope.createIdentifier(function, javaClass.simpleName)
+		val classScope = topScope.classScope(javaClass.simpleName)
+		val constructorScope = classScope.methodScope("constructor")
 
-		val labelMap = newLinkedHashMap
-		gatherLabels(function.output.RMetaAnnotatedType.RType, null, labelMap)
+		val Map<RDataType, Map<DottedPath, String>> labelsPerNode = newLinkedHashMap
+		val edgesPerNode = newLinkedHashMap
+		val outputType = function.output.RMetaAnnotatedType.RType
+		val startNode = if (outputType instanceof RChoiceType) {
+			outputType.asRDataType
+		} else {
+			outputType
+		}
+		if (startNode instanceof RDataType) {
+			buildLabelGraph(startNode, labelsPerNode, edgesPerNode)
+			pruneLabelGraph(labelsPerNode, edgesPerNode)
+		}
+		constructorScope.createIdentifier(startNode, "startNode")
+		labelsPerNode.keySet.forEach[node|
+			if (node != startNode) {
+				constructorScope.createIdentifier(node, node.name.toFirstLower + "Node")
+			}
+		]
 
 		'''
-			public class «className» implements «LabelProvider» {
-				private final «Map»<«RosettaPath», «String»> labelMap;
-				
+			public class «className» extends «GraphBasedLabelProvider» {
 				public «className»() {
-					labelMap = new «HashMap»<>();
+					super(new «LabelNode»());
 					
-					«FOR path : labelMap.keySet»
-						labelMap.put(«RosettaPath».valueOf("«path.withDots»"), "«StringEscapeUtils.escapeJava(labelMap.get(path))»");
+					«FOR node : labelsPerNode.keySet»
+						«val nodeVarName = constructorScope.getIdentifierOrThrow(node)»
+						«val labels = labelsPerNode.get(node)»
+						«IF node != startNode»
+							
+							«LabelNode» «nodeVarName» = new «LabelNode»();
+						«ENDIF»
+						«FOR path : labels.keySet»
+							«nodeVarName».addLabel(«path.representAsList», "«StringEscapeUtils.escapeJava(labels.get(path))»");
+						«ENDFOR»
 					«ENDFOR»
-				}
-				
-				@Override
-				public «String» getLabel(«RosettaPath» path) {
-					RosettaPath normalized = path.toIndexless();
-					return labelMap.get(normalized);
+					«FOR node : edgesPerNode.keySet»
+						«val nodeVarName = constructorScope.getIdentifierOrThrow(node)»
+						«val edges = edgesPerNode.get(node)»
+						«IF !edges.empty»
+						
+						«FOR pathElement : edges.keySet»
+							«nodeVarName».addOutgoingEdge("«StringEscapeUtils.escapeJava(pathElement)»", «constructorScope.getIdentifierOrThrow(edges.get(pathElement))»);
+						«ENDFOR»
+						«ENDIF»
+					«ENDFOR»
 				}
 			}
 		'''
 	}
+	private def StringConcatenationClient representAsList(DottedPath path) {
+		'''«Arrays».asList(«path.stream.map[StringEscapeUtils.escapeJava(it)].collect(Collectors.joining("\", \"", "\"", "\""))»)'''
+	}
 	
-	private def void gatherLabels(RType currentType, DottedPath currentPath, Map<DottedPath, String> labels) {
-		val t = if (currentType instanceof RChoiceType) {
-			currentType.asRDataType
-		} else {
-			currentType
+	private def void buildLabelGraph(RDataType currentNode, Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode) {
+		if (labelsPerNode.containsKey(currentNode)) {
+			// Circular reference: we already computed this node.
+			return
 		}
-		if (t instanceof RDataType) {
-			for (attr : t.allAttributes) {
-				val attrPath = currentPath === null ? DottedPath.of(attr.name) : currentPath.child(attr.name)
-				// 1. Register labels on the type of this attribute
-				var attrType = attr.RMetaAnnotatedType.RType
-				gatherLabels(attrType, attrPath, labels)
-				
-				// 2. Register legacy `as` annotations from rule references
-				if (attr.ruleReference !== null) {
-					registerLegacyRuleAsLabel(attr.ruleReference, attrPath, labels)
+		val labels = newLinkedHashMap
+		labelsPerNode.put(currentNode, labels)
+		val edges = newLinkedHashMap
+		edgesPerNode.put(currentNode, edges)
+		for (attr : currentNode.allAttributes) {
+			val attrPath = DottedPath.of(attr.name)
+			
+			// 1. Register labels on the type of this attribute
+			var attrType = attr.RMetaAnnotatedType.RType
+			val t = if (attrType instanceof RChoiceType) {
+				attrType.asRDataType
+			} else {
+				attrType
+			}
+			if (t instanceof RDataType) {
+				edges.put(attr.name, t)
+				buildLabelGraph(t, labelsPerNode, edgesPerNode)
+			}
+			
+			// 2. Register legacy `as` annotations from rule references
+			if (attr.ruleReference !== null) {
+				registerLegacyRuleAsLabel(attr.ruleReference, attrPath, labels)
+			}
+			
+			// 3. Register label annotations
+			attr.labelAnnotations.forEach[
+				registerLabelAnnotation(it, attrPath, labels)
+			]
+		}
+	}
+	
+	private def void pruneLabelGraph(Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode) {
+		// For each possible path in the graph, see if it is possible to reach any label.
+		// If not, prune those nodes.
+		val nodes = new HashSet(labelsPerNode.keySet)
+		
+		val nodesWithReachableLabels = newHashSet
+		nodesWithReachableLabels.addAll(nodes.filter[!labelsPerNode.get(it).empty])
+		
+		var anyReachableNodesFoundInIteration = true
+		while (anyReachableNodesFoundInIteration) {
+			anyReachableNodesFoundInIteration = false
+			for (node : nodes) {
+				if (!nodesWithReachableLabels.contains(node)) {
+					val hasEdgeToNodeWithReachableLabel = edgesPerNode.get(node).values.exists[nodesWithReachableLabels.contains(it)]
+					if (hasEdgeToNodeWithReachableLabel) {
+						nodesWithReachableLabels.add(node)
+						anyReachableNodesFoundInIteration = true
+					}
 				}
-				
-				// 3. Register label annotations
-				attr.labelAnnotations.forEach[
-					registerLabelAnnotation(it, attrPath, labels)
+			}
+		}
+		// prune
+		for (node : nodes) {
+			if (!nodesWithReachableLabels.contains(node)) {
+				labelsPerNode.remove(node)
+				edgesPerNode.remove(node)
+				edgesPerNode.values.forEach[
+					it.entrySet.removeIf[
+						value == node
+					]
 				]
 			}
 		}
