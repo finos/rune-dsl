@@ -276,7 +276,7 @@ public class LabelProviderGeneratorTest {
 	}
 	
 	@Test
-	void testCircularReferenceInTypesAreSupported() throws IOException {
+	void testCircularReferencesInTypesAreSupported() throws IOException {
 		RosettaTestModel model = loadModel("""
 				namespace test
 				
