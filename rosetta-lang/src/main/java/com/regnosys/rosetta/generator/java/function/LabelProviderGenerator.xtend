@@ -34,7 +34,6 @@ import java.util.stream.Collectors
 import java.util.HashSet
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.regnosys.rosetta.types.RAttribute
-import java.util.Optional
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -48,17 +47,7 @@ class LabelProviderGenerator {
 	def void generateForFunctionIfApplicable(IFileSystemAccess2 fsa, Function func) {
 		if (util.shouldGenerateLabelProvider(func)) {
 			val rFunction = rObjectFactory.buildRFunction(func)
-			val outputType = rFunction.output.RMetaAnnotatedType.RType
-			val attributeToRuleMap =
-				if (outputType instanceof RDataType) {
-					externalAnnotationUtil.getAllReportingRules(outputType, Optional.empty)
-						.entrySet()
-						.stream()
-						.collect(Collectors.toMap([e| e.getKey().getAttr()], [e| e.getValue()]));
-				} else {
-					emptyMap
-				}
-			generate(fsa, rFunction, attributeToRuleMap)
+			generate(fsa, rFunction, emptyMap)
 		}
 	}
 	def void generateForReport(IFileSystemAccess2 fsa, RosettaReport report) {
