@@ -29,10 +29,12 @@ import com.regnosys.rosetta.types.RChoiceType
 import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.lib.labelprovider.GraphBasedLabelProvider
 import com.regnosys.rosetta.lib.labelprovider.LabelNode
-import java.util.Set
 import java.util.Arrays
 import java.util.stream.Collectors
 import java.util.HashSet
+import com.regnosys.rosetta.utils.ExternalAnnotationUtil
+import com.regnosys.rosetta.types.RAttribute
+import java.util.Optional
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -41,23 +43,38 @@ class LabelProviderGenerator {
 	@Inject JavaTypeTranslator typeTranslator
 	@Inject DeepFeatureCallUtil deepPathUtil
 	@Inject LabelProviderGeneratorUtil util
+	@Inject ExternalAnnotationUtil externalAnnotationUtil
 	
 	def void generateForFunctionIfApplicable(IFileSystemAccess2 fsa, Function func) {
 		if (util.shouldGenerateLabelProvider(func)) {
 			val rFunction = rObjectFactory.buildRFunction(func)
-			generate(fsa, rFunction)
+			val outputType = rFunction.output.RMetaAnnotatedType.RType
+			val attributeToRuleMap =
+				if (outputType instanceof RDataType) {
+					externalAnnotationUtil.getAllReportingRules(outputType, Optional.empty)
+						.entrySet()
+						.stream()
+						.collect(Collectors.toMap([e| e.getKey().getAttr()], [e| e.getValue()]));
+				} else {
+					emptyMap
+				}
+			generate(fsa, rFunction, attributeToRuleMap)
 		}
 	}
 	def void generateForReport(IFileSystemAccess2 fsa, RosettaReport report) {
+		val attributeToRuleMap = externalAnnotationUtil.getAllReportingRules(report)
+			.entrySet()
+			.stream()
+			.collect(Collectors.toMap([e| e.getKey().getAttr()], [e| e.getValue()]));
 		val rFunction = rObjectFactory.buildRFunction(report)
-		generate(fsa, rFunction)
+		generate(fsa, rFunction, attributeToRuleMap)
 	}
-	private def void generate(IFileSystemAccess2 fsa, RFunction f) {
+	private def void generate(IFileSystemAccess2 fsa, RFunction f, Map<RAttribute, RosettaRule> attributeToRuleMap) {
 		val javaClass = typeTranslator.toLabelProviderJavaClass(f)
 		val fileName = javaClass.canonicalName.withForwardSlashes + '.java'
 		
 		val topScope = new JavaScope(javaClass.packageName)
-		val StringConcatenationClient classBody = classBody(f, javaClass, topScope)
+		val StringConcatenationClient classBody = classBody(f, attributeToRuleMap, javaClass, topScope)
 
 		val content = buildClass(javaClass.packageName, classBody, topScope)
 		fsa.generateFile(fileName, content)
@@ -65,6 +82,7 @@ class LabelProviderGenerator {
 	
 	private def StringConcatenationClient classBody(
 		RFunction function,
+		Map<RAttribute, RosettaRule> attributeToRuleMap,
 		JavaClass<LabelProvider> javaClass,
 		JavaScope topScope
 	) {
@@ -81,7 +99,7 @@ class LabelProviderGenerator {
 			outputType
 		}
 		if (startNode instanceof RDataType) {
-			buildLabelGraph(startNode, labelsPerNode, edgesPerNode)
+			buildLabelGraph(startNode, labelsPerNode, edgesPerNode, attributeToRuleMap)
 			pruneLabelGraph(labelsPerNode, edgesPerNode)
 		}
 		constructorScope.createIdentifier(startNode, "startNode")
@@ -125,7 +143,7 @@ class LabelProviderGenerator {
 		'''«Arrays».asList(«path.stream.map[StringEscapeUtils.escapeJava(it)].collect(Collectors.joining("\", \"", "\"", "\""))»)'''
 	}
 	
-	private def void buildLabelGraph(RDataType currentNode, Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode) {
+	private def void buildLabelGraph(RDataType currentNode, Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode, Map<RAttribute, RosettaRule> attributeToRuleMap) {
 		if (labelsPerNode.containsKey(currentNode)) {
 			// Circular reference: we already computed this node.
 			return
@@ -146,12 +164,13 @@ class LabelProviderGenerator {
 			}
 			if (t instanceof RDataType) {
 				edges.put(attr.name, t)
-				buildLabelGraph(t, labelsPerNode, edgesPerNode)
+				buildLabelGraph(t, labelsPerNode, edgesPerNode, attributeToRuleMap)
 			}
 			
 			// 2. Register legacy `as` annotations from rule references
-			if (attr.ruleReference !== null) {
-				registerLegacyRuleAsLabel(attr.ruleReference, attrPath, labels)
+			val ruleRef = attributeToRuleMap.get(attr)
+			if (ruleRef !== null) {
+				registerLegacyRuleAsLabel(ruleRef, attrPath, labels)
 			}
 			
 			// 3. Register label annotations
