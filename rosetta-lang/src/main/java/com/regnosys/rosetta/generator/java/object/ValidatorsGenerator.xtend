@@ -236,25 +236,25 @@ class ValidatorsGenerator {
 				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme")»
 					«IF attr.isMulti»
 						«IF !attr.RMetaAnnotatedType.hasMeta»
-							(ComparisonResult) «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
+							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
 								.stream()
 								.filter(it -> !func.evaluate(it, "«args.get("domain").getSingle()»"))
 								.collect(«Collectors».collectingAndThen(
 									«Collectors».joining(", "), 
-									it -> it.isEmpty() ? ComparisonResult.success() : ComparisonResult.failure(it + " code not found in domain '«args.get("domain").getSingle()»'")
+									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«args.get("domain").getSingle()»'")
 								))
 						«ELSE»
-							(ComparisonResult) «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
+							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
 								.stream().map(«prop.type.itemType»::getValue)
 								.filter(it -> !func.evaluate(it, "«args.get("domain").getSingle()»"))
 								.collect(«Collectors».collectingAndThen(
 									«Collectors».joining(", "), 
-									it -> it.isEmpty() ? ComparisonResult.success() : ComparisonResult.failure(it + " code not found in domain '«args.get("domain").getSingle()»'")
+									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«args.get("domain").getSingle()»'")
 								))
 						«ENDIF»
 					«ELSE»
 						func.evaluate(«javaType.getAttributeValue(attr)», "«args.get("domain").getSingle()»")?
-							ComparisonResult.success() : ComparisonResult.failure(«javaType.getAttributeValue(attr)» + " code not found in domain '«args.get("domain").getSingle()»'")
+							«method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(«javaType.getAttributeValue(attr)» + " code not found in domain '«args.get("domain").getSingle()»'")
 					«ENDIF»
 				«ENDIF»
 			«ENDFOR»
