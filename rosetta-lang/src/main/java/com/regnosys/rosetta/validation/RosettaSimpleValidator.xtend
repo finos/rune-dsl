@@ -108,6 +108,10 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
+import com.regnosys.rosetta.types.RMetaAttribute
+import com.regnosys.rosetta.utils.ImportManagementService
+import com.regnosys.rosetta.utils.ConstructorManagementService
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -129,6 +133,10 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject extension RosettaGrammarAccess
 	@Inject extension RObjectFactory objectFactory
 	
+	@Inject ImportManagementService importManagementService;
+	@Inject ConstructorManagementService constructorManagementService;
+
+
 	@Check
 	def void deprecatedWarning(EObject object) {
 		val crossRefs = (object.eClass.EAllStructuralFeatures as EClassImpl.FeatureSubsetSupplier).crossReferences as List<EReference>
@@ -821,51 +829,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (ele.path === null && ele.assignRoot instanceof ShortcutDeclaration)
 			error('''An alias can not be assigned. Assign target must be an attribute.''', ele, OPERATION__ASSIGN_ROOT)
 	}
-	
-	@Check
-	def checkConstructorExpression(RosettaConstructorExpression ele) {
-
-		val rType = ele.RMetaAnnotatedType.RType
-			
-		var baseRType = rType.stripFromTypeAliases
-		if (baseRType instanceof RChoiceType) {
-			baseRType = baseRType.asRDataType
-		}
-		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType)) {
-			error('''Cannot construct an instance of type `«rType.name»`.''', ele.typeCall, null)
-		}
-		
-		val seenFeatures = newHashSet
-		for (pair : ele.values) {
-			val feature = pair.key
-			val expr = pair.value
-			if (!seenFeatures.add(feature)) {
-				error('''Duplicate attribute `«feature.name»`.''', pair, CONSTRUCTOR_KEY_VALUE_PAIR__KEY)
-			}
-			checkType(feature.getRTypeOfFeature(null), expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, INSIGNIFICANT_INDEX)
-			if(!cardinality.isFeatureMulti(feature) && cardinality.isMulti(expr)) {
-				error('''Expecting single cardinality for attribute `«feature.name»`.''', pair,
-					CONSTRUCTOR_KEY_VALUE_PAIR__VALUE)
-			}
-		}
-		val absentAttributes = rType
-			.allFeatures(ele)
-			.filter[!seenFeatures.contains(it)]
-		val requiredAbsentAttributes = absentAttributes
-			.filter[!(it instanceof Attribute) || (it as Attribute).card.inf !== 0]
-		if (ele.implicitEmpty) {
-			if (!requiredAbsentAttributes.empty) {
-				error('''Missing attributes «FOR attr : requiredAbsentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».''', ele.typeCall, null)
-			}
-			if (absentAttributes.size === requiredAbsentAttributes.size) {
-				error('''There are no optional attributes left.''', ele, ROSETTA_CONSTRUCTOR_EXPRESSION__IMPLICIT_EMPTY)
-			}
-		} else {
-			if (!absentAttributes.empty) {
-				error('''Missing attributes «FOR attr : absentAttributes SEPARATOR ', '»`«attr.name»`«ENDFOR».«IF requiredAbsentAttributes.empty» Perhaps you forgot a `...` at the end of the constructor?«ENDIF»''', ele.typeCall, null)
-			}
-		}
-	}
 
 	@Check
 	def checkSynonymMapPath(RosettaMapPathValue ele) {
@@ -1212,11 +1175,13 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				return
 			}
 			val segments = container.path.asSegmentList(container.path)
-			val attr = segments?.last?.attribute
-			if (!attr.hasReferenceAnnotation) {
+			val feature = segments?.last?.feature
+			if ((feature instanceof RosettaMetaType || !(feature as Attribute).hasReferenceAnnotation)) {
 				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
 					o, ROSETTA_OPERATION__OPERATOR)
 			}
+
+
 		} else if (container instanceof ConstructorKeyValuePair) {
 			val attr = container.key
 			if (!(attr instanceof Attribute) || !(attr as Attribute).hasReferenceAnnotation) {
@@ -1231,12 +1196,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Check
 	def checkImport(RosettaModel model) {
-		var usedNames = model.eAllContents.flatMap[
-			eCrossReferences.filter(RosettaRootElement).filter[isResolved].iterator
-		].map[
-			fullyQualifiedName
-		].toList
-
 		for (ns : model.imports) {
 			if (ns.importedNamespace !== null) {
 				val qn = QualifiedName.create(ns.importedNamespace.split('\\.'))
@@ -1244,17 +1203,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
  				if (!isWildcard && ns.namespaceAlias !== null) {
  					error('''"as" statement can only be used with wildcard imports''', ns, IMPORT__NAMESPACE_ALIAS);
  				}
-
-
- 				val isUsed = if (isWildcard) {
- 					usedNames.stream.anyMatch[startsWith(qn.skipLast(1)) && segmentCount === qn.segmentCount]
- 				} else {
- 					usedNames.contains(qn)
-				}
-				if (!isUsed) {
-					warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
-				}
 			}
+		}
+
+		val unused = importManagementService.findUnused(model);
+		for (ns: unused) {
+			warning('''Unused import «ns.importedNamespace»''', ns, IMPORT__IMPORTED_NAMESPACE, UNUSED_IMPORT)
+		}
+
+		val duplicates = importManagementService.findDuplicates(model.imports);
+		for (imp : duplicates) {
+			warning('''Duplicate import «imp.importedNamespace»''', imp, IMPORT__IMPORTED_NAMESPACE, DUPLICATE_IMPORT)
 		}
 	}
 

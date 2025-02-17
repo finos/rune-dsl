@@ -177,24 +177,25 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 	
 	protected void unsupportedTypeError(RMetaAnnotatedType type, RosettaOperation op, EStructuralFeature feature, RType supportedType1, RType supportedType2, RType... moreSupportedTypes) {
 		StringBuilder supportedTypesMsg = new StringBuilder();
-		supportedTypesMsg.append("Supported types are ");
+		supportedTypesMsg.append("Supported types are `");
 		supportedTypesMsg.append(supportedType1);
 		if (moreSupportedTypes.length > 0) {
-			supportedTypesMsg.append(", ");
+			supportedTypesMsg.append("`, `");
 			supportedTypesMsg.append(supportedType2);
 			for (int i=0; i<moreSupportedTypes.length-1; i++) {
-				supportedTypesMsg.append(", ");
+				supportedTypesMsg.append("`, `");
 				supportedTypesMsg.append(moreSupportedTypes[i]);
 			}
-			supportedTypesMsg.append(" and ");
+			supportedTypesMsg.append("` and `");
 			supportedTypesMsg.append(moreSupportedTypes[moreSupportedTypes.length-1]);
 		} else {
-			supportedTypesMsg.append(" and ");
+			supportedTypesMsg.append("` and `");
 			supportedTypesMsg.append(supportedType2);
 		}
+		supportedTypesMsg.append('`');
 		unsupportedTypeError(type, op.getOperator(), op, feature, supportedTypesMsg.toString());
 	}
 	protected void unsupportedTypeError(RMetaAnnotatedType type, String operator, EObject sourceObject, EStructuralFeature feature, String supportedTypesMessage) {
-		error("Operator `" + operator + "` is not supported for type " + type.getRType() + ". " + supportedTypesMessage, sourceObject, feature);
+		error("Operator `" + operator + "` is not supported for type `" + type.getRType() + "`. " + supportedTypesMessage, sourceObject, feature);
 	}
 }

@@ -64,6 +64,10 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.AnnotationPath
+import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
+import java.util.Random
+import com.regnosys.rosetta.types.RAttribute
 
 /**
  * This class contains custom scoping description.
@@ -139,18 +143,29 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 					}
 					return IScope.NULLSCOPE
 				}
-				case SEGMENT__ATTRIBUTE: {
+				case SEGMENT__FEATURE: {
 					switch (context) {
+						// Case handles the head of the segment
 						Operation: {
 							val receiverType = typeProvider.getRTypeOfSymbol(context.assignRoot)
-							return Scopes.scopeFor(receiverType.RType.allFeatures(context))
+							
+							// All features accessible from reciever type including meta attributes
+							var features = receiverType.allFeatures(context, [t| !(t instanceof REnumType)])
+							
+							// We also want to allow the scope provider to return the meta for type of the attribute (e.g. metatda key)
+							if (receiverType.RType instanceof RDataType) {
+								features = features + (receiverType.RType as RDataType).metaAttributes.getMetaDescriptions(context)
+							}
+							
+							return Scopes.scopeFor(features)
 						}
+						// Case handles the tail of the segment
 						Segment: {
 							val prev = context.prev
 							if (prev !== null) {
-								if (prev.attribute.isResolved) {
-									val receiverType = typeProvider.getRTypeOfSymbol(prev.attribute)
-									return Scopes.scopeFor(receiverType.RType.allFeatures(context))
+								if (prev.feature.isResolved) {
+									val receiverType = typeProvider.getRTypeOfFeature(prev.feature, context)
+									return Scopes.scopeFor(receiverType.allFeatures(context, [t| !(t instanceof REnumType)]))
 								}
 							}
 							if (context.eContainer instanceof Operation) {
@@ -161,6 +176,26 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						default:
 							return defaultScope(context, reference)
 					}
+				}
+				case ANNOTATION_PATH_ATTRIBUTE_REFERENCE__ATTRIBUTE: {
+					if (context instanceof Attribute) {
+						val t = typeProvider.getRTypeOfSymbol(context)
+						return Scopes.scopeFor(t.allFeatures(context))
+					}
+				}
+				case ANNOTATION_PATH__ATTRIBUTE: {
+					if (context instanceof AnnotationPath) {
+						val t = typeProvider.getRMetaAnnotatedType(context.receiver)
+						return Scopes.scopeFor(t.allFeatures(context))
+					}
+					return IScope.NULLSCOPE
+				}
+				case ANNOTATION_DEEP_PATH__ATTRIBUTE: {
+					if (context instanceof AnnotationDeepPath) {
+						val t = typeProvider.getRMetaAnnotatedType(context.receiver)
+						return createDeepFeatureScope(t.RType)
+					}
+					return IScope.NULLSCOPE
 				}
 				case ROSETTA_SYMBOL_REFERENCE__SYMBOL: {
 					if (context instanceof Operation) {

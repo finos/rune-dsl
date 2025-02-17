@@ -3,7 +3,7 @@ title: "Rune Java Documentation"
 date: 2023-09-01T12:57:00+02:00
 description: "This document describes the interface and usage of classes that are generated from a Rune model using the Java code generator."
 draft: false
-weight: 2
+weight: 3
 ---
 
 # Rune Java Documentation
@@ -45,8 +45,10 @@ type VehicleOwnership:
 
 type EuropeanParliamentReport:
     vehicleRegistrationID string (1..1)
+        [label as "Vehicle Registration ID"]
         [ruleReference VehicleRegistrationID]
     vehicleClassificationType VehicleClassificationEnum (1..1)
+        [label as "Vehicle Classification Type"]
         [ruleReference VehicleClassificationType]
 
 type Vehicle:
@@ -84,11 +86,9 @@ eligibility rule IsEuroStandardsCoverage from VehicleOwnership:
 
 reporting rule VehicleRegistrationID from VehicleOwnership:
     extract vehicle -> registrationID
-        as "Vehicle Registration ID"
 
 reporting rule VehicleClassificationType from VehicleOwnership: <"Classification type of the vehicle">
     extract vehicle -> vehicleClassification
-        as "Vehicle Classification Type"
 ```
 
 #### Generated Java Code
@@ -96,6 +96,7 @@ reporting rule VehicleClassificationType from VehicleOwnership: <"Classification
 In Java, the report is represented by the following class:
 ``` Java
 @RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
+@RuneLabelProvider(labelProvider=EuropeanParliamentEmissionPerformanceStandardsEULabelProvider.class)
 @ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
 public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
     @Override

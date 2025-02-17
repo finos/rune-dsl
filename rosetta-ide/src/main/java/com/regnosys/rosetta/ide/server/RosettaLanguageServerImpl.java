@@ -16,19 +16,6 @@
 
 package com.regnosys.rosetta.ide.server;
 
-import org.eclipse.xtext.ide.server.LanguageServerImpl;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.lsp4j.*;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.xtext.resource.IResourceServiceProvider;
-import org.eclipse.xtext.util.CancelIndicator;
-
-import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
-import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
-import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
-import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
-import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -36,12 +23,48 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionKind;
+import org.eclipse.lsp4j.CodeActionOptions;
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.FormattingOptions;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.InlayHint;
+import org.eclipse.lsp4j.InlayHintParams;
+import org.eclipse.lsp4j.InlayHintRegistrationOptions;
+import org.eclipse.lsp4j.SemanticTokens;
+import org.eclipse.lsp4j.SemanticTokensDelta;
+import org.eclipse.lsp4j.SemanticTokensDeltaParams;
+import org.eclipse.lsp4j.SemanticTokensParams;
+import org.eclipse.lsp4j.SemanticTokensRangeParams;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.xtext.ide.server.Document;
+import org.eclipse.xtext.ide.server.ILanguageServerAccess;
+import org.eclipse.xtext.ide.server.LanguageServerImpl;
+import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
+import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.util.CancelIndicator;
+
+import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
+import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
+import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
+import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
+import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
+import com.regnosys.rosetta.ide.util.CodeActionUtils;
+
 /**
  * TODO: contribute to Xtext.
  *
  */
 public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
 	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
+	@Inject CodeActionUtils codeActionUtils;
 
 	@Override
 	protected ServerCapabilities createServerCapabilities(InitializeParams params) {
@@ -53,6 +76,14 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 			inlayHintRegistrationOptions.setResolveProvider(resourceServiceProvider.get(IInlayHintsResolver.class) != null);
 			serverCapabilities.setInlayHintProvider(inlayHintRegistrationOptions);
 		}
+		
+		if (resourceServiceProvider.get(ICodeActionService2.class) != null) {
+            CodeActionOptions codeActionProvider = new CodeActionOptions();
+            codeActionProvider.setResolveProvider(true);
+            codeActionProvider.setCodeActionKinds(List.of(CodeActionKind.QuickFix, CodeActionKind.SourceOrganizeImports));
+            codeActionProvider.setWorkDoneProgress(true);
+            serverCapabilities.setCodeActionProvider(codeActionProvider);
+        }
 		
 		ISemanticTokensService semanticTokensService = resourceServiceProvider.get(ISemanticTokensService.class);
 		if (semanticTokensService != null) {
@@ -185,4 +216,43 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 			return CompletableFuture.failedFuture(e);
 		}
 	}
+	
+	@Override
+	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved) {
+		return getRequestManager().runRead((cancelIndicator) -> this.resolveCodeAction(unresolved, cancelIndicator));
+	}
+	
+	protected CodeAction resolveCodeAction(CodeAction codeAction, CancelIndicator cancelIndicator) {
+		CodeActionParams codeActionParams = codeActionUtils.getCodeActionParams(codeAction);
+
+		if (codeActionParams.getTextDocument() == null) {
+			return null;
+		}
+
+		URI uri = getURI(codeActionParams.getTextDocument());
+		
+		return getWorkspaceManager().doRead(uri, (doc, resource) -> {
+			ICodeActionService2.Options baseOptions = createCodeActionBaseOptions(doc,
+					resource, getLanguageServerAccess(), codeActionParams, cancelIndicator);
+			
+			IResolveCodeActionService resolveCodeActionService = getService(uri, IResolveCodeActionService.class);
+			return resolveCodeActionService.getCodeActionResolution(codeAction, baseOptions);
+		});
+	}
+	
+	
+
+	private Options createCodeActionBaseOptions(Document doc, XtextResource resource,
+			ILanguageServerAccess languageServerAcces, CodeActionParams codeActionParams,
+			CancelIndicator cancelIndicator) {
+		Options baseOptions = new ICodeActionService2.Options();
+		baseOptions.setDocument(doc);
+		baseOptions.setResource(resource);
+		baseOptions.setLanguageServerAccess(languageServerAcces);
+		baseOptions.setCodeActionParams(codeActionParams);
+		baseOptions.setCancelIndicator(cancelIndicator);
+
+		return baseOptions;
+	}
+	
 }

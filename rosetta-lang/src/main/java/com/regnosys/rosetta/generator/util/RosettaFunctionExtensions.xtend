@@ -24,9 +24,10 @@ import java.util.List
 import com.regnosys.rosetta.types.RFunction
 import javax.inject.Inject
 import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaFunctionExtensions {
-
+	@Inject RosettaEcoreUtil ecoreUtil
 	@Inject RosettaTypeProvider typeProvider
 	
 	/** 
@@ -171,7 +172,8 @@ class RosettaFunctionExtensions {
 	
 	def getTransformAnnotations(Annotated element) {
 		element.annotations
-			.filter[it.annotation.model.name == "com.rosetta.model"]
+			.filter[ecoreUtil.isResolved(annotation)]
+			.filter["com.rosetta.model" == it.annotation.model.name]
 			.filter["ingest" == it.annotation.name || "enrich" == it.annotation.name || "projection" == it.annotation.name].toList
 	}
 }

@@ -25,6 +25,10 @@ import org.eclipse.xtext.testing.FileInfo
 import org.eclipse.xtext.testing.TextDocumentConfiguration
 import org.eclipse.xtext.testing.TextDocumentPositionConfiguration
 import org.junit.jupiter.api.Assertions
+import org.eclipse.lsp4j.CodeAction
+import org.eclipse.lsp4j.CodeActionParams
+import org.eclipse.lsp4j.CodeActionContext
+import java.nio.file.Files
 
 /**
  * TODO: contribute to Xtext.
@@ -49,6 +53,14 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 				severity <= DiagnosticSeverity.Warning
 			].toList
 		Assertions.assertEquals(0, problems.size(), "There were issues found:\n" + problems.join('\n'));
+	}
+	
+	protected def String readGeneratedFile(String relativePath) {
+		val path = testRootPath.resolve("src/generated/java").resolve(relativePath)
+		if (Files.exists(path)) {
+			return Files.readString(path)
+		}
+		return null
 	}
 	
 	@Accessors static class TestInlayHintsConfiguration extends TextDocumentPositionConfiguration {
@@ -139,5 +151,39 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 		}
 		val filePath = super.initializeContext(configuration);
 		return filePath
+	}
+	
+	@Accessors static class TestCodeActionConfiguration extends TextDocumentPositionConfiguration {
+		(List<CodeAction>)=>void assertCodeActionResolution= null
+	}
+
+	protected def void testResultCodeAction((TestCodeActionConfiguration)=>void configurator) {
+		val extension configuration = new TestCodeActionConfiguration
+		configuration.filePath = 'MyModel.' + fileExtension
+		configurator.apply(configuration)
+		val filePath = initializeContext(configuration).uri
+		
+		val codeActions = languageServer.codeAction(new CodeActionParams=>[
+			textDocument = new TextDocumentIdentifier(filePath)
+			range = new Range => [
+				start = new Position(configuration.line, configuration.column)
+				end = start
+			]
+			context = new CodeActionContext => [
+				diagnostics = this.diagnostics.get(filePath)
+			]
+		]).get
+		
+		val resultCodeActionList = newArrayList
+		
+		// Add all resolved codeActions to result list
+		for (codeAction : codeActions) {
+    		val resolveResult = languageServer.resolveCodeAction(codeAction.getRight)
+    		resultCodeActionList.add(resolveResult.get)
+		}
+		
+		if (configuration.assertCodeActionResolution !== null) {
+			configuration.assertCodeActionResolution.apply(resultCodeActionList)
+		}
 	}
 }

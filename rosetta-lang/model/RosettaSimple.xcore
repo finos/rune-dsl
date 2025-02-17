@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+import com.regnosys.rosetta.rosetta.RosettaFeature
 
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.emf.common.util.EList
@@ -31,6 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaPackage.Literals
 abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
 }
 
+/* ANNOTATIONS */
 class Annotation extends RootElement, RosettaNamed {
 	String prefix
 	contains Attribute[] attributes
@@ -53,6 +55,28 @@ class AnnotationRef {
 	contains AnnotationQualifier[] qualifiers
 }
 
+interface BuiltinAnnotation extends RosettaNamed {
+}
+class LabelAnnotation extends BuiltinAnnotation {
+	contains AnnotationPathExpression path
+	String label
+}
+
+interface AnnotationPathExpression {
+}
+class AnnotationPathAttributeReference extends AnnotationPathExpression {
+	refers Attribute attribute
+}
+class AnnotationPath extends AnnotationPathExpression {
+	contains AnnotationPathExpression receiver
+	refers Attribute attribute
+}
+class AnnotationDeepPath extends AnnotationPathExpression {
+	contains AnnotationPathExpression receiver
+	refers Attribute attribute
+}
+/* END ANNOTATIONS */
+
 interface AssignPathRoot extends RosettaSymbol {
 }
 
@@ -61,6 +85,7 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 	contains RosettaCardinality card
 	contains RosettaSynonym[] synonyms
 	contains RosettaRuleReference ruleReference
+	contains LabelAnnotation[] labels
 }
 
 
@@ -159,7 +184,7 @@ class Operation extends RosettaDefinable {
 }
 
 class Segment {
-	refers Attribute attribute
+	refers RosettaFeature feature
 	contains Segment next opposite prev
 	container Segment prev opposite next
 	

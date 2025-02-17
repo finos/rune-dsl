@@ -31,6 +31,8 @@ import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
+import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
@@ -75,7 +77,7 @@ public class RObjectFactory {
 	
 	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withNoMeta(type);
-		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, null, this);
+		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, Collections.emptyList(), null, this);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
@@ -135,12 +137,12 @@ public class RObjectFactory {
 		);
 	}
 	
-	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<RAttribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RAttribute> assignPath) {
+	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<RAttribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RFeature> assignPath) {
 		Collection<RAttribute> attributes = reportDataType.getAllAttributes();
 		List<ROperation> operations = new ArrayList<>();
 		
 		for (RAttribute attribute : attributes) {
-			List<RAttribute> newAssignPath = new ArrayList<>(assignPath);
+			List<RFeature> newAssignPath = new ArrayList<>(assignPath);
 			newAssignPath.add(attribute);
 			if (attributeToRuleMap.containsKey(attribute)) {
 				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
@@ -155,9 +157,9 @@ public class RObjectFactory {
 		return operations;
 	}
 	
-	private ROperation generateOperationForRuleReference(Attribute inputAttribute, RosettaRule rule, List<RAttribute> assignPath) {
-		RAttribute pathHead = assignPath.get(0);
-		List<RAttribute> pathTail = assignPath.subList(1, assignPath.size());
+	private ROperation generateOperationForRuleReference(Attribute inputAttribute, RosettaRule rule, List<RFeature> assignPath) {
+		RAssignedRoot pathHead = (RAssignedRoot) assignPath.get(0);
+		List<RFeature> pathTail = assignPath.subList(1, assignPath.size());
 		
 		RosettaSymbolReference inputAttributeSymbolRef = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
 		inputAttributeSymbolRef.setSymbol(inputAttribute);
@@ -177,7 +179,7 @@ public class RObjectFactory {
 		RosettaRuleReference ruleRef = attr.getRuleReference();
 
 		return new RAttribute(attr.isOverride(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
-				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr, this);
+				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr.getLabels(), attr, this);
 	}
 	public RAttribute buildRAttributeOfParent(Attribute attr) {
 		Attribute parent = ecoreUtil.getParentAttribute(attr);
@@ -218,7 +220,18 @@ public class RObjectFactory {
 			pathHead = buildRShortcut((ShortcutDeclaration) operation.getAssignRoot());
 		}
 
-		List<RAttribute> pathTail = operation.pathAsSegmentList().stream().map(s -> buildRAttribute(s.getAttribute()))
+		List<RFeature> pathTail = operation.pathAsSegmentList()
+				.stream()
+				.map(s -> {
+					RosettaFeature feature = s.getFeature();
+					if (feature instanceof Attribute) {
+						return buildRAttribute((Attribute) feature);
+					}
+					if (feature instanceof RosettaMetaType) {
+						return buildRMetaAttribute((RosettaMetaType) feature);
+					}
+					return null;
+					})
 				.collect(Collectors.toList());
 
 		return new ROperation(operationType, pathHead, pathTail, operation.getExpression());
@@ -233,4 +246,8 @@ public class RObjectFactory {
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider, this);
 	}
+	public RMetaAttribute buildRMetaAttribute(RosettaMetaType rosettaMetaType) {
+		return new RMetaAttribute(rosettaMetaType.getName(), typeSystem.typeCallToRType(rosettaMetaType.getTypeCall()));
+	}
+
 }

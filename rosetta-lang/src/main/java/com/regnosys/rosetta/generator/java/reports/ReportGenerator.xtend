@@ -13,6 +13,9 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.fasterxml.jackson.core.type.TypeReference
 import com.regnosys.rosetta.utils.ModelIdProvider
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.rosetta.model.lib.annotations.RuneLabelProvider
+import java.util.Map
 
 class ReportGenerator {
 	@Inject extension RObjectFactory
@@ -27,8 +30,13 @@ class ReportGenerator {
 		val clazz = rFunction.toFunctionJavaClass
 		val topScope = new JavaScope(clazz.packageName)
 		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunction.inputs.head.toMetaJavaType, rFunction.output.toMetaJavaType)
-		val reportAnnotationArguments = '''namespace="«report.model.toDottedPath»", body="«report.regulatoryBody.body.name»", corpusList={«FOR corpus: report.regulatoryBody.corpusList SEPARATOR ", "»"«corpus.name»"«ENDFOR»}'''
-		val classBody = functionGenerator.rBuildClass(rFunction, false, #[baseInterface], #{com.rosetta.model.lib.annotations.RosettaReport -> reportAnnotationArguments}, true, topScope);
+		
+		val Map<Class<?>, StringConcatenationClient> annotations = newLinkedHashMap
+		annotations.put(com.rosetta.model.lib.annotations.RosettaReport, '''namespace="«report.model.toDottedPath»", body="«report.regulatoryBody.body.name»", corpusList={«FOR corpus: report.regulatoryBody.corpusList SEPARATOR ", "»"«corpus.name»"«ENDFOR»}''')
+		val labelProviderClass = rFunction.toLabelProviderJavaClass
+		annotations.put(RuneLabelProvider, '''labelProvider=«labelProviderClass».class''')
+		
+		val classBody = functionGenerator.rBuildClass(rFunction, false, #[baseInterface], annotations, true, topScope);
 		val content = buildClass(clazz.packageName, classBody, topScope)
 		fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
 	}
