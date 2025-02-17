@@ -1,23 +1,14 @@
 package test.labels;
 
-import com.rosetta.model.lib.functions.LabelProvider;
-import com.rosetta.model.lib.path.RosettaPath;
-import java.util.HashMap;
-import java.util.Map;
+import com.regnosys.rosetta.lib.labelprovider.GraphBasedLabelProvider;
+import com.regnosys.rosetta.lib.labelprovider.LabelNode;
+import java.util.Arrays;
 
 
-public class MyFuncLabelProvider implements LabelProvider {
-	private final Map<RosettaPath, String> labelMap;
-	
+public class MyFuncLabelProvider extends GraphBasedLabelProvider {
 	public MyFuncLabelProvider() {
-		labelMap = new HashMap<>();
+		super(new LabelNode());
 		
-		labelMap.put(RosettaPath.valueOf("attr"), "My attribute");
-	}
-	
-	@Override
-	public String getLabel(RosettaPath path) {
-		RosettaPath normalized = path.toIndexless();
-		return labelMap.get(normalized);
+		startNode.addLabel(Arrays.asList("attr"), "My attribute");
 	}
 }

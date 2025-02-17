@@ -199,6 +199,68 @@ public class LabelProviderGeneratorTest {
 	}
 	
 	@Test
+	void testReportLabelOverridesExternalRuleSourceRuleReferenceLabel() throws IOException {
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				body Authority Body
+				corpus Regulation "Description" Corpus
+				
+				report Body Corpus in T+1
+					from int
+					when IsEligible
+					with type Foo
+					with source Source
+				
+				eligibility rule IsEligible from int:
+					item
+				
+				type Foo:
+					attr string (1..1)
+						[label as "My attribute"]
+					bar Bar (1..1)
+						[label barAttr1 as "Bar Attribute 1 label"]
+				
+				type Bar:
+					barAttr1 int (1..1)
+					barAttr2 int (1..1)
+				
+				reporting rule FooAttr from int:
+					to-string
+					as "My attribute from rule"
+				
+				reporting rule BarAttr1 from int:
+					item
+					as "My Bar Attribute 1 from rule"
+				
+				reporting rule BarAttr2 from int:
+					item
+					as "My Bar Attribute 2 from rule"
+				
+				rule source Source {
+					Foo:
+						+ attr
+							[ruleReference FooAttr]
+					
+					Bar:
+						+ barAttr1
+							[ruleReference BarAttr1]
+						+ barAttr2
+							[ruleReference BarAttr2]
+				}
+				""");
+		
+		generateLabelProviderForReport(model, "Body", "Corpus");
+		
+		assertSingleGeneratedFile("report-with-external-source/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
+		assertLabels(
+			"attr:My attribute",
+			"bar.barAttr1:Bar Attribute 1 label",
+			"bar.barAttr2:My Bar Attribute 2 from rule"
+		);
+	}
+	
+	@Test
 	void testComplexReportLabels() throws IOException {
 		RosettaTestModel model = loadModel("""
 				namespace test
@@ -272,6 +334,60 @@ public class LabelProviderGeneratorTest {
 			"qux.Opt1.id:Deep path ID",
 			"qux.Opt1.opt1Attr:Super option 1 Attribute",
 			"qux.Opt2.id:Deep path ID"
+		);
+	}
+	
+	@Test
+	void testCircularReferencesInTypesAreSupported() throws IOException {
+		RosettaTestModel model = loadModel("""
+				namespace test
+				
+				type Foo:
+					bar Bar (1..1)
+					fooAttr int (1..1)
+						[label as "Foo attribute"]
+					nested A (1..1)
+						[label b -> bAttr as "Overridden B attribute"]
+						[label b -> a -> b -> c -> b -> bAttr as "Random path B attribute"]
+				
+				type Bar:
+					foos Foo (0..*)
+					barAttr int (1..1)
+						[label as "Bar attribute"]
+				
+				type A:
+					b B (1..1)
+						[label c -> b -> bAttr as "A -> B -> C -> B attribute"]
+				
+				type B:
+					a A (0..1)
+					c C (1..1)
+					bAttr int (1..1)
+						[label as "Default B attribute"]
+				
+				type C:
+					b B (0..1)
+				
+				func MyFunc:
+					[ingest JSON]
+					output:
+						foo Foo (1..1)
+				""");
+		
+		generateLabelProviderForFunction(model, "MyFunc");
+		
+		assertSingleGeneratedFile("func-circular/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
+		assertLabels(
+			"fooAttr:Foo attribute",
+			"bar.barAttr:Bar attribute",
+			"bar.foos(0).fooAttr:Foo attribute",
+			"bar.foos(1).bar.barAttr:Bar attribute",
+			"bar.foos(2).bar.foos(1).fooAttr:Foo attribute",
+			"nested.b.bAttr:Overridden B attribute",
+			"nested.b.a.b.bAttr:Default B attribute",
+			"nested.b.c.b.a.b.bAttr:Default B attribute",
+			"nested.b.a.b.c.b.bAttr:Random path B attribute",
+			"nested.b.a.b.a.b.c.b.bAttr:A -> B -> C -> B attribute"
 		);
 	}
 }

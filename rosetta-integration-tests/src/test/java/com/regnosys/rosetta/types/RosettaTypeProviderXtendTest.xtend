@@ -34,10 +34,11 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 
+// Should be moved over to Java RosettaTypeProviderTest
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
 @TestInstance(Lifecycle.PER_CLASS)
-class RosettaTypeProviderTest {
+class RosettaTypeProviderXtendTest {
 
 	@Inject extension RosettaTypeProvider
 	@Inject extension CardinalityProvider
