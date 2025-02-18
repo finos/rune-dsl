@@ -163,10 +163,8 @@ public class SubtypeRelation {
 			RTypeFunction typeFunc = t1.getTypeFunction();
 			RType underlyingJoin = join(t1.getRefersTo(), t2.getRefersTo());
 			Optional<LinkedHashMap<String, RosettaValue>> aliasParams = typeFunc.reverse(underlyingJoin);
-			//GEM-TH: cdm-ref-data - concatenate typeAliases existing conditions
-			List<Condition> conditions = Stream.concat(t1.getConditions().stream(), t2.getConditions().stream())
-                    .collect(Collectors.toList());
-			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, conditions))
+			//GEM-TH: cdm-ref-data - both typeFunctions are the same. Since conditions are tightly coupled, picked just one set. Condition intersection should be considered
+			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, t1.getConditions()))
 				.orElse(underlyingJoin);
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);

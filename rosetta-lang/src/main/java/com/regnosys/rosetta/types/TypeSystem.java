@@ -304,11 +304,9 @@ public class TypeSystem {
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
-				//GEM-TH: cdm-ref-data - concatenate typeAliases existing conditions
-				List<Condition> conditions = Stream.concat(alias1.getConditions().stream(), alias2.getConditions().stream())
-	                    .collect(Collectors.toList());
+				//GEM-TH: cdm-ref-data - both typeFunctions are the same. Since conditions are tightly coupled, picked just one set. Condition intersection should be considered
 				return typeFunc.reverse(underlier)
-					.<RType>map(args -> new RAliasType(typeFunc, args, underlier, conditions))
+					.<RType>map(args -> new RAliasType(typeFunc, args, underlier, alias1.getConditions()))
 					.orElse(underlier);
 			} else {
 				List<RAliasType> superAliases = new ArrayList<>();

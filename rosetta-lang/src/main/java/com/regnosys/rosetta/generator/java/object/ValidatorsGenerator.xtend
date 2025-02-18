@@ -233,28 +233,28 @@ class ValidatorsGenerator {
 			val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
 			'''
 			«FOR cond : conditions»
-				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme")»
+				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme") && args.get("domain").getSingle().isPresent()»
 					«IF attr.isMulti»
 						«IF !attr.RMetaAnnotatedType.hasMeta»
 							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
 								.stream()
-								.filter(it -> !func.evaluate(it, "«args.get("domain").getSingle()»"))
+								.filter(it -> !func.evaluate(it, "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»"))
 								.collect(«Collectors».collectingAndThen(
 									«Collectors».joining(", "), 
-									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«args.get("domain").getSingle()»'")
+									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
 								))
 						«ELSE»
 							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
 								.stream().map(«prop.type.itemType»::getValue)
-								.filter(it -> !func.evaluate(it, "«args.get("domain").getSingle()»"))
+								.filter(it -> !func.evaluate(it, "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»"))
 								.collect(«Collectors».collectingAndThen(
 									«Collectors».joining(", "), 
-									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«args.get("domain").getSingle()»'")
+									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
 								))
 						«ENDIF»
 					«ELSE»
-						func.evaluate(«javaType.getAttributeValue(attr)», "«args.get("domain").getSingle()»")?
-							«method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(«javaType.getAttributeValue(attr)» + " code not found in domain '«args.get("domain").getSingle()»'")
+						func.evaluate(«javaType.getAttributeValue(attr)», "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»")?
+							«method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(«javaType.getAttributeValue(attr)» + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
 					«ENDIF»
 				«ENDIF»
 			«ENDFOR»
