@@ -1,7 +1,7 @@
 package com.rosetta.model.metafields;
 
 import static java.util.Optional.ofNullable;
-import static com.rosetta.model.lib.JavaPropertyNameConstants.*;
+import static com.rosetta.model.lib.RuneNameConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +136,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute(RUNE_SCHEME)
+		@RuneAttribute(SCHEME)
 		public String getScheme() {
 			return scheme;
 		}
@@ -155,21 +155,21 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("address")
-		@RuneAttribute(RUNE_SCOPED_REFERENCE)
+		@RuneAttribute(SCOPED_REFERENCE)
 		public String getAddress() {
 			return address;
 		}
 		
 		@Override
 		@RosettaAttribute("globalKey")
-		@RuneAttribute(RUNE_KEY)
+		@RuneAttribute(KEY)
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
-		@RuneAttribute(RUNE_EXTERNAL_KEY)
+		@RuneAttribute(EXTERNAL_KEY)
 		public String getExternalKey() {
 			return externalKey;
 		}
@@ -182,7 +182,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		
         @Override
-        @RuneAttribute(RUNE_SCOPED_KEY)
+        @RuneAttribute(SCOPED_KEY)
         public String getScopedKey() {
             if (key == null || key.isEmpty()) {
                 return null;
@@ -272,7 +272,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute(RUNE_SCHEME)
+		@RuneAttribute(SCHEME)
 		public String getScheme() {
 			return scheme;
 		}
@@ -291,21 +291,21 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("address")
-		@RuneAttribute(RUNE_SCOPED_REFERENCE)
+		@RuneAttribute(SCOPED_REFERENCE)
 		public String getAddress() {
 			return address;
 		}
 		
 		@Override
 		@RosettaAttribute("globalKey")
-		@RuneAttribute(RUNE_KEY)
+		@RuneAttribute(KEY)
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
-		@RuneAttribute(RUNE_EXTERNAL_KEY)
+		@RuneAttribute(EXTERNAL_KEY)
 		public String getExternalKey() {
 			return externalKey;
 		}
@@ -318,7 +318,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		
         @Override
-        @RuneAttribute(RUNE_SCOPED_KEY)
+        @RuneAttribute(SCOPED_KEY)
         public String getScopedKey() {
             if (key == null || key.isEmpty()) {
                 return null;
@@ -340,7 +340,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute(RUNE_SCHEME)
+		@RuneAttribute(SCHEME)
 		public MetaFields.MetaFieldsBuilder setScheme(String scheme) {
 			this.scheme = scheme==null?null:scheme;
 			return this;
@@ -359,21 +359,21 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		@Override
 		@RosettaAttribute("address")
-		@RuneAttribute(RUNE_SCOPED_REFERENCE)
+		@RuneAttribute(SCOPED_REFERENCE)
 		public MetaFields.MetaFieldsBuilder setAddress(String address) {
 			this.address = address==null?null:address;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("globalKey")
-		@RuneAttribute(RUNE_KEY)
+		@RuneAttribute(KEY)
 		public MetaFields.MetaFieldsBuilder setGlobalKey(String globalKey) {
 			this.globalKey = globalKey==null?null:globalKey;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("externalKey")
-		@RuneAttribute(RUNE_EXTERNAL_KEY)
+		@RuneAttribute(EXTERNAL_KEY)
 		public MetaFields.MetaFieldsBuilder setExternalKey(String externalKey) {
 			this.externalKey = externalKey==null?null:externalKey;
 			return this;
@@ -415,7 +415,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		}
 		
         @Override
-        @RuneAttribute(RUNE_SCOPED_KEY)
+        @RuneAttribute(SCOPED_KEY)
         public MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey) {
             this.key = new ArrayList<>();
             if (scopedKey!=null)  {

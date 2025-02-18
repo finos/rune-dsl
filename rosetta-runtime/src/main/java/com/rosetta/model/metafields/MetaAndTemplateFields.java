@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.rosetta.model.lib.JavaPropertyNameConstants.*;
+import static com.rosetta.model.lib.RuneNameConstants.*;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -141,7 +141,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute(RUNE_SCHEME)
+		@RuneAttribute(SCHEME)
 		public String getScheme() {
 			return scheme;
 		}
@@ -160,7 +160,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("address")
-		@RuneAttribute(RUNE_SCOPED_REFERENCE)
+		@RuneAttribute(SCOPED_REFERENCE)
 		public String getAddress() {
 			return address;
 		}
@@ -173,14 +173,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("globalKey")
-		@RuneAttribute(RUNE_KEY)
+		@RuneAttribute(KEY)
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
-		@RuneAttribute(RUNE_EXTERNAL_KEY)
+		@RuneAttribute(EXTERNAL_KEY)
 		public String getExternalKey() {
 			return externalKey;
 		}
@@ -192,7 +192,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		
         @Override
-        @RuneAttribute(RUNE_SCOPED_KEY)
+        @RuneAttribute(SCOPED_KEY)
         public String getKeyScoped() {
             if (key == null || key.isEmpty()) {
                 return null;
@@ -287,7 +287,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 	
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute(RUNE_SCHEME)
+		@RuneAttribute(SCHEME)
 		public String getScheme() {
 			return scheme;
 		}
@@ -306,7 +306,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("address")
-		@RuneAttribute(RUNE_SCOPED_REFERENCE)
+		@RuneAttribute(SCOPED_REFERENCE)
 		public String getAddress() {
 			return address;
 		}
@@ -319,14 +319,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("globalKey")
-		@RuneAttribute(RUNE_KEY)
+		@RuneAttribute(KEY)
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
 		@RosettaAttribute("externalKey")
-		@RuneAttribute(RUNE_EXTERNAL_KEY)
+		@RuneAttribute(EXTERNAL_KEY)
 		public String getExternalKey() {
 			return externalKey;
 		}
@@ -350,7 +350,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		
         @Override
-        @RuneAttribute(RUNE_SCOPED_KEY)
+        @RuneAttribute(SCOPED_KEY)
         public String getKeyScoped() {
             if (key == null || key.isEmpty()) {
                 return null;
@@ -360,7 +360,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		
 		@Override
 		@RosettaAttribute("scheme")
-		@RuneAttribute(RUNE_SCHEME)
+		@RuneAttribute(SCHEME)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setScheme(String scheme) {
 			this.scheme = scheme==null?null:scheme;
 			return this;
@@ -379,7 +379,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		@Override
 		@RosettaAttribute("address")
-		@RuneAttribute(RUNE_SCOPED_REFERENCE)
+		@RuneAttribute(SCOPED_REFERENCE)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setAddress(String address) {
 			this.address = address==null?null:address;
 			return this;
@@ -392,14 +392,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		@Override
 		@RosettaAttribute("globalKey")
-		@RuneAttribute(RUNE_KEY)
+		@RuneAttribute(KEY)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey) {
 			this.globalKey = globalKey==null?null:globalKey;
 			return this;
 		}
 		@Override
 		@RosettaAttribute("externalKey")
-		@RuneAttribute(RUNE_EXTERNAL_KEY)
+		@RuneAttribute(EXTERNAL_KEY)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey) {
 			this.externalKey = externalKey==null?null:externalKey;
 			return this;
@@ -440,7 +440,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		
         @Override
-        @RuneAttribute(RUNE_SCOPED_KEY)
+        @RuneAttribute(SCOPED_KEY)
         public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKeyScoped(String keyScoped) {
             this.key = new ArrayList<>();
             if (keyScoped!=null)  {
