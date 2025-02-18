@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.generator.java.types;
 
+import static com.rosetta.model.lib.JavaPropertyNameConstants.*;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -60,8 +62,8 @@ public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 	@Override
 	public Collection<JavaPojoProperty> getOwnProperties() {
 		return List.of(
-				new JavaPojoProperty("value", "@data", "value", valueType, null, null, false),
-				new JavaPojoProperty("meta", "meta", "meta", typeUtil.META_FIELDS, null, null, false)
+				new JavaPojoProperty("value", RUNE_DATA, "value", valueType, null, null, false),
+				new JavaPojoProperty("meta", RUNE_META, "meta", typeUtil.META_FIELDS, null, null, false)
 			);
 	}	
 }
