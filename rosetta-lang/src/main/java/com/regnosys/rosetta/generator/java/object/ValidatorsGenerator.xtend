@@ -125,7 +125,6 @@ class ValidatorsGenerator {
 		public class «javaType.toTypeFormatValidatorClass» implements «Validator»<«javaType»> {
 			«IF conditions.size() > 0»
 				«IF conditions.map[it.name].filter[it.equalsIgnoreCase("IsValidCodingScheme")].size > 0»
-					//GEM-TH: cdm-ref-data validation mock impl
 					protected cdm.base.staticdata.codelist.functions.ValidateFpMLCodingSchemeDomain func = new cdm.base.staticdata.codelist.ValidateFpMLCodingSchemeImpl();
 				«ENDIF»
 			«ENDIF»
@@ -221,7 +220,6 @@ class ValidatorsGenerator {
 		}
 	}
 	
-	//GEM-TH: Collect conditions and arguments from typeAliases to generate external domain validators.
 	private def StringConcatenationClient checkTypeAliasFormat(JavaPojoInterface javaType, RAttribute attr) {
 		val conditions = attr.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases
 		val args = attr.RMetaAnnotatedType.RType.collectArgumentsFromTypeAliases

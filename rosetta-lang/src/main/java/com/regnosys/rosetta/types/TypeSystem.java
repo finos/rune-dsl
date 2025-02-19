@@ -304,7 +304,7 @@ public class TypeSystem {
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
-				//GEM-TH: cdm-ref-data - both typeFunctions are the same. Since conditions are tightly coupled, picked just one set. Condition intersection should be considered
+				//Condition intersection should be considered in the long term. Picked one set of conditions since are tightly coupled with typeFunctions
 				return typeFunc.reverse(underlier)
 					.<RType>map(args -> new RAliasType(typeFunc, args, underlier, alias1.getConditions()))
 					.orElse(underlier);
@@ -347,7 +347,6 @@ public class TypeSystem {
 		return t;
 	}
 	
-	//GEM-TH: cdm-ref-data - Collect typeAliase conditions and arguments for domain validation generation
 	public List<Condition> collectConditionsFromTypeAliases(RType t) {
 		List<Condition> conditions = new ArrayList<>();
 		while (t instanceof RAliasType) {
