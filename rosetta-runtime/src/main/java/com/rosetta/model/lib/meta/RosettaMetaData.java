@@ -33,9 +33,20 @@ public interface RosettaMetaData<T extends RosettaModelObject> {
 	
 	List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory);
 	
+	default Validator<? super T> validator(ValidatorFactory factory) {
+		return null;
+	}
+	
+	// @Compat. The default can be removed once validation/ingestion is in the BSP.
+	default Validator<? super T> typeFormatValidator(ValidatorFactory factory) {
+		return null;
+	}
+	
+	@Deprecated
 	Validator<? super T> validator();
 	
 	// @Compat. The default can be removed once validation/ingestion is in the BSP.
+	@Deprecated
 	default Validator<? super T> typeFormatValidator() {
 		return null;
 	}
