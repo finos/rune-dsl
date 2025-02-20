@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.generator.java.types;
 
+import static com.rosetta.model.lib.RuneNameConstants.*;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -62,9 +64,9 @@ public class RJavaReferenceWithMeta extends RJavaWithMetaValue {
 	@Override
 	public Collection<JavaPojoProperty> getOwnProperties() {
 		return List.of(
-				new JavaPojoProperty("value", "@data", "value", valueType, null, null, false),
-				new JavaPojoProperty("globalReference", "@ref", "globalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
-				new JavaPojoProperty("externalReference", "@ref:external", "externalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
+				new JavaPojoProperty("value", DATA, "value", valueType, null, null, false),
+				new JavaPojoProperty("globalReference", REFERENCE, "globalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
+				new JavaPojoProperty("externalReference", EXTERNAL_REFERENCE, "externalReference", javaTypeUtil.STRING, null, AttributeMeta.META, false),
 				new JavaPojoProperty("reference", null, "reference", javaTypeUtil.REFERENCE, null, null, false)
 			);
 	}
