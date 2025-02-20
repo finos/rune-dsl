@@ -225,7 +225,6 @@ class ValidatorsGenerator {
 		val args = attr.RMetaAnnotatedType.RType.collectArgumentsFromTypeAliases
 		
 		if (conditions.isEmpty() || (!conditions.map[it.name].exists[it.equalsIgnoreCase("IsValidCodingScheme")] && !args.containsKey("domain"))) {
-		//if (conditions.isEmpty()) {
 			null
 		} else {
 			val prop = javaType.findProperty(attr.name)
