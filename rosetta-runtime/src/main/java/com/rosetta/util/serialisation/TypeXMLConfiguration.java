@@ -25,6 +25,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public class TypeXMLConfiguration {
+	@Deprecated
+	private final Optional<ModelSymbolId> substitutionFor; // replaced by substitutionGroup
 	private final Optional<String> substitutionGroup;
 	private final Optional<String> xmlElementName;
 	private final Optional<Map<String, String>> xmlAttributes;
@@ -33,16 +35,23 @@ public class TypeXMLConfiguration {
 	
 	@JsonCreator
 	public TypeXMLConfiguration(
+			@JsonProperty("substitutionFor") @Deprecated Optional<ModelSymbolId> substitutionFor,
 			@JsonProperty("substitutionGroup") Optional<String> substitutionGroup,
 			@JsonProperty("xmlElementName") Optional<String> xmlElementName,
 			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
 			@JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
 			@JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
+		this.substitutionFor = substitutionFor;
 		this.substitutionGroup = substitutionGroup;
 		this.xmlElementName = xmlElementName;
 		this.xmlAttributes = xmlAttributes;
 		this.attributes = attributes;
 		this.enumValues = enumValues;
+	}
+	
+	@Deprecated // Use getSubstitutionGroup instead
+	public Optional<ModelSymbolId> getSubstitutionFor() {
+		return substitutionFor;
 	}
 	
 	public Optional<String> getSubstitutionGroup() {
