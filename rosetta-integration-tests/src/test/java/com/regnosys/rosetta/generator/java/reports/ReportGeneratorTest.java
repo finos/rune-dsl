@@ -214,7 +214,7 @@ public class ReportGeneratorTest {
         var expectedResult = getOutput(classes, "ExtendedBarReport", Map.of(
                 "out1", "v5",
                 "out2", "v2",
-                //"out3", "v4", // TODO fix
+                "out3", "v4",
                 "out4", "v6",
                 "out5", "v7"
         ));
