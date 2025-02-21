@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.types.builtin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class RBuiltinTypeService {
 	public final RMetaAnnotatedType NOTHING_WITH_NO_META = RMetaAnnotatedType.withNoMeta(NOTHING);
 	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
 	public final RMetaAnnotatedType ANY_WITH_NO_META = RMetaAnnotatedType.withNoMeta(ANY);
-	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()));
+	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()), new ArrayList<>());
 	public final RMetaAnnotatedType UNCONSTRAINED_INT_WITH_NO_META = RMetaAnnotatedType.withNoMeta(UNCONSTRAINED_INT);
 	public final RNumberType UNCONSTRAINED_NUMBER = new RNumberType(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	public final RMetaAnnotatedType UNCONSTRAINED_NUMBER_WITH_NO_META = RMetaAnnotatedType.withNoMeta(UNCONSTRAINED_NUMBER);
