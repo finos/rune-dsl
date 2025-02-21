@@ -38,8 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
-import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.Mapper.Path;
+import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;

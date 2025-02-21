@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -57,6 +59,8 @@ import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver.Equation;
 import com.rosetta.model.lib.ModelSymbolId;
 
 import org.eclipse.xtext.xbase.lib.Pair;
+
+import com.regnosys.rosetta.rosetta.simple.Condition;
 
 public class TypeSystem {
 	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
@@ -242,7 +246,8 @@ public class TypeSystem {
 			});
 			absentParameters.forEach(p -> args.put(p.getName(), RosettaValue.empty()));
 			RType refersTo = typeCallToRType(alias.getTypeCall(), RosettaInterpreterContext.of(args));
-			return new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo);
+			List<Condition> conditions = alias.getConditions();
+			return new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo, conditions);
 		}
 		return builtins.NOTHING;
 	}
@@ -299,8 +304,9 @@ public class TypeSystem {
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
+				//Condition intersection should be considered in the long term. Picked one set of conditions since are tightly coupled with typeFunctions
 				return typeFunc.reverse(underlier)
-					.<RType>map(args -> new RAliasType(typeFunc, args, underlier))
+					.<RType>map(args -> new RAliasType(typeFunc, args, underlier, alias1.getConditions()))
 					.orElse(underlier);
 			} else {
 				List<RAliasType> superAliases = new ArrayList<>();
@@ -333,11 +339,29 @@ public class TypeSystem {
 		}
 		return combineUnderlyingTypes.apply(t1, t2);
 	}
-	
+
 	public RType stripFromTypeAliases(RType t) {
 		while (t instanceof RAliasType) {
 			t = ((RAliasType)t).getRefersTo();
 		}
 		return t;
+	}
+	
+	public List<Condition> collectConditionsFromTypeAliases(RType t) {
+		List<Condition> conditions = new ArrayList<>();
+		while (t instanceof RAliasType) {
+			conditions.addAll(((RAliasType)t).getConditions());
+			t = ((RAliasType)t).getRefersTo();
+		}
+		return conditions;
+	}
+		
+	public Map<String, RosettaValue> collectArgumentsFromTypeAliases(RType t) {
+		Map<String, RosettaValue> args = new HashMap<>();
+		while (t instanceof RAliasType) {
+			args.putAll(((RAliasType)t).getArguments());
+			t = ((RAliasType)t).getRefersTo();
+		}
+		return args;
 	}
 }

@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -14,6 +16,8 @@ import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
+
+import com.regnosys.rosetta.rosetta.simple.Condition;
 
 /**
  * An implementation of Rune's subtype relation. This class
@@ -159,7 +163,8 @@ public class SubtypeRelation {
 			RTypeFunction typeFunc = t1.getTypeFunction();
 			RType underlyingJoin = join(t1.getRefersTo(), t2.getRefersTo());
 			Optional<LinkedHashMap<String, RosettaValue>> aliasParams = typeFunc.reverse(underlyingJoin);
-			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin))
+			//Condition intersection should be considered in the long term. Picked one set of conditions since are tightly coupled with typeFunctions
+			return aliasParams.<RType>map(p -> new RAliasType(typeFunc, p, underlyingJoin, t1.getConditions()))
 				.orElse(underlyingJoin);
 		} else {
 			return joinByTraversingAncestorsAndAliases(t1, t2);

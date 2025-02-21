@@ -18,6 +18,7 @@ package com.regnosys.rosetta.types;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -53,7 +54,7 @@ public class TypeFactory {
 		LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(refersTo.getArguments());
 		args.remove(RNumberType.FRACTIONAL_DIGITS_PARAM_NAME);
 		args.remove(RNumberType.SCALE_PARAM_NAME);
-		return new RAliasType(builtinTypes.INT_FUNCTION, args, refersTo);
+		return new RAliasType(builtinTypes.INT_FUNCTION, args, refersTo, new ArrayList<>());
 	}
 	public RAliasType constrainedInt(int digits, BigInteger min, BigInteger max) {
 		return constrainedInt(Optional.of(digits), Optional.of(min), Optional.of(max));

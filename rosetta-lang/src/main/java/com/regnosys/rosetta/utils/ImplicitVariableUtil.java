@@ -28,6 +28,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 
 /**
  * A tool for finding information about implicit variables, often called
@@ -50,6 +51,8 @@ public class ImplicitVariableUtil {
 		EObject prev = context;
 		for (EObject container: containers) {
 			if (container instanceof Data) {
+				return Optional.of(container);
+			} else if (container instanceof RosettaTypeAlias) {
 				return Optional.of(container);
 			} else if (container instanceof RosettaFunctionalOperation) {
 				RosettaFunctionalOperation op = (RosettaFunctionalOperation)container;
