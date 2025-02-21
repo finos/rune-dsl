@@ -111,7 +111,7 @@ class PojoInheritanceRegressionTest {
 		 * @version test
 		 */
 		@RosettaDataType(value="Foo2", builder=Foo2.Foo2BuilderImpl.class, version="test")
-		@RuneDataType(value="Foo2", model="My test model", builder=Foo2.Foo2BuilderImpl.class, version="test")
+		@RuneDataType(value="Foo2", model="com", builder=Foo2.Foo2BuilderImpl.class, version="test")
 		public interface Foo2 extends Foo1 {
 		
 			Foo2Meta metaData = new Foo2Meta();
@@ -784,7 +784,7 @@ class PojoInheritanceRegressionTest {
 		 * @version test
 		 */
 		@RosettaDataType(value="Foo3", builder=Foo3.Foo3BuilderImpl.class, version="test")
-		@RuneDataType(value="Foo3", model="My test model", builder=Foo3.Foo3BuilderImpl.class, version="test")
+		@RuneDataType(value="Foo3", model="com", builder=Foo3.Foo3BuilderImpl.class, version="test")
 		public interface Foo3 extends Foo2 {
 		
 			Foo3Meta metaData = new Foo3Meta();

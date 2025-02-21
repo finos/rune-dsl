@@ -2,35 +2,33 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.ImmutableList
-import javax.inject.Inject
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.types.RDataType
 import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.annotations.RosettaDataType
+import com.rosetta.model.lib.annotations.RuneAttribute
+import com.rosetta.model.lib.annotations.RuneDataType
+import com.rosetta.model.lib.annotations.RuneMetaType
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.util.types.JavaClass
+import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.List
 import java.util.Objects
 import java.util.Optional
+import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
-
-import com.rosetta.util.types.generated.GeneratedJavaClass
-import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
-import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
-import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
-import com.rosetta.model.lib.annotations.RuneDataType
-import com.regnosys.rosetta.config.RosettaConfiguration
-import com.rosetta.model.lib.annotations.RuneAttribute
-import com.rosetta.model.lib.annotations.RuneMetaType
 
 class ModelObjectGenerator {
 	
@@ -40,7 +38,6 @@ class ModelObjectGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 	@Inject extension TypeCoercionService
-	@Inject RosettaConfiguration rosettaConfiguration
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,
@@ -60,10 +57,11 @@ class ModelObjectGenerator {
 		val metaDataIdentifier = interfaceScope.createUniqueIdentifier("metaData");
 		val builderScope = interfaceScope.classScope('''«javaType»Builder''')
 		val implScope = interfaceScope.classScope('''«javaType»Impl''')
+		val modelShortName = javaType.packageName.first
 		'''
 			«javaType.javadoc»
 			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
-			@«RuneDataType»(value="«javaType.rosettaName»", model="«rosettaConfiguration.model.name»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
+			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«javaType.toBuilderImplType».class, version="«javaType.version»")
 			public interface «javaType» extends «implementsClause(javaType)» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();

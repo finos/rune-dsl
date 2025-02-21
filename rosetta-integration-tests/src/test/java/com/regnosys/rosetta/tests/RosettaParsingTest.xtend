@@ -380,6 +380,20 @@ class RosettaParsingTest {
 	}
 	
 	@Test
+	def void testTypeAliasesWithConditions() {
+		'''
+			func Foo:
+				inputs:
+					code DomainCodeList (1..1)
+					domain string (1..1)
+				output: result boolean (1..1)
+				set result: True
+			typeAlias DomainCodeList (domain string): string
+				condition IsValidCode: Foo(item, domain)
+		'''.parseRosettaWithNoIssues
+	}
+	
+	@Test
 	def void testParametrizedBasicTypes() {
 		'''
 			basicType pattern

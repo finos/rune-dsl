@@ -17,20 +17,23 @@
 package com.regnosys.rosetta.types;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 
 import com.regnosys.rosetta.interpreter.RosettaValue;
+import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.rosetta.model.lib.ModelSymbolId;
-
 
 public class RAliasType extends RParametrizedType {
 	private final RTypeFunction typeFunction;
 	private final RType refersTo;
+	private final List<Condition> conditions;
 
-	public RAliasType(RTypeFunction typeFunction, LinkedHashMap<String, RosettaValue> params, RType refersTo) {
+	public RAliasType(RTypeFunction typeFunction, LinkedHashMap<String, RosettaValue> params, RType refersTo, List<Condition> conditions) {
 		super(params);
 		this.typeFunction = typeFunction;
 		this.refersTo = refersTo;
+		this.conditions = conditions;
 	}
 
 	@Override
@@ -44,6 +47,10 @@ public class RAliasType extends RParametrizedType {
 
 	public RType getRefersTo() {
 		return refersTo;
+	}
+	
+	public List<Condition> getConditions() {
+		return conditions;
 	}
 	
 	@Override
@@ -64,6 +71,7 @@ public class RAliasType extends RParametrizedType {
 		RAliasType other = (RAliasType) object;
 		return Objects.equals(typeFunction, other.typeFunction)
 				&& Objects.equals(getArguments(), other.getArguments())
-				&& Objects.equals(refersTo, other.refersTo);
+				&& Objects.equals(refersTo, other.refersTo)
+				&& Objects.equals(conditions, other.conditions);
 	}
 }
