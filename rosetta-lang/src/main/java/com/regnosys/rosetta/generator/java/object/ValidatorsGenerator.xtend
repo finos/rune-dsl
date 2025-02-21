@@ -38,6 +38,11 @@ import com.regnosys.rosetta.types.RCardinality
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 
+import com.regnosys.rosetta.rosetta.simple.Condition;
+import com.regnosys.rosetta.types.RAliasType
+import java.util.Collections
+import java.util.ArrayList
+
 class ValidatorsGenerator {
 
 	@Inject extension ImportManagerExtension
@@ -113,13 +118,24 @@ class ValidatorsGenerator {
 		}
 	'''
 	
-	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) '''
+	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
+		val conditions = attributes.map[it.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases].flatten
+			
+		'''
 		public class «javaType.toTypeFormatValidatorClass» implements «Validator»<«javaType»> {
+			«IF conditions.size() > 0»
+				«IF conditions.map[it.name].filter[it.equalsIgnoreCase("IsValidCodingScheme")].size > 0»
+					protected cdm.base.staticdata.codelist.functions.ValidateFpMLCodingSchemeDomain func = new cdm.base.staticdata.codelist.ValidateFpMLCodingSchemeImpl();
+				«ENDIF»
+			«ENDIF»
 		
 			private «List»<«ComparisonResult»> getComparisonResults(«javaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.map[checkTypeFormat(javaType, it)].filter[it !== null] SEPARATOR ", "»
 							«attrCheck»
+						«ENDFOR»
+						«FOR condCheck : attributes.map[checkTypeAliasFormat(javaType, it)].filter[it !== null] SEPARATOR ", "»
+							«condCheck»
 						«ENDFOR»
 					);
 			}
@@ -152,7 +168,8 @@ class ValidatorsGenerator {
 			}
 		
 		}
-	'''
+		'''
+	}
 
 	def private StringConcatenationClient onlyExistsClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
 		
@@ -202,9 +219,50 @@ class ValidatorsGenerator {
 			'''
 		}
 	}
+	
+	private def StringConcatenationClient checkTypeAliasFormat(JavaPojoInterface javaType, RAttribute attr) {
+		val conditions = attr.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases
+		val args = attr.RMetaAnnotatedType.RType.collectArgumentsFromTypeAliases
+		
+		if (conditions.isEmpty() || (!conditions.map[it.name].exists[it.equalsIgnoreCase("IsValidCodingScheme")] && !args.containsKey("domain"))) {
+			null
+		} else {
+			val prop = javaType.findProperty(attr.name)
+			val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
+			'''
+			«FOR cond : conditions»
+				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme") && args.get("domain").getSingle().isPresent()»
+					«IF attr.isMulti»
+						«IF !attr.RMetaAnnotatedType.hasMeta»
+							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
+								.stream()
+								.filter(it -> !func.evaluate(it, "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»"))
+								.collect(«Collectors».collectingAndThen(
+									«Collectors».joining(", "), 
+									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
+								))
+						«ELSE»
+							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
+								.stream().map(«prop.type.itemType»::getValue)
+								.filter(it -> !func.evaluate(it, "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»"))
+								.collect(«Collectors».collectingAndThen(
+									«Collectors».joining(", "), 
+									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
+								))
+						«ENDIF»
+					«ELSE»
+						func.evaluate(«javaType.getAttributeValue(attr)», "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»")?
+							«method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(«javaType.getAttributeValue(attr)» + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
+					«ENDIF»
+				«ENDIF»
+			«ENDFOR»
+			'''
+		}
+	}
 		
 	private def StringConcatenationClient checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {
 		val t = attr.RMetaAnnotatedType.RType.stripFromTypeAliases
+		
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
 				val min = t.interval.minBound
