@@ -49,6 +49,15 @@ public class TypeXMLConfiguration {
 		this.enumValues = enumValues;
 	}
 	
+	public TypeXMLConfiguration(
+			Optional<String> substitutionGroup,
+			Optional<String> xmlElementName,
+			Optional<Map<String, String>> xmlAttributes,
+			Optional<Map<String, AttributeXMLConfiguration>> attributes,
+			Optional<Map<String, String>> enumValues) {
+		this(Optional.empty(), substitutionGroup, xmlElementName, xmlAttributes, attributes, enumValues);
+	}
+	
 	@Deprecated // Use getSubstitutionGroup instead
 	public Optional<ModelSymbolId> getSubstitutionFor() {
 		return substitutionFor;
