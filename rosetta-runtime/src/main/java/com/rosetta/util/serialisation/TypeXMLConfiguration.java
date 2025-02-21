@@ -25,38 +25,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public class TypeXMLConfiguration {
-	private final Optional<ModelSymbolId> substitutionFor;
+	private final Optional<String> substitutionGroup;
 	private final Optional<String> xmlElementName;
 	private final Optional<Map<String, String>> xmlAttributes;
 	private final Optional<Map<String, AttributeXMLConfiguration>> attributes;
 	private final Optional<Map<String, String>> enumValues;
 	
 	@JsonCreator
-	@Deprecated
 	public TypeXMLConfiguration(
-			@JsonProperty("substitutionFor") Optional<ModelSymbolId> substitutionFor,
-			@JsonProperty("xmlElementName") Optional<String> xmlElementName,
-			@JsonProperty("xmlRootElementName") @Deprecated Optional<String> xmlRootElementName,
-			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
-			@JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
-			@JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
-		this(substitutionFor, xmlElementName.isPresent() ? xmlElementName : xmlRootElementName, xmlAttributes, attributes, enumValues);
-	}
-	public TypeXMLConfiguration(
-			@JsonProperty("substitutionFor") Optional<ModelSymbolId> substitutionFor,
+			@JsonProperty("substitutionGroup") Optional<String> substitutionGroup,
 			@JsonProperty("xmlElementName") Optional<String> xmlElementName,
 			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
 			@JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
 			@JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
-		this.substitutionFor = substitutionFor;
+		this.substitutionGroup = substitutionGroup;
 		this.xmlElementName = xmlElementName;
 		this.xmlAttributes = xmlAttributes;
 		this.attributes = attributes;
 		this.enumValues = enumValues;
 	}
 	
-	public Optional<ModelSymbolId> getSubstitutionFor() {
-		return substitutionFor;
+	public Optional<String> getSubstitutionGroup() {
+		return substitutionGroup;
 	}
 
 	public Optional<String> getXmlElementName() {
@@ -77,7 +67,7 @@ public class TypeXMLConfiguration {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(substitutionFor, xmlAttributes, xmlElementName, attributes, enumValues);
+		return Objects.hash(substitutionGroup, xmlAttributes, xmlElementName, attributes, enumValues);
 	}
 
 	@Override
@@ -89,7 +79,7 @@ public class TypeXMLConfiguration {
 		if (getClass() != obj.getClass())
 			return false;
 		TypeXMLConfiguration other = (TypeXMLConfiguration) obj;
-		return Objects.equals(substitutionFor, other.substitutionFor)
+		return Objects.equals(substitutionGroup, other.substitutionGroup)
 				&& Objects.equals(xmlAttributes, other.xmlAttributes)
 				&& Objects.equals(xmlElementName, other.xmlElementName)
 				&& Objects.equals(attributes, other.attributes)

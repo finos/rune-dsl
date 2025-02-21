@@ -18,12 +18,15 @@ import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 
 public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private RObjectFactory rObjectFactory;
+	@Inject
+	private RBuiltinTypeService builtins;
 	
 	@Check
 	public void checkCyclicOptions(Choice choice) {
@@ -71,6 +74,9 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 		for (RChoiceOption opt: t.getOwnOptions()) {
+			if (builtins.NOTHING.equals(opt.getType().getRType())) {
+				continue;
+			}
 			RChoiceOption alreadyIncluded = includedOptions.put(opt.getType(), opt);
 			if (alreadyIncluded != null) {
 				String msg;
