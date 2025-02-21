@@ -1,5 +1,5 @@
 {
-  "test.ns.Animal" : {
+  "test.ns.AnimalBase" : {
     "attributes" : {
       "name" : {
         "xmlRepresentation" : "ATTRIBUTE"
@@ -7,17 +7,23 @@
     }
   },
   "test.ns.Cow" : {
-    "substitutionFor" : "test.ns.Animal",
+    "substitutionGroup" : "http://www.test.com/test/animal",
     "xmlElementName" : "cow"
   },
   "test.ns.Document" : {
     "xmlElementName" : "document",
     "xmlAttributes" : {
+      "xmlns" : "http://www.test.com/test",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "attributes" : {
+      "animal" : {
+        "substitutionGroup" : "http://www.test.com/test/animal"
+      }
     }
   },
   "test.ns.Goat" : {
-    "substitutionFor" : "test.ns.Animal",
+    "substitutionGroup" : "http://www.test.com/test/animal",
     "xmlElementName" : "goat"
   }
 }

@@ -136,7 +136,7 @@ public class XsdImport {
 	}
 	private TypeXMLConfiguration prune(TypeXMLConfiguration config) {
 		return new TypeXMLConfiguration(
-				config.getSubstitutionFor(),
+				config.getSubstitutionGroup(),
 				config.getXmlElementName(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getAttributes().map(x -> x.isEmpty() ? null : x),
@@ -144,7 +144,7 @@ public class XsdImport {
 			);
 	}
 	private boolean isEmpty(TypeXMLConfiguration config) {
-		return config.getSubstitutionFor().isEmpty()
+		return config.getSubstitutionGroup().isEmpty()
 				&& config.getXmlElementName().isEmpty()
 				&& (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty())
 				&& (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty())

@@ -22,9 +22,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.rosetta.RosettaNamed;
+
+import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
 import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
+import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
+import org.xmlet.xsdparser.xsdelements.XsdSchema;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
 public class XsdUtil {
@@ -67,6 +71,37 @@ public class XsdUtil {
 	public boolean isEnumType(XsdSimpleType simpleType) {
 		return simpleType.getAllRestrictions().stream()
 				.anyMatch(e -> !e.getEnumeration().isEmpty());
+	}
+	
+	public String getQualifiedName(XsdNamedElements elem) {
+		String name = elem.getName();
+		
+		XsdAbstractElement original = getOriginalElement(elem);
+		original.setParentAvailable(true);
+		XsdSchema schema = original.getXsdSchema();
+		if (schema == null) {
+			return name;
+		}
+		
+		String targetNamespace = schema.getTargetNamespace();
+		if (targetNamespace == null) {
+			return name;
+		}
+		return targetNamespace + "/" + name;
+	}
+	
+	public boolean isTopLevelElement(XsdAbstractElement elem) {
+		XsdAbstractElement original = getOriginalElement(elem);
+		original.setParentAvailable(true);
+		XsdAbstractElement p = original.getParent();
+		return p instanceof XsdSchema;
+	}
+	private XsdAbstractElement getOriginalElement(XsdAbstractElement elem) {
+		XsdAbstractElement original = elem;
+		while (original.getCloneOf() != null) {
+			original = original.getCloneOf();
+		}
+		return original;
 	}
 
     public String toTypeName(String xsdName, ImportTargetConfig config) {

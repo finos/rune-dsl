@@ -2,11 +2,13 @@ package com.regnosys.rosetta.tools.modelimport;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
@@ -28,15 +30,21 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 	private final XsdUtil util;
 	private final RosettaBuiltinsService builtins;
 	private final XsdTypeImport typeImport;
-	private final ModelIdProvider modelIdProvider;
 	
 	@Inject
-	public XsdElementImport(XsdUtil util, RosettaBuiltinsService builtins, XsdTypeImport typeImport, ModelIdProvider modelIdProvider) {
+	public XsdElementImport(XsdUtil util, RosettaBuiltinsService builtins, XsdTypeImport typeImport) {
 		super(XsdElement.class);
 		this.util = util;
 		this.builtins = builtins;
 		this.typeImport = typeImport;
-		this.modelIdProvider = modelIdProvider;
+	}
+	
+	@Override
+	public List<XsdElement> filterTypes(List<XsdAbstractElement> elements) {
+		return super.filterTypes(elements)
+				.stream()
+				.filter(elem -> !elem.isAbstractObj())
+				.toList();
 	}
 
 	@Override
@@ -145,7 +153,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		
 		Map<Data, TypeXMLConfiguration> result = new LinkedHashMap<>();
 		
-		Optional<ModelSymbolId> substitution = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(elem -> modelIdProvider.getSymbolId(xsdMapping.getRosettaTypeFromElement(elem)));
+		Optional<String> substitutionGroup = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(elem -> util.getQualifiedName(elem));
 		Optional<String> elementName = xsdElement.isAbstractObj() ? Optional.empty() : Optional.of(xsdElement.getName());
 		Optional<Map<String, String>> xmlAttributes;
 		if (isRoot(xsdElement)) {
@@ -161,7 +169,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		Map<String, AttributeXMLConfiguration> attributeConfig = new LinkedHashMap<>();
 		result.put(data,
 				new TypeXMLConfiguration(
-					substitution,
+					substitutionGroup,
 					elementName,
 					xmlAttributes,
 					Optional.of(attributeConfig),
@@ -179,7 +187,8 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 			attributeConfig.put(attr.getName(), new AttributeXMLConfiguration(
 					Optional.empty(),
 					Optional.empty(),
-					Optional.of(AttributeXMLRepresentation.VALUE)));
+					Optional.of(AttributeXMLRepresentation.VALUE),
+					Optional.empty()));
 		}
 
 		return result;
