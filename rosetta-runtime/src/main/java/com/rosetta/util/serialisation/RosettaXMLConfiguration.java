@@ -67,7 +67,7 @@ public class RosettaXMLConfiguration {
 	@Deprecated // use getSubstitutionsFor instead.
 	public List<ModelSymbolId> getSubstitutionsForType(ModelSymbolId symbolId) {
 		return typeConfigMap.entrySet().stream()
-			.filter(e -> e.getValue().getSubstitutionFor().map(t -> t.equals(symbolId)).orElse(false))
+			.filter(e -> e.getValue().getSubstitutionGroup().map(g -> g.equals(substitutionGroup)).orElse(false))
 			.map(e -> e.getKey())
 			.collect(Collectors.toList());
 	}
