@@ -70,7 +70,7 @@ public class ExternalAnnotationUtil {
 	
 	public Optional<RosettaExternalClass> getExternalType(ExternalAnnotationSource source, RDataType type) {
 		for (RosettaExternalClass extT: source.getExternalClasses()) {
-			if (extT.getTypeRef().equals(type.getEObject())) {
+			if (type.getAllSuperTypes().stream().anyMatch(t -> extT.getTypeRef().equals(t.getEObject()))) {
 				return Optional.of(extT);
 			}
 		}
