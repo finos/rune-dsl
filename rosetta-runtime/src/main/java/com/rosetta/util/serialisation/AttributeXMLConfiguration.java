@@ -27,15 +27,18 @@ public class AttributeXMLConfiguration {
 	private final Optional<String> xmlName;
 	private final Optional<Map<String, String>> xmlAttributes;
 	private final Optional<AttributeXMLRepresentation> xmlRepresentation;
+	private final Optional<String> substitutionGroup;
 	
 	@JsonCreator
 	public AttributeXMLConfiguration(
 			@JsonProperty("xmlName") Optional<String> xmlName,
 			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
-			@JsonProperty("xmlRepresentation") Optional<AttributeXMLRepresentation> xmlRepresentation) {
+			@JsonProperty("xmlRepresentation") Optional<AttributeXMLRepresentation> xmlRepresentation,
+			@JsonProperty("substitutionGroup") Optional<String> substitutionGroup) {
 		this.xmlName = xmlName;
 		this.xmlAttributes = xmlAttributes;
 		this.xmlRepresentation = xmlRepresentation;
+		this.substitutionGroup = substitutionGroup;
 	}
 
 	public Optional<String> getXmlName() {
@@ -49,10 +52,14 @@ public class AttributeXMLConfiguration {
 	public Optional<AttributeXMLRepresentation> getXmlRepresentation() {
 		return xmlRepresentation;
 	}
+	
+	public Optional<String> getSubstitutionGroup() {
+		return substitutionGroup;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(xmlAttributes, xmlName, xmlRepresentation);
+		return Objects.hash(xmlAttributes, xmlName, xmlRepresentation, substitutionGroup);
 	}
 
 	@Override
@@ -65,6 +72,7 @@ public class AttributeXMLConfiguration {
 			return false;
 		AttributeXMLConfiguration other = (AttributeXMLConfiguration) obj;
 		return Objects.equals(xmlAttributes, other.xmlAttributes)
-				&& Objects.equals(xmlName, other.xmlName) && Objects.equals(xmlRepresentation, other.xmlRepresentation);
+				&& Objects.equals(xmlName, other.xmlName) && Objects.equals(xmlRepresentation, other.xmlRepresentation)
+				&& Objects.equals(substitutionGroup, other.substitutionGroup);
 	}
 }

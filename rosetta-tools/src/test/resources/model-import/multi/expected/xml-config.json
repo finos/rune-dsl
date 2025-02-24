@@ -135,7 +135,7 @@
     }
   },
   "fpml.confirmation.AccruingFeeChange" : {
-    "substitutionFor" : "fpml.confirmation.AccruingFeeChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup",
     "xmlElementName" : "accruingFeeChange"
   },
   "fpml.confirmation.AccruingFeeChangeNotification" : {
@@ -145,13 +145,16 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "accruingFeeChangeGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup"
+      },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
   "fpml.confirmation.AccruingFeeExpiry" : {
-    "substitutionFor" : "fpml.confirmation.AccruingFeeChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup",
     "xmlElementName" : "accruingFeeExpiry",
     "attributes" : {
       "_type" : {
@@ -349,7 +352,7 @@
     }
   },
   "fpml.confirmation.Adjustment" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "adjustment"
   },
   "fpml.confirmation.AffectedTransactions" : {
@@ -428,11 +431,11 @@
     }
   },
   "fpml.confirmation.AmendmentFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "amendmentFeePayment"
   },
   "fpml.confirmation.AmericanExercise" : {
-    "substitutionFor" : "fpml.confirmation.Exercise",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise",
     "xmlElementName" : "americanExercise"
   },
   "fpml.confirmation.AmountAdjustmentEnum" : {
@@ -619,11 +622,11 @@
     }
   },
   "fpml.confirmation.Bankruptcy" : {
-    "substitutionFor" : "fpml.confirmation.CreditEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
     "xmlElementName" : "bankruptcy"
   },
   "fpml.confirmation.BaseRateSet" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "baseRateSet"
   },
   "fpml.confirmation.BasicQuotation" : {
@@ -637,7 +640,7 @@
     }
   },
   "fpml.confirmation.Basket" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "basket",
     "attributes" : {
       "basketIdentifierModel" : {
@@ -646,7 +649,7 @@
     }
   },
   "fpml.confirmation.BasketChange" : {
-    "substitutionFor" : "fpml.confirmation.ChangeEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
     "xmlElementName" : "basketChange",
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
@@ -657,6 +660,9 @@
     "attributes" : {
       "payerReceiverModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       },
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
@@ -708,11 +714,11 @@
     }
   },
   "fpml.confirmation.BermudaExercise" : {
-    "substitutionFor" : "fpml.confirmation.Exercise",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise",
     "xmlElementName" : "bermudaExercise"
   },
   "fpml.confirmation.Bond" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "bond",
     "attributes" : {
       "fixedIncomeSecurityContentModel" : {
@@ -720,6 +726,16 @@
       },
       "bondCalculationModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.BondChoiceModel" : {
+    "attributes" : {
+      "bond" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/bond"
+      },
+      "convertibleBond" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond"
       }
     }
   },
@@ -734,11 +750,14 @@
     "attributes" : {
       "bondChoiceModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "equity" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/equity"
       }
     }
   },
   "fpml.confirmation.BondOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "bondOption",
     "attributes" : {
       "bondChoiceModel" : {
@@ -753,8 +772,15 @@
       }
     }
   },
+  "fpml.confirmation.BondReference" : {
+    "attributes" : {
+      "bond" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/bond"
+      }
+    }
+  },
   "fpml.confirmation.Borrowing" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "borrowing"
   },
   "fpml.confirmation.BreakageCalculatedByEnum" : {
@@ -764,7 +790,7 @@
     }
   },
   "fpml.confirmation.BreakageFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "breakageFeePayment"
   },
   "fpml.confirmation.BrokerConfirmationType" : {
@@ -778,11 +804,11 @@
     }
   },
   "fpml.confirmation.BrokerEquityOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "brokerEquityOption"
   },
   "fpml.confirmation.BulletPayment" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "bulletPayment"
   },
   "fpml.confirmation.BullionDeliveryLocation" : {
@@ -796,7 +822,7 @@
     }
   },
   "fpml.confirmation.BullionPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommodityForwardLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg",
     "xmlElementName" : "bullionPhysicalLeg",
     "attributes" : {
       "commodityFixedPhysicalQuantityModel" : {
@@ -934,11 +960,14 @@
     "attributes" : {
       "calculationSequence" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "rateCalculation" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation"
       }
     }
   },
   "fpml.confirmation.CalculationAgentDetermination" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
     "xmlElementName" : "calculationAgentDetermination"
   },
   "fpml.confirmation.CalculationAgentPartyEnum" : {
@@ -1024,6 +1053,9 @@
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "exercise" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -1050,11 +1082,11 @@
     }
   },
   "fpml.confirmation.CapFloor" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "capFloor"
   },
   "fpml.confirmation.Cash" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "cash"
   },
   "fpml.confirmation.CashPayable" : {
@@ -1308,7 +1340,7 @@
     }
   },
   "fpml.confirmation.CoalPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "coalPhysicalLeg"
   },
   "fpml.confirmation.CoalProduct" : {
@@ -1468,11 +1500,11 @@
     }
   },
   "fpml.confirmation.CommitmentAdjustment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
     "xmlElementName" : "commitmentAdjustment"
   },
   "fpml.confirmation.Commodity" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "commodity",
     "attributes" : {
       "commodityProductModel" : {
@@ -1515,7 +1547,7 @@
     }
   },
   "fpml.confirmation.CommodityBasketOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityBasketOption",
     "attributes" : {
       "commodityBasketOptionFeaturesModel" : {
@@ -1653,7 +1685,7 @@
     }
   },
   "fpml.confirmation.CommodityDigitalOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityDigitalOption",
     "attributes" : {
       "commodityDigitalOptionFeaturesModel" : {
@@ -1736,9 +1768,12 @@
     }
   },
   "fpml.confirmation.CommodityForward" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityForward",
     "attributes" : {
+      "commodityForwardLeg" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg"
+      },
       "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -1826,7 +1861,7 @@
     }
   },
   "fpml.confirmation.CommodityInterestLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommodityPerformanceSwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg",
     "xmlElementName" : "commodityInterestLeg",
     "attributes" : {
       "commodityCalculationPeriodsModel" : {
@@ -1932,7 +1967,7 @@
     }
   },
   "fpml.confirmation.CommodityOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityOption",
     "attributes" : {
       "buyerSellerModel" : {
@@ -2002,11 +2037,14 @@
     }
   },
   "fpml.confirmation.CommodityPerformanceSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityPerformanceSwap"
   },
   "fpml.confirmation.CommodityPerformanceSwapBase" : {
     "attributes" : {
+      "commodityPerformanceSwapLeg" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg"
+      },
       "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -2026,6 +2064,13 @@
       },
       "commodityPhysicalAmericanExerciseSequence1" : {
         "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.CommodityPhysicalOptionModel" : {
+    "attributes" : {
+      "commodityForward" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForward"
       }
     }
   },
@@ -2167,7 +2212,7 @@
     }
   },
   "fpml.confirmation.CommodityReturnLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommodityPerformanceSwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg",
     "xmlElementName" : "commodityReturnLeg",
     "attributes" : {
       "commodityCalculationPeriodsModel" : {
@@ -2196,7 +2241,7 @@
     }
   },
   "fpml.confirmation.CommoditySwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commoditySwap",
     "attributes" : {
       "commoditySwapDetailsModel" : {
@@ -2206,13 +2251,16 @@
   },
   "fpml.confirmation.CommoditySwapDetailsModel" : {
     "attributes" : {
+      "commoditySwapLeg" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg"
+      },
       "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
     }
   },
   "fpml.confirmation.CommoditySwaption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commoditySwaption",
     "attributes" : {
       "buyerSellerModel" : {
@@ -2265,7 +2313,7 @@
     }
   },
   "fpml.confirmation.CommodityVarianceLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommodityPerformanceSwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg",
     "xmlElementName" : "commodityVarianceLeg",
     "attributes" : {
       "commodityCalculationPeriodsModel" : {
@@ -2365,6 +2413,9 @@
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+      },
       "partiesAndAccountsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -2388,6 +2439,9 @@
       },
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "partiesAndAccountsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2540,11 +2594,11 @@
     }
   },
   "fpml.confirmation.ConvertibleBond" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "convertibleBond"
   },
   "fpml.confirmation.CorporateAction" : {
-    "substitutionFor" : "fpml.confirmation.ChangeEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
     "xmlElementName" : "corporateAction",
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
@@ -2616,7 +2670,7 @@
     }
   },
   "fpml.confirmation.CorrelationSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "correlationSwap"
   },
   "fpml.confirmation.CorrespondentInformation" : {
@@ -2647,7 +2701,7 @@
     }
   },
   "fpml.confirmation.CreditCurve" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructure",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "creditCurve",
     "attributes" : {
       "creditCurveCharacteristicsModel" : {
@@ -2663,7 +2717,7 @@
     }
   },
   "fpml.confirmation.CreditCurveValuation" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructureValuation",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
     "xmlElementName" : "creditCurveValuation",
     "attributes" : {
       "recoveryRateModel" : {
@@ -2672,7 +2726,7 @@
     }
   },
   "fpml.confirmation.CreditDefaultSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "creditDefaultSwap",
     "attributes" : {
       "creditDefaultSwapChoice" : {
@@ -2681,7 +2735,7 @@
     }
   },
   "fpml.confirmation.CreditDefaultSwapOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "creditDefaultSwapOption"
   },
   "fpml.confirmation.CreditDocument" : {
@@ -2713,6 +2767,13 @@
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    }
+  },
+  "fpml.confirmation.CreditEventNoticeDocument" : {
+    "attributes" : {
+      "creditEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent"
+      }
     }
   },
   "fpml.confirmation.CreditEventNotification" : {
@@ -2959,6 +3020,9 @@
     "attributes" : {
       "dealRulesModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "facilityGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup"
       }
     }
   },
@@ -3003,15 +3067,15 @@
     }
   },
   "fpml.confirmation.DefaultRateChange" : {
-    "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
     "xmlElementName" : "defaultRateChange"
   },
   "fpml.confirmation.DefaultRateExpiry" : {
-    "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
     "xmlElementName" : "defaultRateExpiry"
   },
   "fpml.confirmation.DelayedDraw" : {
-    "substitutionFor" : "fpml.confirmation.FacilityGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
     "xmlElementName" : "delayedDraw"
   },
   "fpml.confirmation.DeliveryDatesEnum" : {
@@ -3162,7 +3226,7 @@
     }
   },
   "fpml.confirmation.Deposit" : {
-    "substitutionFor" : "fpml.confirmation.CurveInstrument",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "deposit"
   },
   "fpml.confirmation.DerivativeCalculationMethod" : {
@@ -3389,11 +3453,11 @@
     }
   },
   "fpml.confirmation.DividendSwapOptionTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "dividendSwapOptionTransactionSupplement"
   },
   "fpml.confirmation.DividendSwapTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "dividendSwapTransactionSupplement",
     "attributes" : {
       "equityUnderlyerProvisionsModel" : {
@@ -3418,7 +3482,7 @@
     }
   },
   "fpml.confirmation.DualExchangeRate" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
     "xmlElementName" : "dualExchangeRate"
   },
   "fpml.confirmation.EarlyTerminationDateEnum" : {
@@ -3481,7 +3545,7 @@
     }
   },
   "fpml.confirmation.ElectricityPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "electricityPhysicalLeg"
   },
   "fpml.confirmation.ElectricityProduct" : {
@@ -3555,7 +3619,7 @@
     }
   },
   "fpml.confirmation.EnvironmentalPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "environmentalPhysicalLeg",
     "attributes" : {
       "businessCentersOrReferenceModel" : {
@@ -3606,7 +3670,7 @@
     }
   },
   "fpml.confirmation.Equity" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "equity"
   },
   "fpml.confirmation.EquityAmericanExercise" : {
@@ -3655,15 +3719,15 @@
     }
   },
   "fpml.confirmation.EquityForward" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "equityForward"
   },
   "fpml.confirmation.EquityOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "equityOption"
   },
   "fpml.confirmation.EquityOptionTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "equityOptionTransactionSupplement",
     "attributes" : {
       "indexAnnexFallbackModel" : {
@@ -3693,7 +3757,7 @@
     }
   },
   "fpml.confirmation.EquitySwapTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "equitySwapTransactionSupplement",
     "attributes" : {
       "mutualOrOptionalEarlyTerminationModel" : {
@@ -3719,7 +3783,7 @@
     }
   },
   "fpml.confirmation.EuropeanExercise" : {
-    "substitutionFor" : "fpml.confirmation.Exercise",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise",
     "xmlElementName" : "europeanExercise"
   },
   "fpml.confirmation.EventId" : {
@@ -3772,6 +3836,9 @@
       },
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "proposedMatchModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3830,6 +3897,9 @@
       },
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       }
     }
   },
@@ -3888,7 +3958,7 @@
     }
   },
   "fpml.confirmation.ExchangeRestrictions" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
     "xmlElementName" : "exchangeRestrictions"
   },
   "fpml.confirmation.ExchangeTraded" : {
@@ -3902,11 +3972,14 @@
     "attributes" : {
       "floatingRateIndexModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
   "fpml.confirmation.ExchangeTradedFund" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "exchangeTradedFund"
   },
   "fpml.confirmation.ExchangeTradedOption" : {
@@ -3941,6 +4014,9 @@
       },
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "eventValuationModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3983,6 +4059,9 @@
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+      },
       "partiesAndAccountsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -4017,6 +4096,9 @@
       },
       "optionsEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "eventValuationModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4128,6 +4210,9 @@
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "exercise" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -4166,7 +4251,7 @@
     }
   },
   "fpml.confirmation.FacilityExtensionFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "facilityExtensionFeePayment"
   },
   "fpml.confirmation.FacilityFeature" : {
@@ -4199,6 +4284,9 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "facilityEventGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup"
+      },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -4255,6 +4343,9 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "facilityRateChangeGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup"
+      },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -4275,6 +4366,11 @@
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "attributes" : {
+      "facilityGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup"
+      }
     }
   },
   "fpml.confirmation.FacilitySummary" : {
@@ -4291,7 +4387,7 @@
     }
   },
   "fpml.confirmation.FacilityTermination" : {
-    "substitutionFor" : "fpml.confirmation.FacilityEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
     "xmlElementName" : "facilityTermination"
   },
   "fpml.confirmation.FacilityType" : {
@@ -4305,11 +4401,11 @@
     }
   },
   "fpml.confirmation.FailureToPay" : {
-    "substitutionFor" : "fpml.confirmation.CreditEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
     "xmlElementName" : "failureToPay"
   },
   "fpml.confirmation.FallbackReferencePrice" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
     "xmlElementName" : "fallbackReferencePrice"
   },
   "fpml.confirmation.FeaturePayment" : {
@@ -4363,7 +4459,7 @@
     }
   },
   "fpml.confirmation.FixedLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "fixedLeg"
   },
   "fpml.confirmation.FixedPrice" : {
@@ -4443,7 +4539,7 @@
     }
   },
   "fpml.confirmation.FloatingLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "floatingLeg"
   },
   "fpml.confirmation.FloatingPriceLeg" : {
@@ -4487,7 +4583,7 @@
     }
   },
   "fpml.confirmation.FloatingRateCalculation" : {
-    "substitutionFor" : "fpml.confirmation.RateCalculation",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation",
     "xmlElementName" : "floatingRateCalculation"
   },
   "fpml.confirmation.FloatingRateCalculationReference" : {
@@ -4539,7 +4635,7 @@
     }
   },
   "fpml.confirmation.Fra" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fra",
     "attributes" : {
       "buyerSellerModel" : {
@@ -4560,11 +4656,11 @@
     }
   },
   "fpml.confirmation.FundingFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "fundingFeePayment"
   },
   "fpml.confirmation.Future" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "future"
   },
   "fpml.confirmation.FutureId" : {
@@ -4578,7 +4674,7 @@
     }
   },
   "fpml.confirmation.Fx" : {
-    "substitutionFor" : "fpml.confirmation.CurveInstrument",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "fx"
   },
   "fpml.confirmation.FxAccrual" : {
@@ -4610,7 +4706,7 @@
     }
   },
   "fpml.confirmation.FxAccrualDigitalOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxAccrualDigitalOption",
     "attributes" : {
       "fxExpiryDateOrScheduleModel" : {
@@ -4622,7 +4718,7 @@
     }
   },
   "fpml.confirmation.FxAccrualForward" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxAccrualForward",
     "attributes" : {
       "fxExpiryDateOrScheduleModel" : {
@@ -4666,7 +4762,7 @@
     }
   },
   "fpml.confirmation.FxAccrualOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxAccrualOption",
     "attributes" : {
       "putCallCurrencyModel" : {
@@ -4859,7 +4955,7 @@
     }
   },
   "fpml.confirmation.FxCurve" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructure",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "fxCurve",
     "attributes" : {
       "fxCurveCharacteristicsModel" : {
@@ -4868,11 +4964,11 @@
     }
   },
   "fpml.confirmation.FxCurveValuation" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructureValuation",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
     "xmlElementName" : "fxCurveValuation"
   },
   "fpml.confirmation.FxDigitalOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxDigitalOption",
     "attributes" : {
       "fxDigitalOptionSequence0" : {
@@ -4880,6 +4976,20 @@
       },
       "fxDigitalOptionSequence1" : {
         "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.FxDisruptionEvents" : {
+    "attributes" : {
+      "fxDisruptionEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent"
+      }
+    }
+  },
+  "fpml.confirmation.FxDisruptionFallbacks" : {
+    "attributes" : {
+      "fxDisruptionFallback" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback"
       }
     }
   },
@@ -4932,7 +5042,7 @@
     }
   },
   "fpml.confirmation.FxFlexibleForward" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxFlexibleForward",
     "attributes" : {
       "buyerSellerModel" : {
@@ -4954,7 +5064,7 @@
     }
   },
   "fpml.confirmation.FxForwardVolatilityAgreement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxForwardVolatilityAgreement",
     "attributes" : {
       "buyerSellerModel" : {
@@ -4976,7 +5086,7 @@
     }
   },
   "fpml.confirmation.FxOption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxOption"
   },
   "fpml.confirmation.FxOptionFeatures" : {
@@ -5004,7 +5114,7 @@
     }
   },
   "fpml.confirmation.FxRangeAccrual" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxRangeAccrual",
     "attributes" : {
       "payerReceiverModel" : {
@@ -5078,7 +5188,7 @@
     }
   },
   "fpml.confirmation.FxSingleLeg" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxSingleLeg",
     "attributes" : {
       "fxCoreDetailsModel" : {
@@ -5100,7 +5210,7 @@
     }
   },
   "fpml.confirmation.FxSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxSwap"
   },
   "fpml.confirmation.FxSwapLeg" : {
@@ -5146,7 +5256,7 @@
     }
   },
   "fpml.confirmation.FxTargetKnockoutForward" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxTargetKnockoutForward",
     "attributes" : {
       "fxTargetKnockoutForwardSequence" : {
@@ -5278,11 +5388,11 @@
     }
   },
   "fpml.confirmation.FxVarianceSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxVarianceSwap"
   },
   "fpml.confirmation.FxVolatilitySwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxVolatilitySwap"
   },
   "fpml.confirmation.FxWeightedFixingSchedule" : {
@@ -5330,7 +5440,7 @@
     }
   },
   "fpml.confirmation.GasPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "gasPhysicalLeg"
   },
   "fpml.confirmation.GasPhysicalQuantity" : {
@@ -5428,7 +5538,7 @@
     }
   },
   "fpml.confirmation.GenericProduct" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "genericProduct",
     "attributes" : {
       "buyerSellerModel" : {
@@ -5555,7 +5665,7 @@
     }
   },
   "fpml.confirmation.Index" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "index"
   },
   "fpml.confirmation.IndexAnnexSource" : {
@@ -5569,7 +5679,7 @@
     }
   },
   "fpml.confirmation.IndexChange" : {
-    "substitutionFor" : "fpml.confirmation.ChangeEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
     "xmlElementName" : "indexChange",
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
@@ -5631,7 +5741,7 @@
     }
   },
   "fpml.confirmation.InflationRateCalculation" : {
-    "substitutionFor" : "fpml.confirmation.RateCalculation",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation",
     "xmlElementName" : "inflationRateCalculation"
   },
   "fpml.confirmation.InformationProvider" : {
@@ -5678,12 +5788,25 @@
       }
     }
   },
+  "fpml.confirmation.InstrumentSetSequence" : {
+    "attributes" : {
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+      },
+      "curveInstrument" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument"
+      }
+    }
+  },
   "fpml.confirmation.InstrumentTradeDetails" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "instrumentTradeDetails",
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
@@ -5721,7 +5844,7 @@
     }
   },
   "fpml.confirmation.InterestCapitalization" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "interestCapitalization",
     "attributes" : {
       "periodModel" : {
@@ -5733,7 +5856,7 @@
     }
   },
   "fpml.confirmation.InterestLeg" : {
-    "substitutionFor" : "fpml.confirmation.ReturnSwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg",
     "xmlElementName" : "interestLeg"
   },
   "fpml.confirmation.InterestLegCalculationPeriodDates" : {
@@ -5751,7 +5874,7 @@
     }
   },
   "fpml.confirmation.InterestPayment" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "interestPayment"
   },
   "fpml.confirmation.InterestRateStream" : {
@@ -5837,25 +5960,32 @@
   "fpml.confirmation.KeyInfoTypeChoice" : {
     "attributes" : {
       "keyName" : {
-        "xmlName" : "KeyName"
+        "xmlName" : "KeyName",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/KeyName"
       },
       "keyValue" : {
-        "xmlName" : "KeyValue"
+        "xmlName" : "KeyValue",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/KeyValue"
       },
       "retrievalMethod" : {
-        "xmlName" : "RetrievalMethod"
+        "xmlName" : "RetrievalMethod",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/RetrievalMethod"
       },
       "x509Data" : {
-        "xmlName" : "X509Data"
+        "xmlName" : "X509Data",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/X509Data"
       },
       "pgpData" : {
-        "xmlName" : "PGPData"
+        "xmlName" : "PGPData",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/PGPData"
       },
       "spkiData" : {
-        "xmlName" : "SPKIData"
+        "xmlName" : "SPKIData",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SPKIData"
       },
       "mgmtData" : {
-        "xmlName" : "MgmtData"
+        "xmlName" : "MgmtData",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/MgmtData"
       }
     }
   },
@@ -5881,10 +6011,12 @@
   "fpml.confirmation.KeyValueType" : {
     "attributes" : {
       "dsaKeyValue" : {
-        "xmlName" : "DSAKeyValue"
+        "xmlName" : "DSAKeyValue",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/DSAKeyValue"
       },
       "rsaKeyValue" : {
-        "xmlName" : "RSAKeyValue"
+        "xmlName" : "RSAKeyValue",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/RSAKeyValue"
       }
     }
   },
@@ -5920,7 +6052,7 @@
     }
   },
   "fpml.confirmation.LcAdjustment" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcAdjustment"
   },
   "fpml.confirmation.LcAutoAdjustEnum" : {
@@ -5931,15 +6063,15 @@
     }
   },
   "fpml.confirmation.LcFxRevaluation" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcFxRevaluation"
   },
   "fpml.confirmation.LcIssuance" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcIssuance"
   },
   "fpml.confirmation.LcIssuanceFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcIssuanceFeePayment",
     "attributes" : {
       "periodModel" : {
@@ -5954,6 +6086,9 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "lcEventGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup"
+      },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -5983,15 +6118,15 @@
     }
   },
   "fpml.confirmation.LcRateChange" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcRateChange"
   },
   "fpml.confirmation.LcRenewal" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcRenewal"
   },
   "fpml.confirmation.LcTermination" : {
-    "substitutionFor" : "fpml.confirmation.LcEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcTermination"
   },
   "fpml.confirmation.LcType" : {
@@ -6076,7 +6211,7 @@
     }
   },
   "fpml.confirmation.LetterOfCreditFacility" : {
-    "substitutionFor" : "fpml.confirmation.FacilityGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
     "xmlElementName" : "letterOfCreditFacility"
   },
   "fpml.confirmation.LetterOfCreditReference" : {
@@ -6158,7 +6293,7 @@
     }
   },
   "fpml.confirmation.Loan" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "loan",
     "attributes" : {
       "loanChoice" : {
@@ -6376,6 +6511,22 @@
       }
     }
   },
+  "fpml.confirmation.LoanBulkServicingNotificationChoice0" : {
+    "attributes" : {
+      "facilityFeePaymentGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup"
+      },
+      "facilityEventGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup"
+      },
+      "loanContractEventGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup"
+      },
+      "lcEventGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup"
+      }
+    }
+  },
   "fpml.confirmation.LoanBulkServicingNotificationChoice1" : {
     "attributes" : {
       "facilityDetailsModel" : {
@@ -6403,6 +6554,9 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "loanContractEventGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup"
+      },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -6498,7 +6652,7 @@
     }
   },
   "fpml.confirmation.LoanPrepayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
     "xmlElementName" : "prepayment"
   },
   "fpml.confirmation.LoanSettlementDateAvailabilityEvent" : {
@@ -6764,11 +6918,11 @@
     }
   },
   "fpml.confirmation.MandatoryCostRateChange" : {
-    "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
     "xmlElementName" : "mandatoryCostRateChange"
   },
   "fpml.confirmation.MandatoryCostRateExpiry" : {
-    "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
     "xmlElementName" : "mandatoryCostRateExpiry"
   },
   "fpml.confirmation.MandatoryEarlyTermination" : {
@@ -6795,7 +6949,8 @@
   "fpml.confirmation.ManifestType" : {
     "attributes" : {
       "reference" : {
-        "xmlName" : "Reference"
+        "xmlName" : "Reference",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Reference"
       },
       "id" : {
         "xmlName" : "Id",
@@ -6816,6 +6971,12 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "pricingStructure" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure"
+      },
+      "pricingStructureValuation" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation"
+      },
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
       }
@@ -6964,7 +7125,7 @@
     }
   },
   "fpml.confirmation.MaturityChange" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "maturityChange"
   },
   "fpml.confirmation.MaturityException" : {
@@ -6999,7 +7160,8 @@
   "fpml.confirmation.MessageHeaderModel" : {
     "attributes" : {
       "signature" : {
-        "xmlName" : "Signature"
+        "xmlName" : "Signature",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Signature"
       }
     }
   },
@@ -7021,7 +7183,7 @@
     }
   },
   "fpml.confirmation.MetalPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommodityForwardLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg",
     "xmlElementName" : "metalPhysicalLeg",
     "attributes" : {
       "commodityFixedPhysicalQuantityModel" : {
@@ -7064,7 +7226,7 @@
     }
   },
   "fpml.confirmation.MiscFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "miscFeePayment",
     "attributes" : {
       "_type" : {
@@ -7080,7 +7242,7 @@
     }
   },
   "fpml.confirmation.Mortgage" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "mortgage",
     "attributes" : {
       "fixedIncomeSecurityContentModel" : {
@@ -7116,7 +7278,7 @@
     }
   },
   "fpml.confirmation.MutualFund" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "mutualFund"
   },
   "fpml.confirmation.MutualOrOptionalEarlyTerminationModel" : {
@@ -7160,7 +7322,7 @@
     }
   },
   "fpml.confirmation.NoFaultTermination" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
     "xmlElementName" : "noFaultTermination"
   },
   "fpml.confirmation.NoTouchLowerBarrierObservation" : {
@@ -7210,7 +7372,7 @@
     }
   },
   "fpml.confirmation.NonDeliverableSubstitute" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
     "xmlElementName" : "nonDeliverableSubstitute"
   },
   "fpml.confirmation.NonNegativeSchedule" : {
@@ -7237,6 +7399,9 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
+      "facilityFeePaymentGroup" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup"
+      },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -7380,7 +7545,7 @@
     }
   },
   "fpml.confirmation.ObligationAcceleration" : {
-    "substitutionFor" : "fpml.confirmation.CreditEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
     "xmlElementName" : "obligationAcceleration"
   },
   "fpml.confirmation.ObligationCategoryEnum" : {
@@ -7394,11 +7559,11 @@
     }
   },
   "fpml.confirmation.ObligationDefault" : {
-    "substitutionFor" : "fpml.confirmation.CreditEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
     "xmlElementName" : "obligationDefault"
   },
   "fpml.confirmation.OilPhysicalLeg" : {
-    "substitutionFor" : "fpml.confirmation.CommoditySwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "oilPhysicalLeg"
   },
   "fpml.confirmation.OilProduct" : {
@@ -7427,6 +7592,9 @@
   },
   "fpml.confirmation.OptionBaseExtended" : {
     "attributes" : {
+      "exercise" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+      },
       "optionDenominationModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -7436,7 +7604,7 @@
     }
   },
   "fpml.confirmation.OptionElement" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "option"
   },
   "fpml.confirmation.OptionExercise" : {
@@ -7519,6 +7687,13 @@
       "PAYER" : "Payer",
       "RECEIVER" : "Receiver",
       "STRADDLE" : "Straddle"
+    }
+  },
+  "fpml.confirmation.OptionalEarlyTermination" : {
+    "attributes" : {
+      "exercise" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+      }
     }
   },
   "fpml.confirmation.OptionalEarlyTerminationModel" : {
@@ -7973,11 +8148,11 @@
     }
   },
   "fpml.confirmation.PenaltyRateChange" : {
-    "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
     "xmlElementName" : "penaltyRateChange"
   },
   "fpml.confirmation.PenaltyRateExpiry" : {
-    "substitutionFor" : "fpml.confirmation.FacilityRateChangeGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
     "xmlElementName" : "penaltyRateExpiry"
   },
   "fpml.confirmation.Period" : {
@@ -8059,6 +8234,13 @@
     "attributes" : {
       "payerReceiverModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.PhysicalSettlement" : {
+    "attributes" : {
+      "product" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product"
       }
     }
   },
@@ -8172,7 +8354,7 @@
     }
   },
   "fpml.confirmation.PriceMateriality" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
     "xmlElementName" : "priceMateriality",
     "attributes" : {
       "prioritizedRateSourceModel" : {
@@ -8198,7 +8380,7 @@
     }
   },
   "fpml.confirmation.PriceSourceDisruption" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
     "xmlElementName" : "priceSourceDisruption"
   },
   "fpml.confirmation.PricingContext" : {
@@ -8512,7 +8694,7 @@
     }
   },
   "fpml.confirmation.RateIndex" : {
-    "substitutionFor" : "fpml.confirmation.CurveInstrument",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "rateIndex"
   },
   "fpml.confirmation.RateObservation" : {
@@ -8601,6 +8783,18 @@
   },
   "fpml.confirmation.ReferenceObligation" : {
     "attributes" : {
+      "bond" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/bond"
+      },
+      "convertibleBond" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond"
+      },
+      "mortgage" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/mortgage"
+      },
+      "loan" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loan"
+      },
       "referenceObligationChoice" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -8609,13 +8803,16 @@
   "fpml.confirmation.ReferenceType" : {
     "attributes" : {
       "transforms" : {
-        "xmlName" : "Transforms"
+        "xmlName" : "Transforms",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Transforms"
       },
       "digestMethod" : {
-        "xmlName" : "DigestMethod"
+        "xmlName" : "DigestMethod",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/DigestMethod"
       },
       "digestValue" : {
-        "xmlName" : "DigestValue"
+        "xmlName" : "DigestValue",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/DigestValue"
       },
       "id" : {
         "xmlName" : "Id",
@@ -8690,7 +8887,7 @@
     }
   },
   "fpml.confirmation.Repayment" : {
-    "substitutionFor" : "fpml.confirmation.LoanContractEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "repayment",
     "attributes" : {
       "repaymentTypeModel" : {
@@ -8699,7 +8896,7 @@
     }
   },
   "fpml.confirmation.Repo" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "repo",
     "attributes" : {
       "repoSequence" : {
@@ -8834,7 +9031,7 @@
     }
   },
   "fpml.confirmation.RepudiationMoratorium" : {
-    "substitutionFor" : "fpml.confirmation.CreditEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
     "xmlElementName" : "repudiationMoratorium"
   },
   "fpml.confirmation.RequestAllocation" : {
@@ -9203,7 +9400,7 @@
     }
   },
   "fpml.confirmation.RestructuringElement" : {
-    "substitutionFor" : "fpml.confirmation.CreditEvent",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
     "xmlElementName" : "restructuring"
   },
   "fpml.confirmation.RestructuringType" : {
@@ -9226,7 +9423,8 @@
   "fpml.confirmation.RetrievalMethodType" : {
     "attributes" : {
       "transforms" : {
-        "xmlName" : "Transforms"
+        "xmlName" : "Transforms",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Transforms"
       },
       "uri" : {
         "xmlName" : "URI",
@@ -9239,11 +9437,11 @@
     }
   },
   "fpml.confirmation.ReturnLeg" : {
-    "substitutionFor" : "fpml.confirmation.ReturnSwapLeg",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg",
     "xmlElementName" : "returnLeg"
   },
   "fpml.confirmation.ReturnSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "returnSwap"
   },
   "fpml.confirmation.ReturnSwapAdditionalPayment" : {
@@ -9264,6 +9462,9 @@
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "returnSwapLeg" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg"
       }
     }
   },
@@ -9303,7 +9504,7 @@
     }
   },
   "fpml.confirmation.Revolver" : {
-    "substitutionFor" : "fpml.confirmation.FacilityGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
     "xmlElementName" : "revolver"
   },
   "fpml.confirmation.RollConventionEnum" : {
@@ -9341,7 +9542,7 @@
     }
   },
   "fpml.confirmation.Rollover" : {
-    "substitutionFor" : "fpml.confirmation.FacilityEventGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
     "xmlElementName" : "rollover",
     "attributes" : {
       "rolloverChoice" : {
@@ -9616,7 +9817,7 @@
     }
   },
   "fpml.confirmation.SettlementPostponement" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
     "xmlElementName" : "settlementPostponement"
   },
   "fpml.confirmation.SettlementPriceDefaultElection" : {
@@ -9727,7 +9928,8 @@
   "fpml.confirmation.SignaturePropertiesType" : {
     "attributes" : {
       "signatureProperty" : {
-        "xmlName" : "SignatureProperty"
+        "xmlName" : "SignatureProperty",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignatureProperty"
       },
       "id" : {
         "xmlName" : "Id",
@@ -9760,16 +9962,20 @@
   "fpml.confirmation.SignatureType" : {
     "attributes" : {
       "signedInfo" : {
-        "xmlName" : "SignedInfo"
+        "xmlName" : "SignedInfo",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignedInfo"
       },
       "signatureValue" : {
-        "xmlName" : "SignatureValue"
+        "xmlName" : "SignatureValue",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignatureValue"
       },
       "keyInfo" : {
-        "xmlName" : "KeyInfo"
+        "xmlName" : "KeyInfo",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/KeyInfo"
       },
       "object" : {
-        "xmlName" : "Object"
+        "xmlName" : "Object",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Object"
       },
       "id" : {
         "xmlName" : "Id",
@@ -9805,13 +10011,16 @@
   "fpml.confirmation.SignedInfoType" : {
     "attributes" : {
       "canonicalizationMethod" : {
-        "xmlName" : "CanonicalizationMethod"
+        "xmlName" : "CanonicalizationMethod",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/CanonicalizationMethod"
       },
       "signatureMethod" : {
-        "xmlName" : "SignatureMethod"
+        "xmlName" : "SignatureMethod",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignatureMethod"
       },
       "reference" : {
-        "xmlName" : "Reference"
+        "xmlName" : "Reference",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Reference"
       },
       "id" : {
         "xmlName" : "Id",
@@ -9820,7 +10029,7 @@
     }
   },
   "fpml.confirmation.SimpleCreditDefaultSwap" : {
-    "substitutionFor" : "fpml.confirmation.CurveInstrument",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "simpleCreditDefaultSwap",
     "attributes" : {
       "creditEntityModel" : {
@@ -9829,11 +10038,11 @@
     }
   },
   "fpml.confirmation.SimpleFra" : {
-    "substitutionFor" : "fpml.confirmation.CurveInstrument",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "simpleFra"
   },
   "fpml.confirmation.SimpleIRSwap" : {
-    "substitutionFor" : "fpml.confirmation.CurveInstrument",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "simpleIrSwap"
   },
   "fpml.confirmation.SimplePayment" : {
@@ -9847,6 +10056,13 @@
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.SingleUnderlyer" : {
+    "attributes" : {
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
@@ -9900,7 +10116,7 @@
     }
   },
   "fpml.confirmation.StandardProduct" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "standardProduct"
   },
   "fpml.confirmation.StandardSettlementStyleEnum" : {
@@ -9924,8 +10140,13 @@
     }
   },
   "fpml.confirmation.Strategy" : {
-    "substitutionFor" : "fpml.confirmation.Product",
-    "xmlElementName" : "strategy"
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
+    "xmlElementName" : "strategy",
+    "attributes" : {
+      "product" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product"
+      }
+    }
   },
   "fpml.confirmation.Strike" : {
     "attributes" : {
@@ -10001,7 +10222,7 @@
     }
   },
   "fpml.confirmation.Swap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "swap"
   },
   "fpml.confirmation.SwapCurveValuation" : {
@@ -10012,11 +10233,14 @@
     }
   },
   "fpml.confirmation.Swaption" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "swaption",
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "exercise" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -10066,7 +10290,7 @@
     }
   },
   "fpml.confirmation.TermDeposit" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "termDeposit",
     "attributes" : {
       "payerReceiverModel" : {
@@ -10078,7 +10302,7 @@
     }
   },
   "fpml.confirmation.TermLoan" : {
-    "substitutionFor" : "fpml.confirmation.FacilityGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
     "xmlElementName" : "termLoan"
   },
   "fpml.confirmation.TermPoint" : {
@@ -10152,6 +10376,9 @@
   },
   "fpml.confirmation.Trade" : {
     "attributes" : {
+      "product" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product"
+      },
       "calculationAgentModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -10231,6 +10458,13 @@
       },
       "tradeAlterationPaymentModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "fpml.confirmation.TradeChangeContent" : {
+    "attributes" : {
+      "changeEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent"
       }
     }
   },
@@ -10397,6 +10631,9 @@
   },
   "fpml.confirmation.TradeUnderlyer2" : {
     "attributes" : {
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+      },
       "payerReceiverModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -10432,6 +10669,9 @@
       },
       "postTradeEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       }
     }
   },
@@ -10446,6 +10686,9 @@
     "attributes" : {
       "tradingEventsBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
+      },
+      "additionalEvent" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       }
     }
   },
@@ -10514,7 +10757,8 @@
   "fpml.confirmation.TransformsType" : {
     "attributes" : {
       "transform" : {
-        "xmlName" : "Transform"
+        "xmlName" : "Transform",
+        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Transform"
       }
     }
   },
@@ -10565,6 +10809,13 @@
       }
     }
   },
+  "fpml.confirmation.UnderlyingAssetOrReferenceModel" : {
+    "attributes" : {
+      "underlyingAsset" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+      }
+    }
+  },
   "fpml.confirmation.UnderlyingAssetTranche" : {
     "attributes" : {
       "value" : {
@@ -10593,7 +10844,7 @@
     }
   },
   "fpml.confirmation.UpfrontFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "upfrontFeePayment"
   },
   "fpml.confirmation.UtilizationModel" : {
@@ -10645,6 +10896,14 @@
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "attributes" : {
+      "market" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/market"
+      },
+      "valuationSet" : {
+        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/valuationSet"
+      }
     }
   },
   "fpml.confirmation.ValuationMethodEnum" : {
@@ -10660,7 +10919,7 @@
     }
   },
   "fpml.confirmation.ValuationPostponement" : {
-    "substitutionFor" : "fpml.confirmation.FxDisruptionFallback",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
     "xmlElementName" : "valuationPostponement"
   },
   "fpml.confirmation.ValuationReference" : {
@@ -10713,15 +10972,15 @@
     }
   },
   "fpml.confirmation.VarianceOptionTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "varianceOptionTransactionSupplement"
   },
   "fpml.confirmation.VarianceSwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "varianceSwap"
   },
   "fpml.confirmation.VarianceSwapTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "varianceSwapTransactionSupplement",
     "attributes" : {
       "equityUnderlyerProvisionsModel" : {
@@ -10797,19 +11056,19 @@
     }
   },
   "fpml.confirmation.VolatilityMatrixValuation" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructureValuation",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
     "xmlElementName" : "volatilityMatrixValuation"
   },
   "fpml.confirmation.VolatilityRepresentation" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructure",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "volatilityRepresentation"
   },
   "fpml.confirmation.VolatilitySwap" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "volatilitySwap"
   },
   "fpml.confirmation.VolatilitySwapTransactionSupplement" : {
-    "substitutionFor" : "fpml.confirmation.Product",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "volatilitySwapTransactionSupplement",
     "attributes" : {
       "equityUnderlyerProvisionsModel" : {
@@ -10818,11 +11077,11 @@
     }
   },
   "fpml.confirmation.WaiverFeePayment" : {
-    "substitutionFor" : "fpml.confirmation.FacilityFeePaymentGroup",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "waiverFeePayment"
   },
   "fpml.confirmation.Warrant" : {
-    "substitutionFor" : "fpml.confirmation.UnderlyingAsset",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "warrant"
   },
   "fpml.confirmation.WeatherCalculationPeriods" : {
@@ -10971,7 +11230,7 @@
     }
   },
   "fpml.confirmation.YieldCurve" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructure",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "yieldCurve",
     "attributes" : {
       "yieldCurveCharacteristicsModel" : {
@@ -10980,7 +11239,7 @@
     }
   },
   "fpml.confirmation.YieldCurveValuation" : {
-    "substitutionFor" : "fpml.confirmation.PricingStructureValuation",
+    "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
     "xmlElementName" : "yieldCurveValuation"
   },
   "fpml.confirmation._Object" : {
