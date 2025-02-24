@@ -64,6 +64,13 @@ public class RosettaXMLConfiguration {
 			.map(e -> e.getKey())
 			.collect(Collectors.toList());
 	}
+	@Deprecated // use getSubstitutionsFor instead.
+	public List<ModelSymbolId> getSubstitutionsForType(ModelSymbolId symbolId) {
+		return typeConfigMap.entrySet().stream()
+			.filter(e -> e.getValue().getSubstitutionFor().map(t -> t.equals(symbolId)).orElse(false))
+			.map(e -> e.getKey())
+			.collect(Collectors.toList());
+	}
 
 	@Override
 	public int hashCode() {
