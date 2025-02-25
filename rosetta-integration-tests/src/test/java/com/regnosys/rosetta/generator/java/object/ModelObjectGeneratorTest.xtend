@@ -25,7 +25,7 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)

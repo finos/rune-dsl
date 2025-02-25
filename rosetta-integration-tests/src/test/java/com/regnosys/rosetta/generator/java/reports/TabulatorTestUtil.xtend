@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.google.inject.Injector
 import java.util.Map
 import com.rosetta.util.types.JavaClass

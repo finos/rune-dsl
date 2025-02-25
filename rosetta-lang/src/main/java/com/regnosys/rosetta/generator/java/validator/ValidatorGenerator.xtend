@@ -21,7 +21,7 @@ import java.util.ArrayList
 import java.util.Optional
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2

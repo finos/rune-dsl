@@ -13,7 +13,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -561,7 +561,7 @@ class RosettaTypeProviderXtendTest {
 			add result: if True then s2 else s2
 			add result: if True then s2 else s3
 		'''.parseRosettaWithNoIssues
-		model.elements.last as Function => [
+		model.elements.lastOrNull as Function => [
 			val max4String = inputs.get(1).typeCall.typeCallToRType.withNoMeta
 			val maxNString = inputs.get(2).typeCall.typeCallToRType.withNoMeta
 			

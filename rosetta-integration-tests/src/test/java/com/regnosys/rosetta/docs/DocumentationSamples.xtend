@@ -4,7 +4,7 @@ import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.util.DottedPath
 import org.junit.jupiter.api.Test
@@ -130,8 +130,8 @@ class DocumentationSamples {
 			import com.rosetta.model.lib.annotations.RuneLabelProvider;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.reports.ReportFunction;
+			import jakarta.inject.Inject;
 			import java.util.Optional;
-			import javax.inject.Inject;
 			import test.reg.EuropeanParliamentReport;
 			import test.reg.EuropeanParliamentReport.EuropeanParliamentReportBuilder;
 			import test.reg.VehicleOwnership;

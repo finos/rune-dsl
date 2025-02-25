@@ -19,7 +19,7 @@ import java.util.Collections
 import java.util.Optional
 import java.util.function.Function
 import java.util.stream.Collectors
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface

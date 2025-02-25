@@ -9,7 +9,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.formatter.FormatterTestHelper
 import org.eclipse.xtext.formatting2.FormatterPreferenceKeys
 import org.eclipse.xtext.testing.formatter.FormatterTestRequest
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)

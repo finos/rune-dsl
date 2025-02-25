@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.rosetta.util.DottedPath
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.rosetta.util.types.JavaType
@@ -92,8 +92,8 @@ class ExpressionGeneratorTest {
 		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.test.model.Bar;
 		import com.rosetta.test.model.functions.Round;
+		import jakarta.inject.Inject;
 		import java.math.BigDecimal;
-		import javax.inject.Inject;
 		
 		
 		@Inject Round round;

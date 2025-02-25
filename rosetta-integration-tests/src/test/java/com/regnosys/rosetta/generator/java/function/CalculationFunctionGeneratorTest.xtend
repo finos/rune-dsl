@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -55,8 +55,8 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Period;
 			import com.rosetta.test.model.PeriodEnum;
+			import jakarta.inject.Inject;
 			import java.math.BigDecimal;
-			import javax.inject.Inject;
 			
 			
 			/**
@@ -288,10 +288,10 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.FoncOut;
 			import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 			import com.rosetta.test.model.FuncIn;
+			import jakarta.inject.Inject;
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
-			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(Calc.CalcDefault.class)
@@ -396,10 +396,10 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.test.model.FuncIn;
 			import com.rosetta.test.model.FuncOut;
 			import com.rosetta.test.model.FuncOut.FuncOutBuilder;
+			import jakarta.inject.Inject;
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
-			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
@@ -503,11 +503,11 @@ class CalculationFunctionGeneratorTest {
 				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+				import jakarta.inject.Inject;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
 				import java.util.stream.Collectors;
-				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
@@ -599,7 +599,7 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import javax.inject.Inject;
+			import jakarta.inject.Inject;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)
@@ -689,7 +689,7 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
-			import javax.inject.Inject;
+			import jakarta.inject.Inject;
 			
 			
 			/**
@@ -805,7 +805,7 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import javax.inject.Inject;
+			import jakarta.inject.Inject;
 			
 			
 			@ImplementedBy(Adder.AdderDefault.class)

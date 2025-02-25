@@ -6,7 +6,7 @@ import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.util.DottedPath
 import com.rosetta.util.types.generated.GeneratedJavaClass
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension

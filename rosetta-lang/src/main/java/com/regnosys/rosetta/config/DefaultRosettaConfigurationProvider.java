@@ -2,7 +2,7 @@ package com.regnosys.rosetta.config;
 
 import java.util.List;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 public class DefaultRosettaConfigurationProvider implements Provider<RosettaConfiguration> {
 	@Override

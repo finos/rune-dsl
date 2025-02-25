@@ -35,8 +35,8 @@ import java.util.Objects
 import java.util.Optional
 import java.util.Set
 import java.util.stream.Collectors
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2

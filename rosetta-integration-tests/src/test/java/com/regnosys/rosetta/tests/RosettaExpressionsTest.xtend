@@ -20,7 +20,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression
@@ -45,7 +45,7 @@ class RosettaExpressionsTest {
 		'''.parseRosettaWithNoErrors
 		
 		model => [
-			((elements.last as Function)
+			((elements.lastOrNull as Function)
 			  .operations.head.expression as RosettaConditionalExpression) => [
 			  	assertFalse(isFull);
 			  	assertNotNull(elsethen);

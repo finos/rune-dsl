@@ -12,7 +12,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import org.junit.jupiter.api.Disabled
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)

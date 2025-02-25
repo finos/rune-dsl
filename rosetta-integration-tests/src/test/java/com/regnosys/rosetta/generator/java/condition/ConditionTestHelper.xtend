@@ -14,7 +14,7 @@ import com.rosetta.model.lib.functions.NoOpModelObjectValidator
 import com.rosetta.model.lib.validation.Validator
 import java.util.Map
 import java.util.Optional
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ConditionTestHelper {

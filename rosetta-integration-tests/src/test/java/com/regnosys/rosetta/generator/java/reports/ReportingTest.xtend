@@ -4,7 +4,7 @@ import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.reports.Tabulator
 import com.rosetta.model.lib.RosettaModelObject

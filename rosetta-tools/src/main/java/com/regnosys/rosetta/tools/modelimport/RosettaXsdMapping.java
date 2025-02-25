@@ -34,7 +34,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.xsdelements.*;

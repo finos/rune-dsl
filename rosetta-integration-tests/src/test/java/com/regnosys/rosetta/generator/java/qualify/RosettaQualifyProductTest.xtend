@@ -17,7 +17,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.MatcherAssert.*
 import static org.hamcrest.core.Is.is
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)

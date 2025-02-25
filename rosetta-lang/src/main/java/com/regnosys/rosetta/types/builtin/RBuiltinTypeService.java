@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
 

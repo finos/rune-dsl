@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.rosetta.util.types.JavaPrimitiveType
 import java.util.List

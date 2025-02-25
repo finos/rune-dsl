@@ -5,7 +5,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import org.eclipse.xtext.EcoreUtil2
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.rosetta.util.types.JavaClass
