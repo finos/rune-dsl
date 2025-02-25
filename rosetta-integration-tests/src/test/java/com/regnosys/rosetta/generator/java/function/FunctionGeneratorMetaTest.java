@@ -30,6 +30,35 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
+    void canSetMetaOutuptWhereInputArgumentIsNull() {
+        var model = """        
+		func MyFunc:
+		    inputs:
+		        value string (0..1)
+		        scheme string (0..1)
+		    output:
+		        result string (0..1)
+		            [metadata scheme]
+		
+		    set result: value
+		    set result -> scheme: scheme
+       """;
+        
+       var code = generatorTestHelper.generateCode(model);
+       
+       generatorTestHelper.writeClasses(code, "canSetMetaOutuptWhereInputArgumentIsNull");
+       
+       var classes = generatorTestHelper.compileToClasses(code);
+       var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+       var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, null, null);
+       
+       var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of());
+       
+       assertEquals(expected, result);    	
+    }
+    
+    @Test
     void canSetMetaLocationOnFunctionObjectOutput() {
         var model = """
         metaType location string

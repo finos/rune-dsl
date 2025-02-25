@@ -59,7 +59,7 @@ class TypeCoercionTest {
 		
 		{
 			final BigDecimal bigDecimal = BigDecimal.valueOf(10);
-			return bigDecimal == null ? null : FieldWithMetaInteger.builder().setValue(bigDecimal.intValueExact()).build();
+			return bigDecimal == null ? FieldWithMetaInteger.builder().build() : FieldWithMetaInteger.builder().setValue(bigDecimal.intValueExact()).build();
 		}
 		'''
 		
@@ -102,10 +102,10 @@ class TypeCoercionTest {
 		{
 			final ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();
 			if (referenceWithMetaString == null) {
-				return null;
+				return FieldWithMetaString.builder().build();
 			}
 			final String string = referenceWithMetaString.getValue();
-			return string == null ? null : FieldWithMetaString.builder().setValue(string).build();
+			return string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
 		}
 		'''
 		
@@ -125,10 +125,10 @@ class TypeCoercionTest {
 		{
 			final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
 			if (fieldWithMetaString == null) {
-				return null;
+				return ReferenceWithMetaString.builder().build();
 			}
 			final String string = fieldWithMetaString.getValue();
-			return string == null ? null : ReferenceWithMetaString.builder().setValue(string).build();
+			return string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
 		}
 		'''
 		
@@ -147,7 +147,7 @@ class TypeCoercionTest {
 		
 		{
 			final String string = "foo";
-			return string == null ? null : FieldWithMetaString.builder().setValue(string).build();
+			return string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
 		}
 		'''		
 		assertCoercion(expected, '''"foo"''', String, new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil))
@@ -158,7 +158,7 @@ class TypeCoercionTest {
 		
 		{
 			final String string = "foo";
-			return string == null ? null : ReferenceWithMetaString.builder().setValue(string).build();
+			return string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
 		}
 		'''
 		assertCoercion(expected2, '''"foo"''', String, new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil))		
