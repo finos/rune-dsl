@@ -45,9 +45,7 @@ public class FunctionGeneratorMetaTest {
        """;
         
        var code = generatorTestHelper.generateCode(model);
-       
-       generatorTestHelper.writeClasses(code, "canSetMetaOutuptWhereInputArgumentIsNull");
-       
+              
        var classes = generatorTestHelper.compileToClasses(code);
        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
