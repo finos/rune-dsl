@@ -479,7 +479,7 @@ class PojoInheritanceRegressionTest {
 				public Foo2.Foo2Builder addParentList(Parent parentList0) {
 					final ReferenceWithMetaChild ifThenElseResult;
 					if (parentList0 == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaChild.builder().build();
 					} else {
 						ifThenElseResult = parentList0 instanceof Child ? ReferenceWithMetaChild.builder().setValue(Child.class.cast(parentList0)).build() : ReferenceWithMetaChild.builder().setValue(null).build();
 					}
@@ -490,7 +490,7 @@ class PojoInheritanceRegressionTest {
 				public Foo2.Foo2Builder addParentList(Parent _parentList, int _idx) {
 					final ReferenceWithMetaChild ifThenElseResult;
 					if (_parentList == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaChild.builder().build();
 					} else {
 						ifThenElseResult = _parentList instanceof Child ? ReferenceWithMetaChild.builder().setValue(Child.class.cast(_parentList)).build() : ReferenceWithMetaChild.builder().setValue(null).build();
 					}
@@ -502,7 +502,7 @@ class PojoInheritanceRegressionTest {
 					final Parent _parent = MapperC.of(parentLists).get();
 					final ReferenceWithMetaChild ifThenElseResult;
 					if (_parent == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaChild.builder().build();
 					} else {
 						ifThenElseResult = _parent instanceof Child ? ReferenceWithMetaChild.builder().setValue(Child.class.cast(_parent)).build() : ReferenceWithMetaChild.builder().setValue(null).build();
 					}
@@ -514,7 +514,7 @@ class PojoInheritanceRegressionTest {
 					final Parent _parent = MapperC.of(parentLists).get();
 					final ReferenceWithMetaChild ifThenElseResult;
 					if (_parent == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaChild.builder().build();
 					} else {
 						ifThenElseResult = _parent instanceof Child ? ReferenceWithMetaChild.builder().setValue(Child.class.cast(_parent)).build() : ReferenceWithMetaChild.builder().setValue(null).build();
 					}
@@ -929,10 +929,10 @@ class PojoInheritanceRegressionTest {
 				@Override
 				public ReferenceWithMetaChild getParentListOverriddenAsSingleReferenceWithMetaChild() {
 					if (parentList == null) {
-						return null;
+						return ReferenceWithMetaChild.builder().build();
 					}
 					final GrandChild grandChild = parentList.getValue();
-					return grandChild == null ? null : ReferenceWithMetaChild.builder().setValue(grandChild).build();
+					return grandChild == null ? ReferenceWithMetaChild.builder().build() : ReferenceWithMetaChild.builder().setValue(grandChild).build();
 				}
 				
 				@Override
@@ -1081,20 +1081,20 @@ class PojoInheritanceRegressionTest {
 				@Override
 				public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getParentListOverriddenAsSingleReferenceWithMetaChild() {
 					if (parentList == null) {
-						return null;
+						return ReferenceWithMetaChild.builder().build().toBuilder();
 					}
 					final GrandChild _grandChild = parentList.getValue();
-					return _grandChild == null ? null : ReferenceWithMetaChild.builder().setValue(_grandChild).build().toBuilder();
+					return _grandChild == null ? ReferenceWithMetaChild.builder().build().toBuilder() : ReferenceWithMetaChild.builder().setValue(_grandChild).build().toBuilder();
 				}
 				
 				@Override
 				public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getOrCreateParentListOverriddenAsSingleReferenceWithMetaChild() {
 					final ReferenceWithMetaGrandChild referenceWithMetaGrandChild0 = getOrCreateParentListOverriddenAsReferenceWithMetaGrandChild();
 					if (referenceWithMetaGrandChild0 == null) {
-						return null;
+						return ReferenceWithMetaChild.builder().build().toBuilder();
 					}
 					final GrandChild grandChild = referenceWithMetaGrandChild0.getValue();
-					return grandChild == null ? null : ReferenceWithMetaChild.builder().setValue(grandChild).build().toBuilder();
+					return grandChild == null ? ReferenceWithMetaChild.builder().build().toBuilder() : ReferenceWithMetaChild.builder().setValue(grandChild).build().toBuilder();
 				}
 				
 				@Override
@@ -1203,11 +1203,11 @@ class PojoInheritanceRegressionTest {
 				public Foo3.Foo3Builder setParentList(ReferenceWithMetaChild _parentList) {
 					final ReferenceWithMetaGrandChild ifThenElseResult;
 					if (_parentList == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaGrandChild.builder().build();
 					} else {
 						final Child child = _parentList.getValue();
 						if (child == null) {
-							ifThenElseResult = null;
+							ifThenElseResult = ReferenceWithMetaGrandChild.builder().build();
 						} else {
 							ifThenElseResult = child instanceof GrandChild ? ReferenceWithMetaGrandChild.builder().setValue(GrandChild.class.cast(child)).build() : ReferenceWithMetaGrandChild.builder().setValue(null).build();
 						}
@@ -1230,7 +1230,7 @@ class PojoInheritanceRegressionTest {
 				public Foo3.Foo3Builder addParentList(Parent parentList0) {
 					final ReferenceWithMetaGrandChild ifThenElseResult;
 					if (parentList0 == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaGrandChild.builder().build();
 					} else {
 						ifThenElseResult = parentList0 instanceof GrandChild ? ReferenceWithMetaGrandChild.builder().setValue(GrandChild.class.cast(parentList0)).build() : ReferenceWithMetaGrandChild.builder().setValue(null).build();
 					}
@@ -1241,7 +1241,7 @@ class PojoInheritanceRegressionTest {
 				public Foo3.Foo3Builder addParentList(Parent _parentList, int _idx) {
 					final ReferenceWithMetaGrandChild ifThenElseResult;
 					if (_parentList == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaGrandChild.builder().build();
 					} else {
 						ifThenElseResult = _parentList instanceof GrandChild ? ReferenceWithMetaGrandChild.builder().setValue(GrandChild.class.cast(_parentList)).build() : ReferenceWithMetaGrandChild.builder().setValue(null).build();
 					}
@@ -1253,7 +1253,7 @@ class PojoInheritanceRegressionTest {
 					final Parent _parent = MapperC.of(parentLists).get();
 					final ReferenceWithMetaGrandChild ifThenElseResult;
 					if (_parent == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaGrandChild.builder().build();
 					} else {
 						ifThenElseResult = _parent instanceof GrandChild ? ReferenceWithMetaGrandChild.builder().setValue(GrandChild.class.cast(_parent)).build() : ReferenceWithMetaGrandChild.builder().setValue(null).build();
 					}
@@ -1265,7 +1265,7 @@ class PojoInheritanceRegressionTest {
 					final Parent _parent = MapperC.of(parentLists).get();
 					final ReferenceWithMetaGrandChild ifThenElseResult;
 					if (_parent == null) {
-						ifThenElseResult = null;
+						ifThenElseResult = ReferenceWithMetaGrandChild.builder().build();
 					} else {
 						ifThenElseResult = _parent instanceof GrandChild ? ReferenceWithMetaGrandChild.builder().setValue(GrandChild.class.cast(_parent)).build() : ReferenceWithMetaGrandChild.builder().setValue(null).build();
 					}
