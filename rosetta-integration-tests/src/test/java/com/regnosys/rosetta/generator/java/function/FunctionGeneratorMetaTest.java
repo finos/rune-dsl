@@ -30,6 +30,41 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
+    void canSetNestedCombinedFieldWithMetaUsingConstructor() {
+        var model = """	   		    
+		type Foo:
+           fooField string (1..1)
+               [metadata scheme]
+		
+		func MyFunc:
+        	inputs:
+        	  myInput string (1..1)
+        	     [metadata scheme]
+        	
+        	output:
+        	    result Foo (1..1)
+        	    
+        	set result: 
+        	    Foo {
+        	      fooField: myInput
+        	    }
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+         
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme"));
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+                "fooField", generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme")
+        ));
+
+        assertEquals(expected, result);    	
+    }    
+    
+    @Test
     void canSetNestedCombinedFieldWithMeta() {
         var model = """	   		    
 		type Foo:

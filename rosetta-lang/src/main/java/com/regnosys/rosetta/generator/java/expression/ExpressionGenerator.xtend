@@ -1122,11 +1122,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				expr.values.map[pair|
 					val attr = pair.key as Attribute
 					val attrExpr = pair.value
-					val hasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasMeta
 					val assignAsKey = attrExpr instanceof AsKeyOperation
+					val requiresValueAssignment = requiresValueAssignment(assignAsKey, attr, attrExpr)
+					
 					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isFeatureMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
-						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF hasMeta && !assignAsKey»Value«ENDIF»(«it»)''', null)]
+						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF requiresValueAssignment»Value«ENDIF»(«it»)''', null)]
 				].reduce[acc,attrCode|
 					acc.then(attrCode, [allSetCode,setAttr|
 						JavaExpression.from(
@@ -1151,6 +1152,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			recordUtil.recordConstructor(type as RRecordType, featureMap, context.scope)
 		}
 	}
+	
+	private def boolean requiresValueAssignment(boolean assignAsKey, Attribute attr, RosettaExpression attrExpr) {
+		if (assignAsKey) {
+			return false
+		}
+		val attrHasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasMeta
+		val attrExprHasMeta = typeProvider.getRMetaAnnotatedType(attrExpr).hasMeta
+		return attrHasMeta && !attrExprHasMeta
+	}
+	
+	
 	private def JavaStatementBuilder evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaScope scope) {
 		if (assignAsKey) {
 			val metaClass = (feature as Attribute).buildRAttribute.toMetaJavaType.itemType
@@ -1196,7 +1208,13 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					]
 			}
 		} else {
-			val clazz = typeProvider.getRTypeOfFeature(feature, value).RType.withNoMeta.toJavaReferenceType
+			var clazz = typeProvider.getRTypeOfFeature(feature, value).RType.withNoMeta.toJavaReferenceType
+			if (feature instanceof Attribute) {
+				if (!requiresValueAssignment(assignAsKey, feature, value)) {
+					clazz = typeProvider.getRTypeOfFeature(feature, value).toJavaReferenceType
+				}
+			}
+			
 			value.javaCode(isMulti ? LIST.wrap(clazz) : clazz, scope)
 		}
 	}
