@@ -43,6 +43,17 @@ public class FunctionGeneratorMetaTest {
 		                            }
         """;    	
         
+        // syntax
+        // scoping
+        // validation: meta field is correct type, with meta value cardinality check (someScheme should be single), lhs of with-meta should be single cardinality
+        // typeProvider: return type of with-meta
+        // cardinalityProvider: returned cardinality of with-meta, has to be single
+        // expectedTypeProvider: is lhs (someValue) correct type given result type and addition of meta to lhs
+        // java layer: code generation (expression generator)
+        
+        // formatting: RosettaExpressionFormatter
+        // syntax highlighting: textmate (in case you need it but probably not RosettaSemanticTokensService)
+        
         var code = generatorTestHelper.generateCode(model);
 
     }
