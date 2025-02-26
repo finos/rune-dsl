@@ -30,6 +30,24 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
+    void canSetMetaFieldsUsingWithMetaSyntax() {
+        var model = """	   		    
+		func MyFunc:
+		    output:
+			    result string (1..1)
+				  [metadata scheme]
+		          [metadata id]
+		    set result: "someValue" with-meta {
+			                            scheme: "someScheme",
+		                                id: "someId"             
+		                            }
+        """;    	
+        
+        var code = generatorTestHelper.generateCode(model);
+
+    }
+    
+    @Test
     void canSetNestedCombinedFieldWithMetaUsingConstructor() {
         var model = """	   		    
 		type Foo:
