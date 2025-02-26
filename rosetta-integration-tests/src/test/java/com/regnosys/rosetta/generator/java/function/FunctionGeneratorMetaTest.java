@@ -31,7 +31,7 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
-    void canSetMetaWhenPassedViaFunction() {
+    void canSetNestedCombinedFieldWithMeta() {
         var model = """	   		    
 		type Foo:
            fooField string (1..1)
@@ -49,7 +49,7 @@ public class FunctionGeneratorMetaTest {
         """;
         
         var code = generatorTestHelper.generateCode(model);
-        
+                
         var classes = generatorTestHelper.compileToClasses(code);
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
