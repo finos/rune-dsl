@@ -654,6 +654,10 @@ SwitchCaseGuard:
 	literalGuard=RosettaLiteral | symbolGuard=[RosettaSymbol|ValidID]
 ;
 
+WithMetaEntry:
+	key=[RosettaFeature|ValidID] ':' value=RosettaCalcExpression
+;
+
 UnaryOperation returns RosettaExpression:
 	RosettaCalcPrimary
 	(
@@ -681,6 +685,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
+			|({WithMetaOperation.argument=current} operator='with-meta' ('{' entries+=WithMetaEntry (',' entries+=WithMetaEntry)* '}'))
 		)
 		| ->(
 			({SortOperation.argument=current} operator='sort')
@@ -718,6 +723,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
 			|({SwitchOperation} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
+			|({WithMetaOperation} operator='with-meta' ('{' entries+=WithMetaEntry (',' entries+=WithMetaEntry)* '}'))			
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -756,6 +762,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
+			|({WithMetaOperation.argument=current} operator='with-meta' ('{' entries+=WithMetaEntry (',' entries+=WithMetaEntry)* '}'))
 		)
 		| ->(
 			({SortOperation.argument=current} operator='sort')
