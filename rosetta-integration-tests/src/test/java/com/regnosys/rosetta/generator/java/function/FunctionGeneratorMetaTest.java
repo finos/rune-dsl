@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -28,6 +29,38 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetMetaWhenPassedViaFunction() {
+        var model = """	   		    
+		type Foo:
+           fooField string (1..1)
+               [metadata scheme]
+		
+		func MyFunc:
+        	inputs:
+        	  myInput string (1..1)
+        	     [metadata scheme]
+        	
+        	output:
+        	    result Foo (1..1)
+        	    
+        	set result -> fooField: myInput
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme"));
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+                "fooField", generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme")
+        ));
+
+        assertEquals(expected, result);    	
+    }
     
     @Test
     void canSetMetaOutuptWhereInputArgumentIsNull() {
@@ -234,9 +267,7 @@ public class FunctionGeneratorMetaTest {
         """;
         
       var code = generatorTestHelper.generateCode(model);
-      
-      generatorTestHelper.writeClasses(code, "canSetExternalKeyOnFunctionObjectOutput");
-      
+            
       var classes = generatorTestHelper.compileToClasses(code);
       var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
       
