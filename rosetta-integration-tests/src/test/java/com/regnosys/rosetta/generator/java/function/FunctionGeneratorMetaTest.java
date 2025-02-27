@@ -31,7 +31,10 @@ public class FunctionGeneratorMetaTest {
     
     @Test
     void canSetMetaFieldsUsingWithMetaSyntax() {
-        var model = """	   		    
+        var model = """	   		  
+        metaType id string
+        metaType scheme string
+          
 		func MyFunc:
 		    output:
 			    result string (1..1)
