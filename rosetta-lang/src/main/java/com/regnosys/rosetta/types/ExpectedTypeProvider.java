@@ -621,7 +621,9 @@ public interface ExpectedTypeProvider {
 			
 			@Override
 			protected RMetaAnnotatedType caseWithMetaOperation(WithMetaOperation expr, Context context) {
-				//TODO: return expected type
+				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
+					return getExpectedTypeFromContainer(expr);
+				}
 				return null;
 			}
 		}

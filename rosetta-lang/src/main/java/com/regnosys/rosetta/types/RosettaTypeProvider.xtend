@@ -634,7 +634,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
- 		//TODO: type provider return type of with meta
+ 		expr.argument.safeRType(cycleTracker)
  	}
 
 }
