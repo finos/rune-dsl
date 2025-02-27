@@ -11,6 +11,7 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.google.common.collect.Lists;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
@@ -28,6 +29,108 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetSingleCardinalityMetaToListOfMetaUsingConstructor() {
+        var model = """	   
+        metaType reference string
+        metaType key string
+                		    
+		type Foo:
+		    barReferences Bar (0..*)
+		    [metadata reference]
+		
+		type Bar:
+		    [metadata key]
+		    barField string (0..1)
+		
+		func MyFunc:
+		    inputs:
+		        bar Bar (0..1)
+		    output:
+		        foo Foo (0..1)
+		
+		    set foo: Foo {
+        		barReferences: bar    
+		    }
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+                
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+					"barField", "barFieldValue",
+					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+       		 ));
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
+
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+									"barField", "barFieldValue",
+									"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+				       		 ))
+							
+						)))
+				
+   		 ));
+        
+        assertEquals(expected, result);    	
+    }  
+    
+    @Test
+    void canSetSingleCardinalityMetaToListOfMeta() {
+        var model = """	   
+        metaType reference string
+        metaType key string
+                		    
+		type Foo:
+		    barReferences Bar (0..*)
+		    [metadata reference]
+		
+		type Bar:
+		    [metadata key]
+		    barField string (0..1)
+		
+		func MyFunc:
+		    inputs:
+		        bar Bar (0..1)
+		    output:
+		        foo Foo (0..1)
+		
+		    set foo -> barReferences: bar
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+                
+        var classes = generatorTestHelper.compileToClasses(code);
+                
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+					"barField", "barFieldValue",
+					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+       		 ));
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
+
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+									"barField", "barFieldValue",
+									"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+				       		 ))
+							
+						)))
+				
+   		 ));
+        
+        assertEquals(expected, result);    	
+    }      
     
     @Test
     void canSetNestedCombinedFieldWithMetaUsingConstructor() {
