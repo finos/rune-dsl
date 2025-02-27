@@ -96,6 +96,7 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
 import com.regnosys.rosetta.rosetta.simple.AnnotationPath
 import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
 import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -630,6 +631,10 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		expr.cases
 			.map[it.expression.safeRType(cycleTracker)]
 			.joinMetaAnnotatedTypes
+ 	}
+ 	
+ 	override protected caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
+ 		//TODO: type provider return type of with meta
  	}
 
 }
