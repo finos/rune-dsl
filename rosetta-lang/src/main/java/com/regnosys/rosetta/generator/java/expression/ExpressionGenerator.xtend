@@ -1323,6 +1323,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
+		val inputRType =  typeProvider.getRMetaAnnotatedType(expr.argument).RType
+ 		JavaExpression.from('''''', context.expectedType)
  		//TODO: code gen
  	}
 }
