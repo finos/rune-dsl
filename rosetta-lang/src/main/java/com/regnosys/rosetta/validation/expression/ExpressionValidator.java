@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ComposedChecks;
 
@@ -39,6 +40,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
+import com.regnosys.rosetta.rosetta.expression.WithMetaEntry;
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
@@ -51,6 +54,7 @@ import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
+import com.regnosys.rosetta.utils.RosettaConfigExtension;
 
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
@@ -71,6 +75,21 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
+	@Inject
+	private RosettaConfigExtension configs;
+	
+//	@Check
+//	public void checkWithMetaOperation(WithMetaOperation op) {
+//		
+//	}
+	
+	@Check
+	public void checkWithMetaEntry(WithMetaEntry entry) {
+		for (IEObjectDescription eObjectDescription : configs.findMetaTypes(entry)) {
+			
+		}
+		
+	}
 	
 	@Check
 	public void checkCondition(Condition c) {

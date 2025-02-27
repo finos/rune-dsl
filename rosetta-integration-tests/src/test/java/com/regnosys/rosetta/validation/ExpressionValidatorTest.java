@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.validation;
 
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
+
 import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
@@ -63,5 +65,27 @@ public class ExpressionValidatorTest {
 					""");
 			
 			validationTestHelper.assertNoIssues(expr);
+	}
+	
+	@Test
+	void testInvalidMetaTypeFails() {
+		RosettaExpression expr =
+				modelService.toTestModel("""
+					metaType id string
+					metaType scheme string
+					""")
+				.parseExpression("""
+					"someValue" with-meta {
+						scheme: 5,
+						id: "someId"
+					}
+					""", 
+					"""
+					result string (1..1)
+				      [metadata scheme]
+		              [metadata id]
+					""");	
+		
+		validationTestHelper.assertError(expr, WITH_META_ENTRY, null, "Metta attribute \"scheme\" should be of type string");
 	}
 }
