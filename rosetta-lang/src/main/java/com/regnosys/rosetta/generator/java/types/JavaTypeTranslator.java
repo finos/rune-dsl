@@ -215,7 +215,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
-	public JavaClass<?> toJavaMetaType(RFeature feature) {
+	public JavaClass<?> toMetaJavaType(RFeature feature) {
 		if (feature instanceof RAttribute) {
 			return toMetaJavaType((RAttribute) feature);
 		} else if (feature instanceof RMetaAttribute) {
@@ -251,7 +251,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<RFeature> segments = op.getPathTail();
 			feature = segments.get(segments.size() - 1);
 		}
-		return toJavaMetaType(feature);
+		return toMetaJavaType(feature);
 	}	
 	public JavaReferenceType operationToJavaType(ROperation op) {
 		RFeature feature;
