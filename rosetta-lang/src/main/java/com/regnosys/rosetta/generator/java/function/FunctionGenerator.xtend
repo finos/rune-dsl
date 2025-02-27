@@ -606,15 +606,20 @@ class FunctionGenerator {
 					]
 			}
 		} else {
-			val endOfPath = op.pathTail.get(op.pathTail.length - 1)
-			val endOfPathIsMeta = if (endOfPath instanceof RAttribute) {
-				endOfPath.RMetaAnnotatedType.hasMeta
-			} else {
-				false
-			}
-			val expectedType = endOfPathIsMeta ? op.operationToReferenceWithMetaType : op.operationToJavaType
+//			val endOfPath = op.pathTail.get(op.pathTail.length - 1)
+//			val endOfPathIsMeta = if (endOfPath instanceof RAttribute) {
+//				endOfPath.RMetaAnnotatedType.hasMeta
+//			} else {
+//				false
+//			}
+//			
+//			val metaType = op.operationToReferenceWithMetaType 
+//			val newMetaTyee = op.operationToMetaJavaType
+//			val nonMetaType = op.operationToJavaType
+//			
+//			val expectedType = endOfPathIsMeta ? op.operationToMetaJavaType : op.operationToJavaType
 			
-			expressionGenerator.javaCode(op.expression, expectedType, scope)
+			expressionGenerator.javaCode(op.expression, op.operationToMetaJavaType, scope)
 		}
 	}
 

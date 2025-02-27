@@ -30,6 +30,35 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
+    void canSetSingleCardinalityMetaToListOfMeta() {
+        var model = """	   
+        metaType reference string
+        metaType key string
+                		    
+		type Foo:
+		    barReferences Bar (0..*)
+		    [metadata reference]
+		
+		type Bar:
+		    [metadata key]
+		    attr string (0..1)
+		
+		func MyFunc:
+		    inputs:
+		        bar Bar (0..1)
+		    output:
+		        foo Foo (0..1)
+		
+		    set foo -> barReferences: bar
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+                
+        var classes = generatorTestHelper.compileToClasses(code);
+ 	
+    }      
+    
+    @Test
     void canSetNestedCombinedFieldWithMetaUsingConstructor() {
         var model = """	   		    
 		type Foo:
