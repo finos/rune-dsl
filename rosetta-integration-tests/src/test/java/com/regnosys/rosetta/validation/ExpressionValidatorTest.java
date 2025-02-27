@@ -42,4 +42,26 @@ public class ExpressionValidatorTest {
 		
 		validationTestHelper.assertNoIssues(expr);
 	}
+	
+	@Test
+	void testValidWithMeta() {
+		RosettaExpression expr =
+				modelService.toTestModel("""
+					metaType id string
+					metaType scheme string
+					""")
+				.parseExpression("""
+					"someValue" with-meta {
+						scheme: "someScheme",
+						id: "someId"
+					}
+					""", 
+					"""
+					result string (1..1)
+				      [metadata scheme]
+		              [metadata id]
+					""");
+			
+			validationTestHelper.assertNoIssues(expr);
+	}
 }
