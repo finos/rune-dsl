@@ -11,6 +11,7 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.google.common.collect.Lists;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
@@ -41,7 +42,7 @@ public class FunctionGeneratorMetaTest {
 		
 		type Bar:
 		    [metadata key]
-		    attr string (0..1)
+		    barField string (0..1)
 		
 		func MyFunc:
 		    inputs:
@@ -55,7 +56,25 @@ public class FunctionGeneratorMetaTest {
         var code = generatorTestHelper.generateCode(model);
                 
         var classes = generatorTestHelper.compileToClasses(code);
- 	
+                
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+					"barField", "barFieldValue",
+					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+       		 ));
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
+
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+									"barField", "barFieldValue"
+				       		 )),
+							"externalReference", "someExternalKey"
+						)))
+				
+   		 ));
     }      
     
     @Test
