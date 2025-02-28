@@ -32,20 +32,20 @@ public class FunctionGeneratorMetaTest {
 
     @Test
     void canSetMetaFieldsUsingWithMetaSyntax() {
-        var model = """	   		  
+        var model = """
         metaType id string
         metaType scheme string
-          
-		func MyFunc:
-		    output:
-			    result string (1..1)
-				  [metadata scheme]
-		          [metadata id]
-		    set result: "someValue" with-meta {
-			                            scheme: "someScheme",
-		                                id: "someId"             
-		                            }
-        """;
+  
+        func MyFunc:
+            output:
+                result string (1..1)
+                  [metadata scheme]
+                  [metadata id]
+            set result: "someValue" with-meta {
+                                        scheme: "someScheme",
+                                        id: "someId"
+                                    }
+  """;
 
         // syntax
         // scoping
@@ -64,28 +64,28 @@ public class FunctionGeneratorMetaTest {
 
     @Test
     void canSetSingleCardinalityMetaToListOfMetaUsingConstructor() {
-        var model = """	   
+        var model = """
         metaType reference string
         metaType key string
-                		    
-		type Foo:
-		    barReferences Bar (0..*)
-		    [metadata reference]
+  
+        type Foo:
+            barReferences Bar (0..*)
+            [metadata reference]
 		
-		type Bar:
-		    [metadata key]
-		    barField string (0..1)
+        type Bar:
+            [metadata key]
+            barField string (0..1)
 		
-		func MyFunc:
-		    inputs:
-		        bar Bar (0..1)
-		    output:
-		        foo Foo (0..1)
+        func MyFunc:
+            inputs:
+                bar Bar (0..1)
+            output:
+                foo Foo (0..1)
 		
-		    set foo: Foo {
-        		barReferences: bar    
-		    }
-        """;
+            set foo: Foo {
+                barReferences: bar
+            }
+  """;
 
         var code = generatorTestHelper.generateCode(model);
 
@@ -116,26 +116,26 @@ public class FunctionGeneratorMetaTest {
 
     @Test
     void canSetSingleCardinalityMetaToListOfMeta() {
-        var model = """	   
+        var model = """
         metaType reference string
         metaType key string
-                		    
-		type Foo:
-		    barReferences Bar (0..*)
-		    [metadata reference]
+  
+        type Foo:
+            barReferences Bar (0..*)
+            [metadata reference]
 		
-		type Bar:
-		    [metadata key]
-		    barField string (0..1)
+        type Bar:
+            [metadata key]
+            barField string (0..1)
 		
-		func MyFunc:
-		    inputs:
-		        bar Bar (0..1)
-		    output:
-		        foo Foo (0..1)
+        func MyFunc:
+            inputs:
+                bar Bar (0..1)
+            output:
+                foo Foo (0..1)
 		
-		    set foo -> barReferences: bar
-        """;
+            set foo -> barReferences: bar
+  """;
 
         var code = generatorTestHelper.generateCode(model);
 
@@ -166,23 +166,23 @@ public class FunctionGeneratorMetaTest {
 
     @Test
     void canSetNestedCombinedFieldWithMetaUsingConstructor() {
-        var model = """	   		    
-		type Foo:
+        var model = """
+        type Foo:
            fooField string (1..1)
                [metadata scheme]
 		
-		func MyFunc:
-        	inputs:
-        	  myInput string (1..1)
-        	     [metadata scheme]
-        	
-        	output:
-        	    result Foo (1..1)
-        	    
-        	set result: 
-        	    Foo {
-        	      fooField: myInput
-        	    }
+        func MyFunc:
+            inputs:
+              myInput string (1..1)
+                 [metadata scheme]
+        
+            output:
+                result Foo (1..1)
+        
+            set result:
+                Foo {
+                  fooField: myInput
+                }
         """;
         
         var code = generatorTestHelper.generateCode(model);
@@ -201,20 +201,20 @@ public class FunctionGeneratorMetaTest {
     
     @Test
     void canSetNestedCombinedFieldWithMeta() {
-        var model = """	   		    
-		type Foo:
+        var model = """
+        type Foo:
            fooField string (1..1)
                [metadata scheme]
 		
-		func MyFunc:
-        	inputs:
-        	  myInput string (1..1)
-        	     [metadata scheme]
-        	
-        	output:
-        	    result Foo (1..1)
-        	    
-        	set result -> fooField: myInput
+        func MyFunc:
+            inputs:
+              myInput string (1..1)
+                 [metadata scheme]
+        
+            output:
+                result Foo (1..1)
+        
+            set result -> fooField: myInput
         """;
         
         var code = generatorTestHelper.generateCode(model);
@@ -232,19 +232,19 @@ public class FunctionGeneratorMetaTest {
     }
     
     @Test
-    void canSetMetaOutuptWhereInputArgumentIsNull() {
-        var model = """        
-		func MyFunc:
-		    inputs:
-		        value string (0..1)
-		        scheme string (0..1)
-		    output:
-		        result string (0..1)
-		            [metadata scheme]
+    void canSetMetaOutputWhereInputArgumentIsNull() {
+        var model = """
+        func MyFunc:
+            inputs:
+                value string (0..1)
+                scheme string (0..1)
+            output:
+                result string (0..1)
+                    [metadata scheme]
 		
-		    set result: value
-		    set result -> scheme: scheme
-       """;
+            set result: value
+            set result -> scheme: scheme
+  """;
         
        var code = generatorTestHelper.generateCode(model);
               
@@ -262,10 +262,10 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaLocationOnFunctionObjectOutput() {
         var model = """
         metaType location string
-        
+       
         type Foo:
             field string (1..1)
-            
+       
         func MyFunc:
             output:
                 result Foo (1..1)
@@ -323,7 +323,7 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaAddressOnFunctionObjectOutput() {
         var model = """
         metaType address string
-        
+       
         type Foo:
             field string (1..1)
 
