@@ -86,6 +86,6 @@ public class ExpressionValidatorTest {
 		              [metadata id]
 					""");	
 		
-		validationTestHelper.assertError(expr, WITH_META_ENTRY, null, "Metta attribute \"scheme\" should be of type string");
+		validationTestHelper.assertError(expr, WITH_META_ENTRY, null, "Expected type `string`, but got `int` instead. Meta attribute 'scheme' should be of type 'string'");
 	}
 }

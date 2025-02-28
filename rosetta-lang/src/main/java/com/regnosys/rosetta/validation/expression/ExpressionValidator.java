@@ -2,6 +2,7 @@ package com.regnosys.rosetta.validation.expression;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Streams;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.IEObjectDescription;
@@ -41,27 +42,24 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.WithMetaEntry;
-import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
+import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 import com.regnosys.rosetta.utils.RosettaConfigExtension;
 
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
+import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 // TODO: move over expression validations from RosettaSimpleValidator
@@ -77,18 +75,25 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaFunctionExtensions functionExtensions;
 	@Inject
 	private RosettaConfigExtension configs;
-	
-//	@Check
-//	public void checkWithMetaOperation(WithMetaOperation op) {
-//		
-//	}
+	@Inject
+	private RosettaTypeProvider rosettaTypeProvider;
 	
 	@Check
 	public void checkWithMetaEntry(WithMetaEntry entry) {
-		for (IEObjectDescription eObjectDescription : configs.findMetaTypes(entry)) {
-			
-		}
-		
+		List<RosettaMetaType> validMetaTypes =
+				Streams.stream(configs.findMetaTypes(entry))
+						.map(IEObjectDescription::getEObjectOrProxy)
+						.map(x -> (RosettaMetaType)x)
+						.collect(Collectors.toList());
+
+		Optional<RosettaMetaType> metaTypeForEntry = validMetaTypes.stream()
+				.filter(validMetaType -> validMetaType.getName().equals(entry.getKey().getName()))
+				.findFirst();
+
+		metaTypeForEntry.ifPresent(metaType -> {
+			RType expectedType = typeSystem.typeCallToRType(metaType.getTypeCall());
+			subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
+		});
 	}
 	
 	@Check
@@ -322,7 +327,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				} else if (callable instanceof RosettaRule) {
 					RosettaRule f = (RosettaRule) callable;
 					if (minCount >= 1) {
-						RMetaAnnotatedType paramType = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(f.getInput()));
+						RMetaAnnotatedType paramType = withNoMeta(typeSystem.typeCallToRType(f.getInput()));
 						RosettaExpression arg = expr.getArgs().get(0);
 						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");
