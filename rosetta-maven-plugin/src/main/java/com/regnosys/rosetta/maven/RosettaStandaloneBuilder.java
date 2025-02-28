@@ -74,12 +74,12 @@ import org.slf4j.LoggerFactory;
 public class RosettaStandaloneBuilder extends StandaloneBuilder {
 	private static final Logger LOG = LoggerFactory.getLogger(RosettaStandaloneBuilder.class);
 	
-	private static final Class<?> standaloneBuilderStateClass; 
+	private static Class<?> standaloneBuilderStateClass; 
 	static {
 		try {
 			standaloneBuilderStateClass = Class.forName("org.eclipse.xtext.builder.standalone.StandaloneBuilderState");
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			standaloneBuilderStateClass = null;
 		}
 	}
 	
