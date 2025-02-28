@@ -82,6 +82,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.RType;
@@ -589,5 +590,11 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 			RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("Constructor expressions are not supported yet.");
+	}
+	
+	@Override
+	protected RosettaValue caseWithMetaOperation(WithMetaOperation expr, RosettaInterpreterContext context) {
+ 		// TODO
+ 		throw new RosettaInterpreterException("WithMeta operations are not supported yet.");
 	}
 }

@@ -138,6 +138,7 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1319,5 +1320,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 							)
 						]
 				]
+ 	}
+ 	
+ 	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
+		val inputRType =  typeProvider.getRMetaAnnotatedType(expr.argument).RType
+ 		JavaExpression.from('''''', context.expectedType)
+ 		//TODO: code gen
  	}
 }

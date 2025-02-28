@@ -68,6 +68,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
@@ -614,6 +615,14 @@ public interface ExpectedTypeProvider {
 					if (expr.getCases().stream().allMatch(c -> leavesItemTypeUnchanged(c.getExpression())) && (expr.getDefault() == null || leavesItemTypeUnchanged(expr.getDefault()))) {
 						return getExpectedTypeFromContainer(expr);
 					}
+				}
+				return null;
+			}
+			
+			@Override
+			protected RMetaAnnotatedType caseWithMetaOperation(WithMetaOperation expr, Context context) {
+				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
+					return getExpectedTypeFromContainer(expr);
 				}
 				return null;
 			}

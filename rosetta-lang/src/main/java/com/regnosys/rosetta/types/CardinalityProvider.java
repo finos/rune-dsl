@@ -75,6 +75,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
@@ -580,4 +581,9 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 		}
  		return false;
  	}
+
+	@Override
+	protected Boolean caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
+		return false;
+	}
 }
