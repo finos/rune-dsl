@@ -80,6 +80,7 @@ import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
+import com.regnosys.rosetta.types.RMetaAnnotatedType
 
 class FunctionGenerator {
 
@@ -514,7 +515,14 @@ class FunctionGenerator {
 		}
 		
 		val innerPropType = innerProp.type.itemType
-		innerPropType instanceof RJavaWithMetaValue && !op.assignAsKey
+		
+		val isMetaSegment = if (segment instanceof RAttribute) {
+			segment.RMetaAnnotatedType.hasMeta
+		} else {
+			false
+		}
+		
+		innerPropType instanceof RJavaWithMetaValue && !isMetaSegment && !op.assignAsKey		
 	}
 	
 	private def StringConcatenationClient generateMetaWrapperCreator(RFeature seg, JavaPojoProperty prop, JavaType expressionType) {
@@ -598,7 +606,7 @@ class FunctionGenerator {
 					]
 			}
 		} else {
-			expressionGenerator.javaCode(op.expression, op.operationToJavaType, scope)
+			expressionGenerator.javaCode(op.expression, op.operationToMetaJavaType, scope)
 		}
 	}
 

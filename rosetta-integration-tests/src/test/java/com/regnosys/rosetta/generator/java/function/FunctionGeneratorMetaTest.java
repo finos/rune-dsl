@@ -11,6 +11,7 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.google.common.collect.Lists;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
@@ -28,6 +29,202 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetSingleCardinalityMetaToListOfMetaUsingConstructor() {
+        var model = """	   
+        metaType reference string
+        metaType key string
+                		    
+		type Foo:
+		    barReferences Bar (0..*)
+		    [metadata reference]
+		
+		type Bar:
+		    [metadata key]
+		    barField string (0..1)
+		
+		func MyFunc:
+		    inputs:
+		        bar Bar (0..1)
+		    output:
+		        foo Foo (0..1)
+		
+		    set foo: Foo {
+        		barReferences: bar    
+		    }
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+                
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+					"barField", "barFieldValue",
+					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+       		 ));
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
+
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+									"barField", "barFieldValue",
+									"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+				       		 ))
+							
+						)))
+				
+   		 ));
+        
+        assertEquals(expected, result);    	
+    }  
+    
+    @Test
+    void canSetSingleCardinalityMetaToListOfMeta() {
+        var model = """	   
+        metaType reference string
+        metaType key string
+                		    
+		type Foo:
+		    barReferences Bar (0..*)
+		    [metadata reference]
+		
+		type Bar:
+		    [metadata key]
+		    barField string (0..1)
+		
+		func MyFunc:
+		    inputs:
+		        bar Bar (0..1)
+		    output:
+		        foo Foo (0..1)
+		
+		    set foo -> barReferences: bar
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+                
+        var classes = generatorTestHelper.compileToClasses(code);
+                
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+					"barField", "barFieldValue",
+					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+       		 ));
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
+
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+									"barField", "barFieldValue",
+									"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
+				       		 ))
+							
+						)))
+				
+   		 ));
+        
+        assertEquals(expected, result);    	
+    }      
+    
+    @Test
+    void canSetNestedCombinedFieldWithMetaUsingConstructor() {
+        var model = """	   		    
+		type Foo:
+           fooField string (1..1)
+               [metadata scheme]
+		
+		func MyFunc:
+        	inputs:
+        	  myInput string (1..1)
+        	     [metadata scheme]
+        	
+        	output:
+        	    result Foo (1..1)
+        	    
+        	set result: 
+        	    Foo {
+        	      fooField: myInput
+        	    }
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+         
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme"));
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+                "fooField", generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme")
+        ));
+
+        assertEquals(expected, result);    	
+    }    
+    
+    @Test
+    void canSetNestedCombinedFieldWithMeta() {
+        var model = """	   		    
+		type Foo:
+           fooField string (1..1)
+               [metadata scheme]
+		
+		func MyFunc:
+        	inputs:
+        	  myInput string (1..1)
+        	     [metadata scheme]
+        	
+        	output:
+        	    result Foo (1..1)
+        	    
+        	set result -> fooField: myInput
+        """;
+        
+        var code = generatorTestHelper.generateCode(model);
+ 
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme"));
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+                "fooField", generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme")
+        ));
+
+        assertEquals(expected, result);    	
+    }
+    
+    @Test
+    void canSetMetaOutuptWhereInputArgumentIsNull() {
+        var model = """        
+		func MyFunc:
+		    inputs:
+		        value string (0..1)
+		        scheme string (0..1)
+		    output:
+		        result string (0..1)
+		            [metadata scheme]
+		
+		    set result: value
+		    set result -> scheme: scheme
+       """;
+        
+       var code = generatorTestHelper.generateCode(model);
+              
+       var classes = generatorTestHelper.compileToClasses(code);
+       var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+       var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, null, null);
+       
+       var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of());
+       
+       assertEquals(expected, result);    	
+    }
     
     @Test
     void canSetMetaLocationOnFunctionObjectOutput() {
@@ -207,9 +404,7 @@ public class FunctionGeneratorMetaTest {
         """;
         
       var code = generatorTestHelper.generateCode(model);
-      
-      generatorTestHelper.writeClasses(code, "canSetExternalKeyOnFunctionObjectOutput");
-      
+            
       var classes = generatorTestHelper.compileToClasses(code);
       var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
       

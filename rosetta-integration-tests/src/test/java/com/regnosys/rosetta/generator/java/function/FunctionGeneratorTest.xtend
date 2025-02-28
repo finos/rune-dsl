@@ -403,7 +403,8 @@ class FunctionGeneratorTest {
 		
 		val expected = classes.createInstanceUsingBuilder("Bar", #{
 			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-				"value" -> "someInput"
+				"value" -> "someInput",
+				"meta" -> MetaFields.builder.setScheme("myScheme")
 			})
 		})
 		
@@ -532,9 +533,7 @@ class FunctionGeneratorTest {
         val myInput = classes.createFieldWithMetaString("someInput", "myScheme")
 		
 		val expected = classes.createInstanceUsingBuilder("Foo", #{
-			"a" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
-				"value" -> "someInput"
-			})
+			"a" -> classes.createFieldWithMetaString("someInput", "myScheme")
 		})
 		
 		val result = test.invokeFunc(RosettaModelObject, myInput)
