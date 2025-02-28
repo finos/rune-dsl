@@ -103,7 +103,7 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 		if (addOutputDirectoriesToCompileSourceRoots) {
 			configureMavenOutputs();
 		}
-		Map<String, LanguageAccess> languages = new LanguageAccessFactory().createLanguageAccess(getLanguages(),
+		Map<String, LanguageAccess> languages = new RosettaLanguageAccessFactory().createLanguageAccess(getLanguages(),
 				this.getClass().getClassLoader());
 		Injector injector = Guice.createInjector(createModule());
 		StandaloneBuilder builder = injector.getInstance(StandaloneBuilder.class);
