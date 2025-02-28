@@ -44,9 +44,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaFunctionExtensions functionExtensions;
 	@Inject
 	private RosettaConfigExtension configs;
-	@Inject
-	private RosettaTypeProvider rosettaTypeProvider;
-
+	
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
 		RosettaExpression argument = operation.getArgument();
