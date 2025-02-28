@@ -2,7 +2,7 @@ package com.regnosys.rosetta.config;
 
 import java.util.Objects;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.google.inject.ProvidedBy;
 
@@ -20,7 +20,7 @@ public class RosettaModelConfiguration {
 		return name;
 	}
 	
-	public static class Provider implements javax.inject.Provider<RosettaModelConfiguration> {
+	public static class Provider implements jakarta.inject.Provider<RosettaModelConfiguration>, javax.inject.Provider<RosettaModelConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {

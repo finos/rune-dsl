@@ -19,13 +19,13 @@ package com.regnosys.rosetta.generator.external;
 import java.util.Collections;
 import java.util.Iterator;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 /**
  * The default implementation of {@code IExternalGeneratorProvider} that returns no external generators. 
  * @author jimwang
  */
-public class EmptyExternalGeneratorsProvider implements Provider<ExternalGenerators> {
+public class EmptyExternalGeneratorsProvider implements Provider<ExternalGenerators>, javax.inject.Provider<ExternalGenerators> {
 
 	@Override
 	public ExternalGenerators get() {

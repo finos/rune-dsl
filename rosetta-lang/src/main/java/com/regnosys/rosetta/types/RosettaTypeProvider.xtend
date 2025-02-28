@@ -85,8 +85,8 @@ import java.math.BigInteger
 import java.util.List
 import java.util.Map
 import java.util.Optional
-import javax.inject.Inject
-import javax.inject.Provider
+import jakarta.inject.Inject
+import jakarta.inject.Provider
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta

@@ -16,7 +16,7 @@
 
   "packageRules": [
     {
-      "description": "Group all Eclipse related dependencies (including Xtext). Because these dependencies often introduce breaking changes in minor version upgrades, we always require an explicit approval in the dependency dashboard before creating a PR.",
+      "description": "Group all Eclipse related dependencies (including Xtext). These dependencies often introduce breaking changes in minor version upgrades.",
       "matchPackagePatterns": ["^org\\.eclipse\\."],
       "groupName": "eclipse dependencies",
       "groupSlug": "eclipse-dependencies"

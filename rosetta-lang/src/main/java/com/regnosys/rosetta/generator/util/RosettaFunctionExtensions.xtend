@@ -22,7 +22,7 @@ import com.regnosys.rosetta.types.RShortcut
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import java.util.List
 import com.regnosys.rosetta.types.RFunction
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.RosettaEcoreUtil
 

@@ -7,7 +7,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import java.util.ArrayList
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 class ModelHelper {
 

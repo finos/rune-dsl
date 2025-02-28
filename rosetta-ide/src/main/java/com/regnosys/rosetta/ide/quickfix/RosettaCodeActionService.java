@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
@@ -30,6 +30,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.xtext.ide.editor.quickfix.DiagnosticResolution;
 import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
+import org.eclipse.xtext.ide.server.ILanguageServerAccess;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
@@ -47,7 +48,16 @@ public class RosettaCodeActionService implements ICodeActionService2 {
 	public List<Either<Command, CodeAction>> getCodeActions(Options options) {
 		List<Either<Command, CodeAction>> result = new ArrayList<>();
 		
-		//Handle Code Actions
+		// By default, Xtext only reads the resource if there is a diagnostic relevant for the quick fix provider.
+		// However, we always require the resource, since we always check contents to, e.g., check whether the imports are sorted or not.
+		options.getLanguageServerAccess()
+			.doSyncRead(options.getURI(), (ILanguageServerAccess.Context context) -> {
+				options.setDocument(context.getDocument());
+				options.setResource(context.getResource());
+				return null;
+			});
+		
+		// Handle code actions
 		List<Either<Command, CodeAction>> codeActions = codeActionProvider.getCodeActions(options).stream()
 				.map(action -> Either.<Command, CodeAction>forRight(action))
 				.collect(Collectors.toList());
@@ -58,6 +68,7 @@ public class RosettaCodeActionService implements ICodeActionService2 {
 				|| options.getCodeActionParams().getContext().getOnly().contains(CodeActionKind.QuickFix);
 		
 		if (handleQuickfixes) {
+			// Handle quick fixes
 			List<Diagnostic> diagnostics = options.getCodeActionParams().getContext().getDiagnostics();
 
 			for (Diagnostic diagnostic : diagnostics) {

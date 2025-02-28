@@ -3,9 +3,9 @@ package com.regnosys.rosetta.cache;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 
 /**
  * A cache that will clear every time a write request is made. For all subsequent read requests, the cache is reused.

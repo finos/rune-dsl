@@ -45,7 +45,7 @@ class RosettaExpressionsTest {
 		'''.parseRosettaWithNoErrors
 		
 		model => [
-			((elements.last as Function)
+			((elements.lastOrNull as Function)
 			  .operations.head.expression as RosettaConditionalExpression) => [
 			  	assertFalse(isFull);
 			  	assertNotNull(elsethen);

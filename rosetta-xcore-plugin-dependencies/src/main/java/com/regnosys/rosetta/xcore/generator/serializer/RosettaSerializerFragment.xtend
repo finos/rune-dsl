@@ -6,7 +6,7 @@ import com.google.common.collect.Multimap
 import java.util.List
 import java.util.Map
 import java.util.Set
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage

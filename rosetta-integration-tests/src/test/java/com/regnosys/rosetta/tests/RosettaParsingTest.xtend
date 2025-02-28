@@ -433,9 +433,9 @@ class RosettaParsingTest {
 						then (extract F(item) only-element -> a)))
 						then (filter item <> "foo"))
 		'''.parseRosettaWithNoErrors
-		model.elements.last as Function => [
+		model.elements.lastOrNull as Function => [
 			val expr1 = operations.head.expression
-			val expr2 = operations.last.expression
+			val expr2 = operations.lastOrNull.expression
 			assertTrue(EcoreUtil2.equals(expr1, expr2));
 		]
 	}
@@ -476,9 +476,9 @@ class RosettaParsingTest {
 					    	then only-element)]))
 					    then (extract (item + "bar"))
 		'''.parseRosettaWithNoErrors
-		model.elements.last as Function => [
+		model.elements.lastOrNull as Function => [
 			val expr1 = operations.head.expression
-			val expr2 = operations.last.expression
+			val expr2 = operations.lastOrNull.expression
 			assertTrue(EcoreUtil2.equals(expr1, expr2));
 		]
 	}
@@ -525,8 +525,8 @@ class RosettaParsingTest {
 					foo extract a
 		'''.parseRosettaWithNoIssues
 		
-		model.elements.last as Function => [
-			val aInput = inputs.last
+		model.elements.lastOrNull as Function => [
+			val aInput = inputs.lastOrNull
 	    	operations.head => [
 	    		expression as MapOperation => [
 	    			function => [
@@ -643,7 +643,7 @@ class RosettaParsingTest {
                        extract [item = True]
 	    '''.parseRosetta
 	    
-	    model.elements.last as Function => [
+	    model.elements.lastOrNull as Function => [
 	    	operations.head => [
 	    		assertTrue(expression instanceof MapOperation)
 	    		expression as MapOperation => [
@@ -666,8 +666,8 @@ class RosettaParsingTest {
                    [True, False] extract [item = False]
 	    '''.parseRosetta
 	    
-	    model.elements.last as Function => [
-	    	assertTrue(operations.last.expression instanceof MapOperation)
+	    model.elements.lastOrNull as Function => [
+	    	assertTrue(operations.lastOrNull.expression instanceof MapOperation)
 	    ]
 	}
 	

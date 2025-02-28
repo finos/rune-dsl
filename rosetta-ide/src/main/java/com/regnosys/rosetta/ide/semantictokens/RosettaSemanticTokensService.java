@@ -16,7 +16,7 @@
 
 package com.regnosys.rosetta.ide.semantictokens;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;

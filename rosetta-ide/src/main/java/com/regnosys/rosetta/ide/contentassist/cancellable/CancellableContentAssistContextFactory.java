@@ -19,7 +19,7 @@ package com.regnosys.rosetta.ide.contentassist.cancellable;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.Token;

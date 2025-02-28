@@ -26,7 +26,7 @@ import com.rosetta.util.types.generated.GeneratedJavaClass
 import java.util.List
 import java.util.Objects
 import java.util.Optional
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 

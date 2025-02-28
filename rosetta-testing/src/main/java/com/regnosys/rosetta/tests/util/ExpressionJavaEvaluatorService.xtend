@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.tests.util
 
 import com.regnosys.rosetta.tests.util.ExpressionParser
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.generator.java.JavaScope
