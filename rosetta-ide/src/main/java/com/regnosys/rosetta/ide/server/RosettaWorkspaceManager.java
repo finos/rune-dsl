@@ -8,6 +8,10 @@ import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 
+/**
+ * Makes the language server robust against a null baseDir.
+ * TODO: This should be contributed back to Xtext.
+ */
 public class RosettaWorkspaceManager extends WorkspaceManager {
 	@Override
 	public void initialize(URI baseDir, Procedure2<? super URI, ? super Iterable<Issue>> issueAcceptor,

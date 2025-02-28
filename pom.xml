@@ -180,6 +180,8 @@
 			</dependency>
 
 			<!-- Runtime dependencies -->
+			<!-- The following dependency can be removed in a next major version
+			     once this issue has been addressed: https://github.com/finos/rune-dsl/issues/938 -->
 			<dependency>
 		        <groupId>com.google.inject</groupId>
 		        <artifactId>guice</artifactId>
