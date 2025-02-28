@@ -8,7 +8,7 @@ import com.regnosys.rosetta.tests.util.ModelHelper
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import com.rosetta.model.lib.RosettaModelObject
 import java.util.Map
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -151,7 +151,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				
@@ -301,7 +301,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				
@@ -443,7 +443,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				
@@ -576,7 +576,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				
@@ -718,7 +718,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				
@@ -831,7 +831,7 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				
@@ -988,7 +988,7 @@ class RosettaRuleGeneratorTest {
 		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Bar;
 		import com.rosetta.test.model.Foo;
-		import jakarta.inject.Inject;
+		import javax.inject.Inject;
 		
 		
 		@ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
@@ -1057,7 +1057,7 @@ class RosettaRuleGeneratorTest {
 		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Input;
 		import com.rosetta.test.model.Input.InputBuilder;
-		import jakarta.inject.Inject;
+		import javax.inject.Inject;
 		import java.util.Optional;
 		
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;

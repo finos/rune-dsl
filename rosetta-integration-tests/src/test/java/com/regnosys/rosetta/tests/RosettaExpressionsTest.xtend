@@ -20,7 +20,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 /**
  * A set of tests for all instances of RosettaExpression i.e. RosettaAdditiveExpression

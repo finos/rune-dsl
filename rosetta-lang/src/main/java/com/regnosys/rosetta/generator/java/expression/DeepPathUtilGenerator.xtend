@@ -78,7 +78,7 @@ class DeepPathUtilGenerator {
 				private final «dependency» «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»;
 				«ENDFOR»
 				
-				@«Inject»
+				@«javax.inject.Inject»
 				public «javaClass»(«FOR dependency : dependencies SEPARATOR ', '»«dependency» «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»«ENDFOR») {
 					«FOR dependency : dependencies»
 					this.«classScope.getIdentifierOrThrow(dependency.toDependencyInstance)» = «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»;

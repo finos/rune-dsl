@@ -19,7 +19,7 @@ import java.time.ZonedDateTime
 import java.util.Arrays
 import java.util.List
 import java.util.Map
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -3313,7 +3313,7 @@ class FunctionGeneratorTest {
 			import com.rosetta.test.model.agreement.Foo.FooBuilder;
 			import com.rosetta.test.model.agreement.Top;
 			import com.rosetta.test.model.agreement.Top.TopBuilder;
-			import jakarta.inject.Inject;
+			import javax.inject.Inject;
 			import java.util.Optional;
 			
 			
@@ -3557,7 +3557,7 @@ class FunctionGeneratorTest {
 				import com.google.inject.ImplementedBy;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.records.Date;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -3661,7 +3661,7 @@ class FunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import jakarta.inject.Inject;
+			import javax.inject.Inject;
 			
 			
 			@ImplementedBy(F2.F2Default.class)
@@ -3824,7 +3824,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.records.Date;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				
 				
 				@ImplementedBy(F3.F3Default.class)
@@ -4513,7 +4513,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.List;
 				import java.util.Optional;
@@ -4616,7 +4616,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -5254,7 +5254,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Optional;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -5344,7 +5344,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -5500,7 +5500,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -5583,7 +5583,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -6131,7 +6131,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 				
@@ -6218,7 +6218,7 @@ class FunctionGeneratorTest {
                 
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.functions.RosettaFunction;
-                import jakarta.inject.Inject;
+                import javax.inject.Inject;
                 
                 
                 @ImplementedBy(B.BDefault.class)

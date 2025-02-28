@@ -19,7 +19,7 @@ import static com.google.common.collect.ImmutableMap.*
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.junit.jupiter.api.Assertions.*
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -59,7 +59,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -164,7 +164,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -307,7 +307,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo2;
 				import com.rosetta.test.model.Foo2.Foo2Builder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -415,7 +415,7 @@ class ListOperationTest {
 				import com.rosetta.model.metafields.FieldWithMetaString;
 				import com.rosetta.test.model.FooWithScheme;
 				import com.rosetta.test.model.FooWithScheme.FooWithSchemeBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -978,7 +978,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.List;
 				import java.util.Optional;
@@ -1622,7 +1622,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -1964,7 +1964,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -2108,7 +2108,7 @@ class ListOperationTest {
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -2373,7 +2373,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -2555,7 +2555,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -2660,7 +2660,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -3381,7 +3381,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -3823,7 +3823,7 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.Foo.FooBuilder;
-				import jakarta.inject.Inject;
+				import javax.inject.Inject;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;

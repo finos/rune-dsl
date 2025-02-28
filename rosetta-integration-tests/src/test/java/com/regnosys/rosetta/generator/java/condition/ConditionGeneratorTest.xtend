@@ -5,7 +5,7 @@ import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import org.junit.jupiter.api.Test
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 
 import static com.google.common.collect.ImmutableMap.*

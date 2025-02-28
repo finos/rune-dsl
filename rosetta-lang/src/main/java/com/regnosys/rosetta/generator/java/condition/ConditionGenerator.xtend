@@ -90,7 +90,7 @@ class ConditionGenerator {
 				class «defaultClassName» implements «className» {
 				
 					«FOR dep : deps»
-						@«Inject» protected «dep» «defaultClassScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
+						@«javax.inject.Inject» protected «dep» «defaultClassScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
 						
 					«ENDFOR»
 					@Override

@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.object
 
 import org.junit.jupiter.api.Test
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.RosettaModelObject

@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.tests;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.util.EObjectValidator;
 import org.eclipse.xtext.diagnostics.Diagnostic;

@@ -33,7 +33,7 @@ class ConfigurableTypeTabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
 			import com.rosetta.test.model.Foo;
-			import jakarta.inject.Singleton;
+			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
@@ -92,8 +92,8 @@ class ConfigurableTypeTabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl;
-			import jakarta.inject.Inject;
-			import jakarta.inject.Singleton;
+			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
@@ -160,7 +160,7 @@ class ConfigurableTypeTabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.FieldImpl;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
-			import jakarta.inject.Singleton;
+			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Objects;

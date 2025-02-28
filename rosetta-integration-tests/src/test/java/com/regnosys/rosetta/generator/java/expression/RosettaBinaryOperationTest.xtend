@@ -18,7 +18,7 @@ import static org.hamcrest.core.Is.is
 import static org.junit.jupiter.api.Assertions.*
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper
 import org.junit.jupiter.api.Disabled
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)

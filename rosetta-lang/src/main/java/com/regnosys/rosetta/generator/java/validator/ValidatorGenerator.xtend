@@ -57,7 +57,7 @@ class ValidatorGenerator {
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				«FOR con : data.conditions»
-				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(type).toConditionJavaType, Object)» «con.conditionName(type).toFirstLower» ;
+				@«javax.inject.Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(type).toConditionJavaType, Object)» «con.conditionName(type).toFirstLower» ;
 										
 				«ENDFOR»
 				

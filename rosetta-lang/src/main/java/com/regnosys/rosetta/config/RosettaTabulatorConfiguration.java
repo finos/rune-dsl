@@ -30,7 +30,7 @@ public class RosettaTabulatorConfiguration {
 		return types;
 	}
 
-	public static class Provider  implements jakarta.inject.Provider<RosettaTabulatorConfiguration> {
+	public static class Provider  implements jakarta.inject.Provider<RosettaTabulatorConfiguration>, javax.inject.Provider<RosettaTabulatorConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {

@@ -9,7 +9,7 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.tests.util.ModelHelper
 
 import static org.junit.jupiter.api.Assertions.*
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)

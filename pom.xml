@@ -85,7 +85,7 @@
 
 	<properties>
 		<maven.compiler.release>11</maven.compiler.release>
-		<java.enforced.version>[21,22)</java.enforced.version>
+		<java.enforced.version>[17,18)</java.enforced.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Release -->
@@ -180,6 +180,11 @@
 			</dependency>
 
 			<!-- Runtime dependencies -->
+			<dependency>
+		        <groupId>com.google.inject</groupId>
+		        <artifactId>guice</artifactId>
+		        <version>6.0.0</version>
+      		</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtext</groupId>
 				<artifactId>xtext-dev-bom</artifactId>

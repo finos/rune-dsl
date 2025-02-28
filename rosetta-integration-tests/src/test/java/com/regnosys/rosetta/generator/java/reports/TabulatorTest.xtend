@@ -13,7 +13,7 @@ import com.rosetta.util.types.generated.GeneratedJavaClassService
 import java.math.BigDecimal
 import java.net.URL
 import java.util.Map
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -169,8 +169,8 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.test.model.Report;
-			import jakarta.inject.Inject;
-			import jakarta.inject.Singleton;
+			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			import java.util.List;
 			
 			
@@ -211,8 +211,8 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl;
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
-			import jakarta.inject.Inject;
-			import jakarta.inject.Singleton;
+			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
@@ -353,8 +353,8 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl;
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
-			import jakarta.inject.Inject;
-			import jakarta.inject.Singleton;
+			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
@@ -553,7 +553,7 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
-			import jakarta.inject.Singleton;
+			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;

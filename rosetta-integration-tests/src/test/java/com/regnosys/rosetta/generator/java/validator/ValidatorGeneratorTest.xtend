@@ -2,7 +2,7 @@ package com.regnosys.rosetta.generator.java.validator
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Disabled
@@ -50,7 +50,7 @@ class ValidatorGeneratorTest {
 			import java.util.ArrayList;
 			import java.util.List;
 			import java.util.regex.Pattern;
-			import jakarta.inject.Inject;
+			import javax.inject.Inject;
 			
 			import static com.rosetta.model.lib.validation.ValidationUtil.checkCardinality;
 			import static com.rosetta.model.lib.validation.ValidationUtil.checkNumber;

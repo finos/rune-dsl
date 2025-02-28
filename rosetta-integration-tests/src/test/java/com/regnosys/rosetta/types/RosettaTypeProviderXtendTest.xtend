@@ -13,7 +13,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.rosetta.RosettaModel

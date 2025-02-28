@@ -20,7 +20,7 @@ public class RosettaModelConfiguration {
 		return name;
 	}
 	
-	public static class Provider implements jakarta.inject.Provider<RosettaModelConfiguration> {
+	public static class Provider implements jakarta.inject.Provider<RosettaModelConfiguration>, javax.inject.Provider<RosettaModelConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {

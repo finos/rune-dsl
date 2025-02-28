@@ -20,7 +20,7 @@ import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
 import com.regnosys.rosetta.config.RosettaModelConfiguration;
 import com.regnosys.rosetta.config.RosettaTabulatorConfiguration;
 
-public class FileBasedRosettaConfigurationProvider implements Provider<RosettaConfiguration> {
+public class FileBasedRosettaConfigurationProvider implements Provider<RosettaConfiguration>, javax.inject.Provider<RosettaConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedRosettaConfigurationProvider.class);
 		
 	private final Provider<RosettaConfiguration> fallback;

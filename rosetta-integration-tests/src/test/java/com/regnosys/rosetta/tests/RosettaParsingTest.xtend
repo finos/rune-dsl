@@ -13,7 +13,7 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.regnosys.rosetta.tests.util.ModelHelper
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.diagnostics.Diagnostic
 import org.eclipse.xtext.testing.InjectWith

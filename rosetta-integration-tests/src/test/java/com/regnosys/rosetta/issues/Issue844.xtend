@@ -7,7 +7,7 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 import static org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
