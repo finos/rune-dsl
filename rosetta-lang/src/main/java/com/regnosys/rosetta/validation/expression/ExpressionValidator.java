@@ -92,6 +92,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 
 		metaTypeForEntry.ifPresent(metaType -> {
 			RType expectedType = typeSystem.typeCallToRType(metaType.getTypeCall());
+			isSingleCheckError(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
 			subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
 		});
 	}

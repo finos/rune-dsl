@@ -81,11 +81,33 @@ public class ExpressionValidatorTest {
 					}
 					""", 
 					"""
-					result string (1..1)
-				      [metadata scheme]
-		              [metadata id]
-					""");	
+                    result string (1..1)
+                      [metadata scheme]
+                      [metadata id]
+                    """);
 		
 		validationTestHelper.assertError(expr, WITH_META_ENTRY, null, "Expected type `string`, but got `int` instead. Meta attribute 'scheme' should be of type 'string'");
+	}
+
+	@Test
+	void testWithMetaExpressionIsSingleCardinality() {
+		RosettaExpression expr =
+				modelService.toTestModel("""
+					metaType id string
+					metaType scheme string
+					""")
+						.parseExpression("""
+					"someValue" with-meta {
+						scheme: ["someScheme", "someOtherScheme"],
+						id: "someId"
+					}
+					""",
+					"""
+					result string (1..1)
+					  [metadata scheme]
+					  [metadata id]
+					""");
+
+		validationTestHelper.assertError(expr, WITH_META_ENTRY, null, "Expecting single cardinality. Meta attribute 'scheme' was multi cardinality");
 	}
 }
