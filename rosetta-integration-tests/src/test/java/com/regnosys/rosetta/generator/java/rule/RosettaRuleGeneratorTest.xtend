@@ -151,8 +151,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import javax.inject.Inject;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
@@ -301,8 +301,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import javax.inject.Inject;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
@@ -443,8 +443,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import javax.inject.Inject;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
@@ -576,8 +576,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import javax.inject.Inject;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
@@ -718,8 +718,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import javax.inject.Inject;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
@@ -831,8 +831,8 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.test.model.BarReport;
 				import com.rosetta.test.model.BarReport.BarReportBuilder;
 				import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-				import javax.inject.Inject;
 				import java.util.Optional;
+				import javax.inject.Inject;
 				
 				
 				@RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
@@ -1057,8 +1057,8 @@ class RosettaRuleGeneratorTest {
 		import com.rosetta.model.lib.reports.ReportFunction;
 		import com.rosetta.test.model.Input;
 		import com.rosetta.test.model.Input.InputBuilder;
-		import javax.inject.Inject;
 		import java.util.Optional;
+		import javax.inject.Inject;
 		
 		import static com.rosetta.model.lib.expression.ExpressionOperators.*;
 		

@@ -18,7 +18,7 @@ package com.rosetta.model.lib.qualify;
 
 import java.util.function.Function;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.google.inject.Injector;
 import com.rosetta.model.lib.RosettaModelObject;

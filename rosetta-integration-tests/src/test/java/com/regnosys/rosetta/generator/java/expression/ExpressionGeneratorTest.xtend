@@ -92,8 +92,8 @@ class ExpressionGeneratorTest {
 		import com.rosetta.model.lib.mapper.MapperS;
 		import com.rosetta.test.model.Bar;
 		import com.rosetta.test.model.functions.Round;
-		import javax.inject.Inject;
 		import java.math.BigDecimal;
+		import javax.inject.Inject;
 		
 		
 		@Inject Round round;

@@ -130,8 +130,8 @@ class DocumentationSamples {
 			import com.rosetta.model.lib.annotations.RuneLabelProvider;
 			import com.rosetta.model.lib.functions.ModelObjectValidator;
 			import com.rosetta.model.lib.reports.ReportFunction;
-			import javax.inject.Inject;
 			import java.util.Optional;
+			import javax.inject.Inject;
 			import test.reg.EuropeanParliamentReport;
 			import test.reg.EuropeanParliamentReport.EuropeanParliamentReportBuilder;
 			import test.reg.VehicleOwnership;

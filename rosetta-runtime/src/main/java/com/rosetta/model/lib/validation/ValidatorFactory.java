@@ -16,7 +16,7 @@
 
 package com.rosetta.model.lib.validation;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.google.inject.Injector;
 import com.rosetta.model.lib.RosettaModelObject;

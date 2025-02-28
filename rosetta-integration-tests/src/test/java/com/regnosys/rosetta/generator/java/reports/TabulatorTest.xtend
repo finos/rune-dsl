@@ -169,9 +169,9 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator;
 			import com.rosetta.model.lib.reports.Tabulator.FieldValue;
 			import com.rosetta.test.model.Report;
+			import java.util.List;
 			import javax.inject.Inject;
 			import javax.inject.Singleton;
-			import java.util.List;
 			
 			
 			@ImplementedBy(TEST_REGCorpReportTabulator.Impl.class)
@@ -211,11 +211,11 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.NestedFieldValueImpl;
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
-			import javax.inject.Inject;
-			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
+			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
@@ -353,12 +353,12 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.MultiNestedFieldValueImpl;
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
-			import javax.inject.Inject;
-			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
 			import java.util.stream.Collectors;
+			import javax.inject.Inject;
+			import javax.inject.Singleton;
 			
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
@@ -553,10 +553,10 @@ class TabulatorTest {
 			import com.rosetta.model.lib.reports.Tabulator.FieldValueImpl;
 			import com.rosetta.test.model.Report;
 			import com.rosetta.util.DottedPath;
-			import javax.inject.Singleton;
 			import java.util.Arrays;
 			import java.util.List;
 			import java.util.Optional;
+			import javax.inject.Singleton;
 			
 			
 			@ImplementedBy(ReportTypeTabulator.Impl.class)
