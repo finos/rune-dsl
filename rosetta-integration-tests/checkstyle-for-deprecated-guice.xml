@@ -7,13 +7,16 @@
 	<property name="localeCountry" value="UK"/>
 	<property name="localeLanguage" value="en"/>
 	<module name="TreeWalker">
-		<!-- Forbid using Google Inject and the new jakarta Inject (for backwards compatibility). -->
+		<!-- Forbid using Google Inject in favor of javax Inject. -->
 		<module name="IllegalImport">
 			<property name="illegalClasses"
-				value="com.google.inject.Inject, com.google.inject.name.Named, com.google.inject.Provider" />
-			<property name="illegalPkgs"
-				value="jakarta.inject" />
+				value="com.google.inject.Inject, com.google.inject.name.Named, com.google.inject.Provider, com.google.inject.Singleton" />
 		</module>
+	</module>
+	<module name="RegexpSingleline">
+	    <property name="format" value=".*jakarta\.inject.*" />
+	    <property name="message" value="The use of 'jakarta.inject' is forbidden in generated code." />
+	    <property name="severity" value="error"/>
 	</module>
 	<module name="BeforeExecutionExclusionFileFilter">
 		<!-- Exclude any generated source folders -->
