@@ -5,7 +5,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.types.RObjectFactory
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension

@@ -9,7 +9,7 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.google.common.collect.Sets;
 import com.regnosys.rosetta.interpreter.RosettaValue;

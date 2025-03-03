@@ -77,10 +77,10 @@ To build the project, run `mvn clean install`.
 
 ### 2. Setting things up in Eclipse
 #### Install Eclipse IDE for Java and DSL Developers
-Install version `2022-06` of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer). Make sure to install version `2022-06`! Later versions dropped support for Java 8 Xtend files, which we need. You might have to enable "Advanced Mode" in the settings of the Eclipse Installer to install a specific version.
+Install version `2025-06` of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer). You might have to enable "Advanced Mode" in the settings of the Eclipse Installer to install a specific version.
 
 #### Configure Eclipse with the right version of Java
-Xtend files cannot be build with any Java version later than 17. In Eclipse, go to Settings... > Java > Installed JREs and make sure the checked JRE points to a Java version of 17.
+Xtend files cannot be build with any Java version later than 21. In Eclipse, go to Settings... > Java > Installed JREs and make sure the checked JRE points to a Java version of 21.
 
 #### Install the Checkstyle plugin
 We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).

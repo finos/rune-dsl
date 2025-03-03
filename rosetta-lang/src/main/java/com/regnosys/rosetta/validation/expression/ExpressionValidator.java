@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.validation.expression;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;

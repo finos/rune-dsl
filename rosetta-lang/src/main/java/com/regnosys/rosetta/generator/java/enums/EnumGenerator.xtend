@@ -9,7 +9,7 @@ import com.rosetta.model.lib.annotations.RosettaSynonym
 import java.util.Collections
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 

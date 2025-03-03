@@ -32,7 +32,7 @@ class RosettaExtensionsTest {
 		'''.parse.elements.filter(Data).map[buildRDataType]
 		assertEquals(classes.toSet, classes.head.allSuperTypes.toSet)
 		assertEquals(classes.tail.toSet, classes.get(1).allSuperTypes.toSet)
-		assertEquals(#{classes.last}, classes.get(2).allSuperTypes.toSet)
+		assertEquals(#{classes.lastOrNull}, classes.get(2).allSuperTypes.toSet)
 	}
 	
 	@Test
@@ -66,7 +66,7 @@ class RosettaExtensionsTest {
 		val elems = model.elements.filter(RosettaEnumeration).map[buildREnumType]
 		val foo = elems.head()
 		val bar = elems.get(1)
-		val baz = elems.last()
+		val baz = elems.lastOrNull()
 		assertEquals(#{foo, bar, baz}, baz.allParents.toSet)
 		assertEquals(#{foo, bar}, bar.allParents.toSet)
 		assertEquals(#{foo}, foo.allParents.toSet)

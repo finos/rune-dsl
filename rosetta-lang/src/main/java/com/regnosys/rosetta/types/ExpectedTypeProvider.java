@@ -77,7 +77,7 @@ import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 import java.util.List;
 import java.util.Objects;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
 
 

@@ -56,6 +56,11 @@ public class RosettaGenerateMojo extends AbstractRosettaGeneratorMojo {
 		}
 	}
 	
+	@Override
+	protected String getClassOutputDirectory() {
+		return getProject().getBuild().getOutputDirectory();
+	}
+	
 	/**
 	 * Project source roots. List of folders, where the source models are
 	 * located.<br>

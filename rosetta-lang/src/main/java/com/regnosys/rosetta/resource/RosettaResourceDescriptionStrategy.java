@@ -12,10 +12,11 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
 
-import com.google.inject.Singleton;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+
+import jakarta.inject.Singleton;
 
 @Singleton
 public class RosettaResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {

@@ -3,7 +3,7 @@ package com.regnosys.rosetta.ide.quickfix;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.lsp4j.CodeAction;
@@ -18,6 +18,8 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.utils.ImportManagementService;
 
 public class RosettaCodeActionProvider extends AbstractCodeActionProvider {
+	private static final String SORT_IMPORTS_LABEL = "Sort imports";
+	
 	@Inject
 	private ImportManagementService importManagementService;
 	@Inject
@@ -30,14 +32,14 @@ public class RosettaCodeActionProvider extends AbstractCodeActionProvider {
 		// Handle Sorting CodeAction
 		RosettaModel model = (RosettaModel) options.getResource().getContents().get(0);
 		if (!importManagementService.isSorted(model.getImports())) {
-			result.add(codeActionUtils.createUnresolvedCodeAction("Sort imports", options.getCodeActionParams(),
+			result.add(codeActionUtils.createUnresolvedCodeAction(SORT_IMPORTS_LABEL, options.getCodeActionParams(),
 					CodeActionKind.SourceOrganizeImports));
 		}
 
 		return result;
 	}
 
-	@CodeActionResolution("Sort imports")
+	@CodeActionResolution(SORT_IMPORTS_LABEL)
 	public List<TextEdit> sortImports(RosettaModel model) {
 		EList<Import> imports = model.getImports();
 
