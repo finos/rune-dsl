@@ -7,7 +7,7 @@
 	<property name="localeCountry" value="UK"/>
 	<property name="localeLanguage" value="en"/>
 	<module name="TreeWalker">
-		<!-- Forbid using Google Inject and the deprecated javax Inject in favour of jakarta Inject. -->
+		<!-- Forbid using Google Inject and the new jakarta Inject (for backwards compatibility). -->
 		<module name="IllegalImport">
 			<property name="illegalClasses"
 				value="com.google.inject.Inject, com.google.inject.name.Named, com.google.inject.Provider" />
