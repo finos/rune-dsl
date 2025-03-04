@@ -59,6 +59,10 @@ public class FunctionGeneratorMetaTest {
         // syntax highlighting: textmate (in case you need it but probably not RosettaSemanticTokensService)
 
         var code = generatorTestHelper.generateCode(model);
+        
+        generatorTestHelper.writeClasses(code, "canSetMetaFieldsUsingWithMetaSyntax");
+
+        var classes = generatorTestHelper.compileToClasses(code);
 
     }
 

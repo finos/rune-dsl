@@ -139,6 +139,8 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import com.rosetta.model.metafields.MetaFields
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1326,7 +1328,25 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		val metaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr)
 		val javaType = metaAnnotatedType.toJavaReferenceType
  		 		//TODO: code gen
- 		
- 		JavaExpression.from('''''', javaType)
+ 		 		
+ 		val argumentExpression = expr.argument.javaCode(javaType.itemValueType, context.scope)
+			.collapseToSingleExpression(context.scope) 
+			 		
+		if (javaType instanceof RJavaFieldWithMeta) {
+			return argumentExpression		 
+					.mapExpression[
+						JavaExpression.from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder().build()).build()''', javaType)
+					]	
+		}
+		
+		//TODO: add ref metas and test
+		if (javaType instanceof RJavaReferenceWithMeta) {
+			return argumentExpression		 
+					.mapExpression[
+						JavaExpression.from('''«javaType».builder().setValue(«it»).build()''', javaType)
+					]	
+		}
+		
+		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta expression type: " + javaType)
  	}
 }
