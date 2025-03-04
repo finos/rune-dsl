@@ -1,12 +1,5 @@
 package com.regnosys.rosetta.validation.expression;
 
-import jakarta.inject.Inject;
-
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.ComposedChecks;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.RosettaEcoreUtil;
@@ -17,17 +10,20 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.types.*;
+import com.regnosys.rosetta.types.RChoiceType;
+import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
+import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 import com.regnosys.rosetta.utils.RosettaConfigExtension;
+import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ComposedChecks;
 
-import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
