@@ -127,7 +127,7 @@ import java.util.Collection
 import java.util.List
 import java.util.Optional
 import java.util.stream.Collectors
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -284,8 +284,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	def JavaStatementBuilder enumCall(RosettaEnumValue feature, JavaType expectedType) {
-		val itemType = expectedType.itemType
-		return JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)
+		val itemType = expectedType.getItemValueType
+		JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)	
 	}
 	
 	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, JavaScope scope) {

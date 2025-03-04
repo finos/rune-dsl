@@ -24,7 +24,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -143,6 +143,13 @@ public class JavaTypeUtil {
 	
 	public boolean hasWildcardArgument(JavaType t) {
 		return t instanceof JavaParameterizedType && ((JavaParameterizedType<?>) t).getArguments().get(0) instanceof JavaWildcardTypeArgument;
+	}
+	public JavaType getItemValueType(JavaType t) {
+		JavaType itemType = getItemType(t);
+		if (itemType instanceof RJavaWithMetaValue) {
+			return ((RJavaWithMetaValue) itemType).valueType;
+		}
+		return itemType;
 	}
 	
 	public JavaType getItemType(JavaType t) {

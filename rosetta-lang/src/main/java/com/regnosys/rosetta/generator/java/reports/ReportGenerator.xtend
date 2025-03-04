@@ -8,7 +8,7 @@ import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.types.RObjectFactory
 import com.rosetta.model.lib.reports.ReportFunction
 import com.rosetta.util.types.JavaParameterizedType
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.fasterxml.jackson.core.type.TypeReference

@@ -21,7 +21,7 @@ import java.util.ArrayList
 import java.util.Optional
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -57,7 +57,7 @@ class ValidatorGenerator {
 		'''
 			public class «data.name»Validator implements «RosettaModelObjectValidator»<«modelPojo»>{
 				«FOR con : data.conditions»
-				@«Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(type).toConditionJavaType, Object)» «con.conditionName(type).toFirstLower» ;
+				@«javax.inject.Inject» protected «new GeneratedJavaClass(root.condition, con.conditionName(type).toConditionJavaType, Object)» «con.conditionName(type).toFirstLower» ;
 										
 				«ENDFOR»
 				

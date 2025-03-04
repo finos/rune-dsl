@@ -35,8 +35,8 @@ import java.util.Objects
 import java.util.Optional
 import java.util.Set
 import java.util.stream.Collectors
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -305,11 +305,11 @@ class TabulatorGenerator {
 			'''
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-				@«Singleton»
+				@«javax.inject.Singleton»
 				class Impl implements «tabulatorClass» {
 					private final «innerTabulatorClass» «innerTabulatorInstance»;
 
-					@«Inject»
+					@«javax.inject.Inject»
 					public Impl(«innerTabulatorClass» «innerTabulatorInstance») {
 						this.«innerTabulatorInstance» = «innerTabulatorInstance»;
 					}
@@ -327,7 +327,7 @@ class TabulatorGenerator {
 			'''
 			@«ImplementedBy»(«tabulatorClass».Impl.class)
 			public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-				@«Singleton»
+				@«javax.inject.Singleton»
 				class Impl implements «tabulatorClass» {
 
 					@Override
@@ -352,7 +352,7 @@ class TabulatorGenerator {
 		'''
 		@«ImplementedBy»(«tabulatorClass».Impl.class)
 		public interface «tabulatorClass» extends «Tabulator»<«inputClass»> {
-			@«Singleton»
+			@«javax.inject.Singleton»
 			class Impl implements «tabulatorClass» {
 				«FOR attr : inputType.allAttributes»
 					«IF context.isTabulated(attr)»
@@ -367,7 +367,7 @@ class TabulatorGenerator {
 				«ENDFOR»
 				«ENDIF»
 
-				«IF !nestedTabulatorInstances.empty»@«Inject»«ENDIF»
+				«IF !nestedTabulatorInstances.empty»@«javax.inject.Inject»«ENDIF»
 				public Impl(«FOR tabInst : nestedTabulatorInstances SEPARATOR ", "»«context.toTabulatorJavaClass(tabInst.type)» «classScope.getIdentifierOrThrow(tabInst)»«ENDFOR») {
 					«FOR tabInst : nestedTabulatorInstances»
 						this.«classScope.getIdentifierOrThrow(tabInst)» = «classScope.getIdentifierOrThrow(tabInst)»;

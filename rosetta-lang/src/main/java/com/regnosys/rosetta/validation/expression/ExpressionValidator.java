@@ -1,5 +1,12 @@
 package com.regnosys.rosetta.validation.expression;
 
+import jakarta.inject.Inject;
+
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.validation.Check;
+import org.eclipse.xtext.validation.ComposedChecks;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import com.regnosys.rosetta.RosettaEcoreUtil;
@@ -44,7 +51,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaFunctionExtensions functionExtensions;
 	@Inject
 	private RosettaConfigExtension configs;
-	
+
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
 		RosettaExpression argument = operation.getArgument();
@@ -69,7 +76,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
 		});
 	}
-	
+
 	@Check
 	public void checkCondition(Condition c) {
 		isSingleCheck(c.getExpression(), c, CONDITION__EXPRESSION, "A condition should be single cardinality");

@@ -18,7 +18,7 @@ import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static com.google.common.collect.ImmutableMap.*
 import com.rosetta.model.lib.RosettaModelObject
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.model.lib.RosettaModelObjectBuilder
