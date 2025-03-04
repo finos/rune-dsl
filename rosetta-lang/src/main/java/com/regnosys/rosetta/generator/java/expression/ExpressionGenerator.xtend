@@ -283,8 +283,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	def JavaStatementBuilder enumCall(RosettaEnumValue feature, JavaType expectedType) {
-		val itemType = expectedType.itemType
-		return JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)
+		val itemType = expectedType.getItemValueType
+		JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)	
 	}
 	
 	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, JavaScope scope) {
