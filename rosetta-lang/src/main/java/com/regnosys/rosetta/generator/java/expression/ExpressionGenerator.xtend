@@ -1327,15 +1327,25 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
  		val metaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr)
 		val javaType = metaAnnotatedType.toJavaReferenceType
- 		 		//TODO: code gen
- 		 		
+		val metaEntries = expr.entries
+							.map[entry |  {
+								val entryType = typeProvider.getRMetaAnnotatedType(entry.value).RType.toJavaReferenceType
+								return entry.key.name -> entry.value.javaCode(entryType, context.scope)
+															.collapseToSingleExpression(context.scope) 
+							}].toList
+		
+		
+ 		 		//TODO: need to translate the meta attribute names to meta field names e.g id to externalId
+ 		
+ 		
+ 		
  		val argumentExpression = expr.argument.javaCode(javaType.itemValueType, context.scope)
 			.collapseToSingleExpression(context.scope) 
 			 		
 		if (javaType instanceof RJavaFieldWithMeta) {
 			return argumentExpression		 
 					.mapExpression[
-						JavaExpression.from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder().build()).build()''', javaType)
+						JavaExpression.from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntries».set«m.key.toFirstUpper»(«m.value»)«ENDFOR».build()).build()''', javaType)
 					]	
 		}
 		
