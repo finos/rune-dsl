@@ -144,13 +144,6 @@ public class JavaTypeUtil {
 	public boolean hasWildcardArgument(JavaType t) {
 		return t instanceof JavaParameterizedType && ((JavaParameterizedType<?>) t).getArguments().get(0) instanceof JavaWildcardTypeArgument;
 	}
-	public JavaType getItemValueType(JavaType t) {
-		JavaType itemType = getItemType(t);
-		if (itemType instanceof RJavaWithMetaValue) {
-			return ((RJavaWithMetaValue) itemType).valueType;
-		}
-		return itemType;
-	}
 	
 	public JavaType getItemType(JavaType t) {
 		if (isWrapper(t)) {
