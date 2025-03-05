@@ -21,12 +21,10 @@
 	<property name="localeCountry" value="UK"/>
 	<property name="localeLanguage" value="en"/>
 	<module name="TreeWalker">
-		<!-- Forbid using Google Inject and the deprecated javax Inject in favour of jakarta Inject. -->
+		<!-- Forbid using Google Inject in favour of javax/jakarta Inject. -->
 		<module name="IllegalImport">
 			<property name="illegalClasses"
 				value="com.google.inject.Inject, com.google.inject.name.Named, com.google.inject.Provider, com.google.inject.Singleton" />
-			<property name="illegalPkgs"
-				value="javax.inject" />
 		</module>
 	</module>
 	<module name="BeforeExecutionExclusionFileFilter">
