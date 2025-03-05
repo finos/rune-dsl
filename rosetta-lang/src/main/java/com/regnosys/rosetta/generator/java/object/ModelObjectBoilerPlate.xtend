@@ -1,23 +1,22 @@
 package com.regnosys.rosetta.generator.java.object
 
 import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.RJavaEnum
 import com.rosetta.model.lib.RosettaModelObject
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.process.AttributeMeta
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
-import java.util.Objects
-import jakarta.inject.Inject
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
-import java.util.Collection
 import com.rosetta.util.types.JavaClass
-import com.regnosys.rosetta.generator.java.types.RJavaEnum
-import com.regnosys.rosetta.types.RDataType
+import jakarta.inject.Inject
+import java.util.Collection
+import java.util.Objects
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ModelObjectBoilerPlate {
 
@@ -48,7 +47,7 @@ class ModelObjectBoilerPlate {
 		if (prop.type == REFERENCE) {
 			return '@ref:scoped'
 		} else
-			return prop.runeName	
+			return prop.serializedName	
 	}
 	
 	def boolean addRuneMetaAnnotation(JavaPojoProperty prop) {

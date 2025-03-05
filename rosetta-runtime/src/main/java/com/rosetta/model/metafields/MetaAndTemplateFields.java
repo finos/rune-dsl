@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.rosetta.model.lib.RuneNameConstants.*;
+import static com.rosetta.model.lib.SerializedNameConstants.*;
 import static java.util.Optional.ofNullable;
 
 /**

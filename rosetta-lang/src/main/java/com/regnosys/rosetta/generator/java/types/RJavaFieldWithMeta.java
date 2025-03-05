@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.types;
 
-import static com.rosetta.model.lib.RuneNameConstants.*;
+import static com.rosetta.model.lib.SerializedNameConstants.*;
 
 import java.util.Collection;
 import java.util.List;
