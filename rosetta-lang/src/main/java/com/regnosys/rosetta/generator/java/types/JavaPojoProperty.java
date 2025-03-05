@@ -38,9 +38,9 @@ public class JavaPojoProperty {
 	public JavaPojoProperty(String name, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
 		this(name, serializedName, compatibilityName, type, javadoc, meta, hasLocation, null);
 	}
-	private JavaPojoProperty(String name, String runeName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, JavaPojoProperty parentProperty) {
+	private JavaPojoProperty(String name, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, JavaPojoProperty parentProperty) {
 		this.name = name;
-		this.serializedName = runeName;
+		this.serializedName = serializedName;
 		this.compatibilityName = compatibilityName;
 		this.type = type;
 		this.javadoc = javadoc;
