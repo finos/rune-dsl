@@ -196,13 +196,14 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 		needsBeforeAllCall = true;
 		
 		// START COPY PASTE OF ORIGINAL IMPLEMENTATION
-		try {
-			Method m = StandaloneBuilder.class.getDeclaredMethod("launch");
-			m.setAccessible(true);
-			return (boolean) m.invoke(this);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			throw new RuntimeException(e);
-		}
+		boolean success = super.launch();
+		
+		LOG.info("Starting after all generation");
+		GeneratorContext context = new GeneratorContext();
+		context.setCancelIndicator(CancelIndicator.NullImpl);
+		getRosettaGenerator().afterAllGenerate(currentResourceSet, currentFileSystemAccess, context);
+		
+		return success;
 //		Stopwatch rootStopwatch = Stopwatch.createStarted();
 //		File stubsDirectory = stubsDirectory();
 //		ensureBaseDir();
