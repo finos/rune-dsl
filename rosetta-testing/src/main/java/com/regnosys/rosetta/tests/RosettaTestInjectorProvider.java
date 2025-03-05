@@ -5,6 +5,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper.Mode;
 
 import com.google.inject.Binder;
 import com.regnosys.rosetta.RosettaRuntimeModule;
+import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
 
 public class RosettaTestInjectorProvider extends RosettaInjectorProvider {
 	protected RosettaRuntimeModule createRuntimeModule() {
@@ -19,7 +20,7 @@ public class RosettaTestInjectorProvider extends RosettaInjectorProvider {
 			
 			// Make sure validation tests properly check the message
 			public void configureValidationTestHelper(Binder binder) {
-				binder.bind(ValidationTestHelper.class).toInstance(new ValidationTestHelper(Mode.EXACT));
+				binder.bind(ValidationTestHelper.class).to(RosettaValidationTestHelper.class);
 			}
 		};
 	}
