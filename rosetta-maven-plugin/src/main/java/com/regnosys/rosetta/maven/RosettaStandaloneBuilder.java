@@ -196,119 +196,126 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 		needsBeforeAllCall = true;
 		
 		// START COPY PASTE OF ORIGINAL IMPLEMENTATION
-		Stopwatch rootStopwatch = Stopwatch.createStarted();
-		File stubsDirectory = stubsDirectory();
-		ensureBaseDir();
-		handleEncoding();
-		LOG.info("Collecting source models.");
-		Iterable<String> rootsToTravers = rootsToTraverse();
-		List<URI> sourceResourceURIs = collectResources(getSourceDirs());
-		File stateFile;
 		try {
-			stateFile = readOrCreateBuilderState(stubsDirectory);
-
-			Set<URI> changedSourceFiles = new HashSet<>();
-			Map<URI, IResourceDescription.Delta> allDeltas = new LinkedHashMap<>();
-			// PATCH: changed order of this code block...
-			Set<URI> changedLibraryFiles = new HashSet<>();
-			List<URI> libraryResourceURIs = Collections.emptyList();
-			if ((boolean) callBuilderStateMethod("updateLibraryHash", new Class[] { HashCode.class }, hashClasspath(rootsToTravers))) {
-				libraryResourceURIs = collectResources(rootsToTravers);
-				aggregateDeltas((Event) callBuilderStateMethod("libraryChanges", new Class[] { List.class, Collection.class }, libraryResourceURIs, changedLibraryFiles), allDeltas);
-			} else {
-				libraryResourceURIs = new ArrayList<>(((Map<URI, HashCode>)getBuilderStateField("libraryFiles")).keySet());
-			}
-			// ... with this one. This is a workaround for the following issue: https://github.com/finos/rune-dsl/issues/878 
-			aggregateDeltas((Event) callBuilderStateMethod("sourceChanges", new Class[] { List.class, Collection.class }, sourceResourceURIs, changedSourceFiles), allDeltas);
-			// END PATCH
-
-			forceDebugLog("Collected source models. Took: " + rootStopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms.");
-			
-			if (getClasspathConfigurationLocation() != null) {
-				writeClassPathConfiguration(rootsToTravers, stubsDirectory != null);
-			}
-			
-			XtextResourceSet resourceSet = resourceSetProvider.get();
-			configureWorkspace(resourceSet);
-			Iterable<String> allClassPathEntries = Iterables.concat(getSourceDirs(), getClassPathEntries());
-			if (stubsDirectory != null) {
-				LOG.info("Installing type provider.");
-				installTypeProvider(allClassPathEntries, resourceSet, null);
-			}
-			IResourceClusteringPolicy strategy = getClusteringPolicy();
-			aggregateDeltas(indexResources(resourceSet, changedSourceFiles, changedLibraryFiles, strategy), allDeltas);
-			// Generate Stubs
-			String stubsClasses = generateStubs(stubsDirectory, changedSourceFiles, allDeltas);
-			if (stubsClasses != null) {
-				LOG.info("Installing type provider for stubs.");
-				installTypeProvider(FluentIterable.from(allClassPathEntries).append(stubsClasses), resourceSet, jvmTypeAccess);
-			}
-			// Validate and generate
-			ResourceDescriptionsData index = (ResourceDescriptionsData) getBuilderStateField("index");
-			boolean hasValidationErrors = false;
-			LOG.info("Validate and generate.");
-			while (!changedSourceFiles.isEmpty() || !allDeltas.isEmpty()) {
-				installSourceLevelURIs(resourceSet, changedSourceFiles);
-				Iterator<URI> sourceResourceIterator = changedSourceFiles.iterator();
-				while (sourceResourceIterator.hasNext()) {
-					List<Resource> resources = new ArrayList<>();
-					int clusterIndex = 0;
-					boolean canContinue = true;
-					while (sourceResourceIterator.hasNext() && canContinue) {
-						URI uri = sourceResourceIterator.next();
-						Resource resource = resourceSet.getResource(uri, true);
-						resources.add(resource);
-						resource.getContents(); // fully initialize
-						EcoreUtil2.resolveLazyCrossReferences(resource, CancelIndicator.NullImpl);
-						IResourceDescription.Manager manager = resourceDescriptionManager(resource);
-
-						IResourceDescription oldDescription = index.getResourceDescription(uri);
-						IResourceDescription newDescription = SerializableResourceDescription
-								.createCopy(manager.getResourceDescription(resource));
-						index.addDescription(uri, newDescription);
-						aggregateDelta(manager.createDelta(oldDescription, newDescription), allDeltas);
-
-						// TODO adjust to handle validations that need an up-to-date index
-						hasValidationErrors = validate(resource) || hasValidationErrors;
-						clusterIndex++;
-						if (!strategy.continueProcessing(resourceSet, null, clusterIndex)) {
-							canContinue = false;
-						}
-					}
-					if (isFailOnValidationError() && hasValidationErrors) {
-						if (isIncremental()) {
-							// since we didn't generate anything yet, we don't want to persist the builder state
-							callBuilderStateMethod("processIssues", new Class[] { IIssueHandler.class }, issueHandler);
-						}
-						return false;
-					}
-					generate(resources);
-					if (!canContinue) {
-						clearResourceSet(resourceSet);
-					}
-				}
-				if (!allDeltas.isEmpty()) {
-					sourceResourceURIs.removeAll(changedSourceFiles);
-					changedSourceFiles.clear();
-					for (URI candidate : sourceResourceURIs) {
-						IResourceDescription description = index.getResourceDescription(candidate);
-						if (resourceDescriptionManager(candidate).isAffected(allDeltas.values(), description,
-								index)) {
-							changedSourceFiles.add(candidate);
-						}
-					}
-					allDeltas.clear();
-				} else {
-					changedSourceFiles.clear();
-				}
-			}
-			return commitBuilderState(stateFile, hasValidationErrors);
-		} finally {
-			setBuilderState(null);
-			getConfiguredFsas().clear();
-
-			LOG.info("Build took " + rootStopwatch.elapsed(TimeUnit.MILLISECONDS) + "ms.");
+			Method m = StandaloneBuilder.class.getDeclaredMethod("launch");
+			m.setAccessible(true);
+			return (boolean) m.invoke(this);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			throw new RuntimeException(e);
 		}
+//		Stopwatch rootStopwatch = Stopwatch.createStarted();
+//		File stubsDirectory = stubsDirectory();
+//		ensureBaseDir();
+//		handleEncoding();
+//		LOG.info("Collecting source models.");
+//		Iterable<String> rootsToTravers = rootsToTraverse();
+//		List<URI> sourceResourceURIs = collectResources(getSourceDirs());
+//		File stateFile;
+//		try {
+//			stateFile = readOrCreateBuilderState(stubsDirectory);
+//
+//			Set<URI> changedSourceFiles = new HashSet<>();
+//			Map<URI, IResourceDescription.Delta> allDeltas = new LinkedHashMap<>();
+//			// PATCH: changed order of this code block...
+//			Set<URI> changedLibraryFiles = new HashSet<>();
+//			List<URI> libraryResourceURIs = Collections.emptyList();
+//			if ((boolean) callBuilderStateMethod("updateLibraryHash", new Class[] { HashCode.class }, hashClasspath(rootsToTravers))) {
+//				libraryResourceURIs = collectResources(rootsToTravers);
+//				aggregateDeltas((Event) callBuilderStateMethod("libraryChanges", new Class[] { List.class, Collection.class }, libraryResourceURIs, changedLibraryFiles), allDeltas);
+//			} else {
+//				libraryResourceURIs = new ArrayList<>(((Map<URI, HashCode>)getBuilderStateField("libraryFiles")).keySet());
+//			}
+//			// ... with this one. This is a workaround for the following issue: https://github.com/finos/rune-dsl/issues/878 
+//			aggregateDeltas((Event) callBuilderStateMethod("sourceChanges", new Class[] { List.class, Collection.class }, sourceResourceURIs, changedSourceFiles), allDeltas);
+//			// END PATCH
+//
+//			forceDebugLog("Collected source models. Took: " + rootStopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms.");
+//			
+//			if (getClasspathConfigurationLocation() != null) {
+//				writeClassPathConfiguration(rootsToTravers, stubsDirectory != null);
+//			}
+//			
+//			XtextResourceSet resourceSet = resourceSetProvider.get();
+//			configureWorkspace(resourceSet);
+//			Iterable<String> allClassPathEntries = Iterables.concat(getSourceDirs(), getClassPathEntries());
+//			if (stubsDirectory != null) {
+//				LOG.info("Installing type provider.");
+//				installTypeProvider(allClassPathEntries, resourceSet, null);
+//			}
+//			IResourceClusteringPolicy strategy = getClusteringPolicy();
+//			aggregateDeltas(indexResources(resourceSet, changedSourceFiles, changedLibraryFiles, strategy), allDeltas);
+//			// Generate Stubs
+//			String stubsClasses = generateStubs(stubsDirectory, changedSourceFiles, allDeltas);
+//			if (stubsClasses != null) {
+//				LOG.info("Installing type provider for stubs.");
+//				installTypeProvider(FluentIterable.from(allClassPathEntries).append(stubsClasses), resourceSet, jvmTypeAccess);
+//			}
+//			// Validate and generate
+//			ResourceDescriptionsData index = (ResourceDescriptionsData) getBuilderStateField("index");
+//			boolean hasValidationErrors = false;
+//			LOG.info("Validate and generate.");
+//			while (!changedSourceFiles.isEmpty() || !allDeltas.isEmpty()) {
+//				installSourceLevelURIs(resourceSet, changedSourceFiles);
+//				Iterator<URI> sourceResourceIterator = changedSourceFiles.iterator();
+//				while (sourceResourceIterator.hasNext()) {
+//					List<Resource> resources = new ArrayList<>();
+//					int clusterIndex = 0;
+//					boolean canContinue = true;
+//					while (sourceResourceIterator.hasNext() && canContinue) {
+//						URI uri = sourceResourceIterator.next();
+//						Resource resource = resourceSet.getResource(uri, true);
+//						resources.add(resource);
+//						resource.getContents(); // fully initialize
+//						EcoreUtil2.resolveLazyCrossReferences(resource, CancelIndicator.NullImpl);
+//						IResourceDescription.Manager manager = resourceDescriptionManager(resource);
+//
+//						IResourceDescription oldDescription = index.getResourceDescription(uri);
+//						IResourceDescription newDescription = SerializableResourceDescription
+//								.createCopy(manager.getResourceDescription(resource));
+//						index.addDescription(uri, newDescription);
+//						aggregateDelta(manager.createDelta(oldDescription, newDescription), allDeltas);
+//
+//						// TODO adjust to handle validations that need an up-to-date index
+//						hasValidationErrors = validate(resource) || hasValidationErrors;
+//						clusterIndex++;
+//						if (!strategy.continueProcessing(resourceSet, null, clusterIndex)) {
+//							canContinue = false;
+//						}
+//					}
+//					if (isFailOnValidationError() && hasValidationErrors) {
+//						if (isIncremental()) {
+//							// since we didn't generate anything yet, we don't want to persist the builder state
+//							callBuilderStateMethod("processIssues", new Class[] { IIssueHandler.class }, issueHandler);
+//						}
+//						return false;
+//					}
+//					generate(resources);
+//					if (!canContinue) {
+//						clearResourceSet(resourceSet);
+//					}
+//				}
+//				if (!allDeltas.isEmpty()) {
+//					sourceResourceURIs.removeAll(changedSourceFiles);
+//					changedSourceFiles.clear();
+//					for (URI candidate : sourceResourceURIs) {
+//						IResourceDescription description = index.getResourceDescription(candidate);
+//						if (resourceDescriptionManager(candidate).isAffected(allDeltas.values(), description,
+//								index)) {
+//							changedSourceFiles.add(candidate);
+//						}
+//					}
+//					allDeltas.clear();
+//				} else {
+//					changedSourceFiles.clear();
+//				}
+//			}
+//			return commitBuilderState(stateFile, hasValidationErrors);
+//		} finally {
+//			setBuilderState(null);
+//			getConfiguredFsas().clear();
+//
+//			LOG.info("Build took " + rootStopwatch.elapsed(TimeUnit.MILLISECONDS) + "ms.");
+//		}
 	}
 
 	@Override
