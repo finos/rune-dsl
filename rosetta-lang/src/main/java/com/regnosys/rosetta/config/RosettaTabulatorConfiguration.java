@@ -3,7 +3,7 @@ package com.regnosys.rosetta.config;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.apache.commons.lang3.Validate;
 
@@ -30,7 +30,7 @@ public class RosettaTabulatorConfiguration {
 		return types;
 	}
 
-	public static class Provider  implements jakarta.inject.Provider<RosettaTabulatorConfiguration>, javax.inject.Provider<RosettaTabulatorConfiguration> {
+	public static class Provider  implements javax.inject.Provider<RosettaTabulatorConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {

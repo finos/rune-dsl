@@ -29,7 +29,7 @@ import org.eclipse.xtext.ide.server.Document;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 import java.util.*;
 
 /**

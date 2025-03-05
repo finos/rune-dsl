@@ -561,7 +561,7 @@ class RosettaTypeProviderXtendTest {
 			add result: if True then s2 else s2
 			add result: if True then s2 else s3
 		'''.parseRosettaWithNoIssues
-		model.elements.lastOrNull as Function => [
+		model.elements.last as Function => [
 			val max4String = inputs.get(1).typeCall.typeCallToRType.withNoMeta
 			val maxNString = inputs.get(2).typeCall.typeCallToRType.withNoMeta
 			

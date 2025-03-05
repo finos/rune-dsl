@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.ide.server;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.xtext.ide.server.ILanguageServerShutdownAndExitHandler;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.regnosys.rosetta.interpreter.RosettaInterpreter;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;

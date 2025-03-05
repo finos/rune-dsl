@@ -19,7 +19,7 @@ package com.regnosys.rosetta.resource;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;

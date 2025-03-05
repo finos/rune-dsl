@@ -18,7 +18,7 @@ package com.regnosys.rosetta.ide.util;
 
 import java.util.Iterator;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.common.util.AbstractTreeIterator;
 import org.eclipse.emf.common.util.TreeIterator;
