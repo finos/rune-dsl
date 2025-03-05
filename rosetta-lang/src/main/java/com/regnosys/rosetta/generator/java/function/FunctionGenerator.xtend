@@ -18,6 +18,8 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
@@ -63,13 +65,13 @@ import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaType
 import com.rosetta.util.types.generated.GeneratedJavaClass
+import jakarta.inject.Inject
 import java.util.ArrayList
 import java.util.Collections
 import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
-import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
@@ -77,10 +79,7 @@ import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
-import com.regnosys.rosetta.types.RDataType
-import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
-import com.regnosys.rosetta.types.RMetaAnnotatedType
+import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 
 class FunctionGenerator {
 
@@ -548,16 +547,7 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def String toPojoPropertyNames(RFeature seg) {
-		return switch(seg.name) {
-			case "reference": "externalReference"
-			case "id": "externalKey"
-			case "key": "externalKey"
-			case "address": "reference"
-			default: seg.name
-		}
-	}
-	
+
 
 	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
 		if (assignAsKey) {
