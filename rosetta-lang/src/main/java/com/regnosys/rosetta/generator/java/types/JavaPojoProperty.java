@@ -27,6 +27,7 @@ import com.rosetta.util.types.JavaType;
 
 public class JavaPojoProperty {
 	private final String name;
+	private final String runeName;
 	private final String serializedName;
 	private final String compatibilityName;
 	private final JavaType type;
@@ -35,11 +36,12 @@ public class JavaPojoProperty {
 	private final AttributeMeta meta; // used in `process` method
 	private final boolean hasLocation; // used in builder `getOrCreate`
 
-	public JavaPojoProperty(String name, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
-		this(name, serializedName, compatibilityName, type, javadoc, meta, hasLocation, null);
+	public JavaPojoProperty(String name, String runeName, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
+		this(name, runeName, serializedName, compatibilityName, type, javadoc, meta, hasLocation, null);
 	}
-	private JavaPojoProperty(String name, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, JavaPojoProperty parentProperty) {
+	private JavaPojoProperty(String name, String runeName, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, JavaPojoProperty parentProperty) {
 		this.name = name;
+		this.runeName = runeName;
 		this.serializedName = serializedName;
 		this.compatibilityName = compatibilityName;
 		this.type = type;
@@ -49,7 +51,7 @@ public class JavaPojoProperty {
 		this.parentProperty = parentProperty;
 	}
 	public JavaPojoProperty specialize(String compatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation) {
-		return new JavaPojoProperty(name, serializedName, compatibilityName, newType, newJavadoc, newMeta, newHasLocation, this);
+		return new JavaPojoProperty(name, runeName, serializedName, compatibilityName, newType, newJavadoc, newMeta, newHasLocation, this);
 	}
 	
 	public boolean isCompatibleWithParent() {
@@ -58,6 +60,9 @@ public class JavaPojoProperty {
 	
 	public String getName() {
 		return name;
+	}
+	public String getRuneName() {
+		return runeName;
 	}
 	public String getSerializedName() {
 		return serializedName;
@@ -102,7 +107,7 @@ public class JavaPojoProperty {
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(compatibilityName, hasLocation, javadoc, meta, name, serializedName, parentProperty, type);
+		return Objects.hash(compatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -114,7 +119,8 @@ public class JavaPojoProperty {
 			return false;
 		JavaPojoProperty other = (JavaPojoProperty) obj;
 		return Objects.equals(compatibilityName, other.compatibilityName) && hasLocation == other.hasLocation
-				&& Objects.equals(javadoc, other.javadoc) && meta == other.meta && Objects.equals(name, other.name) && Objects.equals(serializedName, other.serializedName)
+				&& Objects.equals(javadoc, other.javadoc) && meta == other.meta && Objects.equals(name, other.name) 
+				&& Objects.equals(runeName, other.runeName) && Objects.equals(serializedName, other.serializedName)
 				&& Objects.equals(parentProperty, other.parentProperty) && Objects.equals(type, other.type);
 	}
 }
