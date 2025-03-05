@@ -21,7 +21,7 @@ import static org.eclipse.xtext.EcoreUtil2.getContainerOfType;
 
 import java.util.List;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;

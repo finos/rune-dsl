@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
@@ -94,7 +94,7 @@ class RosettaGenerator implements IGenerator2 {
 		val lock = locks.computeIfAbsent(resourceSet, [new DemandableLock]);
 		try {
 			lock.getWriteLock(true);
-			val models = resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.lastOrNull)].map [
+			val models = resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.last)].map [
 				contents.head as RosettaModel
 			].filter[it.shouldGenerate].toList
 			val version = models.head?.version // TODO: find a way to access the version of a project directly
@@ -115,7 +115,7 @@ class RosettaGenerator implements IGenerator2 {
 	}
 
 	override void beforeGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
-		if (!ignoredFiles.contains(resource.URI.segments.lastOrNull)) {
+		if (!ignoredFiles.contains(resource.URI.segments.last)) {
 			LOGGER.trace("Starting the before generate method for " + resource.URI.toString)
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
@@ -148,7 +148,7 @@ class RosettaGenerator implements IGenerator2 {
 	}
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
-		if (!ignoredFiles.contains(resource.URI.segments.lastOrNull)) {
+		if (!ignoredFiles.contains(resource.URI.segments.last)) {
 			LOGGER.trace("Starting the main generate method for " + resource.URI.toString)
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, false)
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
@@ -236,7 +236,7 @@ class RosettaGenerator implements IGenerator2 {
 	}
 
 	override void afterGenerate(Resource resource, IFileSystemAccess2 fsa2, IGeneratorContext context) {
-		if (!ignoredFiles.contains(resource.URI.segments.lastOrNull)) {
+		if (!ignoredFiles.contains(resource.URI.segments.last)) {
 			LOGGER.trace("Starting the after generate method for " + resource.URI.toString)
 			val lock = locks.computeIfAbsent(resource.resourceSet, [new DemandableLock]);
 			val fsa = fsaFactory.resourceAwareFSA(resource, fsa2, true)
@@ -257,7 +257,7 @@ class RosettaGenerator implements IGenerator2 {
 				fsaFactory.afterGenerate(resource)
 
 				// TODO: move this over to `afterAllGenerate` once the language supports that method as well.
-				val models = resource.resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.lastOrNull)].map [
+				val models = resource.resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.last)].map [
 					contents.head as RosettaModel
 				].filter[shouldGenerate].toList
 				javaPackageInfoGenerator.generatePackageInfoClasses(fsa2, models)
@@ -279,7 +279,7 @@ class RosettaGenerator implements IGenerator2 {
 		try {
 			lock.getWriteLock(true)
 
-			val models = resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.lastOrNull)].map [
+			val models = resourceSet.resources.filter[!ignoredFiles.contains(URI.segments.last)].map [
 				contents.head as RosettaModel
 			].filter[shouldGenerate].toList
 			val version = models.head?.version // TODO: find a way to access the version of a project directly

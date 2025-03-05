@@ -20,11 +20,11 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.scoping.IScope
 import com.regnosys.rosetta.rosetta.RosettaModel
-import jakarta.inject.Inject
+import javax.inject.Inject
 import java.util.List
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.linking.lazy.LazyLinker
-import jakarta.inject.Provider
+import javax.inject.Provider
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.EcoreUtil2

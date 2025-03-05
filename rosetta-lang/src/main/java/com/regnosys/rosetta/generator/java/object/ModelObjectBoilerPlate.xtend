@@ -9,7 +9,7 @@ import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
 import java.util.Objects
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil

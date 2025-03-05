@@ -16,7 +16,7 @@
 
 package com.regnosys.rosetta.generator;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 
