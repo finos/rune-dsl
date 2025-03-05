@@ -29,6 +29,11 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetMetaReferenceUsingWithMetaSyntax() {
+    	//TODO: write this
+    }
 
     @Test
     void canSetMetaFieldsUsingWithMetaSyntax() {
@@ -45,7 +50,7 @@ public class FunctionGeneratorMetaTest {
                                         scheme: "someScheme",
                                         id: "someId"
                                     }
-  """;
+        """;
 
         // syntax
         // scoping
@@ -60,10 +65,19 @@ public class FunctionGeneratorMetaTest {
 
         var code = generatorTestHelper.generateCode(model);
         
-//        generatorTestHelper.writeClasses(code, "canSetMetaFieldsUsingWithMetaSyntax");
-
         var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
 
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        			"value", "someValue",
+        			"meta", MetaFields.builder().setScheme("someScheme").setExternalKey("someId").build()
+        			
+        		));
+
+        assertEquals(expected, result);
     }
 
     @Test
