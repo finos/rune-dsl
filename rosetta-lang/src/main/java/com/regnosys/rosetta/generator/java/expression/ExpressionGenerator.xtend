@@ -1331,7 +1331,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val metaEntries = expr.entries
 							.map[entry |  {
 								val entryType = typeProvider.getRMetaAnnotatedType(entry.value).RType.toJavaReferenceType
-								return entry.key.name.toPojoPropertyNames -> entry.value.javaCode(entryType, context.scope)
+								return entry.key.name -> entry.value.javaCode(entryType, context.scope)
 															.collapseToSingleExpression(context.scope) 
 							}].toList
 		 		
@@ -1341,7 +1341,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		if (javaType instanceof RJavaFieldWithMeta) {
 			return argumentExpression		 
 					.mapExpression[
-						JavaExpression.from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntries».set«m.key.toFirstUpper»(«m.value»)«ENDFOR».build()).build()''', javaType)
+						JavaExpression.from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntries».set«m.key.toPojoPropertyNames.toFirstUpper»(«m.value»)«ENDFOR».build()).build()''', javaType)
 					]	
 		}
 		

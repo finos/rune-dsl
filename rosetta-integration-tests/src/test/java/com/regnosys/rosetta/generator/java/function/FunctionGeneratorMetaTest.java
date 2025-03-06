@@ -34,6 +34,38 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaReferenceUsingWithMetaSyntax() {
     	//TODO: write this
     }
+    
+    @Test
+    void canSetMetaKeyUsingWithMetaSyntax() {
+        var model = """
+        metaType key string
+        metaType scheme string
+        
+        type Foo:
+          [metadata key]
+           someField string (1..1)
+  
+        func MyFunc:
+            output:
+                result Foo (1..1)
+             
+             alias foo: Foo {
+        		someField: "someValue"
+             }
+             
+            set result: foo with-meta {
+                                        key: "someKey"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        generatorTestHelper.writeClasses(code, "canSetMetaKeyUsingWithMetaSyntax");
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        
+        //TODO: finish this
+    }
 
     @Test
     void canSetMetaFieldsUsingWithMetaSyntax() {
