@@ -34,6 +34,51 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaReferenceUsingWithMetaSyntax() {
     	//TODO: write this
     }
+ 
+    @Test
+    void canSetMetaKeyAndSchemeUsingWithMetaSyntax() {
+        var model = """
+        metaType key string
+        metaType scheme string
+        
+        type Foo:
+          [metadata key]
+           someField string (1..1)
+  
+        func MyFunc:
+            output:
+                result Foo (1..1)
+        		  [metadata scheme]
+             
+             alias foo: Foo {
+        		someField: "someValue"
+             }
+             
+            set result: foo with-meta {
+                                        key: "someKey",
+                                        scheme: "someScheme"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        
+       var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"someField", "someValue",
+            			"meta", MetaFields.builder().setExternalKey("someKey").build()
+            		)),
+                "meta", MetaFields.builder().setScheme("someScheme").build()
+        ));
+        
+        assertEquals(expected, result);
+    }
     
     @Test
     void canSetMetaKeyUsingWithMetaSyntax() {
