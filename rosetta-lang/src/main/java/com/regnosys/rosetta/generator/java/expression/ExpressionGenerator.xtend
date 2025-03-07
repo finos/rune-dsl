@@ -127,7 +127,7 @@ import java.util.Collection
 import java.util.List
 import java.util.Optional
 import java.util.stream.Collectors
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
