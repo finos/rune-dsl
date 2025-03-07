@@ -60,11 +60,19 @@ public class FunctionGeneratorMetaTest {
         
         var code = generatorTestHelper.generateCode(model);
         
-        generatorTestHelper.writeClasses(code, "canSetMetaKeyUsingWithMetaSyntax");
         
         var classes = generatorTestHelper.compileToClasses(code);
         
-        //TODO: finish this
+       var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        			"someField", "someValue",
+        			"meta", MetaFields.builder().setExternalKey("someKey").build()
+		 ));
+        
+        assertEquals(expected, result);
     }
 
     @Test

@@ -1326,33 +1326,52 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
- 		val metaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr)
+		val metaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr)
 		val javaType = metaAnnotatedType.toJavaReferenceType
-		val metaEntries = expr.entries
-							.map[entry |  {
-								val entryType = typeProvider.getRMetaAnnotatedType(entry.value).RType.toJavaReferenceType
-								return entry.key.name -> entry.value.javaCode(entryType, context.scope)
-															.collapseToSingleExpression(context.scope) 
-							}].toList
-		 		
- 		val argumentExpression = expr.argument.javaCode(javaType.itemValueType, context.scope)
-			.collapseToSingleExpression(context.scope) 
-			 		
+		val metaEntries = expr.entries.map [ entry |
+			{
+				val entryType = typeProvider.getRMetaAnnotatedType(entry.value).RType.toJavaReferenceType
+				return entry.key.name ->
+					entry.value.javaCode(entryType, context.scope).collapseToSingleExpression(context.scope)
+			}
+		].toList
+
+		val argumentExpression = expr.argument.javaCode(javaType.itemValueType, context.scope).
+			collapseToSingleExpression(context.scope)
+
 		if (javaType instanceof RJavaFieldWithMeta) {
-			return argumentExpression		 
-					.mapExpression[
-						JavaExpression.from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntries».set«m.key.toPojoPropertyNames.toFirstUpper»(«m.value»)«ENDFOR».build()).build()''', javaType)
-					]	
+			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList
+			val keyEntry = metaEntries.findFirst[key == "key"]
+
+			val withMetaArgument = argumentExpression.declareAsVariable(true, "withMetaArgument", context.scope).
+				mapExpression [ withMetaArg |
+					if (keyEntry !== null) {
+						return JavaExpression.
+							from('''«withMetaArg».toBuilder().setMeta(«MetaFields».builder().set«keyEntry.key.toPojoPropertyNames.toFirstUpper»(«keyEntry.value»))''',
+								javaType.itemValueType)
+					}
+					return withMetaArg
+				]
+
+			if (metaEntriesWithoutKey.empty) {
+				return withMetaArgument
+			} else {
+				return withMetaArgument.mapExpression [
+					JavaExpression.
+						from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoPropertyNames.toFirstUpper»(«m.value»)«ENDFOR».build()).build()''',
+							javaType)
+				]
+			}
 		}
-		
-		//TODO: add ref metas and test
+
+		// TODO: add ref metas and test
 		if (javaType instanceof RJavaReferenceWithMeta) {
-			return argumentExpression		 
-					.mapExpression[
-						JavaExpression.from('''«javaType».builder().setValue(«it»).build()''', javaType)
-					]	
+			return argumentExpression.mapExpression [
+				JavaExpression.from('''«javaType».builder().setValue(«it»).build()''', javaType)
+			]
 		}
-		
-		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta expression type: " + javaType)
- 	}
+
+		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta expression type: " +
+			javaType)
+	}
 }
