@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RChoiceType;

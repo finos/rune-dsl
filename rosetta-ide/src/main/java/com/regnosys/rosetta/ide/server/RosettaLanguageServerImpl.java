@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.lsp4j.CodeAction;
@@ -62,7 +62,7 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
  * TODO: contribute to Xtext.
  *
  */
-public class RosettaLanguageServerImpl extends LanguageServerImpl implements RosettaLanguageServer{
+public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
 	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
 	@Inject CodeActionUtils codeActionUtils;
 
@@ -156,10 +156,20 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	
 	/*** SEMANTIC TOKENS ***/
 	public List<SemanticToken> semanticTokens(SemanticTokensParams params, CancelIndicator cancelIndicator) {
-		URI uri = getURI(params.getTextDocument());
-		return getWorkspaceManager().doRead(uri, (document, resource) -> {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
 			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
 			return service.computeSemanticTokens(document, resource, params, cancelIndicator);
+		});
+	}
+	
+	protected SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelIndicator cancelIndicator) {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
+			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
+			List<SemanticToken> tokens = service.computeSemanticTokens(document, resource, params, cancelIndicator);
+			SemanticTokens result = service.toSemanticTokensResponse(tokens);
+			return result;
 		});
 	}
 	
@@ -168,18 +178,7 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	 */
 	@Override
 	public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
-		return getRequestManager().runRead((cancelIndicator) -> semanticTokensFull(params, cancelIndicator));
-	}
-	
-	@Override
-	protected SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelIndicator cancelIndicator) {
-		URI uri = getURI(params.getTextDocument());
-		return getWorkspaceManager().doRead(uri, (document, resource) -> {
-			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
-			List<SemanticToken> tokens = service.computeSemanticTokens(document, resource, params, cancelIndicator);
-			SemanticTokens result = service.toSemanticTokensResponse(tokens);
-			return result;
-		});
+		return this.getRequestManager().runRead((cancelIndicator) -> this.semanticTokensFull(params, cancelIndicator));
 	}
 	
 	/**
@@ -190,22 +189,22 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 		throw new UnsupportedOperationException();
 	}
 	
+	protected SemanticTokens semanticTokensRange(SemanticTokensRangeParams params, CancelIndicator cancelIndicator) {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
+			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
+			List<SemanticToken> tokens = service.computeSemanticTokensInRange(document, resource, params, cancelIndicator);
+			SemanticTokens result = service.toSemanticTokensResponse(tokens);
+			return result;
+		});
+	}
+	
 	/**
 	 * LSP method: textDocument/semanticTokens/range
 	 */
 	@Override
 	public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
 		return this.getRequestManager().runRead((cancelIndicator) -> this.semanticTokensRange(params, cancelIndicator));
-	}
-	
-	protected SemanticTokens semanticTokensRange(SemanticTokensRangeParams params, CancelIndicator cancelIndicator) {
-		URI uri = getURI(params.getTextDocument());
-		return getWorkspaceManager().doRead(uri, (document, resource) -> {
-			ISemanticTokensService service = getService(uri, ISemanticTokensService.class);
-			List<SemanticToken> tokens = service.computeSemanticTokensInRange(document, resource, params, cancelIndicator);
-			SemanticTokens result = service.toSemanticTokensResponse(tokens);
-			return result;
-		});
 	}
 
 	@Override

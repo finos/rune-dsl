@@ -22,8 +22,8 @@ import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.utils.ImportManagementService;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 public class XtextResourceFormatter implements ResourceFormatterService {
 	private static Logger LOGGER = LoggerFactory.getLogger(XtextResourceFormatter.class);

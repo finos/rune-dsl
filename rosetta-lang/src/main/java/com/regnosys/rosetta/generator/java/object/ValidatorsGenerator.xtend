@@ -30,7 +30,7 @@ import java.util.Optional
 import java.util.regex.Pattern
 import org.apache.commons.text.StringEscapeUtils
 import java.math.BigDecimal
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.List
 import com.regnosys.rosetta.types.RAttribute

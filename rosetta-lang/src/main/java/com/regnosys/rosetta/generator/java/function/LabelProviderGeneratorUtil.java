@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.function;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.simple.Function;

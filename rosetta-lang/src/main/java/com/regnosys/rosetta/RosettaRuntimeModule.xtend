@@ -27,7 +27,7 @@ import org.eclipse.xtext.conversion.IValueConverterService
 import com.regnosys.rosetta.parsing.RosettaValueConverterService
 import com.regnosys.rosetta.transgest.ModelLoader
 import com.regnosys.rosetta.transgest.ModelLoaderImpl
-import jakarta.inject.Provider
+import javax.inject.Provider
 import com.regnosys.rosetta.serialization.RosettaTransientValueService
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService
 import com.regnosys.rosetta.resource.RosettaResource

@@ -61,13 +61,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.xtext</groupId>
-            <artifactId>org.eclipse.xtext.xtext.generator</artifactId>
-            <exclusions>
-            	<exclusion>
-            		<groupId>org.osgi</groupId>
-            		<artifactId>org.osgi.service.prefs</artifactId>
-            	</exclusion>
-            </exclusions>
+            <artifactId>org.eclipse.xtext.generator</artifactId>
         </dependency>
         <dependency> <!-- See issue https://github.com/eclipse/mwe/issues/255 -->
 	        <groupId>com.google.inject</groupId>

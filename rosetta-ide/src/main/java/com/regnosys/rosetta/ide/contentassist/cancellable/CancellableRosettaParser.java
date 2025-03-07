@@ -19,7 +19,7 @@ package com.regnosys.rosetta.ide.contentassist.cancellable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.antlr.runtime.TokenSource;
 import org.eclipse.xtext.AbstractElement;

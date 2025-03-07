@@ -39,7 +39,7 @@ import com.rosetta.util.types.generated.GeneratedJavaClass;
 import com.rosetta.util.types.generated.GeneratedJavaClassService;
 import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;

@@ -22,7 +22,7 @@ import java.util.Collections
 import java.util.Optional
 import java.util.function.Function
 import java.util.stream.Collectors
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.

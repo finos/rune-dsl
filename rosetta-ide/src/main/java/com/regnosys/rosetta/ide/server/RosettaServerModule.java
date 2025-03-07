@@ -23,7 +23,6 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.xtext.ide.server.ILanguageServerShutdownAndExitHandler;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.ServerModule;
-import org.eclipse.xtext.ide.server.WorkspaceManager;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
 import org.eclipse.xtext.service.AbstractGenericModule;
 
@@ -78,9 +77,5 @@ public class RosettaServerModule extends AbstractGenericModule {
 	
 	public Class<? extends ILanguageServerShutdownAndExitHandler> bindILanguageServerShutdownAndExitHandler() {
 		return RosettaLanguageServerShutdownAndExitHandler.class;
-	}
-	
-	public Class<? extends WorkspaceManager> bindWorkspaceManager() {
-		return RosettaWorkspaceManager.class;
 	}
 }

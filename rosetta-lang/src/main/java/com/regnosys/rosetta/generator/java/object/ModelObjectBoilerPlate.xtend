@@ -12,8 +12,13 @@ import com.rosetta.model.lib.process.AttributeMeta
 import com.rosetta.model.lib.process.BuilderProcessor
 import com.rosetta.model.lib.process.Processor
 import com.rosetta.util.ListEquals
+import java.util.Objects
+import javax.inject.Inject
 import com.rosetta.util.types.JavaClass
-import jakarta.inject.Inject
+import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import java.util.Collection
 import java.util.Objects
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -47,7 +52,7 @@ class ModelObjectBoilerPlate {
 		if (prop.type == REFERENCE) {
 			return '@ref:scoped'
 		} else
-			return prop.serializedName	
+			return prop.serializedName
 	}
 	
 	def boolean addRuneMetaAnnotation(JavaPojoProperty prop) {
