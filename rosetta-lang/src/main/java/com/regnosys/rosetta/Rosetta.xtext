@@ -167,8 +167,6 @@ RosettaRootElement:
 	| RosettaExternalRuleSource
 	| RosettaReport
 	| RosettaTypeAlias
-	| RosettaQualifiedType
-	| RosettaCalculationType
 	| Annotation
 	| Data
 	| Choice
@@ -255,14 +253,6 @@ RosettaParameter:
 // TODO get rid of these
 RosettaLibraryFunction returns RosettaExternalFunction:
 	'library' 'function' RosettaNamed '(' (parameters+=RosettaParameter (',' parameters+=RosettaParameter)*)? ')' RosettaTyped RosettaDefinable? 
-;
-
-// @Compat
-RosettaQualifiedType returns RosettaBasicType:
-	'qualifiedType' RosettaNamed '{' '}'
-;
-RosettaCalculationType returns RosettaBasicType:
-	'calculationType' RosettaNamed '{' '}'
 ;
 
 /**********************************************************************
@@ -437,9 +427,6 @@ RosettaMapTestFunc:
 RosettaDocReference:
 	'[' ('regulatoryReference'|'docReference') docReference=RegulatoryDocumentReference
 		(rationales+=DocumentRationale)*
-		// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
- 		// NOTE: once we get rid of `extraneousSegments`, we can also remove the syntactic predicate `=>` on the segment of rule `RegulatoryDocumentReference`.
- 		(extraneousSegments+=RosettaSegmentRef)*
 		('structured_provision' structuredProvision=STRING)?
 		('provision' provision=STRING)?
 		(reportedField?='reportedField')? ']'
@@ -463,7 +450,7 @@ RosettaCorpus:
 ;
 
 RosettaSegment:
-	'segment' name=(ValidID | 'rationale' | 'rationale_author' | 'structured_provision') // @Compat. These were previously used as `segment`s, but are now considered keywords.
+	'segment' name=('rationale' | 'rationale_author' | 'structured_provision')
 ;
 
 
@@ -884,7 +871,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|QualifiedName] corpusList+=([RosettaCorpus|QualifiedName])+ (=>segments+=RosettaSegmentRef)* // Syntactic predicate necessary to remove ambiguity with another corpus
+	body=[RosettaBody|QualifiedName] corpusList+=[RosettaCorpus|QualifiedName]+ segments+=RosettaSegmentRef* // Syntactic predicate necessary to remove ambiguity with another corpus
 ;
 
 RosettaSegmentRef:

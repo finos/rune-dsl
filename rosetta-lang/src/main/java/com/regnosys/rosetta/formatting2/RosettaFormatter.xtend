@@ -586,13 +586,13 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 				append[oneSpace]
 			]
 		]
-		rosettaRegulatoryReference.regionFor.keyword(structured_provisionKeyword_5_0)
+		rosettaRegulatoryReference.regionFor.keyword(structured_provisionKeyword_4_0)
 			.prepend[newLine]
 			.append[oneSpace]
-		rosettaRegulatoryReference.regionFor.keyword(provisionKeyword_6_0)
+		rosettaRegulatoryReference.regionFor.keyword(provisionKeyword_5_0)
 			.prepend[newLine]
 			.append[oneSpace]
-		rosettaRegulatoryReference.regionFor.keyword(reportedFieldReportedFieldKeyword_7_0)
+		rosettaRegulatoryReference.regionFor.keyword(reportedFieldReportedFieldKeyword_6_0)
 			.prepend[newLine]
 	}
 
