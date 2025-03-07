@@ -142,6 +142,7 @@ import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.rosetta.model.metafields.MetaFields
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
+import com.rosetta.model.lib.meta.Reference
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1355,7 +1356,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 			if (metaEntriesWithoutKey.empty) {
 				return withMetaArgument
-			} else {
+			} else {				
 				return withMetaArgument.mapExpression [
 					JavaExpression.
 						from('''«javaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoPropertyNames.toFirstUpper»(«m.value»)«ENDFOR».build()).build()''',
@@ -1364,10 +1365,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 		}
 
-		// TODO: add ref metas and test
 		if (javaType instanceof RJavaReferenceWithMeta) {
+			val metaEntriesWithoutAddress = metaEntries.filter[key != "address"].toList
+			val metaAdressEntry = metaEntries.findFirst[key == "address"]
+			
 			return argumentExpression.mapExpression [
-				JavaExpression.from('''«javaType».builder().setValue(«it»).build()''', javaType)
+				JavaExpression.from('''«javaType».builder().setValue(«it»)«FOR m : metaEntriesWithoutAddress».set«m.key.toPojoPropertyNames.toFirstUpper»(«m.value»)«ENDFOR»«IF metaAdressEntry !== null».set«metaAdressEntry.key.toPojoPropertyNames.toFirstUpper»(«Reference».builder().set«metaAdressEntry.key.toPojoPropertyNames.toFirstUpper»(«metaAdressEntry.value»))«ENDIF».build()''', javaType)
 			]
 		}
 

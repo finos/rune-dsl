@@ -29,10 +29,147 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+
+    // syntax
+    // scoping
+    // validation: meta field is correct type, with meta value cardinality check (someScheme should be single), lhs of with-meta should be single cardinality
+    // typeProvider: return type of with-meta
+    // cardinalityProvider: returned cardinality of with-meta, has to be single
+    // expectedTypeProvider: is lhs (someValue) correct type given result type and addition of meta to lhs
+    // java layer: code generation (expression generator)
+
+    // formatting: RosettaExpressionFormatter
+    // syntax highlighting: textmate (in case you need it but probably not RosettaSemanticTokensService)
+
+    @Test
+    void canSetMetaAdressAndReferenceUsingWithMetaSyntax() {
+        var model = """
+        metaType address string
+        metaType reference string        
+        
+        type Foo:
+           someField string (1..1)
+  
+        func MyFunc:
+            output:
+                result Foo (1..1)
+        		  [metadata address]
+          		  [metadata reference]
+
+             
+             alias foo: Foo {
+        		someField: "someValue"
+             }
+             
+            set result: foo with-meta {
+                                        address: "someAddress",
+                                        reference: "someReference"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"someField", "someValue"
+            		)),        		
+        		"reference", Reference.builder().setReference("someAddress"),
+        		"externalReference", "someReference"
+        ));
+
+        assertEquals(expected, result);
+        
+    }    
+    
+    @Test
+    void canSetMetaAdressUsingWithMetaSyntax() {
+        var model = """
+        metaType address string
+        
+        type Foo:
+           someField string (1..1)
+  
+        func MyFunc:
+            output:
+                result Foo (1..1)
+        		  [metadata address]
+             
+             alias foo: Foo {
+        		someField: "someValue"
+             }
+             
+            set result: foo with-meta {
+                                        address: "someAddress"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"someField", "someValue"
+            		)),        		
+        		"reference", Reference.builder().setReference("someAddress")
+        ));
+
+        assertEquals(expected, result);
+        
+    }    
     
     @Test
     void canSetMetaReferenceUsingWithMetaSyntax() {
-    	//TODO: write this
+        var model = """
+        metaType reference string
+        
+        type Foo:
+           someField string (1..1)
+  
+        func MyFunc:
+            output:
+                result Foo (1..1)
+        		  [metadata reference]
+             
+             alias foo: Foo {
+        		someField: "someValue"
+             }
+             
+            set result: foo with-meta {
+                                        reference: "someReference"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        
+        var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"someField", "someValue"
+            		)),
+        		"externalReference", "someReference"
+        ));
+
+        assertEquals(expected, result);
+        
     }
  
     @Test
@@ -136,17 +273,6 @@ public class FunctionGeneratorMetaTest {
                                         id: "someId"
                                     }
         """;
-
-        // syntax
-        // scoping
-        // validation: meta field is correct type, with meta value cardinality check (someScheme should be single), lhs of with-meta should be single cardinality
-        // typeProvider: return type of with-meta
-        // cardinalityProvider: returned cardinality of with-meta, has to be single
-        // expectedTypeProvider: is lhs (someValue) correct type given result type and addition of meta to lhs
-        // java layer: code generation (expression generator)
-
-        // formatting: RosettaExpressionFormatter
-        // syntax highlighting: textmate (in case you need it but probably not RosettaSemanticTokensService)
 
         var code = generatorTestHelper.generateCode(model);
         
