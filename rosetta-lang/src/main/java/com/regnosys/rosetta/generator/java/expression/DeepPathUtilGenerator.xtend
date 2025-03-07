@@ -7,7 +7,7 @@ import java.util.Map
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -78,7 +78,7 @@ class DeepPathUtilGenerator {
 				private final «dependency» «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»;
 				«ENDFOR»
 				
-				@«javax.inject.Inject»
+				@«Inject»
 				public «javaClass»(«FOR dependency : dependencies SEPARATOR ', '»«dependency» «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»«ENDFOR») {
 					«FOR dependency : dependencies»
 					this.«classScope.getIdentifierOrThrow(dependency.toDependencyInstance)» = «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»;

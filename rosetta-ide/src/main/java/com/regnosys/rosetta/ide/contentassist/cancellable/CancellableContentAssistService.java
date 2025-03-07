@@ -19,8 +19,8 @@ package com.regnosys.rosetta.ide.contentassist.cancellable;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;

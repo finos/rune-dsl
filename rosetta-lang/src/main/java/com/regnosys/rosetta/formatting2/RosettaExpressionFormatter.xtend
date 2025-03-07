@@ -18,7 +18,7 @@ import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.services.RosettaGrammarAccess
-import jakarta.inject.Inject
+import javax.inject.Inject
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
@@ -266,7 +266,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: long list
 				expr.regionFor.keyword('[')
 					.append[newLine]
-				expr.elements.lastOrNull
+				expr.elements.last
 					.append[newLine]
 				expr.regionFor.keywords(',').forEach[
 					append[newLine]

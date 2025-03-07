@@ -24,7 +24,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;

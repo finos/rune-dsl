@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.apache.commons.lang3.stream.Streams;
 import org.eclipse.emf.common.util.URI;

@@ -23,8 +23,8 @@ import java.util.Collection
 import java.util.LinkedHashSet
 import java.util.List
 import java.util.Set
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
 

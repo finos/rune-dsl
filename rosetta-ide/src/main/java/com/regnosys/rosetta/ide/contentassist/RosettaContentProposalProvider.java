@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.ide.contentassist;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.RuleCall;

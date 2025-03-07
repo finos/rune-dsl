@@ -9,7 +9,7 @@ import com.regnosys.rosetta.generator.external.ExternalOutputConfiguration
 import java.util.Map
 import java.util.HashMap
 import java.util.HashSet
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 class RosettaOutputConfigurationProvider extends OutputConfigurationProvider {
 

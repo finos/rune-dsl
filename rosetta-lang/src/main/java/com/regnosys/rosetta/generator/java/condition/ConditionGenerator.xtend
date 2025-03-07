@@ -20,7 +20,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
@@ -90,7 +90,7 @@ class ConditionGenerator {
 				class «defaultClassName» implements «className» {
 				
 					«FOR dep : deps»
-						@«javax.inject.Inject» protected «dep» «defaultClassScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
+						@«Inject» protected «dep» «defaultClassScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
 						
 					«ENDFOR»
 					@Override

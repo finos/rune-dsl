@@ -54,12 +54,6 @@ public class RosettaTestGenerateMojo extends AbstractRosettaGeneratorMojo {
 		}
 	}
 	
-	@Override
-	protected String getClassOutputDirectory() {
-		return getProject().getBuild().getTestOutputDirectory();
-	}
-	
-	@Override
 	protected String tmpDirSuffix() {
 		return "-test";
 	}

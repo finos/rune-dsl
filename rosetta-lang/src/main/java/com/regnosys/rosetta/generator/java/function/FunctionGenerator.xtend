@@ -69,7 +69,7 @@ import java.util.List
 import java.util.Map
 import java.util.Optional
 import java.util.stream.Collectors
-import jakarta.inject.Inject
+import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
@@ -225,11 +225,11 @@ class FunctionGenerator {
 			public «IF isStatic»static «ENDIF»abstract class «className» implements «FOR fInterface : functionInterfaces SEPARATOR ","»«fInterface»«ENDFOR» {
 				«IF !preConditions.empty || !postConditions.empty»
 					
-					@«javax.inject.Inject» protected «ConditionValidator» «conditionValidatorId»;
+					@«Inject» protected «ConditionValidator» «conditionValidatorId»;
 				«ENDIF»
 				«IF output.needsBuilder»
 					
-					@«javax.inject.Inject» protected «ModelObjectValidator» «objectValidatorId»;
+					@«Inject» protected «ModelObjectValidator» «objectValidatorId»;
 				«ENDIF»
 				«IF !dependencies.empty»
 					
@@ -237,7 +237,7 @@ class FunctionGenerator {
 					//
 				«ENDIF»
 				«FOR dep : dependencies»
-					@«javax.inject.Inject» protected «dep» «classScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
+					@«Inject» protected «dep» «classScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
 				«ENDFOR»
 			
 				/**
@@ -364,11 +364,11 @@ class FunctionGenerator {
 		«javadoc(function.definition, function.references, version)»
 		public class «className» implements «RosettaFunction» {
 			«FOR dep : dependencies»
-				@«javax.inject.Inject» protected «dep» «dep.simpleName.toFirstLower»;
+				@«Inject» protected «dep» «dep.simpleName.toFirstLower»;
 			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
-				@«javax.inject.Inject» protected «toDispatchClass(enumFunc)» «classScope.getIdentifierOrThrow(enumFunc)»;
+				@«Inject» protected «toDispatchClass(enumFunc)» «classScope.getIdentifierOrThrow(enumFunc)»;
 			«ENDFOR»
 			
 			public «outputType» evaluate(«function.inputsAsParameters(evaluateScope)») {

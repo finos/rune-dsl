@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest
 import static org.junit.jupiter.api.Assertions.*
 import org.eclipse.lsp4j.Position
-import jakarta.inject.Inject
+import javax.inject.Inject
 import com.regnosys.rosetta.ide.util.RangeUtils
 
 class QuickFixTest extends AbstractRosettaLanguageServerTest {
