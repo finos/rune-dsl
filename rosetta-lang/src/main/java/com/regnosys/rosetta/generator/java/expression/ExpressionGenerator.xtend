@@ -127,7 +127,7 @@ import java.util.Collection
 import java.util.List
 import java.util.Optional
 import java.util.stream.Collectors
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -346,11 +346,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def binaryExpr(RosettaBinaryOperation expr, Context context) {
 		val left = expr.left
 		val right = expr.right
-		// val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
-		// val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
-		// val joined = leftRtype.join(rightRtype).toJavaReferenceType
-		// val leftType = leftRtype.toJavaReferenceType
-		// val rightType = rightRtype.toJavaReferenceType
 
 		switch expr.operator {
 			case "and",
