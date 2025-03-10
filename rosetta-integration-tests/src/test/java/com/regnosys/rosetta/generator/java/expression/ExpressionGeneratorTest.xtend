@@ -72,6 +72,28 @@ class ExpressionGeneratorTest {
 
 	
 	@Test
+	def void testDefaultWithMetaCoercion() {
+		val expr = '''
+		foo default bar
+		'''
+		
+		val expected = '''
+		import com.rosetta.model.lib.mapper.MapperS;
+		import com.rosetta.model.metafields.FieldWithMetaString;
+		
+		
+		{
+			FieldWithMetaString foo;
+			FieldWithMetaString bar;
+			final FieldWithMetaString fieldWithMetaString = MapperS.of(foo).getOrDefault(bar);
+			return fieldWithMetaString == null ? null : fieldWithMetaString.getValue();
+		}
+		'''
+		
+		assertJavaCode(expected, expr, String, #[], #["foo string (1..1) [metadata scheme]", "bar string (1..1) [metadata scheme]"])
+	}
+	
+	@Test
 	def void testFeatureCallToIncompatibleOverrideUsesCorrectGetter() {
 		val context = '''
 		type Foo:

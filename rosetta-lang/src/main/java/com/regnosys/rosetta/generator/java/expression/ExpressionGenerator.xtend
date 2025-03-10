@@ -351,12 +351,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def binaryExpr(RosettaBinaryOperation expr, Context context) {
 		val left = expr.left
 		val right = expr.right
-		val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
-		val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
-		val joined = leftRtype.join(rightRtype).toJavaReferenceType
-		val resultType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
-		val leftType = leftRtype.toJavaReferenceType
-		val rightType = rightRtype.toJavaReferenceType
 
 		switch expr.operator {
 			case "and",
@@ -370,6 +364,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			case "-",
 			case "*",
 			case "/": {
+				val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
+				val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
+				val leftType = leftRtype.toJavaReferenceType
+				val rightType = rightRtype.toJavaReferenceType
+				val joinedWithoutMeta = leftRtype.join(rightRtype).toJavaReferenceType
+				val resultType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
 				val method = switch expr.operator {
 					case "+": "add"
 					case "-": "subtract"
@@ -377,10 +377,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					case "/": "divide"
 				}
 				if (leftType.extendsNumber && rightType.extendsNumber) {
-					val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
-					val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
+					val leftCode = javaCode(left, MAPPER.wrapExtends(joinedWithoutMeta), context.scope)
+					val rightCode = javaCode(right, MAPPER.wrapExtends(joinedWithoutMeta), context.scope)
 					leftCode
-						.then(rightCode, [l, r|JavaExpression.from('''«MapperMaths».<«resultType», «joined», «joined»>«method»(«l», «r»)''', MAPPER_S.wrap(resultType))], context.scope)
+						.then(rightCode, [l, r|JavaExpression.from('''«MapperMaths».<«resultType», «joinedWithoutMeta», «joinedWithoutMeta»>«method»(«l», «r»)''', MAPPER_S.wrap(resultType))], context.scope)
 				} else {
 					val leftCode = javaCode(left, MAPPER.wrapExtends(leftType), context.scope)
 					val rightCode = javaCode(right, MAPPER.wrapExtends(rightType), context.scope)
@@ -390,12 +390,20 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			case "contains",
 			case "disjoint": {
+				val leftRMetaType = typeProvider.getRMetaAnnotatedType(expr.left)
+				val rightRMetaType = typeProvider.getRMetaAnnotatedType(expr.right)
+				val joined = leftRMetaType.joinMetaAnnotatedTypes(rightRMetaType).toJavaReferenceType
+				
 				val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
 				val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(expr.operator)»(«l», «r»)''', COMPARISON_RESULT)], context.scope)
 			}
 			case "default": {
+				val leftRMetaType = typeProvider.getRMetaAnnotatedType(expr.left)
+				val rightRMetaType = typeProvider.getRMetaAnnotatedType(expr.right)
+				val joined = leftRMetaType.joinMetaAnnotatedTypes(rightRMetaType).toJavaReferenceType
+				
 				val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
 				if (left.isMulti) {
 					val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
@@ -403,6 +411,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					leftCode
 					.then(rightCode, [l, r| new JavaConditionalExpression(JavaExpression.from('''«l».getMulti().isEmpty()''', JavaPrimitiveType.BOOLEAN),r ,l , typeUtil)], context.scope)
 				} else {
+					val resultType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
 					val rightCode = javaCode(right, joined, context.scope)
 					
 					leftCode
@@ -411,7 +420,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 			case "join": {
 				val leftCode = javaCode(left, MAPPER_C.wrapExtends(STRING), context.scope)
-				val rightCode = expr.right === null ? JavaExpression.from('''«MapperS».of("")''', resultType) : javaCode(right, MAPPER_S.wrap(STRING), context.scope)
+				val rightCode = expr.right === null ? JavaExpression.from('''«MapperS».of("")''', MAPPER_S.wrap(STRING)) : javaCode(right, MAPPER_S.wrap(STRING), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«l».join(«r»)''', MAPPER_S.wrap(STRING))], context.scope)
 			}
@@ -421,6 +430,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			case "<=",
 			case ">",
 			case ">=": {
+				val leftRtype = typeProvider.getRMetaAnnotatedType(expr.left).RType
+				val rightRtype = typeProvider.getRMetaAnnotatedType(expr.right).RType
+				val joinedWithoutMeta = leftRtype.join(rightRtype).toJavaReferenceType
 				val method = switch expr.operator {
 					case "=": 'areEqual'
 					case "<>": 'notEqual'
@@ -435,8 +447,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				} else {
 					CardinalityModifier.ALL
 				}
-				val leftCode = javaCode(left, MAPPER.wrapExtends(joined), context.scope)
-				val rightCode = javaCode(right, MAPPER.wrapExtends(joined), context.scope)
+				val leftCode = javaCode(left, MAPPER.wrapExtends(joinedWithoutMeta), context.scope)
+				val rightCode = javaCode(right, MAPPER.wrapExtends(joinedWithoutMeta), context.scope)
 				leftCode
 					.then(rightCode, [l, r|JavaExpression.from('''«runtimeMethod(method)»(«l», «r», «toCardinalityOperator(modifier, defaultModifier)»)''', COMPARISON_RESULT)], context.scope)
 			}
