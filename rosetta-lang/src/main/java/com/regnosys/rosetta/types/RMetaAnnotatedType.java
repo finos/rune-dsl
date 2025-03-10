@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import com.google.common.collect.Streams;
+
 public class RMetaAnnotatedType {
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
@@ -21,6 +23,11 @@ public class RMetaAnnotatedType {
 	
 	public static RMetaAnnotatedType withMeta(RType rType, List<RMetaAttribute> metaAttributes) {
 		return new RMetaAnnotatedType(rType, metaAttributes);
+	}
+	
+	public RMetaAnnotatedType withAdditionalMetas(List<RMetaAttribute> metaAttributes) {
+		List<RMetaAttribute> metas = Streams.concat(this.metaAttributes.stream(), metaAttributes.stream()).collect(Collectors.toList());
+		return new RMetaAnnotatedType(rType, metas);
 	}
 
 	public RType getRType() {
