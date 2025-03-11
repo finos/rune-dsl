@@ -425,7 +425,7 @@ RosettaMapTestFunc:
  */ 
  
 RosettaDocReference:
-	'[' ('regulatoryReference'|'docReference') docReference=RegulatoryDocumentReference
+	'[' name=('regulatoryReference'|'docReference') (path=AnnotationPathExpression 'as')? docReference=RegulatoryDocumentReference
 		(rationales+=DocumentRationale)*
 		('structured_provision' structuredProvision=STRING)?
 		('provision' provision=STRING)?
@@ -677,7 +677,6 @@ UnaryOperation returns RosettaExpression:
 		| ->(
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
-			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator='extract')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
@@ -714,7 +713,6 @@ UnaryOperation returns RosettaExpression:
 		| (
 			 ({ReduceOperation} operator='reduce')
 			|({FilterOperation} operator='filter')
-			// @Compat: remove `map`
 			|({MapOperation} operator='extract')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)
@@ -752,7 +750,6 @@ UnaryOperation returns RosettaExpression:
 		| ->(
 			 ({ReduceOperation.argument=current} operator='reduce')
 			|({FilterOperation.argument=current} operator='filter')
-			// @Compat: remove `map`
 			|({MapOperation.argument=current} operator='extract')
 		) (function=InlineFunction|=>function=ImplicitInlineFunction)?
 	)*
@@ -871,7 +868,7 @@ RosettaExternalEnumSynonym returns RosettaEnumSynonym:
  *****************************************/
 
 RegulatoryDocumentReference:
-	body=[RosettaBody|QualifiedName] corpusList+=[RosettaCorpus|QualifiedName]+ segments+=RosettaSegmentRef* // Syntactic predicate necessary to remove ambiguity with another corpus
+	body=[RosettaBody|QualifiedName] corpusList+=[RosettaCorpus|QualifiedName]+ segments+=RosettaSegmentRef*
 ;
 
 RosettaSegmentRef:
@@ -917,8 +914,8 @@ AnnotationPathExpression:
 ;
 NestedAnnotationPath returns AnnotationPathExpression:
 	PrimaryAnnotationPath ->(
-			 ({AnnotationPath.receiver=current} '->' (=>attribute=[Attribute|ValidID])?)
-			|({AnnotationDeepPath.receiver=current} '->>' (=>attribute=[Attribute|ValidID])?)
+			 ({AnnotationPath.receiver=current} '->' (->attribute=[Attribute|ValidID])?)
+			|({AnnotationDeepPath.receiver=current} '->>' (->attribute=[Attribute|ValidID])?)
 		)*
 ;
 PrimaryAnnotationPath returns AnnotationPathExpression:

@@ -7,6 +7,7 @@ package com.regnosys.rosetta.rosetta
 import com.google.common.collect.Iterables
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.BuiltinAnnotationWithPath
 import com.regnosys.rosetta.rosetta.simple.RootElement
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -286,7 +287,7 @@ enum RosettaSynonymRef {
  * docReferences
  */
 
-class RosettaDocReference {
+class RosettaDocReference extends BuiltinAnnotationWithPath {
 	contains RegulatoryDocumentReference docReference
 	contains DocumentRationale[] rationales
 	String structuredProvision

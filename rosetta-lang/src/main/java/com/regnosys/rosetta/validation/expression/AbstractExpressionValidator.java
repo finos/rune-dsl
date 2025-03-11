@@ -80,7 +80,7 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		return subtypeCheck(expected, actual, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
 	}
 	protected boolean subtypeCheck(RMetaAnnotatedType expected, RMetaAnnotatedType actual, EObject sourceObject, EStructuralFeature feature, int featureIndex, Function<String, String> suggestion) {
-		if (!typeSystem.isSubtypeOf(actual, expected)) {
+		if (!builtins.NOTHING.equals(expected.getRType()) && !typeSystem.isSubtypeOf(actual, expected)) {
 			error(notASubtypeMessage(expected, actual, suggestion), sourceObject, feature, featureIndex);
 			return false;
 		}
