@@ -1348,7 +1348,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		
 		val metaEntries = expr.entries.map [ entry |
 			{
-				val entryType = typeProvider.getRMetaAnnotatedType(entry.value).RType.toJavaReferenceType
+				val entryType = typeProvider.getRTypeOfFeature(entry.key, expr).RType.toJavaReferenceType
 				return entry.key.name ->
 					entry.value.javaCode(entryType, context.scope).collapseToSingleExpression(context.scope)
 			}
