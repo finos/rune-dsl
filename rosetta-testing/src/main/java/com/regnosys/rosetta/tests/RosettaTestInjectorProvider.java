@@ -18,7 +18,6 @@ public class RosettaTestInjectorProvider extends RosettaInjectorProvider {
 						.getClassLoader();
 			}
 			
-			// Make sure validation tests properly check the message
 			public void configureValidationTestHelper(Binder binder) {
 				binder.bind(ValidationTestHelper.class).to(RosettaValidationTestHelper.class);
 			}

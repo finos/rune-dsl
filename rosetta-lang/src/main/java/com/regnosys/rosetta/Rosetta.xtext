@@ -450,7 +450,7 @@ RosettaCorpus:
 ;
 
 RosettaSegment:
-	'segment' name=('rationale' | 'rationale_author' | 'structured_provision')
+	'segment' name=(ValidID | 'rationale' | 'rationale_author' | 'structured_provision') // @Compat. These were previously used as `segment`s, but are now considered keywords.
 ;
 
 

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 
 public class RosettaValidationTestHelper extends ValidationTestHelper {
 	public RosettaValidationTestHelper() {
+		// Make sure validation tests properly check the message
 		super(Mode.EXACT);
 	}
 	
@@ -32,7 +33,7 @@ public class RosettaValidationTestHelper extends ValidationTestHelper {
 			result.append(") '");
 			result.append(issue.getMessage());
 			result.append("'");
-			// Use line number and column instead of offset
+			// Use line number and column instead of offset (as is used in the superclass)
 			result.append(" at " + issue.getLineNumber() + ":" + issue.getColumn() + ", length " + issue.getLength());
 			if (uri != null) {
 				EObject eObject = resource.getResourceSet().getEObject(uri, true);
