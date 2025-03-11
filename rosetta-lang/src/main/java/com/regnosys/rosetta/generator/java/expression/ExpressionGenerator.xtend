@@ -1416,7 +1416,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			val metaAdressEntry = metaEntries.findFirst[key == "address"]
 			
 			return argumentExpression.mapExpression [
-				JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»)«FOR m : metaEntriesWithoutAddress».set«m.key.toPojoPropertyNames.toFirstUpper»(«m.value»)«ENDFOR»«IF metaAdressEntry !== null».set«metaAdressEntry.key.toPojoPropertyNames.toFirstUpper»(«Reference».builder().set«metaAdressEntry.key.toPojoPropertyNames.toFirstUpper»(«metaAdressEntry.value»))«ENDIF».build()''', withMetaJavaType)
+				JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»)«FOR m : metaEntriesWithoutAddress».set«m.key.toPojoPropertyName.toFirstUpper»(«m.value»)«ENDFOR»«IF metaAdressEntry !== null».set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«Reference».builder().set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«metaAdressEntry.value»))«ENDIF».build()''', withMetaJavaType)
 			]
 		}
 
@@ -1425,7 +1425,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	private def String toPojoSetter(String metaEntryName) {
-		metaEntryName.toPojoPropertyNames.toFirstUpper
+		metaEntryName.toPojoPropertyName.toFirstUpper
 	}
 	
 	private def boolean needsBuilder(JavaClass<?> javaClass) {

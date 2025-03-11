@@ -499,7 +499,7 @@ class FunctionGenerator {
 	
 	private def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment) {
 		if (outputExpressionType instanceof RJavaWithMetaValue || (segment instanceof RMetaAttribute && outputExpressionType instanceof RJavaPojoInterface)) {
-			segment.toPojoPropertyNames.toFirstUpper
+			segment.toPojoPropertyName.toFirstUpper
 		} else {
 			prop.name.toFirstUpper
 		}

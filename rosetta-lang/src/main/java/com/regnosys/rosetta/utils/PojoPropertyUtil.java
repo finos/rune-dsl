@@ -4,11 +4,11 @@ import com.regnosys.rosetta.types.RFeature;
 
 public class PojoPropertyUtil { 
 	
-	public static String toPojoPropertyNames(RFeature seg) {
-		return toPojoPropertyNames(seg.getName());
+	public static String toPojoPropertyName(RFeature seg) {
+		return toPojoPropertyName(seg.getName());
 	}
 	
-	public static String toPojoPropertyNames(String rosettaName) {
+	public static String toPojoPropertyName(String rosettaName) {
 	    switch (rosettaName) {
 	        case "reference":
 	            return "externalReference";
