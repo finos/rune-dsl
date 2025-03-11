@@ -685,7 +685,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateTimeOperation.argument=current} operator='to-date-time')
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
-			|({WithMetaOperation.argument=current} operator='with-meta' ('{' entries+=WithMetaEntry (',' entries+=WithMetaEntry)* '}')?)
+			|({WithMetaOperation.argument=current} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)
 		)
 		| ->(
 			({SortOperation.argument=current} operator='sort')
