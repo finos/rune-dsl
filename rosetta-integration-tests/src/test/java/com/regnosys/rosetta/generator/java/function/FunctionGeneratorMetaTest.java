@@ -29,6 +29,44 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetMetaOnEnumUsingWithMetaSyntax() {
+        var model = """
+        metaType scheme string
+
+        enum MyEnum:
+        		A
+        		B
+        		C
+  
+        func MyFunc:        	      
+            output:
+                result MyEnum (1..1)
+        		  [metadata scheme]
+        	
+        	alias myEnum: MyEnum -> B
+        	
+            set result: myEnum with-meta {
+                                        scheme: "someScheme"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);  
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", Map.of(
+				"value", generatorTestHelper.createEnumInstance(classes, "MyEnum", "B"),
+				"meta", MetaFields.builder().setScheme("someScheme").build()
+			));
+        
+        assertEquals(expected, result);
+    }
 
     @Test
     void canAddKeyToExistingMetaObjectUsingWithMetaSyntax() {
@@ -468,9 +506,7 @@ public class FunctionGeneratorMetaTest {
         """;
 
         var code = generatorTestHelper.generateCode(model);
-        
-        generatorTestHelper.writeClasses(code, "canSetMetaFieldsUsingWithMetaSyntax");
-        
+                
         var classes = generatorTestHelper.compileToClasses(code);
         
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
