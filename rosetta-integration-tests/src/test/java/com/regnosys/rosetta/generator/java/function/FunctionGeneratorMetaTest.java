@@ -144,8 +144,6 @@ public class FunctionGeneratorMetaTest {
         
         var code = generatorTestHelper.generateCode(model);
         
-        generatorTestHelper.writeClasses(code, "canAddSchemeToExistingObjectUsingWithMetaSyntax");
-
         var classes = generatorTestHelper.compileToClasses(code);        
 
         var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
@@ -328,9 +326,7 @@ public class FunctionGeneratorMetaTest {
         """;  
         
         var code = generatorTestHelper.generateCode(model);
-        
-        generatorTestHelper.writeClasses(code, "canSetMetaKeyAndSchemeUsingWithMetaSyntax");
-        
+                
         var classes = generatorTestHelper.compileToClasses(code);
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
