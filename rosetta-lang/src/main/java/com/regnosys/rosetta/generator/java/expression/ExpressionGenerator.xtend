@@ -1364,6 +1364,22 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			
 			
 			if (setKey && !setMeta) {
+				val withMetaArgument = argumentExpression
+						.declareAsVariable(true, "withMetaArgument", context.scope)				
+				val withMetaAgumentVar = context.scope.getIdentifierOrThrow(argumentExpression)
+				
+				if (argumentJavaType instanceof RJavaWithMetaValue) {
+					return withMetaArgument
+						.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
+//						.completeAsExpressionStatement
+//						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
+//						.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+//						.completeAsExpressionStatement 
+//						.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))		
+					
+				} else {
+					
+				}
 				
 			} else if (!setKey && setMeta) {
 				val withMetaArgument = argumentExpression
