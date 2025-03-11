@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.validation.expression;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Streams;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.*;
@@ -16,17 +15,14 @@ import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
-import com.regnosys.rosetta.utils.RosettaConfigExtension;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ComposedChecks;
 
 import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,9 +41,6 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
-	@Inject
-	private RosettaConfigExtension configs;
-
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
 		RosettaExpression argument = operation.getArgument();
@@ -56,21 +49,11 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 
 	@Check
 	public void checkWithMetaEntry(WithMetaEntry entry) {
-		List<RosettaMetaType> validMetaTypes =
-				Streams.stream(configs.findMetaTypes(entry))
-						.map(IEObjectDescription::getEObjectOrProxy)
-						.map(x -> (RosettaMetaType)x)
-						.collect(Collectors.toList());
+		RosettaFeature metaType = entry.getKey();
 
-		Optional<RosettaMetaType> metaTypeForEntry = validMetaTypes.stream()
-				.filter(validMetaType -> validMetaType.getName().equals(entry.getKey().getName()))
-				.findFirst();
-
-		metaTypeForEntry.ifPresent(metaType -> {
-			RType expectedType = typeSystem.typeCallToRType(metaType.getTypeCall());
-			isSingleCheckError(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
-			subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
-		});
+		RType expectedType = typeProvider.getRTypeOfFeature(metaType, null).getRType();
+		isSingleCheckError(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
+		subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
 	}
 
 	@Check
