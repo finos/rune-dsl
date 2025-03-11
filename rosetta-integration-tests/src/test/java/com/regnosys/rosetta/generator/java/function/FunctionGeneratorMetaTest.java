@@ -41,6 +41,82 @@ public class FunctionGeneratorMetaTest {
     // formatting: RosettaExpressionFormatter
     // syntax highlighting: textmate (in case you need it but probably not RosettaSemanticTokensService)
 
+    
+    /*
+     * Input to with-meta (argument)
+     * 
+     * case 1 no key, no meta
+     * 		case A add key -> has key, no meta
+     *  	case B add meta -> no key, has meta
+     *  	case C add both -> has key, has meta
+     * case 2 has key, no meta
+     * 		case A add key -> has key, no meta
+     *  	case B add meta -> has key, has meta
+     *  	case C add both -> has key, has meta
+     * case 3 no key, has meta
+     * 		case A add key -> has key, has meta
+     * 		case B add meta -> no key, has meta
+     * 		case C add both -> has key, has meta
+     * case 4 has key, has meta
+     * 		case A add key-> has key, has meta
+     *      case B add meta -> has key, has meta
+     * 		case C add both -> has key, has meta
+     * 
+     */
+    
+    @Test
+    void canAddKeyAndSchemeToExistingObjectUsingWithMetaSyntax() {
+        var model = """
+        metaType key string
+        metaType scheme string
+        metaType location string
+        
+        type Foo:
+          [metadata key]
+           someField string (1..1)
+  
+        func MyFunc:
+        	inputs:
+        	    myInput Foo (1..1)
+        	      [metadata location]
+        	      
+            output:
+                result Foo (1..1)
+        		  [metadata scheme]
+             
+            set result: myInput with-meta {
+        								key: "someKey",
+                                        scheme: "someScheme"
+                                    }
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);        
+
+        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"someField", "someValue",
+            			"meta", MetaFields.builder().setExternalKey("someOtherKey").build()
+            		)),
+                "meta", MetaFields.builder().setLocation("someLocation").build()
+        ));
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, myInput);
+        
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+            			"someField", "someValue",
+            			"meta", MetaFields.builder().setExternalKey("someKey").build()
+            		)),
+                "meta", MetaFields.builder().setScheme("someScheme").setLocation("someLocation").build()
+        ));
+        
+        assertEquals(expected, result);
+    }      
+    
     @Test
     void canAddSchemeToExistingObjectUsingWithMetaSyntax() {
         var model = """
@@ -68,7 +144,9 @@ public class FunctionGeneratorMetaTest {
         
         var code = generatorTestHelper.generateCode(model);
         
-        var classes = generatorTestHelper.compileToClasses(code);
+        generatorTestHelper.writeClasses(code, "canAddSchemeToExistingObjectUsingWithMetaSyntax");
+
+        var classes = generatorTestHelper.compileToClasses(code);        
 
         var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
                 "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
@@ -250,6 +328,8 @@ public class FunctionGeneratorMetaTest {
         """;  
         
         var code = generatorTestHelper.generateCode(model);
+        
+        generatorTestHelper.writeClasses(code, "canSetMetaKeyAndSchemeUsingWithMetaSyntax");
         
         var classes = generatorTestHelper.compileToClasses(code);
                 
