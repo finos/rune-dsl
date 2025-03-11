@@ -30,39 +30,6 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
-    // syntax
-    // scoping
-    // validation: meta field is correct type, with meta value cardinality check (someScheme should be single), lhs of with-meta should be single cardinality
-    // typeProvider: return type of with-meta
-    // cardinalityProvider: returned cardinality of with-meta, has to be single
-    // expectedTypeProvider: is lhs (someValue) correct type given result type and addition of meta to lhs
-    // java layer: code generation (expression generator)
-
-    // formatting: RosettaExpressionFormatter
-    // syntax highlighting: textmate (in case you need it but probably not RosettaSemanticTokensService)
-
-    
-    /*
-     * Input to with-meta (argument)
-     * 
-     * case 1 no key, no meta
-     * 		case A add key -> has key, no meta
-     *  	case B add meta -> no key, has meta
-     *  	case C add both -> has key, has meta
-     * case 2 has key, no meta
-     * 		case A add key -> has key, no meta
-     *  	case B add meta -> has key, has meta
-     *  	case C add both -> has key, has meta
-     * case 3 no key, has meta
-     * 		case A add key -> has key, has meta
-     * 		case B add meta -> no key, has meta
-     * 		case C add both -> has key, has meta
-     * case 4 has key, has meta
-     * 		case A add key-> has key, has meta
-     *      case B add meta -> has key, has meta
-     * 		case C add both -> has key, has meta
-     * 
-     */
     @Test
     void canAddKeyToExistingMetaObjectUsingWithMetaSyntax() {
         var model = """
@@ -501,6 +468,8 @@ public class FunctionGeneratorMetaTest {
         """;
 
         var code = generatorTestHelper.generateCode(model);
+        
+        generatorTestHelper.writeClasses(code, "canSetMetaFieldsUsingWithMetaSyntax");
         
         var classes = generatorTestHelper.compileToClasses(code);
         

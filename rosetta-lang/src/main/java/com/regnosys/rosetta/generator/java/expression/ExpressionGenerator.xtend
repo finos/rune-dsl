@@ -143,6 +143,8 @@ import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.rosetta.model.metafields.MetaFields
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 import com.rosetta.model.lib.meta.Reference
+import com.rosetta.util.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1353,7 +1355,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		].toList
 
 		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
-				.mapExpression[JavaExpression.from('''«it».toBuilder()''', argumentJavaType.toBuilderType)]
+				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta) {
@@ -1424,5 +1426,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	
 	private def String toPojoSetter(String metaEntryName) {
 		metaEntryName.toPojoPropertyNames.toFirstUpper
+	}
+	
+	private def boolean needsBuilder(JavaClass<?> javaClass) {
+		javaClass instanceof JavaPojoInterface
 	}
 }
