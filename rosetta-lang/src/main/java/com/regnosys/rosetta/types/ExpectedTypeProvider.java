@@ -77,6 +77,8 @@ import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
@@ -136,7 +138,9 @@ public interface ExpectedTypeProvider {
 				} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
 					ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
 					return typeProvider.getRTypeOfFeature(pair.getKey(), null);
-				} else if (owner instanceof RosettaExpression) {
+				}  
+				//TODO: handle with-meta entries here
+				else if (owner instanceof RosettaExpression) {
 					return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
 				} else if (INLINE_FUNCTION__BODY.equals(reference)) {
 					EObject operation = owner.eContainer();
@@ -622,7 +626,18 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseWithMetaOperation(WithMetaOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return getExpectedTypeFromContainer(expr);
+					Set<String> withMetaKeys = expr.getEntries()
+							.stream()
+							.map(e -> e.getKey().getName())
+							.collect(Collectors.toSet());
+					
+					RMetaAnnotatedType expectedType = getExpectedTypeFromContainer(expr);
+					List<RMetaAttribute> metaAttributes = expectedType.getMetaAttributes()
+															.stream()
+															.filter(a -> !withMetaKeys.contains(a.getName()))
+															.collect(Collectors.toList());
+							
+					return RMetaAnnotatedType.withMeta(expectedType.getRType(), metaAttributes);
 				}
 				return null;
 			}

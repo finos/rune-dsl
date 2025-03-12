@@ -1407,6 +1407,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
 							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
 				}
+			} else {
+				return withMetaArgument
 			}
 
 		}
