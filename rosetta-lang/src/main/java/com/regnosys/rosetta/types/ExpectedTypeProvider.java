@@ -68,6 +68,7 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.WithMetaEntry;
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
@@ -138,9 +139,10 @@ public interface ExpectedTypeProvider {
 				} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
 					ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
 					return typeProvider.getRTypeOfFeature(pair.getKey(), null);
-				}  
-				//TODO: handle with-meta entries here
-				else if (owner instanceof RosettaExpression) {
+				}  else if (WITH_META_ENTRY__VALUE.equals(reference) && owner instanceof WithMetaEntry) {
+					WithMetaEntry entry = (WithMetaEntry) owner;
+					return typeProvider.getRTypeOfFeature(entry.getKey(), reference);
+				} else if (owner instanceof RosettaExpression) {
 					return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
 				} else if (INLINE_FUNCTION__BODY.equals(reference)) {
 					EObject operation = owner.eContainer();
