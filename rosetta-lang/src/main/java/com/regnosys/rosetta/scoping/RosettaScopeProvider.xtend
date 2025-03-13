@@ -68,6 +68,8 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.utils.RosettaConfigExtension
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService
+import com.regnosys.rosetta.rosetta.simple.Annotation
 
 /**
  * This class contains custom scoping description.
@@ -88,6 +90,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject extension DeepFeatureCallUtil
 	@Inject extension RObjectFactory
 	@Inject extension RosettaConfigExtension configs
+	@Inject RosettaBuiltinsService rosettaBuiltinsService
 	
 
 	override getScope(EObject context, EReference reference) {
@@ -293,9 +296,13 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 				}
 				case WITH_META_ENTRY__KEY: {
 					if (context instanceof WithMetaEntry) {
-						val metaTypes = configs.findMetaTypes(context)
-											.map[it.EObjectOrProxy]
-						return Scopes.scopeFor(metaTypes)
+						if (context.eResource?.resourceSet === null) {
+							return IScope.NULLSCOPE
+						}
+						
+						val metaData = rosettaBuiltinsService.getAnnotationsResource(context.eResource.resourceSet)
+							.elements.filter(Annotation).findFirst[name == "metadata"]
+						return Scopes.scopeFor(metaData.attributes)
 					}
 					return IScope.NULLSCOPE
 				}
