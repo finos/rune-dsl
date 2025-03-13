@@ -37,7 +37,7 @@ variables:
   sectionStart: '{{wordStart}}((post-)?condition|set|add|inputs|output|alias){{wordEnd}}'
   sectionEnd: (?={{sectionStart}}|{{rootStart}})(?!\bcondition\b)|(?=\bcondition\b\s*({{identifier}})?:)
   functionalOperation: '{{wordStart}}(reduce|filter|extract|sort|min|max){{wordEnd}}'
-  listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum|with-meta){{wordEnd}}'
+  listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}'
   listOperation: ->>|->|{{listOperationWord}}
   synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
   synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
@@ -1216,7 +1216,7 @@ repository:
             - include: '#expression'
           - include: '#expressionWithoutThenAndDefaultOperation'
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|with-meta){{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable
