@@ -390,14 +390,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			externalAnnotationSourceAccess.enumsKeyword_2_0)
 	}
 
-	// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
-	@Check
-	def void deprecatedExtraneousSegment(RosettaDocReference docRef) {
-		for (seg : docRef.extraneousSegments) {
-			warning("Placing document segments after `rationale` is deprecated.", seg, null)
-		}
-	}
-
 	@Check
 	def void checkGeneratedInputInContextWithImplicitVariable(HasGeneratedInput e) {
 		if (e.needsGeneratedInput && !e.implicitVariableExistsInContext) {

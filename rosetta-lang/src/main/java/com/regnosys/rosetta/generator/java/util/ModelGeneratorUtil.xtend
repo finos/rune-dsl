@@ -6,6 +6,12 @@ import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.simple.References
 import java.util.List
 import com.regnosys.rosetta.rosetta.RosettaDocReference
+import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
+import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.simple.AnnotationPath
+import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
+import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ModelGeneratorUtil {
 	
@@ -53,6 +59,7 @@ class ModelGeneratorUtil {
 		«IF references !==null && !references.isEmpty»
 			«FOR reference : references»
 			 *
+			«IF reference.path !== null» * «reference.path.javadocPath»«ENDIF»
 			 * Body «reference.docReference.body.name»
 			«FOR mandate : reference.docReference.corpusList» * Corpus «mandate.getCorpusType» «mandate.name» «IF mandate.getDisplayName !== null»«HtmlEscapers.htmlEscaper().escape(mandate.getDisplayName)»«ENDIF» «IF mandate.definition !== null»"«HtmlEscapers.htmlEscaper().escape(mandate.definition)»"«ENDIF» «ENDFOR»
 			«FOR segment : reference.docReference.segments» * «segment.segment.name» "«HtmlEscapers.htmlEscaper().escape(segment.segmentRef)»"«ENDFOR»
@@ -62,4 +69,13 @@ class ModelGeneratorUtil {
 			«ENDFOR»
 		«ENDIF»
 	'''
+	
+	private static def StringConcatenationClient javadocPath(AnnotationPathExpression p) {
+		switch p {
+			AnnotationPathAttributeReference: '''«p.attribute.name»'''
+			RosettaImplicitVariable: '''«p.name»'''
+			AnnotationPath: '''«p.receiver.javadocPath» -> «p.attribute.name»'''
+			AnnotationDeepPath: '''«p.receiver.javadocPath» ->> «p.attribute.name»'''
+		}
+	}
 }

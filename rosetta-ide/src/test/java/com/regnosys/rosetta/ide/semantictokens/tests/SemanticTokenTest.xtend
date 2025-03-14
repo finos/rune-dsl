@@ -141,7 +141,6 @@ class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			basicType: 13:28:6
 			property.singleCardinality: 17:1:1
 			basicType: 17:3:6
-
 			'''
 		]
 	}
