@@ -49,6 +49,31 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testWithMetaFormat() {
+		'''
+		input
+		with-meta   {
+			scheme: "Some expression",
+			id: foo extract
+			if True
+			then "This is a looong expression"
+			else "other"
+		}
+		''' ->
+		'''
+		input 
+			with-meta {
+				scheme: "Some expression",
+				id: foo 
+					extract
+						if True
+						then "This is a looong expression"
+						else "other"
+			}
+		'''
+	}
+	
+	@Test
 	def void testConstructorFormat1() {
 		'''
 		SomeType {
