@@ -7,7 +7,6 @@ import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -94,7 +93,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
@@ -108,10 +106,10 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-import com.regnosys.rosetta.types.RMetaAttribute
 import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.utils.ConstructorManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
 
 // TODO: split expression validator
 // TODO: type check type call arguments
@@ -153,6 +151,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						checkDeprecatedAnnotation(annotated as Annotated, object, ref, INSIGNIFICANT_INDEX)
 					}
 				}
+			}
+		}
+	}
+	
+	@Check
+	def void deprecatedLabelAsWarning(LabelAnnotation labelAnnotation) {
+		if (labelAnnotation.deprecatedAs) {
+			if (labelAnnotation.path === null) {
+				warning('''The `as` keyword without a path is deprecated''', labelAnnotation, LABEL_ANNOTATION__DEPRECATED_AS)
+			} else {
+				warning('''The `as` keyword after a path is deprecated. Add the keyword `for` before the path instead''', labelAnnotation, LABEL_ANNOTATION__DEPRECATED_AS)
 			}
 		}
 	}

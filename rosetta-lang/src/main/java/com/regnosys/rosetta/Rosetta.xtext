@@ -425,7 +425,7 @@ RosettaMapTestFunc:
  */ 
  
 RosettaDocReference:
-	'[' name=('regulatoryReference'|'docReference') (path=AnnotationPathExpression 'as')? docReference=RegulatoryDocumentReference
+	'[' name=('regulatoryReference'|'docReference') ('for' path=AnnotationPathExpression)? docReference=RegulatoryDocumentReference
 		(rationales+=DocumentRationale)*
 		('structured_provision' structuredProvision=STRING)?
 		('provision' provision=STRING)?
@@ -907,7 +907,7 @@ RosettaRule:
  * Labels
  */
 LabelAnnotation:
-	'[' name='label' path=AnnotationPathExpression? 'as' label=STRING ']'
+	'[' name='label' ('for' path=AnnotationPathExpression | path=AnnotationPathExpression? deprecatedAs?='as')? label=STRING ']'
 ;
 AnnotationPathExpression:
 	NestedAnnotationPath
