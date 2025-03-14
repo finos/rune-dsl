@@ -7,25 +7,25 @@ import com.regnosys.rosetta.rosetta.simple.References
 import java.util.List
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
-import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.simple.AnnotationPath
-import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
-import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
+import javax.inject.Inject
 
 class ModelGeneratorUtil {
 	
-	static def javadoc(RosettaNamed named) '''
+	@Inject
+	AnnotationPathExpressionUtil annotationPathUtil
+	
+	def javadoc(RosettaNamed named) '''
 		«javadoc(named, null)»
 	'''
 	
-	private static def javadoc(RosettaNamed named, String version) {
+	private def javadoc(RosettaNamed named, String version) {
 		val definition = if (named instanceof RosettaDefinable) named.definition else ""
 		val docRef = if (named instanceof References) named.references else emptyList
 		javadoc(definition, docRef, version)
 	}
 
-	static def javadoc(String definition, List<RosettaDocReference> docRef, String version) {
+	def javadoc(String definition, List<RosettaDocReference> docRef, String version) {
 		return if (definition === null && docRef.isEmpty && version === null)
 			null
 		else
@@ -38,24 +38,24 @@ class ModelGeneratorUtil {
 			'''
 	}
 	
-	static def emptyJavadocWithVersion(String version) '''
+	def emptyJavadocWithVersion(String version) '''
 		/**
 		 * @version «version»
 		 */
 	'''
 	
-	static def escape(String definition) 
+	def escape(String definition) 
 	'''«IF definition !==null && !definition.isEmpty»«HtmlEscapers.htmlEscaper().escape(definition)»«ENDIF»'''
 		
-	private static def javadocDefinition(String definition) '''
+	private def javadocDefinition(String definition) '''
 		«IF definition !==null && !definition.isEmpty» * «HtmlEscapers.htmlEscaper().escape(definition)»«ENDIF»
 	'''
 	
-	private static def javadocVersion(String version) '''
+	private def javadocVersion(String version) '''
 		«IF version !==null && !version.isEmpty» * @version «version»«ENDIF»
 	'''
 	
-	private static def javadocDocRef(List<RosettaDocReference> references) '''
+	private def javadocDocRef(List<RosettaDocReference> references) '''
 		«IF references !==null && !references.isEmpty»
 			«FOR reference : references»
 			 *
@@ -70,12 +70,13 @@ class ModelGeneratorUtil {
 		«ENDIF»
 	'''
 	
-	private static def StringConcatenationClient javadocPath(AnnotationPathExpression p) {
-		switch p {
-			AnnotationPathAttributeReference: '''«p.attribute.name»'''
-			RosettaImplicitVariable: '''«p.name»'''
-			AnnotationPath: '''«p.receiver.javadocPath» -> «p.attribute.name»'''
-			AnnotationDeepPath: '''«p.receiver.javadocPath» ->> «p.attribute.name»'''
-		}
+	private def String javadocPath(AnnotationPathExpression expr) {
+		return annotationPathUtil.fold(
+			expr,
+			[a|'''«a.name»'''],
+			[a|'''item'''],
+			[r,p|'''«r» -> «p.attribute.name»'''],
+			[r,dp|'''«r» ->> «dp.attribute.name»''']
+		)
 	}
 }

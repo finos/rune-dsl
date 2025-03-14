@@ -17,10 +17,6 @@ import com.regnosys.rosetta.types.RDataType
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
 import com.regnosys.rosetta.rosetta.RosettaRule
-import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.simple.AnnotationPath
-import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
 import java.util.List
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
@@ -34,6 +30,7 @@ import java.util.stream.Collectors
 import java.util.HashSet
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -43,6 +40,7 @@ class LabelProviderGenerator {
 	@Inject DeepFeatureCallUtil deepPathUtil
 	@Inject LabelProviderGeneratorUtil util
 	@Inject ExternalAnnotationUtil externalAnnotationUtil
+	@Inject AnnotationPathExpressionUtil annotationPathUtil
 	
 	def void generateForFunctionIfApplicable(IFileSystemAccess2 fsa, Function func) {
 		if (util.shouldGenerateLabelProvider(func)) {
@@ -205,7 +203,7 @@ class LabelProviderGenerator {
 	}
 	
 	private def void registerLabelAnnotation(LabelAnnotation ann, DottedPath attrPath, Map<DottedPath, String> labels) {
-		evaluateAnnotationPathExpression(#[attrPath], ann.path)
+		evaluateAnnotationPathExpression(attrPath, ann.path)
 			.forEach[
 				labels.put(it, ann.label)
 			]
@@ -216,32 +214,34 @@ class LabelProviderGenerator {
 		}
 	}
 	
-	private def List<DottedPath> evaluateAnnotationPathExpression(List<DottedPath> currentPaths, AnnotationPathExpression expr) {
+	private def List<DottedPath> evaluateAnnotationPathExpression(DottedPath root, AnnotationPathExpression expr) {
 		if (expr === null) {
-			currentPaths
-		} else if (expr instanceof AnnotationPathAttributeReference) {
-			currentPaths.map[child(expr.attribute.name)]
-		} else if (expr instanceof RosettaImplicitVariable) {
-			currentPaths
-		} else if (expr instanceof AnnotationPath) {
-			currentPaths.evaluateAnnotationPathExpression(expr.receiver).map[child(expr.attribute.name)]
-		} else if (expr instanceof AnnotationDeepPath) {
-			val rawType = typeProvider.getRMetaAnnotatedType(expr.receiver).RType
-			val t = if (rawType instanceof RChoiceType) {
-					rawType.asRDataType
-				} else {
-					rawType
-				}
-			if (t instanceof RDataType) {
-				currentPaths.evaluateAnnotationPathExpression(expr.receiver).flatMap[p|
-					deepPathUtil.findDeepFeaturePaths(t, rObjectFactory.buildRAttribute(expr.attribute))
-						.map[deepPath|
-							p.concat(DottedPath.of(deepPath.map[name]))
-						]
-				].toList
-			} else {
-				#[]
-			}
+			#[root]
+		} else {
+			annotationPathUtil.fold(
+				expr,
+				[a|#[root.child(a.name)]],
+				[a|#[root]],
+				[r,p|r.map[child(p.attribute.name)]],
+				[r,dp|
+					val rawType = typeProvider.getRMetaAnnotatedType(dp.receiver).RType
+					val t = if (rawType instanceof RChoiceType) {
+							rawType.asRDataType
+						} else {
+							rawType
+						}
+					if (t instanceof RDataType) {
+						r.flatMap[p|
+							deepPathUtil.findDeepFeaturePaths(t, rObjectFactory.buildRAttribute(dp.attribute))
+								.map[deepPath|
+									p.concat(DottedPath.of(deepPath.map[name]))
+								]
+						].toList
+					} else {
+						#[]
+					}
+				]
+			)
 		}
 	}
 }

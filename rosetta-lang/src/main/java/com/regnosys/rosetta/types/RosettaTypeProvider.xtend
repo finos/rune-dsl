@@ -92,10 +92,7 @@ import org.eclipse.emf.ecore.EObject
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
-import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
-import com.regnosys.rosetta.rosetta.simple.AnnotationPath
-import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
-import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -109,6 +106,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
+	@Inject AnnotationPathExpressionUtil annotationPathUtil
 
 	def RMetaAnnotatedType getRMetaAnnotatedType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -140,13 +138,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
 		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
-	def RMetaAnnotatedType getRMetaAnnotatedType(AnnotationPathExpression it) {
-		switch it {
-			AnnotationPathAttributeReference: attribute.RTypeOfSymbol
-			RosettaImplicitVariable: EcoreUtil2.getContainerOfType(it, Attribute)?.RTypeOfSymbol ?: NOTHING_WITH_NO_META
-			AnnotationPath: attribute.RTypeOfSymbol
-			AnnotationDeepPath: attribute.RTypeOfSymbol
-		}
+	def RMetaAnnotatedType getRMetaAnnotatedType(AnnotationPathExpression expr) {
+		return annotationPathUtil.getTargetAttribute(expr).RTypeOfSymbol
 	}
 
 	def List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {

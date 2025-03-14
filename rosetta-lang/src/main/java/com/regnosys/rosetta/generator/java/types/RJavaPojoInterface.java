@@ -39,18 +39,20 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	private final TypeSystem typeSystem;
 	private final JavaTypeTranslator typeTranslator;
 	private final JavaTypeUtil typeUtil;
+	private final ModelGeneratorUtil generatorUtil;
 
-	public RJavaPojoInterface(RDataType type, TypeSystem typeSystem, JavaTypeTranslator typeTranslator, JavaTypeUtil typeUtil) {
+	public RJavaPojoInterface(RDataType type, TypeSystem typeSystem, JavaTypeTranslator typeTranslator, JavaTypeUtil typeUtil, ModelGeneratorUtil generatorUtil) {
 		this.type = type;
 		
 		this.typeSystem = typeSystem;
 		this.typeTranslator = typeTranslator;
 		this.typeUtil = typeUtil;
+		this.generatorUtil = generatorUtil;
 	}
 	
 	@Override
 	public String getJavadoc() {
-		return ModelGeneratorUtil.javadoc(type.getEObject().getDefinition(), type.getEObject().getReferences(), getVersion());
+		return generatorUtil.javadoc(type.getEObject().getDefinition(), type.getEObject().getReferences(), getVersion());
 	}
 	@Override
 	public String getRosettaName() {
@@ -84,7 +86,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 			type.getOwnAttributes().forEach(attr -> {
 				String name = attr.getName();
 				JavaType type = typeTranslator.toMetaJavaType(attr);
-				addPropertyIfNecessary(name, name, type, ModelGeneratorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null), attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null, attr.getRMetaAnnotatedType().hasMetaAttribute("location"));
+				addPropertyIfNecessary(name, name, type, generatorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null), attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null, attr.getRMetaAnnotatedType().hasMetaAttribute("location"));
 			});
 			if (type.hasMetaAttribute("key")) {
 				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
@@ -161,7 +163,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		if (superPojo == null) {
 			RDataType superType = type.getSuperType();
 			if (superType != null) {
-				superPojo = new RJavaPojoInterface(superType, typeSystem, typeTranslator, typeUtil);
+				superPojo = new RJavaPojoInterface(superType, typeSystem, typeTranslator, typeUtil, generatorUtil);
 			}
 		}
 		return superPojo;

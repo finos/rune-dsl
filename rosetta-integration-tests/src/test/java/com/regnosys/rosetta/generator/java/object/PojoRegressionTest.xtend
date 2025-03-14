@@ -1342,10 +1342,7 @@ class PojoRegressionTest {
 		import java.util.Objects;
 		
 		import static java.util.Optional.ofNullable;
-		
-		/**
-		 * @version 1
-		 */
+
 		@RosettaDataType(value="FieldWithMetaString", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
 		@RuneDataType(value="FieldWithMetaString", model="com", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
 		public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<String>, GlobalKey {
@@ -1627,10 +1624,7 @@ class PojoRegressionTest {
 		import java.util.Objects;
 		
 		import static java.util.Optional.ofNullable;
-		
-		/**
-		 * @version 1
-		 */
+
 		@RosettaDataType(value="ReferenceWithMetaFoo", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
 		@RuneDataType(value="ReferenceWithMetaFoo", model="com", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
 		public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithMeta<Foo> {

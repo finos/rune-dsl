@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.generator.java.types;
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
@@ -65,6 +66,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private JavaTypeUtil typeUtil;
 	@Inject
 	private ModelIdProvider modelIdProvider;
+	@Inject
+	private ModelGeneratorUtil generatorUtil;
 	
 	@Deprecated
 	public boolean isRosettaModelObject(RAttribute attr) {
@@ -409,7 +412,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	@Override
 	protected JavaPojoInterface caseDataType(RDataType type, Void context) {
-		return new RJavaPojoInterface(type, typeSystem, this, typeUtil);
+		return new RJavaPojoInterface(type, typeSystem, this, typeUtil, generatorUtil);
 	}
 	@Override
 	protected JavaPojoInterface caseChoiceType(RChoiceType type, Void context) {

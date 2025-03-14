@@ -1,9 +1,7 @@
 package com.regnosys.rosetta.generator.java.types;
 
 import java.util.Collection;
-import java.util.Collections;
 
-import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.rosetta.util.types.JavaReferenceType;
 
 public abstract class RJavaWithMetaValue extends JavaPojoInterface {
@@ -29,7 +27,7 @@ public abstract class RJavaWithMetaValue extends JavaPojoInterface {
 
 	@Override
 	public String getJavadoc() {
-		return ModelGeneratorUtil.javadoc(null, Collections.emptyList(), "1");
+		return null;
 	}
 
 	@Override
