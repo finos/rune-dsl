@@ -647,7 +647,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				.toList
 				
 		val argumentType = expr.argument.safeRType(cycleTracker)		
- 		argumentType.withAdditionalMetas(rMetaAttributes)
+ 		argumentType.addMeta(rMetaAttributes)
  	}
 
 }

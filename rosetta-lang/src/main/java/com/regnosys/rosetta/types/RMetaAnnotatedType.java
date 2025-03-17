@@ -25,7 +25,7 @@ public class RMetaAnnotatedType {
 		return new RMetaAnnotatedType(rType, metaAttributes);
 	}
 	
-	public RMetaAnnotatedType withAdditionalMetas(List<RMetaAttribute> metaAttributes) {
+	public RMetaAnnotatedType addMeta(List<RMetaAttribute> metaAttributes) {
 		List<RMetaAttribute> metas = Streams.concat(this.metaAttributes.stream(), metaAttributes.stream()).collect(Collectors.toList());
 		return new RMetaAnnotatedType(rType, metas);
 	}
