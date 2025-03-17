@@ -1056,6 +1056,35 @@ Even though the `Vehicle` choice type does not include `PetrolCar` directly, it 
 
 Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. For example, leaving out the `Bicycle` case in the example above will result in the `switch` operation being highlighted in red.
 
+#### With Meta Operator
+The `with-meta` operator allows you to set metadata on an expression using a constructor-like syntax. This operator can be used when setting the output of a function or the value of an alias.
+
+```Haskell
+type SomeType:
+  [metadata key]
+   someField string (1..1)
+
+func MyFunc:
+    output:
+        result SomeType (1..1)
+          [metadata scheme]
+     
+     alias someType: SomeType {
+        someField: "someValue"
+     }
+     
+    set result: someType with-meta {
+                                key: "someKey",
+                                scheme: "someScheme"
+                            }
+```
+
+In the example above, the `key` metadata is set on `SomeType`, which is stored in an alias, while the `scheme` metadata is set on the output attribute. The `with-meta` operator works with both key and reference metadata types.
+
+**Important Notes:**
+- The argument that the operator is used on (above, this is `someType`) must have a single cardinality.
+- The same cardinality restriction applies to the expression values that you set onto the meta fields (above, `"someKey"` and `"someScheme"`).
+
 #### Operator Precedence
 
 Expressions are evaluated in Rune in the following order, from first to last - see [Operator Precedence](https://en.wikipedia.org/wiki/Order_of_operations)).
@@ -1064,7 +1093,7 @@ Expressions are evaluated in Rune in the following order, from first to last - s
 1. Brackets - e.g. `(1+2)`
 1. if-then-else - e.g. `if (1=2) then 3`
 1. Constructor expressions - e.g `MyType {attr1: "value 1"}`
-1. Unary operators `->`, `->>`, `exists`, `is absent`, `only-element`, `flatten`, `distinct`, `reverse`, `first`, `last`, `sum`, `one-of`, `choice`, `to-string`, `to-number`, `to-int`, `to-time`, `to-enum`, `to-date`, `to-date-time`, `to-zoned-date-time`, `switch`, `sort`, `min`, `max`, `reduce`, `filter`, `map`, `extract` 
+1. Unary operators `->`, `->>`, `exists`, `is absent`, `only-element`, `flatten`, `distinct`, `reverse`, `first`, `last`, `sum`, `one-of`, `choice`, `to-string`, `to-number`, `to-int`, `to-time`, `to-enum`, `to-date`, `to-date-time`, `to-zoned-date-time`, `switch`, `sort`, `min`, `max`, `reduce`, `filter`, `map`, `extract`, `with-meta` 
 1. Binary operators `contains`, `disjoint`, `default`, `join`
 1. Multiplicative operators `*`, `/` 
 1. Additive operators `+`, `-`
