@@ -111,8 +111,15 @@ import com.regnosys.rosetta.utils.ConstructorManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
 
-// TODO: split expression validator
-// TODO: type check type call arguments
+/*
+ * Do not write any more validators in here for the following reasons:
+ * 1. We are moving away from Xtend to Java for all test and implementation code
+ * 2. This approach to putting every validator type in one place is messy and hard to navigate, better to split into classes by type of validator
+ * 
+ * The appropriate validtors can be found by looking for [ValidatorType]Validator.java where validator type could be Expression for example ExpressionValidator.java
+ * 
+ */
+@Deprecated
 class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaEcoreUtil

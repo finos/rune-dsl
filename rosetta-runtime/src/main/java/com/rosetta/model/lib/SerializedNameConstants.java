@@ -1,7 +1,7 @@
 package com.rosetta.model.lib;
 
-public class RuneNameConstants {
-	private RuneNameConstants() {}
+public class SerializedNameConstants {
+	private SerializedNameConstants() {}
 	
 	public static final String DATA = "@data";
 	public static final String REFERENCE = "@ref";

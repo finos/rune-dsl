@@ -1,7 +1,7 @@
 package com.rosetta.model.metafields;
 
 import static java.util.Optional.ofNullable;
-import static com.rosetta.model.lib.RuneNameConstants.*;
+import static com.rosetta.model.lib.SerializedNameConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;

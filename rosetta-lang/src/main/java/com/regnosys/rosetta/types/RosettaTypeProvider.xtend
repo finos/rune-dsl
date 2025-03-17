@@ -93,6 +93,9 @@ import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import com.regnosys.rosetta.rosetta.RosettaMetaType
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -107,6 +110,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
 	@Inject AnnotationPathExpressionUtil annotationPathUtil
+	@Inject extension RosettaConfigExtension configs
 
 	def RMetaAnnotatedType getRMetaAnnotatedType(RosettaExpression expression) {
 		expression.safeRType(newHashMap)
@@ -623,6 +627,20 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		expr.cases
 			.map[it.expression.safeRType(cycleTracker)]
 			.joinMetaAnnotatedTypes
+ 	}
+ 	
+ 	override protected caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
+ 		val metaFeatures = expr.entries.map[key].map[name]
+ 		
+ 		val rMetaAttributes = configs.findMetaTypes(expr)
+				.map[EObjectOrProxy]
+				.map[it as RosettaMetaType]
+				.filter[metaFeatures.contains(it.name)]
+				.map[buildRMetaAttribute]
+				.toList
+				
+		val argumentType = expr.argument.safeRType(cycleTracker)		
+ 		argumentType.addMeta(rMetaAttributes)
  	}
 
 }

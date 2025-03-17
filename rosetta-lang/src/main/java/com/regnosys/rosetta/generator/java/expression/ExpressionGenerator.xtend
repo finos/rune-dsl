@@ -138,6 +138,13 @@ import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.con
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import com.rosetta.model.metafields.MetaFields
+import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
+import com.rosetta.model.lib.meta.Reference
+import com.rosetta.util.types.JavaClass
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1332,4 +1339,98 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						]
 				]
  	}
+ 	
+ 	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
+		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)
+		val withMetaJavaType = withMetaRMetaType.toJavaReferenceType
+		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
+		val argumentJavaType = argumentrMetaType.toJavaReferenceType
+		
+		val metaEntries = expr.entries.map [ entry |
+			{
+				val entryType = typeProvider.getRTypeOfFeature(entry.key, expr).RType.toJavaReferenceType
+				return entry.key.name ->
+					entry.value.javaCode(entryType, context.scope).collapseToSingleExpression(context.scope)
+			}
+		].toList
+
+		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
+				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
+				.collapseToSingleExpression(context.scope)
+
+		if (withMetaJavaType instanceof RJavaFieldWithMeta) {
+			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList
+			val keyEntry = metaEntries.findFirst[key == "key"]
+			val setMeta = !metaEntriesWithoutKey.empty
+			val setKey = keyEntry !== null
+			
+			val withMetaArgument = argumentExpression
+					.declareAsVariable(true, "withMetaArgument", context.scope)				
+			val withMetaAgumentVar = context.scope.getIdentifierOrThrow(argumentExpression)
+			
+			if (setKey && !setMeta) {
+				if (argumentJavaType instanceof RJavaWithMetaValue) {
+					return withMetaArgument
+						.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', withMetaJavaType.itemType)]
+						.completeAsExpressionStatement
+						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))	
+				} else {
+					return withMetaArgument
+						.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''',  withMetaJavaType.itemType)]
+						.completeAsExpressionStatement
+						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
+				}
+			} else if (!setKey && setMeta) {
+				if (argumentJavaType instanceof RJavaWithMetaValue) {
+					return withMetaArgument
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+							.completeAsExpressionStatement
+							.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))
+				} else {
+					return withMetaArgument
+							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
+				}
+				
+			} else if (setKey && setMeta) {
+				if (argumentJavaType instanceof RJavaWithMetaValue) {
+					return withMetaArgument
+							.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
+							.completeAsExpressionStatement
+							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+							.completeAsExpressionStatement 
+							.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))				
+				} else {
+					return withMetaArgument
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
+							.completeAsExpressionStatement
+							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
+							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
+				}
+			} else {
+				return withMetaArgument
+			}
+
+		}
+
+		if (withMetaJavaType instanceof RJavaReferenceWithMeta) {
+			val metaEntriesWithoutAddress = metaEntries.filter[key != "address"].toList
+			val metaAdressEntry = metaEntries.findFirst[key == "address"]
+			
+			return argumentExpression.mapExpression [
+				JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»)«FOR m : metaEntriesWithoutAddress».set«m.key.toPojoPropertyName.toFirstUpper»(«m.value»)«ENDFOR»«IF metaAdressEntry !== null».set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«Reference».builder().set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«metaAdressEntry.value»))«ENDIF».build()''', withMetaJavaType)
+			]
+		}
+
+		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta expression type: " +
+			withMetaJavaType)
+	}
+	
+	private def String toPojoSetter(String metaEntryName) {
+		metaEntryName.toPojoPropertyName.toFirstUpper
+	}
+	
+	private def boolean needsBuilder(JavaClass<?> javaClass) {
+		javaClass instanceof JavaPojoInterface
+	}
 }

@@ -18,6 +18,8 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
@@ -78,6 +80,7 @@ import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
+import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 
 class FunctionGenerator {
 
@@ -498,7 +501,7 @@ class FunctionGenerator {
 	
 	private def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment) {
 		if (outputExpressionType instanceof RJavaWithMetaValue || (segment instanceof RMetaAttribute && outputExpressionType instanceof RJavaPojoInterface)) {
-			segment.toPojoPropertyNames.toFirstUpper
+			segment.toPojoPropertyName.toFirstUpper
 		} else {
 			prop.name.toFirstUpper
 		}
@@ -546,16 +549,7 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def String toPojoPropertyNames(RFeature seg) {
-		return switch(seg.name) {
-			case "reference": "externalReference"
-			case "id": "externalKey"
-			case "key": "externalKey"
-			case "address": "reference"
-			default: seg.name
-		}
-	}
-	
+
 
 	private def JavaStatementBuilder assignValue(JavaScope scope, ROperation op, boolean assignAsKey) {
 		if (assignAsKey) {

@@ -19,6 +19,15 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
+/*
+ * Do not write any more tests in here for the following reasons:
+ * 1. We are moving away from Xtend to Java for all test and implementation code
+ * 2. This approach to putting every test type in one place is messy and hard to navigate, better to split tests concepts into suites
+ * 
+ * The appropriate test suites can be found by looking for [TestType]ValidatorTest.java where test type could be Expression for example ExpressionValidatorTest
+ * 
+ */
+@Deprecated
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
 class RosettaValidatorTest implements RosettaIssueCodes {

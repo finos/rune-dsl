@@ -25,7 +25,11 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
+import com.regnosys.rosetta.rosetta.expression.WithMetaEntry
+import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
+import com.regnosys.rosetta.rosetta.simple.AnnotationPath
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
+import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
@@ -63,11 +67,9 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.AnnotationPath
-import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
-import java.util.Random
-import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.utils.RosettaConfigExtension
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService
+import com.regnosys.rosetta.rosetta.simple.Annotation
 
 /**
  * This class contains custom scoping description.
@@ -87,6 +89,9 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension DeepFeatureCallUtil
 	@Inject extension RObjectFactory
+	@Inject extension RosettaConfigExtension configs
+	@Inject RosettaBuiltinsService rosettaBuiltinsService
+	
 
 	override getScope(EObject context, EReference reference) {
 		try {
@@ -286,6 +291,18 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 						} else if (argumentType instanceof RChoiceType) {
 							return Scopes.scopeFor(argumentType.allOptions.map[EObject])
 						}
+					}
+					return IScope.NULLSCOPE
+				}
+				case WITH_META_ENTRY__KEY: {
+					if (context instanceof WithMetaEntry) {
+						if (context.eResource?.resourceSet === null) {
+							return IScope.NULLSCOPE
+						}
+						
+						val metaData = rosettaBuiltinsService.getAnnotationsResource(context.eResource.resourceSet)
+							.elements.filter(Annotation).findFirst[name == "metadata"]
+						return Scopes.scopeFor(metaData.attributes)
 					}
 					return IScope.NULLSCOPE
 				}
