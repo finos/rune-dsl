@@ -68,6 +68,8 @@ import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.rosetta.expression.ToTimeOperation;
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.WithMetaEntry;
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
@@ -76,6 +78,8 @@ import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
@@ -135,6 +139,9 @@ public interface ExpectedTypeProvider {
 				} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
 					ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
 					return typeProvider.getRTypeOfFeature(pair.getKey(), null);
+				}  else if (WITH_META_ENTRY__VALUE.equals(reference) && owner instanceof WithMetaEntry) {
+					WithMetaEntry entry = (WithMetaEntry) owner;
+					return typeProvider.getRTypeOfFeature(entry.getKey(), reference);
 				} else if (owner instanceof RosettaExpression) {
 					return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
 				} else if (INLINE_FUNCTION__BODY.equals(reference)) {
@@ -614,6 +621,25 @@ public interface ExpectedTypeProvider {
 					if (expr.getCases().stream().allMatch(c -> leavesItemTypeUnchanged(c.getExpression())) && (expr.getDefault() == null || leavesItemTypeUnchanged(expr.getDefault()))) {
 						return getExpectedTypeFromContainer(expr);
 					}
+				}
+				return null;
+			}
+			
+			@Override
+			protected RMetaAnnotatedType caseWithMetaOperation(WithMetaOperation expr, Context context) {
+				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
+					Set<String> withMetaKeys = expr.getEntries()
+							.stream()
+							.map(e -> e.getKey().getName())
+							.collect(Collectors.toSet());
+					
+					RMetaAnnotatedType expectedType = getExpectedTypeFromContainer(expr);
+					List<RMetaAttribute> metaAttributes = expectedType.getMetaAttributes()
+															.stream()
+															.filter(a -> !withMetaKeys.contains(a.getName()))
+															.collect(Collectors.toList());
+							
+					return RMetaAnnotatedType.withMeta(expectedType.getRType(), metaAttributes);
 				}
 				return null;
 			}
