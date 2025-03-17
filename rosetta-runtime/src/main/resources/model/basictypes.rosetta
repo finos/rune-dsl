@@ -49,3 +49,15 @@ recordType zonedDateTime
 	time time
 	timezone string
 }
+
+typeAlias productType:
+	[deprecated]
+	string
+
+typeAlias eventType:
+	[deprecated]
+	string
+
+typeAlias calculation:
+	[deprecated]
+	string
