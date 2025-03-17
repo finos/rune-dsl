@@ -115,13 +115,13 @@ Function:
 ;
 
 ShortcutDeclaration:
-	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=RosettaCalcExpression // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
+	'alias' RosettaNamed ':' =>RosettaDefinable?  expression=Expression // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
 ;
 
 Condition:
 	'condition' RosettaNamed? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
 		=>(References|Annotations)* // Predicate necessary because of conflict between `[` as the start of an annotation and as the start of a list literal.
-		expression=RosettaCalcExpression
+		expression=Expression
 ;
 
 enum Necessity:
@@ -130,12 +130,12 @@ enum Necessity:
 
 PostCondition returns Condition:
 	postCondition ?= 'post-condition'  RosettaNamed? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
-	expression     = RosettaCalcExpression
+	expression     = Expression
 ;
 
 Operation:
 	('set' | add ?= 'add') assignRoot = [AssignPathRoot|ValidID] (path = Segment)? ':' =>RosettaDefinable?
-		expression = RosettaCalcExpressionWithAsKey
+		expression = ExpressionWithAsKey
 ;
 
 Segment:
@@ -150,7 +150,7 @@ EmptyLiteral returns RosettaExpression:
 ;
 
 ListLiteral:
-	{ListLiteral} '[' (elements += RosettaCalcExpression (',' elements += RosettaCalcExpression )*)? ']';
+	{ListLiteral} '[' (elements += Expression (',' elements += Expression )*)? ']';
 
 RosettaRootElement:
 	Enumeration
@@ -459,7 +459,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (rawArgs+=RosettaCalcExpression (',' rawArgs+=RosettaCalcExpression)*)? ')')?
+	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (rawArgs+=Expression (',' rawArgs+=Expression)*)? ')')?
 	| RosettaImplicitVariable
 ;
 
@@ -530,28 +530,28 @@ ClosureParameter:
 ;
 
 InlineFunction:
-	=>((parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[') body=RosettaCalcExpression ']'
+	=>((parameters+=ClosureParameter (',' parameters += ClosureParameter)*)? '[') body=Expression ']'
 	// Predicate necessary because otherwise a ClosureParameter conflicts with a symbol reference inside an ImplicitInlineFunction.
 ;
 
 ImplicitInlineFunction returns InlineFunction:
-	body=RosettaCalcOr
+	body=OrOperation
 ;
 
 /**********************************************************************
- * Calculations
+ * Expressions
  */
 
-RosettaCalcExpressionWithAsKey returns RosettaExpression:
-	RosettaCalcExpression ->({AsKeyOperation.argument=current} operator='as-key')?
+ExpressionWithAsKey returns RosettaExpression:
+	Expression ->({AsKeyOperation.argument=current} operator='as-key')?
 ;
 
-RosettaCalcExpression returns RosettaExpression:
+Expression returns RosettaExpression:
 	ThenOperation
 ;
 
 ThenOperation returns RosettaExpression:
-	RosettaCalcOr (->({ThenOperation.argument=current} operator='then') (function=InlineFunction|=>function=ImplicitInlineFunction)?)*
+	OrOperation (->({ThenOperation.argument=current} operator='then') (function=InlineFunction|=>function=ImplicitInlineFunction)?)*
 ;
 
 /*
@@ -562,45 +562,45 @@ enum CardinalityModifier:
 	| ALL = 'all'
 ;
 
-RosettaCalcOr returns RosettaExpression:
-	RosettaCalcAnd ( ->({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
+OrOperation returns RosettaExpression:
+	AndOperation ( ->({LogicalOperation.left=current} operator='or') right=AndOperation)*
 	// Without left parameter:
-	| ({LogicalOperation} operator='or' right=RosettaCalcAnd) (->({LogicalOperation.left=current} operator='or') right=RosettaCalcAnd)*
+	| ({LogicalOperation} operator='or' right=AndOperation) (->({LogicalOperation.left=current} operator='or') right=AndOperation)*
 ;
 
-RosettaCalcAnd returns RosettaExpression:
-	RosettaCalcEquality ( ->({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*
+AndOperation returns RosettaExpression:
+	EqualityOperation ( ->({LogicalOperation.left=current} operator='and') right=EqualityOperation)*
 	// Without left parameter:
-	| (({LogicalOperation} operator='and' right=RosettaCalcEquality) (->({LogicalOperation.left=current} operator='and') right=RosettaCalcEquality)*)
+	| (({LogicalOperation} operator='and' right=EqualityOperation) (->({LogicalOperation.left=current} operator='and') right=EqualityOperation)*)
 ;
 
-RosettaCalcEquality returns RosettaExpression:
+EqualityOperation returns RosettaExpression:
 	// Note: using a syntactic predicate `=>` instead of a first token set predicate `->` because of the cardinality modifier, which might be used
 	// for both equality expressions and comparison expressions.
-	RosettaCalcComparison ( =>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*
+	ComparisonOperation ( =>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=ComparisonOperation)*
 	// Without left parameter:
-	| (({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=RosettaCalcComparison) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=RosettaCalcComparison)*)
+	| (({EqualityOperation} (cardMod=CardinalityModifier)? operator=('='|'<>') right=ComparisonOperation) (=>({EqualityOperation.left=current} (cardMod=CardinalityModifier)? operator=('='|'<>')) right=ComparisonOperation)*)
 ;
 
-RosettaCalcComparison returns RosettaExpression:
+ComparisonOperation returns RosettaExpression:
 	// Note: using a syntactic predicate `=>` instead of a first token set predicate `->` because of the cardinality modifier, which might be used
 	// for both equality expressions and comparison expressions.
-	RosettaCalcAdditive ( =>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*
+	AdditiveOperation ( =>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=AdditiveOperation)*
 	// Without left parameter:
-	| (({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=RosettaCalcAdditive) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=RosettaCalcAdditive)*)
+	| (({ComparisonOperation} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<") right=AdditiveOperation) (=>({ComparisonOperation.left=current} (cardMod=CardinalityModifier)? operator=(">="|"<="|">"|"<")) right=AdditiveOperation)*)
 ;
 
-RosettaCalcAdditive returns RosettaExpression:
-	RosettaCalcMultiplicative ( ->({ArithmeticOperation.left=current} operator=('+'|'-')) right=RosettaCalcMultiplicative)*
+AdditiveOperation returns RosettaExpression:
+	MultiplicativeOperation ( ->({ArithmeticOperation.left=current} operator=('+'|'-')) right=MultiplicativeOperation)*
 ;
 
-RosettaCalcMultiplicative returns RosettaExpression:
-	RosettaCalcBinary ( ->({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*
+MultiplicativeOperation returns RosettaExpression:
+	BinaryOperation ( ->({ArithmeticOperation.left=current} operator=('*'|'/')) right=BinaryOperation)*
 	// Without left parameter:
-	| (({ArithmeticOperation} operator=('*'|'/') right=RosettaCalcBinary) (->({ArithmeticOperation.left=current} operator=('*'|'/')) right=RosettaCalcBinary)*)
+	| (({ArithmeticOperation} operator=('*'|'/') right=BinaryOperation) (->({ArithmeticOperation.left=current} operator=('*'|'/')) right=BinaryOperation)*)
 ;
 
-RosettaCalcBinary returns RosettaExpression:
+BinaryOperation returns RosettaExpression:
 	UnaryOperation (->(
 		{RosettaContainsExpression.left=current} operator='contains' right=UnaryOperation
 		| {RosettaDisjointExpression.left=current} operator='disjoint' right=UnaryOperation
@@ -633,8 +633,8 @@ enum ExistsModifier:
 ;
 
 SwitchCaseOrDefault:
-	'default' expression=RosettaCalcExpression
- 	| guard=SwitchCaseGuard 'then' expression=RosettaCalcExpression
+	'default' expression=Expression
+ 	| guard=SwitchCaseGuard 'then' expression=Expression
 ;
 
 SwitchCaseGuard:
@@ -642,7 +642,7 @@ SwitchCaseGuard:
 ;
 
 UnaryOperation returns RosettaExpression:
-	RosettaCalcPrimary
+	PrimaryExpression
 	(
 		->(
 			 ({RosettaFeatureCall.receiver=current} '->' (->feature=[RosettaFeature|ValidID])?)
@@ -758,27 +758,27 @@ UnaryOperation returns RosettaExpression:
 /**
  * Primary operations
  */
-RosettaCalcPrimary returns RosettaExpression:
-	RosettaCalcConstructorExpression
+PrimaryExpression returns RosettaExpression:
+	ConstructorExpression
 	| RosettaCalcConditionalExpression
 	| RosettaCalcOnlyExists
 	| RosettaReferenceOrFunctionCall
 	| RosettaLiteral
 	| EmptyLiteral
 	| ListLiteral
-	| '(' RosettaCalcExpression ')'
+	| '(' Expression ')'
 ;
 
-RosettaCalcConstructorExpression returns RosettaExpression:
+ConstructorExpression returns RosettaExpression:
 	{RosettaConstructorExpression} typeCall=TypeCall '{' ((values+=ConstructorKeyValuePair (',' values+=ConstructorKeyValuePair)* (',' | ',' implicitEmpty?='...')?) | implicitEmpty?='...')? '}'
 ;
 
 ConstructorKeyValuePair:
-	key=[RosettaFeature|ValidID] ':' value=RosettaCalcExpressionWithAsKey
+	key=[RosettaFeature|ValidID] ':' value=ExpressionWithAsKey
 ;
 
 RosettaCalcConditionalExpression returns RosettaExpression:
-	 {RosettaConditionalExpression} 'if' if=RosettaCalcOr 'then' ifthen=RosettaCalcOr (->full?='else' elsethen=RosettaCalcOr)?
+	 {RosettaConditionalExpression} 'if' if=OrOperation 'then' ifthen=OrOperation (->full?='else' elsethen=OrOperation)?
 ;
 
 RosettaCalcOnlyExists returns RosettaExpression:
@@ -898,7 +898,7 @@ RosettaRule:
  	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
  	(
 		References*
-		(expression = RosettaCalcExpression
+		(expression = Expression
 		('as' identifier=STRING)?)
  	)
 ;
