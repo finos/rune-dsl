@@ -116,7 +116,7 @@ public class LabelProviderGeneratorTest {
 				
 				type Foo:
 					attr string (1..1)
-						[label as "My attribute"]
+						[label "My attribute"]
 				
 				annotation myAnn:
 				
@@ -138,7 +138,7 @@ public class LabelProviderGeneratorTest {
 				
 				type Foo:
 					attr string (1..1)
-						[label as "My attribute"]
+						[label "My attribute"]
 					other int (1..1)
 				
 				func MyFunc:
@@ -175,7 +175,7 @@ public class LabelProviderGeneratorTest {
 				type Foo:
 					attr string (1..1)
 						[ruleReference FooAttr]
-						[label as "My attribute"]
+						[label "My attribute"]
 					other int (1..1)
 						[ruleReference FooOther]
 				
@@ -217,9 +217,9 @@ public class LabelProviderGeneratorTest {
 				
 				type Foo:
 					attr string (1..1)
-						[label as "My attribute"]
+						[label "My attribute"]
 					bar Bar (1..1)
-						[label barAttr1 as "Bar Attribute 1 label"]
+						[label for barAttr1 "Bar Attribute 1 label"]
 				
 				type Bar:
 					barAttr1 int (1..1)
@@ -279,21 +279,21 @@ public class LabelProviderGeneratorTest {
 				type SuperFoo:
 					attr1 string (1..1)
 						[metadata scheme]
-						[label as "My Label"]
+						[label "My Label"]
 					qux Qux (1..1)
-						[label Opt1 -> opt1Attr as "Super option 1 Attribute"]
+						[label for Opt1 -> opt1Attr "Super option 1 Attribute"]
 				
 				type Foo extends SuperFoo:
 					override attr1 string (1..1)
 						[metadata scheme]
-						[label as "My Overridden Label"]
+						[label "My Overridden Label"]
 					override qux Qux (1..1)
-						[label item ->> id as "Deep path ID"]
+						[label for item ->> id "Deep path ID"]
 					attr2 string (1..1)
-						[label item as "Label with item"]
+						[label for item "Label with item"]
 					bar Bar (1..1)
-						[label barAttr as "Bar attribute using path"]
-						[label item -> nestedBarList -> nestedAttr as "Nested bar attribute $"]
+						[label for barAttr "Bar attribute using path"]
+						[label for item -> nestedBarList -> nestedAttr "Nested bar attribute $"]
 				
 				type Bar:
 					barAttr string (1..1)
@@ -310,7 +310,7 @@ public class LabelProviderGeneratorTest {
 				type Opt1:
 					id string (1..1)
 					opt1Attr int (1..1)
-						[label as "Option 1 Attribute"]
+						[label "Option 1 Attribute"]
 				
 				type Opt2:
 					id string (1..1)
@@ -345,25 +345,25 @@ public class LabelProviderGeneratorTest {
 				type Foo:
 					bar Bar (1..1)
 					fooAttr int (1..1)
-						[label as "Foo attribute"]
+						[label "Foo attribute"]
 					nested A (1..1)
-						[label b -> bAttr as "Overridden B attribute"]
-						[label b -> a -> b -> c -> b -> bAttr as "Random path B attribute"]
+						[label for b -> bAttr "Overridden B attribute"]
+						[label for b -> a -> b -> c -> b -> bAttr "Random path B attribute"]
 				
 				type Bar:
 					foos Foo (0..*)
 					barAttr int (1..1)
-						[label as "Bar attribute"]
+						[label "Bar attribute"]
 				
 				type A:
 					b B (1..1)
-						[label c -> b -> bAttr as "A -> B -> C -> B attribute"]
+						[label for c -> b -> bAttr "A -> B -> C -> B attribute"]
 				
 				type B:
 					a A (0..1)
 					c C (1..1)
 					bAttr int (1..1)
-						[label as "Default B attribute"]
+						[label "Default B attribute"]
 				
 				type C:
 					b B (0..1)

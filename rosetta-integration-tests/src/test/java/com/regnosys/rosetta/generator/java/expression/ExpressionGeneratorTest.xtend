@@ -69,8 +69,6 @@ class ExpressionGeneratorTest {
 		assertEquals(expectedCode, buildClass(pkg, '''«FOR dep : dependencyStatements SEPARATOR "\n" AFTER "\n\n"»«dep»«ENDFOR»«actual»''', scope).replace("package test.ns;", "").trim + System.lineSeparator)
 	}
 	
-
-	
 	@Test
 	def void testDefaultWithMetaCoercion() {
 		val expr = '''

@@ -692,6 +692,7 @@ repository:
           end: '{{docReferenceAnnotationSectionEnd}}'
           patterns:
           - include: '#comment'
+          - include: '#annotationPath'
           - begin: '{{identifier}}'
             beginCaptures:
               0: { name: entity.name.document.body.rosetta }
@@ -724,19 +725,23 @@ repository:
         end: (?=\])|{{sectionEnd}}
         patterns:
         - include: '#comment'
-        - name: meta.annotated.label.path.rosetta
-          begin: '(?<={{wordStart}}label{{wordEnd}})'
-          end: '{{wordStart}}as{{wordEnd}}'
-          endCaptures:
-            0: { name: keyword.other.rosetta }
-          patterns:
-          - include: '#comment'
-          - include: '#implicitVariable'
-          - name: keyword.operator.rosetta
-            match: ->
-          - name: variable.other.member.rosetta
-            match: '{{identifier}}'
+        - include: '#annotationPath'
         - include: '#string'
+
+      annotationPath:
+        name: meta.annotated.path.rosetta
+        begin: '({{wordStart}}for{{wordEnd}})\s*(?:({{identifier}})|({{wordStart}}item{{wordEnd}}))'
+        beginCaptures:
+          1: { name: keyword.other.rosetta }
+          2: { name: variable.other.member.rosetta }
+          3: { name: constant.language.rosetta }
+        end: '(?={{identifier}})'
+        patterns:
+        - include: '#comment'
+        - match: (->|->>)\s*({{identifier}})
+          captures:
+            1: { name: keyword.operator.rosetta }
+            2: { name: variable.other.member.rosetta }
 
       customAnnotationBody:
         name: meta.annotated.rosetta

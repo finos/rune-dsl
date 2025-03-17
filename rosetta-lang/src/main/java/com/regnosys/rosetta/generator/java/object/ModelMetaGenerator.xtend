@@ -21,7 +21,6 @@ import java.util.Set
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.rosetta.model.lib.validation.ValidatorFactory
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.JavaScope
@@ -30,6 +29,7 @@ import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 
 class ModelMetaGenerator {
 
@@ -39,6 +39,7 @@ class ModelMetaGenerator {
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelIdProvider
+	@Inject extension ModelGeneratorUtil
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
 		val className = '''«t.name»Meta'''

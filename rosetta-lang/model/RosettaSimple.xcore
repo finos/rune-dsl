@@ -57,8 +57,11 @@ class AnnotationRef {
 
 interface BuiltinAnnotation extends RosettaNamed {
 }
-class LabelAnnotation extends BuiltinAnnotation {
+interface BuiltinAnnotationWithPath extends BuiltinAnnotation {
 	contains AnnotationPathExpression path
+}
+class LabelAnnotation extends BuiltinAnnotationWithPath {
+	boolean deprecatedAs
 	String label
 }
 

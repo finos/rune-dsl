@@ -325,43 +325,6 @@ enum FloatingRateIndexEnum: <"The enumerated values to specify the list of float
     <...>
 ```
 
-### Meta-Type
-
-The Rune DSL features some special types called *meta-types*, which are useful for its main application in the financial domain. Meta-types are designed to flag attributes that result from some functional logic. This enables a model implementation to identify where to stamp the output when running the corresponding functions.
-
-There are two types of meta-types that are declared at the language level:
-
-- `calculationType`: `calculation`, for calculation functions
-- `qualifiedType`: `productType` and `eventType`, for object qualification functions
-
-#### Calculation
-
-The `calculation` type represents the outcome of a calculation. An attribute with the `calculation` type is meant to be associated to a [calculation function](#calculation-function), so that the attribute\'s type is implied by the function output.
-
-An example usage is the conversion from clean price to dirty price for a bond:
-
-``` Haskell
-type CleanPrice:
-  cleanPrice number (1..1)
-  accruals number (0..1)
-  dirtyPrice calculation (0..1)
-```
-
-#### Object Qualification
-
-Similarly, `productType` and `eventType` represent the outcome of some qualification logic to classify an object (product or event) according to some taxonomy. Attributes of these types are meant to be associated to an [object qualification function](#object-qualification-function).
-
-For example:
-
-``` Haskell
-type ProductIdentification:
-  productQualifier productType (0..1) <"The CDM product qualifier, which corresponds to the outcome of the isProduct qualification logic. This value is derived by the CDM from the product payout features.">
-  primaryAssetdata AssetClassEnum (0..1)
-  secondaryAssetdata AssetClassEnum (0..*)
-  productType string (0..*)
-  productId string (0..*)
-```
-
 ## Meta-Data Component
 
 Meta-data are components that are designed to enrich other model components such as data types, attributes or functions.
@@ -522,7 +485,6 @@ segment article
 segment whereas
 segment annex
 segment table
-segment namingConvention
 ```
 
 A segment is then invoked by associating some free-text name or number to identify that specifc segment:
@@ -547,11 +509,11 @@ A reference to specific document content is created using the `docReference` key
   provision <"ProvisionText">]
 ```
 
-In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may be associated to a data type but with a different name. A document reference allows such data type to be annotated with a special `namingConvention` segment and the corresponding corpus and body that define it.
-
-Such document reference may be associated to the data type itself or to any of its attributes.
+In some instances, a data type may have a different naming convention based on the context in which it is being used: for example, a legal definition may be associated to a data type but with a different name. For such as use case a specific segment can be defined such as `namingConvention`, e.g.,
 
 ``` Haskell
+segment namingConvention
+
 type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
      payer CounterpartyRoleEnum (1..1)
        [docReference ICMA GMRA
@@ -559,6 +521,29 @@ type PayerReceiver: <"Specifies the parties responsible for making and receiving
          provision "As defined in the GRMA Seller party ..."]
      <...>
 ```
+
+Document references may be associated to any type, attribute, function, and rule.
+
+#### Document reference on a path
+
+Document references must not be defined on an attribute directly - it can also be defined on a root type by defining an annotation path. In the example below, we annotate the `payer` attribute which is located under `Report -> leg1 -> payerReceiver`.
+
+``` Haskell
+type Report:
+  leg1 Leg (1..1)
+    [docReference for payerReceiver -> payer ICMA GMRA
+         namingConvention "seller"
+         provision "As defined in the GRMA Seller party ..."]
+    <...>
+```
+
+In general, the path must begin with the keyword `for`, followed by
+
+- An attribute name, e.g., `payerReceiver`,
+- A path to an attribute, e.g., `payerReceiver -> payer`,
+- The `item` keyword to refer to the annotated attribute itself,
+- A deep path on a choice type, e.g., `item ->> dayCountConvention`. (see the [deep path operator](#deep-paths-for-choice-types))
+
 
 ### Data Template
 
@@ -1677,13 +1662,12 @@ func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
             then extract firstName + " " + surname
 ```
 
-**The Rune DSL supports a number of fully defined function cases**, where the output is being built up to a valid state:
+**The Rune DSL supports two fully defined function cases**, where the output is being built up to a valid state:
 
 - Object qualification
-- Calculation
 - Short-hand function
 
-Those functions are typically associated to an annotation to instruct code generators to create concrete functions.
+Those functions are typically associated to an annotation to instruct code generators to invoke concrete functions.
 
 #### Object Qualification Function
 
@@ -1709,37 +1693,6 @@ func Qualify_InterestRate_IRSwap_FixedFloat_PlainVanilla:
   output: is_product boolean (1..1)
 ```
 
-#### Calculation Function
-
-A calculation function defines a calculation output that is often, though not exclusively, of type `number`. It must end with a `set` instruction that fully defines the calculation result.
-
-Calculation functions are associated to the `calculation` [annotation](#annotation).
-
-``` Haskell
-func FixedAmount:
-  [calculation]
-  inputs:
-    interestRatePayout InterestRatePayout (1..1)
-    fixedRate FixedInterestRate (1..1)
-    quantity NonNegativeQuantity (1..1)
-    date date (1..1)
-  output:
-    fixedAmount number (1..1)
-
-  alias calculationAmount: quantity -> amount
-  alias fixedRateAmount: fixedRate -> rate
-  alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
-
-  set fixedAmount:
-    calculationAmount * fixedRateAmount * dayCountFraction
-```
-
-#### Alias
-
-The function syntax supports the definition of *aliases* that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages and are particularly useful in fully defined functions.
-
-The above example builds an interest rate calculation using aliases to define the *calculation amount*, *rate* and *day count fraction* as temporary variables, and finally assigns the *fixed amount* output as the product of those three variables.
-
 #### Short-Hand Function
 
 Short-hand functions are functions that provide a compact syntax for operations that need to be frequently invoked in a model - for instance, model indirections where the corresponding path expression may be deemed too long or cumbersome:
@@ -1755,6 +1708,30 @@ which could be invoked as part of multiple other functions that use the `Economi
 
 ``` Haskell
 PaymentDate( EconomicTerms )
+```
+
+#### Alias
+
+The function syntax supports the definition of *aliases* that are only available in the context of the function. Aliases work like temporary variable assignments used in programming languages and are particularly useful in fully defined functions.
+
+The example below builds an interest rate calculation using aliases to define the *calculation amount*, *rate* and *day count fraction* as temporary variables, and finally assigns the *fixed amount* output as the product of those three variables.
+
+``` Haskell
+func FixedAmount:
+  inputs:
+    interestRatePayout InterestRatePayout (1..1)
+    fixedRate FixedInterestRate (1..1)
+    quantity NonNegativeQuantity (1..1)
+    date date (1..1)
+  output:
+    fixedAmount number (1..1)
+
+  alias calculationAmount: quantity -> amount
+  alias fixedRateAmount: fixedRate -> rate
+  alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
+
+  set fixedAmount:
+    calculationAmount * fixedRateAmount * dayCountFraction
 ```
 
 ### Function Call

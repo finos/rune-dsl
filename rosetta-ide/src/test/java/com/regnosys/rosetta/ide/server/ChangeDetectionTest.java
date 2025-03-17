@@ -204,7 +204,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 				type MyReport:
 					attr string (1..1)
-						[label as "My label"]
+						[label "My label"]
 				""");
 		
 		String labelProviderPath = "test/labels/BodyCorpusLabelProvider.java";
@@ -216,7 +216,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		Assertions.assertNotNull(originalLabelProviderCode, "Label provider does not exist at " + labelProviderPath);
 
 		// Change label to "My new label".
-		makeChange(typeURI, 4, 12, "\"My label\"", "\"My new label\"");
+		makeChange(typeURI, 4, 9, "\"My label\"", "\"My new label\"");
 		
 		// There should again be no issue.
 		assertNoIssues();

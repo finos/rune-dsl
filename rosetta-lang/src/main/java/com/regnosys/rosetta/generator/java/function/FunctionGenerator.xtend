@@ -76,9 +76,10 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
-import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 
 class FunctionGenerator {
@@ -87,6 +88,7 @@ class FunctionGenerator {
 	@Inject JavaDependencyProvider dependencyProvider
 	@Inject RosettaTypeProvider typeProvider
 	@Inject extension RosettaFunctionExtensions
+	@Inject extension ModelGeneratorUtil
 	
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
@@ -241,9 +243,9 @@ class FunctionGenerator {
 			
 				/**
 				«FOR input : inputs»
-					* @param «evaluateScope.getIdentifierOrThrow(input)» «ModelGeneratorUtil.escape(input.definition)»
+					* @param «evaluateScope.getIdentifierOrThrow(input)» «escape(input.definition)»
 				«ENDFOR»
-				* @return «evaluateScope.getIdentifierOrThrow(output)» «ModelGeneratorUtil.escape(output.definition)»
+				* @return «evaluateScope.getIdentifierOrThrow(output)» «escape(output.definition)»
 				*/
 				«IF overridesEvaluate»
 				@Override

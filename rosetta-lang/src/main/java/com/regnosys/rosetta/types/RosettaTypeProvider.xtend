@@ -92,10 +92,7 @@ import org.eclipse.emf.ecore.EObject
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
-import com.regnosys.rosetta.rosetta.simple.AnnotationPathAttributeReference
-import com.regnosys.rosetta.rosetta.simple.AnnotationPath
-import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
-import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.rosetta.RosettaMetaType
@@ -112,6 +109,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
+	@Inject AnnotationPathExpressionUtil annotationPathUtil
 	@Inject extension RosettaConfigExtension configs
 
 	def RMetaAnnotatedType getRMetaAnnotatedType(RosettaExpression expression) {
@@ -144,13 +142,8 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	def Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
 		return extensions.allFeatures(typeOfImplicitVariable(context), context)
 	}
-	def RMetaAnnotatedType getRMetaAnnotatedType(AnnotationPathExpression it) {
-		switch it {
-			AnnotationPathAttributeReference: attribute.RTypeOfSymbol
-			RosettaImplicitVariable: EcoreUtil2.getContainerOfType(it, Attribute)?.RTypeOfSymbol ?: NOTHING_WITH_NO_META
-			AnnotationPath: attribute.RTypeOfSymbol
-			AnnotationDeepPath: attribute.RTypeOfSymbol
-		}
+	def RMetaAnnotatedType getRMetaAnnotatedType(AnnotationPathExpression expr) {
+		return annotationPathUtil.getTargetAttribute(expr).RTypeOfSymbol
 	}
 
 	def List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
