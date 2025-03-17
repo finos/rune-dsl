@@ -51,13 +51,10 @@ recordType zonedDateTime
 }
 
 typeAlias productType:
-	[deprecated]
 	string
 
 typeAlias eventType:
-	[deprecated]
 	string
 
 typeAlias calculation:
-	[deprecated]
 	string
