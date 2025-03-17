@@ -485,7 +485,6 @@ segment article
 segment whereas
 segment annex
 segment table
-segment namingConvention
 ```
 
 A segment is then invoked by associating some free-text name or number to identify that specifc segment:
