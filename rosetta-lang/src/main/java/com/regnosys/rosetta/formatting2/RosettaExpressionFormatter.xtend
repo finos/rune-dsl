@@ -121,8 +121,18 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
 	private def dispatch void unsafeFormatExpression(WithMetaOperation expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension unaryOperationGrammarAccess = unaryOperationAccess
+		
 		expr.formatUnaryOperation(document, mode, [])
-		constructorLikeFormat(expr, document, mode, leftCurlyBracketKeyword_1_1_0_0_23_2_0, rightCurlyBracketKeyword_1_1_0_0_23_2_2)
+		
+		val leftCurlyBracketKeyword = 
+			#[leftCurlyBracketKeyword_0_1_0_0_23_2_0, leftCurlyBracketKeyword_1_0_0_21_2_0, leftCurlyBracketKeyword_1_1_0_0_23_2_0]
+				.findFirst[ expr.regionFor.keyword(it) !== null]
+				
+		val rightCurlyBracketKeyword = 
+			#[rightCurlyBracketKeyword_0_1_0_0_23_2_2, rightCurlyBracketKeyword_1_0_0_21_2_2, rightCurlyBracketKeyword_1_1_0_0_23_2_2]
+				.findFirst[ expr.regionFor.keyword(it) !== null]
+				
+		constructorLikeFormat(expr, document, mode, leftCurlyBracketKeyword, rightCurlyBracketKeyword)
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaConstructorExpression expr, extension IFormattableDocument document, FormattingMode mode) {
