@@ -66,10 +66,9 @@ class RosettaSerializerFragment extends SerializerFragment2 {
 				AbstractDelegatingSemanticSequencer.typeRef
 		val javaFile = fileAccessFactory.createGeneratedJavaFile(clazz)
 		javaFile.resourceSet = language.resourceSet
-		val methodSignatures = newLinkedHashSet
+		val methodSignatures = newHashSet()
 		
-		val Map<IConstraint, IConstraint> superConstraintsMap = newLinkedHashMap
-		grammar.superGrammar.grammarConstraints.forEach[superConstraintsMap.put(it, it)]
+		val superConstraintsMap = grammar.superGrammar.grammarConstraints.map[it->it].toMap
 		
 		javaFile.content = '''
 			public «IF isGenerateStub» abstract «ENDIF»class «clazz.simpleName» extends «superClazz» {
