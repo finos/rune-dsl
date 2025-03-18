@@ -468,7 +468,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		if (meta.name == "reference") {
 			val lambdaScope = scope.lambdaScope
 			val lambdaParam = lambdaScope.createUniqueIdentifier("a")
-			'''.map("get«meta.name.toFirstUpper»", «lambdaParam»->«lambdaParam».getGlobalReference())'''
+			'''.map("get«meta.name.toFirstUpper»", «lambdaParam»->«lambdaParam».getExternalReference())'''
 		} else {
 			val lambdaScope1 = scope.lambdaScope
 			val lambdaParam1 = lambdaScope1.createUniqueIdentifier("a")

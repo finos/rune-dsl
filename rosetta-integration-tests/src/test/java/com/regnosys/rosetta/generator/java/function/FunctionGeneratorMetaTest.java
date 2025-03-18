@@ -31,7 +31,7 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
-    void canPassKeyToReference() {
+    void canReadRererenceOnObjectWithReference() {
         var model = """
         metaType reference string
         metaType key string
@@ -65,9 +65,9 @@ public class FunctionGeneratorMetaTest {
                 "externalReference", "someReference"
         ));
         
-        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, myInput);
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, myInput);
         
-        assertEquals("someReferene", result);
+        assertEquals("someReference", result);
 
     }
 
