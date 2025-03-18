@@ -87,12 +87,24 @@ class ModelMetaGenerator {
 					return «Collections».emptyList();
 					«ENDIF»
 				}
+				
+				@Override
+				public «Validator»<? super «dataClass»> validator(«ValidatorFactory» factory) {
+					return factory.<«dataClass»>create(«validator».class);
+				}
 
+				@Override
+				public «Validator»<? super «dataClass»> typeFormatValidator(«ValidatorFactory» factory) {
+					return factory.<«dataClass»>create(«typeFormatValidator».class);
+				}
+
+				@Deprecated
 				@Override
 				public «Validator»<? super «dataClass»> validator() {
 					return new «validator»();
 				}
 
+				@Deprecated
 				@Override
 				public «Validator»<? super «dataClass»> typeFormatValidator() {
 					return new «typeFormatValidator»();
