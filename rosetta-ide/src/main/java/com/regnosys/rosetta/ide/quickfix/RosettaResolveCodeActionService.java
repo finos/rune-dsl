@@ -18,32 +18,32 @@ import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
 
 public class RosettaResolveCodeActionService implements IResolveCodeActionService {
-	@Inject
-	CodeActionUtils codeActionUtils;
-	@Inject
-	IQuickFixProvider resolutionProvider;
-	@Inject
-	ICodeActionProvider codeActionProvider;
+    @Inject
+    CodeActionUtils codeActionUtils;
+    @Inject
+    IQuickFixProvider resolutionProvider;
+    @Inject
+    ICodeActionProvider codeActionProvider;
 
-	@Override
-	public CodeAction getCodeActionResolution(CodeAction codeAction, Options baseOptions) {
-		switch (codeAction.getKind()) {
-		case CodeActionKind.QuickFix: // handling resolutions for quickFixes
-			Diagnostic diagnostic = Iterables.getOnlyElement(codeAction.getDiagnostics());
-			ICodeActionService2.Options options = codeActionUtils.createOptionsForSingleDiagnostic(baseOptions,
-					diagnostic);
+    @Override
+    public CodeAction getCodeActionResolution(CodeAction codeAction, Options baseOptions) {
+        // handling resolutions for quickFixes
+        if (null != codeAction.getKind() && CodeActionKind.QuickFix.equals(codeAction.getKind())) {
+            Diagnostic diagnostic = Iterables.getOnlyElement(codeAction.getDiagnostics());
+            ICodeActionService2.Options options = codeActionUtils.createOptionsForSingleDiagnostic(baseOptions,
+                    diagnostic);
 
-			List<DiagnosticResolution> resolutions = resolutionProvider.getResolutions(options, diagnostic).stream()
-					.sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
-					.filter(r -> r.getLabel().equals(codeAction.getTitle())).collect(Collectors.toList());
+            List<DiagnosticResolution> resolutions = resolutionProvider.getResolutions(options, diagnostic).stream()
+                    .sorted(Comparator.nullsLast(Comparator.comparing(DiagnosticResolution::getLabel)))
+                    .filter(r -> r.getLabel().equals(codeAction.getTitle())).collect(Collectors.toList());
 
-			// since a CodeAction has only one diagnostic, only one resolution should be found
-			codeAction.setEdit(resolutions.get(0).apply());
+            // since a CodeAction has only one diagnostic, only one resolution should be found
+            codeAction.setEdit(resolutions.get(0).apply());
 
-			return codeAction;
-		default: // handling resolutions for all other types of codeActions
-			return codeActionProvider.resolve(codeAction, baseOptions);
-		}
-	}
+            return codeAction;
+        }
+        // handling resolutions for all other types of codeActions
+        return codeActionProvider.resolve(codeAction, baseOptions);
+    }
 
 }
