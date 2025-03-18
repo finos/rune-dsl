@@ -30,6 +30,8 @@ class RosettaConfigExtension {
 		return findRosettaQualifiableConfiguration(ctx, RosettaQualifiableType.EVENT)
 	}
 	
+	//TODO: remove metaTypes from the model and then we can stop relying on this
+	@Deprecated
 	def findMetaTypes(EObject ctx) {
 		return index.getResourceDescriptions(ctx.eResource.resourceSet).getExportedObjectsByType(ROSETTA_META_TYPE).
 			filter [

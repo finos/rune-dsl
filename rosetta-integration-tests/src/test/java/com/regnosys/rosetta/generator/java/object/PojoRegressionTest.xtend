@@ -114,7 +114,7 @@ class PojoRegressionTest {
 		 * @version test
 		 */
 		@RosettaDataType(value="Pojo", builder=Pojo.PojoBuilderImpl.class, version="test")
-		@RuneDataType(value="Pojo", model="My test model", builder=Pojo.PojoBuilderImpl.class, version="test")
+		@RuneDataType(value="Pojo", model="com", builder=Pojo.PojoBuilderImpl.class, version="test")
 		public interface Pojo extends RosettaModelObject, GlobalKey {
 		
 			PojoMeta metaData = new PojoMeta();
@@ -1342,12 +1342,9 @@ class PojoRegressionTest {
 		import java.util.Objects;
 		
 		import static java.util.Optional.ofNullable;
-		
-		/**
-		 * @version 1
-		 */
+
 		@RosettaDataType(value="FieldWithMetaString", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
-		@RuneDataType(value="FieldWithMetaString", model="My test model", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
+		@RuneDataType(value="FieldWithMetaString", model="com", builder=FieldWithMetaString.FieldWithMetaStringBuilderImpl.class, version="0.0.0")
 		public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<String>, GlobalKey {
 		
 			FieldWithMetaStringMeta metaData = new FieldWithMetaStringMeta();
@@ -1627,12 +1624,9 @@ class PojoRegressionTest {
 		import java.util.Objects;
 		
 		import static java.util.Optional.ofNullable;
-		
-		/**
-		 * @version 1
-		 */
+
 		@RosettaDataType(value="ReferenceWithMetaFoo", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
-		@RuneDataType(value="ReferenceWithMetaFoo", model="My test model", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
+		@RuneDataType(value="ReferenceWithMetaFoo", model="com", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
 		public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithMeta<Foo> {
 		
 			ReferenceWithMetaFooMeta metaData = new ReferenceWithMetaFooMeta();

@@ -18,7 +18,6 @@ import com.rosetta.model.lib.validation.Validator
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 import javax.inject.Inject
 import com.google.inject.ImplementedBy
@@ -26,6 +25,7 @@ import com.rosetta.model.lib.validation.ValidationResult.ValidationType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -35,6 +35,7 @@ class ConditionGenerator {
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
+	@Inject extension ModelGeneratorUtil
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, Condition ele, String version) {
 		val topScope = new JavaScope(root.condition)

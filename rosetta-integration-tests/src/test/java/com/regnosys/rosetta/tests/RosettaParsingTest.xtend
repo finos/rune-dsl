@@ -55,14 +55,14 @@ class RosettaParsingTest {
 		'''
 			type Foo:
 				attr1 string (1..1)
-					[label as "My Attribute"]
+					[label "My Attribute"]
 				attr2 string (1..1)
-					[label item as "My Attribute"]
+					[label for item "My Attribute"]
 				bar Bar (1..1)
-					[label barAttr as "Bar Attribute"]
-					[label item -> nestedBar -> barAttr as "Nested Bar Attribute"]
+					[label for barAttr "Bar Attribute"]
+					[label for item -> nestedBar -> barAttr "Nested Bar Attribute"]
 				qux Qux (1..1)
-					[label item ->> id as "Qux ID"]
+					[label for item ->> id "Qux ID"]
 			
 			
 			type Bar:

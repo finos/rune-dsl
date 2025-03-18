@@ -401,6 +401,16 @@ class SwitchCaseGuard {
 	}
 }
 
+class WithMetaOperation extends RosettaUnaryOperation {
+	contains WithMetaEntry[] entries opposite withMetaOperation
+}
+
+class WithMetaEntry {
+	container WithMetaOperation withMetaOperation opposite entries
+	refers RosettaFeature key
+	contains RosettaExpression value
+}
+
 /**
  * Functional operations
  */

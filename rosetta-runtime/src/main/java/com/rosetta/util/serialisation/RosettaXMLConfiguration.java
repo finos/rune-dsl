@@ -18,7 +18,6 @@ package com.rosetta.util.serialisation;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +31,9 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.rosetta.model.lib.ModelSymbolId;
 
@@ -47,9 +46,11 @@ public class RosettaXMLConfiguration {
 	}
 	
 	public static RosettaXMLConfiguration load(InputStream input) throws IOException {
-		ObjectMapper xmlConfigurationMapper = new ObjectMapper()
-                .registerModule(new Jdk8Module()) // because RosettaXMLConfiguration contains `Optional` types.
-                .setSerializationInclusion(JsonInclude.Include.NON_ABSENT); // because we want to interpret an absent value as `Optional.empty()`.
+		ObjectMapper xmlConfigurationMapper = JsonMapper.builder()
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .addModule(new Jdk8Module()) // because RosettaXMLConfiguration contains `Optional` types.
+                .serializationInclusion(JsonInclude.Include.NON_ABSENT) // because we want to interpret an absent value as `Optional.empty()`.
+                .build();
         return xmlConfigurationMapper.readValue(input, RosettaXMLConfiguration.class);
 	}
 
@@ -57,6 +58,13 @@ public class RosettaXMLConfiguration {
 		return Optional.ofNullable(typeConfigMap.get(symbolId));
 	}
 	
+	public List<ModelSymbolId> getSubstitutionsFor(String substitutionGroup) {
+		return typeConfigMap.entrySet().stream()
+			.filter(e -> e.getValue().getSubstitutionGroup().map(g -> g.equals(substitutionGroup)).orElse(false))
+			.map(e -> e.getKey())
+			.collect(Collectors.toList());
+	}
+	@Deprecated // use getSubstitutionsFor instead.
 	public List<ModelSymbolId> getSubstitutionsForType(ModelSymbolId symbolId) {
 		return typeConfigMap.entrySet().stream()
 			.filter(e -> e.getValue().getSubstitutionFor().map(t -> t.equals(symbolId)).orElse(false))

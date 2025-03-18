@@ -17,6 +17,7 @@
 package com.regnosys.rosetta.generator.java.types;
 
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
@@ -65,6 +66,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private JavaTypeUtil typeUtil;
 	@Inject
 	private ModelIdProvider modelIdProvider;
+	@Inject
+	private ModelGeneratorUtil generatorUtil;
 	
 	@Deprecated
 	public boolean isRosettaModelObject(RAttribute attr) {
@@ -215,6 +218,15 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return itemType;
 	}
+	public JavaClass<?> toMetaJavaType(RFeature feature) {
+		if (feature instanceof RAttribute) {
+			return toMetaJavaType((RAttribute) feature);
+		} else if (feature instanceof RMetaAttribute) {
+			return toItemJavaType((RMetaAttribute) feature);
+		} else {
+			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
+		}
+	}	
 	public JavaClass<?> toJavaType(RFeature feature) {
 		if (feature instanceof RAttribute) {
 			return toJavaType((RAttribute) feature);
@@ -234,6 +246,16 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		}
 		return toJavaReferenceType(typeProvider.getRTypeOfFeature(feature, null));
 	}
+	public JavaReferenceType operationToMetaJavaType(ROperation op) {
+		RFeature feature;
+		if (op.getPathTail().isEmpty()) {
+			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
+		} else {
+			List<RFeature> segments = op.getPathTail();
+			feature = segments.get(segments.size() - 1);
+		}
+		return toMetaJavaType(feature);
+	}	
 	public JavaReferenceType operationToJavaType(ROperation op) {
 		RFeature feature;
 		if (op.getPathTail().isEmpty()) {
@@ -390,7 +412,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	@Override
 	protected JavaPojoInterface caseDataType(RDataType type, Void context) {
-		return new RJavaPojoInterface(type, typeSystem, this, typeUtil);
+		return new RJavaPojoInterface(type, typeSystem, this, typeUtil, generatorUtil);
 	}
 	@Override
 	protected JavaPojoInterface caseChoiceType(RChoiceType type, Void context) {

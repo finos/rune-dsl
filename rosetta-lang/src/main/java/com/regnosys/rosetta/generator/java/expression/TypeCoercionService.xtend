@@ -3,9 +3,12 @@ package com.regnosys.rosetta.generator.java.expression
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
@@ -20,9 +23,6 @@ import java.util.Optional
 import java.util.function.Function
 import java.util.stream.Collectors
 import javax.inject.Inject
-import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
-import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
-import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -377,6 +377,8 @@ class TypeCoercionService {
 			JavaExpression.from('''«ComparisonResult».successEmptyOperand("")''', COMPARISON_RESULT)
 		} else if (expected == JavaPrimitiveType.BOOLEAN) {
 			JavaExpression.from('''false''', JavaPrimitiveType.BOOLEAN)
+		} else if (expected instanceof RJavaWithMetaValue) {
+			JavaExpression.from('''«expected».builder().build()''', itemType)
 		} else if (expected instanceof JavaPrimitiveType) {
 			throw new IllegalArgumentException("No empty representation for primitive type `" + expected + "`.")
 		} else {

@@ -7,7 +7,6 @@ import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
-import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
@@ -94,7 +93,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
@@ -108,13 +106,20 @@ import com.regnosys.rosetta.rosetta.expression.ComparingFunctionalOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
-import com.regnosys.rosetta.types.RMetaAttribute
 import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.utils.ConstructorManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
 
-// TODO: split expression validator
-// TODO: type check type call arguments
+/*
+ * Do not write any more validators in here for the following reasons:
+ * 1. We are moving away from Xtend to Java for all test and implementation code
+ * 2. This approach to putting every validator type in one place is messy and hard to navigate, better to split into classes by type of validator
+ * 
+ * The appropriate validtors can be found by looking for [ValidatorType]Validator.java where validator type could be Expression for example ExpressionValidator.java
+ * 
+ */
+@Deprecated
 class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaEcoreUtil
@@ -153,6 +158,17 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 						checkDeprecatedAnnotation(annotated as Annotated, object, ref, INSIGNIFICANT_INDEX)
 					}
 				}
+			}
+		}
+	}
+	
+	@Check
+	def void deprecatedLabelAsWarning(LabelAnnotation labelAnnotation) {
+		if (labelAnnotation.deprecatedAs) {
+			if (labelAnnotation.path === null) {
+				warning('''The `as` keyword without a path is deprecated''', labelAnnotation, LABEL_ANNOTATION__DEPRECATED_AS)
+			} else {
+				warning('''The `as` keyword after a path is deprecated. Add the keyword `for` before the path instead''', labelAnnotation, LABEL_ANNOTATION__DEPRECATED_AS)
 			}
 		}
 	}
@@ -388,14 +404,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 
 		errorKeyword("A rule source cannot define annotations for enums.", source,
 			externalAnnotationSourceAccess.enumsKeyword_2_0)
-	}
-
-	// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
-	@Check
-	def void deprecatedExtraneousSegment(RosettaDocReference docRef) {
-		for (seg : docRef.extraneousSegments) {
-			warning("Placing document segments after `rationale` is deprecated.", seg, null)
-		}
 	}
 
 	@Check

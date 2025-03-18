@@ -13,14 +13,15 @@ import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import static com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil.*
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import org.apache.commons.text.StringEscapeUtils
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
+	@Inject extension ModelGeneratorUtil
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, REnumType enumeration, String version) {
 		fsa.generateFile(root.withForwardSlashes + '/' + enumeration.name + '.java', enumeration.toJava(root, version))

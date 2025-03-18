@@ -19,6 +19,15 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import javax.inject.Inject
 import com.regnosys.rosetta.tests.util.ExpressionParser
 
+/*
+ * Do not write any more tests in here for the following reasons:
+ * 1. We are moving away from Xtend to Java for all test and implementation code
+ * 2. This approach to putting every test type in one place is messy and hard to navigate, better to split tests concepts into suites
+ * 
+ * The appropriate test suites can be found by looking for [TestType]ValidatorTest.java where test type could be Expression for example ExpressionValidatorTest
+ * 
+ */
+@Deprecated
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
 class RosettaValidatorTest implements RosettaIssueCodes {
@@ -1309,47 +1318,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					extract (
 						extract item + 1
 					)
-		'''.parseRosettaWithNoIssues
-	}
-
-	// @Compat
-	@Test
-	def void shouldStillSupportOldBasicTypes() {
-		'''
-		namespace com.rosetta.model
-		version "${project.version}"
-		
-		basicType string
-		basicType int
-		basicType number
-		basicType boolean
-		basicType time
-		
-		library function DateRanges() date
-		library function Min(x number, y number) number
-		library function Max(x number, y number) number
-		library function Adjust() date
-		library function Within() boolean
-		library function IsLeapYear(year number) boolean
-		
-		recordType date
-		{
-			day   int
-			month int
-			year  int
-		}
-		
-		recordType zonedDateTime
-		{
-			date date
-			time time
-			timezone string
-		}
-		
-		qualifiedType productType {}
-		qualifiedType eventType {}
-		
-		calculationType calculation {}
 		'''.parseRosettaWithNoIssues
 	}
 

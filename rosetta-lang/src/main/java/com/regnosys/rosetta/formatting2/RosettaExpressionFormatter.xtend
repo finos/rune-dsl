@@ -4,37 +4,40 @@ package com.regnosys.rosetta.formatting2
  * For info on the formatter API, see https://www.slideshare.net/meysholdt/xtexts-new-formatter-api.
  */
 
-import org.eclipse.xtext.formatting2.IFormattableDocument
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.ListLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
-import com.regnosys.rosetta.services.RosettaGrammarAccess
-import javax.inject.Inject
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
-import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import org.eclipse.xtext.formatting2.FormatterRequest
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaOperation
-import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.rosetta.expression.ThenOperation
+import com.regnosys.rosetta.services.RosettaGrammarAccess
+import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.Keyword
+import org.eclipse.xtext.formatting2.FormatterRequest
+import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion
-import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
+import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
+
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -98,8 +101,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	def void formatExpression(RosettaExpression expr, extension IFormattableDocument document, FormattingMode mode) {
 		if (!expr.isGenerated) {
-			val leftParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.leftParenthesisKeyword_7_0)
-			val rightParenthesis = expr.regionFor.keyword(rosettaCalcPrimaryAccess.rightParenthesisKeyword_7_2);
+			val leftParenthesis = expr.regionFor.keyword(primaryExpressionAccess.leftParenthesisKeyword_7_0)
+			val rightParenthesis = expr.regionFor.keyword(primaryExpressionAccess.rightParenthesisKeyword_7_2);
 			if (leftParenthesis !== null && rightParenthesis !== null) {
 				leftParenthesis
 					.append[noSpace]
@@ -116,18 +119,37 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 	
+	private def dispatch void unsafeFormatExpression(WithMetaOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension unaryOperationGrammarAccess = unaryOperationAccess
+		
+		expr.formatUnaryOperation(document, mode, [])
+		
+		val leftCurlyBracketKeyword = 
+			#[leftCurlyBracketKeyword_0_1_0_0_23_2_0, leftCurlyBracketKeyword_1_0_0_21_2_0, leftCurlyBracketKeyword_1_1_0_0_23_2_0]
+				.findFirst[ expr.regionFor.keyword(it) !== null]
+				
+		val rightCurlyBracketKeyword = 
+			#[rightCurlyBracketKeyword_0_1_0_0_23_2_2, rightCurlyBracketKeyword_1_0_0_21_2_2, rightCurlyBracketKeyword_1_1_0_0_23_2_2]
+				.findFirst[ expr.regionFor.keyword(it) !== null]
+				
+		constructorLikeFormat(expr, document, mode, leftCurlyBracketKeyword, rightCurlyBracketKeyword)
+	}
+	
 	private def dispatch void unsafeFormatExpression(RosettaConstructorExpression expr, extension IFormattableDocument document, FormattingMode mode) {
-		val extension constructorGrammarAccess = rosettaCalcConstructorExpressionAccess
-
+		val extension constructorGrammarAccess = constructorExpressionAccess
+		constructorLikeFormat(expr, document, mode, leftCurlyBracketKeyword_2,  rightCurlyBracketKeyword_4)
+	}
+	
+	private def void constructorLikeFormat(RosettaExpression expr, extension IFormattableDocument document, FormattingMode mode, Keyword leftCurlyBracket, Keyword rightCurlyBracket) {
 		interiorIndentWithoutCurlyBracket(
-			expr.regionFor.keyword(leftCurlyBracketKeyword_2)
+			expr.regionFor.keyword(leftCurlyBracket)
 				.prepend[oneSpace]
 				.append[newLine],
-			expr.regionFor.keyword(rightCurlyBracketKeyword_4),
+			expr.regionFor.keyword(rightCurlyBracket),
 			document
 		)
 		
-		val rightCurlyBracketRegion = expr.regionFor.keyword(rightCurlyBracketKeyword_4)
+		val rightCurlyBracketRegion = expr.regionFor.keyword(rightCurlyBracket)
 		rightCurlyBracketRegion.prepend [
 			if(rightCurlyBracketRegion.comesAfter("}") // case '}}'
 			|| (rightCurlyBracketRegion.comesAfter(",") &&
@@ -144,12 +166,23 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			}
 		]
 		
-		expr.values.forEach[
-			regionFor.keyword(':')
-				.prepend[noSpace]
-				.append[oneSpace]
-			value.formatExpression(document, mode)
-		]
+		if (expr instanceof RosettaConstructorExpression) {
+			expr.values.forEach [
+				regionFor.keyword(':')
+					.prepend[noSpace]
+					.append[oneSpace]
+				value.formatExpression(document, mode)
+			]
+		}
+
+		if (expr instanceof WithMetaOperation) {
+			expr.entries.forEach [
+				regionFor.keyword(':')
+					.prepend[noSpace]
+					.append[oneSpace]
+				value.formatExpression(document, mode)
+			]
+		}
 	}
 	
 	def comesAfter(ISemanticRegion region, String el) {

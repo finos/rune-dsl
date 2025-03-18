@@ -61,7 +61,7 @@ class ExpressionParser {
 	
 	def RosettaExpression parseExpression(CharSequence expr, List<RosettaModel> context, Attribute... attributes) {
 		val cont = context.isEmpty ? defaultContext : context
-		val IParseResult result = parser.parse(grammar.rosettaCalcExpressionRule, new StringReader(expr.toString()))
+		val IParseResult result = parser.parse(grammar.expressionRule, new StringReader(expr.toString()))
 		val expression = result.rootASTElement as RosettaExpression
 		addSyntaxDiagnostics(createResource("expr", expression, cont), result)
 		link(expression, cont, attributes)

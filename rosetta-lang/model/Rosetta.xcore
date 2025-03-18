@@ -7,6 +7,7 @@ package com.regnosys.rosetta.rosetta
 import com.google.common.collect.Iterables
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.BuiltinAnnotationWithPath
 import com.regnosys.rosetta.rosetta.simple.RootElement
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -286,14 +287,12 @@ enum RosettaSynonymRef {
  * docReferences
  */
 
-class RosettaDocReference {
+class RosettaDocReference extends BuiltinAnnotationWithPath {
 	contains RegulatoryDocumentReference docReference
 	contains DocumentRationale[] rationales
 	String structuredProvision
 	String provision
 	boolean reportedField
-	// @Compat. In DRR, there is a segment `table` located after a `rationale`. This should never be the case, but to remain backwards compatible, we need to allow this.
-	contains RosettaSegmentRef[] extraneousSegments
 }
 
 class RegulatoryDocumentReference {

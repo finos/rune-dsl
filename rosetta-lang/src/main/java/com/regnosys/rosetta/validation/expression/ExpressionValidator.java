@@ -1,64 +1,34 @@
 package com.regnosys.rosetta.validation.expression;
 
-import javax.inject.Inject;
-
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.ComposedChecks;
-
 import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
-import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
-import com.regnosys.rosetta.rosetta.RosettaMetaType;
-import com.regnosys.rosetta.rosetta.RosettaNamed;
-import com.regnosys.rosetta.rosetta.RosettaParameter;
-import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.RosettaSymbol;
-import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
-import com.regnosys.rosetta.rosetta.expression.CardinalityModifier;
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
-import com.regnosys.rosetta.rosetta.expression.ComparisonOperation;
-import com.regnosys.rosetta.rosetta.expression.DefaultOperation;
-import com.regnosys.rosetta.rosetta.expression.EqualityOperation;
-import com.regnosys.rosetta.rosetta.expression.ExistsModifier;
-import com.regnosys.rosetta.rosetta.expression.JoinOperation;
-import com.regnosys.rosetta.rosetta.expression.ListLiteral;
-import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
-import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation;
-import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
-import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaContainsExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaDisjointExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall;
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
-import com.regnosys.rosetta.rosetta.simple.AssignPathRoot;
+import com.regnosys.rosetta.rosetta.*;
+import com.regnosys.rosetta.rosetta.expression.*;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.validation.Check;
+import org.eclipse.xtext.validation.ComposedChecks;
 
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
-
+import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
+import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
 
 // TODO: move over expression validations from RosettaSimpleValidator
 @ComposedChecks(validators = { ConstructorValidator.class, SwitchValidator.class })
@@ -71,7 +41,21 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
-	
+	@Check
+	public void checkWithMetaOperation(WithMetaOperation operation) {
+		RosettaExpression argument = operation.getArgument();
+		isSingleCheckError(argument, operation, ROSETTA_UNARY_OPERATION__ARGUMENT, "The with-meta operator can only be used with single cardinality arguments");
+	}
+
+	@Check
+	public void checkWithMetaEntry(WithMetaEntry entry) {
+		RosettaFeature metaType = entry.getKey();
+
+		RType expectedType = typeProvider.getRTypeOfFeature(metaType, null).getRType();
+		isSingleCheckError(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
+		subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
+	}
+
 	@Check
 	public void checkCondition(Condition c) {
 		isSingleCheck(c.getExpression(), c, CONDITION__EXPRESSION, "A condition should be single cardinality");
@@ -303,7 +287,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				} else if (callable instanceof RosettaRule) {
 					RosettaRule f = (RosettaRule) callable;
 					if (minCount >= 1) {
-						RMetaAnnotatedType paramType = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(f.getInput()));
+						RMetaAnnotatedType paramType = withNoMeta(typeSystem.typeCallToRType(f.getInput()));
 						RosettaExpression arg = expr.getArgs().get(0);
 						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");

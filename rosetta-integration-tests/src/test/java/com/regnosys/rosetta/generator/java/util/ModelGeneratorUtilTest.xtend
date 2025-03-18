@@ -16,6 +16,7 @@ import javax.inject.Inject
 class ModelGeneratorUtilTest {
 
 	@Inject extension ModelHelper modelHelper
+	@Inject ModelGeneratorUtil generatorUtil
 
 	@Test
 	def void testDocReferenceJavaDoc() {
@@ -38,7 +39,7 @@ class ModelGeneratorUtilTest {
 								.filter[name == 'Foo']
 								.get(0)
 
-		val javaDoc = ModelGeneratorUtil.javadoc(fooType)
+		val javaDoc = generatorUtil.javadoc(fooType)
 
 		val expected = '''
 			/**
@@ -81,7 +82,7 @@ class ModelGeneratorUtilTest {
 								.filter[name == 'Foo']
 								.get(0)
 
-		val javaDoc = ModelGeneratorUtil.javadoc(fooType)
+		val javaDoc = generatorUtil.javadoc(fooType)
 
 		val expected = '''
 			/**
@@ -127,7 +128,7 @@ class ModelGeneratorUtilTest {
 								.filter[name == 'Foo']
 								.get(0)
 
-		val javaDoc = ModelGeneratorUtil.javadoc(fooType)
+		val javaDoc = generatorUtil.javadoc(fooType)
 
 		val expected = '''
 			/**
@@ -160,7 +161,7 @@ class ModelGeneratorUtilTest {
 								.filter[name == 'Foo']
 								.get(0)
 
-		val javaDoc = ModelGeneratorUtil.javadoc(fooType)
+		val javaDoc = generatorUtil.javadoc(fooType)
 		
 		val expected = '''
 			/**
@@ -199,7 +200,7 @@ class ModelGeneratorUtilTest {
 								.filter[name == 'bar']
 								.get(0)
 
-		val javaDoc = ModelGeneratorUtil.javadoc(fooBarAttr)
+		val javaDoc = generatorUtil.javadoc(fooBarAttr)
 		
 		val expected = '''
 			/**

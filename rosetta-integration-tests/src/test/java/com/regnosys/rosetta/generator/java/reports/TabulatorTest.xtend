@@ -678,23 +678,19 @@ class TabulatorTest {
 				extract value/2
 			
 			rule source BaseRuleSource {
-				BaseReport:
+				Report:
+				- basic1
 				+ basic1
 					[ruleReference Basic1InSource]
-				+ basic2
-					[ruleReference Basic2]
-				
-				Report:
 				+ basic2
 					[ruleReference Basic2]
 			}
 			
 			rule source RuleSource extends BaseRuleSource {
-				BaseReport:
+				Report:
+				- basic1
 				+ basic1
 					[ruleReference Basic1InSourceModified]
-				
-				Report:
 				- basic2
 				+ basic2
 					[ruleReference Basic2Modified]

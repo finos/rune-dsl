@@ -50,7 +50,11 @@ recordType zonedDateTime
 	timezone string
 }
 
-typeAlias productType: string
-typeAlias eventType: string
+typeAlias productType:
+	string
 
-typeAlias calculation: string
+typeAlias eventType:
+	string
+
+typeAlias calculation:
+	string
