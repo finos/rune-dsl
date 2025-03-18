@@ -37,7 +37,6 @@ import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import javax.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaReport
-import com.regnosys.rosetta.generator.java.validator.ValidatorGenerator
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
@@ -66,7 +65,6 @@ class RosettaGenerator implements IGenerator2 {
 
 	@Inject ModelObjectGenerator dataGenerator
 	@Inject ValidatorsGenerator validatorsGenerator
-	@Inject ValidatorGenerator validatorGenerator
 	@Inject extension RosettaFunctionExtensions
 	@Inject FunctionGenerator funcGenerator
 	@Inject ReportGenerator reportGenerator
@@ -196,13 +194,10 @@ class RosettaGenerator implements IGenerator2 {
 				val t = elem.buildRDataType
 				dataGenerator.generate(packages, fsa, t, version)
 				metaGenerator.generate(packages, fsa, t, version)
-				// Legacy
 				validatorsGenerator.generate(packages, fsa, t, version)
 				elem.conditions.forEach [ cond |
 					conditionGenerator.generate(packages, fsa, t, cond, version)
 				]
-				// new
-				// validatorGenerator.generate(packages, fsa, it, version)
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
