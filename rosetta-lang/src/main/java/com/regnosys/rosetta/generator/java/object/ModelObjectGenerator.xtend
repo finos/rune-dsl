@@ -29,6 +29,7 @@ import java.util.Optional
 import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 
 class ModelObjectGenerator {
 	
@@ -233,6 +234,7 @@ class ModelObjectGenerator {
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			public «prop.type» «prop.getterName»() «field.completeAsReturn.toBlock»
 			

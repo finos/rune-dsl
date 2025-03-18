@@ -28,6 +28,7 @@ import java.util.function.Consumer
 import java.util.stream.Collectors
 import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 
 class ModelObjectBuilderGenerator {
 	
@@ -125,6 +126,7 @@ class ModelObjectBuilderGenerator {
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
 			«IF prop.type.isRosettaModelObject»
@@ -263,6 +265,7 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
@@ -389,6 +392,7 @@ class ModelObjectBuilderGenerator {
 			@Override 
 			«IF isMainProp»
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
@@ -472,6 +476,7 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 			@«RosettaAttribute»("«currentProp.javaAnnotation»")
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «

@@ -90,6 +90,7 @@ class PojoRegressionTest {
 		import com.rosetta.model.lib.annotations.RosettaDataType;
 		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
+		import com.rosetta.model.lib.annotations.RuneScopedAttributeReference;
 		import com.rosetta.model.lib.meta.RosettaMetaData;
 		import com.rosetta.model.lib.path.RosettaPath;
 		import com.rosetta.model.lib.process.BuilderMerger;
@@ -173,7 +174,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("baz")
 				@RuneAttribute("baz")
-				@RuneScopedAttributeReference(pointsToType="com.rosetta.test.model.Baz", pointsToPath="bar->qux")
+				@RuneScopedAttributeReference
 				public ReferenceWithMetaString getBaz() {
 					return baz;
 				}
@@ -228,6 +229,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("baz")
 				@RuneAttribute("baz")
+				@RuneScopedAttributeReference
 				public ReferenceWithMetaString.ReferenceWithMetaStringBuilder getBaz() {
 					return baz;
 				}
@@ -248,6 +250,7 @@ class PojoRegressionTest {
 				@Override
 				@RosettaAttribute("baz")
 				@RuneAttribute("baz")
+				@RuneScopedAttributeReference
 				public Baz.BazBuilder setBaz(ReferenceWithMetaString _baz) {
 					this.baz = _baz == null ? null : _baz.toBuilder();
 					return this;
