@@ -125,7 +125,8 @@ class ValidatorsGenerator {
 		public class «javaType.toTypeFormatValidatorClass» implements «Validator»<«javaType»> {
 			«IF conditions.size() > 0»
 				«IF conditions.map[it.name].filter[it.equalsIgnoreCase("IsValidCodingScheme")].size > 0»
-					protected cdm.base.staticdata.codelist.functions.ValidateFpMLCodingSchemeDomain func = new cdm.base.staticdata.codelist.ValidateFpMLCodingSchemeImpl();
+					@com.google.inject.Inject
+					protected cdm.base.staticdata.codelist.functions.ValidateFpMLCodingSchemeDomain func;
 				«ENDIF»
 			«ENDIF»
 		
