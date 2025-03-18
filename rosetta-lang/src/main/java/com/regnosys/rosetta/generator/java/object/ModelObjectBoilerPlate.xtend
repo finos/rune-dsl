@@ -61,7 +61,7 @@ class ModelObjectBoilerPlate {
 		return prop.attributeMetaTypes.contains(AttributeMetaType.SCOPED_REFERENCE)
 	}
 	
-	def boolean isKey(JavaPojoProperty prop) {
+	def boolean isScopedKey(JavaPojoProperty prop) {
 		return prop.attributeMetaTypes.contains(AttributeMetaType.SCOPED_KEY)
 	}
 	

@@ -29,6 +29,7 @@ import java.util.stream.Collectors
 import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
+import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 
 class ModelObjectBuilderGenerator {
 	
@@ -127,6 +128,7 @@ class ModelObjectBuilderGenerator {
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			public «prop.toBuilderTypeExt» «prop.getterName»() «field.completeAsReturn.toBlock»
 			«IF prop.type.isRosettaModelObject»
@@ -266,6 +268,7 @@ class ModelObjectBuilderGenerator {
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
@@ -393,6 +396,7 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+			«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
@@ -477,6 +481,7 @@ class ModelObjectBuilderGenerator {
 			@«RosettaAttribute»("«currentProp.javaAnnotation»")
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+			«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «
