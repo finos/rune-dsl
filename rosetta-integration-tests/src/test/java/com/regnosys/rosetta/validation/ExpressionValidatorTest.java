@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.validation;
 
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.WITH_META_ENTRY;
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.WITH_META_OPERATION;
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
 import javax.inject.Inject;
 
@@ -22,6 +21,20 @@ public class ExpressionValidatorTest {
 	private ValidationTestHelper validationTestHelper;
 	@Inject
 	private RosettaTestModelService modelService;
+	
+	@Test
+	void toEnumDoesNotWorkOnInt() {
+       RosettaExpression expr =
+               modelService.toTestModel("""
+                    enum Bar:
+                        VALUE1
+                        VALUE2
+                   """).parseExpression("""
+                   123 to-enum Bar
+                   """);
+       
+       validationTestHelper.assertError(expr, TO_ENUM_OPERATION, null, "The argument of to-enum should be a string.");
+	}
 	
 	@Test
 	void testValidChoiceConstruction() {
