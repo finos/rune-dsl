@@ -23,6 +23,20 @@ public class ExpressionValidatorTest {
 	private RosettaTestModelService modelService;
 	
     @Test
+    void toEnumDoesWorkOnStrings() {
+       RosettaExpression expr =
+               modelService.toTestModel("""
+                    enum Bar:
+                        VALUE1
+                        VALUE2
+                   """).parseExpression("""
+                   "VALUE1" to-enum Bar
+                   """);
+       
+       validationTestHelper.assertNoIssues(expr);
+    }   	
+	
+    @Test
     void toEnumDoesWorkOnEnum() {
        RosettaExpression expr =
                modelService.toTestModel("""
