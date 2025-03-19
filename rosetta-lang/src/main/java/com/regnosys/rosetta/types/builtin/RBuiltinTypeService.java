@@ -104,9 +104,9 @@ public class RBuiltinTypeService {
 		
 	    //TODO: can't get rid of these until Translate Generator stops using ExpanedTypes
 		register("productType", (m) -> UNCONSTRAINED_STRING);
-        register("eventType", (m) -> UNCONSTRAINED_STRING);
-        register("calculation", (m) -> UNCONSTRAINED_STRING);
-        register("int", (m) -> UNCONSTRAINED_INT);
+		register("eventType", (m) -> UNCONSTRAINED_STRING);
+		register("calculation", (m) -> UNCONSTRAINED_STRING);
+		register("int", (m) -> UNCONSTRAINED_INT);
 	}
 	
 	public Optional<RType> getType(String name, Map<String, RosettaValue> params) {
