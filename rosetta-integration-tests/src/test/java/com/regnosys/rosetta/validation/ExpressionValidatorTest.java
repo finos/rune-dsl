@@ -22,6 +22,26 @@ public class ExpressionValidatorTest {
 	@Inject
 	private RosettaTestModelService modelService;
 	
+    @Test
+    void toEnumDoesWorkOnEnum() {
+       RosettaExpression expr =
+               modelService.toTestModel("""
+                    enum Foo:
+                        VALUE1
+                        VALUE2
+                        
+                    enum Bar:
+                        VALUE1
+                        VALUE2
+                   """).parseExpression("""
+                   foo to-enum Bar
+                   """, 
+                   "foo Foo (1..1)");
+       
+       validationTestHelper.assertNoIssues(expr);
+    }	
+	
+	
 	@Test
 	void toEnumDoesNotWorkOnInt() {
        RosettaExpression expr =
@@ -33,7 +53,7 @@ public class ExpressionValidatorTest {
                    123 to-enum Bar
                    """);
        
-       validationTestHelper.assertError(expr, TO_ENUM_OPERATION, null, "The argument of to-enum should be a string.");
+       validationTestHelper.assertError(expr, TO_ENUM_OPERATION, null, "The argument of to-enum should be either a string or an enum.");
 	}
 	
 	@Test

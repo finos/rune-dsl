@@ -110,6 +110,7 @@ import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.utils.ConstructorManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 
 /*
  * Do not write any more validators in here for the following reasons:
@@ -865,8 +866,15 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (cardinality.isMulti(arg)) {
 				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
 			}
-			if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META)) {
-				error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+			
+			if (ele instanceof ToEnumOperation) {
+				if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META) && !(arg.RMetaAnnotatedType.RType instanceof REnumType)) {
+					error('''The argument of «ele.operator» should be either a string or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+				}
+			} else {
+				if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META)) {
+					error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
+				}
 			}
 		}
 	}
