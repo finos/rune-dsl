@@ -37,4 +37,28 @@ public class ToEnumOperationTest {
         
         assertEquals(expected, result);
     }
+    
+    
+    @Test
+    void enumToEnumTest() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+                
+                enum Foo:
+                    VALUE1
+                    VALUE2
+                    
+                enum Bar:
+                    VALUE1
+                    VALUE2
+                """).compile();
+        
+        Enum<?> result = model.evaluateExpression(Enum.class, """
+                    Bar -> VALUE2 to-enum Foo
+                    """);
+        
+        var expected = model.getEnumJavaValue("Foo", "VALUE2");
+        
+        assertEquals(expected, result);
+    }
 }
