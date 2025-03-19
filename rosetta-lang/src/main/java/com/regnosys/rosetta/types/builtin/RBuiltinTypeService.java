@@ -102,7 +102,7 @@ public class RBuiltinTypeService {
 		register("number", (m) -> RNumberType.from(m));
 		register("string", (m) -> RStringType.from(m));
 		
-	    //TODO: can't get rid of these until Translate Generator stops using ExpanedTypes
+		//TODO: can't get rid of these until Translate Generator stops using ExpanedTypes
 		register("productType", (m) -> UNCONSTRAINED_STRING);
 		register("eventType", (m) -> UNCONSTRAINED_STRING);
 		register("calculation", (m) -> UNCONSTRAINED_STRING);
