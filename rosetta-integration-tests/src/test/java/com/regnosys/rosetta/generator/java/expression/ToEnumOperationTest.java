@@ -61,4 +61,25 @@ public class ToEnumOperationTest {
         
         assertEquals(expected, result);
     }
+    
+    @Test
+    void emptyToEnumTest() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+                
+                enum Foo:
+                    VALUE1
+                    VALUE2
+                    
+                enum Bar:
+                    VALUE1
+                    VALUE2
+                """).compile();
+        
+        Enum<?> result = model.evaluateExpression(Enum.class, """
+                    (if False then Bar -> VALUE2) to-enum Foo
+                    """);
+        
+        assertEquals(null, result);
+    }    
 }
