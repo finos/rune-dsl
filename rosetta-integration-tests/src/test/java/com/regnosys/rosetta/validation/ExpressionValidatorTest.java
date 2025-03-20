@@ -63,7 +63,7 @@ public class ExpressionValidatorTest {
                 """);
 
         validationTestHelper.assertError(expr, TO_ENUM_OPERATION, null,
-                "The argument of to-enum should be either a string or an enum.");
+                "Operator `to-enum` is not supported for type `int(digits: 3, min: 123, max: 123)`. Supported argument types are strings and enumerations.");
     }
 
     @Test
