@@ -1083,14 +1083,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	private def JavaStatementBuilder conversionOperation(RosettaUnaryOperation expr, Context context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
-		expr.argument.javaCode(MAPPER_S.wrapExtends(STRING), context.scope)
+		val argumentJavaType = typeProvider.getRMetaAnnotatedType(expr.argument).RType.toJavaReferenceType
+		expr.argument.javaCode(MAPPER_S.wrapExtends(argumentJavaType), context.scope)
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[JavaExpression.from('''«it».checkedMap("«expr.operator»", «conversion», «errorClass».class)''', MAPPER_S.wrap(expr))]
 	}
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
 		val javaEnum = expr.enumeration.buildREnumType.toJavaType
-		conversionOperation(expr, context, '''«javaEnum»::fromDisplayName''', IllegalArgumentException)
+		val argIsEnum = typeProvider.getRMetaAnnotatedType(expr.argument).RType.stripFromTypeAliases instanceof REnumType
+		val StringConcatenationClient conversion = argIsEnum ? '''e -> «javaEnum».fromDisplayName(e.toString())''' : '''«javaEnum»::fromDisplayName'''
+		conversionOperation(expr, context, conversion, IllegalArgumentException)
 	}
 
 	override protected caseToIntOperation(ToIntOperation expr, Context context) {
