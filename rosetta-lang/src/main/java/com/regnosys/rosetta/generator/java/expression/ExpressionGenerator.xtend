@@ -1091,7 +1091,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseToEnumOperation(ToEnumOperation expr, Context context) {
 		val javaEnum = expr.enumeration.buildREnumType.toJavaType
-		val argIsEnum = typeProvider.getRMetaAnnotatedType(expr.argument).RType instanceof REnumType
+		val argIsEnum = typeProvider.getRMetaAnnotatedType(expr.argument).RType.stripFromTypeAliases instanceof REnumType
 		val StringConcatenationClient conversion = argIsEnum ? '''e -> «javaEnum».fromDisplayName(e.toString())''' : '''«javaEnum»::fromDisplayName'''
 		conversionOperation(expr, context, conversion, IllegalArgumentException)
 	}
