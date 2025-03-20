@@ -5,6 +5,7 @@ package com.regnosys.rosetta.validation
 
 import org.eclipse.xtext.validation.ComposedChecks
 import com.regnosys.rosetta.validation.expression.ExpressionValidator
+import com.regnosys.rosetta.validation.expression.ParseOperationValidator
 
 /**
  * This class contains custom validation rules. 

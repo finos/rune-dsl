@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.validation;
+package com.regnosys.rosetta.validation.expression;
 
 import javax.inject.Inject;
 
@@ -9,10 +9,11 @@ import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.expression.ParseOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
+import com.regnosys.rosetta.validation.AbstractDeclarativeRosettaValidator;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
-public class ParseOperationValidator extends AbstractDeclarativeRosettaValidator {
+public class ParseOperationValidator extends ExpressionValidator {
     @Inject
     private RosettaTypeProvider typeProvider;
     @Inject
@@ -20,22 +21,19 @@ public class ParseOperationValidator extends AbstractDeclarativeRosettaValidator
     @Inject
     private TypeSystem typeSystem;
     @Inject
-    private CardinalityProvider cardinality;
-    @Inject
     private RBuiltinTypeService builtInTypeService;
     
     @Check
     public void checkParseOpArgument(ParseOperation ele) {
         var arg = ele.getArgument();
         if (ecoreUtil.isResolved(arg)) {
-            if (cardinality.isMulti(arg)) {
-                error(String.format("The argument of %s should be of singular cardinality.'", ele.getOperator()), ele, ROSETTA_UNARY_OPERATION__ARGUMENT);
-            }
-
+            isSingleCheck(arg, ele, ROSETTA_UNARY_OPERATION__ARGUMENT, ele);
+            
             RMetaAnnotatedType argumentRMetaType = typeProvider.getRMetaAnnotatedType(arg);
             if (ele instanceof ToEnumOperation) {
+                RType argumentRType = typeSystem.stripFromTypeAliases(argumentRMetaType.getRType());
                 if (!typeSystem.isSubtypeOf(argumentRMetaType, builtInTypeService.UNCONSTRAINED_STRING_WITH_NO_META)
-                        && !(argumentRMetaType.getRType() instanceof REnumType)) {
+                        && !(argumentRType instanceof REnumType)) {
                     error(String.format("The argument of %s should be either a string or an enum.", ele.getOperator()), ele, ROSETTA_UNARY_OPERATION__ARGUMENT);
                 }
             } else {
