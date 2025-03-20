@@ -32,7 +32,7 @@ public class ParseOperationValidator extends ExpressionValidator {
                 } 
                 if (!typeSystem.isSubtypeOf(argumentRMetaType, builtins.UNCONSTRAINED_STRING_WITH_NO_META)
                         && !(argumentRType instanceof REnumType)) {
-                    unsupportedTypeError(argumentRMetaType, ele.getOperator(), ele, ROSETTA_UNARY_OPERATION__ARGUMENT, "Supported argument types are strings and enumerations.");
+                    unsupportedTypeError(argumentRMetaType, ele.getOperator(), ele, ROSETTA_UNARY_OPERATION__ARGUMENT, "Supported argument types are strings and enumerations");
                 }
             } else {
                 subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, ele.getArgument(), ele, ROSETTA_UNARY_OPERATION__ARGUMENT, ele);
