@@ -835,23 +835,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	}
 	
 	@Test
-	def void toEnumDoesNotWorkOnInt() {
-		val model = '''
-		enum Bar:
-			VALUE1
-			VALUE2
-		
-		func Foo:
-			output: result Bar (1..1)
-			set result:
-				123 to-enum Bar
-		'''.parseRosetta
-		
-		model.assertError(TO_ENUM_OPERATION, null,
-			"The argument of to-enum should be a string.")
-	}
-	
-	@Test
 	def void canCallARuleFromARule() {
 		'''
 		reporting rule Bar from number:

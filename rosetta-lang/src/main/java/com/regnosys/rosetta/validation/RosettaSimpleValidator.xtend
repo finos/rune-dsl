@@ -110,6 +110,7 @@ import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.utils.ConstructorManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
+import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 
 /*
  * Do not write any more validators in here for the following reasons:
@@ -855,19 +856,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			if (invalidChar !== null)
 				error('''Character '«invalidChar.key»' is not allowed «IF invalidChar.value»as first symbol in a path segment.«ELSE»in paths. Use '->' to separate path segments.«ENDIF»''',
 					ele, ROSETTA_SYNONYM_VALUE_BASE__PATH)
-		}
-	}
-	
-	@Check
-	def checkParseOpArgument(ParseOperation ele) {
-		val arg = ele.argument
-		if (arg.isResolved) {
-			if (cardinality.isMulti(arg)) {
-				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
-			}
-			if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META)) {
-				error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
-			}
 		}
 	}
 	
