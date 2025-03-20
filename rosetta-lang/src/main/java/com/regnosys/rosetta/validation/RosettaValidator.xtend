@@ -16,6 +16,7 @@ import com.regnosys.rosetta.validation.expression.ExpressionValidator
 	ReportValidator,
 	TypeValidator,
 	AttributeValidator,
+	ParseOperationValidator,
 	EnumValidator,
 	ChoiceValidator,
 	ExpressionValidator

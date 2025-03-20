@@ -860,26 +860,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	}
 	
 	@Check
-	def checkParseOpArgument(ParseOperation ele) {
-		val arg = ele.argument
-		if (arg.isResolved) {
-			if (cardinality.isMulti(arg)) {
-				error('''The argument of «ele.operator» should be of singular cardinality.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
-			}
-			
-			if (ele instanceof ToEnumOperation) {
-				if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META) && !(arg.RMetaAnnotatedType.RType instanceof REnumType)) {
-					error('''The argument of «ele.operator» should be either a string or an enum.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
-				}
-			} else {
-				if (!arg.RMetaAnnotatedType.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META)) {
-					error('''The argument of «ele.operator» should be a string.''', ele, ROSETTA_UNARY_OPERATION__ARGUMENT)
-				}
-			}
-		}
-	}
-	
-	@Check
 	def checkToStringOpArgument(ToStringOperation ele) {
 		val arg = ele.argument
 		if (arg.isResolved) {
