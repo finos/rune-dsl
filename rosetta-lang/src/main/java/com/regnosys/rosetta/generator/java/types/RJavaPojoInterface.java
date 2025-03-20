@@ -21,8 +21,10 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
+import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -86,15 +88,29 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 			type.getOwnAttributes().forEach(attr -> {
 				String name = attr.getName();
 				JavaType type = typeTranslator.toMetaJavaType(attr);
-				addPropertyIfNecessary(name, name, name, type, generatorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null), attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null, attr.getRMetaAnnotatedType().hasMetaAttribute("location"));
+				addPropertyIfNecessary(name,
+						name,
+						name,
+						type,
+						generatorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null),
+						attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null,
+						attr.getRMetaAnnotatedType().hasMetaAttribute("location"),
+						generateAttributeMetaTypes(attr));
 			});
 			if (type.hasMetaAttribute("key")) {
 				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
-				addPropertyIfNecessary("meta", null, "meta", metaFieldsType, null, null, false);
+				addPropertyIfNecessary("meta",
+						null,
+						"meta",
+						metaFieldsType,
+						null,
+						null,
+						false,
+						List.of());
 			}
 		}
 	}
-	private void addPropertyIfNecessary(String name, String runeName, String serializedName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation) {
+	private void addPropertyIfNecessary(String name, String runeName, String serializedName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
 		JavaPojoProperty parentProperty = allProperties.get(name);
 		if (parentProperty == null) {
 			JavaPojoProperty newProperty = new JavaPojoProperty(
@@ -105,7 +121,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 					type,
 					javadoc,
 					meta,
-					hasLocation);
+					hasLocation, attributeMetaTypes);
 			ownProperties.put(name, newProperty);
 			allProperties.put(name, newProperty);
 		} else {
@@ -119,7 +135,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 					// Incompatible specialization => need new getter
 					compatibilityName = getIncompatiblePropertyName(name, parentType, type);
 				}
-				JavaPojoProperty newProperty = parentProperty.specialize(compatibilityName, type, javadoc, meta, hasLocation);
+				JavaPojoProperty newProperty = parentProperty.specialize(compatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes);
 				ownProperties.put(name, newProperty);
 				allProperties.put(name, newProperty);
 			}
@@ -140,6 +156,20 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 			// Type to other type
 			return propertyName + "OverriddenAs" + specializedType.getSimpleName();
 		}
+	}
+	private List<AttributeMetaType> generateAttributeMetaTypes(RAttribute rAttribute) {
+	    return rAttribute.getRMetaAnnotatedType()
+	        .getMetaAttributes()
+	        .stream()
+	        .filter(metaAttr -> metaAttr.getName().equals("address") || metaAttr.getName().equals("location"))
+	        .map(metaAttr -> {
+	            if (metaAttr.getName().equals("address")) {
+	                return AttributeMetaType.SCOPED_REFERENCE;
+	            } else if (metaAttr.getName().equals("location")) {
+	                return AttributeMetaType.SCOPED_KEY;
+	            }
+	            throw new IllegalStateException("AttributeMetaType for meta attributes of " + metaAttr.getName() + " are not supported");
+	        }).collect(Collectors.toList());
 	}
 
 	@Override

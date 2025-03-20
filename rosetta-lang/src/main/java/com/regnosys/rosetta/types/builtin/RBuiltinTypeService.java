@@ -101,6 +101,12 @@ public class RBuiltinTypeService {
 	public RBuiltinTypeService() {
 		register("number", (m) -> RNumberType.from(m));
 		register("string", (m) -> RStringType.from(m));
+		
+		//TODO: can't get rid of these until Translate Generator stops using ExpanedTypes
+		register("productType", (m) -> UNCONSTRAINED_STRING);
+		register("eventType", (m) -> UNCONSTRAINED_STRING);
+		register("calculation", (m) -> UNCONSTRAINED_STRING);
+		register("int", (m) -> UNCONSTRAINED_INT);
 	}
 	
 	public Optional<RType> getType(String name, Map<String, RosettaValue> params) {
