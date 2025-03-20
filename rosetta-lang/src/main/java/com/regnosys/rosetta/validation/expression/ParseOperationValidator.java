@@ -15,13 +15,8 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 
 public class ParseOperationValidator extends ExpressionValidator {
     @Inject
-    private RosettaTypeProvider typeProvider;
-    @Inject
     private RosettaEcoreUtil ecoreUtil;
-    @Inject
-    private TypeSystem typeSystem;
-    @Inject
-    private RBuiltinTypeService builtInTypeService;
+
     
     @Check
     public void checkParseOpArgument(ParseOperation ele) {
@@ -32,14 +27,15 @@ public class ParseOperationValidator extends ExpressionValidator {
             RMetaAnnotatedType argumentRMetaType = typeProvider.getRMetaAnnotatedType(arg);
             if (ele instanceof ToEnumOperation) {
                 RType argumentRType = typeSystem.stripFromTypeAliases(argumentRMetaType.getRType());
-                if (!typeSystem.isSubtypeOf(argumentRMetaType, builtInTypeService.UNCONSTRAINED_STRING_WITH_NO_META)
+                if (argumentRType.equals(builtins.NOTHING)) {
+                    return;
+                } 
+                if (!typeSystem.isSubtypeOf(argumentRMetaType, builtins.UNCONSTRAINED_STRING_WITH_NO_META)
                         && !(argumentRType instanceof REnumType)) {
                     error(String.format("The argument of %s should be either a string or an enum.", ele.getOperator()), ele, ROSETTA_UNARY_OPERATION__ARGUMENT);
                 }
             } else {
-                if (!typeSystem.isSubtypeOf(argumentRMetaType, builtInTypeService.UNCONSTRAINED_STRING_WITH_NO_META)) {
-                    error(String.format("he argument of  %s should be a string.", ele.getOperator()), ele, ROSETTA_UNARY_OPERATION__ARGUMENT);
-                }
+                subtypeCheck(builtins.UNCONSTRAINED_STRING_WITH_NO_META, ele.getArgument(), ele, ROSETTA_UNARY_OPERATION__ARGUMENT, ele);
             }
         }
     }
