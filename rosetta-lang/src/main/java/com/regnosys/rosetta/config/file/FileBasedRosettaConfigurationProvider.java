@@ -18,7 +18,6 @@ import com.regnosys.rosetta.config.DefaultRosettaConfigurationProvider;
 import com.regnosys.rosetta.config.RosettaConfiguration;
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
 import com.regnosys.rosetta.config.RosettaModelConfiguration;
-import com.regnosys.rosetta.config.RosettaTabulatorConfiguration;
 
 public class FileBasedRosettaConfigurationProvider implements Provider<RosettaConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedRosettaConfigurationProvider.class);
@@ -34,10 +33,8 @@ public class FileBasedRosettaConfigurationProvider implements Provider<RosettaCo
 		this.mapper = new ObjectMapper(new YAMLFactory())
 				.addMixIn(RosettaConfiguration.class, RosettaConfigurationMixin.class)
 				.addMixIn(RosettaModelConfiguration.class, RosettaModelConfigurationMixin.class)
-				.addMixIn(RosettaGeneratorsConfiguration.class, RosettaGeneratorsConfigurationMixin.class)
-				.addMixIn(RosettaTabulatorConfiguration.class, RosettaTabulatorConfigurationMixin.class);
+				.addMixIn(RosettaGeneratorsConfiguration.class, RosettaGeneratorsConfigurationMixin.class);
 		mapper.configOverride(RosettaGeneratorsConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
-		mapper.configOverride(RosettaTabulatorConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
         mapper.configOverride(NamespaceFilter.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 		mapper.configOverride(List.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 	}

@@ -122,9 +122,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<ReportFunction<?, ?>> toReportFunctionJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportFunction(modelIdProvider.getReportId(report));
 	}
-	public JavaClass<Tabulator<?>> toReportTabulatorJavaClass(RosettaReport report) {
-		return generatedJavaClassService.toJavaReportTabulator(modelIdProvider.getReportId(report));
-	}
 	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
 		ModelSymbolId typeId = modelIdProvider.getSymbolId(type);
 		Optional<RosettaExternalRuleSource> containingRuleSource = ruleSource.flatMap((rs) -> findContainingSuperRuleSource(type, rs));
@@ -143,21 +140,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			return Optional.of(ruleSource);
 		}
 		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
-	}
-	@Deprecated
-	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Function projection) {
-		return generatedJavaClassService.toJavaProjectionTabulator(modelIdProvider.getSymbolId(projection));
-	}
-	@Deprecated
-	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Data type, Function projection) {
-		ModelSymbolId typeId = modelIdProvider.getSymbolId(type);
-		ModelSymbolId projectionId = modelIdProvider.getSymbolId(projection);
-		DottedPath packageName = projectionId.getNamespace().child("projections");
-		String simpleName = typeId.getName() + projection.getName() + "TypeTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
-	}
-	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Function function) {
-		return generatedJavaClassService.toJavaFunctionTabulator(modelIdProvider.getSymbolId(function));
 	}
 	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Function function) {
 		ModelSymbolId typeId = modelIdProvider.getSymbolId(type);

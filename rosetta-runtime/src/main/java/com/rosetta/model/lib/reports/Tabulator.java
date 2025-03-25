@@ -27,13 +27,9 @@ import org.apache.commons.lang3.Validate;
 
 import com.rosetta.model.lib.ModelSymbolId;
 
+@Deprecated
 public interface Tabulator<T> {
 
-	/**
-	 * Deprecated because it was only used in tests
-	 * @return Arrays.asList()
-	 */
-	@Deprecated
 	default List<Field> getFields() {
 		return Arrays.asList();
 	}

@@ -32,25 +32,6 @@ public class GeneratedJavaClassService {
 		String simpleName = id.joinRegulatoryReference() + "ReportFunction";
 		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<ReportFunction<?, ?>>() {});
 	}
-	public JavaClass<Tabulator<?>> toJavaReportTabulator(ModelReportId id) {
-		DottedPath packageName = id.getNamespace().child("reports");
-		String simpleName = id.joinRegulatoryReference() + "ReportTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
-	}
-	
-	@Deprecated
-	public JavaClass<Tabulator<?>> toJavaProjectionTabulator(ModelSymbolId id) {
-		DottedPath packageName = id.getNamespace().child("projections");
-		String simpleName = id.getName() + "ProjectionTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
-	}
-	
-	public JavaClass<Tabulator<?>> toJavaFunctionTabulator(ModelSymbolId id) {
-		DottedPath packageName = id.getNamespace().child("tabulator");
-		String simpleName = id.getName() + "Tabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new TypeReference<Tabulator<?>>() {});
-	}
-	
 	public JavaClass<RosettaFunction> toJavaFunction(ModelSymbolId id) {
 		DottedPath packageName = id.getNamespace().child("functions");
 		String simpleName = id.getName();
