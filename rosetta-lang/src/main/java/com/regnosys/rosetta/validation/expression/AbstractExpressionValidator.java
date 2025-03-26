@@ -213,6 +213,6 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		unsupportedTypeError(type, op.getOperator(), op, feature, supportedTypesMsg.toString());
 	}
 	protected void unsupportedTypeError(RMetaAnnotatedType type, String operator, EObject sourceObject, EStructuralFeature feature, String supportedTypesMessage) {
-		error("Operator `" + operator + "` is not supported for type `" + type.getRType() + "`. " + supportedTypesMessage, sourceObject, feature);
+		error("Operator `" + operator + "` is not supported for type `" + type.getRType().getName() + "`. " + supportedTypesMessage, sourceObject, feature);
 	}
 }
