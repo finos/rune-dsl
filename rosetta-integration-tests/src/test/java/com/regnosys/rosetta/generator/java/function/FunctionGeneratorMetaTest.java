@@ -407,13 +407,13 @@ public class FunctionGeneratorMetaTest {
     void canCreateTypeWithMetaUsingConstructorSyntaxWithIfStatement() {
     	var model = """
 			metaType key string
-	        metaType reference string
-	        
-	        type Bar:
-    		    fooReference Foo (0..1)
-    		    [metadata reference]
-	        
-	        type Foo:
+			metaType reference string
+			
+			type Bar:
+			    fooReference Foo (0..1)
+			    [metadata reference]
+			
+			type Foo:
 			    [metadata key]
 			    someField string (1..1)
 			
@@ -423,17 +423,17 @@ public class FunctionGeneratorMetaTest {
 			        [metadata reference]
 			     
 			    set fooReference -> reference: "someRef"
-		    
-		    func MyFunc:
-		        output:
-	                result Bar (1..1)
-	             
-	            set result:
-		 	        Bar {
-		 	            fooReference:
+			
+			func MyFunc:
+			    output:
+			        result Bar (1..1)
+			     
+			    set result:
+			        Bar {
+			            fooReference:
 			                if True // when if statement is removed, function returns ok
 			                then GetRefFunc()
-		 			}
+					}
 	        """;  
 
         var code = generatorTestHelper.generateCode(model);
