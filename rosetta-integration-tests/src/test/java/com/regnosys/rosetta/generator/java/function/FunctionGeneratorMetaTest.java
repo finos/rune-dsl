@@ -410,17 +410,17 @@ public class FunctionGeneratorMetaTest {
 	        metaType reference string
 	        
 	        type Bar:
-    			fooReference Foo (0..1)
-    			[metadata reference]
+    		    fooReference Foo (0..1)
+    		    [metadata reference]
 	        
 	        type Foo:
-				[metadata key]
-				someField string (1..1)
+			    [metadata key]
+			    someField string (1..1)
 			
 			func GetRefFunc:
-				output:
-					fooReference Foo (0..1)
-					[metadata reference]
+			    output:
+			        fooReference Foo (0..1)
+			        [metadata reference]
 			     
 			    set fooReference -> reference: "someRef"
 		    
@@ -429,9 +429,9 @@ public class FunctionGeneratorMetaTest {
 	                result Bar (1..1)
 	             
 	            set result:
-		 			Bar {
-		 			    fooReference:
-					        if True // when if statement is removed, function returns ok
+		 	        Bar {
+		 	            fooReference:
+			                if True // when if statement is removed, function returns ok
 			                then GetRefFunc()
 		 			}
 	        """;  
