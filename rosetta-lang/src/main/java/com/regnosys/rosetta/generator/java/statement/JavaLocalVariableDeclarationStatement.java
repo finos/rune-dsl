@@ -61,21 +61,4 @@ public class JavaLocalVariableDeclarationStatement extends JavaStatement {
 		}
 		target.append(";");
 	}
-	
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		if (isFinal) {
-			builder.append("final ");
-		}
-		builder.append(variableType);
-		builder.append(" ");
-		builder.append(variableId.getDesiredName());
-		if (initialExpression != null) {
-			builder.append(" = ");
-			builder.append(initialExpression);
-		}
-		builder.append(";");
-		return builder.toString();
-	}
 }

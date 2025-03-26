@@ -32,6 +32,8 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
  * See `JavaStatement` for more documentation.
  */
 public class JavaBlock extends JavaStatement implements JavaLambdaBody {
+	
+	public final static JavaBlock EMPTY = new JavaBlock(new JavaStatementList());
 
 	private final JavaStatementList statements;
 	

@@ -23,6 +23,7 @@ import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
@@ -32,7 +33,6 @@ import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclaratio
 import com.regnosys.rosetta.generator.java.statement.JavaReturnStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
-import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 
 /**
@@ -41,16 +41,6 @@ import com.rosetta.util.types.JavaType;
  * See `JavaStatementBuilder` for more documentation.
  */
 public abstract class JavaExpression extends JavaStatementBuilder implements JavaLambdaBody {
-	/**
-	 * An expression representing the value `null`.
-	 */
-	public static final JavaExpression NULL = new JavaExpression(JavaReferenceType.NULL_TYPE) {	
-		@Override
-		public void appendTo(TargetStringConcatenation target) {
-			target.append("null");
-		}
-	};
-	
 	private final JavaType type;
 	
 	public JavaExpression(JavaType type) {
@@ -125,12 +115,6 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	
 	@Override
 	public String toString() {
-		StringConcatenation repr = new StringConcatenation();
-		repr.append(new StringConcatenationClient() {
-			protected void appendTo(TargetStringConcatenation target) {
-				JavaExpression.this.appendTo(target);
-			}
-		});
-		return repr.toString();
+		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
 	}
 }

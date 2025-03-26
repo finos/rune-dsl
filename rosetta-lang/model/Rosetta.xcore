@@ -68,7 +68,11 @@ interface RosettaRootElement {
 abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
-interface ParametrizedRosettaType {
+abstract class RosettaTypeWithConditions extends RosettaType {
+	contains Condition[] conditions opposite enclosingType
+}
+
+interface ParametrizedRosettaType extends RosettaType {
 	contains TypeParameter[] parameters
 }
 
@@ -120,8 +124,7 @@ class RosettaParameter extends RosettaTyped, RosettaSymbol {
 /**********************************************************************
  * Data model
  */
-class RosettaTypeAlias extends RosettaRootElement, RosettaType, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
-	contains Condition[] conditions
+class RosettaTypeAlias extends RosettaRootElement, RosettaTypeWithConditions, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
 }
 
 

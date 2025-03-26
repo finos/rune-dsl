@@ -18,6 +18,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.rosetta.util.types.JavaPrimitiveType
 import java.util.List
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 
 class RecordJavaUtil {
 	@Inject JavaTypeUtil typeUtil
@@ -137,7 +138,7 @@ class RecordJavaUtil {
                 new JavaConditionalExpression(
                     JavaExpression.from('''«FOR arg : nullableArgs SEPARATOR ' && '»«arg» != null«ENDFOR»''', JavaPrimitiveType.BOOLEAN),
                     it,
-                    JavaExpression.NULL,
+                    JavaLiteral.NULL,
                     typeUtil
                 )
             ]

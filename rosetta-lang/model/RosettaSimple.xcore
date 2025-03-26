@@ -15,6 +15,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaType
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaRule
 import org.eclipse.emf.common.util.BasicEList
@@ -92,11 +93,10 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 }
 
 
-class Data extends RosettaType, RootElement, References {
+class Data extends RosettaTypeWithConditions, RootElement, References {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
-	contains Condition[] conditions
 	
 	op boolean hasSuperType() {
 		return superType !== null
@@ -172,6 +172,7 @@ class FunctionDispatch extends Function {
 
 class Condition extends RosettaDefinable, Annotated, RosettaNamed, References {
 	boolean postCondition
+	container RosettaTypeWithConditions enclosingType opposite conditions
 	contains RosettaExpression expression
 }
 

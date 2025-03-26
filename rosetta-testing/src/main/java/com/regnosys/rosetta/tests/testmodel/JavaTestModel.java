@@ -11,6 +11,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler;
@@ -201,5 +202,19 @@ public class JavaTestModel {
 	}
 	public RosettaFunction getReportJavaInstance(String body, String... corpusList) {
 		return injector.getInstance(getReportJavaClass(body, corpusList));
+	}
+	
+	private JavaType getConditionJavaType(String typeName, String conditionName) {
+		Condition condition = rosettaModel.getCondition(typeName, conditionName);
+		return typeTranslator.toConditionJavaClass(condition);
+	}
+	public String getConditionJavaSource(String typeName, String conditionName) {
+		return getSource(getConditionJavaType(typeName, conditionName));
+	}
+	public Class<?> getConditionJavaClass(String typeName, String conditionName) {
+		return getClass(Object.class, getConditionJavaType(typeName, conditionName));
+	}
+	public Object getConditionJavaInstance(String typeName, String conditionName) {
+		return injector.getInstance(getConditionJavaClass(typeName, conditionName));
 	}
 }

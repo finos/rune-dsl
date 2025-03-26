@@ -17,7 +17,7 @@
 package com.regnosys.rosetta.types;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +27,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -46,7 +45,6 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
-import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Choice;
@@ -219,32 +217,39 @@ public class TypeSystem {
 		Objects.requireNonNull(typeCall);
 		Objects.requireNonNull(context);
 		
-		RosettaType t = typeCall.getType();
-		if (t instanceof Choice) {
-			return factory.buildRChoiceType((Choice) t);
-		} else if (t instanceof Data) {
-			return factory.buildRDataType((Data) t);
-		} else if (t instanceof RosettaEnumeration) {
-			return factory.buildREnumType((RosettaEnumeration) t);
-		} else if (t instanceof RosettaBuiltinType) {
-			Map<String, RosettaValue> argMap = typeCall.getArguments().stream()
-					.collect(Collectors.toMap(arg -> arg.getParameter().getName(), arg -> interpreter.interpret(arg.getValue(), context)));
-			return builtins.getType(t, argMap).orElse(builtins.NOTHING);
-		} else if (t instanceof RosettaMetaType) {
-			Map<String, RosettaValue> argMap = typeCall.getArguments().stream()
-					.collect(Collectors.toMap(arg -> arg.getParameter().getName(), arg -> interpreter.interpret(arg.getValue(), context)));
-			return builtins.getType(t, argMap)
-					.orElseGet(() -> typeCallToRType(((RosettaMetaType) t).getTypeCall(), context));
-		} else if (t instanceof RosettaTypeAlias) {
-			RosettaTypeAlias alias = (RosettaTypeAlias) t;
-			LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>();
-			Set<TypeParameter> absentParameters = new HashSet<>(((RosettaTypeAlias) t).getParameters());
-			typeCall.getArguments().forEach(arg -> {
-				RosettaValue eval = interpreter.interpret(arg.getValue(), context);
-				args.put(arg.getParameter().getName(), eval);
-				absentParameters.remove(arg.getParameter());
+		Map<String, RosettaValue> args = new LinkedHashMap<>();
+		typeCall.getArguments().forEach(arg -> {
+			RosettaValue eval = interpreter.interpret(arg.getValue(), context);
+			args.put(arg.getParameter().getName(), eval);
+		});
+		
+		return typeCallToRType(typeCall.getType(), args, context);
+	}
+	public RType typeWithUnknownArgumentsToRType(RosettaType type) {
+		Objects.requireNonNull(type);
+		
+		return typeCallToRType(type, Collections.emptyMap(), new RosettaInterpreterContext());
+	}
+	private RType typeCallToRType(RosettaType type, Map<String, RosettaValue> arguments, RosettaInterpreterContext context) {
+		if (type instanceof Choice) {
+			return factory.buildRChoiceType((Choice) type);
+		} else if (type instanceof Data) {
+			return factory.buildRDataType((Data) type);
+		} else if (type instanceof RosettaEnumeration) {
+			return factory.buildREnumType((RosettaEnumeration) type);
+		} else if (type instanceof RosettaBuiltinType) {
+			return builtins.getType(type, arguments).orElse(builtins.NOTHING);
+		} else if (type instanceof RosettaMetaType) {
+			return builtins.getType(type, arguments)
+					.orElseGet(() -> typeCallToRType(((RosettaMetaType) type).getTypeCall(), context));
+		} else if (type instanceof RosettaTypeAlias) {
+			RosettaTypeAlias alias = (RosettaTypeAlias) type;
+			LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(arguments);
+			((RosettaTypeAlias) type).getParameters().forEach(param -> {
+				if (!arguments.containsKey(param.getName())) {
+					args.put(param.getName(), RosettaValue.empty());
+				}
 			});
-			absentParameters.forEach(p -> args.put(p.getName(), RosettaValue.empty()));
 			RType refersTo = typeCallToRType(alias.getTypeCall(), RosettaInterpreterContext.of(args));
 			List<Condition> conditions = alias.getConditions();
 			return new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo, conditions);
@@ -347,21 +352,14 @@ public class TypeSystem {
 		return t;
 	}
 	
-	public List<Condition> collectConditionsFromTypeAliases(RType t) {
-		List<Condition> conditions = new ArrayList<>();
-		while (t instanceof RAliasType) {
-			conditions.addAll(((RAliasType)t).getConditions());
-			t = ((RAliasType)t).getRefersTo();
+	public AliasHierarchy computeAliasHierarchy(RType t) {
+		List<RAliasType> aliasHierarchy = new ArrayList<>();
+		RType underlyingType = t;
+		while (underlyingType instanceof RAliasType) {
+			RAliasType alias = (RAliasType)underlyingType;
+			aliasHierarchy.add(alias);
+			underlyingType = alias.getRefersTo();
 		}
-		return conditions;
-	}
-		
-	public Map<String, RosettaValue> collectArgumentsFromTypeAliases(RType t) {
-		Map<String, RosettaValue> args = new HashMap<>();
-		while (t instanceof RAliasType) {
-			args.putAll(((RAliasType)t).getArguments());
-			t = ((RAliasType)t).getRefersTo();
-		}
-		return args;
+		return new AliasHierarchy(underlyingType, aliasHierarchy);
 	}
 }

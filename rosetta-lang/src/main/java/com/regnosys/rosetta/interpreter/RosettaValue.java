@@ -22,20 +22,27 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface RosettaValue {
-	public List<?> getItems();
-	public <U> List<U> getItems(Class<U> clazz);
-	public RosettaValueWithNaturalOrder<?> withNaturalOrderOrThrow();
+	List<?> getItems();
+	<U> List<U> getItems(Class<U> clazz);
+	RosettaValueWithNaturalOrder<?> withNaturalOrderOrThrow();
 	
-	public int size();
-	public Stream<?> stream();
+	int size();
+	Stream<?> stream();
 	
-	public Optional<?> getSingle();
-	public Object getSingleOrThrow();
-	public <U> Optional<U> getSingle(Class<U> clazz);
-	public <U> U getSingleOrThrow(Class<U> clazz);
+	Optional<?> getSingle();
+	Object getSingleOrThrow();
+	<U> Optional<U> getSingle(Class<U> clazz);
+	<U> U getSingleOrThrow(Class<U> clazz);
+	
+	boolean isUnknown();
 	
 	
 	public static RosettaValue empty() {
-		return new RosettaValueWithNaturalOrder</*Dummy class*/Integer>(Collections.emptyList(), Integer.class) {};
+		return new RosettaValueWithNaturalOrder</*Dummy class*/Integer>(Collections.emptyList(), Integer.class) {
+			@Override
+			public String toString() {
+				return "empty";
+			}
+		};
 	}
 }

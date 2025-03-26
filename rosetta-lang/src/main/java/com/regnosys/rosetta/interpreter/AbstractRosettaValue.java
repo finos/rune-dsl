@@ -84,6 +84,11 @@ public abstract class AbstractRosettaValue<T> implements RosettaValue {
 	}
 	
 	@Override
+	public boolean isUnknown() {
+		return false;
+	}
+	
+	@Override
 	public String toString() {
 		return "[" 
 				+ items.stream().map(i -> i.toString()).collect(Collectors.joining(", "))

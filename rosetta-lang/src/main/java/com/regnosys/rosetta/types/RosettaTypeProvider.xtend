@@ -96,6 +96,8 @@ import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.rosetta.RosettaMetaType
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
 	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
@@ -120,6 +122,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	def RMetaAnnotatedType getRTypeOfSymbol(RosettaSymbol feature, EObject context) {
 		feature.safeRType(context, newHashMap)
+	}
+	def RMetaAnnotatedType getRTypeOfSymbol(TypeParameter feature) {
+		feature.getRTypeOfSymbol(null)
 	}
 	def RMetaAnnotatedType getRTypeOfSymbol(AssignPathRoot feature) {
 		feature.getRTypeOfSymbol(null)
@@ -276,8 +281,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	private def RMetaAnnotatedType safeTypeOfImplicitVariable(EObject context, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		val definingContainer = context.findContainerDefiningImplicitVariable
 		definingContainer.map [
-			if (it instanceof Data) {
-				buildRDataType.withNoMeta
+			if (it instanceof RosettaTypeWithConditions) {
+				if (it instanceof Data) {
+					buildRDataType.withNoMeta
+				} else if (it instanceof RosettaTypeAlias) {
+					typeWithUnknownArgumentsToRType.withNoMeta
+				} else {
+					NOTHING_WITH_NO_META
+				}
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {

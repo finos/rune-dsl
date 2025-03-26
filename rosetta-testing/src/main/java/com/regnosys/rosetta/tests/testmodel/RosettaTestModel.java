@@ -16,7 +16,9 @@ import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
@@ -39,22 +41,6 @@ public class RosettaTestModel {
 	
 	public RosettaModel getModel() {
 		return model;
-	}
-	
-	private <T extends EObject> T getElementMatching(Class<T> clazz, Predicate<T> match, Supplier<? extends RuntimeException> exceptionSupplier) {
-		return model.getElements().stream()
-				.filter(elem -> clazz.isInstance(elem))
-				.map(elem -> clazz.cast(elem))
-				.filter(match)
-				.findAny()
-				.orElseThrow(exceptionSupplier);
-	}
-	private <T extends RosettaRootElement & RosettaNamed> T getNamedElement(Class<T> clazz, String name) {
-		RosettaNamed elem = getElementMatching(RosettaNamed.class, x -> name.equals(x.getName()), () -> new NoSuchElementException("No element named '" + name + "' found in model.\n\n" + source));
-		if (!clazz.isInstance(elem)) {
-			throw new ClassCastException("The element named '" + name + "' is of type " + elem.getClass().getSimpleName() + ", not " + clazz.getSimpleName() + ".\n\n" + source);
-		}
-		return clazz.cast(elem);
 	}
 	
 	public RosettaExpression parseExpression(CharSequence expressionSource, String... attributes) {
@@ -92,5 +78,32 @@ public class RosettaTestModel {
 			}
 			return true;
 		}, () -> new NoSuchElementException("No report with body " + body + " and corpus list " + Arrays.toString(corpusList) + " found in model.\n\n" + source));
+	}
+	public Condition getCondition(String typeName, String conditionName) {
+		RosettaTypeWithConditions t = getNamedElement(RosettaTypeWithConditions.class, typeName);
+		return getNamedElement(t.getConditions(), Condition.class, conditionName);
+				
+	}
+	
+	private <T extends EObject> T getElementMatching(List<? extends EObject> elements, Class<T> clazz, Predicate<T> match, Supplier<? extends RuntimeException> exceptionSupplier) {
+		return elements.stream()
+				.filter(elem -> clazz.isInstance(elem))
+				.map(elem -> clazz.cast(elem))
+				.filter(match)
+				.findAny()
+				.orElseThrow(exceptionSupplier);
+	}
+	private <T extends EObject> T getElementMatching(Class<T> clazz, Predicate<T> match, Supplier<? extends RuntimeException> exceptionSupplier) {
+		return getElementMatching(model.getElements(), clazz, match, exceptionSupplier);
+	}
+	private <T extends RosettaNamed> T getNamedElement(List<? extends EObject> elements, Class<T> clazz, String name) {
+		RosettaNamed elem = getElementMatching(elements, RosettaNamed.class, x -> name.equals(x.getName()), () -> new NoSuchElementException("No element named '" + name + "' found in model.\n\n" + source));
+		if (!clazz.isInstance(elem)) {
+			throw new ClassCastException("The element named '" + name + "' is of type " + elem.getClass().getSimpleName() + ", not " + clazz.getSimpleName() + ".\n\n" + source);
+		}
+		return clazz.cast(elem);
+	}
+	private <T extends RosettaRootElement & RosettaNamed> T getNamedElement(Class<T> clazz, String name) {
+		return getNamedElement(model.getElements(), clazz, name);
 	}
 }

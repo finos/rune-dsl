@@ -116,6 +116,10 @@ public class RosettaNumber extends Number implements Comparable<RosettaNumber> {
 		return value.doubleValue();
 	}
 	
+	public BigInteger bigIntegerValue() {
+		return value.toBigInteger();
+	}
+	
 	public BigDecimal bigDecimalValue() {
 		return value;
 	}
