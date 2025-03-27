@@ -81,7 +81,7 @@ public class RBuiltinTypeService {
 	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", false));
 	public final RMetaAnnotatedType PATTERN_WITH_NO_META = RMetaAnnotatedType.withNoMeta(PATTERN);
 	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
-	public final RMetaAnnotatedType NOTHING_WITH_NO_META = RMetaAnnotatedType.withNoMeta(NOTHING);
+	public final RMetaAnnotatedType NOTHING_WITH_ANY_META = RMetaAnnotatedType.withNoMeta(NOTHING);
 	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
 	public final RMetaAnnotatedType ANY_WITH_NO_META = RMetaAnnotatedType.withNoMeta(ANY);
 	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()), new ArrayList<>());

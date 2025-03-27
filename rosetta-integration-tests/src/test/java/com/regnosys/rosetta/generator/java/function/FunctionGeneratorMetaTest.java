@@ -31,7 +31,7 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
-    //TODO: enable this when fixing emtpy with-meta syntax
+    // In generator use expected java type when setting fooReference
     @Disabled
     @Test
     void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
