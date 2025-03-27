@@ -49,7 +49,10 @@ class ConditionGenerator {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, CONDITION__EXPRESSION))
 		val deps = dependencies.javaDependencies(condition.expression)
 		val implicitVarRepr = condition.expression.implicitVarInContext
-		val params = conditionClass.parameters.entrySet.toMap([entry|(condition.enclosingType as ParametrizedRosettaType).parameters.findFirst[name == entry.key]], [value])
+		val params = conditionClass.parameters.entrySet.toMap(
+			[entry|(condition.enclosingType as ParametrizedRosettaType).parameters.findFirst[name == entry.key]],
+			[entry|entry.value]
+		)
 		
 		val classScope = scope.classScope(conditionClass.simpleName)
 		

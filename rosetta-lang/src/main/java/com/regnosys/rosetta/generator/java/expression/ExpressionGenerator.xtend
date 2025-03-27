@@ -649,7 +649,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Context context) {
-		if (expr.value == "true") {
+		if (expr.value) {
 			JavaLiteral.TRUE
 		} else {
 			JavaLiteral.FALSE

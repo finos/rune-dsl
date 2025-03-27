@@ -3,8 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.utils.RosettaConfigExtension
@@ -27,18 +25,14 @@ import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import javax.inject.Inject
-import com.regnosys.rosetta.utils.ModelIdProvider
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 
 class ModelMetaGenerator {
 
 	@Inject extension ImportManagerExtension
-	@Inject extension RosettaEcoreUtil
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
-	@Inject extension ModelIdProvider
 	@Inject extension ModelGeneratorUtil
 	
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
@@ -58,7 +52,7 @@ class ModelMetaGenerator {
 		val onlyExistsValidator = dataClass.toOnlyExistsValidatorClass
 		val context = t.EObject.eResource.resourceSet
 		val qualifierFuncs = qualifyFuncs(t.EObject, context.resources.map[contents.head as RosettaModel].toSet)
-		val conditions = t.allSuperTypes.map[conditionRules(it.EObject.conditions)].flatten
+		val conditionClasses = t.allSuperTypes.flatMap[it.EObject.conditions.map[toConditionJavaClass]]
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
@@ -67,10 +61,8 @@ class ModelMetaGenerator {
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
 					return «Arrays».asList(
-						«FOR r : conditions SEPARATOR ','»
-							«val containingClassName = r.containingClassNamespace.child(r.className)»
-							«val conditionClassName = r.containingClassNamespace.condition.child(r.conditionName.toConditionJavaType)»
-							factory.<«containingClassName»>create(«conditionClassName».class)
+						«FOR conditionClass : conditionClasses SEPARATOR ','»
+							factory.<«conditionClass.instanceClass»>create(«conditionClass».class)
 						«ENDFOR»
 					);
 				}
@@ -125,17 +117,5 @@ class ModelMetaGenerator {
 		}
 		val funcs = models.flatMap[elements].filter(Function).toSet
 		return funcs.filter[funcExt.isQualifierFunctionFor(it,type)].toSet
-	}
-	
-	private def List<ClassRule> conditionRules(RDataType t, List<Condition> elements) {
-		val dataNamespace = new RootPackage(t.EObject.model.toDottedPath)
-		return elements.map[new ClassRule((it.eContainer as RosettaNamed).getName, it.conditionName(t), dataNamespace)].toList
-	}
-
-	@org.eclipse.xtend.lib.annotations.Data
-	static class ClassRule {
-		String className
-		String conditionName
-		RootPackage containingClassNamespace
 	}
 }

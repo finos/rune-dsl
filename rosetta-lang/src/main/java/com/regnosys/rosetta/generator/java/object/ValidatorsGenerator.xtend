@@ -144,7 +144,7 @@ class ValidatorsGenerator {
 				protected «dep» «classScope.createIdentifier(dep.toDependencyInstance, dep.simpleName.toFirstLower)»;
 			«ENDFOR»
 		
-			private «List»<«ComparisonResult»> getComparisonResults(«RosettaPath» «pathId», «javaType» o) {
+			private «List»<«ComparisonResult»> getComparisonResults(«javaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
 						«FOR attrCheck : attributes.flatMap[checkTypeFormat(javaType, it)] SEPARATOR ", "»
 							«attrCheck»
@@ -165,7 +165,7 @@ class ValidatorsGenerator {
 			@Override
 			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» «pathId», «javaType» o) {
 				«IF conditionDependencies.empty»
-				return getComparisonResults(«pathId», o)
+				return getComparisonResults(o)
 					.stream()
 					.map(res -> {
 						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
@@ -175,7 +175,7 @@ class ValidatorsGenerator {
 					})
 					.collect(«method(Collectors, "toList")»());
 				«ELSE»
-				return «Streams».concat(getComparisonResults(«pathId», o)
+				return «Streams».concat(getComparisonResults(o)
 						.stream()
 						.map(res -> {
 							if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
@@ -245,7 +245,7 @@ class ValidatorsGenerator {
 	private def List<StringConcatenationClient> checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {
 		val List<StringConcatenationClient> checks = newArrayList
 		
-		val t = attr.RMetaAnnotatedType.RType
+		val t = attr.RMetaAnnotatedType.RType.stripFromTypeAliases
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
 				val min = t.interval.minBound

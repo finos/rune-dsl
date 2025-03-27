@@ -1,6 +1,5 @@
 package com.regnosys.rosetta
 
-import com.google.common.base.CaseFormat
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaRecordType
@@ -10,7 +9,6 @@ import com.regnosys.rosetta.rosetta.expression.OneOfOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.REnumType
@@ -225,21 +223,6 @@ class RosettaEcoreUtil {
 	}
 	
 	@Deprecated
-	def String conditionName(Condition cond, RDataType t) {
-		conditionName(cond, t.EObject)
-	}
-	
-	@Deprecated
-	def String conditionName(Condition cond, Data data) {
-		return cond.conditionName(data.name, data.conditions)
-	}
-
-	@Deprecated
-	def String conditionName(Condition cond, Function func) {
-		return cond.conditionName(func.name, func.conditions)
-	}
-	
-	@Deprecated
 	def boolean isConstraintCondition(Condition cond) {
 		return cond.isOneOf || cond.isChoice
 	}
@@ -252,31 +235,7 @@ class RosettaEcoreUtil {
 		return cond.expression instanceof ChoiceOperation
 	}
 	
-	// TODO: remove?
-	//Name convention: <type name>(<condition name>|<condition type><#>) where condition type should be 'choice' or 'oneof'.
-	private def String conditionName(Condition cond, String containerName, Collection<Condition> conditions) {
-		val name = if (!cond.name.nullOrEmpty)
-				cond.name
-			else {
-				val idx = conditions.filter[name.nullOrEmpty].toList.indexOf(cond)
-				val type = if (cond.isOneOf) {
-						'OneOf' 
-					} else if (cond.isChoice) {
-						 'Choice'
-					} else 'DataRule'
-				'''«type»«idx»'''
-			}
-		return '''«containerName»«name»'''
-	}
-	
  	private def List<RosettaFeature> getMetaDescriptions(RMetaAnnotatedType type, EObject context) {
  		type.metaAttributes.getMetaDescriptions(context)
  	}
-	
-	@Deprecated
-	def String toConditionJavaType(String conditionName) {
-		val allUnderscore = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, conditionName)
-		val camel = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, allUnderscore)
-		return camel
-	}
 }

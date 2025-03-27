@@ -57,7 +57,6 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 import org.mdkt.compiler.CompilationException;
-import org.mdkt.compiler.CompiledCode;
 import org.mdkt.compiler.DynamicClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,7 @@ public class InMemoryJavacCompiler {
 	private static Logger LOGGER = LoggerFactory.getLogger(InMemoryJavacCompiler.class);
 
 	private JavaCompiler javac;
-	private DynamicClassLoader classLoader;
+	private DynamicClassLoaderWithCompiledResources classLoader;
 	private Iterable<String> options;
 
 	private Map<String, SourceCode> sourceCodes = new HashMap<String, SourceCode>();
@@ -81,11 +80,11 @@ public class InMemoryJavacCompiler {
 
 	private InMemoryJavacCompiler() {
 		this.javac = ToolProvider.getSystemJavaCompiler();
-		this.classLoader = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
+		this.classLoader = new DynamicClassLoaderWithCompiledResources(ClassLoader.getSystemClassLoader());
 	}
 
 	public InMemoryJavacCompiler useParentClassLoader(ClassLoader parent) {
-		this.classLoader = new DynamicClassLoader(parent);
+		this.classLoader = new DynamicClassLoaderWithCompiledResources(parent);
 		return this;
 	}
 
@@ -119,7 +118,7 @@ public class InMemoryJavacCompiler {
 		Collection<SourceCode> compilationUnits = sourceCodes.values();
 
 		DiagnosticCollector<JavaFileObject> collector = new DiagnosticCollector<>();
-		ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(
+		JavaFileManager fileManager = new ExtendedStandardJavaFileManager(
 				javac.getStandardFileManager(null, null, StandardCharsets.UTF_8), classLoader);
 		JavaCompiler.CompilationTask task = javac.getTask(null, fileManager, collector, options, null,
 				compilationUnits);
@@ -208,8 +207,7 @@ public class InMemoryJavacCompiler {
 
 	private static class ExtendedStandardJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
 
-		private List<CompiledCode> compiledCode = new ArrayList<CompiledCode>();
-		private DynamicClassLoader cl;
+		private DynamicClassLoaderWithCompiledResources cl;
 
 		/**
 		 * Creates a new instance of ForwardingJavaFileManager.
@@ -217,7 +215,7 @@ public class InMemoryJavacCompiler {
 		 * @param fileManager delegate to this file manager
 		 * @param cl
 		 */
-		protected ExtendedStandardJavaFileManager(JavaFileManager fileManager, DynamicClassLoader cl) {
+		protected ExtendedStandardJavaFileManager(JavaFileManager fileManager, DynamicClassLoaderWithCompiledResources cl) {
 			super(fileManager);
 			this.cl = cl;
 		}
@@ -228,7 +226,6 @@ public class InMemoryJavacCompiler {
 
 			try {
 				CompiledCode innerClass = new CompiledCode(className);
-				compiledCode.add(innerClass);
 				cl.addCode(innerClass);
 				return innerClass;
 			} catch (Exception e) {
@@ -245,6 +242,8 @@ public class InMemoryJavacCompiler {
 		public String inferBinaryName(Location location, JavaFileObject file) {
 			if (file instanceof JavaFileObjectWithName) {
 				return ((JavaFileObjectWithName) file).getClassName();
+			} else if (file instanceof CompiledCode) {
+				return ((CompiledCode) file).getClassName();
 			} else { // if it's not CustomJavaFileObject, then it's coming from standard file manager
 						// - let it handle the file
 				return super.inferBinaryName(location, file);
@@ -268,6 +267,7 @@ public class InMemoryJavacCompiler {
 				URL packageFolderURL = urlEnumeration.nextElement();
 				result.addAll(listUnder(packageName, packageFolderURL));
 			}
+			result.addAll(cl.getCompiledCode(packageName));
 
 			return result;
 		}

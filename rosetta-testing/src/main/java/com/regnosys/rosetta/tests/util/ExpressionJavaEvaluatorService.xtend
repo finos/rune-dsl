@@ -31,7 +31,7 @@ class ExpressionJavaEvaluatorService {
 	@Inject
 	extension ImportManagerExtension
 	
-	def Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType, InMemoryJavacCompiler compiler) {
+	def Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType, ClassLoader classLoader) {
 		val expr = expressionParser.parseExpression(rosettaExpression, #[context])
 		validationHelper.assertNoIssues(expr)
 		
@@ -59,7 +59,11 @@ class ExpressionJavaEvaluatorService {
 		'''
 		
 		val sourceCode = buildClass(packageName, content, packageScope)
-		val evaluatorClass = compiler.compile(packageName.child(className).withDots, sourceCode)
+		val expressionCompiler = InMemoryJavacCompiler
+				.newInstance()
+				.useParentClassLoader(classLoader)
+				.useOptions("--release", "8", "-Xlint:all", "-Xdiags:verbose");
+		val evaluatorClass = expressionCompiler.compile(packageName.child(className).withDots, sourceCode)
 		val instance = injector.getInstance(evaluatorClass)
 		
 		evaluatorClass.getDeclaredMethod(methodName).invoke(instance)

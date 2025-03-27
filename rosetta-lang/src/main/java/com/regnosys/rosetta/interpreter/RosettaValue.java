@@ -34,8 +34,6 @@ public interface RosettaValue {
 	<U> Optional<U> getSingle(Class<U> clazz);
 	<U> U getSingleOrThrow(Class<U> clazz);
 	
-	boolean isUnknown();
-	
 	
 	public static RosettaValue empty() {
 		return new RosettaValueWithNaturalOrder</*Dummy class*/Integer>(Collections.emptyList(), Integer.class) {

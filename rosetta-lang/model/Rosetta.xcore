@@ -69,7 +69,7 @@ abstract class RosettaType extends RosettaRootElement, RosettaNamed {
 }
 
 abstract class RosettaTypeWithConditions extends RosettaType {
-	contains Condition[] conditions opposite enclosingType
+	contains Condition[] conditions opposite _enclosingType
 }
 
 interface ParametrizedRosettaType extends RosettaType {

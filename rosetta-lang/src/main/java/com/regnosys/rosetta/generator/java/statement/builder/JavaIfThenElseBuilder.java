@@ -110,10 +110,10 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	@Override
 	public JavaBlockBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
 		GeneratedIdentifier id = scope.createIdentifier(this, variableId);
-		if (elseBranch == JavaLiteral.NULL) {
+		if (elseBranch instanceof JavaLiteral) {
 			return new JavaBlockBuilder(
 					JavaStatementList.of(
-						new JavaLocalVariableDeclarationStatement(false, commonType, id, JavaLiteral.NULL),
+						new JavaLocalVariableDeclarationStatement(false, commonType, id, (JavaLiteral) elseBranch),
 						new JavaIfThenStatement(condition, thenBranch.completeAsAssignment(id))
 					),
 					new JavaVariable(id, commonType)

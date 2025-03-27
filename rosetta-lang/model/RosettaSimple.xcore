@@ -172,8 +172,17 @@ class FunctionDispatch extends Function {
 
 class Condition extends RosettaDefinable, Annotated, RosettaNamed, References {
 	boolean postCondition
-	container RosettaTypeWithConditions enclosingType opposite conditions
+	container RosettaTypeWithConditions _enclosingType opposite conditions
 	contains RosettaExpression expression
+	
+	op RosettaTypeWithConditions getEnclosingType() {
+		if (_enclosingType !== null) {
+			return _enclosingType
+		}
+		return org.eclipse.xtext.EcoreUtil2.getContainerOfType(this, Choice)
+	}
+	
+	
 }
 
 class Operation extends RosettaDefinable {
