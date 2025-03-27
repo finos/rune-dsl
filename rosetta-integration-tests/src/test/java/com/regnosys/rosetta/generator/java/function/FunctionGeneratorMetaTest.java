@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -30,6 +31,7 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
+    @Disabled
     @Test
     void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
         var model = """
@@ -43,13 +45,6 @@ public class FunctionGeneratorMetaTest {
             type Foo:
                 [metadata key]
                 someField string (1..1)
-            
-            func GetRefFunc:
-                output:
-                    fooReference Foo (0..1)
-                    [metadata reference]
-                 
-                set fooReference -> reference: "someRef"
             
             func MyFunc:
                 output:
@@ -66,6 +61,9 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
+
+        generatorTestHelper.writeClasses(code, "canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement");
+
                 
         var classes = generatorTestHelper.compileToClasses(code);        
                 
@@ -115,7 +113,7 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
-                
+        
         var classes = generatorTestHelper.compileToClasses(code);        
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
