@@ -1425,7 +1425,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			]
 		}
 
-		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta or non POJO expected type: " +
+		throw new IllegalStateException("caseWithMetaOperation with Java meta or Java POJO expected types: " +
 			expectedJavaType)
 	}
 	
