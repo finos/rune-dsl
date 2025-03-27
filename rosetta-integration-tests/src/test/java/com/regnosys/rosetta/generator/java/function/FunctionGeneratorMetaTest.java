@@ -8,7 +8,6 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -31,8 +30,6 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
-    // In generator use expected java type when setting fooReference
-    @Disabled
     @Test
     void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
         var model = """
@@ -62,7 +59,7 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
-
+        
         var classes = generatorTestHelper.compileToClasses(code);        
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");

@@ -145,6 +145,7 @@ import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1344,8 +1345,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
-		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)
-		val withMetaJavaType = withMetaRMetaType.toJavaReferenceType
+		val expectedJavaType =  context.expectedType
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
 		val argumentJavaType = argumentrMetaType.toJavaReferenceType
 		
@@ -1361,7 +1361,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
 				.collapseToSingleExpression(context.scope)
 
-		if (withMetaJavaType instanceof RJavaFieldWithMeta) {
+		if (expectedJavaType instanceof RJavaFieldWithMeta || expectedJavaType instanceof RJavaPojoInterface) {
 			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList
 			val keyEntry = metaEntries.findFirst[key == "key"]
 			val setMeta = !metaEntriesWithoutKey.empty
@@ -1374,24 +1374,24 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			if (setKey && !setMeta) {
 				if (argumentJavaType instanceof RJavaWithMetaValue) {
 					return withMetaArgument
-						.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', withMetaJavaType.itemType)]
+						.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', expectedJavaType.itemType)]
 						.completeAsExpressionStatement
 						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))	
 				} else {
 					return withMetaArgument
-						.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''',  withMetaJavaType.itemType)]
+						.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''',  expectedJavaType.itemType)]
 						.completeAsExpressionStatement
 						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
 				}
 			} else if (!setKey && setMeta) {
 				if (argumentJavaType instanceof RJavaWithMetaValue) {
 					return withMetaArgument
-							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', expectedJavaType.itemType)]
 							.completeAsExpressionStatement
-							.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))
+							.append(new JavaVariable(withMetaAgumentVar, expectedJavaType))
 				} else {
 					return withMetaArgument
-							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«expectedJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', expectedJavaType.itemType)]
 				}
 				
 			} else if (setKey && setMeta) {
@@ -1400,15 +1400,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 							.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
 							.completeAsExpressionStatement
 							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
-							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', expectedJavaType.itemType)]
 							.completeAsExpressionStatement 
-							.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))				
+							.append(new JavaVariable(withMetaAgumentVar, expectedJavaType))				
 				} else {
 					return withMetaArgument
 							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
 							.completeAsExpressionStatement
 							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
-							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«expectedJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', expectedJavaType.itemType)]
 				}
 			} else {
 				return withMetaArgument
@@ -1416,17 +1416,17 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 		}
 
-		if (withMetaJavaType instanceof RJavaReferenceWithMeta) {
+		if (expectedJavaType instanceof RJavaReferenceWithMeta) {
 			val metaEntriesWithoutAddress = metaEntries.filter[key != "address"].toList
 			val metaAdressEntry = metaEntries.findFirst[key == "address"]
 			
 			return argumentExpression.mapExpression [
-				JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»)«FOR m : metaEntriesWithoutAddress».set«m.key.toPojoPropertyName.toFirstUpper»(«m.value»)«ENDFOR»«IF metaAdressEntry !== null».set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«Reference».builder().set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«metaAdressEntry.value»))«ENDIF».build()''', withMetaJavaType)
+				JavaExpression.from('''«expectedJavaType».builder().setValue(«it»)«FOR m : metaEntriesWithoutAddress».set«m.key.toPojoPropertyName.toFirstUpper»(«m.value»)«ENDFOR»«IF metaAdressEntry !== null».set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«Reference».builder().set«metaAdressEntry.key.toPojoPropertyName.toFirstUpper»(«metaAdressEntry.value»))«ENDIF».build()''', expectedJavaType)
 			]
 		}
 
-		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta expression type: " +
-			withMetaJavaType)
+		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta or non POJO expected type: " +
+			expectedJavaType)
 	}
 	
 	private def String toPojoSetter(String metaEntryName) {
