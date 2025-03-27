@@ -31,6 +31,7 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
+    //TODO: enable this when fixing emtpy with-meta syntax
     @Disabled
     @Test
     void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
@@ -62,9 +63,6 @@ public class FunctionGeneratorMetaTest {
 
         var code = generatorTestHelper.generateCode(model);
 
-        generatorTestHelper.writeClasses(code, "canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement");
-
-                
         var classes = generatorTestHelper.compileToClasses(code);        
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
