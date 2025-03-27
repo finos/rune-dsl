@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.Validate;
 
 import com.rosetta.model.lib.ModelSymbolId;
 
+//Deprecated since 9.43.0
 @Deprecated
 public interface Tabulator<T> {
 
