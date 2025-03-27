@@ -285,7 +285,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			} else if (it instanceof SwitchCaseOrDefault) {
 				guard?.choiceOptionGuard?.RTypeOfSymbol ?: NOTHING_WITH_ANY_META
 			}
-		].orElse(NOTHING_WITH_ANY_META)
+		].orElse(NOTHING.withNoMeta)
 	}
 	
 	override protected caseAbsentOperation(RosettaAbsentExpression expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {

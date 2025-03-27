@@ -16,22 +16,15 @@
 
 package com.regnosys.rosetta.types.builtin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.regnosys.rosetta.types.*;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
-import com.regnosys.rosetta.types.RAliasType;
-import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RTypeFunction;
 import com.rosetta.model.lib.RosettaNumber;
 import com.rosetta.util.DottedPath;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
@@ -40,12 +33,16 @@ import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class RBuiltinTypeService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RBuiltinTypeService.class);
 	@Inject
 	private RosettaBuiltinsService builtinsService;
-	
+
+
 	private Map<String, Function<Map<String, RosettaValue>, RType>> typeMap = new HashMap<>();
 
 	public final String INT_NAME = "int";
@@ -81,7 +78,18 @@ public class RBuiltinTypeService {
 	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", false));
 	public final RMetaAnnotatedType PATTERN_WITH_NO_META = RMetaAnnotatedType.withNoMeta(PATTERN);
 	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
-	public final RMetaAnnotatedType NOTHING_WITH_ANY_META = RMetaAnnotatedType.withNoMeta(NOTHING);
+	public final RMetaAnnotatedType NOTHING_WITH_ANY_META = new RMetaAnnotatedType(NOTHING, List.of()) {
+		@Override
+		public List<RMetaAttribute> getMetaAttributes() {
+			StringBuilder sb = new StringBuilder();
+			StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+			for (StackTraceElement stackTraceElement : stackTrace) {
+				sb.append("\tat ").append(stackTraceElement).append("\n");
+			}
+			LOGGER.error("getMetaAttributes called on type NOTHING_WITH_ANY_META:\n{}", sb);
+			return super.getMetaAttributes();
+		}
+	};
 	public final RBasicType ANY = registerConstantType(new RBasicType("any", false));
 	public final RMetaAnnotatedType ANY_WITH_NO_META = RMetaAnnotatedType.withNoMeta(ANY);
 	public final RAliasType UNCONSTRAINED_INT = new RAliasType(INT_FUNCTION, new LinkedHashMap<>(Map.of(RNumberType.DIGITS_PARAM_NAME, RosettaValue.empty(), RNumberType.MIN_PARAM_NAME, RosettaValue.empty(), RNumberType.MAX_PARAM_NAME, RosettaValue.empty())), new RNumberType(Optional.empty(), Optional.of(0), Optional.empty(), Optional.empty(), Optional.empty()), new ArrayList<>());
