@@ -35,12 +35,14 @@ public interface Tabulator<T> {
 	}
 	List<FieldValue> tabulate(T report);
 	
+	@Deprecated
 	public interface Field {
 		String getName();
 		String getAttributeName();
 		List<Field> getChildren();
 		boolean isMulti();
 	}
+	@Deprecated
 	public interface FieldValue {
 		Field getField();
 		Optional<? extends Object> getValue();
@@ -53,6 +55,7 @@ public interface Tabulator<T> {
 			visitor.visitSingle(this, context);
 		}
 	}
+	@Deprecated
 	public interface NestedFieldValue extends FieldValue {
 		Optional<? extends List<? extends FieldValue>> getValue();
 		
@@ -60,6 +63,7 @@ public interface Tabulator<T> {
 			visitor.visitNested(this, context);
 		}
 	}
+	@Deprecated
 	public interface MultiNestedFieldValue extends FieldValue {
 		Optional<? extends List<? extends List<? extends FieldValue>>> getValue();
 		
@@ -67,11 +71,13 @@ public interface Tabulator<T> {
 			visitor.visitMultiNested(this, context);
 		}
 	}
+	@Deprecated
 	public interface FieldValueVisitor<C> {
 		void visitSingle(FieldValue fieldValue, C context);
 		void visitNested(NestedFieldValue fieldValue, C context);
 		void visitMultiNested(MultiNestedFieldValue fieldValue, C context);
 	}
+	@Deprecated
 	public static class FieldImpl implements Field {
 		private final String attributeName;
 		private final boolean isMulti;
@@ -211,6 +217,7 @@ public interface Tabulator<T> {
 			return Objects.equals(field, other.field) && Objects.equals(value, other.value);
 		}
 	}
+	@Deprecated
 	public static class MultiNestedFieldValueImpl implements MultiNestedFieldValue {
 		private Field field;
 		private Optional<? extends List<? extends List<? extends FieldValue>>> value;
