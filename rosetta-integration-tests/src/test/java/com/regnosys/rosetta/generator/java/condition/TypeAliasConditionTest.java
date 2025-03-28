@@ -202,4 +202,35 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 			(v4) -> assertSuccess(v4, "FooC", "T.foos(2)")
 		);
 	}
+	
+	@Test
+	void testConditionsOnTypeAliasWithMissingTypeParameter() {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type T:
+					foos Foo (0..*)
+						[metadata scheme]
+				
+				typeAlias Foo(f int):
+					number(fractionalDigits: f)
+					
+					condition C:
+						item <> f
+				""").compile();
+		RosettaModelObject t = model.evaluateExpression(RosettaModelObject.class, """
+				T {
+				  foos: [0, 10, 42]
+				}
+				""");
+		
+		var validator = getTypeFormatValidator(t);
+		
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		
+		assertResults(
+			results,
+			(v1) -> assertSuccess(v1, "FooC", "T.foos(0)"),
+			(v2) -> assertSuccess(v2, "FooC", "T.foos(1)"),
+			(v3) -> assertSuccess(v3, "FooC", "T.foos(2)")
+		);
+	}
 }
