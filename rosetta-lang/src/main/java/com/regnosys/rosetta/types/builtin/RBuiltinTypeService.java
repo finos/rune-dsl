@@ -78,6 +78,12 @@ public class RBuiltinTypeService {
 	public final RBasicType PATTERN = registerConstantType(new RBasicType("pattern", false));
 	public final RMetaAnnotatedType PATTERN_WITH_NO_META = RMetaAnnotatedType.withNoMeta(PATTERN);
 	public final RBasicType NOTHING = registerConstantType(new RBasicType("nothing", true));
+	/*
+	 * This class represents the bottom type for RMetaAnnotatedType. 
+	 * It should be treated as if it has any meta attributes. 
+	 * When calling getMetaAttributes, one should make sure that they are not 
+	 * calling it on NOTHING_WITH_ANY_META, otherwise an error will be logged.
+	 */
 	public final RMetaAnnotatedType NOTHING_WITH_ANY_META = new RMetaAnnotatedType(NOTHING, List.of()) {
 		@Override
 		public List<RMetaAttribute> getMetaAttributes() {
