@@ -89,7 +89,7 @@ class RosettaTypeProviderXtendTest {
 		'"Some string"'.assertIsValidWithType(stringWithNoMeta(11, 11), false)
 		'3.14'.assertIsValidWithType(numberWithNoMeta(3, 2, "3.14", "3.14"), false)
 		'1'.assertIsValidWithType(intWithNoMeta(1, "1", "1"), false)
-		'empty'.assertIsValidWithType(NOTHING_WITH_NO_META, false)
+		'empty'.assertIsValidWithType(NOTHING_WITH_ANY_META, false)
 	}
 	
 	@Test
@@ -298,7 +298,7 @@ class RosettaTypeProviderXtendTest {
 	
 	@Test
 	def void testListLiteralTypeInference() {
-		'[]'.assertIsValidWithType(NOTHING_WITH_NO_META, false);
+		'[]'.assertIsValidWithType(NOTHING_WITH_ANY_META, false);
 		'[2, 4.5, 7, -3.14]'.assertIsValidWithType(numberWithNoMeta(3, 2, "-3.14", "7"), true);
 		'[2, [1, 2], -3.14]'.assertIsValidWithType(numberWithNoMeta(3, 2, "-3.14", "2"), true);
 	}

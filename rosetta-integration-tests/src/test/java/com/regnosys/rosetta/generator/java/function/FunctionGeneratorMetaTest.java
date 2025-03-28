@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -32,6 +33,100 @@ public class FunctionGeneratorMetaTest {
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
 
+    //TODO: enable this test when fixing the empty with-meta issue
+    @Disabled
+    @Test
+    void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
+        var model = """
+            metaType key string
+            metaType reference string
+            
+            type Bar:
+                fooReference Foo (0..1)
+                [metadata reference]
+            
+            type Foo:
+                [metadata key]
+                someField string (1..1)
+            
+            func MyFunc:
+                output:
+                    result Bar (1..1)
+                 
+                set result:
+                    Bar {
+                        fooReference:
+                            empty with-meta {
+                                reference: "someRef"
+                            }
+                    }
+            """;  
+
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);        
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+                "fooReference", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                        "externalReference", "someRef"
+        ))));
+
+        assertEquals(expected, result);
+    } 
+    
+    @Test
+    void canCreateMetaTypeUsingConstructorSyntaxWithIfStatement() {
+        var model = """
+            metaType key string
+            metaType reference string
+            
+            type Bar:
+                fooReference Foo (0..1)
+                [metadata reference]
+            
+            type Foo:
+                [metadata key]
+                someField string (1..1)
+            
+            func GetRefFunc:
+                output:
+                    fooReference Foo (0..1)
+                    [metadata reference]
+                 
+                set fooReference -> reference: "someRef"
+            
+            func MyFunc:
+                output:
+                    result Bar (1..1)
+                 
+                set result:
+                    Bar {
+                        fooReference:
+                           if True 
+                           then GetRefFunc()
+                    }
+            """;  
+
+        var code = generatorTestHelper.generateCode(model);
+        
+        var classes = generatorTestHelper.compileToClasses(code);        
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+                "fooReference", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                        "externalReference", "someRef"
+        ))));
+
+        assertEquals(expected, result);
+    } 
+    
     @Test
     void canReadRererenceOnObjectWithReference() {
         var model = """
@@ -403,7 +498,7 @@ public class FunctionGeneratorMetaTest {
 
         assertEquals(expected, result);
         
-    }    
+    }
     
     @Test
     void canSetMetaReferenceUsingWithMetaSyntax() {

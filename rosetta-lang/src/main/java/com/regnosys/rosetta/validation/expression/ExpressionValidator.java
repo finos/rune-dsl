@@ -51,9 +51,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkWithMetaEntry(WithMetaEntry entry) {
 		RosettaFeature metaType = entry.getKey();
 
-		RType expectedType = typeProvider.getRTypeOfFeature(metaType, null).getRType();
+		RMetaAnnotatedType expectedType = typeProvider.getRTypeOfFeature(metaType, null);
 		isSingleCheckError(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
-		subtypeCheck(withNoMeta(expectedType), entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getName()));
+		subtypeCheck(expectedType, entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getRType().getName()));
 	}
 
 	@Check
@@ -104,7 +104,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, op);
 		isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, op);
 		if (operator.equals("+")) {
-			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
+			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_ANY_META)) {
 				// Do not check right type
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.DATE_WITH_NO_META)) {
 				subtypeCheck(builtins.TIME_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot add `" + actual + "` to a `date`");
@@ -121,7 +121,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				}
 			}
 		} else if (operator.equals("-")) {
-			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
+			if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_ANY_META)) {
 				// Do not check right type
 			} else if (typeSystem.isSubtypeOf(leftType, builtins.DATE_WITH_NO_META)) {
 				subtypeCheck(builtins.DATE_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot subtract `" + actual + "` from a `date`");
@@ -203,7 +203,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			isSingleCheck(left, op, ROSETTA_BINARY_OPERATION__LEFT, "Did you mean to use `all` or `any` in front of the `" + op.getOperator() + "` operator?");
 			isSingleCheck(right, op, ROSETTA_BINARY_OPERATION__RIGHT, "Did you mean to use `all` or `any` in front of the `" + op.getOperator() + "` operator?");
 		}
-		if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_NO_META)) {
+		if (typeSystem.isSubtypeOf(leftType, builtins.NOTHING_WITH_ANY_META)) {
 			// Do not check right type
 		} else if (typeSystem.isSubtypeOf(leftType, builtins.ZONED_DATE_TIME_WITH_NO_META)) {
 			subtypeCheck(builtins.ZONED_DATE_TIME_WITH_NO_META, rightType, op, ROSETTA_BINARY_OPERATION__RIGHT, actual -> "Cannot compare a `" + actual + "` to a `zonedDateTime`");

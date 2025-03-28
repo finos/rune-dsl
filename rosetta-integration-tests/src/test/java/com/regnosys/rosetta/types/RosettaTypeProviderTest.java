@@ -60,6 +60,6 @@ public class RosettaTypeProviderTest {
 				""");
 		RosettaExpression expr = model.parseExpression("InfiniteRecursion(42)");
 		
-		assertIsValidWithType(expr, builtins.NOTHING_WITH_NO_META, false);
+		assertIsValidWithType(expr, builtins.NOTHING_WITH_ANY_META, false);
 	}
 }

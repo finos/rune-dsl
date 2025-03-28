@@ -5,6 +5,7 @@ package com.regnosys.rosetta.scoping
 
 import com.google.common.base.Predicate
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
@@ -26,6 +27,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
 import com.regnosys.rosetta.rosetta.expression.SwitchCaseGuard
 import com.regnosys.rosetta.rosetta.expression.WithMetaEntry
+import com.regnosys.rosetta.rosetta.simple.Annotation
 import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath
 import com.regnosys.rosetta.rosetta.simple.AnnotationPath
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
@@ -67,9 +69,6 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.utils.RosettaConfigExtension
-import com.regnosys.rosetta.builtin.RosettaBuiltinsService
-import com.regnosys.rosetta.rosetta.simple.Annotation
 
 /**
  * This class contains custom scoping description.
@@ -89,7 +88,7 @@ class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 	@Inject extension RosettaFunctionExtensions
 	@Inject extension DeepFeatureCallUtil
 	@Inject extension RObjectFactory
-	@Inject extension RosettaConfigExtension configs
+	
 	@Inject RosettaBuiltinsService rosettaBuiltinsService
 	
 
