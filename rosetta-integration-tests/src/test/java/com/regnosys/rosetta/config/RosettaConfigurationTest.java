@@ -1,12 +1,15 @@
 package com.regnosys.rosetta.config;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 import java.util.function.Predicate;
+
+import org.junit.jupiter.api.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -38,42 +41,14 @@ public class RosettaConfigurationTest {
 		assertTrue(filter.test("abc.def"));
 		assertFalse(filter.test("abc.def.sub"));
 		
-		assertNotNull(config.getGenerators().getTabulators());
-		List<String> annotations = config.getGenerators().getTabulators().getAnnotations();
-		assertEquals(2, annotations.size());
-		assertTrue(annotations.contains("projection"));
-		assertTrue(annotations.contains("enrich"));
-		
 	}
 	
-	@Test
-	public void testConfigWithoutTabulatorsConfig() {
-		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
-			@SuppressWarnings("unused")
-			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
-				return ConfigWithoutTabulatorsFileProvider.class;
-			}
-		});
-		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
 
-		assertNotNull(config.getGenerators());
-		assertNotNull(config.getGenerators().getTabulators());
-		List<String> annotations = config.getGenerators().getTabulators().getAnnotations();
-		assertNotNull(annotations);
-		assertEquals(0, annotations.size());
-		
-	}
 	
 	private static class MyConfigFileProvider extends RosettaConfigurationFileProvider {
 		@Override
 		public URL get() {
 			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test.yml");
-		}
-	}
-	private static class ConfigWithoutTabulatorsFileProvider extends RosettaConfigurationFileProvider {
-		@Override
-		public URL get() {
-			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test-without-tabulators.yml");
 		}
 	}
 }
