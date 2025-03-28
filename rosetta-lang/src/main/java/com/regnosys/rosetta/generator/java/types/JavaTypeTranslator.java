@@ -278,7 +278,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaType toJavaType(RMetaAnnotatedType type) {
 		JavaReferenceType javaType = toJavaReferenceType(type.getRType());
+		
 		if (type.hasMeta()) {
+		    if (type.getMetaAttributes().stream().allMatch(m -> "key".equals(m.getName()))) {
+		        return javaType;
+		    }
+		    
 			RType rType = typeSystem.stripFromTypeAliases(type.getRType());
 			DottedPath namespace = metaField(rType.getNamespace());
 			return hasReferenceOrAddressMetadata(type) ? 

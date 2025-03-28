@@ -149,13 +149,13 @@ public interface ExpectedTypeProvider {
 					if (operation instanceof ReduceOperation) {
 						return getExpectedTypeFromContainer(operation);
 					} else if (operation instanceof FilterOperation) {
-						return withNoMeta(builtins.BOOLEAN);
+						return builtins.BOOLEAN_WITH_NO_META;
 					} else if (operation instanceof MapOperation) {
 						return getExpectedTypeFromContainer(operation);
 					} else if (operation instanceof ThenOperation) {
 						return getExpectedTypeFromContainer(operation);
 					} else if (operation instanceof ComparingFunctionalOperation) {
-						return withNoMeta(builtins.BOOLEAN);
+						return builtins.BOOLEAN_WITH_NO_META;
 					} else {
 						LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
 					}
@@ -251,7 +251,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseConditionalExpression(RosettaConditionalExpression expr, Context context) {
 				if (ROSETTA_CONDITIONAL_EXPRESSION__IF.equals(context.reference)) {
-					return withNoMeta(builtins.BOOLEAN);
+					return builtins.BOOLEAN_WITH_NO_META;
 				} else if (ROSETTA_CONDITIONAL_EXPRESSION__IFTHEN.equals(context.reference)) {
 					return getExpectedTypeFromContainer(expr);
 				} else if (ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN.equals(context.reference)) {
@@ -331,27 +331,27 @@ public interface ExpectedTypeProvider {
 
 			@Override
 			protected RMetaAnnotatedType caseMultiplyOperation(ArithmeticOperation expr, Context context) {
-				return withNoMeta(builtins.UNCONSTRAINED_NUMBER);
+				return builtins.UNCONSTRAINED_NUMBER_WITH_NO_META;
 			}
 
 			@Override
 			protected RMetaAnnotatedType caseDivideOperation(ArithmeticOperation expr, Context context) {
-				return withNoMeta(builtins.UNCONSTRAINED_NUMBER);
+				return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 			}
 
 			@Override
 			protected RMetaAnnotatedType caseJoinOperation(JoinOperation expr, Context context) {
-				return withNoMeta(builtins.UNCONSTRAINED_STRING);
+				return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 			}
 
 			@Override
 			protected RMetaAnnotatedType caseAndOperation(LogicalOperation expr, Context context) {
-				return withNoMeta(builtins.BOOLEAN);
+				return builtins.BOOLEAN_WITH_NO_META;
 			}
 
 			@Override
 			protected RMetaAnnotatedType caseOrOperation(LogicalOperation expr, Context context) {
-				return withNoMeta(builtins.BOOLEAN);
+				return builtins.BOOLEAN_WITH_NO_META;
 			}
 
 			@Override
@@ -508,7 +508,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToNumberOperation(ToNumberOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
@@ -516,7 +516,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToIntOperation(ToIntOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
@@ -524,7 +524,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToTimeOperation(ToTimeOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
@@ -532,7 +532,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToEnumOperation(ToEnumOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
@@ -540,7 +540,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToDateOperation(ToDateOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
@@ -548,7 +548,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToDateTimeOperation(ToDateTimeOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
@@ -556,7 +556,7 @@ public interface ExpectedTypeProvider {
 			@Override
 			protected RMetaAnnotatedType caseToZonedDateTimeOperation(ToZonedDateTimeOperation expr, Context context) {
 				if (ROSETTA_UNARY_OPERATION__ARGUMENT.equals(context.reference)) {
-					return withNoMeta(builtins.UNCONSTRAINED_STRING);
+					return builtins.UNCONSTRAINED_STRING_WITH_NO_META;
 				}
 				return null;
 			}
