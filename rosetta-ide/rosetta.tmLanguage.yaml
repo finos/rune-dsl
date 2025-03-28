@@ -262,6 +262,7 @@ repository:
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
+		  - include: '#condition'
           - begin: (?<=[_[:alnum:]]{{wordEnd}})  # used to be '(?<={{identifier}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
             end: '(:)|{{rootEnd}}'
             patterns:

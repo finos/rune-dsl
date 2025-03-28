@@ -130,17 +130,26 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.regionFor.keyword(':')
 			.prepend[noSpace]
 		ele.formatDefinition(document)
+		
+		ele.indentInner(ele.regionFor.keyword(':').nextHiddenRegion, document)
 		formatInlineOrMultiline(document, ele,
 			[extension doc |
 				ele.typeCall
 					.prepend[oneSpace]
 					.format
+				ele.conditions.forEach[
+					prepend[setNewLines(2)]
+					format
+				]
 			],
 			[extension doc |
-				ele.indentInner(ele.regionFor.keyword(':').nextHiddenRegion, doc)
 				ele.typeCall
 					.prepend[newLine]
 					.format
+				ele.conditions.forEach[
+					prepend[setNewLines(2)]
+					format
+				]
 			]
 		)
 	}
