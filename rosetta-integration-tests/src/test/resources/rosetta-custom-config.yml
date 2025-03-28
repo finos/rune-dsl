@@ -1,8 +1,0 @@
-model:
-  name: My test model
-dependencies:
-generators:
-  tabulators:
-    annotations:
-      - projection
-      - enrich
