@@ -87,12 +87,7 @@ public class RBuiltinTypeService {
 	public final RMetaAnnotatedType NOTHING_WITH_ANY_META = new RMetaAnnotatedType(NOTHING, List.of()) {
 		@Override
 		public List<RMetaAttribute> getMetaAttributes() {
-			StringBuilder sb = new StringBuilder();
-			StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-			for (StackTraceElement stackTraceElement : stackTrace) {
-				sb.append("\tat ").append(stackTraceElement).append("\n");
-			}
-			LOGGER.error("getMetaAttributes called on type NOTHING_WITH_ANY_META:\n{}", sb);
+			LOGGER.error("getMetaAttributes called on type NOTHING_WITH_ANY_META", new Exception());
 			return super.getMetaAttributes();
 		}
 	};
