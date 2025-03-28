@@ -12,7 +12,7 @@ public class RMetaAnnotatedType {
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
 	
-	public RMetaAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
+	protected RMetaAnnotatedType(RType rType, List<RMetaAttribute> metaAttributes) {
 		this.rType = rType;
 		this.metaAttributes = Validate.noNullElements(metaAttributes);
 	}
