@@ -266,6 +266,7 @@ repository:
             end: '(:)|{{rootEnd}}'
             patterns:
             - include: '#comment'
+            - include: '#condition'
             - include: '#typeParameters'
           - include: '#documentation'
           - include: '#typeCall'

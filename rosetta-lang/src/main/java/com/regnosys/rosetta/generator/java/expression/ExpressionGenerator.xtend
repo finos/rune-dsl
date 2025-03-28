@@ -85,7 +85,6 @@ import com.regnosys.rosetta.rosetta.expression.ToTimeOperation
 import com.regnosys.rosetta.rosetta.expression.ToZonedDateTimeOperation
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption
-import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
@@ -128,7 +127,6 @@ import java.util.List
 import java.util.Optional
 import java.util.stream.Collectors
 import javax.inject.Inject
-import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
@@ -145,6 +143,9 @@ import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+import com.regnosys.rosetta.rosetta.TypeParameter
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
@@ -253,7 +254,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def JavaStatementBuilder implicitVariable(EObject context, JavaScope scope) {
 		val itemType = typeProvider.typeOfImplicitVariable(context).toJavaReferenceType
 		val definingContainer = context.findContainerDefiningImplicitVariable.get
-		val JavaType actualType = if (definingContainer instanceof Data || definingContainer instanceof RosettaRule) {
+		val JavaType actualType = if (definingContainer instanceof RosettaTypeWithConditions || definingContainer instanceof RosettaRule) {
 			// For conditions and rules
 			itemType
 		} else if (definingContainer instanceof SwitchCaseOrDefault) {
@@ -648,7 +649,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseBooleanLiteral(RosettaBooleanLiteral expr, Context context) {
-		JavaExpression.from('''«expr.value»''', JavaPrimitiveType.BOOLEAN)
+		if (expr.value) {
+			JavaLiteral.TRUE
+		} else {
+			JavaLiteral.FALSE
+		}
 	}
 
 	override protected caseChoiceOperation(ChoiceOperation expr, Context context) {
@@ -796,11 +801,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseIntLiteral(RosettaIntLiteral expr, Context context) {
 		val intValue = expr.value.intValue
 		if (BigInteger.valueOf(intValue) == expr.value) {
-			return JavaExpression.from('''«intValue»''', JavaPrimitiveType.INT)
+			return JavaLiteral.INT(intValue)
 		}
 		val longValue = expr.value.longValue
-		if (BigInteger.valueOf(intValue) == expr.value) {
-			return JavaExpression.from('''«longValue»l''', JavaPrimitiveType.LONG)
+		if (BigInteger.valueOf(longValue) == expr.value) {
+			return JavaLiteral.LONG(longValue)
 		}
 		return JavaExpression.from('''new «BigInteger»("«expr.value»")''', BIG_INTEGER)
 	}
@@ -823,7 +828,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseListLiteral(ListLiteral expr, Context context) {
 		if (expr.elements.empty) {
-			return JavaExpression.NULL
+			return JavaLiteral.NULL
 		}
 		val itemType = typeProvider.getRMetaAnnotatedType(expr).toJavaReferenceType
 		val elements = newArrayList
@@ -1011,7 +1016,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseStringLiteral(RosettaStringLiteral expr, Context context) {
-		JavaExpression.from('''"«StringEscapeUtils.escapeJava(expr.value)»"''', STRING)
+		JavaLiteral.STRING(expr.value)
 	}
 
 	override protected caseSubtractOperation(ArithmeticOperation expr, Context context) {
@@ -1061,6 +1066,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			RosettaMetaType: {
 				val implicitType = typeProvider.typeOfImplicitVariable(expr)
 				metaCall(implicitVariable(expr, context.scope), implicitType, s, context.scope)
+			}
+			TypeParameter: {
+				val type = typeProvider.getRTypeOfSymbol(s)
+				new JavaVariable(context.scope.getIdentifierOrThrow(s), type.toJavaReferenceType)
 			}
 			default:
 				throw new UnsupportedOperationException("Unsupported symbol type of " + s?.class?.name)
@@ -1325,7 +1334,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	}
 
  	private def JavaStatementBuilder createSwitchJavaExpression(SwitchOperation expr, JavaStatementBuilder switchArgument, Function3<JavaStatementBuilder, SwitchCaseOrDefault, JavaExpression, JavaStatementBuilder> fold, Context context) {
- 		val defaultExpr = expr.^default === null ? JavaExpression.NULL : expr.^default.javaCode(context.expectedType, context.scope)
+ 		val defaultExpr = expr.^default === null ? JavaLiteral.NULL : expr.^default.javaCode(context.expectedType, context.scope)
  		switchArgument
 				.declareAsVariable(true, "switchArgument", context.scope)
 				.mapExpression[switchArg|
@@ -1336,7 +1345,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 						.mapExpression[
 							new JavaIfThenElseBuilder(
 								it,
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								javaSwitchExpr,
 								typeUtil
 							)

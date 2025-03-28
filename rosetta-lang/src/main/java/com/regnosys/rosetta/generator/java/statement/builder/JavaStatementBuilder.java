@@ -147,7 +147,7 @@ public abstract class JavaStatementBuilder {
 	 * See {@link #mapExpression(Function)}.
 	 */
 	public JavaStatementBuilder mapExpressionIfNotNull(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
-		return mapExpression(expr -> expr == JavaExpression.NULL ? JavaExpression.NULL : mapper.apply(expr));
+		return mapExpression(expr -> expr == JavaLiteral.NULL ? JavaLiteral.NULL : mapper.apply(expr));
 	}
 	
 	/**

@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 
 /**
  * Generates code from your model files on save.
@@ -187,15 +188,17 @@ class RosettaGenerator implements IGenerator2 {
 		if (context.cancelIndicator.canceled) {
 			throw new CancellationException
 		}
+		if (elem instanceof RosettaTypeWithConditions) {
+			elem.conditions.forEach [ cond |
+				conditionGenerator.generate(fsa, cond, version)
+			]
+		}
 		switch (elem) {
 			Data: {
 				val t = elem.buildRDataType
 				dataGenerator.generate(packages, fsa, t, version)
 				metaGenerator.generate(packages, fsa, t, version)
 				validatorsGenerator.generate(packages, fsa, t, version)
-				elem.conditions.forEach [ cond |
-					conditionGenerator.generate(packages, fsa, t, cond, version)
-				]
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}

@@ -27,8 +27,10 @@ import com.regnosys.rosetta.rosetta.expression.InlineFunction;
 import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable;
 import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault;
-import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.BuiltinAnnotationWithPath;
+import com.regnosys.rosetta.rosetta.simple.Condition;
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
 
 /**
  * A tool for finding information about implicit variables, often called
@@ -50,10 +52,11 @@ public class ImplicitVariableUtil {
 		Iterable<EObject> containers = EcoreUtil2.getAllContainers(context);
 		EObject prev = context;
 		for (EObject container: containers) {
-			if (container instanceof Data) {
-				return Optional.of(container);
-			} else if (container instanceof RosettaTypeAlias) {
-				return Optional.of(container);
+			if (container instanceof Condition) {
+				RosettaTypeWithConditions enclosingType = ((Condition) container).getEnclosingType();
+				if (enclosingType != null) {
+					return Optional.of(enclosingType);
+				}
 			} else if (container instanceof RosettaFunctionalOperation) {
 				RosettaFunctionalOperation op = (RosettaFunctionalOperation)container;
 				InlineFunction f = op.getFunction();
@@ -66,6 +69,11 @@ public class ImplicitVariableUtil {
 				SwitchCaseOrDefault c = (SwitchCaseOrDefault) container;
 				if (!c.isDefault() && c.getGuard().getChoiceOptionGuard() != null) {
 					return Optional.of(container);
+				}
+			} else if (container instanceof BuiltinAnnotationWithPath) {
+				Attribute attr = EcoreUtil2.getContainerOfType(container, Attribute.class);
+				if (attr != null) {
+					return Optional.of(attr);
 				}
 			}
 			prev = container;

@@ -8,7 +8,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import javax.inject.Inject
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -25,6 +24,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 
 class DeepPathUtilGenerator {
 	@Inject extension ImportManagerExtension
@@ -101,7 +101,7 @@ class DeepPathUtilGenerator {
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
 		val attrs = choiceType.allAttributes.toList
 		val deepFeatureType = deepFeature.toMetaJavaType
-		var JavaStatementBuilder acc = JavaExpression.NULL
+		var JavaStatementBuilder acc = JavaLiteral.NULL
 		for (a : attrs.reverseView) {
 			val currAcc = acc
 			acc = inputParameter

@@ -6130,6 +6130,9 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
+				import java.util.Arrays;
+				import java.util.Collections;
+				import java.util.List;
 				import javax.inject.Inject;
 				
 				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
@@ -6144,24 +6147,22 @@ class FunctionGeneratorTest {
 					String NAME = "FooBar";
 					String DEFINITION = "if test = True then FuncFoo( attr, \"x\" ) else FuncFoo( attr, \"y\" )";
 					
-					ValidationResult<Foo> validate(RosettaPath path, Foo foo);
-					
 					class Default implements FooBar {
 					
 						@Inject protected FuncFoo funcFoo;
 						
 						@Override
-						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
+						public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
 							if (result.get()) {
-								return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+								return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION));
 							}
 							
 							String failureMessage = result.getError();
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage);
+							return Arrays.asList(ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {
@@ -6181,8 +6182,8 @@ class FunctionGeneratorTest {
 					class NoOp implements FooBar {
 					
 						@Override
-						public ValidationResult<Foo> validate(RosettaPath path, Foo foo) {
-							return ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION);
+						public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
+							return Collections.emptyList();
 						}
 					}
 				}

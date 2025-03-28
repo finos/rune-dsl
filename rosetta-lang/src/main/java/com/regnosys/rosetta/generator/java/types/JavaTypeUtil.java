@@ -40,6 +40,7 @@ import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
+import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.metafields.MetaAndTemplateFields;
 import com.rosetta.model.metafields.MetaFields;
 import com.rosetta.util.types.JavaClass;
@@ -90,6 +91,7 @@ public class JavaTypeUtil {
 	public final JavaGenericTypeDeclaration<MapperListOfLists<?>> MAPPER_LIST_OF_LISTS = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	
 	public final JavaClass<RosettaModelObject> ROSETTA_MODEL_OBJECT = JavaClass.from(RosettaModelObject.class);
+	public final JavaGenericTypeDeclaration<Validator<?>> VALIDATOR = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 
 	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, itemType.toReferenceType());

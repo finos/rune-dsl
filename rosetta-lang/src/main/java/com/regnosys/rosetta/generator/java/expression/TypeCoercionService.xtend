@@ -23,6 +23,7 @@ import java.util.Optional
 import java.util.function.Function
 import java.util.stream.Collectors
 import javax.inject.Inject
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -382,7 +383,7 @@ class TypeCoercionService {
 		} else if (expected instanceof JavaPrimitiveType) {
 			throw new IllegalArgumentException("No empty representation for primitive type `" + expected + "`.")
 		} else {
-			JavaExpression.NULL
+			JavaLiteral.NULL
 		}
 	}
 	
@@ -396,7 +397,7 @@ class TypeCoercionService {
 			JavaExpression.from('''«expression».getValue()''', actual.valueType)
 				.mapExpression[itemToItem(it, expected, throwOnFail, scope)]
 		} else {
-			JavaExpression.NULL
+			JavaLiteral.NULL
 		}
 	}
 	
@@ -425,7 +426,7 @@ class TypeCoercionService {
 					new JavaConditionalExpression(
 						JavaExpression.from('''«it» instanceof «expected»''', JavaPrimitiveType.BOOLEAN),
 						JavaExpression.from('''«expected».class.cast(«it»)''', expected),
-						JavaExpression.NULL,
+						JavaLiteral.NULL,
 						typeUtil
 					)
 				]
@@ -469,7 +470,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«it» <= «Integer».MAX_VALUE && «it» >= «Integer».MIN_VALUE''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''(int) «it»''', JavaPrimitiveType.INT),
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								typeUtil
 							)
 						]
@@ -494,7 +495,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigInteger».valueOf(«it».intValue()).equals(«it»)''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».intValue()''', JavaPrimitiveType.INT),
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								typeUtil
 							)
 						]
@@ -509,7 +510,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigInteger».valueOf(«it».longValue()).equals(«it»)''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».longValue()''', JavaPrimitiveType.LONG),
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								typeUtil
 							)
 						]
@@ -531,7 +532,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigDecimal».valueOf(«it».intValue()).compareTo(«it») == 0''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».intValue()''', JavaPrimitiveType.INT),
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								typeUtil
 							)
 						]
@@ -546,7 +547,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''«BigDecimal».valueOf(«it».longValue()).compareTo(«it») == 0''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».longValue()''', JavaPrimitiveType.LONG),
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								typeUtil
 							)
 						]
@@ -561,7 +562,7 @@ class TypeCoercionService {
 							new JavaConditionalExpression(
 								JavaExpression.from('''new «BigDecimal»(«it».toBigInteger()).compareTo(«it») == 0''', JavaPrimitiveType.BOOLEAN),
 								JavaExpression.from('''«it».toBigInteger()''', BIG_INTEGER),
-								JavaExpression.NULL,
+								JavaLiteral.NULL,
 								typeUtil
 							)
 						]

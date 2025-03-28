@@ -39,5 +39,4 @@ public class JavaExpressionStatement extends JavaStatement {
 		target.append(expression);
 		target.append(";");
 	}
-
 }
