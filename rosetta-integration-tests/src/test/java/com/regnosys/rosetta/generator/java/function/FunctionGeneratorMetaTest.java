@@ -1,6 +1,8 @@
 package com.regnosys.rosetta.generator.java.function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
@@ -1156,5 +1158,37 @@ public class FunctionGeneratorMetaTest {
         var expected = generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme");
 
         assertEquals(expected, result);
+    }
+    
+    @Test
+    void shouldEvaluateEmptyBooleanAttributesToFalse() {
+        var model = """
+        type Foo:
+           field1 boolean (0..1) // set to True
+           field2 boolean (0..1) // set to empty
+  
+        func MyFunc:
+		    inputs:
+  		        foo Foo (0..1)
+            output:
+                result boolean (1..1) // should evaluate to false
+             
+             set result: 
+		       if foo -> field1 and foo -> field2
+		       then True
+		       else False
+        """;  
+        
+        var code = generatorTestHelper.generateCode(model);
+                
+        var classes = generatorTestHelper.compileToClasses(code);
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var foo =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of("field1", true));
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, Boolean.class, foo);
+        
+        assertTrue(result); // this is wrong
     }
 }
