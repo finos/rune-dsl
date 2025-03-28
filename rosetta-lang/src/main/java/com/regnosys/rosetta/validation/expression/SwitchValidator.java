@@ -51,6 +51,7 @@ public class SwitchValidator extends ExpressionValidator {
 		RType rType = typeSystem.stripFromTypeAliases(argumentType.getRType());
 		if (rType.equals(builtins.NOTHING)) {
 			// If there is an error within the argument, do not check further
+			return;
 		} else if (rType instanceof REnumType) {
 			checkEnumSwitch((REnumType) rType, op);
 		} else if (rType instanceof RBasicType) {

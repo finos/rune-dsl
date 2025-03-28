@@ -126,7 +126,6 @@ class ModelMetaGeneratorTest {
 			import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
 			import static com.rosetta.model.lib.validation.ValidationResult.failure;
 			import static com.rosetta.model.lib.validation.ValidationResult.success;
-			import static java.util.stream.Collectors.joining;
 			import static java.util.stream.Collectors.toList;
 			
 			public class FooValidator implements Validator<Foo> {
@@ -138,20 +137,6 @@ class ModelMetaGeneratorTest {
 							checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0), 
 							checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
 						);
-				}
-			
-				@Override
-				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
-					String error = getComparisonResults(o)
-						.stream()
-						.filter(res -> !res.get())
-						.map(res -> res.getError())
-						.collect(joining("; "));
-			
-					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationType.CARDINALITY, "Foo", path, "", error);
-					}
-					return success("Foo", ValidationType.CARDINALITY, "Foo", path, "");
 				}
 			
 				@Override
@@ -192,7 +177,6 @@ class ModelMetaGeneratorTest {
 			import static com.rosetta.model.lib.validation.ValidationResult.success;
 			import static java.util.Optional.empty;
 			import static java.util.Optional.of;
-			import static java.util.stream.Collectors.joining;
 			import static java.util.stream.Collectors.toList;
 			
 			public class FooTypeFormatValidator implements Validator<Foo> {
@@ -203,20 +187,6 @@ class ModelMetaGeneratorTest {
 							checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()), 
 							checkString("f", o.getF(), 0, of(5), empty())
 						);
-				}
-			
-				@Override
-				public ValidationResult<Foo> validate(RosettaPath path, Foo o) {
-					String error = getComparisonResults(o)
-						.stream()
-						.filter(res -> !res.get())
-						.map(res -> res.getError())
-						.collect(joining("; "));
-			
-					if (!isNullOrEmpty(error)) {
-						return failure("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "", error);
-					}
-					return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
 				}
 			
 				@Override

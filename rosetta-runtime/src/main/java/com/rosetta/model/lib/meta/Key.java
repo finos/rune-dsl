@@ -30,6 +30,8 @@ import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.lib.validation.ValidatorFactory;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -244,8 +246,7 @@ public interface Key extends RosettaModelObject{
 		public Validator<? super Key> validator() {
 			return new Validator<Key>() {
 
-				@Override
-				public ValidationResult<Key> validate(RosettaPath path, Key key) {
+				private ValidationResult<Key> getResult(RosettaPath path, Key key) {
 					if (key.getKeyValue()==null) {
 						return ValidationResult.failure("Key.value", ValidationType.KEY, "Key", path, "", "Key value must be set");
 					}
@@ -253,6 +254,11 @@ public interface Key extends RosettaModelObject{
 						return ValidationResult.failure("Key.scope", ValidationType.KEY, "Key", path, "", "Key scope must be set");
 					}
 					return ValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
+				}
+				
+				@Override
+				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Key key) {
+					return Arrays.asList(getResult(path, key));
 				}
 			};
 		}

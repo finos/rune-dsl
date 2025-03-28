@@ -30,6 +30,7 @@ import javax.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 
 class ModelObjectBuilderGenerator {
 	
@@ -200,7 +201,7 @@ class ModelObjectBuilderGenerator {
 					originalField
 						.addCoercions(parent.type.itemType, getterScope)
 						.mapExpression[
-							if (it == JavaExpression.NULL) {
+							if (it == JavaLiteral.NULL) {
 								JavaExpression.from('''«Collections».<«parent.toBuilderTypeSingle»>emptyList()''', parent.toBuilderTypeExt)
 							} else {
 								toBuilder.mapExpression[JavaExpression.from('''«Collections».singletonList(«it»)''', parent.toBuilderTypeExt)]

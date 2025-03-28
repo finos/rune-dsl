@@ -18,6 +18,7 @@ import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaParameter;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
@@ -172,7 +173,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
         Optional<? extends EObject> definingContainer = implicitVariableUtil.findContainerDefiningImplicitVariable(context);
 
         return definingContainer.map(container -> {
-            if (container instanceof Data) {
+            if (container instanceof RosettaTypeWithConditions) {
                 return false;
             } else if (container instanceof RosettaFunctionalOperation) {
                 return safeIsClosureParameterMulti(((RosettaFunctionalOperation) container).getFunction(), cycleTracker);

@@ -19,7 +19,6 @@ package com.regnosys.rosetta.generator.java.types;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.simple.*;
@@ -121,11 +120,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaClass<ReportFunction<?, ?>> toReportFunctionJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportFunction(modelIdProvider.getReportId(report));
 	}
-	private Optional<RosettaExternalRuleSource> findContainingSuperRuleSource(Data type, RosettaExternalRuleSource ruleSource) {
-		if (ruleSource.getExternalClasses().stream().filter(c -> c.getData().equals(type)).findAny().isPresent()) {
-			return Optional.of(ruleSource);
-		}
-		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
+	public JavaConditionInterface toConditionJavaClass(Condition condition) {
+		return new JavaConditionInterface(condition, modelIdProvider, typeProvider, typeSystem, typeUtil, this);
 	}
 	public JavaClass<?> toDeepPathUtilJavaClass(RDataType choiceType) {
 		ModelSymbolId typeId = modelIdProvider.getSymbolId(choiceType.getEObject());

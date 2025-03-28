@@ -47,9 +47,4 @@ public class JavaVariable extends JavaExpression {
 	public void appendTo(TargetStringConcatenation target) {
 		target.append(id);
 	}
-	
-	@Override
-	public String toString() {
-		return id.getDesiredName();
-	}
 }

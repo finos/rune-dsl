@@ -641,7 +641,6 @@ class PojoInheritanceRegressionTest {
 		import static com.rosetta.model.lib.validation.ValidationResult.success;
 		import static java.util.Optional.empty;
 		import static java.util.Optional.of;
-		import static java.util.stream.Collectors.joining;
 		import static java.util.stream.Collectors.toList;
 		
 		public class Foo2TypeFormatValidator implements Validator<Foo2> {
@@ -652,20 +651,6 @@ class PojoInheritanceRegressionTest {
 						checkNumber("numberAttr", o.getNumberAttrOverriddenAsBigInteger(), of(30), of(0), empty(), of(new BigDecimal("1E+2"))), 
 						checkString("stringAttr", o.getStringAttr().getValue(), 0, of(42), empty())
 					);
-			}
-		
-			@Override
-			public ValidationResult<Foo2> validate(RosettaPath path, Foo2 o) {
-				String error = getComparisonResults(o)
-					.stream()
-					.filter(res -> !res.get())
-					.map(res -> res.getError())
-					.collect(joining("; "));
-		
-				if (!isNullOrEmpty(error)) {
-					return failure("Foo2", ValidationType.TYPE_FORMAT, "Foo2", path, "", error);
-				}
-				return success("Foo2", ValidationType.TYPE_FORMAT, "Foo2", path, "");
 			}
 		
 			@Override
@@ -1391,7 +1376,6 @@ class PojoInheritanceRegressionTest {
 		import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
 		import static com.rosetta.model.lib.validation.ValidationResult.failure;
 		import static com.rosetta.model.lib.validation.ValidationResult.success;
-		import static java.util.stream.Collectors.joining;
 		import static java.util.stream.Collectors.toList;
 		
 		public class Foo3Validator implements Validator<Foo3> {
@@ -1404,20 +1388,6 @@ class PojoInheritanceRegressionTest {
 						checkCardinality("parentList", (ReferenceWithMetaGrandChild) o.getParentListOverriddenAsReferenceWithMetaGrandChild() != null ? 1 : 0, 1, 1), 
 						checkCardinality("stringAttr", (FieldWithMetaString) o.getStringAttr() != null ? 1 : 0, 1, 1)
 					);
-			}
-		
-			@Override
-			public ValidationResult<Foo3> validate(RosettaPath path, Foo3 o) {
-				String error = getComparisonResults(o)
-					.stream()
-					.filter(res -> !res.get())
-					.map(res -> res.getError())
-					.collect(joining("; "));
-		
-				if (!isNullOrEmpty(error)) {
-					return failure("Foo3", ValidationType.CARDINALITY, "Foo3", path, "", error);
-				}
-				return success("Foo3", ValidationType.CARDINALITY, "Foo3", path, "");
 			}
 		
 			@Override
@@ -1458,7 +1428,6 @@ class PojoInheritanceRegressionTest {
 		import static com.rosetta.model.lib.validation.ValidationResult.success;
 		import static java.util.Optional.empty;
 		import static java.util.Optional.of;
-		import static java.util.stream.Collectors.joining;
 		import static java.util.stream.Collectors.toList;
 		
 		public class Foo3TypeFormatValidator implements Validator<Foo3> {
@@ -1469,20 +1438,6 @@ class PojoInheritanceRegressionTest {
 						checkNumber("numberAttr", o.getNumberAttrOverriddenAsInteger(), empty(), of(0), empty(), empty()), 
 						checkString("stringAttr", o.getStringAttr().getValue(), 0, of(42), empty())
 					);
-			}
-		
-			@Override
-			public ValidationResult<Foo3> validate(RosettaPath path, Foo3 o) {
-				String error = getComparisonResults(o)
-					.stream()
-					.filter(res -> !res.get())
-					.map(res -> res.getError())
-					.collect(joining("; "));
-		
-				if (!isNullOrEmpty(error)) {
-					return failure("Foo3", ValidationType.TYPE_FORMAT, "Foo3", path, "", error);
-				}
-				return success("Foo3", ValidationType.TYPE_FORMAT, "Foo3", path, "");
 			}
 		
 			@Override

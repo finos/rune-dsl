@@ -6,6 +6,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper.Mode;
 import com.google.inject.Binder;
 import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
+import com.rosetta.model.lib.validation.ValidatorFactory;
 
 public class RosettaTestInjectorProvider extends RosettaInjectorProvider {
 	protected RosettaRuntimeModule createRuntimeModule() {
@@ -20,6 +21,10 @@ public class RosettaTestInjectorProvider extends RosettaInjectorProvider {
 			
 			public void configureValidationTestHelper(Binder binder) {
 				binder.bind(ValidationTestHelper.class).to(RosettaValidationTestHelper.class);
+			}
+			
+			public Class<? extends ValidatorFactory> bindValidatorFactory() {
+				return ValidatorFactory.Default.class;
 			}
 		};
 	}

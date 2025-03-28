@@ -38,10 +38,25 @@ import com.regnosys.rosetta.types.RCardinality
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 
-import com.regnosys.rosetta.rosetta.simple.Condition;
-import com.regnosys.rosetta.types.RAliasType
-import java.util.Collections
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.types.AliasHierarchy
+import com.regnosys.rosetta.generator.GeneratedIdentifier
+import com.google.common.collect.Streams
 import java.util.ArrayList
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
+import com.regnosys.rosetta.generator.java.statement.JavaStatement
+import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
+import com.regnosys.rosetta.generator.java.statement.JavaBlock
+import com.regnosys.rosetta.generator.java.statement.JavaStatementList
+import com.regnosys.rosetta.generator.java.statement.JavaForLoop
+import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
+import com.rosetta.util.types.JavaPrimitiveType
+import com.regnosys.rosetta.generator.java.expression.InterpreterValueJavaConverter
+import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.rosetta.util.types.JavaType
+import com.regnosys.rosetta.types.RAliasType
+import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 
 class ValidatorsGenerator {
 
@@ -50,6 +65,9 @@ class ValidatorsGenerator {
 	@Inject extension TypeSystem
 	@Inject extension RBuiltinTypeService
 	@Inject extension JavaTypeUtil
+	@Inject extension JavaIdentifierRepresentationService
+	@Inject extension InterpreterValueJavaConverter
+	@Inject extension TypeCoercionService
 
 	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType type, String version) {
 		val javaType = type.toJavaReferenceType
@@ -87,20 +105,6 @@ class ValidatorsGenerator {
 						«ENDFOR»
 					);
 			}
-		
-			@Override
-			public «ValidationResult»<«javaType»> validate(«RosettaPath» path, «javaType» o) {
-				String error = getComparisonResults(o)
-					.stream()
-					.filter(res -> !res.get())
-					.map(res -> res.getError())
-					.collect(«method(Collectors, "joining")»("; "));
-		
-				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationResult.ValidationType».CARDINALITY, "«javaType.rosettaName»", path, "", error);
-				}
-				return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationResult.ValidationType».CARDINALITY, "«javaType.rosettaName»", path, "");
-			}
 
 			@Override
 			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «javaType» o) {
@@ -119,53 +123,70 @@ class ValidatorsGenerator {
 	'''
 	
 	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
-		val conditions = attributes.map[it.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases].flatten
+		val validatorClass = javaType.toTypeFormatValidatorClass
+		val packageScope = new JavaScope(validatorClass.packageName)
+		val classScope = packageScope.classScope(validatorClass.simpleName)
+		
+		val pathId = classScope.createUniqueIdentifier("path")
+		
+		val aliasHierarchyPerAttribute = attributes.map[it->RMetaAnnotatedType.RType.computeAliasHierarchy].toMap([key], [value])
+		val conditionDependencies = aliasHierarchyPerAttribute.values.flatMap[aliases].flatMap[conditions].map[toConditionJavaClass].toSet
+		
+		val runConditionsScope = classScope.methodScope("runConditions")
+		val instanceId = runConditionsScope.createUniqueIdentifier("o")
+		val instanceVar = new JavaVariable(instanceId, javaType)
+		val resultsId = runConditionsScope.createUniqueIdentifier("results")
 			
 		'''
-		public class «javaType.toTypeFormatValidatorClass» implements «Validator»<«javaType»> {
-			«IF conditions.size() > 0»
-				«IF conditions.map[it.name].filter[it.equalsIgnoreCase("IsValidCodingScheme")].size > 0»
-					@com.google.inject.Inject
-					protected cdm.base.staticdata.codelist.functions.ValidateFpMLCodingSchemeDomain func;
-				«ENDIF»
-			«ENDIF»
+		public class «validatorClass» implements «Validator»<«javaType»> {
+			«FOR dep : conditionDependencies»
+				@«Inject»
+				protected «dep» «classScope.createIdentifier(dep.toDependencyInstance, dep.simpleName.toFirstLower)»;
+			«ENDFOR»
 		
 			private «List»<«ComparisonResult»> getComparisonResults(«javaType» o) {
 				return «Lists».<«ComparisonResult»>newArrayList(
-						«FOR attrCheck : attributes.map[checkTypeFormat(javaType, it)].filter[it !== null] SEPARATOR ", "»
+						«FOR attrCheck : attributes.flatMap[checkTypeFormat(javaType, it)] SEPARATOR ", "»
 							«attrCheck»
-						«ENDFOR»
-						«FOR condCheck : attributes.map[checkTypeAliasFormat(javaType, it)].filter[it !== null] SEPARATOR ", "»
-							«condCheck»
 						«ENDFOR»
 					);
 			}
-		
-			@Override
-			public «ValidationResult»<«javaType»> validate(«RosettaPath» path, «javaType» o) {
-				String error = getComparisonResults(o)
-					.stream()
-					.filter(res -> !res.get())
-					.map(res -> res.getError())
-					.collect(«method(Collectors, "joining")»("; "));
-
-				if (!«method(Strings, "isNullOrEmpty")»(error)) {
-					return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", path, "", error);
-				}
-				return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", path, "");
+			«IF !conditionDependencies.empty»
+			
+			private «List»<«ValidationResult»<?>> runConditions(«RosettaPath» «pathId», «javaType» «instanceId») {
+				«List»<«ValidationResult»<?>> «resultsId» = new «ArrayList»();
+				«FOR condCheck : attributes.map[checkTypeConditions(javaType, it, aliasHierarchyPerAttribute.get(it), pathId, instanceVar, resultsId, classScope)] SEPARATOR ", "»
+				«condCheck.asStatementList»
+				«ENDFOR»
+				return «resultsId»;
 			}
+			«ENDIF»
 		
 			@Override
-			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «javaType» o) {
+			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» «pathId», «javaType» o) {
+				«IF conditionDependencies.empty»
 				return getComparisonResults(o)
 					.stream()
 					.map(res -> {
 						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
-							return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", path, "", res.getError());
+							return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", «pathId», "", res.getError());
 						}
-						return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", path, "");
+						return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", «pathId», "");
 					})
 					.collect(«method(Collectors, "toList")»());
+				«ELSE»
+				return «Streams».concat(getComparisonResults(o)
+						.stream()
+						.map(res -> {
+							if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
+								return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", «pathId», "", res.getError());
+							}
+							return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationResult.ValidationType».TYPE_FORMAT, "«javaType.rosettaName»", «pathId», "");
+						}),
+						runConditions(«pathId», o).stream()
+					)
+					.collect(«method(Collectors, "toList")»());
+				«ENDIF»
 			}
 		
 		}
@@ -220,57 +241,18 @@ class ValidatorsGenerator {
 			'''
 		}
 	}
-	
-	private def StringConcatenationClient checkTypeAliasFormat(JavaPojoInterface javaType, RAttribute attr) {
-		val conditions = attr.RMetaAnnotatedType.RType.collectConditionsFromTypeAliases
-		val args = attr.RMetaAnnotatedType.RType.collectArgumentsFromTypeAliases
 		
-		if (conditions.isEmpty() || (!conditions.map[it.name].exists[it.equalsIgnoreCase("IsValidCodingScheme")] && !args.containsKey("domain"))) {
-			null
-		} else {
-			val prop = javaType.findProperty(attr.name)
-			val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
-			'''
-			«FOR cond : conditions»
-				«IF cond.getName().equalsIgnoreCase("IsValidCodingScheme") && args.get("domain").getSingle().isPresent()»
-					«IF attr.isMulti»
-						«IF !attr.RMetaAnnotatedType.hasMeta»
-							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
-								.stream()
-								.filter(it -> !func.evaluate(it, "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»"))
-								.collect(«Collectors».collectingAndThen(
-									«Collectors».joining(", "), 
-									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
-								))
-						«ELSE»
-							(«ComparisonResult») «method(Optional, "ofNullable")»(«propCode»).orElse(«method(Collections, "emptyList")»())
-								.stream().map(«prop.type.itemType»::getValue)
-								.filter(it -> !func.evaluate(it, "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»"))
-								.collect(«Collectors».collectingAndThen(
-									«Collectors».joining(", "), 
-									it -> it.isEmpty() ? «method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(it + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
-								))
-						«ENDIF»
-					«ELSE»
-						func.evaluate(«javaType.getAttributeValue(attr)», "«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»")?
-							«method(ComparisonResult, "success")»() : «method(ComparisonResult, "failure")»(«javaType.getAttributeValue(attr)» + " code not found in domain '«StringEscapeUtils.escapeJava(args.get("domain").getSingle().orElse(null) as String)»'")
-					«ENDIF»
-				«ENDIF»
-			«ENDFOR»
-			'''
-		}
-	}
+	private def List<StringConcatenationClient> checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {
+		val List<StringConcatenationClient> checks = newArrayList
 		
-	private def StringConcatenationClient checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {
 		val t = attr.RMetaAnnotatedType.RType.stripFromTypeAliases
-		
 		if (t instanceof RStringType) {
 			if (t != UNCONSTRAINED_STRING) {
 				val min = t.interval.minBound
 				val max = t.interval.max.optional
 				val pattern = t.pattern.optionalPattern
 								
-				return '''«method(ExpressionOperators, "checkString")»("«attr.name»", «javaType.getAttributeValue(attr)», «min», «max», «pattern»)'''
+				checks.add('''«method(ExpressionOperators, "checkString")»("«attr.name»", «javaType.getAttributeValue(attr)», «min», «max», «pattern»)''')
 			}
 		} else if (t instanceof RNumberType) {
 			if (t != UNCONSTRAINED_NUMBER) {
@@ -279,25 +261,100 @@ class ValidatorsGenerator {
 				val min = t.interval.min.optionalBigDecimal
 				val max = t.interval.max.optionalBigDecimal
 				
-				return '''«method(ExpressionOperators, "checkNumber")»("«attr.name»", «javaType.getAttributeValue(attr)», «digits», «fractionalDigits», «min», «max»)'''
+				checks.add('''«method(ExpressionOperators, "checkNumber")»("«attr.name»", «javaType.getAttributeValue(attr)», «digits», «fractionalDigits», «min», «max»)''')
 			}
 		}
-		return null
+		
+		return checks
 	}
 	
-	private def StringConcatenationClient getAttributeValue(JavaPojoInterface javaType, RAttribute attr) {
+	private def JavaStatement checkTypeConditions(JavaPojoInterface javaType, RAttribute attr, AliasHierarchy hierarchy, GeneratedIdentifier pathId, JavaVariable instanceVar, GeneratedIdentifier resultsId, JavaScope scope) {
+		if (!attr.isMulti) {
+			var conditionCalls = JavaBlock.EMPTY
+			for (alias : hierarchy.aliases) {
+				for (condition : alias.conditions) {
+					val conditionClass = condition.toConditionJavaClass
+					val prop = javaType.findProperty(attr.name, conditionClass.instanceClass)
+					conditionCalls = conditionCalls.append(
+						addConditionValidationResultsCode(
+							resultsId,
+							'''«pathId».newSubPath("«attr.name»")''',
+							prop.applyGetter(JavaExpression.from('''o''', javaType)),
+							alias,
+							conditionClass,
+							scope
+						)
+					)
+				}
+			}
+			return conditionCalls
+		} else {
+			if (!hierarchy.aliases.flatMap[conditions].empty) {
+				val prop = javaType.findProperty(attr.name)
+				val attrVarExpr = prop.applyGetter(JavaExpression.from('''o''', javaType))
+				val forIndex = scope.createUniqueIdentifier("i")
+				return attrVarExpr.declareAsVariable(true, attr.name, scope)
+					.complete[attrVar|
+						var forBody = JavaBlock.EMPTY
+						for (alias : hierarchy.aliases) {
+							for (condition : alias.conditions) {
+								forBody = forBody.append(
+									addConditionValidationResultsCode(
+										resultsId,
+										'''«pathId».newSubPath("«attr.name»").withIndex(«forIndex»)''',
+										JavaExpression.from('''«attrVar».get(«forIndex»)''', attrVar.expressionType.itemType),
+										alias,
+										condition.toConditionJavaClass,
+										scope
+									)
+								)
+							}
+						}
+						new JavaForLoop(
+							new JavaLocalVariableDeclarationStatement(false, JavaPrimitiveType.INT, forIndex, JavaExpression.from('''0''', JavaPrimitiveType.INT)),
+							JavaExpression.from('''«forIndex» < «attrVar».size()''', JavaPrimitiveType.BOOLEAN),
+							JavaExpression.from('''«forIndex»++''', JavaPrimitiveType.INT),
+							forBody
+						)
+					]
+			}
+			return JavaBlock.EMPTY
+		}
+	}
+	private def JavaStatement addConditionValidationResultsCode(GeneratedIdentifier resultsId, StringConcatenationClient pathCode, JavaExpression attributeItemCode, RAliasType alias, JavaConditionInterface conditionClass, JavaScope scope) {
+		val conditionVar = scope.getIdentifierOrThrow(conditionClass.toDependencyInstance)
+		val arguments = newArrayList
+					
+		arguments.add(JavaExpression.from(pathCode, JavaType.from(RosettaPath)))
+		arguments.add(attributeItemCode
+			.addCoercions(conditionClass.instanceClass, scope))
+		conditionClass.parameters.forEach[param,type|
+			arguments.add(
+				alias.arguments.get(param).convertValueToJava
+					.addCoercions(type, scope)
+			)
+		]
+		
+		return JavaStatementBuilder.invokeMethod(
+			arguments,
+			[args|JavaExpression.from('''«resultsId».addAll(«conditionVar».getValidationResults(«args»))''', JavaPrimitiveType.VOID)],
+			scope
+		).completeAsExpressionStatement
+	}
+	
+	private def JavaExpression getAttributeValue(JavaPojoInterface javaType, RAttribute attr) {
 		val prop = javaType.findProperty(attr.name)
 		val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
-		if (!attr.RMetaAnnotatedType.hasMeta) {
-			'''«propCode»'''
-		} else {
-			val jt = prop.type
-			if (jt.isList) {
-				val itemType = jt.itemType
-				'''«propCode».stream().map(«itemType»::getValue).collect(«Collectors».toList())'''
+		val propType = propCode.expressionType
+		val propItemType = propType.itemType
+		if (propItemType instanceof RJavaWithMetaValue) {
+			if (propType.isList) {
+				JavaExpression.from('''«propCode».stream().map(«propItemType»::getValue).collect(«Collectors».toList())''', LIST.wrap(propItemType.valueType))
 			} else {
-				'''«propCode».getValue()'''
+				JavaExpression.from('''«propCode».getValue()''', propItemType.valueType)
 			}
+		} else {
+			propCode
 		}
 	}
 	private def StringConcatenationClient optional(Optional<? extends Object> v) {

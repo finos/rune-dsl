@@ -16,10 +16,9 @@
 
 package com.regnosys.rosetta.generator.java.statement;
 
-import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaBlockBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
@@ -126,12 +125,6 @@ public abstract class JavaStatement implements TargetLanguageRepresentation {
 	
 	@Override
 	public String toString() {
-		StringConcatenation repr = new StringConcatenation();
-		repr.append(new StringConcatenationClient() {
-			protected void appendTo(TargetStringConcatenation target) {
-				JavaStatement.this.appendTo(target);
-			}
-		});
-		return repr.toString();
+		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
 	}
 }

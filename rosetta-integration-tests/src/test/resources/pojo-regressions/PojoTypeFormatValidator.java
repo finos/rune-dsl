@@ -15,7 +15,6 @@ import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class PojoTypeFormatValidator implements Validator<Pojo> {
@@ -25,20 +24,6 @@ public class PojoTypeFormatValidator implements Validator<Pojo> {
 				checkString("simpleAttr", o.getSimpleAttr(), 0, of(42), empty()), 
 				checkString("multiSimpleAttr", o.getMultiSimpleAttr(), 0, of(42), empty())
 			);
-	}
-
-	@Override
-	public ValidationResult<Pojo> validate(RosettaPath path, Pojo o) {
-		String error = getComparisonResults(o)
-			.stream()
-			.filter(res -> !res.get())
-			.map(res -> res.getError())
-			.collect(joining("; "));
-
-		if (!isNullOrEmpty(error)) {
-			return failure("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "", error);
-		}
-		return success("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "");
 	}
 
 	@Override
