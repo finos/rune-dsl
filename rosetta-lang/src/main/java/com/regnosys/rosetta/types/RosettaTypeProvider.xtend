@@ -182,13 +182,13 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	
 	private def RMetaAnnotatedType safeRType(RosettaSymbol symbol, EObject context, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		if (!extensions.isResolved(symbol)) {
-			return NOTHING_WITH_NO_META
+			return NOTHING_WITH_ANY_META
 		}
 		val existing = cycleTracker.get(symbol)
 		if (existing !== null) {
 			return existing
 		}
-		cycleTracker.put(symbol, NOTHING_WITH_NO_META)
+		cycleTracker.put(symbol, NOTHING_WITH_ANY_META)
 		val result =
 			switch symbol {
 				RosettaFeature: {
@@ -202,7 +202,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 					if(setOp !== null) {
 						setOp.argument.safeRType(cycleTracker)
 					} else
-						NOTHING_WITH_NO_META
+						NOTHING_WITH_ANY_META
 				}
 				RosettaEnumeration: { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
 					symbol.buildREnumType.withMeta(symbol.RMetaAttributesOfSymbol)
@@ -211,14 +211,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 					if (symbol.output !== null) {
 						safeRType(symbol.output as RosettaFeature, context, cycleTracker)
 					} else {
-						NOTHING_WITH_NO_META
+						NOTHING_WITH_ANY_META
 					}
 				}
 				RosettaRule: {
 					if (symbol.expression !== null) {
 						safeRType(symbol.expression, cycleTracker)
 					} else {
-						NOTHING_WITH_NO_META
+						NOTHING_WITH_ANY_META
 					}
 				}
 				RosettaExternalFunction: {
@@ -237,12 +237,12 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	private def RMetaAnnotatedType safeRType(RosettaFeature feature, EObject context, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		if (!extensions.isResolved(feature)) {
-			return NOTHING_WITH_NO_META
+			return NOTHING_WITH_ANY_META
 		}
 		switch (feature) {
 			RosettaTypedFeature: {
 				val featureType = if (feature.typeCall === null) {
-						NOTHING_WITH_NO_META
+						NOTHING_WITH_ANY_META
 					} else {
 						feature.typeCall.typeCallToRType.withMeta(feature.RMetaAttributesOfFeature)
 					}
@@ -252,17 +252,17 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				if (context instanceof RosettaFeatureCall) {
 					context.receiver.safeRType(cycleTracker)
 				} else {
-					context.expectedTypeFromContainer ?: NOTHING_WITH_NO_META
+					context.expectedTypeFromContainer ?: NOTHING_WITH_ANY_META
 				}
 			}
 			default:
-				NOTHING_WITH_NO_META
+				NOTHING_WITH_ANY_META
 		}
 	}
 	
 	private def RMetaAnnotatedType safeRType(RosettaExpression expression, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		if (expression === null) {
-			return NOTHING_WITH_NO_META
+			return NOTHING_WITH_ANY_META
 		}
 		getRTypeFromCache(EXPRESSION_RTYPE_CACHE_KEY, expression, [doSwitch(expression, cycleTracker)])
 	}
@@ -292,11 +292,11 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType.withNoMeta ?: NOTHING_WITH_NO_META
+				input?.typeCallToRType.withNoMeta ?: NOTHING_WITH_ANY_META
 			} else if (it instanceof SwitchCaseOrDefault) {
-				guard?.choiceOptionGuard?.RTypeOfSymbol ?: NOTHING_WITH_NO_META
+				guard?.choiceOptionGuard?.RTypeOfSymbol ?: NOTHING_WITH_ANY_META
 			}
-		].orElse(NOTHING_WITH_NO_META)
+		].orElse(NOTHING_WITH_ANY_META)
 	}
 	
 	override protected caseAbsentOperation(RosettaAbsentExpression expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
@@ -306,12 +306,12 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	override protected caseAddOperation(ArithmeticOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		val left = expr.left.safeRType(cycleTracker)
 		val right = expr.right.safeRType(cycleTracker)
-		if (left.isSubtypeOf(NOTHING_WITH_NO_META)) {
-			NOTHING_WITH_NO_META
+		if (left.isSubtypeOf(NOTHING_WITH_ANY_META)) {
+			NOTHING_WITH_ANY_META
 		} else if (left.isSubtypeOf(DATE_WITH_NO_META)) {
 			DATE_TIME_WITH_NO_META
 		} else if (left.isSubtypeOf(UNCONSTRAINED_STRING_WITH_NO_META)) {
-			keepTypeAliasIfPossible(left.RType, right.RType, [l,r|
+			keepTypeAliasIfPossibleWithAnyMeta(left.RType, right.RType, [l,r|
 				if (l instanceof RStringType && r instanceof RStringType) {
 					val s1 = l as RStringType
 					val s2 = r as RStringType
@@ -320,9 +320,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				} else {
 					NOTHING
 				}
-			]).withNoMeta
+			])
 		} else if (left.isSubtypeOf(UNCONSTRAINED_NUMBER_WITH_NO_META)) {
-			keepTypeAliasIfPossible(left.RType, right.RType, [l,r|
+			keepTypeAliasIfPossibleWithAnyMeta(left.RType, right.RType, [l,r|
 				if (l instanceof RNumberType && r instanceof RNumberType) {
 					val n1 = l as RNumberType
 					val n2 = r as RNumberType
@@ -332,9 +332,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				} else {
 					NOTHING
 				}
-			]).withNoMeta
+			])
 		} else {
-			NOTHING_WITH_NO_META
+			NOTHING_WITH_ANY_META
 		}
 	}
 	
@@ -359,7 +359,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		val elseT = expr.elsethen.safeRType(cycleTracker)
 		val joined = joinMetaAnnotatedTypes(ifT, elseT)
 		if (ANY_WITH_NO_META.isSubtypeOf(joined)) {
-			NOTHING_WITH_NO_META
+			NOTHING_WITH_ANY_META
 		} else {
 			joined
 		}
@@ -374,7 +374,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		val right = expr.right.safeRType(cycleTracker)
 		val result = left.joinMetaAnnotatedTypes(right)
 		if (ANY_WITH_NO_META.isSubtypeOf(result)) {
-			NOTHING_WITH_NO_META
+			NOTHING_WITH_ANY_META
 		} else {
 			result
 		}
@@ -407,7 +407,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	override protected caseFeatureCall(RosettaFeatureCall expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		val feature = expr.feature
 		if (!extensions.isResolved(feature)) {
-			return NOTHING_WITH_NO_META
+			return NOTHING_WITH_ANY_META
 		}
 		if (feature instanceof RosettaEnumValue) {
 			expr.receiver.safeRType(cycleTracker)
@@ -419,7 +419,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		val feature = expr.feature
 		if (!extensions.isResolved(feature)) {
-			return NOTHING_WITH_NO_META
+			return NOTHING_WITH_ANY_META
 		}
 		(feature as RosettaFeature).safeRType(expr, cycleTracker)
 	}
@@ -472,14 +472,14 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		val types = expr.elements.map[RMetaAnnotatedType].filter[it !== null]
 		val joined = types.joinMetaAnnotatedTypes
 		if (ANY_WITH_NO_META.isSubtypeOf(joined)) {
-			NOTHING_WITH_NO_META
+			NOTHING_WITH_ANY_META
 		} else {
 			joined
 		}
 	}
 	
 	override protected caseMapOperation(MapOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
-		expr.function?.body?.safeRType(cycleTracker) ?: NOTHING_WITH_NO_META
+		expr.function?.body?.safeRType(cycleTracker) ?: NOTHING_WITH_ANY_META
 	}
 	
 	override protected caseMaxOperation(MaxOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
@@ -493,7 +493,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	override protected caseMultiplyOperation(ArithmeticOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		val left = expr.left.safeRType(cycleTracker)
 		val right = expr.right.safeRType(cycleTracker)
-		keepTypeAliasIfPossible(left.RType, right.RType, [l,r|
+		keepTypeAliasIfPossibleWithAnyMeta(left.RType, right.RType, [l,r|
 			if (l instanceof RNumberType && r instanceof RNumberType) {
 				val n1 = l as RNumberType
 				val n2 = r as RNumberType
@@ -503,7 +503,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			} else {
 				NOTHING
 			}
-		]).withNoMeta
+		])
 	}
 	
 	override protected caseNotEqualsOperation(EqualityOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
@@ -512,7 +512,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	
 	override protected caseNumberLiteral(RosettaNumberLiteral expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		if (expr.value === null) { // In case of a parse error
-			return NOTHING_WITH_NO_META
+			return NOTHING_WITH_ANY_META
 		}
 		constrainedNumber(expr.value.toPlainString.replaceAll("\\.|\\-", "").length, Math.max(0, expr.value.scale), expr.value, expr.value).withNoMeta
 	}
@@ -534,7 +534,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	
 	override protected caseReduceOperation(ReduceOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
-		expr.function?.body?.safeRType(cycleTracker) ?: NOTHING_WITH_NO_META
+		expr.function?.body?.safeRType(cycleTracker) ?: NOTHING_WITH_ANY_META
 	}
 	
 	override protected caseReverseOperation(ReverseOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
@@ -552,12 +552,12 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	override protected caseSubtractOperation(ArithmeticOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
 		val left = expr.left.safeRType(cycleTracker)
 		val right = expr.right.safeRType(cycleTracker)
-		if (left.isSubtypeOf(NOTHING_WITH_NO_META)) {
-			NOTHING_WITH_NO_META
+		if (left.isSubtypeOf(NOTHING_WITH_ANY_META)) {
+			NOTHING_WITH_ANY_META
 		} else if (left.isSubtypeOf(DATE_WITH_NO_META)) {
 			UNCONSTRAINED_INT_WITH_NO_META
 		} else if (left.isSubtypeOf(UNCONSTRAINED_NUMBER_WITH_NO_META)) {
-			keepTypeAliasIfPossible(left.RType, right.RType, [l,r|
+			keepTypeAliasIfPossibleWithAnyMeta(left.RType, right.RType, [l,r|
 				if (l instanceof RNumberType && r instanceof RNumberType) {
 					val n1 = l as RNumberType
 					val n2 = r as RNumberType
@@ -567,9 +567,9 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 				} else {
 					NOTHING
 				}
-			]).withNoMeta
+			])
 		} else {
-			NOTHING_WITH_NO_META
+			NOTHING_WITH_ANY_META
 		}
 	}
 	
@@ -595,7 +595,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	}
 	
 	override protected caseThenOperation(ThenOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
-		expr.function?.body?.safeRType(cycleTracker) ?: NOTHING_WITH_NO_META
+		expr.function?.body?.safeRType(cycleTracker) ?: NOTHING_WITH_ANY_META
 	}
 	
 	override protected caseToEnumOperation(ToEnumOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {

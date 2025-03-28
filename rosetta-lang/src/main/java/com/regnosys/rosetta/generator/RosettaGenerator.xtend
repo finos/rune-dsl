@@ -13,7 +13,6 @@ import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
-import com.regnosys.rosetta.generator.java.reports.TabulatorGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
@@ -58,7 +57,6 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject EnumGenerator enumGenerator
 	@Inject ModelMetaGenerator metaGenerator
 	@Inject ConditionGenerator conditionGenerator
-	@Inject TabulatorGenerator tabulatorGenerator
 	@Inject MetaFieldGenerator metaFieldGenerator
 	@Inject ExternalGenerators externalGenerators
 	@Inject JavaPackageInfoGenerator javaPackageInfoGenerator
@@ -204,14 +202,11 @@ class RosettaGenerator implements IGenerator2 {
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
-				tabulatorGenerator.generateTabulatorForReportData(fsa, t, Optional.empty)
-				tabulatorGenerator.generateTabulatorForData(fsa, t)
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {
 					funcGenerator.generate(packages, fsa, elem, version)
 				}
-				tabulatorGenerator.generateTabulatorForFunction(fsa, elem)
 				labelProviderGenerator.generateForFunctionIfApplicable(fsa, elem)
 			}
 			RosettaRule: {
@@ -219,13 +214,7 @@ class RosettaGenerator implements IGenerator2 {
 			}
 			RosettaReport: {
 				reportGenerator.generate(packages, fsa, elem, version)
-				tabulatorGenerator.generateTabulatorForReport(fsa, elem)
 				labelProviderGenerator.generateForReport(fsa, elem)
-			}
-			RosettaExternalRuleSource: {
-				elem.externalClasses.forEach [ externalClass |
-					tabulatorGenerator.generateTabulatorForReportData(fsa, externalClass.data.buildRDataType, Optional.of(elem))
-				]
 			}
 			RosettaEnumeration: {
 				enumGenerator.generate(packages, fsa, elem.buildREnumType, version)

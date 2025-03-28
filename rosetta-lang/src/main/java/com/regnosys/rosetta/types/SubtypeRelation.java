@@ -106,6 +106,13 @@ public class SubtypeRelation {
 	}
 	
 	public RMetaAnnotatedType join(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {
+	    if (t1.equals(builtins.NOTHING_WITH_ANY_META)) {
+	        return t2;
+	    }
+	    if (t2.equals(builtins.NOTHING_WITH_ANY_META)) {
+	        return t1;
+	    }
+	    
 		RType t1RType = t1.getRType();
 		RType t2RType = t2.getRType();
 		if (t1RType.equals(t2RType)) {

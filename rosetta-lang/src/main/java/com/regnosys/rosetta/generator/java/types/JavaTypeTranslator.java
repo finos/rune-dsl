@@ -19,12 +19,8 @@ package com.regnosys.rosetta.generator.java.types;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
-import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
-import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.simple.*;
 import com.regnosys.rosetta.types.*;
 import com.regnosys.rosetta.types.builtin.*;
@@ -36,7 +32,6 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
-import com.rosetta.model.lib.reports.Tabulator;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.*;
 import com.rosetta.util.types.generated.GeneratedJavaClass;
@@ -124,56 +119,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaClass<ReportFunction<?, ?>> toReportFunctionJavaClass(RosettaReport report) {
 		return generatedJavaClassService.toJavaReportFunction(modelIdProvider.getReportId(report));
-	}
-	public JavaClass<Tabulator<?>> toReportTabulatorJavaClass(RosettaReport report) {
-		return generatedJavaClassService.toJavaReportTabulator(modelIdProvider.getReportId(report));
-	}
-	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Optional<RosettaExternalRuleSource> ruleSource) {
-		ModelSymbolId typeId = modelIdProvider.getSymbolId(type);
-		Optional<RosettaExternalRuleSource> containingRuleSource = ruleSource.flatMap((rs) -> findContainingSuperRuleSource(type, rs));
-		if (containingRuleSource.isEmpty()) {
-			DottedPath packageName = typeId.getNamespace().child("reports");
-			String simpleName = typeId.getName() + "TypeTabulator";
-			return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
-		}
-		ModelSymbolId sourceId = modelIdProvider.getSymbolId(containingRuleSource.get());
-		DottedPath packageName = sourceId.getNamespace().child("reports");
-		String simpleName = typeId.getName() + sourceId.getName() + "TypeTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
-	}
-	private Optional<RosettaExternalRuleSource> findContainingSuperRuleSource(Data type, RosettaExternalRuleSource ruleSource) {
-		if (ruleSource.getExternalClasses().stream().filter(c -> c.getData().equals(type)).findAny().isPresent()) {
-			return Optional.of(ruleSource);
-		}
-		return Optional.ofNullable(ruleSource.getSuperRuleSource()).flatMap(s -> findContainingSuperRuleSource(type, s));
-	}
-	@Deprecated
-	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Function projection) {
-		return generatedJavaClassService.toJavaProjectionTabulator(modelIdProvider.getSymbolId(projection));
-	}
-	@Deprecated
-	public JavaClass<Tabulator<?>> toProjectionTabulatorJavaClass(Data type, Function projection) {
-		ModelSymbolId typeId = modelIdProvider.getSymbolId(type);
-		ModelSymbolId projectionId = modelIdProvider.getSymbolId(projection);
-		DottedPath packageName = projectionId.getNamespace().child("projections");
-		String simpleName = typeId.getName() + projection.getName() + "TypeTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
-	}
-	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Function function) {
-		return generatedJavaClassService.toJavaFunctionTabulator(modelIdProvider.getSymbolId(function));
-	}
-	public JavaClass<Tabulator<?>> toTabulatorJavaClass(Data type, Function function) {
-		ModelSymbolId typeId = modelIdProvider.getSymbolId(type);
-		ModelSymbolId projectionId = modelIdProvider.getSymbolId(function);
-		DottedPath packageName = projectionId.getNamespace().child("tabulator");
-		String simpleName = typeId.getName() + function.getName() + "TypeTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
-	}
-	public JavaClass<Tabulator<?>> toTabulatorJavaClass(RDataType type) {
-		ModelSymbolId typeId = type.getSymbolId();
-		DottedPath packageName = typeId.getNamespace().child("tabulator");
-		String simpleName = typeId.getName() + "TypeTabulator";
-		return new GeneratedJavaClass<>(packageName, simpleName, new com.fasterxml.jackson.core.type.TypeReference<Tabulator<?>>() {});
 	}
 	public JavaConditionInterface toConditionJavaClass(Condition condition) {
 		return new JavaConditionInterface(condition, modelIdProvider, typeProvider, typeSystem, typeUtil, this);
@@ -329,7 +274,12 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaType toJavaType(RMetaAnnotatedType type) {
 		JavaReferenceType javaType = toJavaReferenceType(type.getRType());
+		
 		if (type.hasMeta()) {
+		    if (type.getMetaAttributes().stream().allMatch(m -> "key".equals(m.getName()))) {
+		        return javaType;
+		    }
+		    
 			RType rType = typeSystem.stripFromTypeAliases(type.getRType());
 			DottedPath namespace = metaField(rType.getNamespace());
 			return hasReferenceOrAddressMetadata(type) ? 

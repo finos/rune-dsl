@@ -127,7 +127,7 @@ public class TypeSystem {
 		Objects.requireNonNull(types);
 		Validate.noNullElements(types);
 		
-		RMetaAnnotatedType acc = builtins.NOTHING_WITH_NO_META;
+		RMetaAnnotatedType acc = builtins.NOTHING_WITH_ANY_META;
 		for (RMetaAnnotatedType t: types) {
 			acc = subtypeRelation.join(acc, t);
 			if (acc.equals(builtins.ANY_WITH_NO_META)) {
@@ -296,6 +296,16 @@ public class TypeSystem {
 				}
 			}
 		);
+	}
+	
+	public RMetaAnnotatedType keepTypeAliasIfPossibleWithAnyMeta(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {
+	    RType typeWithMaybeAlias = keepTypeAliasIfPossible(t1, t2, combineUnderlyingTypes);
+	    
+	    if (typeWithMaybeAlias.equals(builtins.NOTHING)) {
+	        return builtins.NOTHING_WITH_ANY_META;
+	    }
+	    
+	    return RMetaAnnotatedType.withNoMeta(typeWithMaybeAlias);
 	}
 	
 	public RType keepTypeAliasIfPossible(RType t1, RType t2, BiFunction<RType, RType, RType> combineUnderlyingTypes) {

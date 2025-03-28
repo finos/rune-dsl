@@ -127,7 +127,6 @@ import java.util.List
 import java.util.Optional
 import java.util.stream.Collectors
 import javax.inject.Inject
-import org.apache.commons.text.StringEscapeUtils
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.EcoreUtil2
@@ -147,6 +146,7 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1354,8 +1354,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
-		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)
-		val withMetaJavaType = withMetaRMetaType.toJavaReferenceType
+ 		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)	
+		val withMetaJavaType =  withMetaRMetaType.toJavaReferenceType
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
 		val argumentJavaType = argumentrMetaType.toJavaReferenceType
 		
@@ -1371,7 +1371,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
 				.collapseToSingleExpression(context.scope)
 
-		if (withMetaJavaType instanceof RJavaFieldWithMeta) {
+		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
 			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList
 			val keyEntry = metaEntries.findFirst[key == "key"]
 			val setMeta = !metaEntriesWithoutKey.empty
@@ -1435,7 +1435,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			]
 		}
 
-		throw new IllegalStateException("caseWithMetaOperation cannot be used with non meta expression type: " +
+		throw new IllegalStateException("caseWithMetaOperation with Java meta or Java POJO expected types: " +
 			withMetaJavaType)
 	}
 	

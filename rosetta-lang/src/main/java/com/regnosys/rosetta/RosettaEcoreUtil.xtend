@@ -42,7 +42,7 @@ class RosettaEcoreUtil {
 	}
 	
 	def Iterable<? extends RosettaFeature> allFeatures(RMetaAnnotatedType t, EObject context) {
-		val List<RosettaFeature>  metas = getMetaDescriptions(t, context)
+		val List<RosettaFeature>  metas = t === builtins.NOTHING_WITH_ANY_META ? newArrayList : getMetaDescriptions(t, context)
 		allFeatures(t.RType, context?.eResource?.resourceSet) + metas
 	}
 	
