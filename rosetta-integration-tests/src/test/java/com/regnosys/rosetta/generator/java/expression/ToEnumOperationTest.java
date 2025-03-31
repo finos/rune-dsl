@@ -22,7 +22,7 @@ public class ToEnumOperationTest {
     private RosettaTestModelService modelService;
     
     @Test
-    void enumToEnumWithSourceAndTargetDisplaceNameTest() {
+    void enumToEnumWithSourceAndTargetDisplayNameTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
                 
@@ -46,7 +46,7 @@ public class ToEnumOperationTest {
     }    
 
     @Test
-    void enumToEnumWithSourceDisplaceNameTest() {
+    void enumToEnumWithSourceDisplayNameTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
                 
@@ -79,8 +79,8 @@ public class ToEnumOperationTest {
                     VALUE2 displayName "FooValueTwo"
                     
                 enum Bar:
-                    VALUE1 
-                    VALUE2 
+                    VALUE1
+                    VALUE2
                 """).compile();
         
         Enum<?> result = model.evaluateExpression(Enum.class, """
@@ -89,7 +89,7 @@ public class ToEnumOperationTest {
         
         var expected = model.getEnumJavaValue("Foo", "VALUE2");
         
-        assertNotNull(result);
+//        assertNotNull(result);
         assertEquals(expected, result);
     }
     
