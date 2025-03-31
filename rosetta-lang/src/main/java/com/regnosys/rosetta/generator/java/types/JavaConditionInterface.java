@@ -97,7 +97,7 @@ public class JavaConditionInterface extends JavaClass<Object> {
 			} else {
 				type = "DataRule";
 			}
-			return type + index;
+			conditionName = type + index;
 		}
 		return cond.getEnclosingType().getName() + conditionName;
 	}
