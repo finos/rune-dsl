@@ -4,6 +4,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 
 import javax.inject.Inject;
 
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
@@ -21,6 +22,37 @@ public class ExpressionValidatorTest {
     private ValidationTestHelper validationTestHelper;
     @Inject
     private RosettaTestModelService modelService;
+
+    @Test
+    void stringEnumToStringWithToEnumShouldWarn() {
+        RosettaExpression expr = modelService.toTestModel("""
+                enum Bar:
+                    VALUE1
+                    VALUE2
+               """).parseExpression("""
+               "VALUE1" to-string to-enum Bar
+               """, "foo Foo (1..1)");
+        
+        validationTestHelper.assertNoIssues(expr);
+    }
+    
+    @Test
+    void usingEnumToStringWithToEnumShouldWarn() {
+        RosettaExpression expr = modelService.toTestModel("""
+                enum Foo:
+                    VALUE1
+                    VALUE2
+
+                enum Bar:
+                    VALUE1
+                    VALUE2
+               """).parseExpression("""
+               foo to-string to-enum Bar
+               """, "foo Foo (1..1)");
+        
+        validationTestHelper.assertIssue(expr, TO_ENUM_OPERATION, null, Severity.WARNING,
+                "Using to-string on enumeration to convert to another enum is not required");
+    }
 
     @Test
     void toEnumDoesWorkOnStrings() {

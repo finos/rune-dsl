@@ -8,6 +8,7 @@ import org.eclipse.xtext.validation.Check;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.expression.ParseOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
+import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.validation.AbstractDeclarativeRosettaValidator;
 
@@ -29,7 +30,14 @@ public class ParseOperationValidator extends ExpressionValidator {
                 RType argumentRType = typeSystem.stripFromTypeAliases(argumentRMetaType.getRType());
                 if (argumentRType.equals(builtins.NOTHING)) {
                     return;
-                } 
+                }
+                if (arg instanceof ToStringOperation) {
+                    var toStringArgument = ((ToStringOperation) arg).getArgument();
+                    RType toStringArgumnetRType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(toStringArgument).getRType());
+                    if (toStringArgumnetRType instanceof REnumType) {
+                        warning("Using to-string on enumeration to convert to another enum is not required", ROSETTA_UNARY_OPERATION__ARGUMENT);
+                    }
+                }
                 if (!typeSystem.isSubtypeOf(argumentRMetaType, builtins.UNCONSTRAINED_STRING_WITH_NO_META)
                         && !(argumentRType instanceof REnumType)) {
                     unsupportedTypeError(argumentRMetaType, ele.getOperator(), ele, ROSETTA_UNARY_OPERATION__ARGUMENT, "Supported argument types are strings and enumerations");
