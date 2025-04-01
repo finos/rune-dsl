@@ -137,7 +137,7 @@ public class JavaTestModel {
 			.findAny()
 			.orElseThrow(() -> new NoSuchElementException("The enum " + enumName + " does not have a value named " + valueName));
 		for (Object enumConst : enumJavaClass.getEnumConstants()) {
-			if (enumConst.toString().equals(enumValueRepr.getName())) {
+			if (enumConst.toString().equals(enumValueRepr.getName()) || enumConst.toString().equals(enumValueRepr.getDisplayName())) {
 				return enumConst;
 			}
 		}

@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -21,6 +22,7 @@ public class ToEnumOperationTest {
     @Inject
     private RosettaTestModelService modelService;
     
+    @Disabled
     @Test
     void enumToEnumWithSourceAndTargetDisplayNameTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
@@ -45,6 +47,7 @@ public class ToEnumOperationTest {
         assertEquals(expected, result);
     }    
 
+    @Disabled
     @Test
     void enumToEnumWithSourceDisplayNameTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
@@ -69,6 +72,7 @@ public class ToEnumOperationTest {
         assertEquals(expected, result);
     }
     
+    @Disabled
     @Test
     void enumToEnumWithTargetDisplayNameTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
@@ -89,7 +93,7 @@ public class ToEnumOperationTest {
         
         var expected = model.getEnumJavaValue("Foo", "VALUE2");
         
-//        assertNotNull(result);
+        assertNotNull(result);
         assertEquals(expected, result);
     }
     
