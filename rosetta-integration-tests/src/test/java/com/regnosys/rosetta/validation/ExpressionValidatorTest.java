@@ -24,7 +24,7 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
 
     @Test
-    void convertinNonEnumToStringThenUsingToEnumShouldHaveNoIssues() {
+    void convertingNonEnumToStringThenUsingToEnumShouldHaveNoIssues() {
         RosettaExpression expr = modelService.toTestModel("""
                 enum Bar:
                     VALUE1
