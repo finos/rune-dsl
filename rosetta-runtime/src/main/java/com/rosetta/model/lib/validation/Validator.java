@@ -21,9 +21,14 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.path.RosettaPath;
 
 public interface Validator<T> {
+	
+	default List<ValidationResult<?>> getValidationResults(RosettaPath path, T objectToBeValidated) {
+		return Lists.newArrayList(validate(path, (RosettaModelObject) objectToBeValidated)); // @Compat: for backwards compatibility. Old generated code will not have an implementation for this method.
+	}
 
 	@SuppressWarnings("unchecked")
 	@Deprecated // Since 9.7.0: use `getValidationResults` instead.
@@ -47,7 +52,12 @@ public interface Validator<T> {
 		return ValidationResult.success(first.getName(), first.getValidationType(), first.getModelObjectName(), path, first.getDefinition());
 	}
 	
-	default List<ValidationResult<?>> getValidationResults(RosettaPath path, T objectToBeValidated) {
-		return Lists.newArrayList(validate(path, objectToBeValidated)); // @Compat: for backwards compatibility. Old generated code will not have an implementation for this method.
+	/**
+	 * This method is purely here to remain backwards compatible and will be removed in the future.
+	 */
+	@SuppressWarnings("unchecked")
+	@Deprecated
+	default ValidationResult<T> validate(RosettaPath path, RosettaModelObject objectToBeValidated) {
+		return validate(path, (T)objectToBeValidated);
 	}
 }
