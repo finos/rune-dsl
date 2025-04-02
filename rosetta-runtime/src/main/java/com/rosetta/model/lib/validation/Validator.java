@@ -21,9 +21,10 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.path.RosettaPath;
 
-public interface Validator<T> {
+public interface Validator<T extends RosettaModelObject> {
 
 	@SuppressWarnings("unchecked")
 	@Deprecated // Since 9.7.0: use `getValidationResults` instead.
