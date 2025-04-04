@@ -736,7 +736,7 @@ repository:
           1: { name: keyword.other.rosetta }
           2: { name: variable.other.member.rosetta }
           3: { name: constant.language.rosetta }
-        end: '(?={{identifier}})'
+        end: '(?!\s|->)|(?=\])|{{sectionEnd}}'
         patterns:
         - include: '#comment'
         - match: (->|->>)\s*({{identifier}})
