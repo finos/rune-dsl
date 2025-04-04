@@ -23,6 +23,7 @@ import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
@@ -71,6 +72,7 @@ public interface Reference extends RosettaModelObject {
 
 	@Override
 	default void process(RosettaPath path, Processor processor) {
+	    processor.processBasic(path.newSubPath("address"), String.class, getReference(), this, AttributeMeta.META);
 	}
 
 	static interface ReferenceBuilder extends Reference, RosettaModelObjectBuilder {
@@ -80,7 +82,9 @@ public interface Reference extends RosettaModelObject {
 
 		ReferenceBuilder setReference(String reference);
 
+		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
+		    processor.processBasic(path.newSubPath("address"), String.class, getReference(), this, AttributeMeta.META);
 		}
 	}
 
@@ -151,10 +155,6 @@ public interface Reference extends RosettaModelObject {
 		@Override
 		public ReferenceBuilder toBuilder() {
 			return new ReferenceBuilderImpl().setScope(scope).setPointsTo(pointsTo).setReference(reference);
-		}
-
-		@Override
-		public void process(RosettaPath path, Processor processor) {
 		}
 
 		@Override

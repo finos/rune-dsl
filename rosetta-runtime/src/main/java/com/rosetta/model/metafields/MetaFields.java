@@ -74,11 +74,9 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	default void process(RosettaPath path, Processor processor) {
 		processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath("template"), String.class, getTemplate(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("location"), String.class, getLocation(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("address"), String.class, getAddress(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath("location"), String.class, getScopedKey(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-		processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
 	}
 	
 
@@ -103,11 +101,9 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		default void process(RosettaPath path, BuilderProcessor processor) {
 			processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath("template"), String.class, getTemplate(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("location"), String.class, getLocation(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("address"), String.class, getAddress(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath("location"), String.class, getScopedKey(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-			processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
 		}
 		
 
