@@ -44,6 +44,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	String getAddress();
 	String getGlobalKey();
 	String getExternalKey();
+	@Deprecated
 	List<? extends Key> getKey();
 	String getScopedKey();
 	
@@ -90,9 +91,13 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		MetaFields.MetaFieldsBuilder setAddress(String address);
 		MetaFields.MetaFieldsBuilder setGlobalKey(String globalKey);
 		MetaFields.MetaFieldsBuilder setExternalKey(String externalKey);
+		@Deprecated
 		MetaFields.MetaFieldsBuilder addKey(Key key0);
+		@Deprecated
 		MetaFields.MetaFieldsBuilder addKey(Key key1, int _idx);
+		@Deprecated
 		MetaFields.MetaFieldsBuilder addKey(List<? extends Key> key2);
+		@Deprecated
 		MetaFields.MetaFieldsBuilder setKey(List<? extends Key> key3);
 		MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey);
 		String getScopedKey();

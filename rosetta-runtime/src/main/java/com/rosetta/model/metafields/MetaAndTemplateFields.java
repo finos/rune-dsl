@@ -49,6 +49,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 	String getTemplateGlobalReference();
 	String getGlobalKey();
 	String getExternalKey();
+	@Deprecated
 	List<? extends Key> getKey();
 	String getKeyScoped();
 
@@ -97,9 +98,13 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplateGlobalReference(String templateGlobalReference);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key0);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key1, int _idx);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(List<? extends Key> key2);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKey(List<? extends Key> key3);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKeyScoped(String keyScoped);
 
