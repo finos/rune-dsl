@@ -1,13 +1,5 @@
 package com.rosetta.model.metafields;
 
-import static java.util.Optional.ofNullable;
-import static com.rosetta.model.lib.SerializedNameConstants.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.rosetta.model.lib.RosettaModelObject;
@@ -16,17 +8,21 @@ import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
-import com.rosetta.model.lib.meta.BasicRosettaMetaData;
-import com.rosetta.model.lib.meta.GlobalKeyFields;
-import com.rosetta.model.lib.meta.Key;
-import com.rosetta.model.lib.meta.MetaDataFields;
-import com.rosetta.model.lib.meta.RosettaMetaData;
+import com.rosetta.model.lib.meta.*;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.util.ListEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static com.rosetta.model.lib.SerializedNameConstants.*;
+import static java.util.Optional.ofNullable;
 
 /**
  * @version 1
@@ -38,11 +34,18 @@ import com.rosetta.util.ListEquals;
 public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDataFields {
 
 	MetaFieldsMeta metaData = new MetaFieldsMeta();
+	String SCHEME = "scheme";
+	String TEMPLATE = "template";
+	String LOCATION = "location";
+	String GLOBAL_KEY = "globalKey";
+	String EXTERNAL_KEY = "externalKey";
 
 	/*********************** Getter Methods  ***********************/
 	String getScheme();
 	String getTemplate();
+	@Deprecated
 	String getLocation();
+	@Deprecated
 	String getAddress();
 	String getGlobalKey();
 	String getExternalKey();
@@ -72,11 +75,11 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	
 	@Override
 	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("template"), String.class, getTemplate(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("location"), String.class, getScopedKey(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(SCHEME), String.class, getScheme(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
 	}
 	
 
@@ -86,7 +89,9 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		List<? extends Key.KeyBuilder> getKey();
 		MetaFields.MetaFieldsBuilder setScheme(String scheme);
 		MetaFields.MetaFieldsBuilder setTemplate(String template);
+		@Deprecated
 		MetaFields.MetaFieldsBuilder setLocation(String location);
+		@Deprecated
 		MetaFields.MetaFieldsBuilder setAddress(String address);
 		MetaFields.MetaFieldsBuilder setGlobalKey(String globalKey);
 		MetaFields.MetaFieldsBuilder setExternalKey(String externalKey);
@@ -99,11 +104,11 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("template"), String.class, getTemplate(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("location"), String.class, getScopedKey(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(SCHEME), String.class, getScheme(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
 		}
 		
 

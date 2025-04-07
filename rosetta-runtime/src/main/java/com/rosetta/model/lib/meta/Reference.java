@@ -45,6 +45,9 @@ import com.rosetta.model.lib.process.Processor;
 @RosettaDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class)
 @RuneDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class, version="0.0.0")
 public interface Reference extends RosettaModelObject {
+
+	String ADDRESS = "address";
+
 	Reference build();
 
 	ReferenceBuilder toBuilder();
@@ -72,7 +75,7 @@ public interface Reference extends RosettaModelObject {
 
 	@Override
 	default void process(RosettaPath path, Processor processor) {
-	    processor.processBasic(path.newSubPath("address"), String.class, getReference(), this, AttributeMeta.META);
+	    processor.processBasic(path.newSubPath(ADDRESS), String.class, getReference(), this, AttributeMeta.META);
 	}
 
 	static interface ReferenceBuilder extends Reference, RosettaModelObjectBuilder {
@@ -84,7 +87,7 @@ public interface Reference extends RosettaModelObject {
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
-		    processor.processBasic(path.newSubPath("address"), String.class, getReference(), this, AttributeMeta.META);
+		    processor.processBasic(path.newSubPath(ADDRESS), String.class, getReference(), this, AttributeMeta.META);
 		}
 	}
 
