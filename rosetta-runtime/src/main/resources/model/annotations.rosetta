@@ -30,3 +30,6 @@ annotation enrich: <"Marks a function that performs enrichment operations">
 annotation projection: <"Marks a function that performs projection operations with the out bound serialisation format">
 	JSON boolean (0..1)
 	XML boolean (0..1)
+
+annotation staticImplementation: <"Annotation that marks a function that has been implemented in static code in the model">	
+	
