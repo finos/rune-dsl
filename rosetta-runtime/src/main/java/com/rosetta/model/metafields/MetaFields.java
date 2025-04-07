@@ -34,11 +34,6 @@ import static java.util.Optional.ofNullable;
 public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDataFields {
 
 	MetaFieldsMeta metaData = new MetaFieldsMeta();
-	String SCHEME = "scheme";
-	String TEMPLATE = "template";
-	String LOCATION = "location";
-	String GLOBAL_KEY = "globalKey";
-	String EXTERNAL_KEY = "externalKey";
 
 	/*********************** Getter Methods  ***********************/
 	String getScheme();
@@ -75,11 +70,11 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	
 	@Override
 	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath(SCHEME), String.class, getScheme(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath(TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath(LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath(GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath(EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.SCHEME), String.class, getScheme(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
 	}
 	
 
@@ -104,11 +99,11 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath(SCHEME), String.class, getScheme(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath(TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath(LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath(GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath(EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.SCHEME), String.class, getScheme(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
 		}
 		
 
