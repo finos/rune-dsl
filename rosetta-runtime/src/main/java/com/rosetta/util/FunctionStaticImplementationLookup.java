@@ -11,7 +11,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public interface FunctionStaticImplementationLookup {
-    boolean hasStaticImplementation(Class<? extends RosettaFunction> fucntion);
+    boolean hasStaticImplementation(String fucntion);
+
 
     class Default implements FunctionStaticImplementationLookup {
         private final Injector injector;
@@ -20,10 +21,10 @@ public interface FunctionStaticImplementationLookup {
         public Default(Injector injector) {
             this.injector = injector;
         }
+        
+        public boolean hasStaticImplementation(Class<?> function) {
 
-        @Override
-        public boolean hasStaticImplementation(Class<? extends RosettaFunction> function) {
-            RosettaFunction instance = injector.getInstance(function);
+            Object instance = injector.getInstance(function);
             Annotation[] annotations = function.getAnnotations();
             Optional<Boolean> isStatic = Arrays.stream(annotations)
                     .filter(a -> a.annotationType().equals(ImplementedBy.class))
@@ -34,6 +35,17 @@ public interface FunctionStaticImplementationLookup {
                         return !defaultImplementation.isAssignableFrom(instance.getClass());
                     });
             return isStatic.orElse(false);
+        }
+
+        @Override
+        public boolean hasStaticImplementation(String fucntion) {
+            Class<?> functionClass;
+            try {
+                functionClass = this.getClass().getClassLoader().loadClass(fucntion);
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+            return hasStaticImplementation(functionClass);
         }
         
     }

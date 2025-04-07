@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 public class FunctionStaticImplementationLookupTest {
     private Injector injector;
-    private FunctionStaticImplementationLookup staticImplementationLookup;
+    private FunctionStaticImplementationLookup.Default staticImplementationLookup;
 
     @BeforeEach
     void setUp() {
