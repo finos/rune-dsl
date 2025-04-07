@@ -23,9 +23,11 @@ import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.path.RosettaPath;
+import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
+import com.rosetta.model.metafields.ProcessorPathConstants;
 
 /**
  * @author TomForwood This class represents a reference to a rosetta object
@@ -44,6 +46,7 @@ import com.rosetta.model.lib.process.Processor;
 @RosettaDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class)
 @RuneDataType(value = "Reference", builder = Reference.ReferenceBuilderImpl.class, version="0.0.0")
 public interface Reference extends RosettaModelObject {
+
 	Reference build();
 
 	ReferenceBuilder toBuilder();
@@ -71,6 +74,7 @@ public interface Reference extends RosettaModelObject {
 
 	@Override
 	default void process(RosettaPath path, Processor processor) {
+	    processor.processBasic(path.newSubPath(ProcessorPathConstants.ADDRESS), String.class, getReference(), this, AttributeMeta.META);
 	}
 
 	static interface ReferenceBuilder extends Reference, RosettaModelObjectBuilder {
@@ -80,7 +84,9 @@ public interface Reference extends RosettaModelObject {
 
 		ReferenceBuilder setReference(String reference);
 
+		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
+		    processor.processBasic(path.newSubPath(ProcessorPathConstants.ADDRESS), String.class, getReference(), this, AttributeMeta.META);
 		}
 	}
 
@@ -151,10 +157,6 @@ public interface Reference extends RosettaModelObject {
 		@Override
 		public ReferenceBuilder toBuilder() {
 			return new ReferenceBuilderImpl().setScope(scope).setPointsTo(pointsTo).setReference(reference);
-		}
-
-		@Override
-		public void process(RosettaPath path, Processor processor) {
 		}
 
 		@Override
