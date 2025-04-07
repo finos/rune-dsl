@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.Function;
 
 public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
+//    @Inject
     
     
     @Check

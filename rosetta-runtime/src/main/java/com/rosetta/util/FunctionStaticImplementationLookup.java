@@ -7,14 +7,13 @@ import com.google.inject.Injector;
 import com.rosetta.model.lib.functions.RosettaFunction;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.util.Arrays;
 import java.util.Optional;
 
-public interface StaticImplementationLookup {
+public interface FunctionStaticImplementationLookup {
     boolean hasStaticImplementation(Class<? extends RosettaFunction> fucntion);
 
-    class Default implements StaticImplementationLookup {
+    class Default implements FunctionStaticImplementationLookup {
         private final Injector injector;
 
         @Inject

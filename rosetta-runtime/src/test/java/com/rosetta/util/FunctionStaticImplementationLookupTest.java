@@ -2,25 +2,23 @@ package com.rosetta.util;
 
 import com.google.inject.ImplementedBy;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StaticImplementationLookupTest {
+public class FunctionStaticImplementationLookupTest {
     private Injector injector;
-    private StaticImplementationLookup staticImplementationLookup;
+    private FunctionStaticImplementationLookup staticImplementationLookup;
 
     @BeforeEach
     void setUp() {
         injector = mock(Injector.class);
-        staticImplementationLookup = new StaticImplementationLookup.Default(injector);
+        staticImplementationLookup = new FunctionStaticImplementationLookup.Default(injector);
     }
 
     @Test
