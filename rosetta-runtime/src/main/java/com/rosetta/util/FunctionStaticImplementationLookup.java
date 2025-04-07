@@ -41,7 +41,7 @@ public interface FunctionStaticImplementationLookup {
         public boolean hasStaticImplementation(String fucntion) {
             Class<?> functionClass;
             try {
-                functionClass = this.getClass().getClassLoader().loadClass(fucntion);
+                functionClass = Thread.currentThread().getContextClassLoader().loadClass(fucntion);
             } catch (ClassNotFoundException e) {
                 return false;
             }
