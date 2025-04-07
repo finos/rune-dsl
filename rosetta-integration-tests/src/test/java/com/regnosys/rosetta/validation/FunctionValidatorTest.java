@@ -23,6 +23,7 @@ public class FunctionValidatorTest {
     private RosettaTestModelService modelService;
     @Inject
     private ModelHelper modelHelper;
+
     
     @Test
     void staticFunctionWithNoImplementationShouldWarn() {
