@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
-import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
@@ -19,8 +18,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 public class FunctionValidatorTest {
     @Inject
     private ValidationTestHelper validationTestHelper;
-    @Inject
-    private RosettaTestModelService modelService;
     @Inject
     private ModelHelper modelHelper;
     
@@ -44,7 +41,6 @@ public class FunctionValidatorTest {
     void functionWithNoImplementationAndNoAnnotationShouldWarn() {
         var model = """
             func Foo:
-              [codeImplementation]
               output:
                 result string (1..1)   
             """;
