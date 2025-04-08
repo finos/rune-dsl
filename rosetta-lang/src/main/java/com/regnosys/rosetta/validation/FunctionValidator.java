@@ -10,14 +10,11 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     
     @Check
     public void warnWhenEmptyFunctionsDontHaveCodeImplementationAnnotation(Function function) {
-        boolean hasCodeImplementationAnnotation = false;
-        if (function instanceof Annotated) {
-            Annotated annotated = (Annotated) function;
-            hasCodeImplementationAnnotation = annotated.getAnnotations()
-            .stream()
-            .map(aRef -> aRef.getAnnotation())
-            .anyMatch(a -> "codeImplementation".equals(a.getName()));
-        }
+        Annotated annotated = (Annotated) function;
+        boolean hasCodeImplementationAnnotation = annotated.getAnnotations()
+        .stream()
+        .map(aRef -> aRef.getAnnotation())
+        .anyMatch(a -> "codeImplementation".equals(a.getName()));
         
         if (function.getOperations().isEmpty() && !hasCodeImplementationAnnotation) {
             warning("Functions with no Rune implementation should be annotated with codeImplementation", function, ROSETTA_NAMED__NAME);
