@@ -406,15 +406,13 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			ele.regionFor.keyword('>')
 				.prepend[noSpace]
 			
-			// Force a new line after documentation
-			val endingRegion = ele.regionFor.keyword('>')
-			if (endingRegion !== null) {
-				val formatting = createHiddenRegionFormatting
-				formatting.priority = IHiddenRegionFormatter.HIGH_PRIORITY
-				formatting.newLinesMin = 1
-				val replacer = createHiddenRegionReplacer(endingRegion.nextHiddenRegion, formatting);
-				addReplacer(replacer);
-			}
+			// Force a new line after documentation		
+			val formatting = createHiddenRegionFormatting
+			formatting.priority = IHiddenRegionFormatter.HIGH_PRIORITY
+			formatting.newLinesMin = 1
+			val replacer = createHiddenRegionReplacer(ele.regionFor.keyword('>')
+				.nextHiddenRegion, formatting);
+			addReplacer(replacer);
 		}
 		return ele
 	}

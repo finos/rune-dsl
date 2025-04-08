@@ -18,11 +18,9 @@ package com.regnosys.rosetta.tools.modelimport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -41,7 +39,6 @@ import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
@@ -134,9 +131,6 @@ public class XsdImportTest {
 			
 			XtextResource actualResource = (XtextResource) set.getResource(URI.createURI(resource.getFileName().toString()), false);
 			String actual = formatterService.formatXtextResource(actualResource);
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			actualResource.save(output, null);
-			// String actual = output.toString(StandardCharsets.UTF_8);
 			
 			assertEquals(expected, actual);
 		}
