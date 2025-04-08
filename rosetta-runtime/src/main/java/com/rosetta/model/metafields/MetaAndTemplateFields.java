@@ -42,11 +42,14 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 	/*********************** Getter Methods  ***********************/
 	String getScheme();
 	String getTemplate();
+	@Deprecated
 	String getLocation();
+	@Deprecated
 	String getAddress();
 	String getTemplateGlobalReference();
 	String getGlobalKey();
 	String getExternalKey();
+	@Deprecated
 	List<? extends Key> getKey();
 	String getKeyScoped();
 
@@ -73,14 +76,13 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 	
 	@Override
 	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("template"), String.class, getTemplate(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("location"), String.class, getLocation(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("address"), String.class, getAddress(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("templateGlobalReference"), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-		processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-		processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.SCHEME), String.class, getScheme(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.LOCATION), String.class, getLocation(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE_GLOBAL_REFERENCE), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getKeyScoped(), this, AttributeMeta.META);
+		processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+        processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
 	}
 	
 
@@ -90,27 +92,32 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		List<? extends Key.KeyBuilder> getKey();
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setScheme(String scheme);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplate(String template);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setLocation(String location);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setAddress(String address);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplateGlobalReference(String templateGlobalReference);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key0);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(Key key1, int _idx);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder addKey(List<? extends Key> key2);
+		@Deprecated
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKey(List<? extends Key> key3);
 		MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKeyScoped(String keyScoped);
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath("scheme"), String.class, getScheme(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("template"), String.class, getTemplate(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("location"), String.class, getLocation(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("address"), String.class, getAddress(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("templateGlobalReference"), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("globalKey"), String.class, getGlobalKey(), this, AttributeMeta.META);
-			processor.processBasic(path.newSubPath("externalKey"), String.class, getExternalKey(), this, AttributeMeta.META);
-			processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.SCHEME), String.class, getScheme(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE), String.class, getTemplate(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.LOCATION), String.class, getKeyScoped(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE_GLOBAL_REFERENCE), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
+			processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+            processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
 		}
 		
 
