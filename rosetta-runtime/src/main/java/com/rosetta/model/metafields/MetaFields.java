@@ -76,6 +76,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+        processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
 	}
 	
 
@@ -109,6 +110,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.LOCATION), String.class, getScopedKey(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+	        processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
 		}
 		
 
