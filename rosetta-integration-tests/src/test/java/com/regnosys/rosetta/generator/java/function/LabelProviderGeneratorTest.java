@@ -121,6 +121,7 @@ public class LabelProviderGeneratorTest {
 				annotation myAnn:
 				
 				func MyFunc:
+				    [codeImplementation]
 					[myAnn]
 					output:
 						foo Foo (1..1)
@@ -142,6 +143,7 @@ public class LabelProviderGeneratorTest {
 					other int (1..1)
 				
 				func MyFunc:
+				    [codeImplementation]
 					[ingest JSON]
 					output:
 						foo Foo (1..1)
@@ -369,6 +371,7 @@ public class LabelProviderGeneratorTest {
 					b B (0..1)
 				
 				func MyFunc:
+				    [codeImplementation]
 					[ingest JSON]
 					output:
 						foo Foo (1..1)
