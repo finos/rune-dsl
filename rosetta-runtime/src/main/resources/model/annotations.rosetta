@@ -31,4 +31,4 @@ annotation projection: <"Marks a function that performs projection operations wi
 	JSON boolean (0..1)
 	XML boolean (0..1)
 	
-annotation codeImplementation <"Marks the function as statically implemented by model internal code, with no body defined in Rune.">
+annotation codeImplementation: <"Marks the function as statically implemented by model internal code, with no body defined in Rune.">
