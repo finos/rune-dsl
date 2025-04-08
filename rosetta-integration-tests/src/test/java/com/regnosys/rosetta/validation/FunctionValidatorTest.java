@@ -47,7 +47,7 @@ public class FunctionValidatorTest {
 
        var parsed = modelHelper.parseRosetta(model);
 
-       validationTestHelper.assertWarning(parsed, FUNCTION, null, "Functions with no Rune implementation should be annotated with codeImplementation");
+       validationTestHelper.assertWarning(parsed, FUNCTION, null, "A function should specify an implementation, or they should be annotated with codeImplementation");
     }
 
     @Test
