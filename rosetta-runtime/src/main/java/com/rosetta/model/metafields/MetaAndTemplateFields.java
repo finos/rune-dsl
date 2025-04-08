@@ -82,6 +82,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE_GLOBAL_REFERENCE), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getKeyScoped(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+        processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
 	}
 	
 
@@ -116,6 +117,7 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.TEMPLATE_GLOBAL_REFERENCE), String.class, getTemplateGlobalReference(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.GLOBAL_KEY), String.class, getGlobalKey(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
+            processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
 		}
 		
 
