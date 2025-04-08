@@ -50,4 +50,20 @@ public class FunctionValidatorTest {
        validationTestHelper.assertWarning(parsed, FUNCTION, null, "Functions with no Rune implementation should be annotated with codeImplementation");
     }
 
+    @Test
+    void functionWithCodeImplementationAnnotationAndBodyShouldWarn() {
+        var model = """
+                func Foo:
+                  [codeImplementation]
+                  output:
+                    result string (1..1)
+                    
+                  set result: "output"  
+                """;
+
+           var parsed = modelHelper.parseRosetta(model);
+           
+           validationTestHelper.assertWarning(parsed, FUNCTION, null, "Functions annotated with codeImplementation should not have any setter operations as they will be overriden");
+
+    }
 }

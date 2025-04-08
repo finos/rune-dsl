@@ -2662,7 +2662,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void shouldNotGenerateCardinalityWarning2() {
 		val model = '''
 			func FuncFoo:
-			  [codeImplementation]
 			 	inputs:
 			 		n1 number (0..1)
 			 		n2 number (0..1)
