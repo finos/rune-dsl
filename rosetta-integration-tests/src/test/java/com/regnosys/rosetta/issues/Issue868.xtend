@@ -38,6 +38,7 @@ class Issue868 {
 					AssetType then empty
 		
 		func OtherFunc:
+		  [codeImplementation]
 			inputs:
 				inp int (1..1)
 			output:

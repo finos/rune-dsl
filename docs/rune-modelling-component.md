@@ -389,6 +389,19 @@ Once an annotation is defined, model components can be annotated with its name a
 [<annotationName> (optional: <annotationAttribute>)]
 ```
 
+#### Code Implementation Annotation
+
+The `codeImplementation` annotation is intended to inform users of the model that the implementation of a function has been provided elsewhere in the model's codebase. An example of this could be a static, handwritten Java class that implements the annotated function defined in the model. Code implemented functions should not contain any implementation themselves, as they will be overridden by the static model code. An example of a correctly annotated function with no Rune implementation can be seen below.
+
+```Haskell
+func MyFunc:
+  [codeImplementation]
+  inputs:
+    myInput string (1..1)
+  output:
+    myOutput string (1..1)
+```
+
 #### Meta-Data Annotation
 
 The `metadata` annotation includes attributes that define a set qualifiers that can be applied to a data type or attribute. By default Rune includes several metadata annotations:

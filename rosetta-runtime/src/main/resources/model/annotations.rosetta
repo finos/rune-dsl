@@ -30,3 +30,5 @@ annotation enrich: <"Marks a function that performs enrichment operations">
 annotation projection: <"Marks a function that performs projection operations with the out bound serialisation format">
 	JSON boolean (0..1)
 	XML boolean (0..1)
+	
+annotation codeImplementation: <"Marks the function as statically implemented by model internal code, with no body defined in Rune.">

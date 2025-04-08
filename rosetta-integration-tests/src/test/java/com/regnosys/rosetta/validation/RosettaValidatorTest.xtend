@@ -2669,6 +2669,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					n1 + n2 = n3Alias
 					
 			func GetNumberList:
+			  [codeImplementation]
 				inputs:
 					x number (1..1)
 				output:
@@ -3485,6 +3486,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			import test.two.*
 			
 			func Bar:
+			  [codeImplementation]
 				inputs:
 					foo1 Foo1 (1..1)
 				output:
@@ -3514,6 +3516,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			import test.one.*
 			
 			func Bar:
+			  [codeImplementation]
 				inputs:
 					foo1 Foo1 (1..1)
 				output:

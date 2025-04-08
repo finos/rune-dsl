@@ -101,6 +101,7 @@ class ExpressionGeneratorTest {
 			override attr int (1..1)
 		
 		func Round:
+		  [codeImplementation]
 			inputs:
 				inp number (1..1)
 			output:
