@@ -40,7 +40,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testProjectAnnotationHasTargetFormat() {
 		val model1 = '''
 			func Foo:
-			    [codeImplementation]
 				[projection XML]
 		'''.parseRosetta
 		
@@ -48,7 +47,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		val model2 = '''
 			func Foo:
-			    [codeImplementation]
 				[projection]
 		'''.parseRosetta
 		
@@ -59,7 +57,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testIngestAnnotationHasSourceFormat() {
 		val model1 = '''
 			func Foo:
-			    [codeImplementation]
 				[ingest JSON]
 		'''.parseRosetta
 		
@@ -67,7 +64,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		val model2 = '''
 			func Foo:
-			    [codeImplementation]
 				[ingest]
 		'''.parseRosetta
 		
@@ -78,7 +74,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 	def void testMultipleTransformAnnotationsCanNotBeUsed() {
 		val model1 = '''
 			func Foo:
-			    [codeImplementation]
 				[ingest JSON]
 		'''.parseRosetta
 		
@@ -86,7 +81,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		
 		val model2 = '''
 			func Foo:
-			    [codeImplementation]
 				[ingest JSON]
 				[enrich]
 		'''.parseRosetta
@@ -167,7 +161,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			  	b int (1..1)
 			
 			func MyFunc:
-			  [codeImplementation]
 				inputs:
 			    	foo Foo (1..1)
 			      		[metadata scheme]
@@ -3479,14 +3472,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			namespace test.one
 			
 			type Foo1:
-			  [codeImplementation]
 				attr int (1..1)
 		''',
 		'''
 			namespace test.two
 			
 			type Foo2:
-			  [codeImplementation]
 				attr int (1..1)
 		''',
 		'''
