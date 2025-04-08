@@ -20,9 +20,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -48,6 +50,7 @@ import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.regnosys.rosetta.generator.RosettaGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +96,34 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 		}
 		return rosettaGenerator;
 	}
+	
+	/* START ORDERING HACK */
+	private List<String> fileOrder = null;
+	public void setFileOrder(List<String> fileOrder) {
+		this.fileOrder = fileOrder;
+	}
+	
+	private List<URI> getOrderedURIs(Iterable<URI> resourceURIs) {
+		if (fileOrder == null) {
+			if (resourceURIs instanceof List<?>) {
+				return (List<URI>)resourceURIs;
+			}
+			return Lists.newArrayList(resourceURIs);
+		}
+		LOG.warn("Using ordering hack");
+		Set<URI> unordered = Sets.newLinkedHashSet(resourceURIs);
+		List<URI> result = new ArrayList<>(unordered.size());
+		fileOrder.forEach(file -> {
+			URI match = unordered.stream().filter(uri -> uri.toString().endsWith("/" + file)).findAny().orElse(null);
+			if (match != null) {
+				unordered.remove(match);
+				result.add(match);
+			}
+		});
+		result.addAll(unordered);
+		return result;
+	}
+	/* END ORDERING HACK */
 
 	private boolean needsBeforeAllCall = false;
 	private ResourceSet currentResourceSet;
@@ -125,9 +156,9 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 			LOG.info("Investigating " + Iterables.size(rootsToTravers) + " of " + Iterables.size(getClassPathEntries())
 					+ " class path entries.");
 		}
-		List<URI> sourceResourceURIs = collectResources(getSourceDirs(), resourceSet);
+		List<URI> sourceResourceURIs = getOrderedURIs(collectResources(getSourceDirs(), resourceSet));
 		// PATCHED THE FOLLOWING LINE TO WORKAROUND ISSUE: https://github.com/finos/rune-dsl/issues/878
-		Iterable<URI> allResourcesURIs = Iterables.concat(collectResources(rootsToTravers, resourceSet), sourceResourceURIs);
+		Iterable<URI> allResourcesURIs = getOrderedURIs(Iterables.concat(collectResources(rootsToTravers, resourceSet), sourceResourceURIs));
 		forceDebugLog("Finished collecting source models. Took: " + (System.currentTimeMillis() - startedAt) + " ms.");
 		Iterable<String> allClassPathEntries = Iterables.concat(getSourceDirs(), getClassPathEntries());
 		if (needsJava) {
