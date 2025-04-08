@@ -43,19 +43,6 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 
 	@Inject
 	private ImportManagementService importManagementService;
-	
-	@Inject
-	private FormattingOptionsService optionsService;
-	
-	@Override
-	public void formatCollection(Collection<Resource> resources, IFormattedResourceAcceptor acceptor) {
-		formatCollection(resources, optionsService.getDefaultPreferences(), acceptor);
-	}
-
-	@Override
-	public String formatXtextResource(XtextResource resource) {
-		return formatXtextResource(resource, optionsService.getDefaultPreferences());
-	}
 
 	@Override
 	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferences,

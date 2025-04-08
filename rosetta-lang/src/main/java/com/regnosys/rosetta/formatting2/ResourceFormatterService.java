@@ -30,7 +30,9 @@ public interface ResourceFormatterService {
 	 * @param acceptor  an {@link IFormattedResourceAcceptor} to process the
 	 *                  formatted resource and its content
 	 */
-	void formatCollection(Collection<Resource> resources, IFormattedResourceAcceptor acceptor);
+	default void formatCollection(Collection<Resource> resources, IFormattedResourceAcceptor acceptor) {
+		formatCollection(resources, null, acceptor);
+	}
 
 	/**
 	 * Formats the given {@link XtextResource} in-memory and returns the formatted
@@ -44,7 +46,9 @@ public interface ResourceFormatterService {
 	 * @param resources the {@link XtextResource} to format
 	 * @return the formatted contents
 	 */
-	String formatXtextResource(XtextResource resource);
+	default String formatXtextResource(XtextResource resource) {
+		return formatXtextResource(resource, null);
+	}
 
 	/**
 	 * Formats each {@link XtextResource} in the provided collection in-memory,

@@ -17,10 +17,8 @@
 package com.regnosys.rosetta.tools.modelimport;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +30,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 
@@ -43,16 +40,12 @@ public class RosettaModelFactory {
 	private final ResourceSet resourceSet;
 	
 	private final Set<Resource> builtinResources = new HashSet<>();
-	
-	private final ResourceFormatterService formatterService;
 
 	@Inject
-	public RosettaModelFactory(ResourceSet resourceSet, RosettaBuiltinsService builtins, ResourceFormatterService formatterService) {
+	public RosettaModelFactory(ResourceSet resourceSet, RosettaBuiltinsService builtins) {
 		this.resourceSet = resourceSet;
 		builtinResources.add(resourceSet.getResource(builtins.basicTypesURI, true));
 		builtinResources.add(resourceSet.getResource(builtins.annotationsURI, true));
-		
-		this.formatterService = formatterService;
 	}
 	
 	public ResourceSet getResourceSet() {
@@ -75,19 +68,10 @@ public class RosettaModelFactory {
 		List<Resource> resources = resourceSet.getResources().stream()
 			.filter(r -> !builtinResources.contains(r))
 			.collect(Collectors.toList());
-		try {
-			formatterService.formatCollection(resources,
-					(resource, formattedText) -> {
-						String fileName = resource.getURI().toFileString();
-						Path resourcePath = Path.of(outputDirectory).resolve(fileName);
-						try {
-							Files.writeString(resourcePath, formattedText);
-						} catch (IOException e) {
-							throw new UncheckedIOException(e);
-						}
-					});
-		} catch (UncheckedIOException e) {
-			throw e.getCause();
+		for (Resource resource : resources) {
+			String fileName = resource.getURI().toFileString();
+			resource.setURI(URI.createFileURI(outputDirectory + "/" + fileName));
+			resource.save(Map.of());
 		}
 	}
 

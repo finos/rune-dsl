@@ -104,8 +104,8 @@ class UnnecessaryElementsRemoverTest {
 		import a.*
 		
 		func F:
-			inputs:
-				a string (1..1)
+		    inputs:
+		        a string (1..1)
 			output:
 				result MyEnum (1..1)
 		
