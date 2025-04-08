@@ -36,6 +36,7 @@ import javax.inject.Provider;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
@@ -48,6 +49,7 @@ import org.xmlet.xsdparser.core.XsdParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.rosetta.util.serialisation.RosettaXMLConfiguration;
@@ -70,6 +72,8 @@ public class XsdImportTest {
 	@Inject
 	RBuiltinTypeService builtins;
 	@Inject
+	ResourceFormatterService formatterService;
+	@Inject
 	XsdUtil util;
 
 	@Inject
@@ -82,7 +86,7 @@ public class XsdImportTest {
 		rosettaXsdMapping = new RosettaXsdMapping(builtins, util);
 		resourceSet = resourceSetProvider.get();
 		// Add builtin types to the resource set
-		new RosettaModelFactory(resourceSet, builtinResources);
+		new RosettaModelFactory(resourceSet, builtinResources, formatterService);
 		rosettaXsdMapping.initializeBuiltins(resourceSet);
 	}
 	
@@ -128,10 +132,11 @@ public class XsdImportTest {
 		for (Path resource: expectedResources) {
 			String expected = Files.readString(resource);
 			
-			Resource actualResource = set.getResource(URI.createURI(resource.getFileName().toString()), false);
+			XtextResource actualResource = (XtextResource) set.getResource(URI.createURI(resource.getFileName().toString()), false);
+			String actual = formatterService.formatXtextResource(actualResource);
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			actualResource.save(output, null);
-			String actual = output.toString(StandardCharsets.UTF_8);
+			// String actual = output.toString(StandardCharsets.UTF_8);
 			
 			assertEquals(expected, actual);
 		}

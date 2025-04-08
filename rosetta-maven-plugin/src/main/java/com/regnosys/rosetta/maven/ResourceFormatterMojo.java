@@ -18,12 +18,14 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.lsp4j.FormattingOptions;
+import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
+import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 
 /**
@@ -67,24 +69,28 @@ public class ResourceFormatterMojo extends AbstractMojo {
 	private String path;
 
 	/**
-	 * Path to the .json file containing formatting options
+	 * Optional path to a .json file containing formatting options
 	 */
-	@Parameter(property = "formattingOptionsPath", required = false)
+	@Parameter(property = "formattingOptionsPath")
 	private String formattingOptionsPath;
 	
 	@Inject
-	private FormattingOptionsAdaptor formattingOptionsAdapter;
+	private FormattingOptionsService formattingOptionsService;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		Path directory = Paths.get(path);
 		LOGGER.info("Mojo running on path:" + directory.toString());
 
-		FormattingOptions formattingOptions = null;
-		try {
-			formattingOptions = formattingOptionsAdapter.readFormattingOptions(formattingOptionsPath);
-		} catch (IOException e) {
-			LOGGER.error("Config file not found.", e);
+		ITypedPreferenceValues formattingOptions;
+		if (formattingOptionsPath == null) {
+			formattingOptions = formattingOptionsService.getDefaultPreferences();
+		} else {
+			try {
+				formattingOptions = formattingOptionsService.readPreferencesFromFile(formattingOptionsPath);
+			} catch (IOException e) {
+				throw new MojoFailureException("Failed to read formatting options from file " + formattingOptionsPath + ".", e);
+			}
 		}
 
 		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -101,7 +107,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 			throw new MojoFailureException("Error processing files: " + e.getMessage(), e);
 		}
 		// format resources
-		formatterService.formatCollection(resources, formattingOptionsAdapter.createPreferences(formattingOptions),
+		formatterService.formatCollection(resources, formattingOptions,
 				(resource, formattedText) -> {
 					Path resourcePath = Path.of(resource.getURI().toFileString());
 					try {
