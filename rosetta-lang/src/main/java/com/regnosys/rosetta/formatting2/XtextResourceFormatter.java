@@ -50,7 +50,9 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
 				String formattedContents = formatXtextResource((XtextResource) resource, preferences);
-				acceptor.accept(resource, formattedContents);
+				if (formattedContents != null) {
+					acceptor.accept(resource, formattedContents);
+				}
 			} else {
 				LOGGER.debug("Resource is not of type XtextResource and is skipped: " + resource.getURI());
 			}
