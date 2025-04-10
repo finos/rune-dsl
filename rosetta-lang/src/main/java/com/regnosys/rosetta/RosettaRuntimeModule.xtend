@@ -40,7 +40,7 @@ import com.regnosys.rosetta.cache.RequestScopedCache
 import com.regnosys.rosetta.formatting2.XtextResourceFormatter
 import com.regnosys.rosetta.formatting2.ResourceFormatterService
 import org.eclipse.xtext.formatting2.FormatterRequest
-import com.regnosys.rosetta.formatting2.RosettaFormatterRequestProvider
+import com.regnosys.rosetta.formatting2.FormatterRequestWithDefaultPreferencesProvider
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -74,7 +74,7 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	}
 	
 	def Class<? extends Provider<FormatterRequest>> provideFormatterRequest() {
-		RosettaFormatterRequestProvider
+		FormatterRequestWithDefaultPreferencesProvider
 	}
 	
 	override Class<? extends ITransientValueService> bindITransientValueService() {
