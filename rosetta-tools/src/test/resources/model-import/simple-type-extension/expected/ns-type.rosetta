@@ -2,11 +2,11 @@ namespace test.ns : < "test.ns definition" >
 version "${project.version}"
 
 typeAlias CurrencyCode: <"A code allocated to a currency.">
-	string(pattern: "[A-Z]{3,3}")
+    string(pattern: "[A-Z]{3,3}")
 
 typeAlias Decimal19: number(digits: 25, fractionalDigits: 19, min: 0)
 
 type CurrencyAnd19DecimalAmount: <"A currency and a 19 decimal amount.">
 
-	value Decimal19 (1..1)
-	currency CurrencyCode (1..1)
+    value Decimal19 (1..1)
+    currency CurrencyCode (1..1)

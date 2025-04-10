@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.formatting2.IFormatter2;
@@ -14,6 +15,7 @@ import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.serializer.impl.Serializer;
 import org.eclipse.xtext.util.ITextRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,40 +36,44 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	private Provider<IFormatter2> iFormatter2Provider;
 
 	@Inject
-	private TextRegionAccessBuilder regionBuilder;
+	private Provider<TextRegionAccessBuilder> regionBuilderProvider;
+	
+	@Inject
+	private Serializer serializer;
 
 	@Inject
 	private ImportManagementService importManagementService;
 
 	@Override
-	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferenceValues,
+	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferences,
 			IFormattedResourceAcceptor acceptor) {
 		resources.stream().forEach(resource -> {
 			if (resource instanceof XtextResource) {
-				formatXtextResource((XtextResource) resource, preferenceValues, acceptor);
-
+				String formattedContents = formatXtextResource((XtextResource) resource, preferences);
+				if (formattedContents != null) {
+					acceptor.accept(resource, formattedContents);
+				}
 			} else {
-				LOGGER.debug("Resource is not of type XtextResource and will be skipped: " + resource.getURI());
+				LOGGER.debug("Resource is not of type XtextResource and is skipped: " + resource.getURI());
 			}
 		});
 	}
 
 	@Override
-	public void formatXtextResource(XtextResource resource, ITypedPreferenceValues preferenceValues,
-			IFormattedResourceAcceptor acceptor) {
+	public String formatXtextResource(XtextResource resource, ITypedPreferenceValues preferences) {
 		if (!resource.getAllContents().hasNext()) {
-			LOGGER.info("Resource " + resource.getURI() + " is empty.");
-			return;
+			LOGGER.debug("Resource " + resource.getURI() + " is empty.");
+			return null;
 		}
 
-		LOGGER.info("Formatting file at location " + resource.getURI());
+		LOGGER.debug("Formatting file at location " + resource.getURI());
 
 		// setup request and formatter
 		FormatterRequest req = formatterRequestProvider.get();
-		req.setPreferences(preferenceValues);
+		req.setPreferences(preferences);
 		IFormatter2 formatter = iFormatter2Provider.get();
 
-		ITextRegionAccess regionAccess = regionBuilder.forNodeModel(resource).create();
+		ITextRegionAccess regionAccess = getRegionAccess(resource);
 		req.setTextRegionAccess(regionAccess);
 
 		// list contains all the replacements which should be applied to resource
@@ -88,8 +94,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
-		// Perform handler operation
-		acceptor.accept(resource, formattedString);
+		return formattedString;
 	}
 
 	public ITextReplacement formattedImportsReplacement(XtextResource resource, ITextRegionAccess regionAccess) {
@@ -103,6 +108,16 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		String sortedImportsText = importManagementService.toString(model.getImports());
 		return regionAccess.getRewriter().createReplacement(importsRegion.getOffset(), importsRegion.getLength(),
 				sortedImportsText);
+	}
+	
+	private ITextRegionAccess getRegionAccess(XtextResource resource) {
+		if (resource.getParseResult() != null) {
+			TextRegionAccessBuilder regionBuilder = regionBuilderProvider.get();
+			return regionBuilder.forNodeModel(resource).create();
+		} else {
+			EObject root = resource.getContents().get(0);
+			return serializer.serializeToRegions(root);
+		}
 	}
 
 	/**
@@ -123,5 +138,4 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 
 		return firstRegion.merge(lastRegion);
 	}
-
 }

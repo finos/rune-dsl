@@ -1,7 +1,7 @@
 namespace test
 
 typeAlias maxNBoundedNumber(
-	n int
-	, max number <"The maximum bound on this number. If absent, this number is unbounded from above.">
+    n int
+    , max number <"The maximum bound on this number. If absent, this number is unbounded from above.">
 ): <"A bounded decimal number with N maximum number of digits.">
-	number(digits: n, max: max)
+    number(digits: n, max: max)

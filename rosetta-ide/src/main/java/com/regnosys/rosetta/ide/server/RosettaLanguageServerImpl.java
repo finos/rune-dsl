@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.ide.server;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -50,7 +49,7 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 
-import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
+import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
 import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
@@ -63,7 +62,7 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
  *
  */
 public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
-	@Inject FormattingOptionsAdaptor formattingOptionsAdapter;
+	@Inject FormattingOptionsService formattingOptionsService;
 	@Inject CodeActionUtils codeActionUtils;
 
 	@Override
@@ -209,12 +208,7 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl  implements Ro
 
 	@Override
 	public CompletableFuture<FormattingOptions> getDefaultFormattingOptions() {
-		try {
-			return CompletableFuture.completedFuture(formattingOptionsAdapter.readFormattingOptions(null));
-		} catch (IOException e) {
-			// should never happen, since null path always leads to default options being returned
-			return CompletableFuture.failedFuture(e);
-		}
+		return CompletableFuture.completedFuture(formattingOptionsService.getDefaultOptions());
 	}
 	
 	@Override

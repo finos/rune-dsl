@@ -13,12 +13,14 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.lsp4j.FormattingOptions;
+import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
+import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 
 /**
@@ -38,13 +40,13 @@ import com.regnosys.rosetta.formatting2.ResourceFormatterService;
  * If no valid directory path is provided as an argument, the program will exit with an error message.
  * </p>
  */
-public class ResourceFormattingTool {		
+public class ResourceFormattingTool {
 	@Inject
-	private static FormattingOptionsAdaptor formattingOptionsAdapter;
+	private static FormattingOptionsService formattingOptionsService;
 	
 	private static Logger LOGGER = LoggerFactory.getLogger(ResourceFormattingTool.class);
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		int maxArgs = 2;
 		
 		if (args.length == 0) {
@@ -61,14 +63,16 @@ public class ResourceFormattingTool {
         }
         
         // check if optional parameter was given. If not use default value
-        FormattingOptions formattingOptions = null;
+        ITypedPreferenceValues formattingOptions;
         if(args.length > 1) {
         	String formattingOptionsPath = args[1];
         	try {
-    			formattingOptions = formattingOptionsAdapter.readFormattingOptions(formattingOptionsPath);
+    			formattingOptions = formattingOptionsService.readPreferencesFromFile(formattingOptionsPath);
     		} catch (IOException e) {
-    			LOGGER.error("Config file not found.", e);
+    			throw new IOException("Configuration file at " + formattingOptionsPath + " not found.", e);
     		}
+        } else {
+        	formattingOptions = formattingOptionsService.getDefaultPreferences();
         }
         
         Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -87,7 +91,7 @@ public class ResourceFormattingTool {
             LOGGER.error("Error processing files: " + e.getMessage());
         }
 		
-		formatterService.formatCollection(resources, formattingOptionsAdapter.createPreferences(formattingOptions),
+		formatterService.formatCollection(resources, formattingOptions,
 				(resource, formattedText) -> {
 					Path resourcePath = Path.of(resource.getURI().toFileString());
 					try {
@@ -100,7 +104,7 @@ public class ResourceFormattingTool {
 	}
 	
 	private static void exitProgram(String msg) {
-		System.out.println(msg);
+		LOGGER.error(msg);
         System.exit(1);
 	}
 }

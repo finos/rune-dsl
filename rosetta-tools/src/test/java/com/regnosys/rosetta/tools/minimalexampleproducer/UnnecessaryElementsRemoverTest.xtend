@@ -82,7 +82,7 @@ class UnnecessaryElementsRemoverTest {
 		
 		service.removeUnnecessaryElementsFromResourceSet(rule, false)
 		
-		resourceSet.resources.forEach[assertNoIssues]
+		resourceSet.resources.forEach[assertNoErrors]
 		assertEquals(4, resourceSet.resources.size)
 		assertFalse(resourceSet.resources.contains(model3.eResource))
 		
@@ -104,8 +104,8 @@ class UnnecessaryElementsRemoverTest {
 		import a.*
 		
 		func F:
-			inputs:
-				a string (1..1)
+		    inputs:
+		        a string (1..1)
 			output:
 				result MyEnum (1..1)
 		

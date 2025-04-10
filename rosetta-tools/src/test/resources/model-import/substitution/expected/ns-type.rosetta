@@ -2,9 +2,9 @@ namespace test.ns : < "test.ns definition" >
 version "${project.version}"
 
 type Document:
-	[rootType]
+    [rootType]
 
-	animal AnimalBase (1..1)
+    animal AnimalBase (1..1)
 
 type Cow extends AnimalBase:
 
@@ -12,4 +12,4 @@ type Goat extends AnimalBase:
 
 type AnimalBase:
 
-	name string (0..1)
+    name string (0..1)

@@ -22,6 +22,7 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		val request = formatterRequestProvider.get();
 		request.preferences[
 			put(FormatterPreferenceKeys.maxLineWidth, 80);
+			put(FormatterPreferenceKeys.indentation, '\t'); // Note: this should not be required if we have proper code formatting...
 		]
 		test.apply(request);
 		assertFormattedExpression(request);
@@ -47,6 +48,7 @@ class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		assertFormatted[
 			preferences[
 				put(FormatterPreferenceKeys.maxLineWidth, 80);
+				put(FormatterPreferenceKeys.indentation, '\t'); // Note: this should not be required if we have proper code formatting...
 			]
 			test.apply(it)
 			it.expectation = prefix + indent(it.expectationOrToBeFormatted.toString().trim(), "\t") + Strings.newLine()

@@ -2,22 +2,22 @@ namespace test.ns : < "test.ns definition" >
 version "${project.version}"
 
 typeAlias Max500Text: <"Specifies a character string with a maximum length of 500 characters.">
-	string(minLength: 1, maxLength: 500)
+    string(minLength: 1, maxLength: 500)
 
 typeAlias Max3Number: <"Number (max 999) of objects represented as an integer.">
-	int(digits: 3)
+    int(digits: 3)
 
 type Bar: <"Bar definition.">
 
-	barStrAttr string (1..1) <"Bar string attribute definition.">
+    barStrAttr string (1..1) <"Bar string attribute definition.">
 
 type Foo: <"Foo definition.">
 
-	fooBooleanAttr boolean (1..1) <"FooBooleanAttr definition.">
-	fooStrAttr string (1..1) <"FooStrAttr definition.">
-	fooDecimalAttr number (0..1) <"FooDecimalAttr definition.">
-	fooStringWithRestrictionAttr Max500Text (1..1) <"FooStringWithRestrictionAttr definition.">
-	fooDecimalWithRestrictionAttr Max3Number (0..1) <"FooDecimalWithRestrictionAttr definition.">
-	fooBarAttr Bar (1..1) <"FooBarAttr definition.">
-	fooStrListAttr string (0..*) <"FooStrListAttr definition.">
-	fooBarListAttr Bar (1..2) <"FooBarListAttr definition.">
+    fooBooleanAttr boolean (1..1) <"FooBooleanAttr definition.">
+    fooStrAttr string (1..1) <"FooStrAttr definition.">
+    fooDecimalAttr number (0..1) <"FooDecimalAttr definition.">
+    fooStringWithRestrictionAttr Max500Text (1..1) <"FooStringWithRestrictionAttr definition.">
+    fooDecimalWithRestrictionAttr Max3Number (0..1) <"FooDecimalWithRestrictionAttr definition.">
+    fooBarAttr Bar (1..1) <"FooBarAttr definition.">
+    fooStrListAttr string (0..*) <"FooStrListAttr definition.">
+    fooBarListAttr Bar (1..2) <"FooBarListAttr definition.">
