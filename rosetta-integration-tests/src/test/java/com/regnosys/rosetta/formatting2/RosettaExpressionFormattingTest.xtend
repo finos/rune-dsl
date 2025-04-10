@@ -143,14 +143,14 @@ class RosettaExpressionFormattingTest {
 	def void testConstructorNestedWithBooleanFormat() {
 		'''
 		Constr1 {
-            attr1: if True
-            then False,
-            attr2: if False
-            then Constr2 {
-                    attr11: Constr3 {
-                        attr111: 42
-                	}}
-        }
+			attr1: if True
+			then False,
+			attr2: if False
+			then Constr2 {
+					attr11: Constr3 {
+						attr111: 42
+					}}
+		}
 		''' ->
 		'''
 		Constr1 {
@@ -192,7 +192,7 @@ class RosettaExpressionFormattingTest {
 		el1
 		extract
 			Constr1 {
-		    	attr1: val1
+				attr1: val1
 			}
 		''' -> '''
 		el1
@@ -829,7 +829,7 @@ class RosettaExpressionFormattingTest {
 	def void testRuleChaining2() {
 		'''
 		extract  OtherRule
-		   then    extract OtherRule
+		   then	extract OtherRule
 		''' => '''
 		extract OtherRule
 		then extract OtherRule
@@ -840,7 +840,7 @@ class RosettaExpressionFormattingTest {
 	def void testShortRuleFilter1() {
 		'''
 		filter
-		    True
+			True
 		''' => '''
 		filter True
 		'''
@@ -861,7 +861,7 @@ class RosettaExpressionFormattingTest {
 	def void testLongRuleExtract1() {
 		'''
 		extract
-		     (["This", "is", "a", "loooooooooooooooooooooooong", "list"] 
+			 (["This", "is", "a", "loooooooooooooooooooooooong", "list"] 
 		   count > 10)
 		''' => '''
 		extract

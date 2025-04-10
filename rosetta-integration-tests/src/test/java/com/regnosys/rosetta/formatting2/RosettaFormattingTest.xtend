@@ -30,6 +30,10 @@ class RosettaFormattingTest {
 		// see issue https://github.com/eclipse/xtext-core/issues/164
 		// and issue https://github.com/eclipse/xtext-core/issues/2060
 		req.useSerializer = false
+		
+		req.preferences[
+			put(FormatterPreferenceKeys.indentation, '\t'); // Note: this should not be required if we have proper code formatting...
+		]
 	}
 
 	def ->(CharSequence unformatted, CharSequence expectation) {

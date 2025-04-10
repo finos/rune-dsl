@@ -1,6 +1,6 @@
 {
-	"tabSize":4,
-	"insertSpaces":true,
-	"maxLineWidth":92,
-	"conditionalMaxLineWidth":70
+  "tabSize": 4,
+  "insertSpaces": true,
+  "maxLineWidth": 92,
+  "conditionalMaxLineWidth": 70
 }

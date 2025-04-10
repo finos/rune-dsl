@@ -1,27 +1,79 @@
 package com.regnosys.rosetta.formatting2;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
-
-import com.google.inject.Provider;
+import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
+import org.eclipse.xtext.preferences.TypedPreferenceValues;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RosettaFormatterRequestProvider implements Provider<FormatterRequest> {
+	private final ITypedPreferenceValues defaultPreferences;
+	
 	@Inject
-	private FormattingOptionsService optionsService;
+	public RosettaFormatterRequestProvider(FormattingOptionsService optionsService) {
+		this.defaultPreferences = optionsService.getDefaultPreferences();
+	}
 	
 	@Override
 	public FormatterRequest get() {
-		FormatterRequest req = new FormatterRequest() {
-			@Override
-			public FormatterRequest setPreferences(ITypedPreferenceValues preferences) {
-				if (preferences == null)
-					preferences = optionsService.getDefaultPreferences();
-				return super.setPreferences(preferences);
+		return new FormatterRequestWithDefaultPreferences(defaultPreferences);
+	}
+	
+	private static class FormatterRequestWithDefaultPreferences extends FormatterRequest {
+		private static Logger LOGGER = LoggerFactory.getLogger(FormatterRequestWithDefaultPreferences.class);
+		
+		private final ITypedPreferenceValues defaultPreferences;
+		
+		public FormatterRequestWithDefaultPreferences(ITypedPreferenceValues defaultPreferences) {
+			this.defaultPreferences = defaultPreferences;
+			super.setPreferences(defaultPreferences);
+		}
+		
+		@Override
+		public FormatterRequest setPreferences(ITypedPreferenceValues preferences) {
+			return super.setPreferences(overrideDefaultPreferences(preferences));
+		}
+		
+		private ITypedPreferenceValues overrideDefaultPreferences(ITypedPreferenceValues preferences) {
+			if (preferences == null) {
+				return defaultPreferences;
 			}
-		};
-		req.setPreferences(null);
-		return req;
+			Map<String, String> overrideValues = getValuesMapIfPossible(preferences);
+			if (overrideValues == null) {
+				LOGGER.error("Could not derive preference values to override from " + preferences, new Exception());
+				return defaultPreferences;
+			}
+			return new MapBasedPreferenceValues(defaultPreferences, overrideValues);
+		}
+		private Map<String, String> getValuesMapIfPossible(ITypedPreferenceValues preferences) {
+			while (!(preferences instanceof MapBasedPreferenceValues && ((MapBasedPreferenceValues) preferences).getDelegate() == null)) {
+				if (preferences instanceof TypedPreferenceValues && ((TypedPreferenceValues) preferences).getDelegate() instanceof ITypedPreferenceValues) {
+					preferences = (ITypedPreferenceValues) ((TypedPreferenceValues) preferences).getDelegate();
+				} else if (preferences instanceof MapBasedPreferenceValues && ((MapBasedPreferenceValues) preferences).getDelegate() instanceof ITypedPreferenceValues) {
+					MapBasedPreferenceValues preferencesWithDelegate = (MapBasedPreferenceValues) preferences;
+					Map<String, String> delegateValues = getValuesMapIfPossible((ITypedPreferenceValues) preferencesWithDelegate.getDelegate());
+					if (delegateValues == null) {
+						return null;
+					}
+					Map<String, String> mergedValues = Stream.of(delegateValues.entrySet(), preferencesWithDelegate.getValues().entrySet())
+							.flatMap(Set::stream)
+					        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> v2));
+					return mergedValues;
+				} else {
+					return null;
+				}
+			}
+			MapBasedPreferenceValues preferencesWithoutDelegate = (MapBasedPreferenceValues) preferences;
+			return preferencesWithoutDelegate.getValues();
+		}
 	}
 }
