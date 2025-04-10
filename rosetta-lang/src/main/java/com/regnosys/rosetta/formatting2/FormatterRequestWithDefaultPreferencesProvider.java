@@ -15,11 +15,18 @@ import org.eclipse.xtext.preferences.TypedPreferenceValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RosettaFormatterRequestProvider implements Provider<FormatterRequest> {
+/**
+ * A provider for a formatter request that will respect the Rune's default formatting options
+ * as specified in `default-formatting-options.json`.
+ * 
+ * By binding this provider, all formatting will by default use Rune's default formatting options,
+ * including when serializing generated Rune code.
+ */
+public class FormatterRequestWithDefaultPreferencesProvider implements Provider<FormatterRequest> {
 	private final ITypedPreferenceValues defaultPreferences;
 	
 	@Inject
-	public RosettaFormatterRequestProvider(FormattingOptionsService optionsService) {
+	public FormatterRequestWithDefaultPreferencesProvider(FormattingOptionsService optionsService) {
 		this.defaultPreferences = optionsService.getDefaultPreferences();
 	}
 	
@@ -49,7 +56,7 @@ public class RosettaFormatterRequestProvider implements Provider<FormatterReques
 			}
 			Map<String, String> overrideValues = getValuesMapIfPossible(preferences);
 			if (overrideValues == null) {
-				LOGGER.error("Could not derive preference values to override from " + preferences, new Exception());
+				LOGGER.error("Could not compute preference values to override from " + preferences, new Exception());
 				return defaultPreferences;
 			}
 			return new MapBasedPreferenceValues(defaultPreferences, overrideValues);
