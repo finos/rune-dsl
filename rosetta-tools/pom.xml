@@ -35,8 +35,8 @@
 	<properties>
 		<maven.compiler.release>17</maven.compiler.release>
 
-		<xsdParser.version>1.2.18</xsdParser.version>
-		<commons-cli.version>1.8.0</commons-cli.version>
+		<xsdParser.version>1.2.19</xsdParser.version>
+		<commons-cli.version>1.9.0</commons-cli.version>
 	</properties>
 
 	<dependencyManagement>
