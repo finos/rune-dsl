@@ -103,9 +103,9 @@ class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling before all generate for rosetta -" + e.message +
-				" - see debug logging for more")
+			LOGGER.warn("Unexpected calling before all generate for rosetta -{} - see debug logging for more", e.message)
 			LOGGER.debug("Unexpected calling before all generate for rosetta", e);
+			throw new GenerationException(e.message, null, e.cause)
 		} finally {
 			lock.releaseWriteLock
 		}
@@ -135,9 +135,9 @@ class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling before generate for rosetta -" + e.message +
-					" - see debug logging for more")
+				LOGGER.warn("Unexpected calling before generate for rosetta -{} - see debug logging for more", e.message)
 				LOGGER.debug("Unexpected calling before generate for rosetta", e);
+				throw new GenerationException(e.message, null, e.cause)
 			} finally {
 				lock.releaseWriteLock
 			}
@@ -161,8 +161,14 @@ class RosettaGenerator implements IGenerator2 {
 				// generate
 				val packages = new RootPackage(model.toDottedPath)
 
-				model.elements.forEach [
-					doGenerate(fsa, packages, version, context)
+				model.elements.forEach [rootElement|
+					try {
+						rootElement.doGenerate(fsa, packages, version, context)
+					} catch (CancellationException e) {
+						throw e
+					} catch (Exception e) {
+						throw new GenerationException(e.message, rootElement, e);
+					}
 				]
 
 				// Invoke externally defined code generators
@@ -174,10 +180,16 @@ class RosettaGenerator implements IGenerator2 {
 				metaFieldGenerator.generate(resource, fsa, context)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
+			} catch (GenerationException e) {
+				LOGGER.warn(
+					"Unexpected calling standard generate for rosetta root element  -{} - see debug logging for more", e.message)
+				LOGGER.info("Unexpected calling standard generate for rosetta", e);
+				throw e
 			} catch (Exception e) {
 				LOGGER.warn(
-					"Unexpected calling standard generate for rosetta -" + e.message + " - see debug logging for more")
+					"Unexpected calling standard generate for rosetta -{} - see debug logging for more", e.message)
 				LOGGER.info("Unexpected calling standard generate for rosetta", e);
+				throw new GenerationException(e.message, null, e.cause)
 			} finally {
 				LOGGER.trace("ending the main generate method")
 				lock.releaseWriteLock
@@ -251,9 +263,9 @@ class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message +
-					" - see debug logging for more")
+				LOGGER.warn("Unexpected calling after generate for rosetta -{} - see debug logging for more", e.message)
 				LOGGER.debug("Unexpected calling after generate for rosetta", e);
+				throw new GenerationException(e.message, null, e.cause)
 			} finally {
 				lock.releaseWriteLock
 			}
@@ -278,9 +290,9 @@ class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling after all generate for rosetta -" + e.message +
-				" - see debug logging for more")
+			LOGGER.warn("Unexpected calling after all generate for rosetta -{} - see debug logging for more", e.message)
 			LOGGER.debug("Unexpected calling after all generate for rosetta", e);
+			throw new GenerationException(e.message, null, e.cause)
 		} finally {
 			lock.releaseWriteLock
 		}
