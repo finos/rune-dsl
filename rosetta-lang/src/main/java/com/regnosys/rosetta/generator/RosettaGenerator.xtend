@@ -167,6 +167,7 @@ class RosettaGenerator implements IGenerator2 {
 					} catch (CancellationException e) {
 						throw e
 					} catch (Exception e) {
+						//TODO: aggregate this into a list before throwing
 						throw new GenerationException(e.message, resource.URI, rootElement, e);
 					}
 				]
