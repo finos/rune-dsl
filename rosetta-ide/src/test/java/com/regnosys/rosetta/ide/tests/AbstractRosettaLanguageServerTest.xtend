@@ -42,7 +42,6 @@ abstract class AbstractRosettaLanguageServerTest extends AbstractLanguageServerT
 	}
 	
 	protected override Module getServerModule() {
-		RosettaStandaloneSetup.doSetup
 		return RosettaServerModule.create
 	}
 	

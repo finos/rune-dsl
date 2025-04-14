@@ -168,6 +168,8 @@ class RosettaGenerator implements IGenerator2 {
 						throw e
 					} catch (Exception e) {
 						//TODO: aggregate this into a list before throwing
+						// for each error thrown we need eobject, cause (ex), and message
+						// stretch: consider adding granular throws to ExpressionGenerator
 						throw new GenerationException(e.message, resource.URI, rootElement, e);
 					}
 				]
