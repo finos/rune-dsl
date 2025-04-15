@@ -176,7 +176,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
-	 //TODO: add GenerationException catch/throw here
 	def JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, JavaScope scope) {
 		try {
 			val rawResult = doSwitch(expr, new Context => [{
