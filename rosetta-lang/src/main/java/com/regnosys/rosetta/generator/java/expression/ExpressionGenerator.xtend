@@ -183,6 +183,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				it.scope = scope
 			}])
 			return typeCoercionService.addCoercions(rawResult, expectedType, scope)			
+		} catch (GenerationException e) {
+			throw e
 		} catch (Exception e) {
 			throw new GenerationException(e.message, expr.eResource.URI, expr, e)
 		}
