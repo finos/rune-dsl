@@ -45,6 +45,7 @@ import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+import java.util.List
 
 /**
  * Generates code from your model files on save.
@@ -103,9 +104,9 @@ class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling before all generate for rosetta -" + e.message +
-				" - see debug logging for more")
+			LOGGER.warn("Unexpected calling before all generate for rosetta -{} - see debug logging for more", e.message)
 			LOGGER.debug("Unexpected calling before all generate for rosetta", e);
+			throw new GenerationException(e.message, null, null, e.cause)
 		} finally {
 			lock.releaseWriteLock
 		}
@@ -135,9 +136,9 @@ class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling before generate for rosetta -" + e.message +
-					" - see debug logging for more")
+				LOGGER.warn("Unexpected calling before generate for rosetta -{} - see debug logging for more", e.message)
 				LOGGER.debug("Unexpected calling before generate for rosetta", e);
+				throw new GenerationException(e.message, resource.URI, null, e.cause)
 			} finally {
 				lock.releaseWriteLock
 			}
@@ -161,9 +162,24 @@ class RosettaGenerator implements IGenerator2 {
 				// generate
 				val packages = new RootPackage(model.toDottedPath)
 
-				model.elements.forEach [
-					doGenerate(fsa, packages, version, context)
+				val List<GenerationException> aggregatedGenerationExceptions = newArrayList
+				model.elements.forEach [rootElement|
+					try {
+						rootElement.doGenerate(fsa, packages, version, context)
+					} catch (CancellationException e) {
+						throw e
+					} catch (GenerationException e) {
+						aggregatedGenerationExceptions.add(e)
+					} catch (Exception e) {
+						aggregatedGenerationExceptions.add(new GenerationException(e.message, resource.URI, rootElement, e));
+					}
 				]
+				if (!aggregatedGenerationExceptions.empty) {
+					if (aggregatedGenerationExceptions.size === 1) {
+						throw aggregatedGenerationExceptions.get(0)
+					}
+					throw new AggregateGenerationException("Multiple errors encountered during generation", resource.URI, aggregatedGenerationExceptions)
+				}
 
 				// Invoke externally defined code generators
 				externalGenerators.forEach [ generator |
@@ -174,10 +190,16 @@ class RosettaGenerator implements IGenerator2 {
 				metaFieldGenerator.generate(resource, fsa, context)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
+			} catch (AggregateGenerationException | GenerationException e) {
+				LOGGER.warn(
+					"Unexpected calling standard generate for rosetta root element  -{} - see debug logging for more", e.message)
+				LOGGER.info("Unexpected calling standard generate for rosetta root element", e);
+				throw e
 			} catch (Exception e) {
 				LOGGER.warn(
-					"Unexpected calling standard generate for rosetta -" + e.message + " - see debug logging for more")
+					"Unexpected calling standard generate for rosetta -{} - see debug logging for more", e.message)
 				LOGGER.info("Unexpected calling standard generate for rosetta", e);
+				throw new GenerationException(e.message, resource.URI, null, e.cause)
 			} finally {
 				LOGGER.trace("ending the main generate method")
 				lock.releaseWriteLock
@@ -251,9 +273,9 @@ class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling after generate for rosetta -" + e.message +
-					" - see debug logging for more")
+				LOGGER.warn("Unexpected calling after generate for rosetta -{} - see debug logging for more", e.message)
 				LOGGER.debug("Unexpected calling after generate for rosetta", e);
+				throw new GenerationException(e.message, resource.URI, null, e.cause)
 			} finally {
 				lock.releaseWriteLock
 			}
@@ -278,9 +300,9 @@ class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected")
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling after all generate for rosetta -" + e.message +
-				" - see debug logging for more")
+			LOGGER.warn("Unexpected calling after all generate for rosetta -{} - see debug logging for more", e.message)
 			LOGGER.debug("Unexpected calling after all generate for rosetta", e);
+			throw new GenerationException(e.message, null, null, e.cause)
 		} finally {
 			lock.releaseWriteLock
 		}

@@ -147,6 +147,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
+import com.regnosys.rosetta.generator.GenerationException
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -176,11 +177,18 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
 	def JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, JavaScope scope) {
-		val rawResult = doSwitch(expr, new Context => [{
-			it.expectedType = expectedType
-			it.scope = scope
-		}])
-		return typeCoercionService.addCoercions(rawResult, expectedType, scope)
+		try {
+			val rawResult = doSwitch(expr, new Context => [{
+				it.expectedType = expectedType
+				it.scope = scope
+			}])
+			return typeCoercionService.addCoercions(rawResult, expectedType, scope)			
+		} catch (GenerationException e) {
+			throw e
+		} catch (Exception e) {
+			throw new GenerationException(e.message, expr.eResource.URI, expr, e)
+		}
+
 	}
 
 	private def StringConcatenationClient runtimeMethod(String methodName) {
