@@ -55,6 +55,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         Diagnostic diagnostic = issues.get(0);
         Assertions.assertEquals("Broken expression generator", diagnostic.getMessage());
         Assertions.assertEquals(DiagnosticSeverity.Error, diagnostic.getSeverity());
+        Assertions.assertEquals("com.regnosys.rosetta.ide.build.RosettaStatefulIncrementalBuilder.generationError", diagnostic.getCode().getLeft());
         Range range = diagnostic.getRange();
         Assertions.assertEquals(6, range.getStart().getLine());
         Assertions.assertEquals(14, range.getStart().getCharacter());

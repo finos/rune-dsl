@@ -26,7 +26,8 @@ import javax.inject.Inject;
  * client in the form of Diagnostics
  */
 public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrementalBuilder {
-
+   public static String ISSUE_CODE = RosettaStatefulIncrementalBuilder.class.getName() + ".generationError";
+ 
     @Override
     protected void generate(Resource resource, BuildRequest request, Source2GeneratedMapping newMappings) {
         try {
@@ -42,6 +43,7 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
     private Issue constructIssue(GenerationException e) {
         IssueImpl issue = new IssueImpl();
         issue.setSeverity(Severity.ERROR);
+        issue.setCode(ISSUE_CODE);
         issue.setMessage(e.getMessage() == null ? "Error during generation" : e.getMessage());
         ICompositeNode iNode = NodeModelUtils.findActualNodeFor(e.getContext());
         if (iNode != null) {
