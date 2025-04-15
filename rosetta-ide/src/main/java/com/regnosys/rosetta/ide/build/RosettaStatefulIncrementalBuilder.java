@@ -21,6 +21,10 @@ import org.eclipse.xtext.validation.Issue.IssueImpl;
 
 import javax.inject.Inject;
 
+/**
+ * This class handles errors thrown during code generation and sends them back to the
+ * client in the form of Diagnostics
+ */
 public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrementalBuilder {
 
     @Override
