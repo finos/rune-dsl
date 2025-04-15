@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.ide.build;
 
+import com.regnosys.rosetta.generator.AggregateGenerationException;
 import com.regnosys.rosetta.generator.GenerationException;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public class RosettaInternalStatefulIncrementalBuilder extends InternalStatefulI
     protected void generate(Resource resource, BuildRequest request, Source2GeneratedMapping newMappings) {
         try {
             super.generate(resource, request, newMappings);
+        } catch (AggregateGenerationException e) {
+            List<Issue> issues = e.getGenerationExceptions().stream().map(this::constructIssue).toList();
+            getRequest().getAfterValidate().afterValidate(e.getResourceUri(), issues);
         } catch (GenerationException e) {
             getRequest().getAfterValidate().afterValidate(e.getResourceUri(), List.of(constructIssue(e)));
         }

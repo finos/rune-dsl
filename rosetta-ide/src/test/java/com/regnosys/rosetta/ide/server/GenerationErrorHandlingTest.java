@@ -1,21 +1,26 @@
 package com.regnosys.rosetta.ide.server;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
+import com.regnosys.rosetta.generator.java.enums.EnumGenerator;
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.ide.RosettaIdeModule;
 import com.regnosys.rosetta.ide.RosettaIdeSetup;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.types.REnumType;
 import com.rosetta.util.types.JavaType;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.xtext.ISetup;
+import org.eclipse.xtext.generator.IFileSystemAccess2;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider.Registry;
@@ -35,7 +40,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
     }
 
     @Test
-    void testHandlesError() {
+    void testHandlesIndividualError() {
 
         String namespaceUri = createModel("types.rosetta", """
                 namespace test
@@ -60,9 +65,30 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         Assertions.assertEquals(24, range.getEnd().getCharacter());
     }
 
-    //TODO: test that issue aggregation is happening by having a multi expression test or multiple
+    @Test
+    void testHandlesAggregateError() {
 
-    
+        String namespaceUri = createModel("types.rosetta", """
+                namespace test
+                
+                enum MyEnum:
+                  A
+                  B
+                
+                func Foo:
+                  output:
+                    result MyEnum (1..1)
+                
+                  set result: MyEnum -> B
+                """);
+
+        List<Diagnostic> issues = getDiagnostics().get(namespaceUri);
+
+        Assertions.assertEquals(2, issues.size());
+        Assertions.assertTrue(issues.stream().allMatch(e -> e.getSeverity() == DiagnosticSeverity.Error));
+        Assertions.assertTrue(issues.stream().anyMatch(e -> e.getMessage().equals("Broken expression generator")));
+        Assertions.assertTrue(issues.stream().anyMatch(e -> e.getMessage().equals("Broken enum generator")));
+    }
 
     static class TestIdeSetup extends RosettaIdeSetup {
         @Override
@@ -71,6 +97,10 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
             RosettaRuntimeModule _rosettaRuntimeModule = new RosettaRuntimeModule() {
                 public Class<? extends ExpressionGenerator> bindExpressionGenerator() {
                     return BrokenExpressionGenerator.class;
+                }
+
+                public Class<? extends EnumGenerator> bindEnumGenerator() {
+                    return BrokenEnumGenerator.class;
                 }
             };
 
@@ -86,11 +116,17 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         }
     }
 
+    static class BrokenEnumGenerator extends EnumGenerator {
+        @Override
+        public void generate(RosettaJavaPackages.RootPackage root, IFileSystemAccess2 fsa, REnumType enumeration, String version) {
+            throw new RuntimeException("Broken enum generator");
+        }
+    }
+
     static class TestServerModule extends RosettaServerModule {
         public Class<? extends Provider<IResourceServiceProvider.Registry>> providesIResourceServiceProvider$Registry() {
             return TestIResourceServiceProviderRegistryFactory.class;
         }
-
     }
 
     static class TestIResourceServiceProviderRegistryFactory implements Provider<IResourceServiceProvider.Registry> {

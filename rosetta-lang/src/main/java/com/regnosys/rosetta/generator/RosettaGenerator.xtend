@@ -45,6 +45,7 @@ import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+import java.util.List
 
 /**
  * Generates code from your model files on save.
@@ -161,18 +162,22 @@ class RosettaGenerator implements IGenerator2 {
 				// generate
 				val packages = new RootPackage(model.toDottedPath)
 
+				val List<GenerationException> aggregatedGenerationExceptions = newArrayList
 				model.elements.forEach [rootElement|
 					try {
 						rootElement.doGenerate(fsa, packages, version, context)
 					} catch (CancellationException e) {
 						throw e
 					} catch (Exception e) {
-						//TODO: aggregate this into a list before throwing
-						// for each error thrown we need eobject, cause (ex), and message
-						// stretch: consider adding granular throws to ExpressionGenerator
-						throw new GenerationException(e.message, resource.URI, rootElement, e);
+						aggregatedGenerationExceptions.add(new GenerationException(e.message, resource.URI, rootElement, e));
 					}
 				]
+				if (!aggregatedGenerationExceptions.empty) {
+					if (aggregatedGenerationExceptions.size === 1) {
+						throw aggregatedGenerationExceptions.get(0)
+					}
+					throw new AggregateGenerationException("Multiple errors encountered during generation", resource.URI, aggregatedGenerationExceptions)
+				}
 
 				// Invoke externally defined code generators
 				externalGenerators.forEach [ generator |
@@ -183,7 +188,7 @@ class RosettaGenerator implements IGenerator2 {
 				metaFieldGenerator.generate(resource, fsa, context)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
-			} catch (GenerationException e) {
+			} catch (AggregateGenerationException | GenerationException e) {
 				LOGGER.warn(
 					"Unexpected calling standard generate for rosetta root element  -{} - see debug logging for more", e.message)
 				LOGGER.info("Unexpected calling standard generate for rosetta root element", e);
