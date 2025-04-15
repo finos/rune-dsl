@@ -50,7 +50,7 @@ fragment References*:
 	references+=RosettaDocReference;
 
 fragment RuleReference*:
-	ruleReference=RosettaRuleReference;
+	ruleReferences+=RuleReferenceAnnotation;
 // TODO: cleanup annotations. Now it's a mix of hard-coded annotations and these kind of annotations.
 // Hard-coded:
 // - prefix annotation
@@ -841,7 +841,7 @@ enum ExternalValueOperator:
 RosettaExternalRegularAttribute:
 	operator=ExternalValueOperator attributeRef=[RosettaFeature|ValidID]
 		externalSynonyms+=RosettaExternalSynonym*
-		(externalRuleReference=RosettaRuleReference)?
+		externalRuleReferences+=RuleReferenceAnnotation*
 ;
 
 RosettaExternalEnumValue: 
@@ -897,8 +897,8 @@ RosettaReport:
 	('with' 'source' ruleSource=[RosettaExternalRuleSource|QualifiedName])?
 ;
 
-RosettaRuleReference:
-	'[' 'ruleReference' reportingRule=[RosettaRule|QualifiedName] ']'	
+RuleReferenceAnnotation:
+	'[' name='ruleReference' ('for' path=AnnotationPathExpression) reportingRule=[RosettaRule|QualifiedName] ']'	
 ;
 
 RosettaRule:

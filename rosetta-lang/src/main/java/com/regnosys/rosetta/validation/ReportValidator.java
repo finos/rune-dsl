@@ -32,7 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;

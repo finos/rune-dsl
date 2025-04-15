@@ -42,7 +42,7 @@ import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
@@ -176,10 +176,9 @@ public class RObjectFactory {
 	public RAttribute buildRAttribute(Attribute attr) {
 		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfFeature(attr, null);
 		RCardinality card = buildRCardinality(attr.getCard());
-		RosettaRuleReference ruleRef = attr.getRuleReference();
 
 		return new RAttribute(attr.isOverride(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
-				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr.getLabels(), attr, this);
+				card, attr.getRuleReferences(), attr.getLabels(), attr, this);
 	}
 	public RAttribute buildRAttributeOfParent(Attribute attr) {
 		Attribute parent = ecoreUtil.getParentAttribute(attr);

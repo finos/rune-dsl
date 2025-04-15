@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
-import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaRule
@@ -65,6 +64,9 @@ class LabelAnnotation extends BuiltinAnnotationWithPath {
 	boolean deprecatedAs
 	String label
 }
+class RuleReferenceAnnotation extends BuiltinAnnotationWithPath {
+	refers RosettaRule reportingRule
+}
 
 interface AnnotationPathExpression {
 }
@@ -88,7 +90,7 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 	boolean override
 	contains RosettaCardinality card
 	contains RosettaSynonym[] synonyms
-	contains RosettaRuleReference ruleReference
+	contains RuleReferenceAnnotation[] ruleReferences
 	contains LabelAnnotation[] labels
 }
 
@@ -220,9 +222,5 @@ class ShortcutDeclaration extends RosettaNamed, RosettaDefinable, AssignPathRoot
 
 class References {
 	contains RosettaDocReference[] references
-}
-
-class RosettaRuleReference {
-	refers RosettaRule reportingRule
 }
 
