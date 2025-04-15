@@ -61,7 +61,7 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
  * TODO: contribute to Xtext.
  *
  */
-public class RosettaLanguageServerImpl extends LanguageServerImpl  implements RosettaLanguageServer{
+public class RosettaLanguageServerImpl extends LanguageServerImpl implements RosettaLanguageServer{
 	@Inject FormattingOptionsService formattingOptionsService;
 	@Inject CodeActionUtils codeActionUtils;
 

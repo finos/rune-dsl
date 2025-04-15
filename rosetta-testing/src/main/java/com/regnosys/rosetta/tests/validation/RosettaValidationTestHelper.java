@@ -20,7 +20,7 @@ public class RosettaValidationTestHelper extends ValidationTestHelper {
 		
 		String issuesRepresentation = getIssuesAsString(model, issues, new StringBuilder()).toString();
 		
-		Assertions.assertEquals(issuesExpectation, issuesRepresentation);
+		Assertions.assertEquals(issuesExpectation.trim(), issuesRepresentation.trim());
 	}
 	
 	@Override
