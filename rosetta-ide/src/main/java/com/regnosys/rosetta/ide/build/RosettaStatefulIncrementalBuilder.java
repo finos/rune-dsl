@@ -21,7 +21,7 @@ import org.eclipse.xtext.validation.Issue.IssueImpl;
 
 import javax.inject.Inject;
 
-public class RosettaInternalStatefulIncrementalBuilder extends InternalStatefulIncrementalBuilder {
+public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrementalBuilder {
 
     @Override
     protected void generate(Resource resource, BuildRequest request, Source2GeneratedMapping newMappings) {

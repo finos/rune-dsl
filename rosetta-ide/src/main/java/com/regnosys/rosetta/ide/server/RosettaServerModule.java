@@ -29,7 +29,7 @@ import org.eclipse.xtext.service.AbstractGenericModule;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import com.regnosys.rosetta.ide.build.RosettaInternalStatefulIncrementalBuilder;
+import com.regnosys.rosetta.ide.build.RosettaStatefulIncrementalBuilder;
 
 public class RosettaServerModule extends AbstractGenericModule {
 	/**
@@ -82,6 +82,6 @@ public class RosettaServerModule extends AbstractGenericModule {
 	}
 	
 	public Class<? extends IncrementalBuilder.InternalStatefulIncrementalBuilder> bindIncrementalBuilder$InternalStatefulIncrementalBuilder() {
-	    return RosettaInternalStatefulIncrementalBuilder.class;
+	    return RosettaStatefulIncrementalBuilder.class;
 	}
 }
