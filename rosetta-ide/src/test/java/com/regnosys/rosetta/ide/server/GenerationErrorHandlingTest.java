@@ -16,7 +16,6 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.xtext.ISetup;
-import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider.Registry;
@@ -25,9 +24,8 @@ import org.eclipse.xtext.util.Modules2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import javax.inject.Provider;
+import java.util.List;
 
 public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerValidationTest {
 
@@ -37,7 +35,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
     }
 
     @Test
-    void testHandlesError() throws InterruptedException {
+    void testHandlesError() {
 
         String namespaceUri = createModel("types.rosetta", """
                 namespace test
@@ -45,7 +43,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
                 func Foo:
                   output:
                     result string (1..1)
-                  
+                
                   set result: "myOutput"
                 """);
         
