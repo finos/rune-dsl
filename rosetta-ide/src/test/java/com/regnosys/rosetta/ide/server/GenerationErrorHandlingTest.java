@@ -13,7 +13,10 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.rosetta.util.types.JavaType;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.xtext.ISetup;
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider.Registry;
@@ -49,12 +52,18 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         List<Diagnostic> issues = getDiagnostics().get(namespaceUri);
 
         Assertions.assertEquals(1, issues.size());
-        
-        //TODO: test that the message and position (derived from eobject) are populated
-        //TODO: test that issue aggregation is happening by having a multi expression test or multiple 
-
+        Diagnostic diagnostic = issues.get(0);
+        Assertions.assertEquals("Broken expression generator", diagnostic.getMessage());
+        Assertions.assertEquals(DiagnosticSeverity.Error, diagnostic.getSeverity());
+        Range range = diagnostic.getRange();
+        Assertions.assertEquals(2, range.getStart().getLine());
+        Assertions.assertEquals(0, range.getStart().getCharacter());
+        Assertions.assertEquals(6, range.getEnd().getLine());
+        Assertions.assertEquals(24, range.getEnd().getCharacter());
     }
-    
+
+    //TODO: test that issue aggregation is happening by having a multi expression test or multiple
+
     
 
     static class TestIdeSetup extends RosettaIdeSetup {
