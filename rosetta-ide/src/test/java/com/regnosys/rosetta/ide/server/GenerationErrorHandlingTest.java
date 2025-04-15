@@ -1,11 +1,9 @@
 package com.regnosys.rosetta.ide.server;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.regnosys.rosetta.RosettaRuntimeModule;
-import com.regnosys.rosetta.generator.java.JavaScope;
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator;
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator;
@@ -13,9 +11,8 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.regnosys.rosetta.ide.RosettaIdeModule;
 import com.regnosys.rosetta.ide.RosettaIdeSetup;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.expression.*;
 import com.regnosys.rosetta.types.REnumType;
-import com.rosetta.util.types.JavaType;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Range;
@@ -59,8 +56,8 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         Assertions.assertEquals("Broken expression generator", diagnostic.getMessage());
         Assertions.assertEquals(DiagnosticSeverity.Error, diagnostic.getSeverity());
         Range range = diagnostic.getRange();
-        Assertions.assertEquals(2, range.getStart().getLine());
-        Assertions.assertEquals(0, range.getStart().getCharacter());
+        Assertions.assertEquals(6, range.getStart().getLine());
+        Assertions.assertEquals(14, range.getStart().getCharacter());
         Assertions.assertEquals(6, range.getEnd().getLine());
         Assertions.assertEquals(24, range.getEnd().getCharacter());
     }
@@ -111,7 +108,62 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
 
     static class BrokenExpressionGenerator extends ExpressionGenerator {
         @Override
-        public JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, JavaScope scope) {
+        protected JavaStatementBuilder doSwitch(RosettaExpression expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(RosettaLiteral expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(RosettaReference expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(RosettaOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(RosettaBinaryOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(ArithmeticOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(LogicalOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(ModifiableBinaryOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(ComparisonOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(EqualityOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(RosettaUnaryOperation expr, Context context) {
+            throw new RuntimeException("Broken expression generator");
+        }
+
+        @Override
+        protected JavaStatementBuilder doSwitch(RosettaFunctionalOperation expr, Context context) {
             throw new RuntimeException("Broken expression generator");
         }
     }

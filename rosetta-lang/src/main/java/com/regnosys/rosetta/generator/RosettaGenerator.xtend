@@ -168,6 +168,8 @@ class RosettaGenerator implements IGenerator2 {
 						rootElement.doGenerate(fsa, packages, version, context)
 					} catch (CancellationException e) {
 						throw e
+					} catch (GenerationException e) {
+						aggregatedGenerationExceptions.add(e)
 					} catch (Exception e) {
 						aggregatedGenerationExceptions.add(new GenerationException(e.message, resource.URI, rootElement, e));
 					}
