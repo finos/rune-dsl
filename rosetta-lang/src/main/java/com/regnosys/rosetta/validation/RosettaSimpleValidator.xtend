@@ -17,7 +17,6 @@ import com.regnosys.rosetta.rosetta.RosettaMapPathValue
 import com.regnosys.rosetta.rosetta.RosettaMapping
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaNamed
-import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.RosettaSynonymBody
@@ -48,15 +47,10 @@ import com.regnosys.rosetta.types.builtin.RBasicType
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.types.builtin.RRecordType
 import com.regnosys.rosetta.utils.ExpressionHelper
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil.CollectRuleVisitor
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import java.time.format.DateTimeFormatter
 import java.util.List
-import java.util.Map
-import java.util.Optional
-import java.util.Set
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
@@ -91,9 +85,7 @@ import com.regnosys.rosetta.rosetta.expression.InlineFunction
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput
 import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
 import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
-import com.regnosys.rosetta.rosetta.expression.ParseOperation
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation
 import com.regnosys.rosetta.rosetta.expression.ListOperation
 import com.regnosys.rosetta.rosetta.expression.UnaryFunctionalOperation
@@ -107,17 +99,15 @@ import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.utils.ImportManagementService
-import com.regnosys.rosetta.utils.ConstructorManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
-import com.regnosys.rosetta.rosetta.expression.ToEnumOperation
 
 /*
  * Do not write any more validators in here for the following reasons:
  * 1. We are moving away from Xtend to Java for all test and implementation code
  * 2. This approach to putting every validator type in one place is messy and hard to navigate, better to split into classes by type of validator
  * 
- * The appropriate validtors can be found by looking for [ValidatorType]Validator.java where validator type could be Expression for example ExpressionValidator.java
+ * The appropriate validators can be found by looking for [ValidatorType]Validator.java where validator type could be Expression for example ExpressionValidator.java
  * 
  */
 @Deprecated
@@ -133,14 +123,12 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject RosettaConfigExtension confExtensions
 	@Inject extension ImplicitVariableUtil
 	@Inject RosettaScopeProvider scopeProvider
-	@Inject ExternalAnnotationUtil externalAnn
 	@Inject extension RBuiltinTypeService
 	@Inject extension TypeSystem
 	@Inject extension RosettaGrammarAccess
 	@Inject extension RObjectFactory objectFactory
 	
 	@Inject ImportManagementService importManagementService;
-	@Inject ConstructorManagementService constructorManagementService;
 
 
 	@Check
@@ -312,74 +300,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 	def void checkSynonymSource(RosettaExternalSynonymSource source) {
 		for (t : source.externalClasses) {
 			for (attr : t.regularAttributes) {
-				if (attr.externalRuleReference !== null) {
-					error('''You may not define rule references in a synonym source.''', attr.externalRuleReference, null);
-				}
-			}
-		}
-	}
-
-	@Check
-	def void checkRuleSource(RosettaReport report) {
-		val visitor = new CollectRuleErrorVisitor(objectFactory)
-
-		report.reportType.buildRDataType.collectRuleErrors(Optional.ofNullable(report.ruleSource), visitor)
-
-		visitor.errorMap.entrySet.forEach [
-			error(value, key, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
-		]
-	}
-
-	private def void collectRuleErrors(RDataType type, Optional<RosettaExternalRuleSource> source, CollectRuleErrorVisitor visitor) {
-		externalAnn.collectAllRuleReferencesForType(source, type, visitor)
-
-		type.allAttributes.forEach[attr |
-			var attrType = attr.RMetaAnnotatedType.RType
-
-			if (attrType instanceof RChoiceType) {
-				attrType = attrType.asRDataType
-			}
-
-			if (attrType instanceof RDataType) {
-				if (!visitor.collectedTypes.contains(attrType)) {
-					visitor.collectedTypes.add(attrType)
-					attrType.collectRuleErrors(source, visitor)
-				}
-			}
-		]
-	}
-
-	private static class CollectRuleErrorVisitor implements CollectRuleVisitor {
-		final extension RObjectFactory objectFactory
-		new(RObjectFactory objectFactory) {
-			this.objectFactory = objectFactory
-		}
-
-		final Map<RAttribute, RosettaRule> ruleMap = newHashMap;
-		final Map<RosettaExternalRegularAttribute, String> errorMap = newHashMap;
-		final Set<RDataType> collectedTypes = newHashSet;
-
-		override void add(RAttribute attr, RosettaRule rule) {
-			ruleMap.put(attr, rule);
-		}
-
-		override void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule) {
-			val attr = (extAttr.attributeRef as Attribute).buildRAttribute
-			if (!ruleMap.containsKey(attr)) {
-				ruleMap.put(attr, rule);
-			} else {
-				errorMap.put(
-					extAttr, '''There is already a mapping defined for `«attr.name»`. Try removing the mapping first with `- «attr.name»`.''')
-			}
-		}
-
-		override void remove(RosettaExternalRegularAttribute extAttr) {
-			val attr = (extAttr.attributeRef as Attribute).buildRAttribute
-			if (ruleMap.containsKey(attr)) {
-				ruleMap.remove(attr);
-			} else {
-				errorMap.put(
-					extAttr, '''You cannot remove this mapping because `«attr.name»` did not have a mapping defined before.''')
+				attr.externalRuleReferences.forEach[
+					error('''You may not define rule references in a synonym source.''', it, null);
+				]
 			}
 		}
 	}
@@ -445,14 +368,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		if (Character.isLowerCase(func.name.charAt(0))) {
 			warning("Function name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE)
 		}
-	}
-
-	private def checkType(RMetaAnnotatedType expectedType, RosettaExpression expression, EObject owner, EReference ref, int index) {
-		val actualMetaType = expression.RMetaAnnotatedType
-		val actualType = actualMetaType.RType
-		if (!actualMetaType.isSubtypeOf(expectedType))
-			error('''Expected type '«expectedType.RType.name»' but was '«actualType?.name ?: 'null'»'«»''', owner, ref,
-				index, TYPE_ERROR)
 	}
 
 	@Check
@@ -724,41 +639,6 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			} catch (PatternSyntaxException e) {
 				error("Pattern to match must be a valid regular expression - " + e.message, synonym,
 					ROSETTA_ENUM_SYNONYM__PATTERN_MATCH)
-			}
-		}
-	}
-
-	/**
-	 * Check all report attribute type and cardinality match the associated reporting rules
-	 */
-	@Check
-	def void checkAttributeRuleReference(Attribute attr) {
-		val ruleRef = attr.ruleReference
-		if (ruleRef !== null) {
-			val rule = ruleRef.reportingRule
-			
-			val attrExt = attr.buildRAttribute
-			val attrSingle = !attrExt.isMulti
-			val attrType = attrExt.RMetaAnnotatedType.RType
-
-			// check cardinality
-			val ruleSingle = !rule.expression.isMulti
-			if (attrSingle && !ruleSingle) {
-				val cardWarning = '''Cardinality mismatch - report field «attr.name» has single cardinality ''' +
-					'''whereas the reporting rule «rule.name» has multiple cardinality.'''
-				error(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-			} else if (!attrSingle && ruleSingle) {
-				val cardWarning = '''Cardinality mismatch - report field «attr.name» has multiple cardinality ''' +
-					'''whereas the reporting rule «rule.name» has single cardinality.'''
-				warning(cardWarning, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
-			}
-			
-			// check type
-			val ruleType = rule.expression.RMetaAnnotatedType.RType
-			if (!ruleType.isSubtypeOf(attrType)) {
-				val typeError = '''Type mismatch - report field «attr.name» has type «attrType.name» ''' +
-					'''whereas the reporting rule «rule.name» has type «ruleType».'''
-				error(typeError, ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE)
 			}
 		}
 	}

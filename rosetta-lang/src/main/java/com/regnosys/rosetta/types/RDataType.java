@@ -19,11 +19,13 @@ package com.regnosys.rosetta.types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -35,7 +37,7 @@ public class RDataType extends RType implements RObject {
 	
 	private RDataType superType = null;
 	private ModelSymbolId symbolId = null;
-	private List<RAttribute> ownAttributes = null;
+	private Map<String, RAttribute> ownAttributes = null;
 	private List<RMetaAttribute> metaAttributes = null;
 	
 	private final ModelIdProvider modelIdProvider;
@@ -86,16 +88,16 @@ public class RDataType extends RType implements RObject {
 	/**
 	 * Get a list of all super types of this data type, including itself.
 	 * 
-	 * The list is ordered from the most top-level data type to the least (i.e., itself).
+	 * The list is ordered from the most top-level data type to the lowest level (i.e., itself).
 	 */
 	public List<RDataType> getAllSuperTypes() {
-		LinkedHashSet<RDataType> reversedResult = new LinkedHashSet<>();
+		Set<RDataType> reversedResult = new LinkedHashSet<>();
 		doGetAllSuperTypes(this, reversedResult);
 		List<RDataType> result = reversedResult.stream().collect(Collectors.toCollection(ArrayList::new));
 		Collections.reverse(result);
 		return result;
 	}
-	private void doGetAllSuperTypes(RDataType current, LinkedHashSet<RDataType> superTypes) {
+	private void doGetAllSuperTypes(RDataType current, Set<RDataType> superTypes) {
 		if (superTypes.add(current)) {
 			RDataType s = current.getSuperType();
 			if (s != null) {
@@ -105,26 +107,68 @@ public class RDataType extends RType implements RObject {
 	}
 	
 	/**
-	 * Get a list of the attributes defined in this data type. This does not include attributes of any super types,
+	 * Get an ordered collection of the attributes defined in this data type. This does not include attributes of any super types,
 	 * except if the attribute is overridden by this data type.
 	 */
-	public List<RAttribute> getOwnAttributes() {
+	public Collection<RAttribute> getOwnAttributes() {
+		return getOwnAttributesAsMap().values();
+	}
+	
+	/**
+	 * Find an attribute defined in this data type by name. This does not include attributes of any super types,
+	 * except if the attribute is overridden by this data type.
+	 * 
+	 * If no attribute with the given name exists, the result is null.
+	 */
+	public RAttribute getOwnAttributeByName(String name) {
+		return getOwnAttributesAsMap().get(name);
+	}
+	
+	private Map<String, RAttribute> getOwnAttributesAsMap() {
 		if (ownAttributes == null) {
-			ownAttributes = data.getAttributes().stream().map(s -> objectFactory.buildRAttribute(s)).collect(Collectors.toList());
+			ownAttributes = data.getAttributes().stream()
+					.map(s -> objectFactory.buildRAttributeWithEnclosingType(this, s))
+					.collect(Collectors.toMap(
+								a -> a.getName(),
+								a -> a,
+								(a1, a2) -> a1,
+								LinkedHashMap::new
+							));
 		}
 		return ownAttributes;
 	}
 	
 	/**
-	 * Get a list of all attributes of this data type, including all attributes of its super types.
+	 * Get a collection of all attributes of this data type, including all attributes of its super types.
 	 * 
-	 * The list starts with the attributes of the top-most super type, and ends with the attributes of itself.
+	 * The collection is ordered and starts with the attributes of the top-most super type, and ends with the attributes of itself.
 	 * Attribute overrides replace their respective parent attributes, respecting the original order.
 	 */
 	public Collection<RAttribute> getAllAttributes() {
 		Map<String, RAttribute> result = new LinkedHashMap<>();
-		getAllSuperTypes().stream().flatMap(s -> s.getOwnAttributes().stream()).forEach(a -> result.put(a.getName(), a));
+		getAllSuperTypes().stream().map(s -> s.getOwnAttributesAsMap()).forEach(attrs -> result.putAll(attrs));
 		return result.values();
+	}
+	
+	/**
+	 * Find an attribute defined in this data type or in any of its super types by name.
+	 * 
+	 * If no attribute with the given name exists, the result is null.
+	 */
+	public RAttribute getAttributeByName(String name) {
+		Set<RDataType> visited = new HashSet<>();
+		RDataType current = this;
+		while (current != null) {
+			if (!visited.add(current)) {
+				return null;
+			}
+			RAttribute found = current.getOwnAttributeByName(name);
+			if (found != null) {
+				return found;
+			}
+			current = current.getSuperType();
+		}
+		return null;
 	}
 
 	@Override

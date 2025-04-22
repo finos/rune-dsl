@@ -66,6 +66,7 @@ class LabelAnnotation extends BuiltinAnnotationWithPath {
 }
 class RuleReferenceAnnotation extends BuiltinAnnotationWithPath {
 	refers RosettaRule reportingRule
+	boolean empty
 }
 
 interface AnnotationPathExpression {

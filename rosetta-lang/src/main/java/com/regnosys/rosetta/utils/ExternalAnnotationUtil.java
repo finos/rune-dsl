@@ -40,6 +40,9 @@ import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
+import com.regnosys.rosetta.rules.RuleAttributeMap;
+import com.regnosys.rosetta.rules.RuleTypeMap;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
@@ -140,161 +143,161 @@ public class ExternalAnnotationUtil {
 		return result;
 	}
 	
-	public Map<RAttribute, RosettaRule> getAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type) {
-		CollectRuleVisitor.Default visitor = new CollectRuleVisitor.Default(objectFactory);
-		
-		collectAllRuleReferencesForType(maybeSource, type, visitor);
-		
-		return visitor.getMap();
-	}
-	
-	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type, T visitor) {
-		// collect inline rule reference
-		type.getAllAttributes()
-			.forEach(attr -> 
-				Optional.ofNullable(attr.getRuleReference()).ifPresent(rule -> visitor.add(attr, rule)));
-		
-		maybeSource.ifPresent((source) -> {
-			// collect external super sources
-			List<ExternalAnnotationSource> superSources = getSuperSources(source);
-			// reverse so the sources are applied in the correct order
-			Collections.reverse(superSources);
-			superSources.forEach(s -> collectExternalRuleReferencesForType(s, type, visitor));
-			
-			// collect this external source
-			collectExternalRuleReferencesForType(source, type, visitor);
-		});
-		
-		return visitor;
-	}
-	
-	private void collectExternalRuleReferencesForType(ExternalAnnotationSource source, RDataType type, CollectRuleVisitor visitor) {
-		getExternalType(source, type).ifPresent(extT -> {
-			for (RosettaExternalRegularAttribute extAttr: extT.getRegularAttributes()) {
-				if (extAttr.getOperator().equals(ExternalValueOperator.MINUS)) {
-					visitor.remove(extAttr);
-				} else {
-					if (extAttr.getExternalRuleReference() != null) {
-						visitor.add(extAttr, extAttr.getExternalRuleReference().getReportingRule());
-					}
-				}
-			}
-		});
-	}
-	
-	public interface CollectRuleVisitor {
-		
-		void add(RAttribute attr, RosettaRule rule);
-		void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule);
-		void remove(RosettaExternalRegularAttribute attr);
-		
-		public static class Default implements CollectRuleVisitor {
-			private final RObjectFactory objectFactory;
-			public Default(RObjectFactory objectFactory) {
-				this.objectFactory = objectFactory;
-			}
-
-			private final Map<RAttribute, RosettaRule> map = new HashMap<>();
-			
-			@Override
-			public void add(RAttribute attr, RosettaRule rule) {
-				map.put(attr, rule);
-			}
-			
-			@Override
-			public void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule) {
-				map.put(objectFactory.buildRAttribute((Attribute) extAttr.getAttributeRef()), rule);
-			}
-
-			@Override
-			public void remove(RosettaExternalRegularAttribute extAttr) {
-				map.remove(objectFactory.buildRAttribute((Attribute) extAttr.getAttributeRef()));
-			}
-			
-			public Map<RAttribute, RosettaRule> getMap() {
-				return map;
-			}
-		}
-	}
-	
-	/**
-	 * Get all reporting rules for a report
-	 */
-	public Map<PathAttribute, RosettaRule> getAllReportingRules(RosettaReport report) {
-		return getAllReportingRules(objectFactory.buildRDataType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
-	}
-	
-	public Map<PathAttribute, RosettaRule> getAllReportingRules(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
-		Map<PathAttribute, RosettaRule> rules = new HashMap<>();
-		RosettaPath path = RosettaPath.valueOf(type.getName());
-		collectReportingRules(type, path, ruleSource, rules, new HashSet<>());
-		return rules;
-	}
-	
-	/**
-	 * Recursively collects all reporting rules for all attributes
-	 */
-	private void collectReportingRules(RDataType dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<RDataType> collectedTypes) {
-		Map<RAttribute, RosettaRule> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
-		
-		dataType.getAllAttributes().forEach(attr -> {
-			RType attrType = attr.getRMetaAnnotatedType().getRType();
-			if (attrType instanceof RChoiceType) {
-				attrType = ((RChoiceType) attrType).asRDataType();
-			}
-			RosettaRule rule = attrRules.get(attr);
-			
-			if (!(attrType instanceof RDataType)) {
-				if (rule != null) {
-					visitor.put(new PathAttribute(path, attr), rule);
-				}
-			} else {
-				if (rule != null) {
-					visitor.put(new PathAttribute(path, attr), rule);
-				}
-				RDataType attrDataType = (RDataType) attrType;
-				if (collectedTypes.add(attrDataType)) {
-					RosettaPath subPath = attr.isMulti() ?
-						path.newSubPath(attr.getName(), 0) :
-						path.newSubPath(attr.getName());
-					collectReportingRules(attrDataType, subPath, ruleSource, visitor, collectedTypes);
-				}
-			}
-		});	
-	}
-	
-	public static class PathAttribute {
-		private final RosettaPath path;
-		private final RAttribute attr;
-		
-		public PathAttribute(RosettaPath path, RAttribute attr) {
-			this.path = path;
-			this.attr = attr;
-		}
-
-		public RosettaPath getPath() {
-			return path;
-		}
-
-		public RAttribute getAttr() {
-			return attr;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(attr, path);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			PathAttribute other = (PathAttribute) obj;
-			return Objects.equals(attr, other.attr) && Objects.equals(path, other.path);
-		}
-	}
+//	public Map<RAttribute, RosettaRule> getAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type) {
+//		CollectRuleVisitor.Default visitor = new CollectRuleVisitor.Default(objectFactory);
+//		
+//		collectAllRuleReferencesForType(maybeSource, type, visitor);
+//		
+//		return visitor.getMap();
+//	}
+//	
+//	public <T extends CollectRuleVisitor> T collectAllRuleReferencesForType(Optional<? extends ExternalAnnotationSource> maybeSource, RDataType type, T visitor) {
+//		// collect inline rule reference
+//		type.getAllAttributes()
+//			.forEach(attr -> 
+//				Optional.ofNullable(attr.getRuleReference()).ifPresent(rule -> visitor.add(attr, rule)));
+//		
+//		maybeSource.ifPresent((source) -> {
+//			// collect external super sources
+//			List<ExternalAnnotationSource> superSources = getSuperSources(source);
+//			// reverse so the sources are applied in the correct order
+//			Collections.reverse(superSources);
+//			superSources.forEach(s -> collectExternalRuleReferencesForType(s, type, visitor));
+//			
+//			// collect this external source
+//			collectExternalRuleReferencesForType(source, type, visitor);
+//		});
+//		
+//		return visitor;
+//	}
+//	
+//	private void collectExternalRuleReferencesForType(ExternalAnnotationSource source, RDataType type, CollectRuleVisitor visitor) {
+//		getExternalType(source, type).ifPresent(extT -> {
+//			for (RosettaExternalRegularAttribute extAttr: extT.getRegularAttributes()) {
+//				if (extAttr.getOperator().equals(ExternalValueOperator.MINUS)) {
+//					visitor.remove(extAttr);
+//				} else {
+//					if (extAttr.getExternalRuleReference() != null) {
+//						visitor.add(extAttr, extAttr.getExternalRuleReference().getReportingRule());
+//					}
+//				}
+//			}
+//		});
+//	}
+//	
+//	public interface CollectRuleVisitor {
+//		
+//		void add(RAttribute attr, RosettaRule rule);
+//		void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule);
+//		void remove(RosettaExternalRegularAttribute attr);
+//		
+//		public static class Default implements CollectRuleVisitor {
+//			private final RObjectFactory objectFactory;
+//			public Default(RObjectFactory objectFactory) {
+//				this.objectFactory = objectFactory;
+//			}
+//
+//			private final Map<RAttribute, RosettaRule> map = new HashMap<>();
+//			
+//			@Override
+//			public void add(RAttribute attr, RosettaRule rule) {
+//				map.put(attr, rule);
+//			}
+//			
+//			@Override
+//			public void add(RosettaExternalRegularAttribute extAttr, RosettaRule rule) {
+//				map.put(objectFactory.buildRAttribute((Attribute) extAttr.getAttributeRef()), rule);
+//			}
+//
+//			@Override
+//			public void remove(RosettaExternalRegularAttribute extAttr) {
+//				map.remove(objectFactory.buildRAttribute((Attribute) extAttr.getAttributeRef()));
+//			}
+//			
+//			public Map<RAttribute, RosettaRule> getMap() {
+//				return map;
+//			}
+//		}
+//	}
+//	
+//	/**
+//	 * Get all reporting rules for a report
+//	 */
+//	public Map<PathAttribute, RosettaRule> getAllReportingRules(RosettaReport report) {
+//		return getAllReportingRules(objectFactory.buildRDataType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
+//	}
+//	
+//	public Map<PathAttribute, RosettaRule> getAllReportingRules(RDataType type, Optional<RosettaExternalRuleSource> ruleSource) {
+//		Map<PathAttribute, RosettaRule> rules = new HashMap<>();
+//		RosettaPath path = RosettaPath.valueOf(type.getName());
+//		collectReportingRules(type, path, ruleSource, rules, new HashSet<>());
+//		return rules;
+//	}
+//	
+//	/**
+//	 * Recursively collects all reporting rules for all attributes
+//	 */
+//	private void collectReportingRules(RDataType dataType, RosettaPath path, Optional<RosettaExternalRuleSource> ruleSource, Map<PathAttribute, RosettaRule> visitor, Set<RDataType> collectedTypes) {
+//		Map<RAttribute, RosettaRule> attrRules = getAllRuleReferencesForType(ruleSource, dataType);
+//		
+//		dataType.getAllAttributes().forEach(attr -> {
+//			RType attrType = attr.getRMetaAnnotatedType().getRType();
+//			if (attrType instanceof RChoiceType) {
+//				attrType = ((RChoiceType) attrType).asRDataType();
+//			}
+//			RosettaRule rule = attrRules.get(attr);
+//			
+//			if (!(attrType instanceof RDataType)) {
+//				if (rule != null) {
+//					visitor.put(new PathAttribute(path, attr), rule);
+//				}
+//			} else {
+//				if (rule != null) {
+//					visitor.put(new PathAttribute(path, attr), rule);
+//				}
+//				RDataType attrDataType = (RDataType) attrType;
+//				if (collectedTypes.add(attrDataType)) {
+//					RosettaPath subPath = attr.isMulti() ?
+//						path.newSubPath(attr.getName(), 0) :
+//						path.newSubPath(attr.getName());
+//					collectReportingRules(attrDataType, subPath, ruleSource, visitor, collectedTypes);
+//				}
+//			}
+//		});	
+//	}
+//	
+//	public static class PathAttribute {
+//		private final RosettaPath path;
+//		private final RAttribute attr;
+//		
+//		public PathAttribute(RosettaPath path, RAttribute attr) {
+//			this.path = path;
+//			this.attr = attr;
+//		}
+//
+//		public RosettaPath getPath() {
+//			return path;
+//		}
+//
+//		public RAttribute getAttr() {
+//			return attr;
+//		}
+//
+//		@Override
+//		public int hashCode() {
+//			return Objects.hash(attr, path);
+//		}
+//
+//		@Override
+//		public boolean equals(Object obj) {
+//			if (this == obj)
+//				return true;
+//			if (obj == null)
+//				return false;
+//			if (getClass() != obj.getClass())
+//				return false;
+//			PathAttribute other = (PathAttribute) obj;
+//			return Objects.equals(attr, other.attr) && Objects.equals(path, other.path);
+//		}
+//	}
 }

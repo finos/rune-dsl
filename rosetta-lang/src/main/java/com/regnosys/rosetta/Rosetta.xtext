@@ -898,7 +898,7 @@ RosettaReport:
 ;
 
 RuleReferenceAnnotation:
-	'[' name='ruleReference' ('for' path=AnnotationPathExpression) reportingRule=[RosettaRule|QualifiedName] ']'	
+	'[' name='ruleReference' ('for' path=AnnotationPathExpression)? (reportingRule=[RosettaRule|QualifiedName] | empty?='empty') ']'	
 ;
 
 RosettaRule:

@@ -484,8 +484,8 @@ class RosettaExternalRuleSource extends ExternalAnnotationSource {
 	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
 	refers ExternalAnnotationSource[] superSources
 	
-	op RosettaExternalRuleSource getSuperRuleSource(){
-		return superSources.filter(RosettaExternalRuleSource).head
+	op RosettaExternalRuleSource[] getSuperRuleSources(){
+		return superSources.filter(RosettaExternalRuleSource).toEList
 	}
 }
 

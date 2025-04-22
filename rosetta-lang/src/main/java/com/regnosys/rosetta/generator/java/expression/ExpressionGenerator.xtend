@@ -284,8 +284,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	private def StringConcatenationClient aliasCallArgs(ShortcutDeclaration alias, JavaScope scope) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
-		val output = rObjectFactory.buildRAttribute(funcExt.getOutput(func))
-		val inputs = funcExt.getInputs(func).map[rObjectFactory.buildRAttribute(it)]
+		val output = rObjectFactory.buildRAttributeWithEnclosingType(null, funcExt.getOutput(func))
+		val inputs = funcExt.getInputs(func).map[rObjectFactory.buildRAttributeWithEnclosingType(null, it)]
 		'''
 			«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''

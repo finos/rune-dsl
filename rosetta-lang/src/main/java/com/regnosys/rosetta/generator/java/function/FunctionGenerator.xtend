@@ -78,8 +78,6 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
-import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
-import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 
 class FunctionGenerator {
@@ -387,8 +385,8 @@ class FunctionGenerator {
 				«val rFunction = new RFunction(
 					new ModelSymbolId(function.model.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
 					enumFunc.definition,
-					function.inputs.map[rTypeBuilderFactory.buildRAttribute(it)],
-					rTypeBuilderFactory.buildRAttribute(function.output),
+					function.inputs.map[rTypeBuilderFactory.buildRAttributeWithEnclosingType(null, it)],
+					rTypeBuilderFactory.buildRAttributeWithEnclosingType(null, function.output),
 					RFunctionOrigin.FUNCTION,
 					enumFunc.conditions,
 					enumFunc.postConditions,

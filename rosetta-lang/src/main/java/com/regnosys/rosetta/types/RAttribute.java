@@ -27,6 +27,7 @@ import com.regnosys.rosetta.rosetta.simple.LabelAnnotation;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 
 public class RAttribute implements RAssignedRoot, RFeature {
+	private final RDataType enclosingType;
 	private final boolean isOverride;
 	private final String name;
 	private final String definition;
@@ -37,12 +38,12 @@ public class RAttribute implements RAssignedRoot, RFeature {
 	private final List<LabelAnnotation> labelAnnotations;
 	private final Attribute origin;
 	
-	private final RObjectFactory rObjectFactory;
 	private RAttribute parentAttribute = null;
 
-	public RAttribute(boolean isOverride, String name, String definition, List<RosettaDocReference> docReferences,
+	public RAttribute(RDataType enclosingType, boolean isOverride, String name, String definition, List<RosettaDocReference> docReferences,
 			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality,
-			List<RuleReferenceAnnotation> ruleReferences, List<LabelAnnotation> labelAnnotations, Attribute origin, RObjectFactory rObjectFactory) {
+			List<RuleReferenceAnnotation> ruleReferences, List<LabelAnnotation> labelAnnotations, Attribute origin) {
+		this.enclosingType = enclosingType;
 		this.isOverride = isOverride;
 		this.name = name;
 		this.definition = definition;
@@ -52,7 +53,10 @@ public class RAttribute implements RAssignedRoot, RFeature {
 		this.ruleReferences = ruleReferences;
 		this.labelAnnotations = labelAnnotations;
 		this.origin = origin;
-		this.rObjectFactory = rObjectFactory;
+	}
+	
+	public RDataType getEnclosingType() {
+		return enclosingType;
 	}
 	
 	public boolean isOverride() {
@@ -85,14 +89,23 @@ public class RAttribute implements RAssignedRoot, RFeature {
 		return definition;
 	}
 
+	public List<RosettaDocReference> getOwnDocReferences() {
+		return docReferences;
+	}
 	public List<RosettaDocReference> getAllDocReferences() {
 		return inheritAnnotationsFromParent(RAttribute::getAllDocReferences, docReferences);
 	}
 
+	public List<RuleReferenceAnnotation> getOwnRuleReferences() {
+		return ruleReferences;
+	}
 	public List<RuleReferenceAnnotation> getAllRuleReferences() {
 		return inheritAnnotationsFromParent(RAttribute::getAllRuleReferences, ruleReferences);
 	}
 	
+	public List<LabelAnnotation> getOwnLabelAnnotations() {
+		return labelAnnotations;
+	}
 	public List<LabelAnnotation> getAllLabelAnnotations() {
 		return inheritAnnotationsFromParent(RAttribute::getAllLabelAnnotations, labelAnnotations);
 	}
@@ -110,8 +123,16 @@ public class RAttribute implements RAssignedRoot, RFeature {
 	}
 	
 	public RAttribute getParentAttribute() {
-		if (parentAttribute == null && origin.isOverride()) {
-			parentAttribute = rObjectFactory.buildRAttributeOfParent(origin);
+		if (parentAttribute == null && isOverride && enclosingType != null) {
+			RDataType currentEnclosingType = enclosingType.getSuperType();
+			while (currentEnclosingType != null) {
+				RAttribute foundParentAttr = currentEnclosingType.getOwnAttributeByName(name);
+				if (foundParentAttr != null) {
+					parentAttribute = foundParentAttr;
+					break;
+				}
+				currentEnclosingType = currentEnclosingType.getSuperType();
+			}
 		}
 		return parentAttribute;
 	}

@@ -61,7 +61,7 @@ class ExpressionGeneratorTest {
 		val statements = newArrayList
 		statements.addAll(
 			attributes
-				.map[buildRAttribute]
+				.map[buildRAttributeWithEnclosingType(null, it)]
 				.map[new JavaLocalVariableDeclarationStatement(false, toMetaJavaType, scope.createIdentifier(it, name))])
 		statements.add(parsedExpr.javaCode(expectedType, scope).completeAsReturn)
 		

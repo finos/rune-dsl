@@ -92,7 +92,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 						name,
 						name,
 						type,
-						generatorUtil.javadoc(attr.getDefinition(), attr.getDocReferences(), null),
+						generatorUtil.javadoc(attr.getDefinition(), attr.getAllDocReferences(), null),
 						attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null,
 						attr.getRMetaAnnotatedType().hasMetaAttribute("location"),
 						generateAttributeMetaTypes(attr));

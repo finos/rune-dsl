@@ -60,13 +60,13 @@ public class RosettaParsingTest {
 					[ruleReference for barAttr SimpleAttr]
 					[ruleReference for item -> nestedBar -> barAttr SimpleAttr]
 			
-			type Foo:
+			type Foo extends SuperFoo:
 				override superAttr string (1..1)
 					[ruleReference empty]
-				attr string (1..1)
-					[ruleReference for item SimpleAttr]
 				override superBar Bar (1..1)
 					[ruleReference for barAttr empty]
+				attr string (1..1)
+					[ruleReference for item SimpleAttr]
 				qux Qux (1..1)
 					[ruleReference for item ->> id SimpleAttr]
 			

@@ -24,10 +24,10 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 public class ROperation {
 	private final ROperationType rOperationType;
 	private final RAssignedRoot pathHead;
-	private final List<RFeature> pathTail;
+	private final List<? extends RFeature> pathTail;
 	private final RosettaExpression expression;
 	
-	public ROperation(ROperationType rOperationType, RAssignedRoot pathHead, List<RFeature> pathTail, RosettaExpression expression) {
+	public ROperation(ROperationType rOperationType, RAssignedRoot pathHead, List<? extends RFeature> pathTail, RosettaExpression expression) {
 		this.rOperationType = rOperationType;
 		this.pathHead = pathHead;
 		this.pathTail = pathTail;
@@ -42,7 +42,7 @@ public class ROperation {
 		return pathHead;
 	}
 
-	public List<RFeature> getPathTail() {
+	public List<? extends RFeature> getPathTail() {
 		return pathTail;
 	}
 

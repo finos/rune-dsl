@@ -12,6 +12,10 @@ import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.rules.RuleMap;
+import com.regnosys.rosetta.rules.RulePathMap;
+import com.regnosys.rosetta.rules.RuleReferenceService;
+import com.regnosys.rosetta.rules.RuleResult;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
@@ -19,22 +23,24 @@ import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
-import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.*;
 
+import java.util.List;
+import java.util.Map;
+
 public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private RObjectFactory rObjectFactory;
 	@Inject
-	private RosettaTypeProvider typeProvider;
-	@Inject
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private TypeSystem typeSystem;
+	@Inject
+	private RuleReferenceService ruleService;
 	
 	@Check
 	public void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
@@ -46,19 +52,58 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	}
 	
 	@Check
-	public void checkAttribute(Attribute ele) {
-		RType attrType = typeProvider.getRTypeOfSymbol(ele).getRType();
+	public void checkAttribute(Attribute attr) {
+		RAttribute attribute = rObjectFactory.buildRAttribute(attr);
+		RType attrType = attribute.getRMetaAnnotatedType().getRType();
 
 		if (attrType instanceof RChoiceType) {
 			attrType = ((RChoiceType)attrType).asRDataType();
 		}
 		if (attrType instanceof RDataType) {
 			RDataType attrDataType = (RDataType) attrType;
-			if (ecoreUtil.hasReferenceAnnotation(ele) 
+			if (ecoreUtil.hasReferenceAnnotation(attr) 
 					&& !(attrDataType.hasMetaAttribute("key") || attrDataType.getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute("key")))) {
 				// TODO: make error instead
-				warning(attrDataType.getName() + " must be annotated with [metadata key] as reference annotation is used", ele,
+				warning(attrDataType.getName() + " must be annotated with [metadata key] as reference annotation is used", attr,
 					ROSETTA_TYPED__TYPE_CALL);
+			}
+		}
+		
+		if (!attribute.getOwnRuleReferences().isEmpty()) {
+			EObject container = attr.eContainer();
+			if (!(container instanceof Data)) {
+				for (int i=0; i<attribute.getOwnRuleReferences().size(); i++) {
+					error("You can only add rule references on the attribute of a type", attr, ATTRIBUTE__RULE_REFERENCES, i);
+				}
+			} else {
+				RuleMap map = new RuleMap(); // TODO: reuse this instance for multiple validation methods for efficiency?
+				RulePathMap ruleMap = ruleService.computeRulePathMap(attribute.getEnclosingType(), attribute, map);
+				Map<List<String>, RuleResult> parentRules = ruleMap.getParentRules();
+				Map<List<String>, RuleResult> ownRules = ruleMap.getOwnRules();
+				ownRules.forEach((path, ruleResult) -> {
+					if (ruleResult.isExplicitlyEmpty()) {
+						if (!parentRules.containsKey(path)) {
+							error("There is no inherited rule reference" + toPathMessage(path) + " to remove", ruleResult.getSource(), RULE_REFERENCE_ANNOTATION__EMPTY);
+						}
+					} else {
+						RosettaRule rule = ruleResult.getRule();
+						RAttribute target = ruleService.getTargetAttribute(attribute, path);
+						if (target != null) {
+							RFunction ruleFunc = rObjectFactory.buildRFunction(rule);
+							
+							// check type
+							RMetaAnnotatedType ruleType = ruleFunc.getOutput().getRMetaAnnotatedType();
+							if (!typeSystem.isSubtypeOf(ruleType, target.getRMetaAnnotatedType())) {
+								error("Expected type " + target.getRMetaAnnotatedType() + toPathMessage(path) + ", but rule has type " + ruleType, ruleResult.getSource(), RULE_REFERENCE_ANNOTATION__EMPTY);
+							}
+							
+							// check cardinality
+							if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
+								error("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getSource(), RULE_REFERENCE_ANNOTATION__EMPTY);
+							}
+						}
+					}
+				});
 			}
 		}
 	}
@@ -85,29 +130,44 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					if (!parentAttribute.getCardinality().includes(attribute.getCardinality())) {
 						error("Cardinality may not be broader than the cardinality of the parent attribute " + parentAttribute.getCardinality(), attr, ATTRIBUTE__CARD);
 					}
-					// Check inherited rule reference is compatible
-					if (attr.getRuleReference() == null) {
-						RosettaRule r = parentAttribute.getRuleReference();
-						if (r != null) {
-							RFunction rule = rObjectFactory.buildRFunction(r);
-							
-							// check type
-							RMetaAnnotatedType ruleType = rule.getOutput().getRMetaAnnotatedType();
-							if (!typeSystem.isSubtypeOf(ruleType, overriddenType)) {
-								error("The overridden type is incompatible with the inherited rule reference `" + r.getName() + "`. Either change the type or override the rule reference", attr, ROSETTA_TYPED__TYPE_CALL);
+					// Check inherited rule references are compatible
+					if (!overriddenType.equals(parentAttrType) || !attribute.getCardinality().equals(parentAttribute.getCardinality())) {
+						RuleMap map = new RuleMap();
+						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute.getEnclosingType(), attribute, map);
+						Map<List<String>, RuleResult> inheritedRules = ruleMap.getInheritedRules();
+						inheritedRules.forEach((path, ruleResult) -> {
+							RosettaRule rule = ruleResult.getRule();
+							if (rule != null) {
+								RAttribute target = ruleService.getTargetAttribute(attribute, path);
+								if (target != null) {
+									RFunction ruleFunc = rObjectFactory.buildRFunction(rule);
+									
+									// check type
+									RMetaAnnotatedType ruleType = ruleFunc.getOutput().getRMetaAnnotatedType();
+									if (!typeSystem.isSubtypeOf(ruleType, target.getRMetaAnnotatedType())) {
+										error("The overridden type is incompatible with the inherited rule reference `" + rule.getName() + "`" + toPathMessage(path) + ". Either change the type or override the rule reference", attr, ROSETTA_TYPED__TYPE_CALL);
+									}
+									
+									// check cardinality
+									if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
+										error("Cardinality is incompatible with the inherited rule reference `" + rule.getName() + "`" + toPathMessage(path) + ". Either change the cardinality or override the rule reference", attr, ATTRIBUTE__CARD);
+									}
+								}
 							}
-							
-							// check cardinality
-							if (!attribute.isMulti() && rule.getOutput().isMulti()) {
-								error("Cardinality is incompatible with the inherited rule reference `" + r.getName() + "`. Either change the cardinality or override the rule reference", attr, ATTRIBUTE__CARD);
-							}
-						}
+						});
+						// TODO: for own rules that are explicitly empty, check if they actually override anything
 					}
 				} else {
 					error("Attribute " + attr.getName() + " does not exist in supertype", attr, ROSETTA_NAMED__NAME);
 				}
 			}
 		}
+	}
+	private String toPathMessage(List<String> path) {
+		if (path.isEmpty()) {
+			return "";
+		}
+		return " for " + String.join(" -> ", path);
 	}
 	
 	@Check

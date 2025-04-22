@@ -21,12 +21,71 @@ public class AttributeValidatorTest {
     private RosettaTestModelService modelService;
     
     @Test
+    void testDeepPathInRuleReferenceIsDisallowed() {
+    	assertIssues("""
+				type Foo:
+					opt C (1..1)
+						[ruleReference for item ->> id IdRule]
+				
+				choice C:
+					Opt1
+					Opt2
+				
+				type Opt1:
+					id string (1..1)
+				
+				type Opt2:
+					id string (1..1)
+    			
+    			reporting rule IdRule from int:
+    				"Test"
+				""",
+				"error"
+			);
+    }
+    
+    @Test
+    void testCannotEmptyNonExistingRuleReference() {
+    	assertIssues("""
+				type Foo:
+					attr string (1..1)
+				
+				type Bar extends Foo:
+					override attr string (1..1)
+						[ruleReference empty]
+				""",
+				"""
+				ERROR (null) 'There is no inherited rule reference to remove' at 9:18, length 5, on RuleReferenceAnnotation
+				"""
+			);
+    }
+    
+    @Test
+    void testCircularReportError() {
+    	assertIssues("""
+				type Foo:
+					anotherFoo Foo (0..1)
+					attr string (1..1)
+						[ruleReference Attr]
+				
+				reporting rule Attr from int:
+					"Test"
+				""",
+				"""
+				
+				"""
+			);
+    }
+    
+    @Test
 	void testAttributeNameShouldStartWithLowerCase() {
 		assertIssues("""
 				type PartyIdentifier:
 					PartyId string (1..1)
 				""",
-				"Attribute name should start with a lower case"
+				"""
+				WARNING (RosettaIssueCodes.invalidCase) 'Attribute name should start with a lower case' at 5:2, length 7, on Attribute
+				"""
 			);
 	}
 	
@@ -39,7 +98,9 @@ public class AttributeValidatorTest {
 					attr WithKey (0..1)
 						[metadata reference]
 				""",
-				"WithKey must be annotated with [metadata key] as reference annotation is used"
+				"""
+				WARNING (null) 'WithKey must be annotated with [metadata key] as reference annotation is used' at 7:7, length 7, on Attribute
+				"""
 			);
 	}
 	
@@ -85,7 +146,9 @@ public class AttributeValidatorTest {
 				type Bar extends Foo:
 					override otherAttr number (0..1)
 				""",
-				"Attribute otherAttr does not exist in supertype"
+				"""
+				ERROR (null) 'Attribute otherAttr does not exist in supertype' at 8:11, length 9, on Attribute
+				"""
 			);
 	}
 	
@@ -93,12 +156,15 @@ public class AttributeValidatorTest {
 	void testCannotOverrideFunctionAttribute() {
 		assertIssues("""
 				func Foo:
+					[codeImplementation]
 					inputs:
 						override foo int (1..1)
 					output:
 						result int (1..1)
 				""",
-				"You can only override the attribute of a type"
+				"""
+				ERROR (null) 'You can only override the attribute of a type' at 7:3, length 8, on Attribute
+				"""
 			);
 	}
 	
@@ -111,7 +177,9 @@ public class AttributeValidatorTest {
 				type Bar extends Foo:
 					override attr string (0..1)
 				""",
-				"The overridden type should be a subtype of the parent type number"
+				"""
+				ERROR (null) 'The overridden type should be a subtype of the parent type number' at 8:16, length 6, on Attribute
+				"""
 			);
 	}
 	
@@ -133,7 +201,9 @@ public class AttributeValidatorTest {
 				
 				type Child2 extends Parent:
 				""",
-				"The overridden type should be a subtype of the parent type Child1"
+				"""
+				ERROR (null) 'The overridden type should be a subtype of the parent type Child1' at 11:16, length 6, on Attribute
+				"""
 			);
 	}
 	
@@ -146,7 +216,9 @@ public class AttributeValidatorTest {
 				type Bar extends Foo:
 					override attr string (0..1)
 				""",
-				"Cardinality may not be broader than the cardinality of the parent attribute (1..1)"
+				"""
+				ERROR (null) 'Cardinality may not be broader than the cardinality of the parent attribute (1..1)' at 8:23, length 6, on Attribute
+				"""
 			);
 	}
 	
@@ -164,7 +236,7 @@ public class AttributeValidatorTest {
 				type Bar extends Foo:
 				    override attr string (1..1)
 				""",
-				"The overridden type should be a subtype of the parent type StringOrNumber"
+				"ERROR (null) 'The overridden type should be a subtype of the parent type StringOrNumber' at 12:19, length 6, on Attribute"
 			);
 	}
 	
@@ -187,7 +259,9 @@ public class AttributeValidatorTest {
 				type Bar extends Foo:
 				    override attr StringOrNumber (1..1)
 				""",
-				"The overridden type should be a subtype of the parent type StringOrNumberOrBoolean"
+				"""
+				ERROR (null) 'The overridden type should be a subtype of the parent type StringOrNumberOrBoolean' at 17:19, length 14, on Attribute
+				"""
 			);
 	}
 	
@@ -207,7 +281,9 @@ public class AttributeValidatorTest {
 				reporting rule AttrRule from Parent:
 					item
 				""",
-				"The overridden type is incompatible with the inherited rule reference `AttrRule`. Either change the type or override the rule reference"
+				"""
+				ERROR (null) 'The overridden type is incompatible with the inherited rule reference `AttrRule`. Either change the type or override the rule reference' at 12:19, length 5, on Attribute
+				"""
 			);
 	}
 	
@@ -247,7 +323,9 @@ public class AttributeValidatorTest {
 	            	set result:
 	            		foo -> attr
 				""",
-				"attr is deprecated"
+				"""
+				WARNING (null) 'attr is deprecated' at 16:19, length 4, on RosettaFeatureCall
+				"""
 			);
     }
 	
@@ -270,7 +348,10 @@ public class AttributeValidatorTest {
 					set result:
 						bar -> attr
 				""",
-				"attr is deprecated"
+				"""
+				WARNING (null) 'attr is deprecated' at 9:11, length 4, on Attribute
+				WARNING (null) 'attr is deprecated' at 18:10, length 4, on RosettaFeatureCall
+				"""
 			);
 	}
 	
@@ -280,7 +361,9 @@ public class AttributeValidatorTest {
 				type Foo:
 					attr int (2..1)
 				""",
-				"The upper bound must be greater than the lower bound"
+				"""
+				ERROR (null) 'The upper bound must be greater than the lower bound' at 5:11, length 6, on RosettaCardinality
+				"""
 			);
 	}
 	
