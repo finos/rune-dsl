@@ -55,7 +55,7 @@ class LabelProviderGenerator {
 			rFunction.output.RMetaAnnotatedType.RType as RDataType,
 			newHashMap,
 			[map,context|
-				map.put(context.targetAttribute, context.ruleResult.rule)
+				map.put(context.targetAttribute, context.rule)
 				map
 			]
 		)

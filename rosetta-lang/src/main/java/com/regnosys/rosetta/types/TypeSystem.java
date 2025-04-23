@@ -40,6 +40,7 @@ import com.regnosys.rosetta.rosetta.RosettaBuiltinType;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
@@ -48,7 +49,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rules.RuleReferenceService;
-import com.regnosys.rosetta.rules.RuleResult;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver;
@@ -87,11 +87,13 @@ public class TypeSystem {
         			data,
         			builtins.ANY,
         			(acc, context) -> {
-        				RuleResult ruleResult = context.getRuleResult();
-        				if (ruleResult.isExplicitlyEmpty()) {
+        				if (context.isExplicitlyEmpty()) {
         					return acc;
         				}
-        				RType ruleInputType = typeCallToRType(ruleResult.getRule().getInput());
+        				RType ruleInputType = getRuleInputType(context.getRule());
+        				if (builtins.NOTHING.equals(ruleInputType)) {
+        					return acc;
+        				}
         				return meet(acc, ruleInputType);
         			}
         		);
@@ -99,6 +101,15 @@ public class TypeSystem {
 	}
     private RType getRulesInputTypeFromCache(RDataType data, RosettaExternalRuleSource source, Provider<RType> typeProvider) {
     	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
+    }
+    
+    public RType getRuleInputType(RosettaRule rule) {
+    	Objects.requireNonNull(rule);
+    	TypeCall input = rule.getInput();
+    	if (input == null) {
+    		return builtins.NOTHING;
+    	}
+    	return typeCallToRType(input);
     }
     
     public RMetaAnnotatedType joinMetaAnnotatedTypes(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {

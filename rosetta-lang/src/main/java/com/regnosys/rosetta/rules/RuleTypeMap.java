@@ -9,7 +9,7 @@ import com.regnosys.rosetta.types.RDataType;
  * A map from types in one particular context (rule source or no rule source) to a `RuleAttributeMap`, which keeps track of rules
  * attached to its attributes.
  */
-public class RuleTypeMap {
+class RuleTypeMap {
 	private final Map<RDataType, RuleAttributeMap> map = new LinkedHashMap<>();
 	
 	public void add(RDataType type, RuleAttributeMap attrMap) {

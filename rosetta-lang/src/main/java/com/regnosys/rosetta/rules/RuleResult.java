@@ -8,11 +8,11 @@ import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 
 public class RuleResult {
 	private final RosettaRule rule;
-	private final EObject source;
+	private final EObject origin;
 	
-	private RuleResult(RosettaRule rule, EObject source) {
+	private RuleResult(RosettaRule rule, EObject origin) {
 		this.rule = rule;
-		this.source = source;
+		this.origin = origin;
 	}
 	
 	public static RuleResult fromAnnotation(RuleReferenceAnnotation annotation) {
@@ -33,8 +33,8 @@ public class RuleResult {
 	public RosettaRule getRule() {
 		return rule;
 	}
-	public EObject getSource() {
-		return source;
+	public EObject getOrigin() {
+		return origin;
 	}
 	
 }

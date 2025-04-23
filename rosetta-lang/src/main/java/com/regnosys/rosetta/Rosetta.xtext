@@ -921,8 +921,8 @@ AnnotationPathExpression:
 ;
 NestedAnnotationPath returns AnnotationPathExpression:
 	PrimaryAnnotationPath ->(
-			 ({AnnotationPath.receiver=current} '->' attribute=[Attribute|ValidID])
-			|({AnnotationDeepPath.receiver=current} '->>' attribute=[Attribute|ValidID])
+			 ({AnnotationPath.receiver=current} operator='->' attribute=[Attribute|ValidID])
+			|({AnnotationDeepPath.receiver=current} operator='->>' attribute=[Attribute|ValidID])
 		)*
 ;
 PrimaryAnnotationPath returns AnnotationPathExpression:

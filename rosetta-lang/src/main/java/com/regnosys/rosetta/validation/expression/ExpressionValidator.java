@@ -287,7 +287,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				} else if (callable instanceof RosettaRule) {
 					RosettaRule f = (RosettaRule) callable;
 					if (minCount >= 1) {
-						RMetaAnnotatedType paramType = withNoMeta(typeSystem.typeCallToRType(f.getInput()));
+						RMetaAnnotatedType paramType = withNoMeta(typeSystem.getRuleInputType(f));
 						RosettaExpression arg = expr.getArgs().get(0);
 						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
 						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");

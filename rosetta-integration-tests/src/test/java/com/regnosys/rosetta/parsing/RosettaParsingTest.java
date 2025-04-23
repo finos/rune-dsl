@@ -67,25 +67,10 @@ public class RosettaParsingTest {
 					[ruleReference for barAttr empty]
 				attr string (1..1)
 					[ruleReference for item SimpleAttr]
-				qux Qux (1..1)
-					[ruleReference for item ->> id SimpleAttr]
-			
 			
 			type Bar:
 				barAttr string (1..1)
 				nestedBar Bar (0..1)
-			
-			choice Qux:
-				Opt1
-				Opt2
-			
-			type Opt1:
-				id string (1..1)
-				opt1Attr int (1..1)
-			
-			type Opt2:
-				id string (1..1)
-				opt2Attribute int (1..1)
 			
 			reporting rule SimpleAttr from int:
 				"test"

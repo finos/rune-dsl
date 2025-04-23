@@ -13,12 +13,14 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.types.RAttribute;
@@ -46,56 +48,93 @@ public class RuleReferenceService {
 			} catch (ClassCastException | NoSuchElementException e) {
 				// This should never happen - it indicates some invalid computation before calling this method.
 				LOGGER.error("Error while following path " + path + " from " + start + ".", e);
-				return  null;
+				return null;
 			}
 		}
 		return result;
 	}
 	
-	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initial, BiFunction<T, FoldContext, T> foldFunc) {
-		return traverse(source, type, initial, foldFunc, new RuleMap());
+	/**
+	 * Traverse the tree structure defined by the attributes of a data type and their nested attributes, together with their associated rules.
+	 * For each attribute with an associated rule, the given `updateState` function is called, which based on the current state, the current path
+	 * and the associated rule updates the current state. In functional programming, this is better known as a "fold".
+	 * 
+	 * A rule reference is is said to be "associated" to an attribute if one of the three following conditions is true:
+	 * 1. An enclosing attribute has a rule reference with a path that points to the attribute.
+	 * 2. The attribute itself has a rule reference that points to itself.
+	 * 3. The attribute inherits a rule reference that points to itself from a rule source or a super type.
+	 * If none of the above conditions are true, the attribute does not have an associated rule reference.
+	 * Note that an `empty` rule reference is still considered a rule reference.
+	 * 
+	 * A rule source may be specified to determine which rule reference annotations to use. If the provided
+	 * rule source is null, only inline annotations on attributes will be considered.
+	 * 
+	 * A "minus" in a rule source is equivalent to replacing all inherited rule references with an empty rule reference.
+	 * 
+	 * The traversal works as follows. For each attribute for the current data type:
+	 * 1. If the attribute has an associated rule reference, update the state based on
+	 *    the current state, the path to the attribute and the associated rule.
+	 * 2. If the attribute does not have an associated rule reference, and the type of the attribute is a data type,
+	 *    traverse down that type while remembering the rule references that have a path pointing inside the attribute
+	 *    by adding them to the "nested rule context".
+	 * 
+	 * If a cycle is detected in the traversed types, no more rule references are added to the nested rule context. Once
+	 * that context is empty, the traversal terminates.
+	 * 
+	 * @param <T> The type of the state during traversal.
+	 * @param source The rule source to determine associated rule references. May be null to only consider inline rule references on attributes.
+	 * @param type The type to traverse.
+	 * @param initialState The initial state.
+	 * @param updateState A function that will be called each time an associated rule reference is found, and which updates the current state.
+	 * @return
+	 */
+	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState) {
+		return traverse(source, type, initialState, updateState, new RuleComputationCache());
 	}
-	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initial, BiFunction<T, FoldContext, T> foldFunc, RuleMap map) {
-		return traverse(source, type, initial, foldFunc, map, new HashMap<>(), new ArrayList<>(), new HashSet<>());
+	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, RuleComputationCache computationCache) {
+		return traverse(source, type, initialState, updateState, computationCache, new HashMap<>(), new ArrayList<>(), new HashSet<>());
 	}
-	private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initial, BiFunction<T, FoldContext, T> foldFunc, RuleMap map, Map<List<String>, RuleResult> context, List<RAttribute> path, Set<RDataType> visited) {		
-		if (!visited.add(type)) {
-			return initial;
+	private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, RuleComputationCache computationCache, Map<List<String>, RuleResult> nestedRuleContext, List<RAttribute> path, Set<RDataType> visited) {		
+		boolean isCycle = !visited.add(type);
+		if (isCycle && nestedRuleContext.isEmpty()) {
+			return initialState;
 		}
 		
-		T foldResult = initial;
+		T currentState = initialState;
 		for (RAttribute attr : type.getAllAttributes()) {
 			String attrName = attr.getName();
 			List<RAttribute> attrPath = new ArrayList<>(path);
 			attrPath.add(attr);
 			
-			RuleResult ruleResult = context.get(List.of(attrName));
+			RuleResult ruleResult = nestedRuleContext.get(List.of(attrName));
 			if (ruleResult != null) {
-				foldResult = foldFunc.apply(foldResult, new FoldContext(attrPath, ruleResult));
+				currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
 			} else {
-				RulePathMap pathMap = computeRulePathMapInContext(source, type, attr, map);
+				RulePathMap pathMap = computeRulePathMapInContext(source, type, attr, computationCache);
 				ruleResult = pathMap.get(List.of());
 				if (ruleResult != null) {
-					foldResult = foldFunc.apply(foldResult, new FoldContext(attrPath, ruleResult));
+					currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
 				} else {
 					RType attrType = attr.getRMetaAnnotatedType().getRType();
 					if (attrType instanceof RChoiceType) {
 						attrType = ((RChoiceType) attrType).asRDataType();
 					}
 					if (attrType instanceof RDataType) {
-						Map<List<String>, RuleResult> subcontext = getSubcontextForAttribute(attr, context);
-						pathMap.addToMapIfNotPresent(subcontext);
-						foldResult = traverse(source, (RDataType) attrType, foldResult, foldFunc, map, subcontext, attrPath, new HashSet<>(visited));
+						Map<List<String>, RuleResult> subcontext = getSubcontextForAttribute(attr, nestedRuleContext);
+						if (!isCycle) {
+							pathMap.addToMapIfNotPresent(subcontext);
+						}
+						currentState = traverse(source, (RDataType) attrType, currentState, updateState, computationCache, subcontext, attrPath, new HashSet<>(visited));
 					}
 				}
 			}
 		}
-		return foldResult;
+		return currentState;
 	}
-	public static class FoldContext {
+	public static class RuleReferenceContext {
 		private final List<RAttribute> path;
 		private final RuleResult ruleResult;
-		public FoldContext(List<RAttribute> path, RuleResult ruleResult) {
+		public RuleReferenceContext(List<RAttribute> path, RuleResult ruleResult) {
 			this.path = path;
 			this.ruleResult = ruleResult;
 		}
@@ -109,8 +148,15 @@ public class RuleReferenceService {
 		public RAttribute getTargetAttribute() {
 			return path.get(path.size() - 1);
 		}
- 		public RuleResult getRuleResult() {
-			return ruleResult;
+		
+		public boolean isExplicitlyEmpty() {
+			return ruleResult.isExplicitlyEmpty();
+		}
+		public RosettaRule getRule() {
+			return ruleResult.getRule();
+		}
+		public EObject getRuleOrigin() {
+			return ruleResult.getOrigin();
 		}
 	}
 	private Map<List<String>, RuleResult> getSubcontextForAttribute(RAttribute attribute, Map<List<String>, RuleResult> context) {
@@ -123,14 +169,14 @@ public class RuleReferenceService {
 				));
 	}
 	
-	public RulePathMap computeRulePathMap(RDataType type, RAttribute attribute, RuleMap map) {
-		return computeRulePathMapInContext(null, type, attribute, map);
+	public RulePathMap computeRulePathMap(RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
+		return computeRulePathMapInContext(null, type, attribute, computationCache);
 	}
-	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleMap map) {
-		RuleTypeMap typeMap = map.get(source);
+	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
+		RuleTypeMap typeMap = computationCache.get(source);
 		if (typeMap == null) {
 			typeMap = new RuleTypeMap();
-			map.add(source, typeMap);
+			computationCache.add(source, typeMap);
 		}
 		
 		RuleAttributeMap attrMap = typeMap.get(type);
@@ -156,17 +202,17 @@ public class RuleReferenceService {
 				// Due to attribute overrides, the attribute in the super type might be a different attribute with the same name.
 				RAttribute attrInSuperType = superType.getAttributeByName(attribute.getName());
 				if (attrInSuperType != null) {
-					RulePathMap parentMap = computeRulePathMapInContext(source, superType, attrInSuperType, map);
+					RulePathMap parentMap = computeRulePathMapInContext(source, superType, attrInSuperType, computationCache);
 					parentsInDescendingPriority.add(parentMap);
 				}
 			}
 			
 			if (source.getSuperRuleSources().isEmpty()) {
-				RulePathMap parentMap = computeRulePathMapInContext(null, type, attribute, map);
+				RulePathMap parentMap = computeRulePathMapInContext(null, type, attribute, computationCache);
 				parentsInDescendingPriority.add(parentMap);
 			} else {
 				source.getSuperRuleSources().stream()
-					.map(superSource -> computeRulePathMapInContext(superSource, type, attribute, map))
+					.map(superSource -> computeRulePathMapInContext(superSource, type, attribute, computationCache))
 					.forEach(parentMap -> parentsInDescendingPriority.add(parentMap));
 			}
 		} else {
@@ -174,7 +220,7 @@ public class RuleReferenceService {
 			// check if attribute overrides another attribute.
 			RAttribute parentAttribute = attribute.getParentAttribute();
 			if (parentAttribute != null) {
-				RulePathMap parentMap = computeRulePathMapInContext(null, parentAttribute.getEnclosingType(), parentAttribute, map);
+				RulePathMap parentMap = computeRulePathMapInContext(null, parentAttribute.getEnclosingType(), parentAttribute, computationCache);
 				parentsInDescendingPriority.add(parentMap);
 			}
 		}

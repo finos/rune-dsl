@@ -313,7 +313,7 @@ public interface ExpectedTypeProvider {
 						return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index));
 					} else if (symbol instanceof RosettaRule) {
 						RosettaRule rule = (RosettaRule)symbol;
-						return withNoMeta(typeSystem.typeCallToRType(rule.getInput()));
+						return withNoMeta(typeSystem.getRuleInputType(rule));
 					}
 				}
 				return null;

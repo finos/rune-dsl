@@ -44,7 +44,6 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
 import com.regnosys.rosetta.rules.RuleReferenceService;
-import com.regnosys.rosetta.rules.RuleResult;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 
 public class RObjectFactory {
@@ -77,13 +76,13 @@ public class RObjectFactory {
 		return new RAttribute(null, false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, Collections.emptyList(), null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
-		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
+		RType inputRType = typeSystem.getRuleInputType(rule);
 		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
-				modelIdProvider.getSymbolId(rule),
+				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
 				outputAttribute,
@@ -135,9 +134,8 @@ public class RObjectFactory {
 					reportType,
 					new LinkedHashMap<>(),
 					(acc, context) -> {
-						RuleResult ruleResult = context.getRuleResult();
-						if (!ruleResult.isExplicitlyEmpty()) {
-							acc.put(context.getPath(), ruleResult.getRule());
+						if (!context.isExplicitlyEmpty()) {
+							acc.put(context.getPath(), context.getRule());
 						}
 						return acc;
 					}

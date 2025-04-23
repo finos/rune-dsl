@@ -1,24 +1,15 @@
 package com.regnosys.rosetta.validation;
 
-import javax.inject.Inject;
-
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
-import com.regnosys.rosetta.tests.testmodel.RosettaTestModel;
-import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
-import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
-public class AttributeValidatorTest {
-	@Inject
-    private RosettaValidationTestHelper validationHelper;
-    @Inject
-    private RosettaTestModelService modelService;
+public class AttributeValidatorTest extends AbstractValidatorTest {
     
     @Test
     void testDeepPathInRuleReferenceIsDisallowed() {
@@ -40,7 +31,9 @@ public class AttributeValidatorTest {
     			reporting rule IdRule from int:
     				"Test"
 				""",
-				"error"
+				"""
+				ERROR (null) 'Deep paths are not allowed for `ruleReference` annotations' at 6:27, length 3, on AnnotationDeepPath
+				"""
 			);
     }
     
@@ -61,8 +54,8 @@ public class AttributeValidatorTest {
     }
     
     @Test
-    void testCircularReportError() {
-    	assertIssues("""
+    void testInvalidCircularReport() {
+    	assertNoIssues("""
 				type Foo:
 					anotherFoo Foo (0..1)
 					attr string (1..1)
@@ -70,11 +63,24 @@ public class AttributeValidatorTest {
 				
 				reporting rule Attr from int:
 					"Test"
-				""",
-				"""
-				
 				"""
 			);
+    }
+    
+    @Test
+    void testValidCircular() {
+    	assertNoIssues("""
+    			type Foo:
+					bar Bar (1..1)
+						[ruleReference for attr AttrRule]
+				
+				type Bar:
+					attr string (1..1)
+					bar Bar (0..1)
+				
+				reporting rule AttrRule from string:
+					item
+    			""");
     }
     
     @Test
@@ -307,6 +313,54 @@ public class AttributeValidatorTest {
 	}
 	
 	@Test
+	void testMustOverrideNestedRuleReferenceWhenRestrictingType() {
+		assertIssues("""
+				type Parent:
+					qux SuperQux (1..1)
+				type Child extends Parent:
+					override qux Qux (1..1)
+				
+				type SuperQux:
+				type Qux extends SuperQux:
+				
+				type Foo:
+				    attr Parent (1..1)
+				    	[ruleReference for qux SuperQuxRule]
+				
+				type Bar extends Foo:
+				    override attr Child (1..1)
+				
+				reporting rule SuperQuxRule from SuperQux:
+					item
+				""",
+				"""
+				ERROR (null) 'The overridden type is incompatible with the inherited rule reference `SuperQuxRule` for qux. Either change the type or override the rule reference' at 17:19, length 5, on Attribute
+				"""
+			);
+	}
+	
+	@Test
+	void testMustNotOverrideNestedRuleReferenceWhenRestrictingTypeToCompatibleType() {
+		assertNoIssues("""
+				type Parent:
+					n number (1..1)
+				type Child extends Parent:
+					override n int (1..1)
+				
+				type Foo:
+				    attr Parent (1..1)
+				    	[ruleReference for n NRule]
+				
+				type Bar extends Foo:
+				    override attr Child (1..1)
+				
+				reporting rule NRule from int:
+					item
+				"""
+			);
+	}
+	
+	@Test
     void supportDeprecatedAnnotationOnAttribute() {
 		assertIssues("""
 				type Foo:
@@ -365,14 +419,5 @@ public class AttributeValidatorTest {
 				ERROR (null) 'The upper bound must be greater than the lower bound' at 5:11, length 6, on RosettaCardinality
 				"""
 			);
-	}
-	
-	private void assertIssues(String model, String expectedIssues) {
-		RosettaTestModel parsedModel = modelService.toTestModel(model, false);
-		validationHelper.assertIssues(parsedModel.getModel(), expectedIssues);
-	}
-	
-	private void assertNoIssues(String model) {
-		modelService.toTestModel(model, true);
 	}
 }

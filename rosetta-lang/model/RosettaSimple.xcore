@@ -75,10 +75,12 @@ class AnnotationPathAttributeReference extends AnnotationPathExpression {
 	refers Attribute attribute
 }
 class AnnotationPath extends AnnotationPathExpression {
+	String operator
 	contains AnnotationPathExpression receiver
 	refers Attribute attribute
 }
 class AnnotationDeepPath extends AnnotationPathExpression {
+	String operator
 	contains AnnotationPathExpression receiver
 	refers Attribute attribute
 }
