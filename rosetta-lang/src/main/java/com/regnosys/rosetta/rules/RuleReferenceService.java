@@ -58,16 +58,19 @@ public class RuleReferenceService {
 	 * 2. If the attribute does not have an associated rule reference, is single cardinality, and the type of the attribute is a data type,
 	 *    traverse down that type while remembering the rule references that have a path pointing inside the attribute
 	 *    by adding them to the "nested rule context".
+	 * Note that the type of a multi-cardinality attribute is never considered for traversal.
 	 * 
-	 * If a cycle is detected in the traversed types, no more rule references are added to the nested rule context. Once
-	 * that context is empty, the traversal terminates.
+	 * If a cycle is detected in the traversed types, no more rule references are added to the nested rule context. If
+	 * the nested rule context is empty, the traversal terminates for that path.
 	 * 
 	 * @param <T> The type of the state during traversal.
 	 * @param source The rule source to determine associated rule references. May be null to only consider inline rule references on attributes.
 	 * @param type The type to traverse.
 	 * @param initialState The initial state.
 	 * @param updateState A function that will be called each time an associated rule reference is found, and which updates the current state.
-	 * @return
+	 *                    The first parameter represents the current state. The second parameter contains information about the current path
+	 *                    and the associated rule reference for that path.
+	 * @return The end state.
 	 */
 	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState) {
 		return traverse(source, type, initialState, updateState, new RuleComputationCache());

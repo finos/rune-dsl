@@ -105,7 +105,7 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 						[ruleReference empty]
 				""",
 				"""
-				ERROR (null) 'There is no inherited rule reference to remove' at 9:18, length 5, on RuleReferenceAnnotation
+				ERROR (null) 'There is no rule reference to remove' at 9:18, length 5, on RuleReferenceAnnotation
 				"""
 			);
     }

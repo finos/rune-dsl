@@ -175,12 +175,12 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 		ownRules.forEach((path, ruleResult) -> {
 			if (ruleResult.isExplicitlyEmpty()) {
 				if (!parentRules.containsKey(path)) {
-					EObject errorSource = ruleResult.getOrigin();
+					EObject errorOrigin = ruleResult.getOrigin();
 					String msg = "There is no rule reference" + toPathMessage(path) + " to remove";
-					if (source instanceof RuleReferenceAnnotation) {
-						error(msg, errorSource, RULE_REFERENCE_ANNOTATION__EMPTY);
+					if (errorOrigin instanceof RuleReferenceAnnotation) {
+						error(msg, errorOrigin, RULE_REFERENCE_ANNOTATION__EMPTY);
 					} else {
-						error(msg, errorSource, null);
+						error(msg, errorOrigin, null);
 					}
 				}
 			} else {
