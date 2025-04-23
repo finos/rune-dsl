@@ -68,44 +68,6 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					ROSETTA_TYPED__TYPE_CALL);
 			}
 		}
-		
-		if (!attribute.getOwnRuleReferences().isEmpty()) {
-			EObject container = attr.eContainer();
-			if (!(container instanceof Data)) {
-				for (int i=0; i<attribute.getOwnRuleReferences().size(); i++) {
-					error("You can only add rule references on the attribute of a type", attr, ATTRIBUTE__RULE_REFERENCES, i);
-				}
-			} else {
-				RuleComputationCache map = new RuleComputationCache(); // TODO: reuse this instance for multiple validation methods for efficiency?
-				RulePathMap ruleMap = ruleService.computeRulePathMap(attribute.getEnclosingType(), attribute, map);
-				Map<List<String>, RuleResult> parentRules = ruleMap.getParentRules();
-				Map<List<String>, RuleResult> ownRules = ruleMap.getOwnRules();
-				ownRules.forEach((path, ruleResult) -> {
-					if (ruleResult.isExplicitlyEmpty()) {
-						if (!parentRules.containsKey(path)) {
-							error("There is no inherited rule reference" + toPathMessage(path) + " to remove", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
-						}
-					} else {
-						RosettaRule rule = ruleResult.getRule();
-						RAttribute target = ruleService.getTargetAttribute(attribute, path);
-						if (target != null) {
-							RFunction ruleFunc = rObjectFactory.buildRFunction(rule);
-							
-							// check type
-							RMetaAnnotatedType ruleType = ruleFunc.getOutput().getRMetaAnnotatedType();
-							if (!typeSystem.isSubtypeOf(ruleType, target.getRMetaAnnotatedType())) {
-								error("Expected type " + target.getRMetaAnnotatedType() + toPathMessage(path) + ", but rule has type " + ruleType, ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
-							}
-							
-							// check cardinality
-							if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
-								error("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
-							}
-						}
-					}
-				});
-			}
-		}
 	}
 	
 	@Check
@@ -155,7 +117,6 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 								}
 							}
 						});
-						// TODO: for own rules that are explicitly empty, check if they actually override anything
 					}
 				} else {
 					error("Attribute " + attr.getName() + " does not exist in supertype", attr, ROSETTA_NAMED__NAME);

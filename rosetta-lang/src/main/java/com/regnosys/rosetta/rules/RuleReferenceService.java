@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -35,25 +35,6 @@ public class RuleReferenceService {
 	@Inject
 	private AnnotationPathExpressionUtil pathExpressionUtil;
 	
-	public RAttribute getTargetAttribute(RAttribute start, List<String> path) {
-		RAttribute result = start;
-		for (String next : path) {
-			RType attrType = start.getRMetaAnnotatedType().getRType();
-			if (attrType instanceof RChoiceType) {
-				attrType = ((RChoiceType) attrType).asRDataType();
-			}
-			try {
-				RDataType attrDataType = (RDataType)attrType;
-				result = attrDataType.getAllAttributes().stream().filter(a -> next.equals(a.getName())).findAny().orElseThrow();
-			} catch (ClassCastException | NoSuchElementException e) {
-				// This should never happen - it indicates some invalid computation before calling this method.
-				LOGGER.error("Error while following path " + path + " from " + start + ".", e);
-				return null;
-			}
-		}
-		return result;
-	}
-	
 	/**
 	 * Traverse the tree structure defined by the attributes of a data type and their nested attributes, together with their associated rules.
 	 * For each attribute with an associated rule, the given `updateState` function is called, which based on the current state, the current path
@@ -74,7 +55,7 @@ public class RuleReferenceService {
 	 * The traversal works as follows. For each attribute for the current data type:
 	 * 1. If the attribute has an associated rule reference, update the state based on
 	 *    the current state, the path to the attribute and the associated rule.
-	 * 2. If the attribute does not have an associated rule reference, and the type of the attribute is a data type,
+	 * 2. If the attribute does not have an associated rule reference, is single cardinality, and the type of the attribute is a data type,
 	 *    traverse down that type while remembering the rule references that have a path pointing inside the attribute
 	 *    by adding them to the "nested rule context".
 	 * 
@@ -114,7 +95,7 @@ public class RuleReferenceService {
 				ruleResult = pathMap.get(List.of());
 				if (ruleResult != null) {
 					currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
-				} else {
+				} else if (!attr.isMulti()) {
 					RType attrType = attr.getRMetaAnnotatedType().getRType();
 					if (attrType instanceof RChoiceType) {
 						attrType = ((RChoiceType) attrType).asRDataType();
@@ -271,6 +252,25 @@ public class RuleReferenceService {
 					t.getRegularAttributes().stream()
 						.filter(a -> a.getAttributeRef().equals(attribute.getEObject()))
 				);
+	}
+	
+	public RAttribute getTargetAttribute(RAttribute start, List<String> path) {
+		RAttribute result = start;
+		for (String next : path) {
+			RType attrType = result.getRMetaAnnotatedType().getRType();
+			if (attrType instanceof RChoiceType) {
+				attrType = ((RChoiceType) attrType).asRDataType();
+			}
+			try {
+				RDataType attrDataType = (RDataType)attrType;
+				result = Objects.requireNonNull(attrDataType.getAttributeByName(next));
+			} catch (ClassCastException | NullPointerException e) {
+				// This should never happen - it indicates some invalid computation before calling this method.
+				LOGGER.error("Error while following attribute `" + next + "` path " + path + " from " + start + ".", e);
+				return null;
+			}
+		}
+		return result;
 	}
 	
 	private List<String> toList(AnnotationPathExpression path) {

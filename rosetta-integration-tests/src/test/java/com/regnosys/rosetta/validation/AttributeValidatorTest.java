@@ -38,6 +38,63 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
     }
     
     @Test
+    void testPathInRuleReferenceOnMultiCardinalityAttributeIsDisallowed() {
+    	assertIssues("""
+				type Foo:
+					bars Bar (0..*)
+						[ruleReference for attr AttrRule]
+				
+				type Bar:
+					attr string (1..1)
+				
+				reporting rule AttrRule from string:
+					item
+				""",
+				"""
+				ERROR (null) 'Paths on multi-cardinality attributes are not allowed' at 6:22, length 4, on RuleReferenceAnnotation
+				"""
+			);
+    }
+    
+    @Test
+    void testPathInRuleReferenceContainingMultiCardinalityAttributeIsDisallowed() {
+    	assertIssues("""
+				type Foo:
+					bars Bar (1..1)
+						[ruleReference for quxs -> attr AttrRule]
+				
+				type Bar:
+					quxs Qux (0..*)
+				
+				type Qux:
+					attr string (1..1)
+				
+				reporting rule AttrRule from string:
+					item
+				""",
+				"""
+				ERROR (null) 'Paths on multi-cardinality attributes are not allowed' at 6:27, length 2, on AnnotationPath
+				"""
+			);
+    }
+    
+    @Test
+    void testPathInRuleReferenceEndingWithMultiCardinalityAttributeIsAllowed() {
+    	assertNoIssues("""
+				type Foo:
+					bars Bar (1..1)
+						[ruleReference for attr AttrRule]
+				
+				type Bar:
+					attr string (0..*)
+				
+				reporting rule AttrRule from string:
+					item
+				"""
+			);
+    }
+    
+    @Test
     void testCannotEmptyNonExistingRuleReference() {
     	assertIssues("""
 				type Foo:

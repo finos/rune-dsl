@@ -11,6 +11,25 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class ReportValidatorTest extends AbstractValidatorTest {
 	@Test
+	void testRuleReferenceToRuleWithLabelIsDeprecated() {
+		assertIssues("""
+				type Foo:
+					bar Bar (1..1)
+						[ruleReference for barAttr RuleWithLabel]
+				
+				type Bar:
+					barAttr string (1..1)
+				
+				reporting rule RuleWithLabel from number:
+					empty
+					as "My label"
+				""",
+				"""
+				WARNING (null) 'Specifying a label in a reporting rule is deprecated. Add a `label` annotation instead' at 6:30, length 13, on RuleReferenceAnnotation
+				""");
+	}
+	
+	@Test
 	void testInvalidInputType() {
 		assertIssues("""
 				type Foo:

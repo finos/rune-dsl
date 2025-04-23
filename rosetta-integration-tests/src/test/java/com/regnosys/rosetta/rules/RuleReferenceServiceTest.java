@@ -29,6 +29,23 @@ public class RuleReferenceServiceTest {
 	private RObjectFactory objectFactory;
 	
 	@Test
+	void testDoNotTraverseMultiCardinalityAttributes() {
+		assertTraversal(
+				"Foo",
+				"""
+				type Foo:
+					bars Bar (0..*)
+				
+				type Bar:
+					attr string (1..1)
+						[ruleReference AttrRule]
+				""",
+				"""
+				"""
+			);
+	}
+	
+	@Test
 	void testOverrideNestedRuleWhileSpecializingType() {
 		assertTraversal(
 				"FooExtended",

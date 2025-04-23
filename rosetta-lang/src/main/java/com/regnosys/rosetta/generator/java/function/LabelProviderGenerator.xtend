@@ -31,6 +31,7 @@ import java.util.HashSet
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.rules.RuleReferenceService
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -50,12 +51,19 @@ class LabelProviderGenerator {
 	}
 	def void generateForReport(IFileSystemAccess2 fsa, RosettaReport report) {
 		val rFunction = rObjectFactory.buildRFunction(report)
-		val attributeToRuleMap = ruleService.traverse( // TODO: this is kind of wrong!! It does not allow different rules on the same type by traversing different paths
-			report.ruleSource, 
+		val attributeToRuleMap = ruleService.traverse(
+			report.ruleSource,
 			rFunction.output.RMetaAnnotatedType.RType as RDataType,
 			newHashMap,
 			[map,context|
-				map.put(context.targetAttribute, context.rule)
+				if (context.rule !== null && context.rule.identifier !== null) {
+					val origin = context.ruleOrigin
+					if (origin instanceof RuleReferenceAnnotation) {
+						if (origin.path === null) {
+							map.put(context.targetAttribute, context.rule)
+						}
+					}
+				}
 				map
 			]
 		)

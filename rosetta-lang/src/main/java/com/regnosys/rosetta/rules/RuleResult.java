@@ -16,11 +16,7 @@ public class RuleResult {
 	}
 	
 	public static RuleResult fromAnnotation(RuleReferenceAnnotation annotation) {
-		if (annotation.isEmpty()) {
-			return new RuleResult(null, annotation);
-		} else {
-			return new RuleResult(annotation.getReportingRule(), annotation);
-		}
+		return new RuleResult(annotation.getReportingRule(), annotation);
 	}
 	public static RuleResult explicitlyEmptyFromMinusInRuleSource(RosettaExternalRegularAttribute minusAttribute) {
 		return new RuleResult(null, minusAttribute);
