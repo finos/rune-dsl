@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.xtext.build.IncrementalBuilder;
 import org.eclipse.xtext.ide.server.ILanguageServerShutdownAndExitHandler;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.ServerModule;
@@ -28,6 +29,7 @@ import org.eclipse.xtext.service.AbstractGenericModule;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+import com.regnosys.rosetta.ide.build.RosettaStatefulIncrementalBuilder;
 
 public class RosettaServerModule extends AbstractGenericModule {
 	/**
@@ -77,5 +79,9 @@ public class RosettaServerModule extends AbstractGenericModule {
 	
 	public Class<? extends ILanguageServerShutdownAndExitHandler> bindILanguageServerShutdownAndExitHandler() {
 		return RosettaLanguageServerShutdownAndExitHandler.class;
+	}
+	
+	public Class<? extends IncrementalBuilder.InternalStatefulIncrementalBuilder> bindIncrementalBuilder$InternalStatefulIncrementalBuilder() {
+	    return RosettaStatefulIncrementalBuilder.class;
 	}
 }
