@@ -233,4 +233,80 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 			(v3) -> assertSuccess(v3, "FooC", "T.foos(2)")
 		);
 	}
+	
+	@Test
+	void testConditionsFromTypeWithMultipleAttributes() {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type T:
+					atr1 FooAlias(f: "foo") (0..1)
+					atr2 string (0..1)
+					
+					condition Cond1:
+						atr1 exists
+				
+				typeAlias FooAlias (f string):
+					string
+
+					condition CondA:
+						f exists
+					condition CondB:
+						 item <> f
+				""").compile();
+		
+		RosettaModelObject t = model.evaluateExpression(RosettaModelObject.class, """
+				T {
+				  atr1: "foo",
+				  atr2: "foo2"
+				}
+				""");
+		
+		var validator = getTypeFormatValidator(t);
+		
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		
+		assertResults(
+			results,
+			(v1) -> assertSuccess(v1, "T", "T"),
+			(v2) -> assertSuccess(v2, "Cond1", "T"),
+			(v3) -> assertSuccess(v3, "FooAliasCondA", "T.atr1"),
+			(v4) -> assertFailure(v4, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
+		);
+	}
+	
+	@Test
+	void testConditionsFromTypeWithSingleAttribute() {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type T:
+					atr1 FooAlias(f: "foo") (0..1)
+					
+					condition Cond1:
+						atr1 exists
+				
+				typeAlias FooAlias (f string):
+					string
+
+					condition CondA:
+						f exists
+					condition CondB:
+						 item <> f
+				""").compile();
+		
+		RosettaModelObject t = model.evaluateExpression(RosettaModelObject.class, """
+				T {
+				  atr1: "foo"
+				}
+				""");
+		
+		var validator = getTypeFormatValidator(t);
+		
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		
+		assertResults(
+			results,
+			(v1) -> assertSuccess(v1, "T", "T"),
+			(v2) -> assertSuccess(v2, "Cond1", "T"),
+			(v3) -> assertSuccess(v3, "FooAliasCondA", "T.atr1"),
+			(v4) -> assertFailure(v4, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
+		);
+	}
 }
