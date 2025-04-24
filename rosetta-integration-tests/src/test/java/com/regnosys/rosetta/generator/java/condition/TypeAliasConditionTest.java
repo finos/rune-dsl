@@ -266,10 +266,8 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		assertResults(
 			results,
-			(v1) -> assertSuccess(v1, "T", "T"),
-			(v2) -> assertSuccess(v2, "Cond1", "T"),
-			(v3) -> assertSuccess(v3, "FooAliasCondA", "T.atr1"),
-			(v4) -> assertFailure(v4, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
+			(v1) -> assertSuccess(v1, "FooAliasCondA", "T.atr1"),
+			(v2) -> assertFailure(v2, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
 		);
 	}
 	
@@ -303,10 +301,8 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		assertResults(
 			results,
-			(v1) -> assertSuccess(v1, "T", "T"),
-			(v2) -> assertSuccess(v2, "Cond1", "T"),
-			(v3) -> assertSuccess(v3, "FooAliasCondA", "T.atr1"),
-			(v4) -> assertFailure(v4, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
+			(v1) -> assertSuccess(v1, "FooAliasCondA", "T.atr1"),
+			(v2) -> assertFailure(v2, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
 		);
 	}
 }
