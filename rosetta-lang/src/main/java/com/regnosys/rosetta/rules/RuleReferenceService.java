@@ -40,7 +40,7 @@ public class RuleReferenceService {
 	 * For each attribute with an associated rule reference, a given callback is called, which based on a state, the current path
 	 * and the associated rule reference updates the current state. In functional programming, this is better known as a "fold".
 	 * 
-	 * A rule reference is is said to be "associated" to an attribute if one of the three following conditions is true:
+	 * A rule reference is said to be "associated" to an attribute if one of the three following conditions is true:
 	 * 1. An enclosing attribute has a rule reference with a path that points to the attribute.
 	 * 2. The attribute itself has a rule reference that points to itself.
 	 * 3. The attribute inherits a rule reference that points to itself from a rule source or a super type.
