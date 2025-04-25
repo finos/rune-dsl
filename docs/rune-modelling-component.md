@@ -2400,7 +2400,7 @@ type ReportComponent:
 When overriding the attribute of a report type, all rule references and labels are inherited. Rule references for a specific path can also be removed by using the `empty` keyword.
 
 In the example below, the `Report -> component` attribute inherits the rule reference for `componentID`, overrides the rule reference for `componentValue` and removes the rule reference for `componentUnit`.
-```
+``` Haskell
 type CommonReport:
     component ReportComponent (1..1)
         [ruleReference for componentID ReportComponentID]
