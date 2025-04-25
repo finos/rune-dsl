@@ -715,6 +715,7 @@ repository:
         end: (?=\])|{{sectionEnd}}
         patterns:
         - include: '#comment'
+        - include: '#annotationPath'
         - name: entity.name.rule.rosetta
           match: '{{identifier}}'
 

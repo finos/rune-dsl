@@ -24,34 +24,31 @@ import javax.inject.Inject;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.CodeActionKind;
-import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.FormattingOptions;
-import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
-import org.eclipse.lsp4j.InlayHintRegistrationOptions;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensDelta;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
-import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
-import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.xtext.ide.server.Document;
 import org.eclipse.xtext.ide.server.ILanguageServerAccess;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
-import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.ide.overrides.IParentsService;
+import com.regnosys.rosetta.ide.overrides.ParentsParams;
+import com.regnosys.rosetta.ide.overrides.ParentsResult;
 import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
@@ -61,43 +58,16 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
  * TODO: contribute to Xtext.
  *
  */
-public class RosettaLanguageServerImpl extends LanguageServerImpl implements RosettaLanguageServer{
+public class RosettaLanguageServerImpl extends LanguageServerImpl implements RosettaLanguageServer, RosettaTextDocumentService {
 	@Inject FormattingOptionsService formattingOptionsService;
 	@Inject CodeActionUtils codeActionUtils;
-
+	
 	@Override
-	protected ServerCapabilities createServerCapabilities(InitializeParams params) {
-		ServerCapabilities serverCapabilities = super.createServerCapabilities(params);
-		IResourceServiceProvider resourceServiceProvider = getResourceServiceProvider(URI.createURI("synth:///file.rosetta"));
-
-		if (resourceServiceProvider.get(IInlayHintsService.class) != null) {
-			InlayHintRegistrationOptions inlayHintRegistrationOptions = new InlayHintRegistrationOptions();
-			inlayHintRegistrationOptions.setResolveProvider(resourceServiceProvider.get(IInlayHintsResolver.class) != null);
-			serverCapabilities.setInlayHintProvider(inlayHintRegistrationOptions);
-		}
-		
-		if (resourceServiceProvider.get(ICodeActionService2.class) != null) {
-            CodeActionOptions codeActionProvider = new CodeActionOptions();
-            codeActionProvider.setResolveProvider(true);
-            codeActionProvider.setCodeActionKinds(List.of(CodeActionKind.QuickFix, CodeActionKind.SourceOrganizeImports));
-            codeActionProvider.setWorkDoneProgress(true);
-            serverCapabilities.setCodeActionProvider(codeActionProvider);
-        }
-		
-		ISemanticTokensService semanticTokensService = resourceServiceProvider.get(ISemanticTokensService.class);
-		if (semanticTokensService != null) {
-			SemanticTokensWithRegistrationOptions semanticTokensOptions = new SemanticTokensWithRegistrationOptions();
-			semanticTokensOptions.setLegend(semanticTokensService.getLegend());
-			semanticTokensOptions.setFull(true);
-			semanticTokensOptions.setRange(true);
-			serverCapabilities.setSemanticTokensProvider(semanticTokensOptions);
-		}
-		
-		return serverCapabilities;
+	public RosettaTextDocumentService getRosettaTextDocumentService() {
+		return this;
 	}
 
 	/*** INLAY HINTS ***/
-	
 	protected List<InlayHint> inlayHint(InlayHintParams params, CancelIndicator cancelIndicator) {
 		URI uri = this.getURI(params.getTextDocument());
 		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
@@ -206,11 +176,13 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 		return this.getRequestManager().runRead((cancelIndicator) -> this.semanticTokensRange(params, cancelIndicator));
 	}
 
+	/*** FORMATTING ***/
 	@Override
 	public CompletableFuture<FormattingOptions> getDefaultFormattingOptions() {
 		return CompletableFuture.completedFuture(formattingOptionsService.getDefaultOptions());
 	}
 	
+	/*** CODE ACTIONS ***/
 	@Override
 	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction unresolved) {
 		return getRequestManager().runRead((cancelIndicator) -> this.resolveCodeAction(unresolved, cancelIndicator));
@@ -233,8 +205,6 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 			return resolveCodeActionService.getCodeActionResolution(codeAction, baseOptions);
 		});
 	}
-	
-	
 
 	private Options createCodeActionBaseOptions(Document doc, XtextResource resource,
 			ILanguageServerAccess languageServerAcces, CodeActionParams codeActionParams,
@@ -248,5 +218,18 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 
 		return baseOptions;
 	}
+
+	/*** PARENTS ***/
+	@Override
+	public CompletableFuture<List<? extends ParentsResult>> parents(ParentsParams params) {
+		return getRequestManager().runRead((cancelIndicator) -> this.parents(params, cancelIndicator));
+	}
 	
+	protected List<? extends ParentsResult> parents(ParentsParams params, CancelIndicator cancelIndicator) {
+		URI uri = this.getURI(params.getTextDocument());
+		return this.getWorkspaceManager().doRead(uri, (document, resource) -> {
+			IParentsService service = getService(uri, IParentsService.class);
+			return service.computeParents(document, resource, params, cancelIndicator);
+		});
+	}
 }
