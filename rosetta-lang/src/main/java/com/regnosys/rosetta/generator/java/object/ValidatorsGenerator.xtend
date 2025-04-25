@@ -155,7 +155,7 @@ class ValidatorsGenerator {
 			
 			private «List»<«ValidationResult»<?>> runConditions(«RosettaPath» «pathId», «javaType» «instanceId») {
 				«List»<«ValidationResult»<?>> «resultsId» = new «ArrayList»();
-				«FOR condCheck : attributes.map[checkTypeConditions(javaType, it, aliasHierarchyPerAttribute.get(it), pathId, instanceVar, resultsId, classScope)] SEPARATOR ", "»
+				«FOR condCheck : attributes.map[checkTypeConditions(javaType, it, aliasHierarchyPerAttribute.get(it), pathId, instanceVar, resultsId, classScope)]»
 				«condCheck.asStatementList»
 				«ENDFOR»
 				return «resultsId»;
