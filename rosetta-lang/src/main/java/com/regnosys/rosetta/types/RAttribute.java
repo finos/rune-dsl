@@ -19,39 +19,44 @@ package com.regnosys.rosetta.types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import com.regnosys.rosetta.rosetta.RosettaDocReference;
-import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 
 public class RAttribute implements RAssignedRoot, RFeature {
+	private final RDataType enclosingType;
 	private final boolean isOverride;
 	private final String name;
 	private final String definition;
 	private final List<RosettaDocReference> docReferences;
 	private final RMetaAnnotatedType rMetaAnnotatedType;
 	private final RCardinality cardinality;
-	private final RosettaRule ruleReference;
+	private final List<RuleReferenceAnnotation> ruleReferences;
 	private final List<LabelAnnotation> labelAnnotations;
 	private final Attribute origin;
 	
-	private final RObjectFactory rObjectFactory;
 	private RAttribute parentAttribute = null;
 
-	public RAttribute(boolean isOverride, String name, String definition, List<RosettaDocReference> docReferences,
+	public RAttribute(RDataType enclosingType, boolean isOverride, String name, String definition, List<RosettaDocReference> docReferences,
 			RMetaAnnotatedType rMetaAnnotatedType, RCardinality cardinality,
-			RosettaRule ruleReference, List<LabelAnnotation> labelAnnotations, Attribute origin, RObjectFactory rObjectFactory) {
+			List<RuleReferenceAnnotation> ruleReferences, List<LabelAnnotation> labelAnnotations, Attribute origin) {
+		this.enclosingType = enclosingType;
 		this.isOverride = isOverride;
 		this.name = name;
 		this.definition = definition;
 		this.docReferences = docReferences;
 		this.rMetaAnnotatedType = rMetaAnnotatedType;
 		this.cardinality = cardinality;
-		this.ruleReference = ruleReference;
+		this.ruleReferences = ruleReferences;
 		this.labelAnnotations = labelAnnotations;
 		this.origin = origin;
-		this.rObjectFactory = rObjectFactory;
+	}
+	
+	public RDataType getEnclosingType() {
+		return enclosingType;
 	}
 	
 	public boolean isOverride() {
@@ -84,44 +89,50 @@ public class RAttribute implements RAssignedRoot, RFeature {
 		return definition;
 	}
 
-	public List<RosettaDocReference> getDocReferences() {
-		RAttribute p = getParentAttribute();
-		List<RosettaDocReference> parentDocRefs;
-		if (p == null || (parentDocRefs = p.getDocReferences()).isEmpty()) {
-			return docReferences;
-		}
-		List<RosettaDocReference> docRefs = new ArrayList<>(docReferences.size() + parentDocRefs.size());
-		docRefs.addAll(docReferences);
-		docRefs.addAll(parentDocRefs);
-		return docRefs;
+	public List<RosettaDocReference> getOwnDocReferences() {
+		return docReferences;
+	}
+	public List<RosettaDocReference> getAllDocReferences() {
+		return inheritAnnotationsFromParent(RAttribute::getAllDocReferences, docReferences);
 	}
 
-	public RosettaRule getRuleReference() {
-		if (ruleReference != null) {
-			return ruleReference;
-		}
-		RAttribute p = getParentAttribute();
-		if (p != null) {
-			return p.getRuleReference();
-		}
-		return null;
+	public List<RuleReferenceAnnotation> getOwnRuleReferences() {
+		return ruleReferences;
+	}
+	public List<RuleReferenceAnnotation> getAllRuleReferences() {
+		return inheritAnnotationsFromParent(RAttribute::getAllRuleReferences, ruleReferences);
 	}
 	
-	public List<LabelAnnotation> getLabelAnnotations() {
+	public List<LabelAnnotation> getOwnLabelAnnotations() {
+		return labelAnnotations;
+	}
+	public List<LabelAnnotation> getAllLabelAnnotations() {
+		return inheritAnnotationsFromParent(RAttribute::getAllLabelAnnotations, labelAnnotations);
+	}
+	
+	private <T> List<T> inheritAnnotationsFromParent(Function<RAttribute, List<T>> getter, List<T> ownAnnotations) {
 		RAttribute p = getParentAttribute();
-		List<LabelAnnotation> parentLabels;
-		if (p == null || (parentLabels = p.getLabelAnnotations()).isEmpty()) {
-			return labelAnnotations;
+		List<T> parentAnnotations;
+		if (p == null || (parentAnnotations = getter.apply(p)).isEmpty()) {
+			return ownAnnotations;
 		}
-		List<LabelAnnotation> labels = new ArrayList<>(docReferences.size() + parentLabels.size());
-		labels.addAll(parentLabels);
-		labels.addAll(labelAnnotations);
-		return labels;
+		List<T> allAnnotations = new ArrayList<>(ownAnnotations.size() + parentAnnotations.size());
+		allAnnotations.addAll(parentAnnotations);
+		allAnnotations.addAll(ownAnnotations);
+		return allAnnotations;
 	}
 	
 	public RAttribute getParentAttribute() {
-		if (parentAttribute == null && origin.isOverride()) {
-			parentAttribute = rObjectFactory.buildRAttributeOfParent(origin);
+		if (parentAttribute == null && isOverride && enclosingType != null) {
+			RDataType currentEnclosingType = enclosingType.getSuperType();
+			while (currentEnclosingType != null) {
+				RAttribute foundParentAttr = currentEnclosingType.getOwnAttributeByName(name);
+				if (foundParentAttr != null) {
+					parentAttribute = foundParentAttr;
+					break;
+				}
+				currentEnclosingType = currentEnclosingType.getSuperType();
+			}
 		}
 		return parentAttribute;
 	}

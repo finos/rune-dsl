@@ -38,6 +38,10 @@ import org.eclipse.xtext.ide.server.contentassist.ContentAssistService
 import org.eclipse.xtext.ide.server.formatting.FormattingService
 import org.eclipse.xtext.ide.server.hover.IHoverService
 import org.eclipse.xtext.service.OperationCanceledManager
+import com.regnosys.rosetta.ide.server.RosettaCapabilitiesContributor
+import org.eclipse.xtext.ide.server.ICapabilitiesContributor
+import com.regnosys.rosetta.ide.overrides.IParentsService
+import com.regnosys.rosetta.ide.overrides.RosettaParentsService
 
 /**
  * Use this class to register ide components.
@@ -118,5 +122,13 @@ class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	def Class<? extends IdeContentProposalProvider> bindIdeContentProposalProvider() {
 		RosettaContentProposalProvider
+	}
+	
+	def Class<? extends ICapabilitiesContributor> bindICapabilitiesContributor() {
+		RosettaCapabilitiesContributor
+	}
+	
+	def Class<? extends IParentsService> bindIParentsService() {
+		RosettaParentsService
 	}
 }

@@ -16,18 +16,17 @@
 
 package com.regnosys.rosetta.types;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -42,10 +41,9 @@ import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 
 public class RObjectFactory {
@@ -58,16 +56,14 @@ public class RObjectFactory {
 	@Inject
 	private ModelIdProvider modelIdProvider;
 	@Inject
-	private ExternalAnnotationUtil externalAnnotationUtil;
-	@Inject
-	private RosettaEcoreUtil ecoreUtil;
+	private RuleReferenceService ruleService;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
-				function.getInputs().stream().map(i -> buildRAttribute(i)).collect(Collectors.toList()),
-				buildRAttribute(function.getOutput()),
+				function.getInputs().stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
+				buildRAttributeWithEnclosingType(null, function.getOutput()),
 				RFunctionOrigin.FUNCTION,
 				function.getConditions(), function.getPostConditions(),
 				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
@@ -77,16 +73,16 @@ public class RObjectFactory {
 	
 	private RAttribute createArtificialAttribute(String name, RType type, boolean isMulti) {
 		RMetaAnnotatedType rAnnotatedType = RMetaAnnotatedType.withNoMeta(type);
-		return new RAttribute(false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, Collections.emptyList(), null, this);
+		return new RAttribute(null, false, name, null, Collections.emptyList(), rAnnotatedType, isMulti ? RCardinality.UNBOUNDED : RCardinality.OPTIONAL, null, Collections.emptyList(), null);
 	}
 	public RFunction buildRFunction(RosettaRule rule) {		
-		RType inputRType = typeSystem.typeCallToRType(rule.getInput());
+		RType inputRType = typeSystem.getRuleInputType(rule);
 		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
 		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
-				modelIdProvider.getSymbolId(rule),
+				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
 				outputAttribute,
@@ -117,16 +113,11 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
-		Map<RAttribute, RosettaRule> attributeToRuleMap = externalAnnotationUtil.getAllReportingRules(report)
-			.entrySet()
-			.stream()
-			.collect(Collectors.toMap(e -> e.getKey().getAttr(), e -> e.getValue()));
-		
-		List<ROperation> operations = generateReportOperations(outputRtype, attributeToRuleMap, inputAttribute, List.of(outputAttribute));
-		return new RFunction(
+		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
+		return new RFunction( 
 			modelIdProvider.getReportId(report),
 			reportDefinition,
-			List.of(buildRAttribute(inputAttribute)),
+			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
 			outputAttribute,
 			RFunctionOrigin.REPORT,
 			List.of(),
@@ -137,30 +128,23 @@ public class RObjectFactory {
 		);
 	}
 	
-	private List<ROperation> generateReportOperations(RDataType reportDataType, Map<RAttribute, RosettaRule> attributeToRuleMap, Attribute inputAttribute, List<RFeature> assignPath) {
-		Collection<RAttribute> attributes = reportDataType.getAllAttributes();
-		List<ROperation> operations = new ArrayList<>();
-		
-		for (RAttribute attribute : attributes) {
-			List<RFeature> newAssignPath = new ArrayList<>(assignPath);
-			newAssignPath.add(attribute);
-			if (attributeToRuleMap.containsKey(attribute)) {
-				operations.add(generateOperationForRuleReference(inputAttribute, attributeToRuleMap.get(attribute), newAssignPath));
-				continue;
-			}
-			RType attrType = attribute.getRMetaAnnotatedType().getRType() instanceof RChoiceType ? ((RChoiceType)attribute.getRMetaAnnotatedType().getRType()).asRDataType() : attribute.getRMetaAnnotatedType().getRType();
-			if (attrType instanceof RDataType) {
-				RDataType rData = (RDataType) attrType;
-				operations.addAll(generateReportOperations(rData, attributeToRuleMap, inputAttribute, newAssignPath));
-			}
-		}
-		return operations;
+	private List<ROperation> generateOperations(RosettaReport report, RAttribute outputAttribute, RDataType reportType, Attribute inputAttribute) {
+		return ruleService.<Map<List<RAttribute>, RosettaRule>>traverse(
+					report.getRuleSource(),
+					reportType,
+					new LinkedHashMap<>(),
+					(acc, context) -> {
+						if (!context.isExplicitlyEmpty()) {
+							acc.put(context.getPath(), context.getRule());
+						}
+						return acc;
+					}
+				).entrySet().stream()
+					.map(e -> generateOperationForRuleReference(inputAttribute, outputAttribute, e.getValue(), e.getKey()))
+					.collect(Collectors.toList());
 	}
 	
-	private ROperation generateOperationForRuleReference(Attribute inputAttribute, RosettaRule rule, List<RFeature> assignPath) {
-		RAssignedRoot pathHead = (RAssignedRoot) assignPath.get(0);
-		List<RFeature> pathTail = assignPath.subList(1, assignPath.size());
-		
+	private ROperation generateOperationForRuleReference(Attribute inputAttribute, RAttribute outputAttribute, RosettaRule rule, List<? extends RFeature> assignPath) {
 		RosettaSymbolReference inputAttributeSymbolRef = ExpressionFactory.eINSTANCE.createRosettaSymbolReference();
 		inputAttributeSymbolRef.setSymbol(inputAttribute);
 		
@@ -170,23 +154,23 @@ public class RObjectFactory {
 		symbolRef.setExplicitArguments(true);
 		symbolRef.getArgs().add(inputAttributeSymbolRef);
 		
-		return new ROperation(ROperationType.SET, pathHead, pathTail, symbolRef);
+		return new ROperation(ROperationType.SET, outputAttribute, assignPath, symbolRef);
 	}
 
 	public RAttribute buildRAttribute(Attribute attr) {
+		RDataType enclosingType = null;
+		EObject container = attr.eContainer();
+		if (container instanceof Data) {
+			enclosingType = buildRDataType((Data) container);
+		}
+		return buildRAttributeWithEnclosingType(enclosingType, attr);
+	}
+	public RAttribute buildRAttributeWithEnclosingType(RDataType enclosingType, Attribute attr) {
 		RMetaAnnotatedType rAnnotatedType = typeProvider.getRTypeOfFeature(attr, null);
 		RCardinality card = buildRCardinality(attr.getCard());
-		RosettaRuleReference ruleRef = attr.getRuleReference();
 
-		return new RAttribute(attr.isOverride(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
-				card, ruleRef != null ? ruleRef.getReportingRule() : null, attr.getLabels(), attr, this);
-	}
-	public RAttribute buildRAttributeOfParent(Attribute attr) {
-		Attribute parent = ecoreUtil.getParentAttribute(attr);
-		if (parent == null) {
-			return null;
-		}
-		return buildRAttribute(parent);
+		return new RAttribute(enclosingType, attr.isOverride(), attr.getName(), attr.getDefinition(), attr.getReferences(), rAnnotatedType,
+				card, attr.getRuleReferences(), attr.getLabels(), attr);
 	}
 	public RCardinality buildRCardinality(RosettaCardinality card) {
 		if (card.isUnbounded()) {
@@ -215,7 +199,7 @@ public class RObjectFactory {
 		RAssignedRoot pathHead;
 
 		if (operation.getAssignRoot() instanceof Attribute) {
-			pathHead = buildRAttribute((Attribute) operation.getAssignRoot());
+			pathHead = buildRAttributeWithEnclosingType(null, (Attribute) operation.getAssignRoot());
 		} else {
 			pathHead = buildRShortcut((ShortcutDeclaration) operation.getAssignRoot());
 		}

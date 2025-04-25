@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -49,8 +48,8 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver;
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver.Equation;
@@ -68,7 +67,7 @@ public class TypeSystem {
 	@Inject
 	private RBuiltinTypeService builtins;
 	@Inject
-	private ExternalAnnotationUtil annotationUtil;
+	private RuleReferenceService ruleService;
 	@Inject
 	private IRequestScopedCache cache;
 	@Inject
@@ -79,41 +78,38 @@ public class TypeSystem {
 	private RosettaSimpleSystemSolver systemSolver;
 	@Inject
 	private ModelIdProvider modelIdProvider;
-	
-	public RType getRulesInputType(RDataType data, Optional<RosettaExternalRuleSource> source) {
-		return getRulesInputType(data, source, new HashSet<>());
-	}
-	private RType getRulesInputType(RDataType data, Optional<RosettaExternalRuleSource> source, Set<RDataType> visited) {
+
+	public RType getRulesInputType(RDataType data, RosettaExternalRuleSource source) {
 		Objects.requireNonNull(data);
         return getRulesInputTypeFromCache(data, source, () -> {
-            if (!visited.add(data)) {
-                return builtins.ANY;
-            }
-
-            Map<RAttribute, RosettaRule> ruleReferences = annotationUtil.getAllRuleReferencesForType(source, data);
-            RType result = builtins.ANY;
-            for (RAttribute attr: data.getOwnAttributes()) {
-                RosettaRule rule = ruleReferences.get(attr);
-                if (rule != null) {
-                    RType inputType = typeCallToRType(rule.getInput());
-                    result = meet(result, inputType);
-                } else {
-                    RType attrType = stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
-                    if (attrType instanceof RChoiceType) {
-                    	attrType = ((RChoiceType) attrType).asRDataType();
-                    }
-                    if (attrType instanceof RDataType) {
-                    	RDataType attrData = (RDataType)attrType;
-                        RType inputType = getRulesInputType(attrData, source, visited);
-                        result = meet(result, inputType);
-                    }
-                }
-            }
-            return result;
+        	return ruleService.<RType>traverse(
+        			source,
+        			data,
+        			builtins.ANY,
+        			(acc, context) -> {
+        				if (context.isExplicitlyEmpty()) {
+        					return acc;
+        				}
+        				RType ruleInputType = getRuleInputType(context.getRule());
+        				if (builtins.NOTHING.equals(ruleInputType)) {
+        					return acc;
+        				}
+        				return meet(acc, ruleInputType);
+        			}
+        		);
         });
 	}
-    private RType getRulesInputTypeFromCache(RDataType data, Optional<RosettaExternalRuleSource> source, Provider<RType> typeProvider) {
+    private RType getRulesInputTypeFromCache(RDataType data, RosettaExternalRuleSource source, Provider<RType> typeProvider) {
     	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
+    }
+    
+    public RType getRuleInputType(RosettaRule rule) {
+    	Objects.requireNonNull(rule);
+    	TypeCall input = rule.getInput();
+    	if (input == null) {
+    		return builtins.NOTHING;
+    	}
+    	return typeCallToRType(input);
     }
     
     public RMetaAnnotatedType joinMetaAnnotatedTypes(RMetaAnnotatedType t1, RMetaAnnotatedType t2) {

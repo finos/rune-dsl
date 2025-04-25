@@ -2176,8 +2176,8 @@ The report type is istelf defined as a [data type](#data-type) component whose a
 ``` Haskell
 type <ReportType>:
   <field1> <Type1> (x..y)
-    [ ruleReference <RuleName1> ]
-    [ label <optional path> as "My label name"]
+    [ruleReference <optional path> <RuleName1>]
+    [label <optional path> "My label name"]
   <...>
 ```
 
@@ -2193,22 +2193,22 @@ report EuropeanParliament EmissionPerformanceStandardsEU in real-time
 ``` Haskell
 type EuropeanParliamentReport:
     vehicleRegistrationID string (1..1)
-        [label as "Vehicle Registration ID"]
+        [label "Vehicle Registration ID"]
         [ruleReference VehicleRegistrationID]
     firstRegistrationDate date (1..1)
-        [label as "First Registration Date"]
+        [label "First Registration Date"]
         [ruleReference FirstRegistrationDate]
     vehicleClassificationType VehicleClassificationEnum (1..1)
-        [label as "Vehicle Classification Type"]
+        [label "Vehicle Classification Type"]
         [ruleReference VehicleClassificationType]
     engineType EngineTypeEnum (1..1)
-        [label as "Engine Type"]
+        [label "Engine Type"]
         [ruleReference EngineType]
     euroEmissionStandard EuroEmissionStandardEnum (1..1)
-        [label as "Emission Standards"]
+        [label "Emission Standards"]
         [ruleReference EuroEmissionStandard]
     carbonMonoxide number (1..1)
-        [label as "Carbon Monoxide"]
+        [label "Carbon Monoxide"]
         [ruleReference CarbonMonoxide]
 ```
 
@@ -2360,36 +2360,55 @@ reporting rule NotionalAmountScheduleLeg1EffectiveDate from DatedValue: <"Effect
   CDENotionalAmountScheduleEffectiveDate
 ```
 
-### Label Annotations
+### Rule references and labels for nested attributes
 
-In a previous section, we saw how we can define a label for a report attribute to appear as the column name in a computed report:
+In a previous section, we saw how we can define a label and a rule reference for a report attribute to define a field in a computed report:
 
 ``` Haskell
 type EuropeanParliamentReport:
     vehicleRegistrationID string (1..1)
-        [label as "Vehicle Registration ID"]
+        [label "Vehicle Registration ID"]
         [ruleReference VehicleRegistrationID]
     ...
 ```
 
-In some cases though, the report attribute might be of a complex type, and the label should actually be placed on a nested attribute. To accomodate for that, an optional path can be used, e.g.,
+In some cases though, the report attribute might be of a complex type, and the annotations should actually be placed on a nested attribute. To accomodate for that, an optional path can be used, e.g.,
 ``` haskell
-[label subattribute -> subsubattribute -> ... as "Nested attribute label"]
+[label for subattribute -> subsubattribute -> ... "Nested attribute label"]
+[ruleReference subattribute -> subsubattribute -> ... NestedRule]
 ```
-A label path supports accessing attributes with the path operator `->`, the `item` keyword (which refers to the attribute the annotation is placed on), and also supports the deep path operator `->>` to label common attributes of choice types.
+Such an annotation path supports accessing attributes with the path operator `->`, the `item` keyword - which refers to the attribute the annotation is placed on -, and also supports the deep path operator `->>` to label common attributes of choice types.
 
-For multi-cardinality attributes of complex type, the dollar symbol `$` can be used to represent the index of the result. If not present, the index is implicitly appended to the end of the label.
+For multi-cardinality attributes of complex type, the dollar symbol `$` can be used inside a label to represent the index of the result. If not present, the index is implicitly appended to the end of the label.
 
 ``` Haskell
 type Report:
     components ReportComponent (0..*)
         // label the id as "Component ID nr 0", "Component ID nr 1", "Component ID nr 2", ...
-        [label componentID as "Component ID nr $"]
+        [label for componentID "Component ID nr $"]
         // label the price using an implicit index: "Component Price (0)", "Component Price (1)", "Component Price (2)", ...
-        [label componentPrice as "Component Price"]
-        [ruleReference ReportComponentRule]
+        [label for componentPrice "Component Price"]
+        [ruleReference ReportComponentID]
 
 type ReportComponent:
     componentID string (1..1)
     componentPrice number (1..1)
+```
+
+### Rule reference and label inheritance
+
+When overriding the attribute of a report type, all rule references and labels are inherited. Rule references for a specific path can also be removed by using the `empty` keyword.
+
+In the example below, the `Report -> component` attribute inherits the rule reference for `componentID`, overrides the rule reference for `componentValue` and removes the rule reference for `componentUnit`.
+``` Haskell
+type CommonReport:
+    component ReportComponent (1..1)
+        [ruleReference for componentID ReportComponentID]
+        [ruleReference for componentValue ReportComponentValue]
+        [ruleReference for componentUnit ReportComponentUnit]
+
+type Report extends CommonReport:
+    override component ReportComponent (1..1)
+        [ruleReference for componentValue OverriddenReportComponentValue]
+        [ruleReference for componentUnit empty]
 ```

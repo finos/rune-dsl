@@ -61,7 +61,7 @@ class ModelHelper {
 
 	def parseRosetta(CharSequence model) {
 		var m = model;
-		if (model.subSequence(0,9) != "namespace") {
+		if (!model.toString.trim.startsWith("namespace")) {
 			m = versionInfo + "\n" + m
 		}
 		val resourceSet = testResourceSet()
@@ -74,7 +74,7 @@ class ModelHelper {
 	def parseRosetta(CharSequence... models) {
 		val resourceSet = testResourceSet()
 		return new ArrayList(models
-			.map[if (it.subSequence(0,9) != "namespace") versionInfo + "\n" + it else it]
+			.map[if (!it.toString.trim.startsWith("namespace")) versionInfo + "\n" + it else it]
 			.map[it.parse(resourceSet)])
 	}
 	

@@ -10,6 +10,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaReport;
@@ -83,6 +84,9 @@ public class RosettaTestModel {
 		RosettaTypeWithConditions t = getNamedElement(RosettaTypeWithConditions.class, typeName);
 		return getNamedElement(t.getConditions(), Condition.class, conditionName);
 				
+	}
+	public RosettaExternalRuleSource getRuleSource(String name) {
+		return getNamedElement(RosettaExternalRuleSource.class, name);
 	}
 	
 	private <T extends EObject> T getElementMatching(List<? extends EObject> elements, Class<T> clazz, Predicate<T> match, Supplier<? extends RuntimeException> exceptionSupplier) {

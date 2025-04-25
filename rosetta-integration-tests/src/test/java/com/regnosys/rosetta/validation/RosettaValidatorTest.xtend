@@ -963,8 +963,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		}
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
-			"Attribute `attr2` has a rule that expects an input of type `number`, while other rules expect an input of type `string`.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`")
 	}
 	
 	@Test
@@ -999,8 +999,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		}
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
-			"Attribute `attr` has a rule that expects an input of type `number`, while other rules expect an input of type `string`.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`")
 	}
 	
 	@Test
@@ -1029,8 +1029,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		}
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
-			"Attribute `attr2` has a rule that expects an input of type `number`, while other rules expect an input of type `string`.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`")
 	}
 	
 	@Test
@@ -1049,8 +1049,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				[ruleReference Bar]
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`")
 	}
 	
 	@Test
@@ -1077,8 +1077,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				[ruleReference Foo2]
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`")
 	}
 	
 	@Test
@@ -1106,7 +1106,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		'''.parseRosetta
 		
 		model.assertError(ATTRIBUTE, null,
-			"Attribute `sub` contains rules that expect an input of type `string`, while previous rules expect an input of type `number`.")
+			"Rule `Foo1` for sub -> attr1 expects an input of type `string`, while previous rules expect an input of type `number`")
 	}
 	
 	@Test
@@ -1127,8 +1127,8 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				[ruleReference Bar]
 		'''.parseRosetta
 		
-		model.assertError(ROSETTA_RULE_REFERENCE, null,
-			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null,
+			"Rule `Bar` expects an input of type `number`, while previous rules expect an input of type `string`")
 	}
 
 	@Test
@@ -1377,46 +1377,6 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 		model.assertError(ROSETTA_EXTERNAL_RULE_SOURCE, null,
             "A rule source cannot define annotations for enums.")
 	}
-
-	@Test
-	def void cannotImplicitlyOverrideRuleReferenceFromSuperSourceTest() {
-		val model = '''
-			body Authority TEST_REG
-			corpus TEST_REG FOO
-			
-			report TEST_REG FOO in T+1
-			from ReportableEvent
-			when FooRule
-			with type Foo
-			with source TestB
-			
-			eligibility rule FooRule from Foo:
-				filter foo exists
-
-			type Foo:
-				foo string (0..1)
-			
-			reporting rule RA from Foo:
-				"A"
-			
-			reporting rule RB from Foo:
-				"B"
-			
-			rule source TestA {
-				Foo:
-				+ foo
-					[ruleReference RA]
-			}
-			
-			rule source TestB extends TestA {
-				Foo:
-				+ foo
-					[ruleReference RB]
-			}
-		'''.parseRosetta
-		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
-            "There is already a mapping defined for `foo`. Try removing the mapping first with `- foo`.")
-	}
 	
 	@Test
 	def void externalRuleSourceCannotExtendExternalSynonymSourceTest() {
@@ -1459,7 +1419,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 			}
 		'''.parseRosetta
 		model.assertError(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE, null,
-            "You cannot remove this mapping because `foo` did not have a mapping defined before.")
+            "There is no rule reference to remove")
 	}
 	
 	@Test
@@ -2358,7 +2318,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				aa string (1..1)
 					[ruleReference Aa]
 		'''.parseRosetta
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Cardinality mismatch - report field aa has single cardinality whereas the reporting rule Aa has multiple cardinality.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected single cardinality, but rule has multi cardinality")
 	}
 
 	@Test
@@ -2421,12 +2381,12 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 					[ruleReference Ff]
 			
 		'''.parseRosetta
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field aa has type string whereas the reporting rule Aa has type date.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field bb has type string whereas the reporting rule Bb has type time.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field cc has type string whereas the reporting rule Cc has type zonedDateTime.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field dd has type string whereas the reporting rule Dd has type int.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ee has type string whereas the reporting rule Ee has type number.")
-		model.assertError(ROSETTA_RULE_REFERENCE, null, "Type mismatch - report field ff has type string whereas the reporting rule Ff has type BazEnum.")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type date")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type time")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type zonedDateTime")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type int")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type number")
+		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type BazEnum")
 	}
 	
 	@Test

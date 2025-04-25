@@ -248,7 +248,7 @@ class RosettaRuleGeneratorTest {
 
 					type BarReport:
 						barBarOne string (1..1)
-						barBarTwo string (1..1)
+						barBarTwo string (0..*)
 						barBaz BarBazReport (1..1)
 						barQuxList BarQuxReport (0..*)
 						barQuux Quux (1..1)
@@ -295,7 +295,6 @@ class RosettaRuleGeneratorTest {
 				import com.rosetta.model.lib.annotations.RosettaReport;
 				import com.rosetta.model.lib.annotations.RuneLabelProvider;
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.reports.ReportFunction;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.BarReport;
@@ -353,7 +352,7 @@ class RosettaRuleGeneratorTest {
 								.setBarBarOne(barBarOneRule.evaluate(input));
 							
 							output
-								.setBarBarTwo(MapperC.of(barBarTwoRule.evaluate(input)).get());
+								.setBarBarTwo(barBarTwoRule.evaluate(input));
 							
 							output
 								.getOrCreateBarBaz()

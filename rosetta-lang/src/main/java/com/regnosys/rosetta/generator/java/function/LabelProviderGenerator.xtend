@@ -28,9 +28,10 @@ import com.regnosys.rosetta.lib.labelprovider.LabelNode
 import java.util.Arrays
 import java.util.stream.Collectors
 import java.util.HashSet
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
+import com.regnosys.rosetta.rules.RuleReferenceService
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -39,7 +40,7 @@ class LabelProviderGenerator {
 	@Inject JavaTypeTranslator typeTranslator
 	@Inject DeepFeatureCallUtil deepPathUtil
 	@Inject LabelProviderGeneratorUtil util
-	@Inject ExternalAnnotationUtil externalAnnotationUtil
+	@Inject RuleReferenceService ruleService
 	@Inject AnnotationPathExpressionUtil annotationPathUtil
 	
 	def void generateForFunctionIfApplicable(IFileSystemAccess2 fsa, Function func) {
@@ -49,11 +50,23 @@ class LabelProviderGenerator {
 		}
 	}
 	def void generateForReport(IFileSystemAccess2 fsa, RosettaReport report) {
-		val attributeToRuleMap = externalAnnotationUtil.getAllReportingRules(report)
-			.entrySet()
-			.stream()
-			.collect(Collectors.toMap([e| e.getKey().getAttr()], [e| e.getValue()]));
 		val rFunction = rObjectFactory.buildRFunction(report)
+		val attributeToRuleMap = ruleService.traverse(
+			report.ruleSource,
+			rFunction.output.RMetaAnnotatedType.RType as RDataType,
+			newHashMap,
+			[map,context|
+				if (context.rule !== null && context.rule.identifier !== null) {
+					val origin = context.ruleOrigin
+					if (origin instanceof RuleReferenceAnnotation) {
+						if (origin.path === null) {
+							map.put(context.targetAttribute, context.rule)
+						}
+					}
+				}
+				map
+			]
+		)
 		generate(fsa, rFunction, attributeToRuleMap)
 	}
 	private def void generate(IFileSystemAccess2 fsa, RFunction f, Map<RAttribute, RosettaRule> attributeToRuleMap) {
@@ -161,7 +174,7 @@ class LabelProviderGenerator {
 			}
 			
 			// 3. Register label annotations
-			attr.labelAnnotations.forEach[
+			attr.allLabelAnnotations.forEach[
 				registerLabelAnnotation(it, attrPath, labels)
 			]
 		}

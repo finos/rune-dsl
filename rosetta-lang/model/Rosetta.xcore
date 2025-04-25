@@ -12,7 +12,7 @@ import com.regnosys.rosetta.rosetta.simple.RootElement
 import com.regnosys.rosetta.rosetta.simple.References
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.simple.Condition
 
@@ -453,7 +453,7 @@ class RosettaExternalRegularAttribute {
 	ExternalValueOperator operator
 	refers RosettaFeature attributeRef
 	contains RosettaExternalSynonym[] externalSynonyms
-	contains RosettaRuleReference externalRuleReference
+	contains RuleReferenceAnnotation[] externalRuleReferences
 }
 
 class RosettaExternalEnumValue {
@@ -484,8 +484,8 @@ class RosettaExternalRuleSource extends ExternalAnnotationSource {
 	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
 	refers ExternalAnnotationSource[] superSources
 	
-	op RosettaExternalRuleSource getSuperRuleSource(){
-		return superSources.filter(RosettaExternalRuleSource).head
+	op RosettaExternalRuleSource[] getSuperRuleSources(){
+		return superSources.filter(RosettaExternalRuleSource).toEList
 	}
 }
 

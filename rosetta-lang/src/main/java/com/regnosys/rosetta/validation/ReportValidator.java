@@ -18,29 +18,39 @@ package com.regnosys.rosetta.validation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
-import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.simple.AnnotationDeepPath;
+import com.regnosys.rosetta.rosetta.simple.AnnotationPath;
+import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
+import com.regnosys.rosetta.rules.RuleComputationCache;
+import com.regnosys.rosetta.rules.RulePathMap;
+import com.regnosys.rosetta.rules.RuleReferenceService;
+import com.regnosys.rosetta.rules.RuleReferenceService.RuleReferenceContext;
+import com.regnosys.rosetta.rules.RuleResult;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RAttribute;
-import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RFunction;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.utils.ExternalAnnotationUtil;
+import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
@@ -53,10 +63,46 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 	private RBuiltinTypeService builtins;
 	
 	@Inject
-	private ExternalAnnotationUtil annotationUtil;
+	private RuleReferenceService ruleService;
 	
 	@Inject
 	private RObjectFactory objectFactory;
+	
+	@Inject
+	private AnnotationPathExpressionUtil annotationPathUtil;
+	
+	@Check
+	public void checkRuleReferenceAnnotation(RuleReferenceAnnotation ann) {
+		AnnotationPathExpression path = ann.getPath();
+		if (path != null) {
+			// Disallow deep path operator
+			EcoreUtil2.eAllOfType(path, AnnotationDeepPath.class).forEach(deepPath -> {
+				error("Deep paths are not allowed for `ruleReference` annotations", deepPath, ANNOTATION_DEEP_PATH__OPERATOR);
+			});
+			
+			// Disallow paths on multi-cardinality attributes
+			EObject container = ann.eContainer();
+			if (container instanceof Attribute) {
+				Attribute containingAttribute = (Attribute) container;
+				if (containingAttribute.getCard().isPlural()) {
+					error("Paths on multi-cardinality attributes are not allowed", ann, BUILTIN_ANNOTATION_WITH_PATH__PATH);
+				} else {
+					EcoreUtil2.eAllOfType(path, AnnotationPath.class).forEach(p -> {
+						Attribute target = annotationPathUtil.getTargetAttribute(p.getReceiver());
+						if (target.getCard().isPlural()) {
+							error("Paths on multi-cardinality attributes are not allowed", p, ANNOTATION_PATH__OPERATOR);
+						}
+					});
+				}
+			}
+			
+			// Deprecate rules with a label if a path is used
+			RosettaRule rule = ann.getReportingRule();
+			if (rule != null && rule.getIdentifier() != null) {
+				warning("Specifying a label in a reporting rule is deprecated. Add a `label` annotation instead", ann, RULE_REFERENCE_ANNOTATION__REPORTING_RULE);
+			}
+		}
+	}
 	
 	@Check
 	public void checkReport(RosettaReport report) {
@@ -67,13 +113,13 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 			if (!eligibilityRule.isEligibility()) {
 				error("Rule " + eligibilityRule.getName() + " is not an eligibility rule.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);
 			}
-			RType ruleInputType = ts.typeCallToRType(eligibilityRule.getInput());
+			RType ruleInputType = ts.getRuleInputType(eligibilityRule);
 			if (!ts.isSubtypeOf(ruleInputType, inputType)) {
 				error("Eligibility rule " + eligibilityRule.getName() + " expects a `" + ruleInputType + "` as input, but this report is generated from a `" + inputType + "`.", report, ROSETTA_REPORT__ELIGIBILITY_RULES, i);
 			}
 		}
 		
-		RType reportTypeInputType = ts.getRulesInputType(objectFactory.buildRDataType(report.getReportType()), Optional.ofNullable(report.getRuleSource()));
+		RType reportTypeInputType = ts.getRulesInputType(objectFactory.buildRDataType(report.getReportType()), report.getRuleSource());
 		if (reportTypeInputType != builtins.ANY) {
 			if (!ts.isSubtypeOf(reportTypeInputType, inputType)) {
 				if (report.getRuleSource() != null) {
@@ -88,95 +134,132 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	public void checkReportType(Data data) {
 		RDataType rData = objectFactory.buildRDataType(data);
-		RType superType = ts.stripFromTypeAliases(rData.getSuperType());
-		RType current;
-		if (superType != null) {
-			current = ts.getRulesInputType((RDataType)superType, Optional.empty());
-			if (current.equals(builtins.NOTHING)) {
-				return;
-			}
-		} else {
-			current = builtins.ANY;
-		}
-		for (RAttribute attr: rData.getOwnAttributes()) {
-			RosettaRule rule = attr.getRuleReference();
-			if (rule != null) {
-				RType inputType = ts.typeCallToRType(rule.getInput());
-				RType newCurrent = ts.meet(current, inputType);
-				if (newCurrent.equals(builtins.NOTHING)) {
-					error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr.getEObject().getRuleReference(), ROSETTA_RULE_REFERENCE__REPORTING_RULE);
-				} else {
-					current = newCurrent;
-				}
-			} else {
-				RType attrType = ts.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
-				if (attrType instanceof RChoiceType) {
-					attrType = ((RChoiceType) attrType).asRDataType();
-				}
-				if (attrType instanceof RDataType) {
-					RDataType attrData = (RDataType)attrType;
-					RType inputType = ts.getRulesInputType(attrData, Optional.empty());
-					if (!inputType.equals(builtins.NOTHING)) {
-						RType newCurrent = ts.meet(current, inputType);
-						if (newCurrent.equals(builtins.NOTHING)) {
-							error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while previous rules expect an input of type `" + current + "`.", attr.getEObject(), null);
-						} else {
-							current = newCurrent;
-						}
-					}
-				}
-			}
-		}
+		checkReportInputType(data, null, rData, new RuleComputationCache());
 	}
 	
 	@Check
 	public void checkExternalRuleSource(RosettaExternalRuleSource source) {
+		RuleComputationCache computationCache = new RuleComputationCache();
 		for (RosettaExternalClass externalClass: source.getExternalClasses()) {
 			RDataType data = objectFactory.buildRDataType(externalClass.getData());
-			Map<RAttribute, RosettaRule> ruleReferences = annotationUtil.getAllRuleReferencesForType(Optional.of(source), data);
+			checkReportInputType(externalClass, source, data, computationCache);
 			
-			RType current = builtins.ANY;
-			for (RAttribute attr: data.getOwnAttributes()) {
-				Optional<RosettaExternalRegularAttribute> maybeExtAttr = externalClass.getRegularAttributes().stream()
-						.filter(ext -> ext.getOperator() == ExternalValueOperator.PLUS)
-						.filter(ext -> ext.getAttributeRef().equals(attr.getEObject()))
-						.findAny();
-				RosettaRule rule = ruleReferences.get(attr);
-				if (rule != null) {
-					RType inputType = ts.typeCallToRType(rule.getInput());
-					RType newCurrent = ts.meet(current, inputType);
-					if (newCurrent.equals(builtins.NOTHING)) {
-						if (maybeExtAttr.isPresent()) {
-							RosettaExternalRegularAttribute extAttr = maybeExtAttr.get();
-							error("Attribute `" + attr.getName() + "` has a rule that expects an input of type `" + inputType + "`, while other rules expect an input of type `" + current + "`.", extAttr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
-						}
+			// TODO: somehow generalize this with the one for inline attributes
+			externalClass.getRegularAttributes().forEach(annotatedAttr -> {
+				RAttribute attribute = data.getAttributeByName(annotatedAttr.getAttributeRef().getName());
+				if (attribute != null) {
+					checkOwnRuleReferenceAnnotations(source, data, attribute, computationCache);
+				}
+			});
+		}
+	}
+	
+	@Check
+	public void checkAttribute(Attribute attr) {
+		RAttribute attribute = objectFactory.buildRAttribute(attr);
+		if (!attribute.getOwnRuleReferences().isEmpty()) {
+			EObject container = attr.eContainer();
+			if (!(container instanceof Data)) {
+				for (int i=0; i<attribute.getOwnRuleReferences().size(); i++) {
+					error("You can only add rule references on the attribute of a type", attr, ATTRIBUTE__RULE_REFERENCES, i);
+				}
+			} else {
+				checkOwnRuleReferenceAnnotations(null, attribute.getEnclosingType(), attribute, new RuleComputationCache());
+			}
+		}
+	}
+	private void checkOwnRuleReferenceAnnotations(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
+		RulePathMap ruleMap = ruleService.computeRulePathMapInContext(source, type, attribute, computationCache);
+		Map<List<String>, RuleResult> parentRules = ruleMap.getParentRules();
+		Map<List<String>, RuleResult> ownRules = ruleMap.getOwnRules();
+		ownRules.forEach((path, ruleResult) -> {
+			if (ruleResult.isExplicitlyEmpty()) {
+				if (!parentRules.containsKey(path)) {
+					EObject errorOrigin = ruleResult.getOrigin();
+					String msg = "There is no rule reference" + toPathMessage(path) + " to remove";
+					if (errorOrigin instanceof RuleReferenceAnnotation) {
+						error(msg, errorOrigin, RULE_REFERENCE_ANNOTATION__EMPTY);
 					} else {
-						current = newCurrent;
+						error(msg, errorOrigin, null);
 					}
-				} else {
-					RType attrType = ts.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
-					if (attrType instanceof RChoiceType) {
-						attrType = ((RChoiceType) attrType).asRDataType();
+				}
+			} else {
+				RosettaRule rule = ruleResult.getRule();
+				RAttribute target = ruleService.getTargetAttribute(attribute, path);
+				if (target != null) {
+					RFunction ruleFunc = objectFactory.buildRFunction(rule);
+					
+					// check type
+					RMetaAnnotatedType ruleType = ruleFunc.getOutput().getRMetaAnnotatedType();
+					if (!ts.isSubtypeOf(ruleType, target.getRMetaAnnotatedType())) {
+						error("Expected type " + target.getRMetaAnnotatedType() + toPathMessage(path) + ", but rule has type " + ruleType, ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
 					}
-					if (attrType instanceof RDataType) {
-						RDataType attrData = (RDataType)attrType;
-						RType inputType = ts.getRulesInputType(attrData, Optional.of(source));
-						if (!inputType.equals(builtins.NOTHING)) {
-							RType newCurrent = ts.meet(current, inputType);
-							if (newCurrent.equals(builtins.NOTHING)) {
-								if (maybeExtAttr.isPresent()) {
-									RosettaExternalRegularAttribute extAttr = maybeExtAttr.get();
-									error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while other rules expect an input of type `" + current + "`.", extAttr, ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF);
-								} else {
-									error("Attribute `" + attr.getName() + "` contains rules that expect an input of type `" + inputType + "`, while other rules expect an input of type `" + current + "`.", externalClass, ROSETTA_EXTERNAL_CLASS__DATA);
-								}
-							} else {
-								current = newCurrent;
-							}
-						}
+					
+					// check cardinality
+					if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
+						error("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
 					}
 				}
 			}
+		});
+	}
+	
+	private void checkReportInputType(EObject objectBeingChecked, RosettaExternalRuleSource source, RDataType type, RuleComputationCache computationCache) {
+		ruleService.<RType>traverse(
+				source,
+				type,
+				builtins.ANY,
+				(current, context) -> {
+					if (context.isExplicitlyEmpty()) {
+						return current;
+					}
+					RType ruleInputType = ts.getRuleInputType(context.getRule());
+					if (ruleInputType.equals(builtins.NOTHING)) {
+						// There is already an existing error to do with the rule itself
+						return current;
+					}
+					RType newCurrent = ts.meet(current, ruleInputType);
+					if (newCurrent.equals(builtins.NOTHING)) {
+						// The rule is not compatible with previous types - raise an error
+						inputTypeErrorForRule(objectBeingChecked, context, current, ruleInputType);
+						return current;
+					}
+					return newCurrent;
+				},
+				computationCache
+			);
+	}
+	private void inputTypeErrorForRule(EObject objectBeingChecked, RuleReferenceContext context, RType previousInputType, RType inputType) {
+		EObject origin = context.getRuleOrigin();
+		EObject container = EcoreUtil2.getContainerOfType(origin, objectBeingChecked.getClass());
+		RosettaRule rule = context.getRule();
+		if (container.equals(objectBeingChecked)) {
+			// If the cause of the error is contained in the object being checked, we can raise a specific error.
+			if (origin instanceof RuleReferenceAnnotation) {
+				// Because of a rule reference annotation
+				RuleReferenceAnnotation ann = (RuleReferenceAnnotation) origin;
+				error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + previousInputType + "`", ann, RULE_REFERENCE_ANNOTATION__REPORTING_RULE);
+			} else if (origin instanceof RosettaExternalRegularAttribute) {
+				// A minus in a rule source should never cause an error, because it does not specify new rules
+			}
+		} else {
+			// Without knowing exactly which (nested/inherited) rule reference is responsible for the error, just put the error on the type of the attribute
+			// with a message pointing to which rule we were processing.
+			RAttribute containingAttribute = context.getPath().get(0);
+			String pathMsg = getPathMessage(context.getPath());
+			error("Rule `" + rule.getName() + "`"+ pathMsg + " expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + previousInputType + "`", containingAttribute.getEObject(), ROSETTA_TYPED__TYPE_CALL);
 		}
+	}
+	private String getPathMessage(List<RAttribute> path) {
+		if (path.isEmpty()) {
+			return "";
+		}
+		return " for " + path.stream().map(a -> a.getName()).collect(Collectors.joining(" -> "));
+	}
+	private String toPathMessage(List<String> path) {
+		if (path.isEmpty()) {
+			return "";
+		}
+		return " for " + String.join(" -> ", path);
 	}
 }

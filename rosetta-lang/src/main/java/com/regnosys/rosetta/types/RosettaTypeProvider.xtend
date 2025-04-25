@@ -292,7 +292,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 			} else if (it instanceof RosettaFunctionalOperation) {
 				safeRType(argument, cycleTracker)
 			} else if (it instanceof RosettaRule) {
-				input?.typeCallToRType?.withNoMeta ?: NOTHING_WITH_ANY_META
+				ruleInputType.withNoMeta
 			} else if (it instanceof SwitchCaseOrDefault) {
 				guard?.choiceOptionGuard?.RTypeOfSymbol ?: NOTHING_WITH_ANY_META
 			}

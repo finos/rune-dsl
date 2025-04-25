@@ -50,7 +50,7 @@ import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.rosetta.simple.RosettaRuleReference;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.types.CardinalityProvider;
@@ -156,10 +156,10 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		return markRule(rule, ROSETTA_NAMED__NAME, rule);
 	}
 	@MarkSemanticToken
-	public SemanticToken markRuleReference(RosettaRuleReference ruleRef) {
+	public SemanticToken markRuleReference(RuleReferenceAnnotation ruleRef) {
 		RosettaRule rule = ruleRef.getReportingRule();
 		if (extensions.isResolved(rule)) {
-			return markRule(ruleRef, ROSETTA_RULE_REFERENCE__REPORTING_RULE, rule);
+			return markRule(ruleRef, RULE_REFERENCE_ANNOTATION__REPORTING_RULE, rule);
 		}
 		return null;
 	}
