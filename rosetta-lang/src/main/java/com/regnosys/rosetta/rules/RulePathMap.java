@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.ecore.EObject;
+
 /**
  * A map for one particular attribute to keep track of which rules are attached to which path.
  * 
@@ -14,10 +16,7 @@ import java.util.Map;
 public class RulePathMap {
 	private final List<RulePathMap> parents;
 	private Map<List<String>, RuleResult> map = new LinkedHashMap<>();
-	
-	public RulePathMap() {
-		this(List.of());
-	}
+
 	public RulePathMap(List<RulePathMap> parentsInDescendingPriority) {
 		this.parents = parentsInDescendingPriority;
 	}

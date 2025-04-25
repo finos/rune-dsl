@@ -95,7 +95,7 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					// Check inherited rule references are compatible
 					if (!overriddenType.equals(parentAttrType) || !attribute.getCardinality().equals(parentAttribute.getCardinality())) {
 						RuleComputationCache map = new RuleComputationCache();
-						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute.getEnclosingType(), attribute, map);
+						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute, map);
 						Map<List<String>, RuleResult> inheritedRules = ruleMap.getInheritedRules();
 						inheritedRules.forEach((path, ruleResult) -> {
 							RosettaRule rule = ruleResult.getRule();

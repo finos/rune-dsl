@@ -36,28 +36,31 @@ public class RuleReferenceService {
 	private AnnotationPathExpressionUtil pathExpressionUtil;
 	
 	/**
-	 * Traverse the tree structure defined by the attributes of a data type and their nested attributes, together with their associated rules.
-	 * For each attribute with an associated rule, the given `updateState` function is called, which based on the current state, the current path
-	 * and the associated rule updates the current state. In functional programming, this is better known as a "fold".
+	 * Traverse the tree structure defined by the attributes and their nested attributes of a given data type, together with their associated rule references.
+	 * For each attribute with an associated rule reference, a given callback is called, which based on a state, the current path
+	 * and the associated rule reference updates the current state. In functional programming, this is better known as a "fold".
 	 * 
 	 * A rule reference is is said to be "associated" to an attribute if one of the three following conditions is true:
 	 * 1. An enclosing attribute has a rule reference with a path that points to the attribute.
 	 * 2. The attribute itself has a rule reference that points to itself.
 	 * 3. The attribute inherits a rule reference that points to itself from a rule source or a super type.
 	 * If none of the above conditions are true, the attribute does not have an associated rule reference.
-	 * Note that an `empty` rule reference is still considered a rule reference.
+	 * Note that an attribute with an `empty` rule reference is still considered to have an associated rule reference.
 	 * 
 	 * A rule source may be specified to determine which rule reference annotations to use. If the provided
-	 * rule source is null, only inline annotations on attributes will be considered.
+	 * rule source is null, only inline annotations on attributes are considered.
 	 * 
 	 * A "minus" in a rule source is equivalent to replacing all inherited rule references with an empty rule reference.
 	 * 
-	 * The traversal works as follows. For each attribute for the current data type:
+	 * During traversal, a context is passed down to remember rule references with a path that point towards nested attributes. In what follows, this is called
+	 * the "nested rule context".
+	 * 
+	 * The traversal works as follows. For each attribute of the current data type:
 	 * 1. If the attribute has an associated rule reference, update the state based on
 	 *    the current state, the path to the attribute and the associated rule.
-	 * 2. If the attribute does not have an associated rule reference, is single cardinality, and the type of the attribute is a data type,
+	 * 2. If the attribute does not have an associated rule reference, the attribute is single cardinality, and the type of the attribute is a data type,
 	 *    traverse down that type while remembering the rule references that have a path pointing inside the attribute
-	 *    by adding them to the "nested rule context".
+	 *    by adding them to the nested rule context.
 	 * Note that the type of a multi-cardinality attribute is never considered for traversal.
 	 * 
 	 * If a cycle is detected in the traversed types, no more rule references are added to the nested rule context. If
@@ -153,8 +156,8 @@ public class RuleReferenceService {
 				));
 	}
 	
-	public RulePathMap computeRulePathMap(RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
-		return computeRulePathMapInContext(null, type, attribute, computationCache);
+	public RulePathMap computeRulePathMap(RAttribute attribute, RuleComputationCache computationCache) {
+		return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute, computationCache);
 	}
 	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
 		RuleTypeMap typeMap = computationCache.get(source);

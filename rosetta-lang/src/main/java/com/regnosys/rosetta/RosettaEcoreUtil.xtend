@@ -30,6 +30,13 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import java.util.function.Predicate
 import com.regnosys.rosetta.types.RMetaAttribute
+import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
+import org.eclipse.xtext.EcoreUtil2
+import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
+import com.regnosys.rosetta.rosetta.RosettaExternalClass
+import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource
+import java.util.stream.Collectors
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 
 @Singleton // see `metaFieldsCache`
 class RosettaEcoreUtil {
@@ -164,6 +171,81 @@ class RosettaEcoreUtil {
 		}
 		return null
 	}
+	def List<EObject> getParentsOfExternalType(RosettaExternalClass externalType) {
+		val source = EcoreUtil2.getContainerOfType(externalType, ExternalAnnotationSource)
+		if (source === null) {
+			return emptyList
+		}
+		
+		val type = externalType.data
+		val parents = newLinkedHashSet
+		var RosettaExternalClass superTypeInSource = null
+		if (type.superType !== null) {
+			superTypeInSource = findSuperTypeInSource(type.superType, null, source)
+			if (superTypeInSource !== null) {
+				parents.add(superTypeInSource)
+			}
+		}
+		
+		val superSources = getSuperSources(source)
+		if (superSources.isEmpty) {
+			parents.add(type)
+		} else {
+			val visitedSources = newHashSet
+			visitedSources.add(source)
+			val stop = superTypeInSource?.data
+			superSources.forEach[
+				collectParentsOfTypeInSource(parents, type, stop, it, visitedSources)
+			]
+		}
+				
+		return parents.toList
+	}
+	private def void collectParentsOfTypeInSource(Set<EObject> parents, Data type, Data stop, ExternalAnnotationSource currentSource, Set<ExternalAnnotationSource> visitedSources) {
+		if (!visitedSources.add(currentSource)) {
+			return
+		}
+		
+		val superTypeInSource = findSuperTypeInSource(type, stop, currentSource)
+		if (superTypeInSource !== null) {
+			parents.add(superTypeInSource)
+		}
+		val superSources = getSuperSources(currentSource)
+		if (superSources.isEmpty) {
+			parents.add(type)
+		} else {
+			superSources.forEach[
+				collectParentsOfTypeInSource(parents, type, superTypeInSource?.data ?: stop, it, visitedSources)
+			]
+		}
+	}
+	private def RosettaExternalClass findSuperTypeInSource(Data type, Data stop, ExternalAnnotationSource source) {
+		val visitedTypes = newHashSet
+		var current = type
+		
+		while (current !== null && current != stop && !visitedTypes.add(current)) {
+			val d = current
+			val externalType = source.externalClasses.findFirst[data == d]
+			if (externalType !== null) {
+				return externalType
+			}
+			current = current.superType
+		}
+		return null
+	}
+	private def List<ExternalAnnotationSource> getSuperSources(ExternalAnnotationSource source) {
+		if (source instanceof RosettaExternalSynonymSource) {
+			return source.getSuperSources().stream()
+					.filter[s| s instanceof ExternalAnnotationSource]
+					.map[s| s as ExternalAnnotationSource]
+					.collect(Collectors.toList());
+		} else if (source instanceof RosettaExternalRuleSource) {
+			return source.getSuperSources();
+		} else {
+			return emptyList
+		}
+	}
+	
 	
 	def Set<RosettaSynonym> getAllSynonyms(RosettaSynonym s) {
 		doGetSynonyms(s, newLinkedHashSet)
