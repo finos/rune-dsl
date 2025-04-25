@@ -40,9 +40,12 @@ public class RuleReferenceService {
 	 * For each attribute with an associated rule reference, a given callback is called, which based on a state, the current path
 	 * and the associated rule reference updates the current state. In functional programming, this is better known as a "fold".
 	 * 
+	 * During traversal, a context is passed down to remember rule references with a path that point towards nested attributes. In what follows, this is called
+	 * the "nested rule context".
+	 * 
 	 * A rule reference is said to be "associated" to an attribute if one of the three following conditions is true:
-	 * 1. An enclosing attribute has a rule reference with a path that points to the attribute.
-	 * 2. The attribute itself has a rule reference that points to itself.
+	 * 1. The nested rule context has a rule reference that points to the attribute.
+	 * 2. The attribute has a rule reference that points to itself.
 	 * 3. The attribute inherits a rule reference that points to itself from a rule source or a super type.
 	 * If none of the above conditions are true, the attribute does not have an associated rule reference.
 	 * Note that an attribute with an `empty` rule reference is still considered to have an associated rule reference.
@@ -51,9 +54,6 @@ public class RuleReferenceService {
 	 * rule source is null, only inline annotations on attributes are considered.
 	 * 
 	 * A "minus" in a rule source is equivalent to replacing all inherited rule references with an empty rule reference.
-	 * 
-	 * During traversal, a context is passed down to remember rule references with a path that point towards nested attributes. In what follows, this is called
-	 * the "nested rule context".
 	 * 
 	 * The traversal works as follows. For each attribute of the current data type:
 	 * 1. If the attribute has an associated rule reference, update the state based on
