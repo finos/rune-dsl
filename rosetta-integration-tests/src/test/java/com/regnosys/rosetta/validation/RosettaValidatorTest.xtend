@@ -2318,7 +2318,7 @@ class RosettaValidatorTest implements RosettaIssueCodes {
 				aa string (1..1)
 					[ruleReference Aa]
 		'''.parseRosetta
-		model.assertError(RULE_REFERENCE_ANNOTATION, null, "Expected single cardinality, but rule has multi cardinality")
+		model.assertWarning(RULE_REFERENCE_ANNOTATION, null, "Expected single cardinality, but rule has multi cardinality")
 	}
 
 	@Test
