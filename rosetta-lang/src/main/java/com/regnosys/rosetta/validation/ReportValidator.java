@@ -197,6 +197,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 					
 					// check cardinality
 					if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
+						// TODO: make an error
 						warning("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
 					}
 				}
