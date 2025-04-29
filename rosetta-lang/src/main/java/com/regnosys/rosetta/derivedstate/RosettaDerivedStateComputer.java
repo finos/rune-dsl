@@ -47,7 +47,9 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	
 	@Override
 	public void installDerivedState(DerivedStateAwareResource resource, boolean preLinkingPhase) {
-		setAllDerivedState(resource.getAllContents());
+		if (!preLinkingPhase) {
+			setAllDerivedState(resource.getAllContents());
+		}
 	}
 
 	@Override
