@@ -67,9 +67,6 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 	@Parameter(defaultValue = "false")
 	private Boolean compilerPreserveInformationAboutFormalParameters;
 	
-	@Parameter(property = "file")
-	private String[] fileOrder;
-	
 	// TODO: add this method to Xtext so I don't have to overwrite `internalExecute`
 	// and duplicate all of the above parameters.
 	protected Module createModule() {
@@ -85,8 +82,6 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 				this.getClass().getClassLoader());
 		Injector injector = Guice.createInjector(createModule());
 		RosettaStandaloneBuilder builder = injector.getInstance(RosettaStandaloneBuilder.class);
-		if (fileOrder != null)
-			builder.setFileOrder(List.of(fileOrder));
 		builder.setBaseDir(getProject().getBasedir().getAbsolutePath());
 		builder.setLanguages(languages);
 		builder.setEncoding(getEncoding());
