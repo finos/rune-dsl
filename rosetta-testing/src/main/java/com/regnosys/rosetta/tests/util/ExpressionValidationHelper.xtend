@@ -13,8 +13,8 @@ import org.eclipse.xtext.validation.Issue
 
 import static com.google.common.collect.Iterables.isEmpty
 import static org.junit.jupiter.api.Assertions.*
-import javax.inject.Inject
-import javax.inject.Named
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import com.regnosys.rosetta.validation.ReportValidator
 
 class ExpressionValidationHelper {

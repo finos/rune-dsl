@@ -3,8 +3,6 @@ package com.regnosys.rosetta.ide.overrides;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
@@ -18,6 +16,8 @@ import org.eclipse.xtext.util.Strings;
 import com.regnosys.rosetta.ide.util.AbstractLanguageServerService;
 import com.regnosys.rosetta.ide.util.RangeUtils;
 import com.regnosys.rosetta.rosetta.RosettaModel;
+
+import jakarta.inject.Inject;
 
 public class AbstractParentsService extends AbstractLanguageServerService<ParentsResult> implements IParentsService {
 	@Inject

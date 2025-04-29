@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import com.regnosys.rosetta.config.RosettaConfiguration;
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
 import com.regnosys.rosetta.config.RosettaModelConfiguration;
 
-public class FileBasedRosettaConfigurationProvider implements Provider<RosettaConfiguration> {
+public class FileBasedRosettaConfigurationProvider implements Provider<RosettaConfiguration>, javax.inject.Provider<RosettaConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedRosettaConfigurationProvider.class);
 		
 	private final Provider<RosettaConfiguration> fallback;

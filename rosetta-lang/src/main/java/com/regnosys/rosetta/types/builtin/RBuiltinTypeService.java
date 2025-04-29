@@ -19,8 +19,8 @@ package com.regnosys.rosetta.types.builtin;
 import java.util.*;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import com.regnosys.rosetta.types.*;
 import org.eclipse.emf.ecore.resource.ResourceSet;

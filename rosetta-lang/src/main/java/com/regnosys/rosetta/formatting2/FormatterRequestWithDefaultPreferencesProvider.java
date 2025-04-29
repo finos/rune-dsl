@@ -5,15 +5,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 import org.eclipse.xtext.preferences.TypedPreferenceValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 /**
  * A provider for a formatter request that will respect the Rune's default formatting options
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * By binding this provider, all formatting will by default use Rune's default formatting options,
  * including when serializing generated Rune code.
  */
-public class FormatterRequestWithDefaultPreferencesProvider implements Provider<FormatterRequest> {
+public class FormatterRequestWithDefaultPreferencesProvider implements Provider<FormatterRequest>, javax.inject.Provider<FormatterRequest> {
 	private final ITypedPreferenceValues defaultPreferences;
 	
 	@Inject

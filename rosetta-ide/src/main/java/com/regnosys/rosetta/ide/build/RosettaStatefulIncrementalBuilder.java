@@ -15,11 +15,8 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.util.LineAndColumn;
-import org.eclipse.xtext.validation.DiagnosticConverterImpl;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.validation.Issue.IssueImpl;
-
-import javax.inject.Inject;
 
 /**
  * This class handles errors thrown during code generation and sends them back to the

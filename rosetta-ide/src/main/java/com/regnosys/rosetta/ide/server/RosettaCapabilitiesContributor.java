@@ -2,8 +2,6 @@ package com.regnosys.rosetta.ide.server;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.InitializeParams;
@@ -13,6 +11,8 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.xtext.ide.server.ICapabilitiesContributor;
 
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
+
+import jakarta.inject.Inject;
 
 public class RosettaCapabilitiesContributor implements ICapabilitiesContributor {
 	@Inject

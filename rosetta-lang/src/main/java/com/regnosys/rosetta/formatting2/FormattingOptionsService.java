@@ -6,13 +6,13 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.eclipse.emf.mwe.core.resources.ResourceLoader;
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.inject.Inject;
 
 public class FormattingOptionsService {
 	private static final String DEFAULT_FORMATTING_OPTIONS_PATH = "default-formatting-options.json";

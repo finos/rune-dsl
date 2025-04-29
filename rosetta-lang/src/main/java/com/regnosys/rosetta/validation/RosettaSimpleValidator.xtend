@@ -54,7 +54,7 @@ import java.util.List
 import java.util.Stack
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
@@ -484,7 +484,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 		if (element.instances.filter[^set !== null && when === null].size == 1) {
 			val defaultInstance = element.instances.findFirst[^set !== null && when === null]
-			val lastInstance = element.instances.last
+			val lastInstance = element.instances.lastOrNull
 			if (defaultInstance !== lastInstance) {
 				error('''Set to without when case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
@@ -532,7 +532,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 		if (element.instances.filter[^default].size == 1) {
 			val defaultInstance = element.instances.findFirst[^default]
-			val lastInstance = element.instances.last
+			val lastInstance = element.instances.lastOrNull
 			if (defaultInstance !== lastInstance) {
 				error('''Default case must be ordered last.''', element, ROSETTA_MAPPING__INSTANCES)
 			}
@@ -621,7 +621,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			try {
 				Pattern.compile(body.patternMatch)
 			} catch (PatternSyntaxException e) {
-				error("Pattern to match must be a valid regular expression - " + e.message, body,
+				error("Pattern to match must be a valid regular expression - " + e.getPatternSyntaxErrorMessage, body,
 					ROSETTA_SYNONYM_BODY__PATTERN_MATCH)
 			}
 		}
@@ -637,10 +637,14 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			try {
 				Pattern.compile(synonym.patternMatch)
 			} catch (PatternSyntaxException e) {
-				error("Pattern to match must be a valid regular expression - " + e.message, synonym,
+				error("Pattern to match must be a valid regular expression - " + e.getPatternSyntaxErrorMessage, synonym,
 					ROSETTA_ENUM_SYNONYM__PATTERN_MATCH)
 			}
 		}
+	}
+	
+	private def String getPatternSyntaxErrorMessage(PatternSyntaxException e) {
+		return e.message.replace(System.lineSeparator, '\n')
 	}
 
 	@Check
@@ -1051,7 +1055,7 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 				return
 			}
 			val segments = container.path.asSegmentList(container.path)
-			val feature = segments?.last?.feature
+			val feature = segments?.lastOrNull?.feature
 			if ((feature instanceof RosettaMetaType || !(feature as Attribute).hasReferenceAnnotation)) {
 				error(''''«o.operator»' can only be used with attributes annotated with [metadata reference] annotation.''',
 					o, ROSETTA_OPERATION__OPERATOR)

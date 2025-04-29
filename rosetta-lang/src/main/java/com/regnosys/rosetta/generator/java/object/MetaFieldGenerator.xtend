@@ -9,7 +9,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.types.RObjectFactory
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
 import com.rosetta.util.types.generated.GeneratedJavaClass
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtend2.lib.StringConcatenationClient

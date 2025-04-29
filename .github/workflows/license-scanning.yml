@@ -21,6 +21,7 @@ env:
   ALLOW_LICENSES: "
     licenses/license/name!='Apache License, Version 2.0' and
     not(contains(licenses/license/url, '://www.apache.org/licenses/LICENSE-2.0.txt')) and
+    not(contains(licenses/license/url, '://opensource.org/licenses/Apache-2.0')) and
     
     licenses/license/name!='BSD License' and
     not(contains(licenses/license/url, 'antlr.org/license.html')) and

@@ -8,7 +8,7 @@ import java.util.List
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 class ModelGeneratorUtil {
 	

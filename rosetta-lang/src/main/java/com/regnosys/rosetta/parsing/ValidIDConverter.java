@@ -18,7 +18,7 @@ package com.regnosys.rosetta.parsing;
 
 import java.util.Set;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.xtext.Alternatives;
 import org.eclipse.xtext.Keyword;

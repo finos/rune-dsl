@@ -89,6 +89,7 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 		return success;
 	}
 
+	@Override
 	protected void generate(List<Resource> sourceResources) {
 		if (needsBeforeAllCall) {
 			LOG.info("Starting before all generation");

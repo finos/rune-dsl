@@ -4,35 +4,36 @@ package com.regnosys.rosetta.formatting2
  * For info on the formatter API, see https://www.slideshare.net/meysholdt/xtexts-new-formatter-api.
  */
 
+import org.eclipse.xtext.formatting2.IFormattableDocument
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.ListLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
+import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
+import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
+import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
+import com.regnosys.rosetta.services.RosettaGrammarAccess
+import jakarta.inject.Inject
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
+import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
+import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
+import com.regnosys.rosetta.rosetta.expression.InlineFunction
+import org.eclipse.xtext.formatting2.FormatterRequest
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ComparisonOperation
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair
-import com.regnosys.rosetta.rosetta.expression.InlineFunction
-import com.regnosys.rosetta.rosetta.expression.ListLiteral
-import com.regnosys.rosetta.rosetta.expression.ModifiableBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaBinaryOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaConstructorExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall
-import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
-import com.regnosys.rosetta.rosetta.expression.RosettaFeatureCall
-import com.regnosys.rosetta.rosetta.expression.RosettaFunctionalOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaImplicitVariable
-import com.regnosys.rosetta.rosetta.expression.RosettaLiteral
-import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference
-import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation
 import com.regnosys.rosetta.rosetta.expression.ThenOperation
-import com.regnosys.rosetta.services.RosettaGrammarAccess
-import javax.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.Keyword
-import org.eclipse.xtext.formatting2.FormatterRequest
-import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 
@@ -299,7 +300,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			[extension doc | // case: long list
 				expr.regionFor.keyword('[')
 					.append[newLine]
-				expr.elements.last
+				expr.elements.lastOrNull
 					.append[newLine]
 				expr.regionFor.keywords(',').forEach[
 					append[newLine]

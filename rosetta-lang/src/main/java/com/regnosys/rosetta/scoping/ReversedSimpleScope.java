@@ -3,7 +3,7 @@ package com.regnosys.rosetta.scoping;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;

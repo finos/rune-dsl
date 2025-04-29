@@ -16,7 +16,7 @@ import com.rosetta.util.ListEquals
 import com.rosetta.util.types.JavaClass
 import java.util.Collection
 import java.util.Objects
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 
 class ModelObjectBoilerPlate {
