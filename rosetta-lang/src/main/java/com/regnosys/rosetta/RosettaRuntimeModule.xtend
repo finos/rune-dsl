@@ -10,7 +10,6 @@ import com.regnosys.rosetta.generator.external.ExternalGenerators
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory
 import com.regnosys.rosetta.resource.RosettaFragmentProvider
-import com.regnosys.rosetta.resource.RosettaResourceDescriptionManager
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider
 import org.eclipse.xtext.generator.IOutputConfigurationProvider
@@ -41,6 +40,7 @@ import com.regnosys.rosetta.formatting2.XtextResourceFormatter
 import com.regnosys.rosetta.formatting2.ResourceFormatterService
 import org.eclipse.xtext.formatting2.FormatterRequest
 import com.regnosys.rosetta.formatting2.FormatterRequestWithDefaultPreferencesProvider
+import org.eclipse.xtext.resource.DerivedStateAwareResourceDescriptionManager
 
 /* Use this class to register components to be used at runtime / without the Equinox extension registry.*/
 class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
@@ -66,7 +66,7 @@ class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	}
 	
 	def Class<? extends IResourceDescription.Manager> bindIResourceDescriptionManager() {
-		RosettaResourceDescriptionManager
+		DerivedStateAwareResourceDescriptionManager
 	}
 	
 	def Class<? extends Provider<ExternalGenerators>> provideExternalGenerators() {
