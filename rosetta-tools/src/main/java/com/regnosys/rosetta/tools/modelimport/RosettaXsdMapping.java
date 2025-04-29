@@ -57,12 +57,14 @@ public class RosettaXsdMapping {
     private final Map<String, Data> groupsMap = new HashMap<>();
 	private final Map<XsdElement, Data> elementsMap = new HashMap<>();
 	
-	private final Map<XsdAbstractElement, Attribute> attributeMap = new HashMap<>();
+	private final Map<ElementAndData, Attribute> attributeMap = new HashMap<>();
 	private final Map<XsdEnumeration, RosettaEnumValue> enumValueMap = new HashMap<>();
 
 	private final RBuiltinTypeService builtins;
 	private final XsdUtil util;
 	
+    record ElementAndData (XsdAbstractElement xsdAbstractElement, Data data) {}
+    
 	@Inject
 	public RosettaXsdMapping(RBuiltinTypeService builtins, XsdUtil util) {
 		this.builtins = builtins;
@@ -199,7 +201,7 @@ public class RosettaXsdMapping {
             throw new IllegalArgumentException("Illegal complex type " + complexType + " of class " + complexType.getClass() + ".");
         }
 		if (complexTypesMap.containsKey(complexType)) {
-			throw new IllegalArgumentException("There is already a registered type for " + complexType + ".");
+			throw new IllegalArgumentException("There is already a registered type for " + complexType + "." + (data.getName()));
 		}
 		complexTypesMap.put(complexType, data);
 	}
@@ -215,11 +217,13 @@ public class RosettaXsdMapping {
 		}
 		elementsMap.put(element, data);
 	}
-	public void registerAttribute(XsdAbstractElement elem, Attribute attr) {
-		if (attributeMap.containsKey(elem)) {
+	public void registerAttribute(XsdAbstractElement elem, Attribute attr, Data data) {
+        ElementAndData key = new ElementAndData(elem, data);
+
+		if (attributeMap.containsKey(key)) {
 			throw new IllegalArgumentException("There is already a registered attribute for " + elem + ".");
 		}
-		attributeMap.put(elem, attr);
+        attributeMap.put(key, attr);
 	}
 	public void registerEnumValue(XsdEnumeration elem, RosettaEnumValue value) {
 		if (enumValueMap.containsKey(elem)) {
@@ -312,8 +316,8 @@ public class RosettaXsdMapping {
 		}
 		return t;
 	}
-	public Attribute getAttribute(XsdAbstractElement elem) {
-		Attribute a = attributeMap.get(elem);
+	public Attribute getAttribute(XsdAbstractElement elem, Data data) {
+		Attribute a = attributeMap.get(new ElementAndData(elem, data));
 		if (a == null) {
 			throw new RuntimeException("No registered attribute " + elem + " was found.");
 		}

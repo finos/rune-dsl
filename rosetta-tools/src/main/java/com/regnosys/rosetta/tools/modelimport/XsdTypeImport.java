@@ -64,10 +64,17 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     @Override
     public List<XsdNamedElements> filterTypes(List<XsdAbstractElement> elements) {
         return elements.stream()
-                .filter(elem -> elem instanceof XsdComplexType || elem instanceof XsdGroup)
+                .filter(elem -> elem instanceof XsdComplexType || elem instanceof XsdGroup || isElementWithComplexType(elem))
                 .map(elem -> (XsdNamedElements)elem)
                 .collect(Collectors.toList());
     }
+	
+	private boolean isElementWithComplexType(XsdAbstractElement element) {
+		if (element instanceof XsdElement xsdElement) {
+			return xsdElement.getTypeAsXsd() == null &&  xsdElement.getXsdComplexType() != null;
+		}
+		return false;
+	}
 
 	private Optional<XsdNamedElements> getBaseSimpleType(XsdComplexType xsdType) {
         Optional<XsdExtension> optExt = getExtension(xsdType);
@@ -131,20 +138,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		if (xsdType instanceof XsdGroup group) {
             xsdMapping.registerGroup(group, data);
             initialCompleteData(data, Stream.of(group.getChildElement()), null, xsdMapping, result, targetConfig);
-        } else {
+        } else if (xsdType instanceof XsdElement xsdElement) {
+			XsdComplexType ct = xsdElement.getXsdComplexType();
+			registerXsdComplexType(xsdMapping, targetConfig, ct, data, result);
+		} else {
         	XsdComplexType ct = (XsdComplexType)xsdType;
-            xsdMapping.registerComplexType(ct, data);
-        	
-        	// If the complex type extends a simple type, simulate this
-            // by adding a `value` attribute of the corresponding type.
-            if (getBaseSimpleType(ct).isPresent()) {
-                Attribute valueAttr = createValueAttribute(targetConfig);
-                data.getAttributes().add(valueAttr);
-                xsdMapping.registerAttribute(ct, valueAttr);
-            }
-            
-            initialCompleteData(data, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping, result, targetConfig);
-        }
+			registerXsdComplexType(xsdMapping, targetConfig, ct, data, result);
+		}
 
         // Post process: make sure all names are unique:
         util.makeNamesUnique(result);
@@ -157,18 +157,32 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		return result;
 	}
 
+	private void registerXsdComplexType(RosettaXsdMapping xsdMapping, ImportTargetConfig targetConfig, XsdComplexType ct, Data data, List<Data> result) {
+		xsdMapping.registerComplexType(ct, data);
+
+		// If the complex type extends a simple type, simulate this
+		// by adding a `value` attribute of the corresponding type.
+		if (getBaseSimpleType(ct).isPresent()) {
+			Attribute valueAttr = createValueAttribute(targetConfig);
+			data.getAttributes().add(valueAttr);
+			xsdMapping.registerAttribute(ct, valueAttr, data);
+		}
+
+		initialCompleteData(data, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping, result, targetConfig);
+	}
+
 	private void registerXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         if (abstractElement instanceof XsdElement elem) {
             Attribute attr = createAttributeFromElement(elem, currentChoiceGroup, config);
-            xsdMapping.registerAttribute(elem, attr);
+            xsdMapping.registerAttribute(elem, attr, currentData);
             currentData.getAttributes().add(attr);
         } else if (abstractElement instanceof XsdGroup group) {
             Attribute attr = createAttributeFromGroup(group, currentChoiceGroup, config);
-            xsdMapping.registerAttribute(group, attr);
+            xsdMapping.registerAttribute(group, attr, currentData);
             currentData.getAttributes().add(attr);
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
         	Attribute attr = createAttributeFromXsdAttribute(xsdAttr, config);
-            xsdMapping.registerAttribute(xsdAttr, attr);
+            xsdMapping.registerAttribute(xsdAttr, attr, currentData);
             currentData.getAttributes().add(attr);
         } else if (abstractElement instanceof XsdSequence seq) {
             if (currentChoiceGroup != null || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
@@ -176,7 +190,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 xsdMapping.registerComplexType(seq, newData);
 
                 Attribute attr = createAttributeFromSequence(seq, newData.getName(), currentChoiceGroup, config);
-                xsdMapping.registerAttribute(seq, attr);
+                xsdMapping.registerAttribute(seq, attr, currentData);
                 currentData.getAttributes().add(attr);
             } else {
                 seq.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result, config));
@@ -187,7 +201,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 xsdMapping.registerComplexType(all, newData);
 
                 Attribute attr = createAttributeFromAll(all, newData.getName(), currentChoiceGroup, config);
-                xsdMapping.registerAttribute(all, attr);
+                xsdMapping.registerAttribute(all, attr, currentData);
                 currentData.getAttributes().add(attr);
             } else {
                 all.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, null, currentChoiceGroups, xsdMapping, result, config));
@@ -200,7 +214,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 xsdMapping.registerComplexType(choice, newData);
 
                 Attribute attr = createAttributeFromChoice(choice, newData.getName(), currentChoiceGroup, config);
-                xsdMapping.registerAttribute(choice, attr);
+                xsdMapping.registerAttribute(choice, attr, currentData);
                 currentData.getAttributes().add(attr);
             } else {
                 ChoiceGroup newChoiceGroup = new ChoiceGroup(new ArrayList<>(), choice.getMinOccurs() > 0);
@@ -233,31 +247,39 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		if (xsdType instanceof XsdGroup group) {
 			Data data = xsdMapping.getRosettaTypeFromGroup(group);
 			completeData(data, Stream.of(group.getChildElement()), null, xsdMapping);
+		} else if (xsdType instanceof XsdElement xsdElement) {
+			XsdComplexType ct = xsdElement.getXsdComplexType();
+			completeComplexType(xsdType, xsdMapping, ct);
 		} else {
 			XsdComplexType ct = (XsdComplexType)xsdType;
-            Data data = xsdMapping.getRosettaTypeFromComplex(ct);
-			
-			// Add supertype
-			getBaseComplexType(ct)
-				.ifPresent(base -> {
-					Data superType = xsdMapping.getRosettaTypeFromComplex(base);
-					data.setSuperType(superType);
-				});
-			
-			// If the complex type extends a simple type, add the corresponding type
-			// to the dedicated `value` attribute.
-			getBaseSimpleType(ct)
-				.ifPresent(base -> {
-					Attribute attr = xsdMapping.getAttribute(xsdType);
-					attr.setTypeCall(xsdMapping.getRosettaTypeCall(base));
-				});
-			
-			completeData(data, Stream.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping);
+			completeComplexType(xsdType, xsdMapping, ct);
 		}
 	}
+
+	private void completeComplexType(XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, XsdComplexType ct) {
+		Data data = xsdMapping.getRosettaTypeFromComplex(ct);
+
+		// Add supertype
+		getBaseComplexType(ct)
+			.ifPresent(base -> {
+				Data superType = xsdMapping.getRosettaTypeFromComplex(base);
+				data.setSuperType(superType);
+			});
+
+		// If the complex type extends a simple type, add the corresponding type
+		// to the dedicated `value` attribute.
+		getBaseSimpleType(ct)
+			.ifPresent(base -> {
+				Attribute attr = xsdMapping.getAttribute(xsdType, data);
+				attr.setTypeCall(xsdMapping.getRosettaTypeCall(base));
+			});
+
+		completeData(data, Stream.concat(getChildElement(ct).stream(), getAttributes(ct)), null, xsdMapping);
+	}
+
 	private void completeXsdElementsRecursively(Data currentData, XsdAbstractElement abstractElement, ChoiceGroup currentChoiceGroup, List<ChoiceGroup> currentChoiceGroups, RosettaXsdMapping xsdMapping) {
         if (abstractElement instanceof XsdElement elem) {
-        	Attribute attr = xsdMapping.getAttribute(elem);
+        	Attribute attr = xsdMapping.getAttribute(elem, currentData);
 			if (elem.getTypeAsXsd() != null) {
 				attr.setTypeCall(xsdMapping.getRosettaTypeCall(elem.getTypeAsXsd()));
 			} else {
@@ -268,13 +290,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				currentChoiceGroup.attributes.add(attr);
 			}
         } else if (abstractElement instanceof XsdGroup group) {
-        	Attribute attr = xsdMapping.getAttribute(group);
+        	Attribute attr = xsdMapping.getAttribute(group, currentData);
 			attr.setTypeCall(xsdMapping.getRosettaTypeCall(group));
 			if (currentChoiceGroup != null) {
 				currentChoiceGroup.attributes.add(attr);
 			}
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
-        	Attribute attr = xsdMapping.getAttribute(xsdAttr);
+        	Attribute attr = xsdMapping.getAttribute(xsdAttr, currentData);
 			if (xsdAttr.getXsdSimpleType() != null) {
 				attr.setTypeCall(xsdMapping.getRosettaTypeCall(xsdAttr.getXsdSimpleType()));
 			} else if (xsdAttr.getTypeAsBuiltInType() != null) {
@@ -291,7 +313,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             	Data newData = xsdMapping.getRosettaTypeFromComplex(seq);
             	completeData(newData, seq.getXsdElements(), null, xsdMapping);
             	
-            	Attribute attr = xsdMapping.getAttribute(seq);
+            	Attribute attr = xsdMapping.getAttribute(seq, currentData);
     			attr.setTypeCall(xsdMapping.getRosettaTypeCall(seq));
     			if (currentChoiceGroup != null) {
     				currentChoiceGroup.attributes.add(attr);
@@ -304,7 +326,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             	Data newData = xsdMapping.getRosettaTypeFromComplex(all);
             	completeData(newData, all.getXsdElements(), null, xsdMapping);
             	
-            	Attribute attr = xsdMapping.getAttribute(all);
+            	Attribute attr = xsdMapping.getAttribute(all, currentData);
     			attr.setTypeCall(xsdMapping.getRosettaTypeCall(all));
     			if (currentChoiceGroup != null) {
     				currentChoiceGroup.attributes.add(attr);
@@ -319,7 +341,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 Data newData = xsdMapping.getRosettaTypeFromComplex(choice);
                 completeData(newData, choice.getXsdElements(), initialChoiceGroup, xsdMapping);
             	
-                Attribute attr = xsdMapping.getAttribute(choice);
+                Attribute attr = xsdMapping.getAttribute(choice, currentData);
     			attr.setTypeCall(xsdMapping.getRosettaTypeCall(choice));
     			if (currentChoiceGroup != null) {
     				currentChoiceGroup.attributes.add(attr);
@@ -370,6 +392,15 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		Data data;
 		if (xsdType instanceof XsdGroup group) {
 			data = xsdMapping.getRosettaTypeFromGroup(group);
+		} else if (xsdType instanceof XsdElement xsdElement) {
+			XsdComplexType ct = xsdElement.getXsdComplexType();
+			data = xsdMapping.getRosettaTypeFromComplex(ct);
+			if (xsdMapping.getElementsWithComplexType(ct)
+					.map(xsdMapping::getRosettaTypeFromElement)
+					.anyMatch(t -> t.equals(data))) {
+				// This type is merged into an element.
+				return Collections.emptyMap();
+			}
 		} else {
 			XsdComplexType ct = (XsdComplexType)xsdType;
 			data = xsdMapping.getRosettaTypeFromComplex(ct);
@@ -393,33 +424,40 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 			);
 		result.put(data, config);
 		
-		completeAttributeConfiguration(attributeConfig, xsdType, xsdMapping, result);
+		completeAttributeConfiguration(attributeConfig, xsdType, xsdMapping, result, data);
 		
 		return result;
 	}
-	public void completeAttributeConfiguration(Map<String, AttributeXMLConfiguration> attributeConfig, XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result) {
+	public void completeAttributeConfiguration(Map<String, AttributeXMLConfiguration> attributeConfig, XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result, Data data) {
 		if (xsdType instanceof XsdGroup group) {
-            completeTypeConfiguration(attributeConfig, Stream.of(group.getChildElement()), false, xsdMapping, result);
-        } else {
+            completeTypeConfiguration(attributeConfig, Stream.of(group.getChildElement()), false, xsdMapping, result, data);
+        } else if (xsdType instanceof XsdElement xsdElement) {
+			XsdComplexType ct = xsdElement.getXsdComplexType();
+			completeAttributeConfigurationForXsdComplexType(attributeConfig, xsdType, xsdMapping, result, data, ct);
+		}else {
         	XsdComplexType ct = (XsdComplexType)xsdType;
-        	
-        	// If the complex type extends a simple type, simulate this
-            // by adding a `value` attribute of the corresponding type.
-            if (getBaseSimpleType(ct).isPresent()) {
-            	Attribute attr = xsdMapping.getAttribute(xsdType);
-            	attributeConfig.put(attr.getName(), new AttributeXMLConfiguration(
-    					Optional.empty(),
-    					Optional.empty(),
-    					Optional.of(AttributeXMLRepresentation.VALUE),
-    					Optional.empty()));
-            }
-            
-            completeTypeConfiguration(attributeConfig, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), false, xsdMapping, result);
-        }
+			completeAttributeConfigurationForXsdComplexType(attributeConfig, xsdType, xsdMapping, result, data, ct);
+		}
 	}
-	private void getAttributeConfigurationRecursively(Map<String, AttributeXMLConfiguration> currentConfig, XsdAbstractElement abstractElement, boolean isChoiceGroup, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result) {
+
+	private void completeAttributeConfigurationForXsdComplexType(Map<String, AttributeXMLConfiguration> attributeConfig, XsdNamedElements xsdType, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result, Data data, XsdComplexType ct) {
+		// If the complex type extends a simple type, simulate this
+		// by adding a `value` attribute of the corresponding type.
+		if (getBaseSimpleType(ct).isPresent()) {
+			Attribute attr = xsdMapping.getAttribute(xsdType, data);
+			attributeConfig.put(attr.getName(), new AttributeXMLConfiguration(
+					Optional.empty(),
+					Optional.empty(),
+					Optional.of(AttributeXMLRepresentation.VALUE),
+					Optional.empty()));
+		}
+
+		completeTypeConfiguration(attributeConfig, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), false, xsdMapping, result, data);
+	}
+
+	private void getAttributeConfigurationRecursively(Map<String, AttributeXMLConfiguration> currentConfig, XsdAbstractElement abstractElement, boolean isChoiceGroup, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result, Data data) {
         if (abstractElement instanceof XsdElement elem) {
-            Attribute attr = xsdMapping.getAttribute(elem);
+            Attribute attr = xsdMapping.getAttribute(elem, data);
             Optional<String> elemNameOverride;
             if (elem.getName().equals(attr.getName())) {
             	elemNameOverride = Optional.empty();
@@ -440,14 +478,14 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 						substitutionGroup));
             }
         } else if (abstractElement instanceof XsdGroup group) {
-            Attribute attr = xsdMapping.getAttribute(group);
+            Attribute attr = xsdMapping.getAttribute(group, data);
             currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
 					Optional.empty(),
 					Optional.empty(),
 					Optional.of(AttributeXMLRepresentation.VIRTUAL),
 					Optional.empty()));
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
-        	Attribute attr = xsdMapping.getAttribute(xsdAttr);
+        	Attribute attr = xsdMapping.getAttribute(xsdAttr, data);
         	currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
         			xsdAttr.getName().equals(attr.getName()) ? Optional.empty() : Optional.of(xsdAttr.getName()),
 					Optional.empty(),
@@ -455,45 +493,45 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 					Optional.empty()));
         } else if (abstractElement instanceof XsdSequence seq) {
             if (isChoiceGroup || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
-            	Data data = xsdMapping.getRosettaTypeFromComplex(seq);
-            	createTypeConfiguration(data, seq.getXsdElements(), false, xsdMapping, result);
+            	Data seqData = xsdMapping.getRosettaTypeFromComplex(seq);
+            	createTypeConfiguration(seqData, seq.getXsdElements(), false, xsdMapping, result);
 
-                Attribute attr = xsdMapping.getAttribute(seq);
+                Attribute attr = xsdMapping.getAttribute(seq, seqData);
                 currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VIRTUAL),
     					Optional.empty()));
             } else {
-                seq.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, false, xsdMapping, result));
+                seq.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, false, xsdMapping, result, data));
             }
         } else if (abstractElement instanceof XsdAll all) {
             if (isChoiceGroup || all.getMinOccurs() == 0) {
-            	Data data = xsdMapping.getRosettaTypeFromComplex(all);
-            	createTypeConfiguration(data, all.getXsdElements(), false, xsdMapping, result);
+            	Data allData = xsdMapping.getRosettaTypeFromComplex(all);
+            	createTypeConfiguration(allData, all.getXsdElements(), false, xsdMapping, result);
 
-                Attribute attr = xsdMapping.getAttribute(all);
+                Attribute attr = xsdMapping.getAttribute(all, allData);
                 currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VIRTUAL),
     					Optional.empty()));
             } else {
-                all.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, false, xsdMapping, result));
+                all.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, false, xsdMapping, result, data));
             }
         } else if (abstractElement instanceof XsdChoice choice) {
             if (isChoiceGroup || isMulti(choice.getMaxOccurs())) {
-            	Data data = xsdMapping.getRosettaTypeFromComplex(choice);
-            	createTypeConfiguration(data, choice.getXsdElements(), true, xsdMapping, result);
+            	Data choiceData = xsdMapping.getRosettaTypeFromComplex(choice);
+            	createTypeConfiguration(choiceData, choice.getXsdElements(), true, xsdMapping, result);
 
-                Attribute attr = xsdMapping.getAttribute(choice);
+                Attribute attr = xsdMapping.getAttribute(choice, choiceData);
                 currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VIRTUAL),
     					Optional.empty()));
             } else {
-                choice.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, true, xsdMapping, result));
+                choice.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, true, xsdMapping, result, data));
             }
         }
 	}
@@ -508,12 +546,12 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				Optional.empty());
         result.put(data, config);
 
-        completeTypeConfiguration(currentConfig, abstractElements, isChoiceGroup, xsdMapping, result);
+        completeTypeConfiguration(currentConfig, abstractElements, isChoiceGroup, xsdMapping, result, data);
 
         return config;
     }
-	private void completeTypeConfiguration(Map<String, AttributeXMLConfiguration> currentConfig, Stream<XsdAbstractElement> abstractElements, boolean isChoiceGroup, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result) {
-		abstractElements.forEach(elem -> getAttributeConfigurationRecursively(currentConfig, elem, isChoiceGroup, xsdMapping, result));
+	private void completeTypeConfiguration(Map<String, AttributeXMLConfiguration> currentConfig, Stream<XsdAbstractElement> abstractElements, boolean isChoiceGroup, RosettaXsdMapping xsdMapping, Map<Data, TypeXMLConfiguration> result, Data data) {
+		abstractElements.forEach(elem -> getAttributeConfigurationRecursively(currentConfig, elem, isChoiceGroup, xsdMapping, result, data));
     }
 
 	private Attribute createAttribute(String rawName, String docs, int minOccurs, String maxOccurs, ChoiceGroup choiceGroup, ImportTargetConfig config) {
