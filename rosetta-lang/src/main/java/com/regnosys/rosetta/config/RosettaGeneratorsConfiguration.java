@@ -3,7 +3,7 @@ package com.regnosys.rosetta.config;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.google.inject.ProvidedBy;
 
@@ -22,8 +22,8 @@ public class RosettaGeneratorsConfiguration {
 	public Predicate<String> getNamespaceFilter() {
 		return namespaceFilter;
 	}
-	
-	public static class Provider implements javax.inject.Provider<RosettaGeneratorsConfiguration> {
+
+	public static class Provider implements jakarta.inject.Provider<RosettaGeneratorsConfiguration>, javax.inject.Provider<RosettaGeneratorsConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {

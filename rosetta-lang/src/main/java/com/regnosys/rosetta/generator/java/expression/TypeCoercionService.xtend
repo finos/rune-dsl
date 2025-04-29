@@ -22,8 +22,8 @@ import java.util.Collections
 import java.util.Optional
 import java.util.function.Function
 import java.util.stream.Collectors
-import javax.inject.Inject
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import jakarta.inject.Inject
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.

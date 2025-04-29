@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.eclipse.emf.ecore.resource.ResourceSet;

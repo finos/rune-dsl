@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
@@ -29,6 +27,8 @@ import com.regnosys.rosetta.interpreter.RosettaValue;
 import com.regnosys.rosetta.interpreter.RosettaZonedDateTimeValue;
 import com.rosetta.model.lib.RosettaNumber;
 import com.rosetta.model.lib.records.Date;
+
+import jakarta.inject.Inject;
 
 public class InterpreterValueJavaConverter {
 	@Inject

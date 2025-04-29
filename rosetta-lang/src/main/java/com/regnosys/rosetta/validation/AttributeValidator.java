@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.validation;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;

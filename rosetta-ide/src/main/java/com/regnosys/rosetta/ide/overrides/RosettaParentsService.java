@@ -2,13 +2,13 @@ package com.regnosys.rosetta.ide.overrides;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.eclipse.emf.ecore.EObject;
 
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+
+import jakarta.inject.Inject;
 
 public class RosettaParentsService extends AbstractParentsService {
 	@Inject

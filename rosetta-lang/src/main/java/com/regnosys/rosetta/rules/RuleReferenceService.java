@@ -11,8 +11,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-
 import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +26,8 @@ import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil;
+
+import jakarta.inject.Inject;
 
 public class RuleReferenceService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RuleReferenceService.class);

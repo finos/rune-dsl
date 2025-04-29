@@ -19,7 +19,11 @@ package com.regnosys.rosetta.maven;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
@@ -66,9 +70,24 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 
 	@Parameter(defaultValue = "false")
 	private Boolean compilerPreserveInformationAboutFormalParameters;
+
+	@Parameter(defaultValue = "false")
+	private boolean writeStorageResources;
 	
-	@Parameter(property = "file")
-	private String[] fileOrder;
+	@Parameter(defaultValue = "false")
+	private boolean writeClasspathConfiguration = false;
+	
+	@Parameter(defaultValue = "${project.build.directory}/xtext.classpath")
+	private String classpathConfigurationLocation;
+	
+	@Parameter( defaultValue = "${mojoExecution}", readonly = true )
+	private MojoExecution mojoExecution;
+	
+	@Parameter( readonly = true, defaultValue = "${plugin.artifacts}" )
+	private List<Artifact> pluginDependencies;
+	
+	@Parameter(defaultValue = "true") // NOTE: we have a different default from Xtext!! We want to have this enabled by default.
+	private boolean incrementalXtextBuild;
 	
 	// TODO: add this method to Xtext so I don't have to overwrite `internalExecute`
 	// and duplicate all of the above parameters.
@@ -85,20 +104,24 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 				this.getClass().getClassLoader());
 		Injector injector = Guice.createInjector(createModule());
 		RosettaStandaloneBuilder builder = injector.getInstance(RosettaStandaloneBuilder.class);
-		if (fileOrder != null)
-			builder.setFileOrder(List.of(fileOrder));
 		builder.setBaseDir(getProject().getBasedir().getAbsolutePath());
 		builder.setLanguages(languages);
 		builder.setEncoding(getEncoding());
-		builder.setClassPathEntries(getClasspathElements());
+		builder.setClassPathEntries(getClasspathEntries());
 		builder.setClassPathLookUpFilter(classPathLookupFilter);
 		builder.setSourceDirs(getSourceRoots());
 		builder.setJavaSourceDirs(javaSourceRoots);
 		builder.setFailOnValidationError(failOnValidationError);
 		builder.setTempDir(createTempDir().getAbsolutePath());
 		builder.setDebugLog(getLog().isDebugEnabled());
-		if (clusteringConfig != null)
+		builder.setIncrementalBuild(incrementalXtextBuild);
+		builder.setWriteStorageResources(writeStorageResources);
+		if (writeClasspathConfiguration) {
+			builder.setClasspathConfigurationLocation(classpathConfigurationLocation, mojoExecution.getGoal(), getClassOutputDirectory());
+		}
+		if (clusteringConfig != null) {
 			builder.setClusteringConfig(clusteringConfig.convertToStandaloneConfig());
+		}
 		configureCompiler(builder.getCompiler());
 		logState();
 		boolean errorDetected = !builder.launch();
@@ -117,7 +140,7 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 	}
 
 	private File createTempDir() {
-		File tmpDir = new File(tmpClassDirectory);
+		File tmpDir = new File(tmpClassDirectory + tmpDirSuffix());
 		if (!tmpDir.mkdirs() && !tmpDir.exists()) {
 			throw new IllegalArgumentException("Couldn't create directory '" + tmpClassDirectory + "'.");
 		}
@@ -132,7 +155,19 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 		if (getLog().isDebugEnabled()) {
 			getLog().debug("Source dirs: " + IterableExtensions.join(getSourceRoots(), ", "));
 			getLog().debug("Java source dirs: " + IterableExtensions.join(javaSourceRoots, ", "));
-			getLog().debug("Classpath entries: " + IterableExtensions.join(getClasspathElements(), ", "));
+			getLog().debug("Classpath entries: " + IterableExtensions.join(getClasspathEntries(), ", "));
 		}
+	}
+	
+	private Set<String> getClasspathEntries() {
+		Set<String> classpathElements = getClasspathElements();
+		if (isIncludePluginDependencies()) {
+			getLog().info("Including plugin dependencies");
+			List<String> pluginClasspathElements = pluginDependencies.stream()
+					.map(e -> e.getFile().toPath().toString())
+					.collect(Collectors.toList());
+			classpathElements.addAll(pluginClasspathElements);
+		}
+		return classpathElements;
 	}
 }

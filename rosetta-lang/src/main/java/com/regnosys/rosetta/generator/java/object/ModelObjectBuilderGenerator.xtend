@@ -26,7 +26,7 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.function.Consumer
 import java.util.stream.Collectors
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey

@@ -54,7 +54,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.TypeCallArgument
-import javax.inject.Inject
+import jakarta.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.simple.Choice
 
@@ -463,7 +463,7 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 				.prepend[noSpace]
 			set(
 				inputsColon.nextHiddenRegion,
-				ele.inputs.last.nextHiddenRegion,
+				ele.inputs.lastOrNull.nextHiddenRegion,
 				[indent]
 			)
 			ele.inputs.forEach[

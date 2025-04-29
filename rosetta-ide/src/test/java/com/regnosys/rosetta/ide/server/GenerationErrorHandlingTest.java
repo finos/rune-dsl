@@ -13,6 +13,9 @@ import com.regnosys.rosetta.ide.RosettaIdeSetup;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 import com.regnosys.rosetta.rosetta.expression.*;
 import com.regnosys.rosetta.types.REnumType;
+
+import jakarta.inject.Provider;
+
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Range;
@@ -26,7 +29,6 @@ import org.eclipse.xtext.util.Modules2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Provider;
 import java.util.List;
 
 public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerValidationTest {
@@ -182,7 +184,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         }
     }
 
-    static class TestIResourceServiceProviderRegistryFactory implements Provider<IResourceServiceProvider.Registry> {
+    static class TestIResourceServiceProviderRegistryFactory implements Provider<IResourceServiceProvider.Registry>, javax.inject.Provider<IResourceServiceProvider.Registry> {
         private final Registry registry = loadRegistry();
         
         @Override

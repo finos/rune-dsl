@@ -1,16 +1,15 @@
 package com.regnosys.rosetta.validation.expression;
 
-import javax.inject.Inject;
-
 import com.regnosys.rosetta.types.*;
+
+import jakarta.inject.Inject;
+
 import org.eclipse.xtext.validation.Check;
 
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.expression.ParseOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
 import com.regnosys.rosetta.rosetta.expression.ToStringOperation;
-import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
-import com.regnosys.rosetta.validation.AbstractDeclarativeRosettaValidator;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 

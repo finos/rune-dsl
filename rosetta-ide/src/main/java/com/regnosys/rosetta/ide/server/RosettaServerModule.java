@@ -24,6 +24,7 @@ import org.eclipse.xtext.build.IncrementalBuilder;
 import org.eclipse.xtext.ide.server.ILanguageServerShutdownAndExitHandler;
 import org.eclipse.xtext.ide.server.LanguageServerImpl;
 import org.eclipse.xtext.ide.server.ServerModule;
+import org.eclipse.xtext.ide.server.WorkspaceManager;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
 import org.eclipse.xtext.service.AbstractGenericModule;
 
@@ -83,5 +84,8 @@ public class RosettaServerModule extends AbstractGenericModule {
 	
 	public Class<? extends IncrementalBuilder.InternalStatefulIncrementalBuilder> bindIncrementalBuilder$InternalStatefulIncrementalBuilder() {
 	    return RosettaStatefulIncrementalBuilder.class;
+	}
+	public Class<? extends WorkspaceManager> bindWorkspaceManager() {
+		return RosettaWorkspaceManager.class;
 	}
 }
