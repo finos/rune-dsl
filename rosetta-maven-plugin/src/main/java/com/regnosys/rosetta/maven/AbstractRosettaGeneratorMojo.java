@@ -88,7 +88,7 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
 	
 	@Parameter(defaultValue = "true") // NOTE: we have a different default from Xtext!! We want to have this enabled by default.
 	private boolean incrementalXtextBuild;
-	
+
 	// TODO: add this method to Xtext so I don't have to overwrite `internalExecute`
 	// and duplicate all of the above parameters.
 	protected Module createModule() {
