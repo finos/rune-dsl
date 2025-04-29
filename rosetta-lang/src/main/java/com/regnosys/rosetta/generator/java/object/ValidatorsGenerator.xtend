@@ -47,7 +47,6 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.generator.java.statement.JavaStatement
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.statement.JavaBlock
-import com.regnosys.rosetta.generator.java.statement.JavaStatementList
 import com.regnosys.rosetta.generator.java.statement.JavaForLoop
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
 import com.rosetta.util.types.JavaPrimitiveType
@@ -140,7 +139,7 @@ class ValidatorsGenerator {
 		'''
 		public class «validatorClass» implements «Validator»<«javaType»> {
 			«FOR dep : conditionDependencies»
-				@«Inject»
+				@«javax.inject.Inject»
 				protected «dep» «classScope.createIdentifier(dep.toDependencyInstance, dep.simpleName.toFirstLower)»;
 			«ENDFOR»
 		

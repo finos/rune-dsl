@@ -78,9 +78,9 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 	@Override
 	public boolean launch() {
 		needsBeforeAllCall = true;
-
+		
 		boolean success = super.launch();
-
+		
 		LOG.info("Starting after all generation");
 		GeneratorContext context = new GeneratorContext();
 		context.setCancelIndicator(CancelIndicator.NullImpl);
