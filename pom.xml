@@ -473,6 +473,14 @@
 					<stagingProgressTimeoutMinutes>${stagingTimeoutInMinutes}</stagingProgressTimeoutMinutes>
 				</configuration>
 			</plugin>
+			<!-- Prevent maven-source-plugin from running twice during a release -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<skipSource>true</skipSource>
+				</configuration>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
