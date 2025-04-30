@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
@@ -24,6 +23,7 @@ import java.util.function.Function
 import java.util.stream.Collectors
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import jakarta.inject.Inject
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.

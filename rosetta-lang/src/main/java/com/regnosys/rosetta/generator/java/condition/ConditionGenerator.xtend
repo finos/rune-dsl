@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.generator.java.condition
 
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -26,6 +24,8 @@ import java.util.Collections
 import java.util.List
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler

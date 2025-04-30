@@ -55,7 +55,7 @@ class CodeGeneratorTestHelper {
 		generateCode(#[eResource])
 	}
 	
-	protected def generateCode(List<Resource> resources) {
+	def generateCode(List<Resource> resources) {
 		val fsa = new RegisteringFileSystemAccess()
 		val ctx = new GeneratorContext()=> [
 			cancelIndicator =  CancelIndicator.NullImpl

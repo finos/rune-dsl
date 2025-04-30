@@ -22,7 +22,7 @@ import java.util.function.Function;
 import org.eclipse.xtend2.lib.StringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.JavaBlock;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenElseStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement;

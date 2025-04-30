@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.object
 
 import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.generator.GeneratedIdentifier
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
@@ -31,6 +30,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ModelObjectGenerator {
 	

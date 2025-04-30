@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
       - name: Publish package
-        run: mvn -B -U clean deploy -P release
+        run: mvn -B clean deploy -P release
         env:
           GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
           GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}

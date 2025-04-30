@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -19,6 +18,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.regnosys.rosetta.types.RType
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension

@@ -21,11 +21,11 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import com.rosetta.model.lib.validation.ValidatorFactory
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import jakarta.inject.Inject
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ModelMetaGenerator {
 

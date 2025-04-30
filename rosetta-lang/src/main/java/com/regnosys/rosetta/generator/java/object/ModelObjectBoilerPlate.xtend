@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.types.AttributeMetaType
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
@@ -18,6 +17,7 @@ import java.util.Collection
 import java.util.Objects
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ModelObjectBoilerPlate {
 

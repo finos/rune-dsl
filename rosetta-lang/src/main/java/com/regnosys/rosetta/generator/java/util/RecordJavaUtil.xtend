@@ -4,7 +4,6 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.rosetta.RosettaRecordFeature
 import com.rosetta.model.lib.records.Date
 import java.time.ZonedDateTime
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.types.builtin.RDateType
 import com.regnosys.rosetta.types.builtin.RDateTimeType
 import com.regnosys.rosetta.types.builtin.RZonedDateTimeType
@@ -19,6 +18,7 @@ import com.rosetta.util.types.JavaPrimitiveType
 import java.util.List
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class RecordJavaUtil {
 	@Inject JavaTypeUtil typeUtil

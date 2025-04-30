@@ -2,9 +2,9 @@ package com.regnosys.rosetta.generator.java.util
 
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import java.lang.reflect.Method
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ImportManagerExtension {
 	def method(Class<?> clazz, String methodName) {

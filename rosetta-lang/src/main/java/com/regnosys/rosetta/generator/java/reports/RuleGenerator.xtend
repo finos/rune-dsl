@@ -6,12 +6,12 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.model.lib.reports.ReportFunction
 import com.rosetta.util.types.JavaParameterizedType
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.fasterxml.jackson.core.type.TypeReference
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class RuleGenerator {
 	@Inject extension JavaTypeTranslator

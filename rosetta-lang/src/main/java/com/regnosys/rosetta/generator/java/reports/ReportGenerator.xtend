@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -16,6 +15,7 @@ import com.regnosys.rosetta.utils.ModelIdProvider
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneLabelProvider
 import java.util.Map
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ReportGenerator {
 	@Inject extension RObjectFactory

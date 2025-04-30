@@ -3,8 +3,6 @@ package com.regnosys.rosetta.generator.java.function
 import com.fasterxml.jackson.core.type.TypeReference
 import com.google.inject.ImplementedBy
 import com.regnosys.rosetta.generator.GeneratedIdentifier
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
@@ -79,6 +77,7 @@ import static com.regnosys.rosetta.generator.java.enums.EnumHelper.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class FunctionGenerator {
 
@@ -91,7 +90,6 @@ class FunctionGenerator {
 	@Inject ExpressionHelper exprHelper
 	@Inject extension ImportManagerExtension
 	@Inject CardinalityProvider cardinality
-	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension JavaTypeTranslator
 	@Inject RObjectFactory rTypeBuilderFactory
 	@Inject ImplicitVariableUtil implicitVariableUtil

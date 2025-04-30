@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaPrimitiveType
 import java.util.Map
@@ -17,7 +16,6 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.rosetta.expression.ExistsModifier
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.HashSet
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
@@ -25,6 +23,8 @@ import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class DeepPathUtilGenerator {
 	@Inject extension ImportManagerExtension

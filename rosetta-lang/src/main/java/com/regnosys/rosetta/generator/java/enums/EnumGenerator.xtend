@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.enums
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
@@ -17,6 +16,7 @@ import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension

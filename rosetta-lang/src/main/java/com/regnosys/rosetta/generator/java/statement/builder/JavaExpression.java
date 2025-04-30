@@ -25,7 +25,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 
 import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;

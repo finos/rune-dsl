@@ -1,8 +1,6 @@
 package com.regnosys.rosetta.generator.java.expression
 
 import com.regnosys.rosetta.RosettaEcoreUtil
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
@@ -148,6 +146,8 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	

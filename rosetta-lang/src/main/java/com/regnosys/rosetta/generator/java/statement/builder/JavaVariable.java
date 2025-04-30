@@ -19,7 +19,7 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaScope;
 import com.rosetta.util.types.JavaType;
 
 /**

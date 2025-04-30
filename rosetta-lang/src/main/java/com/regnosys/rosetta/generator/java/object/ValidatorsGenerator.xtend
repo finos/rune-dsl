@@ -18,7 +18,6 @@ import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
@@ -38,7 +37,6 @@ import com.regnosys.rosetta.types.RCardinality
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.types.AliasHierarchy
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.google.common.collect.Streams
@@ -56,6 +54,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
 
 class ValidatorsGenerator {
 

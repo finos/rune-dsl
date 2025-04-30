@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.JavaEnhancedForLoop
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
@@ -31,6 +30,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ModelObjectBuilderGenerator {
 	

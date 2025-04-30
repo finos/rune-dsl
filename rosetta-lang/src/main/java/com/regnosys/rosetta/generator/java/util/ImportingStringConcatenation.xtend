@@ -4,7 +4,6 @@ import java.lang.reflect.Method
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.TargetLanguageStringConcatenation
 import com.rosetta.util.DottedPath
@@ -12,6 +11,7 @@ import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.generator.java.types.JavaTypeRepresentation
 import com.rosetta.util.types.JavaParameterizedType
+import com.regnosys.rosetta.generator.java.scoping.JavaScope
 
 class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	@Accessors(PUBLIC_GETTER)
