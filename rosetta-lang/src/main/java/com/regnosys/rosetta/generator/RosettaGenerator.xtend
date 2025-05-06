@@ -42,6 +42,8 @@ import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import java.util.List
+import com.regnosys.rosetta.generator.java.JavaClassGenerator
+import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
 
 /**
  * Generates code from your model files on save.
@@ -153,6 +155,13 @@ class RosettaGenerator implements IGenerator2 {
 					return
 				}
 				val version = model.version
+				
+				val globalScope = new JavaGlobalScope
+				val List<JavaClassGenerator> javaGenerators = null
+				javaGenerators.forEach[generator|
+					generator.streamObjects(model)
+						.forEach
+				]
 
 				val List<GenerationException> aggregatedGenerationExceptions = newArrayList
 				model.elements.forEach [rootElement|
