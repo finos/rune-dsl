@@ -18,7 +18,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.regnosys.rosetta.types.RType
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -58,7 +58,7 @@ class MetaFieldGenerator {
 	}
 
 	private def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RType valueType) {						
-		val scope = new JavaScope(metaJavaType.packageName)
+		val scope = new JavaStatementScope(metaJavaType.packageName)
 		
 		val StringConcatenationClient body = '''
 			«metaJavaType.classBody(scope, new GeneratedJavaClass<Object>(metaJavaType.packageName, metaJavaType.simpleName + "Meta", Object), "1")»
@@ -72,7 +72,7 @@ class MetaFieldGenerator {
 	}
 	
 	private def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RType valueType) {					
-		val scope = new JavaScope(root.metaField)
+		val scope = new JavaStatementScope(root.metaField)
 		
 		val StringConcatenationClient body = '''
 			«metaJavaType.classBody(scope, new GeneratedJavaClass<Object>(root.metaField, metaJavaType.simpleName + "Meta", Object), "1")»

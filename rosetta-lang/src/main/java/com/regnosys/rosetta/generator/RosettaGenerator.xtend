@@ -5,7 +5,6 @@
 package com.regnosys.rosetta.generator
 
 import com.regnosys.rosetta.generator.external.ExternalGenerators
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
@@ -15,13 +14,11 @@ import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
 import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
 import java.util.Map
-import java.util.Optional
 import java.util.concurrent.CancellationException
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -41,7 +38,6 @@ import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
@@ -79,7 +75,6 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject
 	RosettaGeneratorsConfiguration config;
 	
-	@Inject extension ModelIdProvider
 	@Inject extension RObjectFactory
 
 	// For files that are
@@ -159,13 +154,10 @@ class RosettaGenerator implements IGenerator2 {
 				}
 				val version = model.version
 
-				// generate
-				val packages = new RootPackage(model.toDottedPath)
-
 				val List<GenerationException> aggregatedGenerationExceptions = newArrayList
 				model.elements.forEach [rootElement|
 					try {
-						rootElement.doGenerate(fsa, packages, version, context)
+						rootElement.doGenerate(fsa, version, context)
 					} catch (CancellationException e) {
 						throw e
 					} catch (GenerationException e) {
@@ -206,7 +198,7 @@ class RosettaGenerator implements IGenerator2 {
 			}
 		}
 	}
-	private def void doGenerate(RosettaRootElement elem, IFileSystemAccess2 fsa, RootPackage packages, String version, IGeneratorContext context) {
+	private def void doGenerate(RosettaRootElement elem, IFileSystemAccess2 fsa, String version, IGeneratorContext context) {
 		if (context.cancelIndicator.canceled) {
 			throw new CancellationException
 		}
@@ -218,28 +210,28 @@ class RosettaGenerator implements IGenerator2 {
 		switch (elem) {
 			Data: {
 				val t = elem.buildRDataType
-				dataGenerator.generate(packages, fsa, t, version)
-				metaGenerator.generate(packages, fsa, t, version)
-				validatorsGenerator.generate(packages, fsa, t, version)
+				dataGenerator.generate(fsa, t, version)
+				metaGenerator.generate(fsa, t, version)
+				validatorsGenerator.generate(fsa, t, version)
 				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
 					deepPathUtilGenerator.generate(fsa, t, version)
 				}
 			}
 			Function: {
 				if (!elem.isDispatchingFunction) {
-					funcGenerator.generate(packages, fsa, elem, version)
+					funcGenerator.generate(fsa, elem, version)
 				}
 				labelProviderGenerator.generateForFunctionIfApplicable(fsa, elem)
 			}
 			RosettaRule: {
-				ruleGenerator.generate(packages, fsa, elem, version)
+				ruleGenerator.generate(fsa, elem, version)
 			}
 			RosettaReport: {
-				reportGenerator.generate(packages, fsa, elem, version)
+				reportGenerator.generate(fsa, elem, version)
 				labelProviderGenerator.generateForReport(fsa, elem)
 			}
 			RosettaEnumeration: {
-				enumGenerator.generate(packages, fsa, elem.buildREnumType, version)
+				enumGenerator.generate(fsa, elem.buildREnumType, version)
 			}
 		}
 	}

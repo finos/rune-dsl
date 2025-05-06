@@ -25,7 +25,7 @@ import java.util.List
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class ConditionGenerator {
 	@Inject ExpressionGenerator expressionHandler
@@ -38,14 +38,14 @@ class ConditionGenerator {
 	
 	def generate(IFileSystemAccess2 fsa, Condition ele, String version) {
 		val clazz = ele.toConditionJavaClass
-		val topScope = new JavaScope(clazz.packageName)
+		val topScope = new JavaStatementScope(clazz.packageName)
 		
 		val classBody = ele.conditionClassBody(clazz, topScope, version)
 		val content = buildClass(clazz.packageName, classBody, topScope)
 		fsa.generateFile('''«clazz.canonicalName.withForwardSlashes».java''', content)
 	}
 
-	private def StringConcatenationClient conditionClassBody(Condition condition, JavaConditionInterface conditionClass, JavaScope scope, String version) {
+	private def StringConcatenationClient conditionClassBody(Condition condition, JavaConditionInterface conditionClass, JavaStatementScope scope, String version) {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, CONDITION__EXPRESSION))
 		val deps = dependencies.javaDependencies(condition.expression)
 		val implicitVarRepr = condition.expression.implicitVarInContext

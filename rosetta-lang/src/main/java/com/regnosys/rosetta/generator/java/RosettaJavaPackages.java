@@ -59,54 +59,54 @@ public class RosettaJavaPackages {
 		return defaultNamespace().child("metafields");
 	}
 
-	public static class RootPackage extends DottedPath {
-
-		public RootPackage(DottedPath namespace) {
-			super(namespace);
-		}
-
-		public RootPackage(String namespace) {
-			this(DottedPath.splitOnDots(namespace));
-		}
-
-		public DottedPath metaField() {
-			return child("metafields");
-		}
-
-		public DottedPath meta() {
-			return child("meta");
-		}
-
-		public DottedPath functions() {
-			return child("functions");
-		}
-		
-		public DottedPath util() {
-			return child("util");
-		}
-
-		public DottedPath typeValidation() {
-			return child("validation");
-		}
-
-		public DottedPath condition() {
-			return typeValidation().child("datarule");
-		}
-
-		public DottedPath existsValidation() {
-			return typeValidation().child("exists");
-		}
-		
-		public DottedPath reports() {
-			return child("reports");
-		}
-
-		public DottedPath qualifyEvent() {
-			return child("qualify").child("event");
-		}
-
-		public DottedPath qualifyProduct() {
-			return child("qualify").child("product");
-		}
-	}
+//	public static class RootPackage extends DottedPath {
+//
+//		public RootPackage(DottedPath namespace) {
+//			super(namespace);
+//		}
+//
+//		public RootPackage(String namespace) {
+//			this(DottedPath.splitOnDots(namespace));
+//		}
+//
+//		public DottedPath metaField() {
+//			return child("metafields");
+//		}
+//
+//		public DottedPath meta() {
+//			return child("meta");
+//		}
+//
+//		public DottedPath functions() {
+//			return child("functions");
+//		}
+//		
+//		public DottedPath util() {
+//			return child("util");
+//		}
+//
+//		public DottedPath typeValidation() {
+//			return child("validation");
+//		}
+//
+//		public DottedPath condition() {
+//			return typeValidation().child("datarule");
+//		}
+//
+//		public DottedPath existsValidation() {
+//			return typeValidation().child("exists");
+//		}
+//		
+//		public DottedPath reports() {
+//			return child("reports");
+//		}
+//
+//		public DottedPath qualifyEvent() {
+//			return child("qualify").child("event");
+//		}
+//
+//		public DottedPath qualifyProduct() {
+//			return child("qualify").child("product");
+//		}
+//	}
 }

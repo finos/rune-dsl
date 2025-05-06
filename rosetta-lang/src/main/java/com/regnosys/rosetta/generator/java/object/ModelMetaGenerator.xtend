@@ -25,7 +25,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import jakarta.inject.Inject
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class ModelMetaGenerator {
 
@@ -35,17 +35,17 @@ class ModelMetaGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelGeneratorUtil
 	
-	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
+	def generate(IFileSystemAccess2 fsa, RDataType t, String version) {
 		val className = '''«t.name»Meta'''
 		
-		val scope = new JavaScope(root.meta)
+		val scope = new JavaStatementScope(root.meta)
 		
-		val classBody = t.metaClassBody(root, className, version)
+		val classBody = t.metaClassBody(className, version)
 		val javaFileContents = buildClass(root.meta, classBody, scope)
 		fsa.generateFile('''«root.meta.withForwardSlashes»/«className».java''', javaFileContents)
 	}
 	
-	private def StringConcatenationClient metaClassBody(RDataType t, RootPackage root, String className, String version) {
+	private def StringConcatenationClient metaClassBody(RDataType t, String className, String version) {
 		val dataClass = t.toJavaType
 		val validator = dataClass.toValidatorClass
 		val typeFormatValidator = dataClass.toTypeFormatValidatorClass

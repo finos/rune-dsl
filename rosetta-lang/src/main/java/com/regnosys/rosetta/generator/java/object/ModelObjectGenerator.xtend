@@ -30,7 +30,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class ModelObjectGenerator {
 	
@@ -41,18 +41,18 @@ class ModelObjectGenerator {
 	@Inject extension JavaTypeUtil
 	@Inject extension TypeCoercionService
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType t, String version) {
+	def generate(IFileSystemAccess2 fsa, RDataType t, String version) {
 		fsa.generateFile(root.child(t.name + '.java').withForwardSlashes,
-			generateRosettaClass(root, t, version))
+			generateRosettaClass(t, version))
 	}
 
-	private def generateRosettaClass(RootPackage root, RDataType t, String version) {
-		val scope = new JavaScope(root)
+	private def generateRosettaClass(RDataType t, String version) {
+		val scope = new JavaStatementScope(root)
 		val javaType = t.toJavaReferenceType
 		buildClass(root, javaType.classBody(scope, new GeneratedJavaClass<Object>(root.meta, t.name+'Meta', Object), version), scope)
 	}
 
-	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaScope scope, JavaClass<?> metaType, String version) {
+	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaStatementScope scope, JavaClass<?> metaType, String version) {
 		val superInterface = javaType.superPojo
 		val extendSuperImpl = superInterface !== null && javaType.ownProperties.forall[isCompatibleWithParent]
 		val interfaceScope = scope.classScope(javaType.toString)
@@ -100,7 +100,7 @@ class ModelObjectGenerator {
 		'''
 	}
 
-	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(JavaPojoInterface javaType, JavaScope builderScope) {
+	protected def StringConcatenationClient pojoBuilderInterfaceGetterMethods(JavaPojoInterface javaType, JavaStatementScope builderScope) {
 		'''
 		«FOR prop : javaType.ownProperties»
 			«IF prop.type.isRosettaModelObject»
@@ -117,7 +117,7 @@ class ModelObjectGenerator {
 		«ENDFOR»
 		'''
 	}
-	protected def StringConcatenationClient pojoBuilderInterfaceSetterMethods(JavaPojoInterface mainType, JavaPojoInterface currentType, JavaScope builderScope) {
+	protected def StringConcatenationClient pojoBuilderInterfaceSetterMethods(JavaPojoInterface mainType, JavaPojoInterface currentType, JavaStatementScope builderScope) {
 		val isMainPojo = mainType == currentType
 		val builderType = mainType.toBuilderType
 		'''
@@ -216,7 +216,7 @@ class ModelObjectGenerator {
 		return false
 	}
 
-	private def StringConcatenationClient rosettaClass(JavaPojoInterface javaType, boolean extended, JavaScope scope) {
+	private def StringConcatenationClient rosettaClass(JavaPojoInterface javaType, boolean extended, JavaStatementScope scope) {
 		val properties = extended ? javaType.ownProperties : javaType.allProperties
 		'''
 		«FOR prop : properties»
@@ -262,7 +262,7 @@ class ModelObjectGenerator {
 		}
 		'''
 	}
-	private def StringConcatenationClient derivedIncompatibleGettersForProperty(JavaExpression originalField, JavaPojoProperty prop, JavaScope scope) {
+	private def StringConcatenationClient derivedIncompatibleGettersForProperty(JavaExpression originalField, JavaPojoProperty prop, JavaStatementScope scope) {
 		val parent = prop.parentProperty
 		if (parent === null) {
 			return null

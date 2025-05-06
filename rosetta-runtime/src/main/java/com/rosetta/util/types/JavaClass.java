@@ -176,12 +176,6 @@ public abstract class JavaClass<T> implements JavaReferenceType, JavaTypeDeclara
 		}
 		return new JavaClassImpl<>(c);
 	}
-		
-	public abstract DottedPath getPackageName();
-	
-	public DottedPath getCanonicalName() {
-		return getPackageName().child(getSimpleName());
-	}
 	
 	public abstract JavaClass<? super T> getSuperclass();
 	public abstract List<JavaClass<?>> getInterfaces();

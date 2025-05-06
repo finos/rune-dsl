@@ -55,6 +55,7 @@ import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class ValidatorsGenerator {
 
@@ -67,29 +68,29 @@ class ValidatorsGenerator {
 	@Inject extension InterpreterValueJavaConverter
 	@Inject extension TypeCoercionService
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType type, String version) {
+	def generate(IFileSystemAccess2 fsa, RDataType type, String version) {
 		val javaType = type.toJavaReferenceType
 		val attrs = type.allAttributes
 		fsa.generateFile(javaType.toValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateClass(root, javaType, attrs, version))
+			generateClass(javaType, attrs, version))
 		fsa.generateFile(javaType.toTypeFormatValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateTypeFormatValidator(root, javaType, attrs, version))
+			generateTypeFormatValidator(javaType, attrs, version))
 		fsa.generateFile(javaType.toOnlyExistsValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateOnlyExistsValidator(root, javaType, attrs, version))
+			generateOnlyExistsValidator(javaType, attrs, version))
 	}
 
-	private def generateClass(RootPackage root, JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
-		val scope = new JavaScope(root.typeValidation)
+	private def generateClass(JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
+		val scope = new JavaStatementScope(root.typeValidation)
 		buildClass(root.typeValidation, javaType.classBody(version, attributes), scope)
 	}
 	
-	private def generateTypeFormatValidator(RootPackage root, JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
-		val scope = new JavaScope(root.typeValidation)
+	private def generateTypeFormatValidator(JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
+		val scope = new JavaStatementScope(root.typeValidation)
 		buildClass(root.typeValidation, javaType.typeFormatClassBody(version, attributes), scope)
 	}
 
-	private def generateOnlyExistsValidator(RootPackage root, JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
-		val scope = new JavaScope(root.existsValidation)
+	private def generateOnlyExistsValidator(JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
+		val scope = new JavaStatementScope(root.existsValidation)
 		buildClass(root.existsValidation, javaType.onlyExistsClassBody(version, attributes), scope)
 	}
 
@@ -122,7 +123,7 @@ class ValidatorsGenerator {
 	
 	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
 		val validatorClass = javaType.toTypeFormatValidatorClass
-		val packageScope = new JavaScope(validatorClass.packageName)
+		val packageScope = new JavaStatementScope(validatorClass.packageName)
 		val classScope = packageScope.classScope(validatorClass.simpleName)
 		
 		val pathId = classScope.createUniqueIdentifier("path")
@@ -266,7 +267,7 @@ class ValidatorsGenerator {
 		return checks
 	}
 	
-	private def JavaStatement checkTypeConditions(JavaPojoInterface javaType, RAttribute attr, AliasHierarchy hierarchy, GeneratedIdentifier pathId, JavaVariable instanceVar, GeneratedIdentifier resultsId, JavaScope scope) {
+	private def JavaStatement checkTypeConditions(JavaPojoInterface javaType, RAttribute attr, AliasHierarchy hierarchy, GeneratedIdentifier pathId, JavaVariable instanceVar, GeneratedIdentifier resultsId, JavaStatementScope scope) {
 		if (!attr.isMulti) {
 			var conditionCalls = JavaBlock.EMPTY
 			for (alias : hierarchy.aliases) {
@@ -319,7 +320,7 @@ class ValidatorsGenerator {
 			return JavaBlock.EMPTY
 		}
 	}
-	private def JavaStatement addConditionValidationResultsCode(GeneratedIdentifier resultsId, StringConcatenationClient pathCode, JavaExpression attributeItemCode, RAliasType alias, JavaConditionInterface conditionClass, JavaScope scope) {
+	private def JavaStatement addConditionValidationResultsCode(GeneratedIdentifier resultsId, StringConcatenationClient pathCode, JavaExpression attributeItemCode, RAliasType alias, JavaConditionInterface conditionClass, JavaStatementScope scope) {
 		val conditionVar = scope.getIdentifierOrThrow(conditionClass.toDependencyInstance)
 		val arguments = newArrayList
 					

@@ -25,7 +25,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
 
 import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.scoping.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
@@ -67,13 +67,13 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	}
 	
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
 		if (after instanceof JavaExpression) {
 			return this.then((JavaExpression)after, combineExpressions, scope);
 		}
 		return after.then(this, (otherExpr, thisExpr) -> combineExpressions.apply(thisExpr, otherExpr), scope);
 	}
-	public JavaStatementBuilder then(JavaExpression after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaExpression after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
 		return combineExpressions.apply(this, after);
 	}
 
@@ -95,7 +95,7 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	}
 
 	@Override
-	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
+	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope) {
 		GeneratedIdentifier id = scope.createIdentifier(this, variableId);
 		return new JavaBlockBuilder(
 				JavaStatementList.of(new JavaLocalVariableDeclarationStatement(isFinal, this.type, id, this)),
@@ -104,7 +104,7 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	}
 	
 	@Override
-	public JavaStatementBuilder collapseToSingleExpression(JavaScope scope) {
+	public JavaStatementBuilder collapseToSingleExpression(JavaStatementScope scope) {
 		return this;
 	}
 

@@ -18,12 +18,12 @@ import com.rosetta.util.types.JavaPrimitiveType
 import java.util.List
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class RecordJavaUtil {
 	@Inject JavaTypeUtil typeUtil
 	
-	def dispatch StringConcatenationClient recordFeatureToLambda(RDateType recordType, RosettaRecordFeature feature, JavaScope scope) {
+	def dispatch StringConcatenationClient recordFeatureToLambda(RDateType recordType, RosettaRecordFeature feature, JavaStatementScope scope) {
 		switch(feature.name) {
 			case "day": 
 				'''«Date»::getDay'''
@@ -35,7 +35,7 @@ class RecordJavaUtil {
 				throw new UnsupportedOperationException("Unsupported record feature named " + feature.name)
 		}
 	}
-	def dispatch StringConcatenationClient recordFeatureToLambda(RDateTimeType recordType, RosettaRecordFeature feature, JavaScope scope) {
+	def dispatch StringConcatenationClient recordFeatureToLambda(RDateTimeType recordType, RosettaRecordFeature feature, JavaStatementScope scope) {
 		switch(feature.name) {
 			case "date": {
 				val lambdaScope = scope.lambdaScope
@@ -48,7 +48,7 @@ class RecordJavaUtil {
 				throw new UnsupportedOperationException("Unsupported record feature named " + feature.name)
 		}
 	}
-	def dispatch StringConcatenationClient recordFeatureToLambda(RZonedDateTimeType recordType, RosettaRecordFeature feature, JavaScope scope) {
+	def dispatch StringConcatenationClient recordFeatureToLambda(RZonedDateTimeType recordType, RosettaRecordFeature feature, JavaStatementScope scope) {
 		switch(feature.name) {
 			case "date": {
 				val lambdaScope = scope.lambdaScope
@@ -67,7 +67,7 @@ class RecordJavaUtil {
 		}
 	}
 	
-	def dispatch JavaStatementBuilder recordConstructor(RDateType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
+	def dispatch JavaStatementBuilder recordConstructor(RDateType recordType, Map<String, JavaStatementBuilder> features, JavaStatementScope scope) {
 		#["year", "month", "day"].ifAllNotNull(features, [args|
             args.get(0)
                 .then(
@@ -85,7 +85,7 @@ class RecordJavaUtil {
                 ]
         ], scope)
 	}
-	def dispatch JavaStatementBuilder recordConstructor(RDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
+	def dispatch JavaStatementBuilder recordConstructor(RDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaStatementScope scope) {
 		#["date", "time"].ifAllNotNull(features, [args|
             args.get(0)
                 .then(
@@ -98,7 +98,7 @@ class RecordJavaUtil {
                 ]
         ], scope)
 	}
-	def dispatch JavaStatementBuilder recordConstructor(RZonedDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaScope scope) {
+	def dispatch JavaStatementBuilder recordConstructor(RZonedDateTimeType recordType, Map<String, JavaStatementBuilder> features, JavaStatementScope scope) {
 		#["date", "time", "timezone"].ifAllNotNull(features, [args|
 		    args.get(0)
                 .then(
@@ -117,7 +117,7 @@ class RecordJavaUtil {
 		], scope)
 	}
 	
-	private def JavaStatementBuilder ifAllNotNull(List<String> featureList, Map<String, JavaStatementBuilder> allFeatures, (List<JavaStatementBuilder>) => JavaStatementBuilder conversion, JavaScope scope) {
+	private def JavaStatementBuilder ifAllNotNull(List<String> featureList, Map<String, JavaStatementBuilder> allFeatures, (List<JavaStatementBuilder>) => JavaStatementBuilder conversion, JavaStatementScope scope) {
         if (featureList.map[allFeatures.get(it)].forall[expressionType instanceof JavaPrimitiveType]) {
             return conversion.apply(featureList.map[allFeatures.get(it)])
         }

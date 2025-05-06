@@ -17,7 +17,7 @@ import java.util.Collection
 import java.util.Objects
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class ModelObjectBoilerPlate {
 
@@ -28,7 +28,7 @@ class ModelObjectBoilerPlate {
 	val toBuilder = [JavaClass<?> t|t.simpleName + "Builder"]
 	val identity = [JavaClass<?> t|t.simpleName]
 
-	def StringConcatenationClient builderBoilerPlate(JavaPojoInterface javaType, boolean extended, JavaScope scope) {
+	def StringConcatenationClient builderBoilerPlate(JavaPojoInterface javaType, boolean extended, JavaStatementScope scope) {
 		val properties = extended ? javaType.ownProperties : javaType.allProperties
 		'''
 			«javaType.contributeEquals(extended, properties, scope)»
@@ -69,7 +69,7 @@ class ModelObjectBoilerPlate {
 		'''«FOR i : javaType.interfaces SEPARATOR ', '»«i»«ENDFOR»'''
 	}
 
-	def StringConcatenationClient boilerPlate(JavaPojoInterface javaType, boolean extended, JavaScope scope) {
+	def StringConcatenationClient boilerPlate(JavaPojoInterface javaType, boolean extended, JavaStatementScope scope) {
 		val properties = extended ? javaType.ownProperties : javaType.allProperties
 		'''
 			«javaType.contributeEquals(extended, properties, scope)»
@@ -78,7 +78,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeHashCode(JavaPojoProperty prop, JavaScope scope) {
+	private def StringConcatenationClient contributeHashCode(JavaPojoProperty prop, JavaStatementScope scope) {
 		val id = scope.getIdentifierOrThrow(prop)
 		val itemType = prop.type.itemType
 		'''
@@ -94,7 +94,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeHashCode(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaScope scope) {
+	private def StringConcatenationClient contributeHashCode(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaStatementScope scope) {
 		val methodScope = scope.methodScope("hashCode")
 		'''
 		@Override
@@ -109,7 +109,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeToString(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, (JavaClass<?>)=>String classNameFunc, JavaScope scope) {
+	private def StringConcatenationClient contributeToString(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, (JavaClass<?>)=>String classNameFunc, JavaStatementScope scope) {
 		val methodScope = scope.methodScope("toString")
 		'''
 		@Override
@@ -123,7 +123,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeEquals(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaScope scope) {
+	private def StringConcatenationClient contributeEquals(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaStatementScope scope) {
 		val methodScope = scope.methodScope("equals")
 		'''
 		@Override
@@ -143,7 +143,7 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeToEquals(JavaPojoProperty prop, JavaScope scope) '''
+	private def StringConcatenationClient contributeToEquals(JavaPojoProperty prop, JavaStatementScope scope) '''
 	«IF prop.type.isList»
 		if (!«ListEquals».listEquals(«scope.getIdentifierOrThrow(prop)», _that.«prop.getterName»())) return false;
 	«ELSE»

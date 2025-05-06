@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass.JavaClassImpl;
 
 public abstract class JavaGenericTypeDeclaration<T> implements JavaTypeDeclaration<T> {
@@ -147,6 +148,15 @@ public abstract class JavaGenericTypeDeclaration<T> implements JavaTypeDeclarati
 	
 	public abstract JavaClass<? super T> getSuperclass();
 	public abstract List<JavaClass<?>> getInterfaces();
+	
+	@Override
+	public DottedPath getPackageName() {
+		return getBaseType().getPackageName();
+	}
+	@Override
+	public String getSimpleName() {
+		return getBaseType().getSimpleName();
+	}
 	
 	@Override
 	public JavaParameterizedType<T> applySubstitution(Map<JavaTypeVariable, JavaTypeArgument> substitution) {

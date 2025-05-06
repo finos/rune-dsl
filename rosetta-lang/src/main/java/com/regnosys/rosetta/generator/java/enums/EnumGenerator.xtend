@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.enums
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.rosetta.model.lib.annotations.RosettaEnum
@@ -16,19 +15,19 @@ import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class EnumGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelGeneratorUtil
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, REnumType enumeration, String version) {
-		fsa.generateFile(root.withForwardSlashes + '/' + enumeration.name + '.java', enumeration.toJava(root, version))
+	def generate(IFileSystemAccess2 fsa, REnumType enumeration, String version) {
+		fsa.generateFile(root.withForwardSlashes + '/' + enumeration.name + '.java', enumeration.toJava(version))
 	}
 
-	private def String toJava(REnumType e, RootPackage root, String version) {
-		val scope = new JavaScope(root)
+	private def String toJava(REnumType e, String version) {
+		val scope = new JavaStatementScope(root)
 		
 		val javaEnum = e.toJavaReferenceType
 		

@@ -45,6 +45,15 @@ public class JavaNameEscapingTest {
 	}
 	
 	@Test
+	void testTypeNameOverlapsWithRuntimeClass() {
+		modelService.toJavaTestModel("""
+				namespace com.rosetta.model.lib
+				
+				type RosettaModelObject:
+				""").compile();
+	}
+	
+	@Test
 	void testJavaKeywordInNamespace() {
 		modelService.toJavaTestModel("""
 				namespace foo.package

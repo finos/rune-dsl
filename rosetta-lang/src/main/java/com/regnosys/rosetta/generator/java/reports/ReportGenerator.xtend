@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.reports
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -15,7 +14,7 @@ import com.regnosys.rosetta.utils.ModelIdProvider
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneLabelProvider
 import java.util.Map
-import com.regnosys.rosetta.generator.java.scoping.JavaScope
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class ReportGenerator {
 	@Inject extension RObjectFactory
@@ -24,11 +23,11 @@ class ReportGenerator {
 	@Inject extension ImportManagerExtension
 	@Inject extension ModelIdProvider
 
-	def generate(RootPackage root, IFileSystemAccess2 fsa, RosettaReport report, String version) {
+	def generate(IFileSystemAccess2 fsa, RosettaReport report, String version) {
 		
 		val rFunction = buildRFunction(report)
 		val clazz = rFunction.toFunctionJavaClass
-		val topScope = new JavaScope(clazz.packageName)
+		val topScope = new JavaStatementScope(clazz.packageName)
 		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunction.inputs.head.toMetaJavaType, rFunction.output.toMetaJavaType)
 		
 		val Map<Class<?>, StringConcatenationClient> annotations = newLinkedHashMap

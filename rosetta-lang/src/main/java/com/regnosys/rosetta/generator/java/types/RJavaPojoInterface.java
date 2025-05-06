@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.model.lib.process.AttributeMeta;
-import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaType;
 
@@ -44,6 +44,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	private final ModelGeneratorUtil generatorUtil;
 
 	public RJavaPojoInterface(RDataType type, TypeSystem typeSystem, JavaTypeTranslator typeTranslator, JavaTypeUtil typeUtil, ModelGeneratorUtil generatorUtil) {
+		super(JavaPackageName.escape(type.getNamespace()), type.getName());
 		this.type = type;
 		
 		this.typeSystem = typeSystem;
@@ -114,6 +115,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		JavaPojoProperty parentProperty = allProperties.get(name);
 		if (parentProperty == null) {
 			JavaPojoProperty newProperty = new JavaPojoProperty(
+					this,
 					name,
 					runeName,
 					serializedName,
@@ -135,7 +137,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 					// Incompatible specialization => need new getter
 					compatibilityName = getIncompatiblePropertyName(name, parentType, type);
 				}
-				JavaPojoProperty newProperty = parentProperty.specialize(compatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes);
+				JavaPojoProperty newProperty = parentProperty.specialize(this, compatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes);
 				ownProperties.put(name, newProperty);
 				allProperties.put(name, newProperty);
 			}
@@ -170,23 +172,6 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	            }
 	            throw new IllegalStateException("AttributeMetaType for meta attributes of " + metaAttr.getName() + " are not supported");
 	        }).collect(Collectors.toList());
-	}
-
-	@Override
-	public boolean isSubtypeOf(JavaType other) {
-		// TODO: also check other interfaces
-		if (typeUtil.ROSETTA_MODEL_OBJECT.isSubtypeOf(other)) {
-			return true;
-		}
-		if (other instanceof RJavaPojoInterface) {
-			return typeSystem.isSubtypeOf(type, ((RJavaPojoInterface)other).type);
-		}
-		return false;
-	}
-
-	@Override
-	public String getSimpleName() {
-		return type.getName();
 	}
 	
 	@Override
@@ -223,10 +208,4 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	public List<JavaClass<?>> getInterfaces() {
 		return getInterfaceDeclarations();
 	}
-
-	@Override
-	public DottedPath getPackageName() {
-		return type.getNamespace();
-	}
-
 }

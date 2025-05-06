@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.xtext.EcoreUtil2;
 
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
@@ -27,32 +28,36 @@ import com.rosetta.util.types.JavaGenericTypeDeclaration;
 import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
-import com.rosetta.util.types.JavaTypeDeclaration;
 
-public class JavaConditionInterface extends JavaClass<Object> {
+public class JavaConditionInterface extends RGeneratedJavaClass<Object> {
 	private final Condition condition;
 	
-	private final String simpleName;
 	private final RType instanceType;
 	private final JavaReferenceType instanceClass;
 	private Map<String, JavaType> parameters = null;
 	
-	private final ModelIdProvider modelIdProvider;
 	private final RosettaTypeProvider typeProvider;
 	private final JavaTypeUtil typeUtil;
 	private final JavaTypeTranslator typeTranslator;
 	
-	public JavaConditionInterface(Condition condition, ModelIdProvider modelIdProvider, RosettaTypeProvider typeProvider, TypeSystem typeSystem, JavaTypeUtil typeUtil, JavaTypeTranslator typeTranslator) {
+	private JavaConditionInterface(Condition condition, JavaPackageName packageName, String simpleName, RosettaTypeProvider typeProvider, TypeSystem typeSystem, JavaTypeUtil typeUtil, JavaTypeTranslator typeTranslator) {
+		super(packageName, simpleName);
+		
 		this.condition = condition;
 		
-		this.simpleName = computeConditionClassName(condition);
 		this.instanceType = typeSystem.typeWithUnknownArgumentsToRType(condition.getEnclosingType());
 		this.instanceClass = typeTranslator.toJavaReferenceType(instanceType);
 		
-		this.modelIdProvider = modelIdProvider;
 		this.typeProvider = typeProvider;
 		this.typeUtil = typeUtil;
 		this.typeTranslator = typeTranslator;
+	}
+	
+	public static JavaConditionInterface create(Condition condition, ModelIdProvider modelIdProvider, RosettaTypeProvider typeProvider, TypeSystem typeSystem, JavaTypeUtil typeUtil, JavaTypeTranslator typeTranslator) {
+		DottedPath unescapedPackageName = modelIdProvider.toDottedPath(condition.getEnclosingType().getModel()).child("validation").child("datarule");
+		JavaPackageName packageName = JavaPackageName.escape(unescapedPackageName);
+		String simpleName = computeConditionClassName(condition);
+		return new JavaConditionInterface(condition, packageName, simpleName, typeProvider, typeSystem, typeUtil, typeTranslator);
 	}
 	
 	public Map<String, JavaType> getParameters() {
@@ -114,24 +119,6 @@ public class JavaConditionInterface extends JavaClass<Object> {
 	public JavaParameterizedType<Validator<?>> getValidatorInterface() {
 		return JavaParameterizedType.from(typeUtil.VALIDATOR, instanceClass);
 	}
-	
-	@Override
-	public boolean isSubtypeOf(JavaType other) {
-		if (implementsValidatorInterface()) {
-			if (getValidatorInterface().isSubtypeOf(other)) {
-				return true;
-			}
-		}
-		if (other instanceof JavaConditionInterface) {
-			return condition.equals(((JavaConditionInterface)other).condition);
-		}
-		return false;
-	}
-
-	@Override
-	public String getSimpleName() {
-		return simpleName;
-	}
 
 	@Override
 	public List<? extends JavaGenericTypeDeclaration<?>> getInterfaceDeclarations() {
@@ -148,11 +135,6 @@ public class JavaConditionInterface extends JavaClass<Object> {
 		}
 		return Collections.emptyList();
 	}
-
-	@Override
-	public DottedPath getPackageName() {
-		return modelIdProvider.toDottedPath(condition.getEnclosingType().getModel()).child("validation").child("datarule");
-	}
 	
 	@Override
 	public JavaClass<? super Object> getSuperclassDeclaration() {
@@ -162,23 +144,5 @@ public class JavaConditionInterface extends JavaClass<Object> {
 	@Override
 	public JavaClass<? super Object> getSuperclass() {
 		return getSuperclassDeclaration();
-	}
-
-	@Override
-	public boolean extendsDeclaration(JavaTypeDeclaration<?> other) {
-		if (other instanceof JavaType) {
-			return this.isSubtypeOf((JavaType)other);
-		}
-		return false;
-	}
-
-	@Override
-	public boolean isFinal() {
-		return false;
-	}
-
-	@Override
-	public Class<?> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
-		return Class.forName(getCanonicalName().toString(), true, classLoader);
 	}
 }
