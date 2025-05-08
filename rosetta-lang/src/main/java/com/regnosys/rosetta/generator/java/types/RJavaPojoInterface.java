@@ -118,6 +118,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 					runeName,
 					serializedName,
 					name,
+					name,
 					type,
 					javadoc,
 					meta,
@@ -127,15 +128,23 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		} else {
 			JavaType parentType = parentProperty.getType();
 			if (!type.equals(parentType)) {
-				String compatibilityName;
+				String getterCompatibilityName;
 				if (type.isSubtypeOf(parentType)) {
 					// Specialize existing property => reuse getter of parent
-					compatibilityName = parentProperty.getName();
+					getterCompatibilityName = parentProperty.getGetterCompatibilityName();
 				} else {
 					// Incompatible specialization => need new getter
-					compatibilityName = getIncompatiblePropertyName(name, parentType, type);
+					getterCompatibilityName = getIncompatiblePropertyName(name, parentType, type);
 				}
-				JavaPojoProperty newProperty = parentProperty.specialize(compatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes);
+				String setterCompatibilityName;
+				if (type.getTypeErasure().equals(parentType.getTypeErasure())) {
+					// Type erasures are the same => need new setter
+					setterCompatibilityName = getIncompatiblePropertyName(name, parentType, type);
+				} else {
+					// Type erasures are not the same => we can overload the setter
+					setterCompatibilityName = parentProperty.getSetterCompatibilityName();
+				}
+				JavaPojoProperty newProperty = parentProperty.specialize(getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes);
 				ownProperties.put(name, newProperty);
 				allProperties.put(name, newProperty);
 			}
