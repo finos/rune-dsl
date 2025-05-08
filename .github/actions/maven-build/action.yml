@@ -28,4 +28,4 @@ runs:
         server-password: CI_DEPLOY_PASSWORD
     - name: Build with Maven
       shell: bash
-      run: mvn -B -U clean ${{ inputs.build-command }}${{ inputs.run-tests == 'false' && ' -DskipTests' || '' }}
+      run: mvn -B clean ${{ inputs.build-command }}${{ inputs.run-tests == 'false' && ' -DskipTests' || '' }}
