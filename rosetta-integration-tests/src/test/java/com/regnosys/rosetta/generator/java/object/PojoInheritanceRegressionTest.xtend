@@ -309,7 +309,7 @@ class PojoInheritanceRegressionTest {
 					ofNullable(getNumberAttrOverriddenAsBigInteger()).ifPresent(builder::setNumberAttr);
 					ofNullable(getParent()).ifPresent(builder::setParent);
 					ofNullable(getParentListOverriddenAsSingleReferenceWithMetaChild()).ifPresent(builder::setParentList);
-					ofNullable(getOtherParentList()).ifPresent(builder::setOtherParentList);
+					ofNullable(getOtherParentList()).ifPresent(builder::setOtherParentListOverriddenAsChild);
 					ofNullable(getStringAttr()).ifPresent(builder::setStringAttr);
 				}
 		
@@ -1125,7 +1125,7 @@ class PojoInheritanceRegressionTest {
 					ofNullable(getNumberAttrOverriddenAsInteger()).ifPresent(builder::setNumberAttr);
 					ofNullable(getParent()).ifPresent(builder::setParent);
 					ofNullable(getParentListOverriddenAsReferenceWithMetaGrandChild()).ifPresent(builder::setParentList);
-					ofNullable(getOtherParentList()).ifPresent(builder::setOtherParentList);
+					ofNullable(getOtherParentList()).ifPresent(builder::setOtherParentListOverriddenAsChild);
 					ofNullable(getStringAttr()).ifPresent(builder::setStringAttr);
 				}
 		
