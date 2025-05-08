@@ -244,4 +244,9 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 	public void accept(JavaTypeVisitor visitor) {
 		visitor.visitType(this);
 	}
+	
+	@Override
+	public JavaClass<? super T> getTypeErasure() {
+		return getGenericTypeDeclaration().getBaseType();
+	}
 }

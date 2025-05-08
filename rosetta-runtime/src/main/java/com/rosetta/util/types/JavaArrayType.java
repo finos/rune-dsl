@@ -91,4 +91,9 @@ public class JavaArrayType implements JavaReferenceType {
 	public void accept(JavaTypeVisitor visitor) {
 		visitor.visitType(this);
 	}
+	
+	@Override
+	public JavaArrayType getTypeErasure() {
+		return new JavaArrayType(baseType.getTypeErasure());
+	}
 }

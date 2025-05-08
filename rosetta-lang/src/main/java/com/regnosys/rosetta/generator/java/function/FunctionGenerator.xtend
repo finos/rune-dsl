@@ -483,12 +483,12 @@ class FunctionGenerator {
 					val outputExpressionType = expr.expressionType.itemType
 					val prop = getPojoProperty(seg, outputExpressionType)
 					
-					val propertySetterName = getPropertySetterName(outputExpressionType, prop, seg)
 					val requiresValueSetter = requiresValueSetter(outputExpressionType, prop, seg, op)
+					val propertySetterName = getPropertySetterName(outputExpressionType, prop, seg, op.ROperationType, requiresValueSetter)
 					expr = JavaExpression.from(
 						'''
 						«oldExpr»
-							«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«IF op.ROperationType == ROperationType.ADD»add«ELSE»set«ENDIF»«propertySetterName»«IF requiresValueSetter»Value«ENDIF»(«it»)''',
+							«generateMetaWrapperCreator(seg, prop, outputExpressionType)».«propertySetterName»(«it»)''',
 						JavaPrimitiveType.VOID
 					)
 					
@@ -497,11 +497,29 @@ class FunctionGenerator {
 		}
 	}
 	
-	private def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment) {
+	private def String getPropertySetterName(JavaType outputExpressionType, JavaPojoProperty prop, RFeature segment, ROperationType operationType, boolean requiresValueSetter) {
 		if (outputExpressionType instanceof RJavaWithMetaValue || (segment instanceof RMetaAttribute && outputExpressionType instanceof RJavaPojoInterface)) {
-			segment.toPojoPropertyName.toFirstUpper
+			val prefix = operationType == ROperationType.ADD ? "add" : "set"
+			val segmentPropName = segment.toPojoPropertyName.toFirstUpper
+			if (requiresValueSetter) {
+				prefix + segmentPropName + "Value"
+			} else {
+				prefix + segmentPropName
+			}
 		} else {
-			prop.name.toFirstUpper
+			if (requiresValueSetter) {
+				if (operationType == ROperationType.ADD) {
+					prop.valueAdderName
+				} else {
+					prop.valueSetterName
+				}
+			} else {
+				if (operationType == ROperationType.ADD) {
+					prop.adderName
+				} else {
+					prop.setterName
+				}
+			}
 		}
 	}
 	

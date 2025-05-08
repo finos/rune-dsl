@@ -69,4 +69,9 @@ public interface JavaType {
 	JavaReferenceType toReferenceType();
 	String getSimpleName();
 	void accept(JavaTypeVisitor visitor);
+	
+	// See https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.6
+	default JavaType getTypeErasure() {
+		return this;
+	}
 }
