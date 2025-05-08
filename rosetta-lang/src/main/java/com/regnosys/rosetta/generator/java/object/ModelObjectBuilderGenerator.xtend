@@ -105,15 +105,15 @@ class ModelObjectBuilderGenerator {
 					«IF prop.type.isList»
 						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::«prop.getOrCreateName»);
 					«ELSE»
-						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::set«prop.name.toFirstUpper»);
+						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::«prop.setterName»);
 					«ENDIF»
 				«ENDFOR»
 				
 				«FOR prop : properties.filter[!type.isRosettaModelObject]»
 					«IF prop.type.isList»
-						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), («Consumer»<«prop.type.itemType»>) this::add«prop.name.toFirstUpper»);
+						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), («Consumer»<«prop.type.itemType»>) this::«prop.adderName»);
 					«ELSE»
-						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), this::set«prop.name.toFirstUpper»);
+						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), this::«prop.setterName»);
 					«ENDIF»
 				«ENDFOR»
 				return this;

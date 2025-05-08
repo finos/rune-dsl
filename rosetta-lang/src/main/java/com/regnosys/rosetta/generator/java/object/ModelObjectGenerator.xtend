@@ -261,7 +261,7 @@ class ModelObjectGenerator {
 		protected void setBuilderFields(«javaType.toBuilderType» builder) {
 			«IF extended»super.setBuilderFields(builder);«ENDIF»
 			«FOR prop : properties»
-				«method(Optional, "ofNullable")»(«prop.getterName»()).ifPresent(builder::set«prop.name.toFirstUpper»);
+				«method(Optional, "ofNullable")»(«prop.getterName»()).ifPresent(builder::«prop.setterName»);
 			«ENDFOR»
 		}
 		'''
