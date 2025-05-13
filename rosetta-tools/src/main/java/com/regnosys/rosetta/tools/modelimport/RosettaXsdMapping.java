@@ -90,7 +90,7 @@ public class RosettaXsdMapping {
 		registerBuiltinTypeSupplier("base64Binary", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("boolean", () -> toTypeCall(booleanT));
 		registerBuiltinTypeSupplier("byte", () -> toTypeCall(integer, createTypeArgument(minInt, -128), createTypeArgument(maxInt, 127)));
-		registerBuiltinTypeSupplier("date", () -> toTypeCall(date));
+		registerBuiltinTypeSupplier("date", () -> toTypeCall(zonedDateTime));
 		registerBuiltinTypeSupplier("dateTime", () -> toTypeCall(zonedDateTime));
 		// dateTimeStamp
 		// dayTimeDuration
