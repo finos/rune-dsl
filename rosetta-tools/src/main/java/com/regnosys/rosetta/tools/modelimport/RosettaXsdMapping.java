@@ -100,11 +100,11 @@ public class RosettaXsdMapping {
 		// ENTITIES
 		// ENTITY
 		registerBuiltinTypeSupplier("float", () -> toTypeCall(number));
-		registerBuiltinTypeSupplier("gDay", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gMonth", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gMonthDay", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gYear", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gYearMonth", () -> toTypeCall(integer));
+		registerBuiltinTypeSupplier("gDay", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gMonth", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gMonthDay", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gYear", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gYearMonth", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("hexBinary", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("ID", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("IDREF", () -> toTypeCall(string));
