@@ -1631,7 +1631,7 @@ type Future extends ExchangeTraded: <"Identifies the underlying asset when it is
     multiplier PositiveDecimal (0..1) <"The multiplier is the minimum number of the underlying - index or stock - that a participant has to trade while taking a position in the Future contract. The purpose of the multiplier is to inflate the value of the contract to add leverage to the trade. The multiplier for the Dow is 10, for the Nasdaq it is 100 and it is 250 for the Standard and Poor\'s index.">
     futureContractReference String (0..1) <"Native identifier for the contract on the listing exchange.">
     maturity date (0..1) <"The date when the future contract expires.">
-    contractYearMonth int (0..1) <"The contract month of the futures contract. i.e. F13 WTI NYMEX Contract is 2013-01.">
+    contractYearMonth string (0..1) <"The contract month of the futures contract. i.e. F13 WTI NYMEX Contract is 2013-01.">
     underlyer ExchangeTradedContractUnderlyer (0..1) <"Underlyer of the option e.g. a listed future.">
     settlementType SettlementTypeEnum (0..1) <"Settlement method for the contract (Cash, Physical). This value is used to populate the \"Delivery Type\" field for regulatory reporting (CFTC, ESMA).">
 
@@ -9528,7 +9528,7 @@ type CommodityProductModelSequence:
 
     commodityProductModelSequenceChoice CommodityProductModelSequenceChoice (0..1)
     deliveryDate AdjustableDate (0..1) <"The Delivery Date is a fixed, single day.">
-    deliveryDateYearMonth int (0..1) <"The Delivery Date is a fixed, single month.">
+    deliveryDateYearMonth string (0..1) <"The Delivery Date is a fixed, single month.">
     deliveryDateRollConvention Offset (0..1) <"The \'deliveryDateRollConvention\' specifies, for a Commodity Transaction that references a listed future via the \'deliveryDates\' element, the day on which the specified future will roll to the next nearby month prior to the expiration of the referenced future. If the future will not roll at all - i.e. the price will be taken from the expiring contract, 0 should be specified here. If the future will roll to the next nearby on the last trading day - i.e. the price will be taken from the next nearby on the last trading day, then 1 should be specified and so on.">
     deliveryDateExpirationConvention Offset (0..1) <"The \'deliveryDateExpirationConvention\' specifies, for a Commodity Transaction that references a listed future via the \'deliveryDates\' element, the day on which the specified future will expire ahead of the actual expiration of the referenced future. For example: Z21 Contract expires on 19Nov21, with an adjust of 2D the \"expire\" will be 16Nov21. DeliveryDateRollConvention takes precedence. Example: Pricing on the Z21 Contract with NearbyContractDay and a deliveryDateRoll of 10D, Sampling of the F22 Contract will occur on 8Nov21 through the last Date of the Z21 Contract. With an ExpConvention of 5D, the last sampling date on the F22 contract will be 12Nov21.">
 
