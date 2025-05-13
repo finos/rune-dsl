@@ -17,6 +17,9 @@
       "fooDecimalAttr" : {
         "xmlName" : "FooDecimalAttr"
       },
+      "fooDateAttr" : {
+        "xmlName" : "FooDateAttr"
+      },
       "fooStringWithRestrictionAttr" : {
         "xmlName" : "FooStringWithRestrictionAttr"
       },
