@@ -74,6 +74,12 @@
                     <xs:documentation source="Definition" xml:lang="EN">FooDecimalAttr definition.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="FooDateAttr" type="xs:date">
+                <xs:annotation>
+                    <xs:documentation source="Name" xml:lang="EN">FooDateAttrName</xs:documentation>
+                    <xs:documentation source="Definition" xml:lang="EN">FooDateAttr definition.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="FooStringWithRestrictionAttr" type="Max500Text">
                 <xs:annotation>
                     <xs:documentation source="Name" xml:lang="EN">FooStringWithRestrictionAttrName</xs:documentation>

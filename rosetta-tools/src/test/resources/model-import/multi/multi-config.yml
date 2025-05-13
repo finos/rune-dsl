@@ -6,3 +6,5 @@ target:
   nameOverrides:
     "Prepayment": "LoanPrepayment"  # complex type
     "prepayment": "LoanPrepayment"  # element
+  preferences:
+    xsdDateHandlingStrategy: "AS_RUNE_ZONED_DATE_TIME"

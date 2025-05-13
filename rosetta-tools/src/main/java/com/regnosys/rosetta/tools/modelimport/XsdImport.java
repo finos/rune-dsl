@@ -65,7 +65,7 @@ public class XsdImport {
 		List<XsdAbstractElement> xsdElements = parsedInstance.getResultXsdSchemas().flatMap(XsdSchema::getXsdElements).toList();
 		
 		// Initialization
-		xsdMapping.initializeBuiltins(rosettaModelFactory.getResourceSet());
+		xsdMapping.initializeBuiltins(rosettaModelFactory.getResourceSet(), targetConfig);
 		
 		// First register all rosetta types and attributes, which makes it possible to support
 		// forward references and self-references.

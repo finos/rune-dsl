@@ -16,6 +16,7 @@ type Foo: <"Foo definition.">
     fooBooleanAttr boolean (1..1) <"FooBooleanAttr definition.">
     fooStrAttr string (1..1) <"FooStrAttr definition.">
     fooDecimalAttr number (0..1) <"FooDecimalAttr definition.">
+    fooDateAttr date (1..1) <"FooDateAttr definition.">
     fooStringWithRestrictionAttr Max500Text (1..1) <"FooStringWithRestrictionAttr definition.">
     fooDecimalWithRestrictionAttr Max3Number (0..1) <"FooDecimalWithRestrictionAttr definition.">
     fooBarAttr Bar (1..1) <"FooBarAttr definition.">
