@@ -79,6 +79,7 @@ class PojoInheritanceRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RosettaIgnore;
 		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -255,6 +256,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public BigDecimal getNumberAttr() {
 					return numberAttr == null ? null : new BigDecimal(numberAttr);
 				}
@@ -274,6 +276,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public List<? extends Parent> getParentList() {
 					return parentList == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue());
 				}
@@ -379,6 +382,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public BigDecimal getNumberAttr() {
 					return numberAttr == null ? null : new BigDecimal(numberAttr);
 				}
@@ -424,6 +428,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public List<? extends Parent.ParentBuilder> getParentList() {
 					return parentList == null ? Collections.<Parent.ParentBuilder>emptyList() : Collections.singletonList(parentList.getValue().toBuilder());
 				}
@@ -491,6 +496,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public Foo2.Foo2Builder setNumberAttr(BigDecimal _numberAttr) {
 					final BigInteger ifThenElseResult;
 					if (_numberAttr == null) {
@@ -510,6 +516,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public Foo2.Foo2Builder setParent(Parent _parent) {
 					final Child ifThenElseResult;
 					if (_parent == null) {
@@ -569,6 +576,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override 
+				@RosettaIgnore
 				public Foo2.Foo2Builder setParentList(List<? extends Parent> parentLists) {
 					final Parent _parent = MapperC.of(parentLists).get();
 					final ReferenceWithMetaChild ifThenElseResult;
@@ -581,7 +589,6 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
-				@RosettaAttribute("otherParentList")
 				@RuneAttribute("otherParentList")
 				public Foo2.Foo2Builder addOtherParentList(Child _otherParentList) {
 					if (_otherParentList != null) {
@@ -651,6 +658,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override 
+				@RosettaIgnore
 				public Foo2.Foo2Builder setOtherParentList(List<? extends Parent> otherParentLists) {
 					return setOtherParentListOverriddenAsChild(otherParentLists.stream()
 						.<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
@@ -877,6 +885,7 @@ class PojoInheritanceRegressionTest {
 		import com.rosetta.model.lib.RosettaModelObjectBuilder;
 		import com.rosetta.model.lib.annotations.RosettaAttribute;
 		import com.rosetta.model.lib.annotations.RosettaDataType;
+		import com.rosetta.model.lib.annotations.RosettaIgnore;
 		import com.rosetta.model.lib.annotations.RuneAttribute;
 		import com.rosetta.model.lib.annotations.RuneDataType;
 		import com.rosetta.model.lib.mapper.MapperC;
@@ -1057,11 +1066,13 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public BigInteger getNumberAttrOverriddenAsBigInteger() {
 					return numberAttr == null ? null : BigInteger.valueOf(numberAttr);
 				}
 				
 				@Override
+				@RosettaIgnore
 				public BigDecimal getNumberAttr() {
 					return numberAttr == null ? null : BigDecimal.valueOf(numberAttr);
 				}
@@ -1081,6 +1092,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public ReferenceWithMetaChild getParentListOverriddenAsSingleReferenceWithMetaChild() {
 					if (parentList == null) {
 						return ReferenceWithMetaChild.builder().build();
@@ -1090,6 +1102,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public List<? extends Parent> getParentList() {
 					return parentList == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue());
 				}
@@ -1195,11 +1208,13 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public BigInteger getNumberAttrOverriddenAsBigInteger() {
 					return numberAttr == null ? null : BigInteger.valueOf(numberAttr);
 				}
 				
 				@Override
+				@RosettaIgnore
 				public BigDecimal getNumberAttr() {
 					return numberAttr == null ? null : BigDecimal.valueOf(numberAttr);
 				}
@@ -1245,6 +1260,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getParentListOverriddenAsSingleReferenceWithMetaChild() {
 					if (parentList == null) {
 						return ReferenceWithMetaChild.builder().build().toBuilder();
@@ -1264,6 +1280,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public List<? extends Parent.ParentBuilder> getParentList() {
 					return parentList == null ? Collections.<Parent.ParentBuilder>emptyList() : Collections.singletonList(parentList.getValue().toBuilder());
 				}
@@ -1331,6 +1348,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public Foo3.Foo3Builder setNumberAttr(BigInteger _numberAttr) {
 					final Integer ifThenElseResult;
 					if (_numberAttr == null) {
@@ -1342,6 +1360,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public Foo3.Foo3Builder setNumberAttr(BigDecimal _numberAttr) {
 					final Integer ifThenElseResult;
 					if (_numberAttr == null) {
@@ -1361,6 +1380,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public Foo3.Foo3Builder setParent(Parent _parent) {
 					final Child ifThenElseResult;
 					if (_parent == null) {
@@ -1386,6 +1406,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
+				@RosettaIgnore
 				public Foo3.Foo3Builder setParentList(ReferenceWithMetaChild _parentList) {
 					final ReferenceWithMetaGrandChild ifThenElseResult;
 					if (_parentList == null) {
@@ -1447,6 +1468,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override 
+				@RosettaIgnore
 				public Foo3.Foo3Builder setParentList(List<? extends Parent> parentLists) {
 					final Parent _parent = MapperC.of(parentLists).get();
 					final ReferenceWithMetaGrandChild ifThenElseResult;
@@ -1459,7 +1481,6 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override
-				@RosettaAttribute("otherParentList")
 				@RuneAttribute("otherParentList")
 				public Foo3.Foo3Builder addOtherParentList(Child _otherParentList) {
 					if (_otherParentList != null) {
@@ -1529,6 +1550,7 @@ class PojoInheritanceRegressionTest {
 				}
 				
 				@Override 
+				@RosettaIgnore
 				public Foo3.Foo3Builder setOtherParentList(List<? extends Parent> otherParentLists) {
 					return setOtherParentListOverriddenAsChild(otherParentLists.stream()
 						.<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)

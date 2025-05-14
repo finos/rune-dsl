@@ -31,6 +31,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.rosetta.model.lib.annotations.RosettaIgnore
 
 class ModelObjectBuilderGenerator {
 	
@@ -184,6 +185,7 @@ class ModelObjectBuilderGenerator {
 		'''
 		
 		@Override
+		@«RosettaIgnore»
 		public «parent.toBuilderTypeExt» «parent.getterName»() «
 			(if (parent.type.isList) {
 				if (originalProp.type.isList) {
@@ -270,7 +272,6 @@ class ModelObjectBuilderGenerator {
 			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
@@ -404,6 +405,8 @@ class ModelObjectBuilderGenerator {
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+			«ELSE»
+				@«RosettaIgnore»
 			«ENDIF»
 			public «builderType» «setMultiMethodName»(«propType» «setMultiMethodArg») «
 				(if (isMainProp) {
@@ -488,11 +491,13 @@ class ModelObjectBuilderGenerator {
 			«val setMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), propType)»
 			@Override
 			«IF isMainProp»
-			@«RosettaAttribute»("«currentProp.javaAnnotation»")
-			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
-			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
-			«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
-			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+				@«RosettaAttribute»("«currentProp.javaAnnotation»")
+				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
+				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+			«ELSE»
+				@«RosettaIgnore»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «
 				(if (isMainProp) {

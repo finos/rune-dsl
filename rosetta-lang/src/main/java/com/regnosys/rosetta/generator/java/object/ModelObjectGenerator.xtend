@@ -31,6 +31,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
+import com.rosetta.model.lib.annotations.RosettaIgnore
 
 class ModelObjectGenerator {
 	
@@ -276,6 +277,7 @@ class ModelObjectGenerator {
 		val getterScope = scope.methodScope(parent.getterName)
 		'''
 		@Override
+		@«RosettaIgnore»
 		public «parent.type» «parent.getterName»() «originalField.addCoercions(parent.type, getterScope).completeAsReturn.toBlock»
 		
 		«derivedIncompatibleGettersForProperty(originalField, parent, scope)»
