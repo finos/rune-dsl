@@ -22,7 +22,7 @@ public class ImportTargetConfig {
 		this.namespace = namespace;
 		this.namespaceDefinition = namespaceDefinition;
 		this.nameOverrides = nameOverrides == null ? Collections.emptyMap() : nameOverrides;
-		this.preferences = preferences == null ? new ImportTargetPreferences(null, null, null) : preferences;
+		this.preferences = preferences == null ? new ImportTargetPreferences(null, null, null, null) : preferences;
 	}
 
 	public String getNamespace() {
