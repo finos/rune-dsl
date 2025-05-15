@@ -72,6 +72,10 @@ public class RosettaXMLConfiguration {
 			.collect(Collectors.toList());
 	}
 
+	public SortedMap<ModelSymbolId, TypeXMLConfiguration> getTypeConfigMap() {
+		return typeConfigMap;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(typeConfigMap);

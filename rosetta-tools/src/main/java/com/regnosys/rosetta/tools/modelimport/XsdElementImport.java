@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
@@ -170,6 +171,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		result.put(data,
 				new TypeXMLConfiguration(
 					substitutionGroup,
+					Lists.newArrayList(),
 					elementName,
 					xmlAttributes,
 					Optional.of(attributeConfig),
