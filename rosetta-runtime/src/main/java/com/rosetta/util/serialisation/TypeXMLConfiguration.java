@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 import com.rosetta.model.lib.ModelSymbolId;
 
 public class TypeXMLConfiguration {
@@ -34,19 +35,19 @@ public class TypeXMLConfiguration {
 	private final Optional<Map<String, String>> xmlAttributes;
 	private final Optional<Map<String, AttributeXMLConfiguration>> attributes;
 	private final Optional<Map<String, String>> enumValues;
-	
+
 	@JsonCreator
 	public TypeXMLConfiguration(
             @JsonProperty("substitutionFor") @Deprecated Optional<ModelSymbolId> substitutionFor,
             @JsonProperty("substitutionGroup") Optional<String> substitutionGroup,
-			List<SubstitutionGroupTarget> substitutionGroupTargets,
+			@JsonProperty("substitutionGroupTargets") List<SubstitutionGroupTarget> substitutionGroupTargets,
             @JsonProperty("xmlElementName") Optional<String> xmlElementName,
             @JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
             @JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
             @JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
 		this.substitutionFor = substitutionFor;
 		this.substitutionGroup = substitutionGroup;
-        this.substitutionGroupTargets = substitutionGroupTargets;
+        this.substitutionGroupTargets = substitutionGroupTargets == null ? Lists.newArrayList() : substitutionGroupTargets;
         this.xmlElementName = xmlElementName;
 		this.xmlAttributes = xmlAttributes;
 		this.attributes = attributes;
