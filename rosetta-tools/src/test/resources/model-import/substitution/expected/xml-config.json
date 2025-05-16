@@ -7,8 +7,9 @@
     }
   },
   "test.ns.Cow" : {
-    "substitutionGroup" : "http://www.test.com/test/animal",
-    "xmlElementName" : "cow"
+    "elements" : [
+      {"name" : "cow", "fullyQualifiedName" : "http://www.test.com/test/cow", "substitutionGroup" : "http://www.test.com/test/animal", "abstract" :  false}
+    ]
   },
   "test.ns.Document" : {
     "xmlElementName" : "document",
@@ -18,12 +19,28 @@
     },
     "attributes" : {
       "animal" : {
-        "substitutionGroup" : "http://www.test.com/test/animal"
+        "elementRef" : "http://www.test.com/test/animal"
       }
     }
   },
+  "test.ns.Fish" : {
+    "elements" : [
+      {"name" : "fish", "fullyQualifiedName" : "http://www.test.com/test/fish", "substitutionGroup" : "http://www.test.com/test/animal", "abstract" :  true}
+    ]
+  },
   "test.ns.Goat" : {
-    "substitutionGroup" : "http://www.test.com/test/animal",
-    "xmlElementName" : "goat"
+    "elements" : [
+      {"name" : "goat", "fullyQualifiedName" : "http://www.test.com/test/goat", "substitutionGroup" : "http://www.test.com/test/animal", "abstract" :  false}
+    ]
+  },
+  "test.ns.Shark" : {
+    "elements" : [
+      {"name" : "shark", "fullyQualifiedName" : "http://www.test.com/test/shark", "substitutionGroup" : "http://www.test.com/test/fish", "abstract" :  false}
+    ]
+  },
+  "test.ns.Salmon" : {
+    "elements" : [
+      {"name" : "salmon", "fullyQualifiedName" : "http://www.test.com/test/salmon", "substitutionGroup" : "http://www.test.com/test/fish", "abstract" :  false}
+    ]
   }
 }
