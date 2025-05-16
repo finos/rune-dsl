@@ -42,6 +42,15 @@ import com.regnosys.rosetta.tests.compiler.CompilationException;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 
+/** 
+ * How to add a new regression test:
+ * 1. Create a folder under `src/test/resources`. Let's call it ROOT_FOLDER.
+ * 2. Under ROOT_FOLDER, create a folder called `model`.
+ * 3. Put any .rosetta files to test in this folder.
+ * 4. Create a new Java test class that inherits from `AbstractJavaGeneratorRegressionTest`.
+ * 5. Implement `getTestRootResourceFolder` to return ROOT_FOLDER.
+ * For your first run, you might want to set UPDATE_EXPECTATIONS to `true` so it will create all generated files for you.
+ */
 public abstract class AbstractJavaGeneratorRegressionTest {
 	private static final boolean UPDATE_EXPECTATIONS = false;
 
