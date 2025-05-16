@@ -56,8 +56,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
-import org.mdkt.compiler.CompilationException;
-import org.mdkt.compiler.DynamicClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,7 +159,7 @@ public class InMemoryJavacCompiler {
 				}
 			}
 			if (hasErrors) {
-				throw new CompilationException("Java code compiled with errors:" + exceptionMsg.toString());
+				throw new CompilationException("Java code compiled with errors:" + exceptionMsg.toString(), diagnosticsPerClass);
 			} else if (hasWarnings) {
 				// TODO: turn this back on and fix warnings.
 				// LOGGER.debug("There were warnings during compilation:" +
