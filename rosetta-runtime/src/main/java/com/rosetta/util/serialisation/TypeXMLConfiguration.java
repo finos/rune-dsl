@@ -29,8 +29,10 @@ import com.rosetta.model.lib.ModelSymbolId;
 public class TypeXMLConfiguration {
 	@Deprecated
 	private final Optional<ModelSymbolId> substitutionFor; // replaced by substitutionGroup
+	@Deprecated
 	private final Optional<String> substitutionGroup;
-	private final List<SubstitutionGroupTarget> substitutionGroupTargets;
+	private final List<XmlElement> elements;
+	@Deprecated
 	private final Optional<String> xmlElementName;
 	private final Optional<Map<String, String>> xmlAttributes;
 	private final Optional<Map<String, AttributeXMLConfiguration>> attributes;
@@ -40,14 +42,14 @@ public class TypeXMLConfiguration {
 	public TypeXMLConfiguration(
             @JsonProperty("substitutionFor") @Deprecated Optional<ModelSymbolId> substitutionFor,
             @JsonProperty("substitutionGroup") Optional<String> substitutionGroup,
-			@JsonProperty("substitutionGroupTargets") List<SubstitutionGroupTarget> substitutionGroupTargets,
+			@JsonProperty("elements") List<XmlElement> elements,
             @JsonProperty("xmlElementName") Optional<String> xmlElementName,
             @JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
             @JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
             @JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
 		this.substitutionFor = substitutionFor;
 		this.substitutionGroup = substitutionGroup;
-        this.substitutionGroupTargets = substitutionGroupTargets == null ? Lists.newArrayList() : substitutionGroupTargets;
+        this.elements = elements == null ? Lists.newArrayList() : elements;
         this.xmlElementName = xmlElementName;
 		this.xmlAttributes = xmlAttributes;
 		this.attributes = attributes;
@@ -56,23 +58,25 @@ public class TypeXMLConfiguration {
 	
 	public TypeXMLConfiguration(
             Optional<String> substitutionGroup,
-			List<SubstitutionGroupTarget> substitutionGroupTargets,
+			List<XmlElement> elements,
             Optional<String> xmlElementName,
             Optional<Map<String, String>> xmlAttributes,
             Optional<Map<String, AttributeXMLConfiguration>> attributes,
             Optional<Map<String, String>> enumValues) {
-		this(Optional.empty(), substitutionGroup, substitutionGroupTargets, xmlElementName, xmlAttributes, attributes, enumValues);
+		this(Optional.empty(), substitutionGroup, elements, xmlElementName, xmlAttributes, attributes, enumValues);
 	}
 	
 	@Deprecated // Use getSubstitutionGroup instead
 	public Optional<ModelSymbolId> getSubstitutionFor() {
 		return substitutionFor;
 	}
-	
+
+	@Deprecated
 	public Optional<String> getSubstitutionGroup() {
 		return substitutionGroup;
 	}
 
+	@Deprecated
 	public Optional<String> getXmlElementName() {
 		return xmlElementName;
 	}
@@ -89,13 +93,13 @@ public class TypeXMLConfiguration {
 		return enumValues;
 	}
 
-	public List<SubstitutionGroupTarget> getSubstitutionGroupTargets() {
-		return substitutionGroupTargets;
+	public List<XmlElement> getElements() {
+		return elements;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(substitutionGroup, substitutionGroupTargets, xmlAttributes, xmlElementName, attributes, enumValues);
+		return Objects.hash(substitutionGroup, elements, xmlAttributes, xmlElementName, attributes, enumValues);
 	}
 
 	@Override
@@ -108,7 +112,7 @@ public class TypeXMLConfiguration {
 			return false;
 		TypeXMLConfiguration other = (TypeXMLConfiguration) obj;
 		return Objects.equals(substitutionGroup, other.substitutionGroup)
-				&& Objects.equals(substitutionGroupTargets, other.substitutionGroupTargets)
+				&& Objects.equals(elements, other.elements)
 				&& Objects.equals(xmlAttributes, other.xmlAttributes)
 				&& Objects.equals(xmlElementName, other.xmlElementName)
 				&& Objects.equals(attributes, other.attributes)

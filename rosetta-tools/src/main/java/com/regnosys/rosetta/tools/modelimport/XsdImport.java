@@ -137,7 +137,7 @@ public class XsdImport {
 	private TypeXMLConfiguration prune(TypeXMLConfiguration config) {
 		return new TypeXMLConfiguration(
 				config.getSubstitutionGroup(),
-				config.getSubstitutionGroupTargets(),
+				config.getElements(),
 				config.getXmlElementName(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getAttributes().map(x -> x.isEmpty() ? null : x),

@@ -190,6 +190,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 					Optional.empty(),
 					Optional.empty(),
 					Optional.of(AttributeXMLRepresentation.VALUE),
+					Optional.empty(),
 					Optional.empty()));
 		}
 
