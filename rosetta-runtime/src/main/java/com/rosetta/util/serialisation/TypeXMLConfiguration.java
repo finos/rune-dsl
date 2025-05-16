@@ -16,22 +16,21 @@
 
 package com.rosetta.util.serialisation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.rosetta.model.lib.ModelSymbolId;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
-import com.rosetta.model.lib.ModelSymbolId;
 
 public class TypeXMLConfiguration {
 	@Deprecated
 	private final Optional<ModelSymbolId> substitutionFor; // replaced by substitutionGroup
 	@Deprecated
 	private final Optional<String> substitutionGroup;
-	private final List<XmlElement> elements;
+	private final Optional<List<XmlElement>> elements;
 	@Deprecated
 	private final Optional<String> xmlElementName;
 	private final Optional<Map<String, String>> xmlAttributes;
@@ -41,15 +40,15 @@ public class TypeXMLConfiguration {
 	@JsonCreator
 	public TypeXMLConfiguration(
             @JsonProperty("substitutionFor") @Deprecated Optional<ModelSymbolId> substitutionFor,
-            @JsonProperty("substitutionGroup") Optional<String> substitutionGroup,
-			@JsonProperty("elements") List<XmlElement> elements,
-            @JsonProperty("xmlElementName") Optional<String> xmlElementName,
+            @JsonProperty("substitutionGroup") @Deprecated Optional<String> substitutionGroup,
+			@JsonProperty("elements") Optional<List<XmlElement>> elements,
+            @JsonProperty("xmlElementName") @Deprecated Optional<String> xmlElementName,
             @JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
             @JsonProperty("attributes") Optional<Map<String, AttributeXMLConfiguration>> attributes,
             @JsonProperty("enumValues") Optional<Map<String, String>> enumValues) {
 		this.substitutionFor = substitutionFor;
 		this.substitutionGroup = substitutionGroup;
-        this.elements = elements == null ? Lists.newArrayList() : elements;
+        this.elements = elements;
         this.xmlElementName = xmlElementName;
 		this.xmlAttributes = xmlAttributes;
 		this.attributes = attributes;
@@ -58,7 +57,7 @@ public class TypeXMLConfiguration {
 	
 	public TypeXMLConfiguration(
             Optional<String> substitutionGroup,
-			List<XmlElement> elements,
+			Optional<List<XmlElement>> elements,
             Optional<String> xmlElementName,
             Optional<Map<String, String>> xmlAttributes,
             Optional<Map<String, AttributeXMLConfiguration>> attributes,
@@ -93,7 +92,7 @@ public class TypeXMLConfiguration {
 		return enumValues;
 	}
 
-	public List<XmlElement> getElements() {
+	public Optional<List<XmlElement>> getElements() {
 		return elements;
 	}
 

@@ -171,7 +171,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		result.put(data,
 				new TypeXMLConfiguration(
 					substitutionGroup,
-					Lists.newArrayList(),
+					Optional.empty(), //TODO: populate elements here
 					elementName,
 					xmlAttributes,
 					Optional.of(attributeConfig),

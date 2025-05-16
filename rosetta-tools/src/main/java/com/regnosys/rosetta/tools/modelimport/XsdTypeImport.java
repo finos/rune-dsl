@@ -387,7 +387,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		Map<String, AttributeXMLConfiguration> attributeConfig = new LinkedHashMap<>();
 		TypeXMLConfiguration config = new TypeXMLConfiguration(
 				Optional.empty(),
-				Lists.newArrayList(),
+				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
 				Optional.of(attributeConfig),
@@ -511,7 +511,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 		Map<String, AttributeXMLConfiguration> currentConfig = new LinkedHashMap<>();
 		TypeXMLConfiguration config = new TypeXMLConfiguration(
 				Optional.empty(),
-				Lists.newArrayList(),
+				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
 				Optional.of(currentConfig),

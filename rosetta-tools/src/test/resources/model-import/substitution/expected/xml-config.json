@@ -12,7 +12,9 @@
     ]
   },
   "test.ns.Document" : {
-    "xmlElementName" : "document",
+    "elements" : [
+      {"name" : "document", "fullyQualifiedName" : "http://www.test.com/test/document", "abstract" :  false}
+    ],
     "xmlAttributes" : {
       "xmlns" : "http://www.test.com/test",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"

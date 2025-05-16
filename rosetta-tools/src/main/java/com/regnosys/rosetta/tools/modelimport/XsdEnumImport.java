@@ -100,7 +100,7 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 		RosettaEnumeration rosettaEnumeration = xsdMapping.getRosettaEnumerationFromSimple(xsdType);
 		return Collections.singletonMap(rosettaEnumeration, new TypeXMLConfiguration(
 				Optional.empty(),
-				Lists.newArrayList(),
+				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
