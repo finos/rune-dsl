@@ -47,6 +47,8 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
  * generate Java code, compile the Java code and then check whether they match expectations.
  * Any expectation mismatches or compilation errors will result in a failure.
  * 
+ * Expectations can be written by setting UPDATE_EXPECTATIONS to `true`.
+ * 
  * How to add a new regression test:
  * 1. Create a folder under `src/test/resources`. Let's call it ROOT_FOLDER.
  * 2. Under ROOT_FOLDER, create a folder called `model`.
