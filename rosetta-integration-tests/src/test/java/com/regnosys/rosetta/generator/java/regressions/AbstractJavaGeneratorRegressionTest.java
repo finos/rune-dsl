@@ -42,7 +42,11 @@ import com.regnosys.rosetta.tests.compiler.CompilationException;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 
-/** 
+/**
+ * Given a folder with .rosetta files, this test will parse those files, validate them,
+ * generate Java code, compile the Java code and then check whether they match expectations.
+ * Any expectation mismatches or compilation errors will result in a failure.
+ * 
  * How to add a new regression test:
  * 1. Create a folder under `src/test/resources`. Let's call it ROOT_FOLDER.
  * 2. Under ROOT_FOLDER, create a folder called `model`.
