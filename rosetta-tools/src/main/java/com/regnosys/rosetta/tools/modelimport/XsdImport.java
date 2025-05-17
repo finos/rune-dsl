@@ -145,8 +145,7 @@ public class XsdImport {
 			);
 	}
 	private boolean isEmpty(TypeXMLConfiguration config) {
-		return config.getSubstitutionGroup().isEmpty()
-				&& config.getXmlElementName().isEmpty()
+		return config.getElements().isEmpty()
 				&& (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty())
 				&& (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty())
 				&& (config.getEnumValues().isEmpty() || config.getEnumValues().get().isEmpty());

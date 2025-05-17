@@ -1,12 +1,9 @@
 package com.regnosys.rosetta.tools.modelimport;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import com.google.common.collect.Lists;
+import com.rosetta.util.serialisation.XmlElement;
 import jakarta.inject.Inject;
 
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
@@ -156,6 +153,10 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		
 		Optional<String> substitutionGroup = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(elem -> util.getQualifiedName(elem));
 		Optional<String> elementName = xsdElement.isAbstractObj() ? Optional.empty() : Optional.of(xsdElement.getName());
+
+		Optional<List<XmlElement>> elements =
+				Optional.of(Lists.newArrayList(new XmlElement(xsdElement.getName(), util.getQualifiedName(xsdElement), substitutionGroup.orElse(null), xsdElement.isAbstractObj())));
+
 		Optional<Map<String, String>> xmlAttributes;
 		if (isRoot(xsdElement)) {
 			Map<String, String> attrs = new LinkedHashMap<>();
@@ -170,9 +171,9 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		Map<String, AttributeXMLConfiguration> attributeConfig = new LinkedHashMap<>();
 		result.put(data,
 				new TypeXMLConfiguration(
-					substitutionGroup,
-					Optional.empty(), //TODO: populate elements here
-					elementName,
+					Optional.empty(),
+					elements,
+					Optional.empty(),
 					xmlAttributes,
 					Optional.of(attributeConfig),
 					Optional.empty()

@@ -56,9 +56,9 @@ public class TypeXMLConfiguration {
 	}
 	
 	public TypeXMLConfiguration(
-            Optional<String> substitutionGroup,
+			@Deprecated Optional<String> substitutionGroup,
 			Optional<List<XmlElement>> elements,
-            Optional<String> xmlElementName,
+			@Deprecated Optional<String> xmlElementName,
             Optional<Map<String, String>> xmlAttributes,
             Optional<Map<String, AttributeXMLConfiguration>> attributes,
             Optional<Map<String, String>> enumValues) {
