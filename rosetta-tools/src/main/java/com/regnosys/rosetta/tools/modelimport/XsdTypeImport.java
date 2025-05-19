@@ -20,7 +20,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
@@ -389,7 +388,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
-				Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.of(attributeConfig),
 				Optional.empty()
 			);
@@ -513,7 +512,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
-				Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.of(currentConfig),
 				Optional.empty());
         result.put(data, config);

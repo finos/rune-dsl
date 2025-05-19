@@ -137,15 +137,17 @@ public class XsdImport {
 	private TypeXMLConfiguration prune(TypeXMLConfiguration config) {
 		return new TypeXMLConfiguration(
 				config.getSubstitutionGroup(),
-				config.getElements(),
 				config.getXmlElementName(),
+				config.getXmlElementFullyQualifiedName(),
+				config.getIsAbstract(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getEnumValues().map(x -> x.isEmpty() ? null : x)
 			);
 	}
 	private boolean isEmpty(TypeXMLConfiguration config) {
-		return config.getElements().isEmpty()
+		return config.getSubstitutionGroup().isEmpty()
+				&& config.getXmlElementName().isEmpty()
 				&& (config.getXmlAttributes().isEmpty() || config.getXmlAttributes().get().isEmpty())
 				&& (config.getAttributes().isEmpty() || config.getAttributes().get().isEmpty())
 				&& (config.getEnumValues().isEmpty() || config.getEnumValues().get().isEmpty());

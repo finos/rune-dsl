@@ -153,10 +153,6 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		
 		Optional<String> substitutionGroup = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(elem -> util.getQualifiedName(elem));
 		Optional<String> elementName = xsdElement.isAbstractObj() ? Optional.empty() : Optional.of(xsdElement.getName());
-
-		Optional<List<XmlElement>> elements =
-				Optional.of(Lists.newArrayList(new XmlElement(xsdElement.getName(), util.getQualifiedName(xsdElement), substitutionGroup.orElse(null), xsdElement.isAbstractObj())));
-
 		Optional<Map<String, String>> xmlAttributes;
 		if (isRoot(xsdElement)) {
 			Map<String, String> attrs = new LinkedHashMap<>();
@@ -171,9 +167,10 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		Map<String, AttributeXMLConfiguration> attributeConfig = new LinkedHashMap<>();
 		result.put(data,
 				new TypeXMLConfiguration(
-					Optional.empty(),
-					elements,
-					Optional.empty(),
+					substitutionGroup,
+					elementName,
+					Optional.empty(),//TODO: put fully qualified name here
+						Optional.empty(), //TODO: put abstract here
 					xmlAttributes,
 					Optional.of(attributeConfig),
 					Optional.empty()
