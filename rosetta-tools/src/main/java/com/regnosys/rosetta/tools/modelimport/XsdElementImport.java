@@ -1,27 +1,17 @@
 package com.regnosys.rosetta.tools.modelimport;
 
-import java.util.*;
-
-import com.google.common.collect.Lists;
-import com.rosetta.util.serialisation.XmlElement;
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.rosetta.simple.*;
+import com.rosetta.util.serialisation.AttributeXMLConfiguration;
+import com.rosetta.util.serialisation.AttributeXMLRepresentation;
+import com.rosetta.util.serialisation.TypeXMLConfiguration;
 import jakarta.inject.Inject;
-
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 
-import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.rosetta.simple.Annotation;
-import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
-import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.serialisation.AttributeXMLConfiguration;
-import com.rosetta.util.serialisation.AttributeXMLRepresentation;
-import com.rosetta.util.serialisation.TypeXMLConfiguration;
+import java.util.*;
 
 public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 
