@@ -30,7 +30,7 @@
     "substitutionGroup" : "http://www.test.com/test/animal",
     "xmlElementName" : "fish",
     "xmlElementFullyQualifiedName" : "http://www.test.com/test/fish",
-    "abstract" :  true
+    "abstract" : true
   },
   "test.ns.Goat" : {
     "substitutionGroup" : "http://www.test.com/test/animal",

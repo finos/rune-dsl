@@ -33,7 +33,7 @@
 	<xs:element name="fish" type="Fish" abstract="true" substitutionGroup="animal"/>
 	<xs:element name="shark" type="Shark" substitutionGroup="fish"/>
 	<xs:element name="salmon" type="Salmon" substitutionGroup="fish"/>
-	
+
 	<!-- Types: `Cow` and `Goat` extend from `Animal` -->
 	<xs:complexType name="AnimalBase">
 	  <xs:attribute name="name" type="xs:string" />

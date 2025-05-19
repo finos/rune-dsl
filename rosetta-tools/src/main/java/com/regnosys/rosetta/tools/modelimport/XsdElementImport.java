@@ -41,7 +41,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 	public List<XsdElement> filterTypes(List<XsdAbstractElement> elements) {
 		return super.filterTypes(elements)
 				.stream()
-				.filter(elem -> !elem.isAbstractObj())
+				.filter(elem -> !elem.isAbstractObj() || elem.getXsdSubstitutionGroup() != null)
 				.toList();
 	}
 
