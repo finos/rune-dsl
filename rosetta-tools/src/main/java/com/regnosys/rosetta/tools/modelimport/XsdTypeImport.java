@@ -428,19 +428,19 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             } else {
             	elemNameOverride = Optional.of(elem.getName());
             }
-            Optional<String> substitutionGroup;
+            Optional<String> elementRef;
             if (util.isTopLevelElement(elem)) {
-            	substitutionGroup = Optional.of(util.getQualifiedName(elem));
+            	elementRef = Optional.of(util.getQualifiedName(elem));
             } else {
-            	substitutionGroup = Optional.empty();
+            	elementRef = Optional.empty();
             }
-            if (elemNameOverride.isPresent() || substitutionGroup.isPresent()) {
+            if (elemNameOverride.isPresent() || elementRef.isPresent()) {
             	currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
             			elemNameOverride,
 						Optional.empty(),
 						Optional.empty(),
-						substitutionGroup,
-						substitutionGroup));
+						Optional.empty(),
+						elementRef));
             }
         } else if (abstractElement instanceof XsdGroup group) {
             Attribute attr = xsdMapping.getAttribute(group);
