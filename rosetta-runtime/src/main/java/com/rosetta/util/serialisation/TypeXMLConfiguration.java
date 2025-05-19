@@ -83,7 +83,7 @@ public class TypeXMLConfiguration {
 		return xmlElementFullyQualifiedName;
 	}
 
-	public Optional<Boolean> getIsAbstract() {
+	public Optional<Boolean> getAbstract() {
 		return isAbstract;
 	}
 

@@ -139,7 +139,7 @@ public class XsdImport {
 				config.getSubstitutionGroup(),
 				config.getXmlElementName(),
 				config.getXmlElementFullyQualifiedName(),
-				config.getIsAbstract(),
+				config.getAbstract(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getEnumValues().map(x -> x.isEmpty() ? null : x)

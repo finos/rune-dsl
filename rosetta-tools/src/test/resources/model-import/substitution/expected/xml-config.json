@@ -7,15 +7,15 @@
     }
   },
   "test.ns.Cow" : {
+    "substitutionGroup" : "http://www.test.com/test/animal",
     "xmlElementName" : "cow",
     "xmlElementFullyQualifiedName" : "http://www.test.com/test/cow",
-    "substitutionGroup" : "http://www.test.com/test/animal",
-    "abstract": false
+    "abstract" : false
   },
   "test.ns.Document" : {
     "xmlElementName" : "document",
     "xmlElementFullyQualifiedName" : "http://www.test.com/test/document",
-    "abstract" :  false,
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.test.com/test",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -27,27 +27,27 @@
     }
   },
   "test.ns.Fish" : {
+    "substitutionGroup" : "http://www.test.com/test/animal",
     "xmlElementName" : "fish",
     "xmlElementFullyQualifiedName" : "http://www.test.com/test/fish",
-    "substitutionGroup" : "http://www.test.com/test/animal",
     "abstract" :  true
   },
   "test.ns.Goat" : {
+    "substitutionGroup" : "http://www.test.com/test/animal",
     "xmlElementName" : "goat",
     "xmlElementFullyQualifiedName" : "http://www.test.com/test/goat",
-    "substitutionGroup" : "http://www.test.com/test/animal",
-    "abstract" :  false
-  },
-  "test.ns.Shark" : {
-    "xmlElementName" : "shark",
-    "xmlElementFullyQualifiedName" : "http://www.test.com/test/shark",
-    "substitutionGroup" : "http://www.test.com/test/fish",
-    "abstract" :  false
+    "abstract" : false
   },
   "test.ns.Salmon" : {
+    "substitutionGroup" : "http://www.test.com/test/fish",
     "xmlElementName" : "salmon",
     "xmlElementFullyQualifiedName" : "http://www.test.com/test/salmon",
+    "abstract" : false
+  },
+  "test.ns.Shark" : {
     "substitutionGroup" : "http://www.test.com/test/fish",
-    "abstract" :  false
+    "xmlElementName" : "shark",
+    "xmlElementFullyQualifiedName" : "http://www.test.com/test/shark",
+    "abstract" : false
   }
 }
