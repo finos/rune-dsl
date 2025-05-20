@@ -57,6 +57,9 @@ public class AttributeXMLConfiguration {
 		return xmlRepresentation;
 	}
 
+	/**
+	 * @deprecated this is a legacy field as this isn't actually a substitution group it points to rather an elementRef, the getElementRef() method should be used instead
+	 */
 	@Deprecated
 	public Optional<String> getSubstitutionGroup() {
 		return substitutionGroup;
