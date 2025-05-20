@@ -1,0 +1,39 @@
+namespace test.pojo
+
+type Pojo:
+    [metadata key]
+    simpleAttr string(maxLength: 42) (1..1)
+    multiSimpleAttr string(maxLength: 42) (0..*)
+
+    simpleAttrWithMeta string (1..1)
+        [metadata scheme]
+    multiSimpleAttrWithMeta string (0..*)
+        [metadata scheme]
+
+    simpleAttrWithId string (1..1)
+        [metadata id]
+    multiSimpleAttrWithId string (0..*)
+        [metadata id]
+
+    complexAttr Foo (1..1)
+    multiComplexAttr Foo (0..*)
+
+    complexAttrWithRef Foo (1..1)
+        [metadata reference]
+    multiComplexAttrWithRef Foo (0..*)
+        [metadata reference]
+
+type Foo:
+    [metadata key]
+
+
+type Qux:
+    qux string (1..1)
+        [metadata location]
+
+type Bar:
+    bar Qux (1..1)
+
+type Baz:
+    baz string (1..1)
+        [metadata address "pointsTo"=Bar->bar->qux]
