@@ -516,6 +516,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
+		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
 		public Foo2.Foo2Builder addOtherParentList(Child _otherParentList) {
 			if (_otherParentList != null) {

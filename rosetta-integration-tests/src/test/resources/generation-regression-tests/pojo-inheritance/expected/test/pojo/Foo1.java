@@ -372,6 +372,7 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
+		@RosettaAttribute("parentList")
 		@RuneAttribute("parentList")
 		public Foo1.Foo1Builder addParentList(Parent _parentList) {
 			if (_parentList != null) {
@@ -410,6 +411,7 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
+		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
 		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList) {
 			if (_otherParentList != null) {

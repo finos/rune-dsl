@@ -602,6 +602,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@Override
+		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
 		public Foo3.Foo3Builder addOtherParentList(Child _otherParentList) {
 			if (_otherParentList != null) {

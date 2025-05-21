@@ -193,7 +193,7 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 				if (UPDATE_EXPECTATIONS) {
 					String relativePath = updateExpectation.updateExpectation();
 					throw wrapAssertionFailure(
-							"Expectation has been updated at " + relativePath + ".\n" + e.getMessage(), e);
+							"Expectation has been updated at " + getTestRootResourceFolder() + "/" + relativePath + ".\n" + e.getMessage(), e);
 				} else {
 					throw wrapAssertionFailure(
 							"Run with UPDATE_EXPECTATIONS=true to update expectation.\n" + e.getMessage(), e);
