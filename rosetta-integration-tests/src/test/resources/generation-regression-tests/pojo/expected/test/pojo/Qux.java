@@ -1,4 +1,4 @@
-package com.rosetta.test.model;
+package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
@@ -15,20 +15,20 @@ import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
 import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
-import com.rosetta.test.model.Qux;
-import com.rosetta.test.model.Qux.QuxBuilder;
-import com.rosetta.test.model.Qux.QuxBuilderImpl;
-import com.rosetta.test.model.Qux.QuxImpl;
-import com.rosetta.test.model.meta.QuxMeta;
 import java.util.Objects;
+import test.pojo.Qux;
+import test.pojo.Qux.QuxBuilder;
+import test.pojo.Qux.QuxBuilderImpl;
+import test.pojo.Qux.QuxImpl;
+import test.pojo.meta.QuxMeta;
 
 import static java.util.Optional.ofNullable;
 
 /**
- * @version test
+ * @version 0.0.0
  */
-@RosettaDataType(value="Qux", builder=Qux.QuxBuilderImpl.class, version="test")
-@RuneDataType(value="Qux", model="com", builder=Qux.QuxBuilderImpl.class, version="test")
+@RosettaDataType(value="Qux", builder=Qux.QuxBuilderImpl.class, version="0.0.0")
+@RuneDataType(value="Qux", model="test", builder=Qux.QuxBuilderImpl.class, version="0.0.0")
 public interface Qux extends RosettaModelObject {
 
 	QuxMeta metaData = new QuxMeta();

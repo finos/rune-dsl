@@ -1,4 +1,4 @@
-package com.rosetta.test.model.validation.exists;
+package test.pojo.validation.exists;
 
 import com.google.common.collect.ImmutableMap;
 import com.rosetta.model.lib.path.RosettaPath;
@@ -7,13 +7,13 @@ import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 import com.rosetta.model.metafields.FieldWithMetaString;
-import com.rosetta.test.model.Foo;
-import com.rosetta.test.model.Pojo;
-import com.rosetta.test.model.metafields.ReferenceWithMetaFoo;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import test.pojo.Foo;
+import test.pojo.Pojo;
+import test.pojo.metafields.ReferenceWithMetaFoo;
 
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;

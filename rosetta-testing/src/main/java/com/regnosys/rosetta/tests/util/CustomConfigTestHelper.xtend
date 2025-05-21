@@ -2,13 +2,13 @@ package com.regnosys.rosetta.tests.util
 
 import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
 import java.util.List
-import java.util.HashMap
 import com.google.inject.Injector
 import com.regnosys.rosetta.RosettaRuntimeModule
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
+import java.util.Map
 
 class CustomConfigTestHelper {
-	static def compileToClassesForModel(List<HashMap<String, String>> code,
+	static def compileToClassesForModel(List<Map<String, String>> code,
 		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		val generatedCode = newHashMap

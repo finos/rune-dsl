@@ -1,4 +1,4 @@
-package com.rosetta.test.model.metafields;
+package test.pojo.metafields;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
@@ -18,53 +18,53 @@ import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
-import com.rosetta.test.model.Foo;
-import com.rosetta.test.model.Foo.FooBuilder;
 import java.util.Objects;
+import test.pojo.GrandChild;
+import test.pojo.GrandChild.GrandChildBuilder;
 
 import static java.util.Optional.ofNullable;
 
-@RosettaDataType(value="ReferenceWithMetaFoo", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
-@RuneDataType(value="ReferenceWithMetaFoo", model="com", builder=ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl.class, version="0.0.0")
-public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithMeta<Foo> {
+@RosettaDataType(value="ReferenceWithMetaGrandChild", builder=ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilderImpl.class, version="0.0.0")
+@RuneDataType(value="ReferenceWithMetaGrandChild", model="test", builder=ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilderImpl.class, version="0.0.0")
+public interface ReferenceWithMetaGrandChild extends RosettaModelObject, ReferenceWithMeta<GrandChild> {
 
-	ReferenceWithMetaFooMeta metaData = new ReferenceWithMetaFooMeta();
+	ReferenceWithMetaGrandChildMeta metaData = new ReferenceWithMetaGrandChildMeta();
 
 	/*********************** Getter Methods  ***********************/
-	Foo getValue();
+	GrandChild getValue();
 	String getGlobalReference();
 	String getExternalReference();
 	Reference getReference();
 
 	/*********************** Build Methods  ***********************/
-	ReferenceWithMetaFoo build();
+	ReferenceWithMetaGrandChild build();
 	
-	ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder toBuilder();
+	ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder toBuilder();
 	
-	static ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder builder() {
-		return new ReferenceWithMetaFoo.ReferenceWithMetaFooBuilderImpl();
+	static ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder builder() {
+		return new ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilderImpl();
 	}
 
 	/*********************** Utility Methods  ***********************/
 	@Override
-	default RosettaMetaData<? extends ReferenceWithMetaFoo> metaData() {
+	default RosettaMetaData<? extends ReferenceWithMetaGrandChild> metaData() {
 		return metaData;
 	}
 	
 	@Override
 	@RuneAttribute("@type")
-	default Class<? extends ReferenceWithMetaFoo> getType() {
-		return ReferenceWithMetaFoo.class;
+	default Class<? extends ReferenceWithMetaGrandChild> getType() {
+		return ReferenceWithMetaGrandChild.class;
 	}
 	
 	@Override
-	default Class<Foo> getValueType() {
-		return Foo.class;
+	default Class<GrandChild> getValueType() {
+		return GrandChild.class;
 	}
 	
 	@Override
 	default void process(RosettaPath path, Processor processor) {
-		processRosetta(path.newSubPath("value"), processor, Foo.class, getValue());
+		processRosetta(path.newSubPath("value"), processor, GrandChild.class, getValue());
 		processor.processBasic(path.newSubPath("globalReference"), String.class, getGlobalReference(), this, AttributeMeta.META);
 		processor.processBasic(path.newSubPath("externalReference"), String.class, getExternalReference(), this, AttributeMeta.META);
 		processRosetta(path.newSubPath("reference"), processor, Reference.class, getReference());
@@ -72,38 +72,38 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 	
 
 	/*********************** Builder Interface  ***********************/
-	interface ReferenceWithMetaFooBuilder extends ReferenceWithMetaFoo, RosettaModelObjectBuilder, ReferenceWithMeta.ReferenceWithMetaBuilder<Foo> {
-		Foo.FooBuilder getOrCreateValue();
+	interface ReferenceWithMetaGrandChildBuilder extends ReferenceWithMetaGrandChild, RosettaModelObjectBuilder, ReferenceWithMeta.ReferenceWithMetaBuilder<GrandChild> {
+		GrandChild.GrandChildBuilder getOrCreateValue();
 		@Override
-		Foo.FooBuilder getValue();
+		GrandChild.GrandChildBuilder getValue();
 		Reference.ReferenceBuilder getOrCreateReference();
 		@Override
 		Reference.ReferenceBuilder getReference();
-		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo value);
-		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String globalReference);
-		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setExternalReference(String externalReference);
-		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setReference(Reference reference);
+		ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setValue(GrandChild value);
+		ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setGlobalReference(String globalReference);
+		ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setExternalReference(String externalReference);
+		ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setReference(Reference reference);
 
 		@Override
 		default void process(RosettaPath path, BuilderProcessor processor) {
-			processRosetta(path.newSubPath("value"), processor, Foo.FooBuilder.class, getValue());
+			processRosetta(path.newSubPath("value"), processor, GrandChild.GrandChildBuilder.class, getValue());
 			processor.processBasic(path.newSubPath("globalReference"), String.class, getGlobalReference(), this, AttributeMeta.META);
 			processor.processBasic(path.newSubPath("externalReference"), String.class, getExternalReference(), this, AttributeMeta.META);
 			processRosetta(path.newSubPath("reference"), processor, Reference.ReferenceBuilder.class, getReference());
 		}
 		
 
-		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder prune();
+		ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder prune();
 	}
 
-	/*********************** Immutable Implementation of ReferenceWithMetaFoo  ***********************/
-	class ReferenceWithMetaFooImpl implements ReferenceWithMetaFoo {
-		private final Foo value;
+	/*********************** Immutable Implementation of ReferenceWithMetaGrandChild  ***********************/
+	class ReferenceWithMetaGrandChildImpl implements ReferenceWithMetaGrandChild {
+		private final GrandChild value;
 		private final String globalReference;
 		private final String externalReference;
 		private final Reference reference;
 		
-		protected ReferenceWithMetaFooImpl(ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder builder) {
+		protected ReferenceWithMetaGrandChildImpl(ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder builder) {
 			this.value = ofNullable(builder.getValue()).map(f->f.build()).orElse(null);
 			this.globalReference = builder.getGlobalReference();
 			this.externalReference = builder.getExternalReference();
@@ -114,7 +114,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		@RosettaAttribute("value")
 		@RuneAttribute("@data")
 		@RuneMetaType
-		public Foo getValue() {
+		public GrandChild getValue() {
 			return value;
 		}
 		
@@ -141,18 +141,18 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		}
 		
 		@Override
-		public ReferenceWithMetaFoo build() {
+		public ReferenceWithMetaGrandChild build() {
 			return this;
 		}
 		
 		@Override
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder toBuilder() {
-			ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder builder = builder();
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder toBuilder() {
+			ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder builder = builder();
 			setBuilderFields(builder);
 			return builder;
 		}
 		
-		protected void setBuilderFields(ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder builder) {
+		protected void setBuilderFields(ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder builder) {
 			ofNullable(getValue()).ifPresent(builder::setValue);
 			ofNullable(getGlobalReference()).ifPresent(builder::setGlobalReference);
 			ofNullable(getExternalReference()).ifPresent(builder::setExternalReference);
@@ -164,7 +164,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 			if (this == o) return true;
 			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
 		
-			ReferenceWithMetaFoo _that = getType().cast(o);
+			ReferenceWithMetaGrandChild _that = getType().cast(o);
 		
 			if (!Objects.equals(value, _that.getValue())) return false;
 			if (!Objects.equals(globalReference, _that.getGlobalReference())) return false;
@@ -185,7 +185,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		
 		@Override
 		public String toString() {
-			return "ReferenceWithMetaFoo {" +
+			return "ReferenceWithMetaGrandChild {" +
 				"value=" + this.value + ", " +
 				"globalReference=" + this.globalReference + ", " +
 				"externalReference=" + this.externalReference + ", " +
@@ -194,10 +194,10 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		}
 	}
 
-	/*********************** Builder Implementation of ReferenceWithMetaFoo  ***********************/
-	class ReferenceWithMetaFooBuilderImpl implements ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder {
+	/*********************** Builder Implementation of ReferenceWithMetaGrandChild  ***********************/
+	class ReferenceWithMetaGrandChildBuilderImpl implements ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder {
 	
-		protected Foo.FooBuilder value;
+		protected GrandChild.GrandChildBuilder value;
 		protected String globalReference;
 		protected String externalReference;
 		protected Reference.ReferenceBuilder reference;
@@ -206,18 +206,18 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		@RosettaAttribute("value")
 		@RuneAttribute("@data")
 		@RuneMetaType
-		public Foo.FooBuilder getValue() {
+		public GrandChild.GrandChildBuilder getValue() {
 			return value;
 		}
 		
 		@Override
-		public Foo.FooBuilder getOrCreateValue() {
-			Foo.FooBuilder result;
+		public GrandChild.GrandChildBuilder getOrCreateValue() {
+			GrandChild.GrandChildBuilder result;
 			if (value!=null) {
 				result = value;
 			}
 			else {
-				result = value = Foo.builder();
+				result = value = GrandChild.builder();
 			}
 			
 			return result;
@@ -262,7 +262,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		@RosettaAttribute("value")
 		@RuneAttribute("@data")
 		@RuneMetaType
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setValue(Foo _value) {
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setValue(GrandChild _value) {
 			this.value = _value == null ? null : _value.toBuilder();
 			return this;
 		}
@@ -270,7 +270,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		@Override
 		@RosettaAttribute("globalReference")
 		@RuneAttribute("@ref")
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String _globalReference) {
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setGlobalReference(String _globalReference) {
 			this.globalReference = _globalReference == null ? null : _globalReference;
 			return this;
 		}
@@ -278,7 +278,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		@Override
 		@RosettaAttribute("externalReference")
 		@RuneAttribute("@ref:external")
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setExternalReference(String _externalReference) {
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setExternalReference(String _externalReference) {
 			this.externalReference = _externalReference == null ? null : _externalReference;
 			return this;
 		}
@@ -287,24 +287,24 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		@RosettaAttribute("address")
 		@RuneAttribute("@ref:scoped")
 		@RuneMetaType
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setReference(Reference _reference) {
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder setReference(Reference _reference) {
 			this.reference = _reference == null ? null : _reference.toBuilder();
 			return this;
 		}
 		
 		@Override
-		public ReferenceWithMetaFoo build() {
-			return new ReferenceWithMetaFoo.ReferenceWithMetaFooImpl(this);
+		public ReferenceWithMetaGrandChild build() {
+			return new ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildImpl(this);
 		}
 		
 		@Override
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder toBuilder() {
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder toBuilder() {
 			return this;
 		}
 	
 		@SuppressWarnings("unchecked")
 		@Override
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder prune() {
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder prune() {
 			if (value!=null && !value.prune().hasData()) value = null;
 			if (reference!=null && !reference.prune().hasData()) reference = null;
 			return this;
@@ -321,8 +321,8 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 	
 		@SuppressWarnings("unchecked")
 		@Override
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder o = (ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder) other;
+		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+			ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder o = (ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder) other;
 			
 			merger.mergeRosetta(getValue(), o.getValue(), this::setValue);
 			merger.mergeRosetta(getReference(), o.getReference(), this::setReference);
@@ -337,7 +337,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 			if (this == o) return true;
 			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
 		
-			ReferenceWithMetaFoo _that = getType().cast(o);
+			ReferenceWithMetaGrandChild _that = getType().cast(o);
 		
 			if (!Objects.equals(value, _that.getValue())) return false;
 			if (!Objects.equals(globalReference, _that.getGlobalReference())) return false;
@@ -358,7 +358,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		
 		@Override
 		public String toString() {
-			return "ReferenceWithMetaFooBuilder {" +
+			return "ReferenceWithMetaGrandChildBuilder {" +
 				"value=" + this.value + ", " +
 				"globalReference=" + this.globalReference + ", " +
 				"externalReference=" + this.externalReference + ", " +
@@ -368,6 +368,6 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 	}
 }
 
-class ReferenceWithMetaFooMeta extends BasicRosettaMetaData<ReferenceWithMetaFoo>{
+class ReferenceWithMetaGrandChildMeta extends BasicRosettaMetaData<ReferenceWithMetaGrandChild>{
 
 }

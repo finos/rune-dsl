@@ -1,4 +1,4 @@
-package com.rosetta.test.model;
+package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
@@ -14,20 +14,20 @@ import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.ReferenceWithMetaString;
 import com.rosetta.model.metafields.ReferenceWithMetaString.ReferenceWithMetaStringBuilder;
-import com.rosetta.test.model.Baz;
-import com.rosetta.test.model.Baz.BazBuilder;
-import com.rosetta.test.model.Baz.BazBuilderImpl;
-import com.rosetta.test.model.Baz.BazImpl;
-import com.rosetta.test.model.meta.BazMeta;
 import java.util.Objects;
+import test.pojo.Baz;
+import test.pojo.Baz.BazBuilder;
+import test.pojo.Baz.BazBuilderImpl;
+import test.pojo.Baz.BazImpl;
+import test.pojo.meta.BazMeta;
 
 import static java.util.Optional.ofNullable;
 
 /**
- * @version test
+ * @version 0.0.0
  */
-@RosettaDataType(value="Baz", builder=Baz.BazBuilderImpl.class, version="test")
-@RuneDataType(value="Baz", model="com", builder=Baz.BazBuilderImpl.class, version="test")
+@RosettaDataType(value="Baz", builder=Baz.BazBuilderImpl.class, version="0.0.0")
+@RuneDataType(value="Baz", model="test", builder=Baz.BazBuilderImpl.class, version="0.0.0")
 public interface Baz extends RosettaModelObject {
 
 	BazMeta metaData = new BazMeta();

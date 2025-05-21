@@ -69,7 +69,7 @@ public class RosettaXsdMapping {
 		this.util = util;
 	}
 	
-	public void initializeBuiltins(ResourceSet resourceSet) {		
+	public void initializeBuiltins(ResourceSet resourceSet, ImportTargetConfig targetConfig) {
 		RosettaBasicType string = builtins.toRosettaType(builtins.UNCONSTRAINED_STRING, RosettaBasicType.class, resourceSet);
 		RosettaBasicType number = builtins.toRosettaType(builtins.UNCONSTRAINED_NUMBER, RosettaBasicType.class, resourceSet);
 		RosettaTypeAlias integer = builtins.toRosettaType(builtins.UNCONSTRAINED_INT, RosettaTypeAlias.class, resourceSet);
@@ -90,7 +90,7 @@ public class RosettaXsdMapping {
 		registerBuiltinTypeSupplier("base64Binary", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("boolean", () -> toTypeCall(booleanT));
 		registerBuiltinTypeSupplier("byte", () -> toTypeCall(integer, createTypeArgument(minInt, -128), createTypeArgument(maxInt, 127)));
-		registerBuiltinTypeSupplier("date", () -> toTypeCall(date));
+		registerBuiltinTypeSupplier("date", () -> toTypeCall(targetConfig.getPreferences().getXsdDateHandlingStrategy() == XsdDateHandlingStrategy.AS_RUNE_DATE ? date : zonedDateTime));
 		registerBuiltinTypeSupplier("dateTime", () -> toTypeCall(zonedDateTime));
 		// dateTimeStamp
 		// dayTimeDuration
@@ -100,11 +100,11 @@ public class RosettaXsdMapping {
 		// ENTITIES
 		// ENTITY
 		registerBuiltinTypeSupplier("float", () -> toTypeCall(number));
-		registerBuiltinTypeSupplier("gDay", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gMonth", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gMonthDay", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gYear", () -> toTypeCall(integer));
-		registerBuiltinTypeSupplier("gYearMonth", () -> toTypeCall(integer));
+		registerBuiltinTypeSupplier("gDay", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gMonth", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gMonthDay", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gYear", () -> toTypeCall(string));
+		registerBuiltinTypeSupplier("gYearMonth", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("hexBinary", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("ID", () -> toTypeCall(string));
 		registerBuiltinTypeSupplier("IDREF", () -> toTypeCall(string));

@@ -31,6 +31,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.rosetta.model.lib.annotations.RosettaIgnore
 
 class ModelObjectBuilderGenerator {
 	
@@ -105,15 +106,15 @@ class ModelObjectBuilderGenerator {
 					«IF prop.type.isList»
 						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::«prop.getOrCreateName»);
 					«ELSE»
-						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::set«prop.name.toFirstUpper»);
+						merger.mergeRosetta(«prop.getterName»(), o.«prop.getterName»(), this::«prop.setterName»);
 					«ENDIF»
 				«ENDFOR»
 				
 				«FOR prop : properties.filter[!type.isRosettaModelObject]»
 					«IF prop.type.isList»
-						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), («Consumer»<«prop.type.itemType»>) this::add«prop.name.toFirstUpper»);
+						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), («Consumer»<«prop.type.itemType»>) this::«prop.adderName»);
 					«ELSE»
-						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), this::set«prop.name.toFirstUpper»);
+						merger.mergeBasic(«prop.getterName»(), o.«prop.getterName»(), this::«prop.setterName»);
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -184,6 +185,7 @@ class ModelObjectBuilderGenerator {
 		'''
 		
 		@Override
+		@«RosettaIgnore»
 		public «parent.toBuilderTypeExt» «parent.getterName»() «
 			(if (parent.type.isList) {
 				if (originalProp.type.isList) {
@@ -251,10 +253,14 @@ class ModelObjectBuilderGenerator {
 		val builderType = javaType.toBuilderType
 		val mainPropType = mainProp.type
 		val propType = currentProp.type
+		val addMultiMethodName = currentProp.adderName
 		val addMethodName = "add" + currentProp.name.toFirstUpper
 		val addValueMethodName = addMethodName + "Value"
+		val addMultiValueMethodName = currentProp.valueAdderName
+		val setMultiMethodName = currentProp.setterName
 		val setMethodName = "set" + currentProp.name.toFirstUpper
 		val setValueMethodName = "set" + currentProp.name.toFirstUpper + "Value"
+		val setMultiValueMethodName = currentProp.valueSetterName
 		val isMainProp = mainProp == currentProp
 		val field = scope.getIdentifierOrThrow(mainProp)
 		val thisExpr = new JavaThis(builderType)
@@ -266,7 +272,6 @@ class ModelObjectBuilderGenerator {
 			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
@@ -365,10 +370,10 @@ class ModelObjectBuilderGenerator {
 				»
 			«ENDIF»
 			
-			«val addMultiMethodScope = scope.methodScope(addMethodName)»
+			«val addMultiMethodScope = scope.methodScope(addMultiMethodName)»
 			«val addMultiMethodArg = new JavaVariable(addMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
-			public «builderType» «addMethodName»(«propType» «addMultiMethodArg») «
+			public «builderType» «addMultiMethodName»(«propType» «addMultiMethodArg») «
 				(if (isMainProp) {
 					val forLoopId = addMultiMethodScope.createUniqueIdentifier("toAdd")
 					val forLoopVar = new JavaVariable(forLoopId, itemType)
@@ -385,33 +390,26 @@ class ModelObjectBuilderGenerator {
 						.collapseToSingleExpression(addMultiMethodScope)
 						.mapExpression[
 							if (mainPropType.isList) {
-								JavaExpression.from('''«addMethodName»(«it»)''', builderType)
+								JavaExpression.from('''«mainProp.adderName»(«it»)''', builderType)
 							} else {
-								JavaExpression.from('''«setMethodName»(«it»)''', builderType)
+								JavaExpression.from('''«mainProp.setterName»(«it»)''', builderType)
 							}
 						]
 				}).completeAsReturn.toBlock
 				»
 			
-			«val setMultiMethodScope = scope.methodScope(setMethodName)»
+			«val setMultiMethodScope = scope.methodScope(setMultiMethodName)»
 			«val setMultiMethodArg = new JavaVariable(setMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
 			«IF isMainProp»
-<<<<<<< Updated upstream
-			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
-			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
-			«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
-			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
-=======
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ELSE»
 				@«RosettaIgnore»
->>>>>>> Stashed changes
 			«ENDIF»
-			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
+			public «builderType» «setMultiMethodName»(«propType» «setMultiMethodArg») «
 				(if (isMainProp) {
 					new JavaIfThenElseBuilder(
 						JavaExpression.from('''«setMultiMethodArg» == null''', JavaPrimitiveType.BOOLEAN),
@@ -428,7 +426,7 @@ class ModelObjectBuilderGenerator {
 						.addCoercions(mainPropType, false, setMultiMethodScope)
 						.collapseToSingleExpression(setMultiMethodScope)
 						.mapExpression[
-							JavaExpression.from('''«setMethodName»(«it»)''', builderType)
+							JavaExpression.from('''«mainProp.setterName»(«it»)''', builderType)
 						]
 				}).completeAsReturn.toBlock
 				»
@@ -436,10 +434,10 @@ class ModelObjectBuilderGenerator {
 			«val valueType = itemType.valueType»
 			«val mainValueType = mainItemType instanceof RJavaWithMetaValue ? mainItemType.valueType : mainItemType»
 			
-			«val addMultiValueMethodScope = scope.methodScope(addValueMethodName)»
+			«val addMultiValueMethodScope = scope.methodScope(addMultiValueMethodName)»
 			«val addMultiValueMethodArg = new JavaVariable(addMultiValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
 			@Override
-			public «builderType» «addValueMethodName»(«addMultiValueMethodArg.expressionType» «addMultiValueMethodArg») «
+			public «builderType» «addMultiValueMethodName»(«addMultiValueMethodArg.expressionType» «addMultiValueMethodArg») «
 				(if (isMainProp) {
 					val forLoopId = addMultiValueMethodScope.createUniqueIdentifier("toAdd")
 					val forLoopVar = new JavaVariable(forLoopId, itemType)
@@ -456,7 +454,7 @@ class ModelObjectBuilderGenerator {
 						.collapseToSingleExpression(addMultiValueMethodScope)
 						.mapExpression[
 							if (mainPropType.isList) {
-								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«addValueMethodName»«ELSE»«addMethodName»«ENDIF»(«it»)''', builderType)
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«mainProp.valueAdderName»«ELSE»«mainProp.adderName»«ENDIF»(«it»)''', builderType)
 							} else {
 								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
 							}
@@ -464,10 +462,10 @@ class ModelObjectBuilderGenerator {
 				}).completeAsReturn.toBlock
 				»
 			
-			«val setMultiValueMethodScope = scope.methodScope(setValueMethodName)»
+			«val setMultiValueMethodScope = scope.methodScope(setMultiValueMethodName)»
 			«val setMultiValueMethodArg = new JavaVariable(setMultiValueMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), LIST.wrapExtends(valueType))»
 			@Override
-			public «builderType» «setValueMethodName»(«setMultiValueMethodArg.expressionType» «setMultiValueMethodArg») «
+			public «builderType» «setMultiValueMethodName»(«setMultiValueMethodArg.expressionType» «setMultiValueMethodArg») «
 				(if (isMainProp) {
 					JavaExpression.from('''this.«field».clear()''', JavaPrimitiveType.VOID).completeAsExpressionStatement
 						.append(new JavaIfThenStatement(
@@ -480,7 +478,11 @@ class ModelObjectBuilderGenerator {
 						.addCoercions(mainPropType.isList ? LIST.wrapExtendsIfNotFinal(mainValueType) : mainValueType, false, setMultiValueMethodScope)
 						.collapseToSingleExpression(setMultiValueMethodScope)
 						.mapExpression[
-							JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+							if (mainPropType.isList) {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«mainProp.valueSetterName»«ELSE»«mainProp.setterName»«ENDIF»(«it»)''', builderType)
+							} else {
+								JavaExpression.from('''«IF mainItemType instanceof RJavaWithMetaValue»«setValueMethodName»«ELSE»«setMethodName»«ENDIF»(«it»)''', builderType)
+							}
 						]
 				}).completeAsReturn.toBlock
 				»
@@ -490,11 +492,13 @@ class ModelObjectBuilderGenerator {
 			«val setMethodArg = new JavaVariable(setMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), propType)»
 			@Override
 			«IF isMainProp»
-			@«RosettaAttribute»("«currentProp.javaAnnotation»")
-			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
-			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
-			«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
-			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+				@«RosettaAttribute»("«currentProp.javaAnnotation»")
+				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
+				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+			«ELSE»
+				@«RosettaIgnore»
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMethodArg») «
 				(if (isMainProp) {

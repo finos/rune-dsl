@@ -40,7 +40,6 @@ import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlet.xsdparser.core.XsdParser;
@@ -74,16 +73,16 @@ public class XsdImportTest {
 
 	@Inject
 	XsdImport xsdImport;
-	
+
+    private RosettaXsdMapping rosettaXsdMapping;
 	private ResourceSet resourceSet;
-	private RosettaXsdMapping rosettaXsdMapping;
+
 	@BeforeEach
 	void beforeEach() {
 		rosettaXsdMapping = new RosettaXsdMapping(builtins, util);
 		resourceSet = resourceSetProvider.get();
 		// Add builtin types to the resource set
 		new RosettaModelFactory(resourceSet, builtinResources);
-		rosettaXsdMapping.initializeBuiltins(resourceSet);
 	}
 	
 	private void assertNoUnresolvedXsdElements(XsdParser parsedInstance) {
@@ -94,9 +93,9 @@ public class XsdImportTest {
 		Path baseFolder = Path.of(getClass().getResource("/model-import/" + xsdName).toURI());
 		Path expectedFolder = baseFolder.resolve("expected");
 		Path configFile = baseFolder.resolve(xsdName + "-config.yml");
-		
-		ImportConfig config;
-		if (Files.exists(configFile)) {
+
+        ImportConfig config;
+        if (Files.exists(configFile)) {
 			ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 			try (InputStream input = Files.newInputStream(configFile)) {
 				config = mapper.readValue(input, ImportConfig.class);
@@ -104,6 +103,8 @@ public class XsdImportTest {
 		} else {
 			config = mockConfig(baseFolder);
 		}
+		rosettaXsdMapping.initializeBuiltins(resourceSet, config.getTarget());
+
 		Path xsdFile = baseFolder.resolve(config.getSchemaLocation()).normalize();
 
 		// Load xsd elements
