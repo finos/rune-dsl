@@ -468,6 +468,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
+		@RosettaIgnore
 		public Foo2.Foo2Builder addParentList(Parent parentList0) {
 			final ReferenceWithMetaChild ifThenElseResult;
 			if (parentList0 == null) {
@@ -540,7 +541,6 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override 
-		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
 		public Foo2.Foo2Builder setOtherParentListOverriddenAsChild(List<? extends Child> otherParentLists) {
 			if (otherParentLists == null) {
@@ -554,6 +554,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
+		@RosettaIgnore
 		public Foo2.Foo2Builder addOtherParentList(Parent otherParentList0) {
 			final Child ifThenElseResult;
 			if (otherParentList0 == null) {

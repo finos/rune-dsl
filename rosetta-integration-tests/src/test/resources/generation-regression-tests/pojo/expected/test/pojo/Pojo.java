@@ -619,7 +619,6 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override 
-		@RosettaAttribute("multiSimpleAttr")
 		@RuneAttribute("multiSimpleAttr")
 		public Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttrs) {
 			if (multiSimpleAttrs == null) {
@@ -683,7 +682,6 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override 
-		@RosettaAttribute("multiSimpleAttrWithMeta")
 		@RuneAttribute("multiSimpleAttrWithMeta")
 		public Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 			if (multiSimpleAttrWithMetas == null) {
@@ -767,7 +765,6 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override 
-		@RosettaAttribute("multiSimpleAttrWithId")
 		@RuneAttribute("multiSimpleAttrWithId")
 		public Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 			if (multiSimpleAttrWithIds == null) {
@@ -833,7 +830,6 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override 
-		@RosettaAttribute("multiComplexAttr")
 		@RuneAttribute("multiComplexAttr")
 		public Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 			if (multiComplexAttrs == null) {
@@ -898,7 +894,6 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override 
-		@RosettaAttribute("multiComplexAttrWithRef")
 		@RuneAttribute("multiComplexAttrWithRef")
 		public Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 			if (multiComplexAttrWithRefs == null) {

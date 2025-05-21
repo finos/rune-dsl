@@ -191,9 +191,9 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 				assertion.execute();
 			} catch (AssertionFailedError e) {
 				if (UPDATE_EXPECTATIONS) {
-					Path updatedPath = updateExpectation.updateExpectation();
+					String relativePath = updateExpectation.updateExpectation();
 					throw wrapAssertionFailure(
-							"Expectation has been updated at " + updatedPath + ".\n" + e.getMessage(), e);
+							"Expectation has been updated at " + relativePath + ".\n" + e.getMessage(), e);
 				} else {
 					throw wrapAssertionFailure(
 							"Run with UPDATE_EXPECTATIONS=true to update expectation.\n" + e.getMessage(), e);
@@ -211,17 +211,17 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 				error.getActual().getEphemeralValue(), error);
 	}
 
-	private Path writeExpectationFile(String relativePath, String content) throws IOException {
+	private String writeExpectationFile(String relativePath, String content) throws IOException {
 		Path expectationPath = getExpectationPath(relativePath);
 		Files.createDirectories(expectationPath.getParent());
 		Files.writeString(expectationPath, content, StandardCharsets.UTF_8);
-		return expectationPath;
+		return relativePath;
 	}
 
-	private Path deleteExpectationFile(String relativePath) throws IOException {
+	private String deleteExpectationFile(String relativePath) throws IOException {
 		Path expectationPath = getExpectationPath(relativePath);
 		Files.delete(expectationPath);
-		return expectationPath;
+		return relativePath;
 	}
 
 	private Path getExpectationPath(String relativePath) {
@@ -276,6 +276,6 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 
 	@FunctionalInterface
 	private static interface UpdateExpectation {
-		Path updateExpectation() throws Throwable;
+		String updateExpectation() throws Throwable;
 	}
 }
