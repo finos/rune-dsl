@@ -271,6 +271,8 @@ class ModelObjectBuilderGenerator {
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+			«ELSE»
+				@«RosettaIgnore»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				(if (isMainProp) {
@@ -395,10 +397,19 @@ class ModelObjectBuilderGenerator {
 			«val setMultiMethodArg = new JavaVariable(setMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
 			«IF isMainProp»
+<<<<<<< Updated upstream
 			@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 			«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+=======
+				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
+				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
+				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+			«ELSE»
+				@«RosettaIgnore»
+>>>>>>> Stashed changes
 			«ENDIF»
 			public «builderType» «setMethodName»(«propType» «setMultiMethodArg») «
 				(if (isMainProp) {
