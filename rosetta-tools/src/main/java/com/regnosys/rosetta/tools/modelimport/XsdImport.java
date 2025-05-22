@@ -138,6 +138,8 @@ public class XsdImport {
 		return new TypeXMLConfiguration(
 				config.getSubstitutionGroup(),
 				config.getXmlElementName(),
+				config.getXmlElementFullyQualifiedName(),
+				config.getAbstract(),
 				config.getXmlAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getAttributes().map(x -> x.isEmpty() ? null : x),
 				config.getEnumValues().map(x -> x.isEmpty() ? null : x)

@@ -27,19 +27,23 @@ public class AttributeXMLConfiguration {
 	private final Optional<String> xmlName;
 	private final Optional<Map<String, String>> xmlAttributes;
 	private final Optional<AttributeXMLRepresentation> xmlRepresentation;
+	@Deprecated
 	private final Optional<String> substitutionGroup;
+	private final Optional<String> elementRef;
 	
 	@JsonCreator
 	public AttributeXMLConfiguration(
-			@JsonProperty("xmlName") Optional<String> xmlName,
-			@JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
-			@JsonProperty("xmlRepresentation") Optional<AttributeXMLRepresentation> xmlRepresentation,
-			@JsonProperty("substitutionGroup") Optional<String> substitutionGroup) {
+            @JsonProperty("xmlName") Optional<String> xmlName,
+            @JsonProperty("xmlAttributes") Optional<Map<String, String>> xmlAttributes,
+            @JsonProperty("xmlRepresentation") Optional<AttributeXMLRepresentation> xmlRepresentation,
+            @JsonProperty("substitutionGroup") Optional<String> substitutionGroup,
+			@JsonProperty("elementRef") Optional<String> elementRef) {
 		this.xmlName = xmlName;
 		this.xmlAttributes = xmlAttributes;
 		this.xmlRepresentation = xmlRepresentation;
 		this.substitutionGroup = substitutionGroup;
-	}
+        this.elementRef = elementRef;
+    }
 
 	public Optional<String> getXmlName() {
 		return xmlName;
@@ -52,14 +56,22 @@ public class AttributeXMLConfiguration {
 	public Optional<AttributeXMLRepresentation> getXmlRepresentation() {
 		return xmlRepresentation;
 	}
-	
+
+	/**
+	 * @deprecated this is a legacy field as this isn't actually a substitution group it points to rather an elementRef, the getElementRef() method should be used instead
+	 */
+	@Deprecated
 	public Optional<String> getSubstitutionGroup() {
 		return substitutionGroup;
 	}
 
+	public Optional<String> getElementRef() {
+		return elementRef;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(xmlAttributes, xmlName, xmlRepresentation, substitutionGroup);
+		return Objects.hash(xmlAttributes, xmlName, xmlRepresentation, substitutionGroup, elementRef);
 	}
 
 	@Override
@@ -73,6 +85,7 @@ public class AttributeXMLConfiguration {
 		AttributeXMLConfiguration other = (AttributeXMLConfiguration) obj;
 		return Objects.equals(xmlAttributes, other.xmlAttributes)
 				&& Objects.equals(xmlName, other.xmlName) && Objects.equals(xmlRepresentation, other.xmlRepresentation)
-				&& Objects.equals(substitutionGroup, other.substitutionGroup);
+				&& Objects.equals(substitutionGroup, other.substitutionGroup)
+				&& Objects.equals(elementRef, other.elementRef);
 	}
 }

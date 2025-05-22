@@ -1,29 +1,17 @@
 package com.regnosys.rosetta.tools.modelimport;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.rosetta.simple.*;
+import com.rosetta.util.serialisation.AttributeXMLConfiguration;
+import com.rosetta.util.serialisation.AttributeXMLRepresentation;
+import com.rosetta.util.serialisation.TypeXMLConfiguration;
 import jakarta.inject.Inject;
-
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdComplexType;
 import org.xmlet.xsdparser.xsdelements.XsdElement;
 import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
 
-import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
-import com.regnosys.rosetta.rosetta.simple.Annotation;
-import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
-import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.util.serialisation.AttributeXMLConfiguration;
-import com.rosetta.util.serialisation.AttributeXMLRepresentation;
-import com.rosetta.util.serialisation.TypeXMLConfiguration;
+import java.util.*;
 
 public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 
@@ -43,7 +31,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 	public List<XsdElement> filterTypes(List<XsdAbstractElement> elements) {
 		return super.filterTypes(elements)
 				.stream()
-				.filter(elem -> !elem.isAbstractObj())
+				.filter(elem -> !elem.isAbstractObj() || elem.getXsdSubstitutionGroup() != null)
 				.toList();
 	}
 
@@ -153,8 +141,10 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		
 		Map<Data, TypeXMLConfiguration> result = new LinkedHashMap<>();
 		
-		Optional<String> substitutionGroup = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(elem -> util.getQualifiedName(elem));
-		Optional<String> elementName = xsdElement.isAbstractObj() ? Optional.empty() : Optional.of(xsdElement.getName());
+		Optional<String> substitutionGroup = Optional.ofNullable(xsdElement.getXsdSubstitutionGroup()).map(util::getQualifiedName);
+		Optional<String> xmlElementName = Optional.of(xsdElement.getName());
+		Optional<String> xmlElementFullyQualifiedName = Optional.of(util.getQualifiedName(xsdElement));
+		Optional<Boolean> isAbstract = Optional.of(xsdElement.isAbstractObj());
 		Optional<Map<String, String>> xmlAttributes;
 		if (isRoot(xsdElement)) {
 			Map<String, String> attrs = new LinkedHashMap<>();
@@ -170,7 +160,9 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 		result.put(data,
 				new TypeXMLConfiguration(
 					substitutionGroup,
-					elementName,
+					xmlElementName,
+					xmlElementFullyQualifiedName,
+					isAbstract,
 					xmlAttributes,
 					Optional.of(attributeConfig),
 					Optional.empty()
@@ -188,6 +180,7 @@ public class XsdElementImport extends AbstractXsdImport<XsdElement, Data>{
 					Optional.empty(),
 					Optional.empty(),
 					Optional.of(AttributeXMLRepresentation.VALUE),
+					Optional.empty(),
 					Optional.empty()));
 		}
 
