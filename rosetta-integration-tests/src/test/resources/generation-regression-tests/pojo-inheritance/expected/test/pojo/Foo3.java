@@ -554,6 +554,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@Override
+		@RosettaIgnore
 		public Foo3.Foo3Builder addParentList(Parent parentList0) {
 			final ReferenceWithMetaGrandChild ifThenElseResult;
 			if (parentList0 == null) {
@@ -601,6 +602,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@Override
+		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
 		public Foo3.Foo3Builder addOtherParentList(Child _otherParentList) {
 			if (_otherParentList != null) {
@@ -626,7 +628,6 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@Override 
-		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
 		public Foo3.Foo3Builder setOtherParentListOverriddenAsChild(List<? extends Child> otherParentLists) {
 			if (otherParentLists == null) {
@@ -640,6 +641,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@Override
+		@RosettaIgnore
 		public Foo3.Foo3Builder addOtherParentList(Parent otherParentList0) {
 			final Child ifThenElseResult;
 			if (otherParentList0 == null) {
