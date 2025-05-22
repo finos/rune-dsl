@@ -272,10 +272,13 @@ class ModelObjectBuilderGenerator {
 			«val addMethodArg = new JavaVariable(addMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)»
 			@Override
 			«IF isMainProp»
+				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
+			«ELSE»
+				@«RosettaIgnore»
 			«ENDIF»
 			public «builderType» «addMethodName»(«itemType» «addMethodArg») «
 				(if (isMainProp) {
@@ -400,7 +403,6 @@ class ModelObjectBuilderGenerator {
 			«val setMultiMethodArg = new JavaVariable(setMultiMethodScope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)»
 			@Override 
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
