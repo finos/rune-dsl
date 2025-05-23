@@ -21,7 +21,7 @@ public class RosettaValidationTestHelper extends ValidationTestHelper {
 		String issuesRepresentation = getIssuesAsString(model, issues, new StringBuilder()).toString().trim();
 		
 		Assertions.assertEquals(issuesExpectation.trim(), issuesRepresentation);
-		Assertions.assertNotEquals("", issuesRepresentation, "When asserting for issues, the issues may not be empty. Use the method ValidationTestHelper#assertNoIssues instead.");
+		Assertions.assertNotEquals("", issuesRepresentation, "No issues were found. When asserting for issues, the expected issues may not be empty. Use the method ValidationTestHelper#assertNoIssues instead.");
 	}
 	
 	@Override

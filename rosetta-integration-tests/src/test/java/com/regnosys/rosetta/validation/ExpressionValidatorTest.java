@@ -7,21 +7,36 @@ import javax.inject.Inject;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
+import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class ExpressionValidatorTest {
     @Inject
-    private ValidationTestHelper validationTestHelper;
+    private RosettaValidationTestHelper validationTestHelper;
     @Inject
     private RosettaTestModelService modelService;
+    
+    @Test
+    void enumTypeSymbolReferenceShouldBeDisallowed() {
+    	RosettaExpression expr = modelService.toTestModel("""
+                enum Foo:
+                    VALUE1
+                    VALUE2
+               """).parseExpression("""
+               Foo
+               """);
+    	
+    	validationTestHelper.assertIssues(expr, """
+    			ERROR (null) 'Enum type `Foo` must be followed by ` -> <enum value>`. Possible values are: VALUE1, VALUE2' at 1:1, length 3, on RosettaSymbolReference
+    			""");
+    }
 
     @Test
     void convertingNonEnumToStringThenUsingToEnumShouldHaveNoIssues() {
