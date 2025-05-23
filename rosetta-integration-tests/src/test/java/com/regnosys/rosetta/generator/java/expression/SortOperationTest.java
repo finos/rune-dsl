@@ -50,4 +50,27 @@ public class SortOperationTest {
         var attrValues = sortedList.stream().map(bar -> ReflectiveInvoker.from(bar, "getAttr", Integer.class).invoke()).toList();
         Assertions.assertEquals(Arrays.asList(0, 1, null), attrValues);
     }
+
+    @Test
+    void sortAllNullEntries() {
+        var model = modelService.toJavaTestModel("""
+        		type Foo:
+        			bars Bar (0..*)
+        		
+        		type Bar:
+        			attr int (0..1)
+        		""").compile();
+        var sortedList = (List<?>) model.evaluateExpression(JavaParameterizedType.from(new TypeReference<List<RosettaModelObject>>() {}, JavaWildcardTypeArgument.extendsBound(typeUtil.ROSETTA_MODEL_OBJECT)), """
+				Foo {
+					bars: [
+							Bar { ... },
+							Bar { ... },
+							Bar { ... }
+						]
+				} -> bars sort [ attr ]
+				""");
+        
+        var attrValues = sortedList.stream().map(bar -> ReflectiveInvoker.from(bar, "getAttr", Integer.class).invoke()).toList();
+        Assertions.assertEquals(Arrays.asList(null, null, null), attrValues);
+    }
 }
