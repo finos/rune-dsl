@@ -45,7 +45,7 @@ public class RosettaTestModel {
 	}
 	
 	public RosettaExpression parseExpression(CharSequence expressionSource, String... attributes) {
-		return expressionParser.parseExpression(expressionSource, Arrays.asList(model), Arrays.asList(attributes));
+		return expressionParser.parseExpression(expressionSource, List.of(model), List.of(attributes));
 	}
 	
 	public Data getType(String name) {

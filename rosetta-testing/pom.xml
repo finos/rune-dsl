@@ -27,10 +27,6 @@
 
 	<name>Rosetta DSL Testing Utilities</name>
 	<artifactId>com.regnosys.rosetta.tests</artifactId>
-	
-	<properties>
-		<maven.compiler.release>8</maven.compiler.release>
-	</properties>
 
 	<dependencies>
 		<!-- Inter-project dependencies -->

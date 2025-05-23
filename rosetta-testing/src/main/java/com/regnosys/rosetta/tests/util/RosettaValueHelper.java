@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.tests.util;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -43,27 +42,14 @@ public class RosettaValueHelper {
 			if (list.isEmpty()) {
 				return RosettaValue.empty();
 			} else {
-				// Note: with Java 9+, this could be a chain of `Optional#or`s, but we're on Java 8...
-				Optional<RosettaValue> v = tryCast(list, Boolean.class, RosettaBooleanValue::new);
-				if (v.isPresent()) {
-					return v.get();
-				}
-				v = tryCast(list, RosettaNumber.class, RosettaNumberValue::new);
-				if (v.isPresent()) {
-					return v.get();
-				}
-				v = tryCast(list, Integer.class, ints -> new RosettaNumberValue(ints.stream().map(i -> RosettaNumber.valueOf(i)).collect(Collectors.toList())));
-				if (v.isPresent()) {
-					return v.get();
-				}
-				v = tryCast(list, String.class, RosettaStringValue::new);
-				if (v.isPresent()) {
-					return v.get();
-				}
-				throw new IllegalArgumentException("Unsupported Rosetta value " + obj);
+				return tryCast(list, Boolean.class, RosettaBooleanValue::new)
+						.or(() -> tryCast(list, RosettaNumber.class, RosettaNumberValue::new))
+						.or(() -> tryCast(list, Integer.class, ints -> new RosettaNumberValue(ints.stream().map(i -> RosettaNumber.valueOf(i)).collect(Collectors.toList()))))
+						.or(() -> tryCast(list, String.class, RosettaStringValue::new))
+						.orElseThrow(() -> new IllegalArgumentException("Unsupported Rosetta value " + obj));
 			}
 		} else {
-			return toValue(Arrays.asList(obj));
+			return toValue(List.of(obj));
 		}
 	}
 }
