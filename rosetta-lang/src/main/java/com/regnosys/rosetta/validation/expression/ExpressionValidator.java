@@ -43,6 +43,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
+	
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
 		RosettaExpression argument = operation.getArgument();
@@ -307,6 +308,14 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 								ROSETTA_SYMBOL_REFERENCE__SYMBOL
 							);
 						}
+					}
+				}
+				if (s instanceof RosettaEnumeration) {
+					if (!(expr.eContainer() instanceof RosettaFeatureCall)) {
+						var enumValues = ((RosettaEnumeration) s).getEnumValues().stream()
+								.map(v -> v.getName())
+								.collect(Collectors.joining(", "));
+						error("Enum type `" + s.getName() + "` must be followed by ` -> <enum value>`. Possible values are: " + enumValues, expr, ROSETTA_SYMBOL_REFERENCE__SYMBOL);
 					}
 				}
 				if (expr.isExplicitArguments()) {
