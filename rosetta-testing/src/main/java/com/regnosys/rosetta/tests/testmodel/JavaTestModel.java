@@ -94,10 +94,13 @@ public class JavaTestModel {
 		return this;
 	}
 	
-	public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {
+	public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {		
+		return resultType.cast(evaluateExpression(JavaType.from(resultType), expr));
+	}
+	public Object evaluateExpression(JavaType resultType, CharSequence expr) {
 		assertCompiled();
 		
-		return resultType.cast(evaluatorService.evaluate(expr, rosettaModel.getModel(), JavaType.from(resultType), inMemoryCompiler.getClassloader()));
+		return evaluatorService.evaluate(expr, rosettaModel.getModel(), resultType, inMemoryCompiler.getClassloader());
 	}
 	
 	
