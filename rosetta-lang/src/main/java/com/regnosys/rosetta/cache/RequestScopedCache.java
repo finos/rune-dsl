@@ -12,6 +12,9 @@ import jakarta.inject.Singleton;
  */
 @Singleton
 public class RequestScopedCache implements IRequestScopedCache {
+	public static final String REQUEST_SCOPED_CACHE_DISABLED_VARIABLE_NAME = "DISABLE_REQUEST_SCOPED_CACHE";
+	private static final boolean REQUEST_SCOPED_CACHE_DISABLED = Boolean.getBoolean(REQUEST_SCOPED_CACHE_DISABLED_VARIABLE_NAME);
+	
 	// A special object representing a cached null value.
 	private final Object NULL = new Object();
 	
@@ -27,20 +30,20 @@ public class RequestScopedCache implements IRequestScopedCache {
 	
 	@SuppressWarnings("unchecked")
 	public <T> T get(Object key, Provider<T> provider) {
-//		Object v = values.get(key);
-//		if (v == NULL) {
-//			return null;
-//		}
-//		if (v != null) {
-//			return (T)v;
-//		}
+		Object v = values.get(key);
+		if (v == NULL) {
+			return null;
+		}
+		if (v != null) {
+			return (T)v;
+		}
 		
 		T computed = provider.get();
-//		if (computed == null) {
-//			values.put(key, NULL);
-//		} else {
-//			values.put(key, computed);
-//		}
+		if (computed == null) {
+			values.put(key, NULL);
+		} else {
+			values.put(key, computed);
+		}
 		return computed;
 	}
 	
