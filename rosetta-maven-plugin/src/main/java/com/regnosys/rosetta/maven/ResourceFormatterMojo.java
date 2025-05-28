@@ -7,8 +7,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.inject.Inject;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -17,14 +15,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
-import com.regnosys.rosetta.formatting2.FormattingOptionsAdaptor;
 import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
 
@@ -73,15 +69,15 @@ public class ResourceFormatterMojo extends AbstractMojo {
 	 */
 	@Parameter(property = "formattingOptionsPath")
 	private String formattingOptionsPath;
-	
-	@Inject
-	private FormattingOptionsService formattingOptionsService;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		Path directory = Paths.get(path);
 		LOGGER.info("Mojo running on path:" + directory.toString());
 
+		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
+		
+		FormattingOptionsService formattingOptionsService = inj.getInstance(FormattingOptionsService.class);
 		ITypedPreferenceValues formattingOptions;
 		if (formattingOptionsPath == null) {
 			formattingOptions = formattingOptionsService.getDefaultPreferences();
@@ -92,8 +88,7 @@ public class ResourceFormatterMojo extends AbstractMojo {
 				throw new MojoFailureException("Failed to read formatting options from file " + formattingOptionsPath + ".", e);
 			}
 		}
-
-		Injector inj = new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
+		
 		ResourceSet resourceSet = inj.getInstance(ResourceSet.class);
 		ResourceFormatterService formatterService = inj.getInstance(ResourceFormatterService.class);
 
