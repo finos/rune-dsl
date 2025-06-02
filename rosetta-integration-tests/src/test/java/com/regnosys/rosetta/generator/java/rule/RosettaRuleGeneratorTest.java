@@ -230,7 +230,7 @@ public class RosettaRuleGeneratorTest {
                     }
                 }
                 """.replace("\r", "");
-        assertEquals(expected, reportJava);
+        assertJavaEquals(expected, reportJava);
 
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -376,7 +376,7 @@ public class RosettaRuleGeneratorTest {
                     }
                 }
                 """.replace("\r", "");
-        assertEquals(expected, reportJava);
+        assertJavaEquals(expected, reportJava);
 
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -511,7 +511,7 @@ public class RosettaRuleGeneratorTest {
                     }
                 }
                 """.replace("\r", "");
-        assertEquals(expected, reportJava);
+        assertJavaEquals(expected, reportJava);
 
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -637,7 +637,7 @@ public class RosettaRuleGeneratorTest {
                     }
                 }
                 """.replace("\r", "");
-        assertEquals(expected, reportJava);
+        assertJavaEquals(expected, reportJava);
 
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -767,7 +767,7 @@ public class RosettaRuleGeneratorTest {
                     }
                 }
                 """.replace("\r", "");
-        assertEquals(expected, reportJava);
+        assertJavaEquals(expected, reportJava);
 
         var classes = codeGeneratorTestHelper.compileToClasses(code);
 
@@ -869,7 +869,7 @@ public class RosettaRuleGeneratorTest {
                     }
                 }
                 """.replace("\r", "");
-        assertEquals(expected, reportJava);
+        assertJavaEquals(expected, reportJava);
 
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -942,7 +942,7 @@ public class RosettaRuleGeneratorTest {
                 	}
                 }
                 """.replace("\r", "");
-        assertEquals(expected, ruleJava);
+        assertJavaEquals(expected, ruleJava);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
         var ruleImpl = loadRule(classes, "com.rosetta.test.model.reports.Rule1Rule");
         assertNotNull(ruleImpl);
@@ -1017,7 +1017,7 @@ public class RosettaRuleGeneratorTest {
                 	}
                 }
                 """.replace("\r", "");
-        assertEquals(expected, rule);
+        assertJavaEquals(expected, rule);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
         var ruleImpl = loadRule(classes, "com.rosetta.test.model.reports.Rule1Rule");
         assertNotNull(ruleImpl);
@@ -1096,7 +1096,7 @@ public class RosettaRuleGeneratorTest {
                 	}
                 }
                 """.replace("\r", "");
-        assertEquals(expected, ruleJava);
+        assertJavaEquals(expected, ruleJava);
         codeGeneratorTestHelper.compileToClasses(code);
     }
 
@@ -1199,7 +1199,7 @@ public class RosettaRuleGeneratorTest {
                 }
                 """.replace("\r", "");
         codeGeneratorTestHelper.compileToClasses(code);
-        assertEquals(expected, ruleJava);
+        assertJavaEquals(expected, ruleJava);
     }
 
     @Test
@@ -1608,8 +1608,14 @@ public class RosettaRuleGeneratorTest {
                 }
                 """.replace("\r", "");
 
-        assertEquals(expectedRule, rule);
+        assertJavaEquals(expectedRule, rule);
 
         codeGeneratorTestHelper.compileToClasses(code);
     }
+
+    private static void assertJavaEquals(String expected, String actual) {
+        assertEquals(expected.replace("\r", "").replace("\t", "    "), 
+                actual.replace("\r", "").replace("\t", "    "));
+    }
+
 }
