@@ -28,6 +28,11 @@
     <name>Rosetta DSL SDK</name>
     <artifactId>com.regnosys.rosetta</artifactId>
 
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <java.enforced.version>17</java.enforced.version>
+    </properties>
+    
     <description>
         Responsibilities: defining the core of the Rosetta DSL, including
         - the AST
