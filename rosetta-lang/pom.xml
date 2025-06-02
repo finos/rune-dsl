@@ -30,7 +30,6 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
-        <java.enforced.version>17</java.enforced.version>
     </properties>
     
     <description>
