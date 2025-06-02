@@ -32,6 +32,9 @@
 		Responsibilities: calling the Rosetta code generator from Maven.
 	</description>
 
+	<properties>
+		<maven.compiler.release>17</maven.compiler.release>
+	</properties>
 	<dependencies>
 		<!-- Inter-project dependencies -->
 		<dependency>
