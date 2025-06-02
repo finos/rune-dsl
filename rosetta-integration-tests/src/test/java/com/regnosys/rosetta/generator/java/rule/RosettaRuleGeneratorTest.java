@@ -146,95 +146,92 @@ public class RosettaRuleGeneratorTest {
 
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
-        try {
-            assertThat(reportJava, CoreMatchers.notNullValue());
-            var expected = """
-                    package com.rosetta.test.model.reports;
-                    
-                    import com.google.inject.ImplementedBy;
-                    import com.rosetta.model.lib.annotations.RosettaReport;
-                    import com.rosetta.model.lib.annotations.RuneLabelProvider;
-                    import com.rosetta.model.lib.functions.ModelObjectValidator;
-                    import com.rosetta.model.lib.reports.ReportFunction;
-                    import com.rosetta.test.model.Bar;
-                    import com.rosetta.test.model.BarReport;
-                    import com.rosetta.test.model.BarReport.BarReportBuilder;
-                    import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-                    import java.util.Optional;
-                    import javax.inject.Inject;
-                    
-                    
-                    @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
-                    @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
-                    @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
-                    public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                    \t
-                    	@Inject protected ModelObjectValidator objectValidator;
-                    \t
-                    	// RosettaFunction dependencies
-                    	//
-                    	@Inject protected BarBarOneRule barBarOneRule;
-                    	@Inject protected BarBarTwoRule barBarTwoRule;
-                    	@Inject protected BarBazRule barBazRule;
-                    	@Inject protected BarQuuxRule barQuuxRule;
-                    	@Inject protected BarQuxListRule barQuxListRule;
-                    
-                    	/**
-                    	* @param input\s
-                    	* @return output\s
-                    	*/
-                    	@Override
-                    	public BarReport evaluate(Bar input) {
-                    		BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                    \t\t
-                    		final BarReport output;
-                    		if (outputBuilder == null) {
-                    			output = null;
-                    		} else {
-                    			output = outputBuilder.build();
-                    			objectValidator.validate(BarReport.class, output);
-                    		}
-                    \t\t
-                    		return output;
-                    	}
-                    
-                    	protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                    
-                    	public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
-                    		@Override
-                    		protected BarReport.BarReportBuilder doEvaluate(Bar input) {
-                    			BarReport.BarReportBuilder output = BarReport.builder();
-                    			return assignOutput(output, input);
-                    		}
-                    \t\t
-                    		protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
-                    			output
-                    				.setBarBarOne(barBarOneRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarBarTwo(barBarTwoRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.getOrCreateBarBaz()
-                    				.setBarBaz1(barBazRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarQuxList(barQuxListRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarQuux(barQuuxRule.evaluate(input));
-                    \t\t\t
-                    			return Optional.ofNullable(output)
-                    				.map(o -> o.prune())
-                    				.orElse(null);
-                    		}
-                    	}
+        assertThat(reportJava, CoreMatchers.notNullValue());
+        var expected = """
+                package com.rosetta.test.model.reports;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.annotations.RosettaReport;
+                import com.rosetta.model.lib.annotations.RuneLabelProvider;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.reports.ReportFunction;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.BarReport;
+                import com.rosetta.test.model.BarReport.BarReportBuilder;
+                import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
+                import java.util.Optional;
+                import javax.inject.Inject;
+                
+                
+                @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+                @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
+                @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+                public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+                \t
+                    @Inject protected ModelObjectValidator objectValidator;
+                \t
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected BarBarOneRule barBarOneRule;
+                    @Inject protected BarBarTwoRule barBarTwoRule;
+                    @Inject protected BarBazRule barBazRule;
+                    @Inject protected BarQuuxRule barQuuxRule;
+                    @Inject protected BarQuxListRule barQuxListRule;
+                
+                    /**
+                    * @param input\s
+                    * @return output\s
+                    */
+                    @Override
+                    public BarReport evaluate(Bar input) {
+                        BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+                \t\t
+                        final BarReport output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(BarReport.class, output);
+                        }
+                \t\t
+                        return output;
                     }
-                    """;
-            assertEquals(expected, reportJava);
+                
+                    protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+                
+                    public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+                        @Override
+                        protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+                            BarReport.BarReportBuilder output = BarReport.builder();
+                            return assignOutput(output, input);
+                        }
+                \t\t
+                        protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+                            output
+                                .setBarBarOne(barBarOneRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarBarTwo(barBarTwoRule.evaluate(input));
+                \t\t\t
+                            output
+                                .getOrCreateBarBaz()
+                                .setBarBaz1(barBazRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarQuxList(barQuxListRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarQuux(barQuuxRule.evaluate(input));
+                \t\t\t
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """.replace("\r", "");
+        assertEquals(expected, reportJava);
 
-        } finally {
-        }
         codeGeneratorTestHelper.compileToClasses(code);
     }
 
@@ -295,95 +292,92 @@ public class RosettaRuleGeneratorTest {
         var code = codeGeneratorTestHelper.generateCode(model.toArray(CharSequence[]::new));
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
-        try {
-            assertThat(reportJava, CoreMatchers.notNullValue());
-            var expected = """
-                    package com.rosetta.test.model.reports;
-                    
-                    import com.google.inject.ImplementedBy;
-                    import com.rosetta.model.lib.annotations.RosettaReport;
-                    import com.rosetta.model.lib.annotations.RuneLabelProvider;
-                    import com.rosetta.model.lib.functions.ModelObjectValidator;
-                    import com.rosetta.model.lib.reports.ReportFunction;
-                    import com.rosetta.test.model.Bar;
-                    import com.rosetta.test.model.BarReport;
-                    import com.rosetta.test.model.BarReport.BarReportBuilder;
-                    import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-                    import java.util.Optional;
-                    import javax.inject.Inject;
-                    
-                    
-                    @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
-                    @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
-                    @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
-                    public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                    \t
-                    	@Inject protected ModelObjectValidator objectValidator;
-                    \t
-                    	// RosettaFunction dependencies
-                    	//
-                    	@Inject protected BarBarOneRule barBarOneRule;
-                    	@Inject protected BarBarTwoRule barBarTwoRule;
-                    	@Inject protected BarBazRule barBazRule;
-                    	@Inject protected BarQuuxRule barQuuxRule;
-                    	@Inject protected BarQuxListRule barQuxListRule;
-                    
-                    	/**
-                    	* @param input\s
-                    	* @return output\s
-                    	*/
-                    	@Override
-                    	public BarReport evaluate(Bar input) {
-                    		BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                    \t\t
-                    		final BarReport output;
-                    		if (outputBuilder == null) {
-                    			output = null;
-                    		} else {
-                    			output = outputBuilder.build();
-                    			objectValidator.validate(BarReport.class, output);
-                    		}
-                    \t\t
-                    		return output;
-                    	}
-                    
-                    	protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                    
-                    	public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
-                    		@Override
-                    		protected BarReport.BarReportBuilder doEvaluate(Bar input) {
-                    			BarReport.BarReportBuilder output = BarReport.builder();
-                    			return assignOutput(output, input);
-                    		}
-                    \t\t
-                    		protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
-                    			output
-                    				.setBarBarOne(barBarOneRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarBarTwo(barBarTwoRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.getOrCreateBarBaz()
-                    				.setBarBaz1(barBazRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarQuxList(barQuxListRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarQuux(barQuuxRule.evaluate(input));
-                    \t\t\t
-                    			return Optional.ofNullable(output)
-                    				.map(o -> o.prune())
-                    				.orElse(null);
-                    		}
-                    	}
+        assertThat(reportJava, CoreMatchers.notNullValue());
+        var expected = """
+                package com.rosetta.test.model.reports;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.annotations.RosettaReport;
+                import com.rosetta.model.lib.annotations.RuneLabelProvider;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.reports.ReportFunction;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.BarReport;
+                import com.rosetta.test.model.BarReport.BarReportBuilder;
+                import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
+                import java.util.Optional;
+                import javax.inject.Inject;
+                
+                
+                @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+                @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
+                @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+                public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+                \t
+                    @Inject protected ModelObjectValidator objectValidator;
+                \t
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected BarBarOneRule barBarOneRule;
+                    @Inject protected BarBarTwoRule barBarTwoRule;
+                    @Inject protected BarBazRule barBazRule;
+                    @Inject protected BarQuuxRule barQuuxRule;
+                    @Inject protected BarQuxListRule barQuxListRule;
+                
+                    /**
+                    * @param input\s
+                    * @return output\s
+                    */
+                    @Override
+                    public BarReport evaluate(Bar input) {
+                        BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+                \t\t
+                        final BarReport output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(BarReport.class, output);
+                        }
+                \t\t
+                        return output;
                     }
-                    """;
-            assertEquals(expected, reportJava);
+                
+                    protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+                
+                    public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+                        @Override
+                        protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+                            BarReport.BarReportBuilder output = BarReport.builder();
+                            return assignOutput(output, input);
+                        }
+                \t\t
+                        protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+                            output
+                                .setBarBarOne(barBarOneRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarBarTwo(barBarTwoRule.evaluate(input));
+                \t\t\t
+                            output
+                                .getOrCreateBarBaz()
+                                .setBarBaz1(barBazRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarQuxList(barQuxListRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarQuux(barQuuxRule.evaluate(input));
+                \t\t\t
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """.replace("\r", "");
+        assertEquals(expected, reportJava);
 
-        } finally {
-        }
         codeGeneratorTestHelper.compileToClasses(code);
     }
 
@@ -437,91 +431,88 @@ public class RosettaRuleGeneratorTest {
         var code = codeGeneratorTestHelper.generateCode(model.toArray(CharSequence[]::new));
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
-        try {
-            assertThat(reportJava, CoreMatchers.notNullValue());
-            var expected = """
-                    package com.rosetta.test.model.reports;
-                    
-                    import com.google.inject.ImplementedBy;
-                    import com.rosetta.model.lib.annotations.RosettaReport;
-                    import com.rosetta.model.lib.annotations.RuneLabelProvider;
-                    import com.rosetta.model.lib.functions.ModelObjectValidator;
-                    import com.rosetta.model.lib.reports.ReportFunction;
-                    import com.rosetta.test.model.Bar;
-                    import com.rosetta.test.model.BarReport;
-                    import com.rosetta.test.model.BarReport.BarReportBuilder;
-                    import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-                    import java.util.Optional;
-                    import javax.inject.Inject;
-                    
-                    
-                    @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
-                    @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
-                    @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
-                    public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                    \t
-                    	@Inject protected ModelObjectValidator objectValidator;
-                    \t
-                    	// RosettaFunction dependencies
-                    	//
-                    	@Inject protected BarBarTwoRule barBarTwoRule;
-                    	@Inject protected BarBazRule barBazRule;
-                    	@Inject protected BarQuxListRule barQuxListRule;
-                    	@Inject protected New_BarBarOneRule new_BarBarOneRule;
-                    
-                    	/**
-                    	* @param input\s
-                    	* @return output\s
-                    	*/
-                    	@Override
-                    	public BarReport evaluate(Bar input) {
-                    		BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                    \t\t
-                    		final BarReport output;
-                    		if (outputBuilder == null) {
-                    			output = null;
-                    		} else {
-                    			output = outputBuilder.build();
-                    			objectValidator.validate(BarReport.class, output);
-                    		}
-                    \t\t
-                    		return output;
-                    	}
-                    
-                    	protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                    
-                    	public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
-                    		@Override
-                    		protected BarReport.BarReportBuilder doEvaluate(Bar input) {
-                    			BarReport.BarReportBuilder output = BarReport.builder();
-                    			return assignOutput(output, input);
-                    		}
-                    \t\t
-                    		protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
-                    			output
-                    				.setBarBarOne(new_BarBarOneRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarBarTwo(barBarTwoRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.getOrCreateBarBaz()
-                    				.setBarBaz1(barBazRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarQuxList(barQuxListRule.evaluate(input));
-                    \t\t\t
-                    			return Optional.ofNullable(output)
-                    				.map(o -> o.prune())
-                    				.orElse(null);
-                    		}
-                    	}
+        assertThat(reportJava, CoreMatchers.notNullValue());
+        var expected = """
+                package com.rosetta.test.model.reports;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.annotations.RosettaReport;
+                import com.rosetta.model.lib.annotations.RuneLabelProvider;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.reports.ReportFunction;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.BarReport;
+                import com.rosetta.test.model.BarReport.BarReportBuilder;
+                import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
+                import java.util.Optional;
+                import javax.inject.Inject;
+                
+                
+                @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+                @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
+                @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+                public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+                \t
+                    @Inject protected ModelObjectValidator objectValidator;
+                \t
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected BarBarTwoRule barBarTwoRule;
+                    @Inject protected BarBazRule barBazRule;
+                    @Inject protected BarQuxListRule barQuxListRule;
+                    @Inject protected New_BarBarOneRule new_BarBarOneRule;
+                
+                    /**
+                    * @param input\s
+                    * @return output\s
+                    */
+                    @Override
+                    public BarReport evaluate(Bar input) {
+                        BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+                \t\t
+                        final BarReport output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(BarReport.class, output);
+                        }
+                \t\t
+                        return output;
                     }
-                    """;
-            assertEquals(expected, reportJava);
+                
+                    protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+                
+                    public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+                        @Override
+                        protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+                            BarReport.BarReportBuilder output = BarReport.builder();
+                            return assignOutput(output, input);
+                        }
+                \t\t
+                        protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+                            output
+                                .setBarBarOne(new_BarBarOneRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarBarTwo(barBarTwoRule.evaluate(input));
+                \t\t\t
+                            output
+                                .getOrCreateBarBaz()
+                                .setBarBaz1(barBazRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarQuxList(barQuxListRule.evaluate(input));
+                \t\t\t
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """.replace("\r", "");
+        assertEquals(expected, reportJava);
 
-        } finally {
-        }
         codeGeneratorTestHelper.compileToClasses(code);
     }
 
@@ -570,87 +561,84 @@ public class RosettaRuleGeneratorTest {
         var code = codeGeneratorTestHelper.generateCode(model.toArray(CharSequence[]::new));
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
-        try {
-            assertThat(reportJava, CoreMatchers.notNullValue());
-            var expected = """
-                    package com.rosetta.test.model.reports;
-                    
-                    import com.google.inject.ImplementedBy;
-                    import com.rosetta.model.lib.annotations.RosettaReport;
-                    import com.rosetta.model.lib.annotations.RuneLabelProvider;
-                    import com.rosetta.model.lib.functions.ModelObjectValidator;
-                    import com.rosetta.model.lib.reports.ReportFunction;
-                    import com.rosetta.test.model.Bar;
-                    import com.rosetta.test.model.BarReport;
-                    import com.rosetta.test.model.BarReport.BarReportBuilder;
-                    import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-                    import java.util.Optional;
-                    import javax.inject.Inject;
-                    
-                    
-                    @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
-                    @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
-                    @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
-                    public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                    \t
-                    	@Inject protected ModelObjectValidator objectValidator;
-                    \t
-                    	// RosettaFunction dependencies
-                    	//
-                    	@Inject protected BarBarTwoRule barBarTwoRule;
-                    	@Inject protected BarBazRule barBazRule;
-                    	@Inject protected BarQuxListRule barQuxListRule;
-                    
-                    	/**
-                    	* @param input\s
-                    	* @return output\s
-                    	*/
-                    	@Override
-                    	public BarReport evaluate(Bar input) {
-                    		BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                    \t\t
-                    		final BarReport output;
-                    		if (outputBuilder == null) {
-                    			output = null;
-                    		} else {
-                    			output = outputBuilder.build();
-                    			objectValidator.validate(BarReport.class, output);
-                    		}
-                    \t\t
-                    		return output;
-                    	}
-                    
-                    	protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                    
-                    	public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
-                    		@Override
-                    		protected BarReport.BarReportBuilder doEvaluate(Bar input) {
-                    			BarReport.BarReportBuilder output = BarReport.builder();
-                    			return assignOutput(output, input);
-                    		}
-                    \t\t
-                    		protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
-                    			output
-                    				.setBarBarTwo(barBarTwoRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.getOrCreateBarBaz()
-                    				.setBarBaz1(barBazRule.evaluate(input));
-                    \t\t\t
-                    			output
-                    				.setBarQuxList(barQuxListRule.evaluate(input));
-                    \t\t\t
-                    			return Optional.ofNullable(output)
-                    				.map(o -> o.prune())
-                    				.orElse(null);
-                    		}
-                    	}
+        assertThat(reportJava, CoreMatchers.notNullValue());
+        var expected = """
+                package com.rosetta.test.model.reports;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.annotations.RosettaReport;
+                import com.rosetta.model.lib.annotations.RuneLabelProvider;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.reports.ReportFunction;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.BarReport;
+                import com.rosetta.test.model.BarReport.BarReportBuilder;
+                import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
+                import java.util.Optional;
+                import javax.inject.Inject;
+                
+                
+                @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+                @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
+                @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+                public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+                \t
+                    @Inject protected ModelObjectValidator objectValidator;
+                \t
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected BarBarTwoRule barBarTwoRule;
+                    @Inject protected BarBazRule barBazRule;
+                    @Inject protected BarQuxListRule barQuxListRule;
+                
+                    /**
+                    * @param input\s
+                    * @return output\s
+                    */
+                    @Override
+                    public BarReport evaluate(Bar input) {
+                        BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+                \t\t
+                        final BarReport output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(BarReport.class, output);
+                        }
+                \t\t
+                        return output;
                     }
-                    """;
-            assertEquals(expected, reportJava);
+                
+                    protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+                
+                    public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+                        @Override
+                        protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+                            BarReport.BarReportBuilder output = BarReport.builder();
+                            return assignOutput(output, input);
+                        }
+                \t\t
+                        protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+                            output
+                                .setBarBarTwo(barBarTwoRule.evaluate(input));
+                \t\t\t
+                            output
+                                .getOrCreateBarBaz()
+                                .setBarBaz1(barBazRule.evaluate(input));
+                \t\t\t
+                            output
+                                .setBarQuxList(barQuxListRule.evaluate(input));
+                \t\t\t
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """.replace("\r", "");
+        assertEquals(expected, reportJava);
 
-        } finally {
-        }
         codeGeneratorTestHelper.compileToClasses(code);
     }
 
@@ -712,78 +700,75 @@ public class RosettaRuleGeneratorTest {
         var code = codeGeneratorTestHelper.generateCode(model.toArray(CharSequence[]::new));
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
-        try {
-            assertThat(reportJava, CoreMatchers.notNullValue());
-            var expected = """
-                    package com.rosetta.test.model.reports;
-                    
-                    import com.google.inject.ImplementedBy;
-                    import com.rosetta.model.lib.annotations.RosettaReport;
-                    import com.rosetta.model.lib.annotations.RuneLabelProvider;
-                    import com.rosetta.model.lib.functions.ModelObjectValidator;
-                    import com.rosetta.model.lib.reports.ReportFunction;
-                    import com.rosetta.test.model.Bar;
-                    import com.rosetta.test.model.BarReport;
-                    import com.rosetta.test.model.BarReport.BarReportBuilder;
-                    import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-                    import java.util.Optional;
-                    import javax.inject.Inject;
-                    
-                    
-                    @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
-                    @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
-                    @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
-                    public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                    \t
-                    	@Inject protected ModelObjectValidator objectValidator;
-                    \t
-                    	// RosettaFunction dependencies
-                    	//
-                    	@Inject protected BarToBazReportRule barToBazReportRule;
-                    
-                    	/**
-                    	* @param input\s
-                    	* @return output\s
-                    	*/
-                    	@Override
-                    	public BarReport evaluate(Bar input) {
-                    		BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                    \t\t
-                    		final BarReport output;
-                    		if (outputBuilder == null) {
-                    			output = null;
-                    		} else {
-                    			output = outputBuilder.build();
-                    			objectValidator.validate(BarReport.class, output);
-                    		}
-                    \t\t
-                    		return output;
-                    	}
-                    
-                    	protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                    
-                    	public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
-                    		@Override
-                    		protected BarReport.BarReportBuilder doEvaluate(Bar input) {
-                    			BarReport.BarReportBuilder output = BarReport.builder();
-                    			return assignOutput(output, input);
-                    		}
-                    \t\t
-                    		protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
-                    			output
-                    				.setBaz(barToBazReportRule.evaluate(input));
-                    \t\t\t
-                    			return Optional.ofNullable(output)
-                    				.map(o -> o.prune())
-                    				.orElse(null);
-                    		}
-                    	}
+        assertThat(reportJava, CoreMatchers.notNullValue());
+        var expected = """
+                package com.rosetta.test.model.reports;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.annotations.RosettaReport;
+                import com.rosetta.model.lib.annotations.RuneLabelProvider;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.reports.ReportFunction;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.BarReport;
+                import com.rosetta.test.model.BarReport.BarReportBuilder;
+                import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
+                import java.util.Optional;
+                import javax.inject.Inject;
+                
+                
+                @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+                @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
+                @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+                public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+                \t
+                    @Inject protected ModelObjectValidator objectValidator;
+                \t
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected BarToBazReportRule barToBazReportRule;
+                
+                    /**
+                    * @param input\s
+                    * @return output\s
+                    */
+                    @Override
+                    public BarReport evaluate(Bar input) {
+                        BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+                \t\t
+                        final BarReport output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(BarReport.class, output);
+                        }
+                \t\t
+                        return output;
                     }
-                    """;
-            assertEquals(expected, reportJava);
+                
+                    protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+                
+                    public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+                        @Override
+                        protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+                            BarReport.BarReportBuilder output = BarReport.builder();
+                            return assignOutput(output, input);
+                        }
+                \t\t
+                        protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+                            output
+                                .setBaz(barToBazReportRule.evaluate(input));
+                \t\t\t
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """.replace("\r", "");
+        assertEquals(expected, reportJava);
 
-        } finally {
-        }
         var classes = codeGeneratorTestHelper.compileToClasses(code);
 
         var test = functionGeneratorHelper.createFunc(classes, "TEST_REGMiFIRReportFunction", DottedPath.splitOnDots("com.rosetta.test.model.reports"));
@@ -824,71 +809,68 @@ public class RosettaRuleGeneratorTest {
         var code = codeGeneratorTestHelper.generateCode(model);
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
-        try {
-            assertThat(reportJava, CoreMatchers.notNullValue());
-            var expected = """
-                    package com.rosetta.test.model.reports;
-                    
-                    import com.google.inject.ImplementedBy;
-                    import com.rosetta.model.lib.annotations.RosettaReport;
-                    import com.rosetta.model.lib.annotations.RuneLabelProvider;
-                    import com.rosetta.model.lib.functions.ModelObjectValidator;
-                    import com.rosetta.model.lib.reports.ReportFunction;
-                    import com.rosetta.test.model.Bar;
-                    import com.rosetta.test.model.BarReport;
-                    import com.rosetta.test.model.BarReport.BarReportBuilder;
-                    import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
-                    import java.util.Optional;
-                    import javax.inject.Inject;
-                    
-                    
-                    @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
-                    @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
-                    @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
-                    public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                    \t
-                    	@Inject protected ModelObjectValidator objectValidator;
-                    
-                    	/**
-                    	* @param input\s
-                    	* @return output\s
-                    	*/
-                    	@Override
-                    	public BarReport evaluate(Bar input) {
-                    		BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                    \t\t
-                    		final BarReport output;
-                    		if (outputBuilder == null) {
-                    			output = null;
-                    		} else {
-                    			output = outputBuilder.build();
-                    			objectValidator.validate(BarReport.class, output);
-                    		}
-                    \t\t
-                    		return output;
-                    	}
-                    
-                    	protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                    
-                    	public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
-                    		@Override
-                    		protected BarReport.BarReportBuilder doEvaluate(Bar input) {
-                    			BarReport.BarReportBuilder output = BarReport.builder();
-                    			return assignOutput(output, input);
-                    		}
-                    \t\t
-                    		protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
-                    			return Optional.ofNullable(output)
-                    				.map(o -> o.prune())
-                    				.orElse(null);
-                    		}
-                    	}
+        assertThat(reportJava, CoreMatchers.notNullValue());
+        var expected = """
+                package com.rosetta.test.model.reports;
+                
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.annotations.RosettaReport;
+                import com.rosetta.model.lib.annotations.RuneLabelProvider;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.reports.ReportFunction;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.BarReport;
+                import com.rosetta.test.model.BarReport.BarReportBuilder;
+                import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
+                import java.util.Optional;
+                import javax.inject.Inject;
+                
+                
+                @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
+                @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
+                @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
+                public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
+                \t
+                    @Inject protected ModelObjectValidator objectValidator;
+                
+                    /**
+                    * @param input\s
+                    * @return output\s
+                    */
+                    @Override
+                    public BarReport evaluate(Bar input) {
+                        BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
+                \t\t
+                        final BarReport output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(BarReport.class, output);
+                        }
+                \t\t
+                        return output;
                     }
-                    """;
-            assertEquals(expected, reportJava);
+                
+                    protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
+                
+                    public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
+                        @Override
+                        protected BarReport.BarReportBuilder doEvaluate(Bar input) {
+                            BarReport.BarReportBuilder output = BarReport.builder();
+                            return assignOutput(output, input);
+                        }
+                \t\t
+                        protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """.replace("\r", "");
+        assertEquals(expected, reportJava);
 
-        } finally {
-        }
         codeGeneratorTestHelper.compileToClasses(code);
     }
 
@@ -959,7 +941,7 @@ public class RosettaRuleGeneratorTest {
                 		}
                 	}
                 }
-                """;
+                """.replace("\r", "");
         assertEquals(expected, ruleJava);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
         var ruleImpl = loadRule(classes, "com.rosetta.test.model.reports.Rule1Rule");
@@ -1034,7 +1016,7 @@ public class RosettaRuleGeneratorTest {
                 		}
                 	}
                 }
-                """;
+                """.replace("\r", "");
         assertEquals(expected, rule);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
         var ruleImpl = loadRule(classes, "com.rosetta.test.model.reports.Rule1Rule");
@@ -1113,7 +1095,7 @@ public class RosettaRuleGeneratorTest {
                 		}
                 	}
                 }
-                """;
+                """.replace("\r", "");
         assertEquals(expected, ruleJava);
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -1215,7 +1197,7 @@ public class RosettaRuleGeneratorTest {
                 		}
                 	}
                 }
-                """;
+                """.replace("\r", "");
         codeGeneratorTestHelper.compileToClasses(code);
         assertEquals(expected, ruleJava);
     }
@@ -1408,8 +1390,7 @@ public class RosettaRuleGeneratorTest {
                 else if bar = Bar -> Y then "Y"
                 else if bar = Bar -> Z then "Z"
                 
-                """
-                .replace("\r", "");
+                """.replace("\r", "");
         var code = codeGeneratorTestHelper.generateCode(model);
         codeGeneratorTestHelper.compileToClasses(code);
     }
@@ -1625,7 +1606,7 @@ public class RosettaRuleGeneratorTest {
                 		}
                 	}
                 }
-                """;
+                """.replace("\r", "");
 
         assertEquals(expectedRule, rule);
 
