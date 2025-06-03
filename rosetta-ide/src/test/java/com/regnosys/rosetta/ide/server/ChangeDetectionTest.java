@@ -225,4 +225,33 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		Assertions.assertNotNull(newLabelProviderCode, "Label provider does not exist at " + labelProviderPath);
 		Assertions.assertNotEquals(originalLabelProviderCode, newLabelProviderCode);
 	}
+
+	@Test
+	void testBreakingAndFixingOneNamespaceHasNoIssues() {
+		String nsA = createModel("a.rosetta", """
+				namespace a
+				
+				enum Y: Q
+				""");
+		String nsB = createModel("b.rosetta", """
+				namespace b
+
+				type X: x string (1..1)
+				reporting rule R from X: a.Y -> Q
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsA, 2, 0, "", "break me");
+		List<Diagnostic> issues = getDiagnostics().get(nsB);
+
+		assertIssues("Error [[3, 25] .. [3, 28]]: Couldn't resolve reference to RosettaSymbol 'a.Y'.\n" +
+				"Error [[3, 32] .. [3, 33]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+
+		makeChange(nsA, 2, 0, "break me", "");
+
+		// There should again be no issue. 
+		assertNoIssues();
+	}
 }
