@@ -114,20 +114,18 @@ public class RObjectFactory {
 		inputAttribute.setCard(cardinality);
 		
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
-		RFunction rFunction = new RFunction(
-				modelIdProvider.getReportId(report),
-				reportDefinition,
-				List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
-				outputAttribute,
-				RFunctionOrigin.REPORT,
-				List.of(),
-				List.of(),
-				List.of(),
-				operations,
-				List.of()
+		return new RFunction( 
+			modelIdProvider.getReportId(report),
+			reportDefinition,
+			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
+			outputAttribute,
+			RFunctionOrigin.REPORT,
+			List.of(),
+			List.of(),
+			List.of(),
+			operations,
+			List.of()
 		);
-
-		return rFunction;
 	}
 	
 	private List<ROperation> generateOperations(RosettaReport report, RAttribute outputAttribute, RDataType reportType, Attribute inputAttribute) {
