@@ -113,9 +113,6 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
-		if (modelIdProvider.getReportId(report).toString().contains("Ext")) {
-			System.out.println();
-		}
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
 		RFunction rFunction = new RFunction(
 				modelIdProvider.getReportId(report),
@@ -129,9 +126,6 @@ public class RObjectFactory {
 				operations,
 				List.of()
 		);
-		if (modelIdProvider.getReportId(report).toString().contains("Ext")) {
-			System.out.println();
-		}
 
 		return rFunction;
 	}
