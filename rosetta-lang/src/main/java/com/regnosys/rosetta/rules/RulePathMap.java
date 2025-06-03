@@ -17,9 +17,8 @@ import org.eclipse.emf.ecore.EObject;
  */
 public class RulePathMap {
 	private final List<RulePathMap> parents;
-	private Map<List<String>, RuleResult> map = new LinkedHashMap<>();
-
-	private String id;
+	private final Map<List<String>, RuleResult> map = new LinkedHashMap<>();
+	private final String id;
 	
 	public RulePathMap(String id, List<RulePathMap> parentsInDescendingPriority) {
 		this.parents = parentsInDescendingPriority;
@@ -83,6 +82,10 @@ public class RulePathMap {
 
 	@Override
 	public String toString() {
-		return id  + " - " + Optional.ofNullable(get(List.of()).getRule()).map(RosettaNamed::getName).orElse("[empty rule reference]");
+		return "RulePathMap{" +
+				"parentsSize=" + parents.size() +
+				", map=" + map +
+				", id='" + id + '\'' +
+				'}';
 	}
 }
