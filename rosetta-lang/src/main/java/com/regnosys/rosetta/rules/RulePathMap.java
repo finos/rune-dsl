@@ -3,7 +3,9 @@ package com.regnosys.rosetta.rules;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -15,10 +17,12 @@ import org.eclipse.emf.ecore.EObject;
  */
 public class RulePathMap {
 	private final List<RulePathMap> parents;
-	private Map<List<String>, RuleResult> map = new LinkedHashMap<>();
-
-	public RulePathMap(List<RulePathMap> parentsInDescendingPriority) {
+	private final Map<List<String>, RuleResult> map = new LinkedHashMap<>();
+	private final String id;
+	
+	public RulePathMap(String id, List<RulePathMap> parentsInDescendingPriority) {
 		this.parents = parentsInDescendingPriority;
+		this.id = id;
 	}
 
 	public void add(List<String> path, RuleResult ruleResult) {
@@ -74,5 +78,14 @@ public class RulePathMap {
 	 */
 	public Map<List<String>, RuleResult> getOwnRules() {
 		return map;
+	}
+
+	@Override
+	public String toString() {
+		return "RulePathMap{" +
+				"parentsSize=" + parents.size() +
+				", map=" + map +
+				", id='" + id + '\'' +
+				'}';
 	}
 }
