@@ -113,19 +113,27 @@ public class RObjectFactory {
 		cardinality.setSup(1);
 		inputAttribute.setCard(cardinality);
 		
+		if (modelIdProvider.getReportId(report).toString().contains("Ext")) {
+			System.out.println();
+		}
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
-		return new RFunction( 
-			modelIdProvider.getReportId(report),
-			reportDefinition,
-			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
-			outputAttribute,
-			RFunctionOrigin.REPORT,
-			List.of(),
-			List.of(),
-			List.of(),
-			operations,
-			List.of()
+		RFunction rFunction = new RFunction(
+				modelIdProvider.getReportId(report),
+				reportDefinition,
+				List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
+				outputAttribute,
+				RFunctionOrigin.REPORT,
+				List.of(),
+				List.of(),
+				List.of(),
+				operations,
+				List.of()
 		);
+		if (modelIdProvider.getReportId(report).toString().contains("Ext")) {
+			System.out.println();
+		}
+
+		return rFunction;
 	}
 	
 	private List<ROperation> generateOperations(RosettaReport report, RAttribute outputAttribute, RDataType reportType, Attribute inputAttribute) {

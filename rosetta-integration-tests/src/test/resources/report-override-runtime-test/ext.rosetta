@@ -17,3 +17,29 @@ rule source ExtRegRules extends RegRules
 {
 
 }
+
+
+/* 
+
+precedent order - for Reg Trade Ext ==> ExtRegRules ==> ExtRegReport ==> notation
+    Proposed?
+    - ExtRegRules-ExtRegReport-notation
+    - ExtRegRules-RegReport-notation
+    - RegRules-ExtRegReport-notation
+    - RegRules-RegReport-notation
+    - no-source-ExtRegReport-notation
+    - no-source-RegReport-notation
+    - no-source-CommonReport-notation
+    - no-source-CriticalDataElement-notation
+
+precedent order - for Reg Trade Ext ==> ExtRegRules ==> ExtRegReport ==> notation
+    What it is now
+
+- ExtRegRules-ExtRegReport-notation - PriceNotationBase
+- ExtRegRules-RegReport-notation - PriceNotationBase
+- ExtRegRules-CommonReport-notation - PriceNotationBase
+- ExtRegRules-CriticalDataElement-notation - PriceNotationBase
+- RegRules-CriticalDataElement-notation - PriceNotationBase
+- no-source-CriticalDataElement-notation - PriceNotationBase
+
+*/

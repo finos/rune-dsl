@@ -7,6 +7,6 @@ enum NotationEnum:
     Y
     Z
 
-reporting rule PriceNotationEnum from Instruction:
+reporting rule PriceNotationBase from Instruction:
     extract NotationEnum -> Y
         as "The notation"
