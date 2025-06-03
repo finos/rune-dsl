@@ -1,0 +1,5 @@
+namespace common.layer: <"">
+
+import cde.layer.* as cde
+
+type CommonReport extends cde.CriticalDataElement:

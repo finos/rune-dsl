@@ -1,0 +1,19 @@
+namespace ext: <"">
+
+import common.layer.* as common
+import cde.layer.* as cde
+import base.layer.*
+import reg.*
+
+corpus Reg Ext
+
+report Reg Trade Ext in T+1
+    from Instruction when Ok
+    with type ExtRegReport with source ExtRegRules
+
+type ExtRegReport extends RegReport:
+
+rule source ExtRegRules extends RegRules
+{
+
+}
