@@ -17,7 +17,7 @@
 package com.regnosys.rosetta.ide.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.regnosys.rosetta.cache.IRequestScopedCache;
+import com.regnosys.rosetta.cache.RequestScopedCacheManager;
 
 import org.eclipse.xtext.ide.server.concurrent.AbstractRequest;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
@@ -50,7 +50,7 @@ public class RosettaRequestManager extends RequestManager {
 	                        .setDaemon(true)
 	                        .setNameFormat("rosetta-language-server-request-timeout-%d")
 	                        .build());
-	private final IRequestScopedCache requestCache;
+	private final RequestScopedCacheManager requestCacheManager;
 
 	/*
 	 * TODO: contribute to Xtext
@@ -73,9 +73,9 @@ public class RosettaRequestManager extends RequestManager {
 		
 		Object serviceProvider = serviceProviderRegistry.getExtensionToFactoryMap().get("rosetta");
 		if (serviceProvider instanceof IResourceServiceProvider) {
-			this.requestCache = ((IResourceServiceProvider) serviceProvider).get(IRequestScopedCache.class);
+			this.requestCacheManager = ((IResourceServiceProvider) serviceProvider).get(RequestScopedCacheManager.class);
 		} else {
-			this.requestCache = null;
+			this.requestCacheManager = null;
 		}
 	}
 
@@ -115,7 +115,7 @@ public class RosettaRequestManager extends RequestManager {
 			Function0<? extends U> nonCancellable,
 			Function2<? super CancelIndicator, ? super U, ? extends V> cancellable) {
 		return super.runWrite(() -> {
-			requestCache.clear();
+			requestCacheManager.clearAll();
 			return nonCancellable.apply();
 		}, (cancelIndicator, intermediate) -> runCancellableWithTimeout((_cancelIndicator) -> cancellable.apply(_cancelIndicator, intermediate)).apply(cancelIndicator));
 	}

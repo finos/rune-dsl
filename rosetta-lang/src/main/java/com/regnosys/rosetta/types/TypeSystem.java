@@ -28,11 +28,10 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 
 import org.apache.commons.lang3.Validate;
 
-import com.regnosys.rosetta.cache.IRequestScopedCache;
+import com.regnosys.rosetta.cache.caches.RulesInputTypeCache;
 import com.regnosys.rosetta.interpreter.RosettaInterpreter;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.interpreter.RosettaValue;
@@ -55,13 +54,9 @@ import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver;
 import com.regnosys.rosetta.utils.RosettaSimpleSystemSolver.Equation;
 import com.rosetta.model.lib.ModelSymbolId;
 
-import org.eclipse.xtext.xbase.lib.Pair;
-
 import com.regnosys.rosetta.rosetta.simple.Condition;
 
 public class TypeSystem {
-	public static String RULE_INPUT_TYPE_CACHE_KEY = TypeSystem.class.getCanonicalName() + ".RULE_INPUT_TYPE";
-
 	@Inject
 	private RObjectFactory factory;
 	@Inject
@@ -69,7 +64,7 @@ public class TypeSystem {
 	@Inject
 	private RuleReferenceService ruleService;
 	@Inject
-	private IRequestScopedCache cache;
+	private RulesInputTypeCache cache;
 	@Inject
 	private SubtypeRelation subtypeRelation;
 	@Inject
@@ -81,7 +76,7 @@ public class TypeSystem {
 
 	public RType getRulesInputType(RDataType data, RosettaExternalRuleSource source) {
 		Objects.requireNonNull(data);
-        return getRulesInputTypeFromCache(data, source, () -> {
+        return cache.get(source, data, () -> {
         	return ruleService.<RType>traverse(
         			source,
         			data,
@@ -99,9 +94,6 @@ public class TypeSystem {
         		);
         });
 	}
-    private RType getRulesInputTypeFromCache(RDataType data, RosettaExternalRuleSource source, Provider<RType> typeProvider) {
-    	return cache.get(new Pair<>(RULE_INPUT_TYPE_CACHE_KEY, new Pair<>(data, source)), typeProvider);
-    }
     
     public RType getRuleInputType(RosettaRule rule) {
     	Objects.requireNonNull(rule);

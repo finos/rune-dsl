@@ -28,7 +28,7 @@ import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
-import com.regnosys.rosetta.cache.IRequestScopedCache;
+import com.regnosys.rosetta.cache.caches.RDataTypeCache;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -60,7 +60,7 @@ public class RObjectFactory {
 	@Inject
 	private RuleReferenceService ruleService;
 	@Inject
-	private IRequestScopedCache cache;
+	private RDataTypeCache cache;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
@@ -226,7 +226,7 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return cache.get(new CacheKey(data), () -> new RDataType(data, modelIdProvider, this, typeProvider));
+		return cache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
 	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
@@ -236,12 +236,5 @@ public class RObjectFactory {
 	}
 	public RMetaAttribute buildRMetaAttribute(RosettaMetaType rosettaMetaType) {
 		return new RMetaAttribute(rosettaMetaType.getName(), typeSystem.typeCallToRType(rosettaMetaType.getTypeCall()));
-	}
-
-	private static record CacheKey(EObject object) {
-		@Override
-	    public int hashCode() {
-	        return Objects.hash(getClass(), object);
-	    }
 	}
 }
