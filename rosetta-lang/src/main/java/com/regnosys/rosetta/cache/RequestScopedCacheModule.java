@@ -19,35 +19,35 @@ public class RequestScopedCacheModule extends AbstractModule {
 	
 	private void configureCaches() {
 		caches.add(
-				new RDataTypeCache(
-					CacheBuilder.newBuilder()
-						.build()
-				));
+			new RDataTypeCache(
+				CacheBuilder.newBuilder()
+					.build()
+			));
 		
 		caches.add(
-				new ExpectedTypeCache(
-					CacheBuilder.newBuilder()
-						.build()
-				));
+			new ExpectedTypeCache(
+				CacheBuilder.newBuilder()
+					.build()
+			));
 		
 		caches.add(
-				new RuleComputationCache(
-					CacheBuilder.newBuilder()
-						.build()
-				));
+			new RuleComputationCache(
+				CacheBuilder.newBuilder()
+					.build()
+			));
 		
 		caches.add(
-				new RulesInputTypeCache(
-					CacheBuilder.newBuilder()
-						.build()
-				));
+			new RulesInputTypeCache(
+				CacheBuilder.newBuilder()
+					.build()
+			));
 
 		caches.add(
-				new ExpressionTypeCache(
-					CacheBuilder.newBuilder()
-						.weakKeys() // keys are reference-based and should be cleaned up under memory pressure
-						.build()
-				));
+			new ExpressionTypeCache(
+				CacheBuilder.newBuilder()
+					.weakKeys() // keys are reference-based and should be cleaned up under memory pressure
+					.build()
+			));
 	}
 	
 	@SuppressWarnings("unchecked")

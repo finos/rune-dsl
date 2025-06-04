@@ -33,7 +33,6 @@
     </description>
 
     <dependencies>
-
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xmi</artifactId>

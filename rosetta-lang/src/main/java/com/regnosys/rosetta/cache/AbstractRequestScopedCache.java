@@ -7,9 +7,10 @@ import jakarta.inject.Provider;
 
 
 public abstract class AbstractRequestScopedCache<K, V> implements IRequestScopedCache<K, V> {
-	public static final String REQUEST_SCOPED_CACHE_ENABLED_VARIABLE_NAME = "DISABLE_REQUEST_SCOPED_CACHE";
+	public static final String REQUEST_SCOPED_CACHE_ENABLED_VARIABLE_NAME = "ENABLE_REQUEST_SCOPED_CACHE";
 	private static final boolean REQUEST_SCOPED_CACHE_ENABLED = EnvironmentUtil.getBooleanOrDefault(REQUEST_SCOPED_CACHE_ENABLED_VARIABLE_NAME, true);
 	
+	// A special object representing a cached null value.
 	private final Object NULL_SENTINEL = new Object();
 	
 	private final Cache<K, Object> managedCache;
@@ -30,7 +31,7 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 		if (v == NULL_SENTINEL) return null;
 		if (v != null) return (V) v;
 
-		// If value is not present - perform get and put in same block.
+		// If value is not present - perform get and put in same synchronize block.
 		synchronized (this) {
 		    v = managedCache.getIfPresent(key);
 		    if (v == NULL_SENTINEL) return null;

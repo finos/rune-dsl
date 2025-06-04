@@ -5,12 +5,8 @@ import java.util.Set;
 import jakarta.inject.Inject;
 
 public class RequestScopedCacheManager {
-	private final Set<IRequestScopedCache<?, ?>> caches;
-	
 	@Inject
-	public RequestScopedCacheManager(Set<IRequestScopedCache<?, ?>> caches) {
-		this.caches = caches;
-	}
+	private Set<IRequestScopedCache<?, ?>> caches;
 	
 	public void clearAll() {
 		for (var cache : caches) {
