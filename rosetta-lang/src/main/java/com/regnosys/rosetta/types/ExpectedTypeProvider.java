@@ -170,42 +170,14 @@ public interface ExpectedTypeProvider {
 			});
 		}
 		
-		private static class CacheKey {
-			private final EObject owner;
-			private final EReference reference;
-			private final int index;
-			public CacheKey(EObject owner, EReference reference, int index) {
-				this.owner = owner;
-				this.reference = reference;
-				this.index = index;
-			}
-			
+		private static record CacheKey(EObject owner, EReference reference, int index) {
 			@Override
 			public int hashCode() {
-				return Objects.hash(CacheKey.class, index, owner, reference);
-			}
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null)
-					return false;
-				if (getClass() != obj.getClass())
-					return false;
-				CacheKey other = (CacheKey) obj;
-				return index == other.index && Objects.equals(owner, other.owner)
-						&& Objects.equals(reference, other.reference);
+				return Objects.hash(getClass(), index, owner, reference);
 			}
 		}
-		private static class Context {
-			public final EReference reference;
-			public final int index;
-			
-			public Context(EReference reference, int index) {
-				this.reference = reference;
-				this.index = index;
-			}
-		}
+		private static record Context(EReference reference, int index) {}
+		
 		private class ExpectedTypeSwitch extends RosettaExpressionSwitch<RMetaAnnotatedType, Context> {
 			public RMetaAnnotatedType doSwitch(RosettaExpression expr, EReference reference, int index) {
 				return doSwitch(expr, new Context(reference, index));

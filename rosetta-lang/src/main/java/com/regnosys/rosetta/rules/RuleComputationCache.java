@@ -9,8 +9,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
  * A map from a context (being either a rule source or no rule source) to a `RuleTypeMap`, which keeps track of rules
  * attached to attributes for each type.
  */
-// TODO: this class should be made package private and put into the `IRequestScopedCache`.
-public class RuleComputationCache {
+class RuleComputationCache {
 	private final Map<RosettaExternalRuleSource, RuleTypeMap> map = new LinkedHashMap<>();
 	
 	/**

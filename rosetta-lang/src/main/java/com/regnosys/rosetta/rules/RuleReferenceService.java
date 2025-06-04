@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.regnosys.rosetta.cache.IRequestScopedCache;
 import com.regnosys.rosetta.rosetta.ExternalValueOperator;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
@@ -30,10 +31,14 @@ import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil;
 import jakarta.inject.Inject;
 
 public class RuleReferenceService {
+	private static final String RULE_COMPUTATION_CACHE_KEY = "RULE_COMPUTATION_CACHE_KEY";
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RuleReferenceService.class);
 	
 	@Inject
 	private AnnotationPathExpressionUtil pathExpressionUtil;
+	@Inject
+	private IRequestScopedCache cache;
 	
 	/**
 	 * Traverse the tree structure defined by the attributes and their nested attributes of a given data type, together with their associated rule references.
@@ -76,10 +81,7 @@ public class RuleReferenceService {
 	 * @return The end state.
 	 */
 	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState) {
-		return traverse(source, type, initialState, updateState, new RuleComputationCache());
-	}
-	public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, RuleComputationCache computationCache) {
-		return traverse(source, type, initialState, updateState, computationCache, new HashMap<>(), new ArrayList<>(), new HashSet<>());
+		return traverse(source, type, initialState, updateState, getRuleComputationCache(), new HashMap<>(), new ArrayList<>(), new HashSet<>());
 	}
 	private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, RuleComputationCache computationCache, Map<List<String>, RuleResult> nestedRuleContext, List<RAttribute> path, Set<RDataType> visited) {		
 		boolean isCycle = !visited.add(type);
@@ -156,10 +158,13 @@ public class RuleReferenceService {
 				));
 	}
 	
-	public RulePathMap computeRulePathMap(RAttribute attribute, RuleComputationCache computationCache) {
-		return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute, computationCache);
+	public RulePathMap computeRulePathMap(RAttribute attribute) {
+		return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute);
 	}
-	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
+	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute) {
+		return computeRulePathMapInContext(source, type, attribute, getRuleComputationCache());
+	}
+	private RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
 		RuleTypeMap typeMap = computationCache.get(source);
 		if (typeMap == null) {
 			typeMap = new RuleTypeMap();
@@ -313,5 +318,9 @@ public class RuleReferenceService {
 					// Invalid: deep paths are not allowed
 					return null;
 				});
+	}
+	
+	private RuleComputationCache getRuleComputationCache() {
+		 return cache.get(RULE_COMPUTATION_CACHE_KEY, () -> new RuleComputationCache());
 	}
 }
