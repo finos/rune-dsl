@@ -4,8 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.emf.ecore.EObject;
-
 /**
  * A map for one particular attribute to keep track of which rules are attached to which path.
  * 
@@ -14,22 +12,23 @@ import org.eclipse.emf.ecore.EObject;
  * a rule attached to a particular path will take precedence.
  */
 public class RulePathMap {
-	private final List<RulePathMap> parents;
-	private Map<List<String>, RuleResult> map = new LinkedHashMap<>();
-
-	public RulePathMap(List<RulePathMap> parentsInDescendingPriority) {
-		this.parents = parentsInDescendingPriority;
+	private final RulePathMap parentInContext;
+	private final List<RulePathMap> parentsOutsideContext;
+	private final Map<List<String>, RuleResult> map = new LinkedHashMap<>();
+	private final String id;
+	
+	public RulePathMap(String id, RulePathMap parentInContext, List<RulePathMap> parentsOutsideContextInDescendingPriority) {
+		this.parentInContext = parentInContext;
+		this.parentsOutsideContext = parentsOutsideContextInDescendingPriority;
+		this.id = id;
 	}
 
 	public void add(List<String> path, RuleResult ruleResult) {
 		map.put(path, ruleResult);
 	}
 	public RuleResult get(List<String> path) {
-		var result = map.get(path);
-		if (result != null) {
-			return result;
-		}
-		for (RulePathMap parent : parents) {
+		var result = getInContext(path);
+		for (RulePathMap parent : parentsOutsideContext) {
 			result = parent.get(path);
 			if (result != null) {
 				return result;
@@ -37,16 +36,32 @@ public class RulePathMap {
 		}
 		return null;
 	}
+	private RuleResult getInContext(List<String> path) {
+		var result = map.get(path);
+		if (result != null) {
+			return result;
+		}
+		if (parentInContext != null) {
+			result = parentInContext.getInContext(path);
+		}
+		return result;
+	}
 	
 	public Map<List<String>, RuleResult> getAsMap() {
 		Map<List<String>, RuleResult> result = new LinkedHashMap<>();
-		addToMapIfNotPresent(result);
+		addRulesToMapIfNotPresent(result);
 		return result;
 	}
-	public void addToMapIfNotPresent(Map<List<String>, RuleResult> mapToAddTo) {
+	public void addRulesToMapIfNotPresent(Map<List<String>, RuleResult> mapToAddTo) {
+		addRulesInContextToMapIfNotPresent(mapToAddTo);
+		for (RulePathMap parent : parentsOutsideContext) {
+			parent.addRulesToMapIfNotPresent(mapToAddTo);
+		}
+	}
+	private void addRulesInContextToMapIfNotPresent(Map<List<String>, RuleResult> mapToAddTo) {
 		map.forEach(mapToAddTo::putIfAbsent);
-		for (RulePathMap parent : parents) {
-			parent.addToMapIfNotPresent(mapToAddTo);
+		if (parentInContext != null) {
+			parentInContext.addRulesInContextToMapIfNotPresent(mapToAddTo);
 		}
 	}
 	
@@ -64,8 +79,11 @@ public class RulePathMap {
 	 */
 	public Map<List<String>, RuleResult> getParentRules() {
 		Map<List<String>, RuleResult> result = new LinkedHashMap<>();
-		for (RulePathMap parent : parents) {
-			parent.addToMapIfNotPresent(result);
+		if (parentInContext != null) {
+			parentInContext.addRulesInContextToMapIfNotPresent(result);
+		}
+		for (RulePathMap parent : parentsOutsideContext) {
+			parent.addRulesToMapIfNotPresent(result);
 		}
 		return result;
 	}
@@ -74,5 +92,14 @@ public class RulePathMap {
 	 */
 	public Map<List<String>, RuleResult> getOwnRules() {
 		return map;
+	}
+
+	@Override
+	public String toString() {
+		return "RulePathMap{" +
+				"parentsSize=" + ((parentInContext == null ? 0 : 1) + parentsOutsideContext.size()) +
+				", map=" + map +
+				", id='" + id + '\'' +
+				'}';
 	}
 }

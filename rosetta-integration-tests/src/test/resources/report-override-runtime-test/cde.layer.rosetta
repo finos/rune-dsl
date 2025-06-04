@@ -1,0 +1,5 @@
+namespace cde.layer: <"">
+
+type CriticalDataElement:
+    notation price.NotationEnum (0..1)
+        [ruleReference price.PriceNotationBase]
