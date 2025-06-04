@@ -7,10 +7,12 @@ public class EnvironmentUtil {
 	 */
 	public static boolean getBooleanOrDefault(String systemPropertyOrEnvironmentVariableName, boolean defaultValue) {
 		boolean result = defaultValue;
-        try {
-            result = Boolean.parseBoolean(getValue(systemPropertyOrEnvironmentVariableName));
-        } catch (IllegalArgumentException | NullPointerException e) {
-        }
+		String value = getValue(systemPropertyOrEnvironmentVariableName);
+		if ("true".equals(value)) {
+			result = true;
+		} else if ("false".equals(value)) {
+			result = false;
+		}
         return result;
 	}
 	
