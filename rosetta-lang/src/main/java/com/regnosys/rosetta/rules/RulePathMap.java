@@ -28,6 +28,9 @@ public class RulePathMap {
 	}
 	public RuleResult get(List<String> path) {
 		var result = getInContext(path);
+		if (result != null) {
+			return result;
+		}
 		for (RulePathMap parent : parentsOutsideContext) {
 			result = parent.get(path);
 			if (result != null) {
