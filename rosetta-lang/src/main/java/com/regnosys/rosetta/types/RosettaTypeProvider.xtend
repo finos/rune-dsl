@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
@@ -97,6 +96,7 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
 import com.regnosys.rosetta.cache.caches.ExpressionTypeCache
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
 

@@ -14,10 +14,8 @@ import org.eclipse.xtext.util.Modules2;
  * Initialization support for running Xtext languages as language servers.
  */
 public class RosettaIdeSetup extends RosettaStandaloneSetup {
-
 	@Override
 	public Injector createInjector() {
 		return Guice.createInjector(Modules2.mixin(new RosettaRuntimeModule(), new RosettaIdeModule()));
 	}
-	
 }
