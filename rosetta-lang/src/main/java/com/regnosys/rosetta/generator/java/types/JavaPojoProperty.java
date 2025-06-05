@@ -35,14 +35,15 @@ public class JavaPojoProperty {
 	private final JavaType type;
 	private final String javadoc;
 	private final JavaPojoProperty parentProperty;
-	private final AttributeMeta meta; // used in `process` method
+    private final boolean isRequired;
+    private final AttributeMeta meta; // used in `process` method
 	private final boolean hasLocation; // used in builder `getOrCreate`
 	private final List<AttributeMetaType> attributeMetaTypes;
 
-	public JavaPojoProperty(String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
-		this(name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, null);
+	public JavaPojoProperty(String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, boolean isRequired) {
+		this(name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, null, isRequired);
 	}
-	private JavaPojoProperty(String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, JavaPojoProperty parentProperty) {
+	private JavaPojoProperty(String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, JavaPojoProperty parentProperty, boolean isRequired) {
 		this.name = name;
 		this.runeName = runeName;
 		this.serializedName = serializedName;
@@ -54,9 +55,10 @@ public class JavaPojoProperty {
 		this.hasLocation = hasLocation;
 		this.attributeMetaTypes = attributeMetaTypes;
 		this.parentProperty = parentProperty;
-	}
-	public JavaPojoProperty specialize(String getterCompatibilityName, String setterCompatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation, List<AttributeMetaType> attributeMetaTypes) {
-		return new JavaPojoProperty(name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
+        this.isRequired = isRequired;
+    }
+	public JavaPojoProperty specialize(String getterCompatibilityName, String setterCompatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation, List<AttributeMetaType> attributeMetaTypes, boolean isRequired) {
+		return new JavaPojoProperty(name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this, isRequired);
 	}
 	
 	public boolean isCompatibleWithParent() {
@@ -114,7 +116,11 @@ public class JavaPojoProperty {
     public JavaPojoProperty getParentProperty() {
 		return parentProperty;
 	}
-	
+
+	public boolean isRequired() {
+		return isRequired;
+	}
+
 	public JavaExpression applyGetter(JavaExpression expr) {
 		return JavaExpression.from(new StringConcatenationClient() {
 			@Override
@@ -133,7 +139,7 @@ public class JavaPojoProperty {
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(getterCompatibilityName, setterCompatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type, attributeMetaTypes);
+		return Objects.hash(getterCompatibilityName, setterCompatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type, attributeMetaTypes, isRequired);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -148,6 +154,6 @@ public class JavaPojoProperty {
 				&& Objects.equals(javadoc, other.javadoc) && meta == other.meta && Objects.equals(name, other.name) 
 				&& Objects.equals(runeName, other.runeName) && Objects.equals(serializedName, other.serializedName)
 				&& Objects.equals(attributeMetaTypes, other.attributeMetaTypes) && Objects.equals(parentProperty, other.parentProperty) 
-				&& Objects.equals(type, other.type);
+				&& Objects.equals(type, other.type) && Objects.equals(isRequired, other.isRequired) ;
 	}
 }

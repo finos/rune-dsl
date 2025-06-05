@@ -72,7 +72,9 @@ class ModelObjectBuilderGenerator {
 			public «javaType.toBuilderType» prune() {
 				«IF extendSuperImpl»super.prune();«ENDIF»
 				«FOR prop : properties»
-					«IF !prop.type.isList && prop.type.isRosettaModelObject»
+					«IF !prop.type.isList && prop.type.isRosettaModelObject && prop.isRequired»
+					    if («builderScope.getIdentifierOrThrow(prop)»!=null && !«builderScope.getIdentifierOrThrow(prop)».prune().hasData()) «builderScope.getIdentifierOrThrow(prop)» = «prop.type».builder();
+                    «ELSEIF !prop.type.isList && prop.type.isRosettaModelObject»
 						if («builderScope.getIdentifierOrThrow(prop)»!=null && !«builderScope.getIdentifierOrThrow(prop)».prune().hasData()) «builderScope.getIdentifierOrThrow(prop)» = null;
 					«ELSEIF prop.type.isList && prop.type.isRosettaModelObject»
 						«builderScope.getIdentifierOrThrow(prop)» = «builderScope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
