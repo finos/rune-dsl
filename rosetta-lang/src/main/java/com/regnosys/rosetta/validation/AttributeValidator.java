@@ -12,7 +12,6 @@ import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rules.RuleComputationCache;
 import com.regnosys.rosetta.rules.RulePathMap;
 import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.rules.RuleResult;
@@ -94,8 +93,7 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					}
 					// Check inherited rule references are compatible
 					if (!overriddenType.equals(parentAttrType) || !attribute.getCardinality().equals(parentAttribute.getCardinality())) {
-						RuleComputationCache map = new RuleComputationCache();
-						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute, map);
+						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute);
 						Map<List<String>, RuleResult> inheritedRules = ruleMap.getInheritedRules();
 						inheritedRules.forEach((path, ruleResult) -> {
 							RosettaRule rule = ruleResult.getRule();

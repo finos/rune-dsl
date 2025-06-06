@@ -9,8 +9,8 @@ import org.eclipse.xtext.resource.IResourceDescriptionsProvider
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*
 import jakarta.inject.Inject
-import com.regnosys.rosetta.RosettaEcoreUtil
 import org.eclipse.emf.common.util.URI
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaConfigExtension {
 

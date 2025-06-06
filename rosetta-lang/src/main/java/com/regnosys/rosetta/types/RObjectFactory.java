@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
@@ -27,6 +28,7 @@ import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
+import com.regnosys.rosetta.cache.caches.RDataTypeCache;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -57,6 +59,8 @@ public class RObjectFactory {
 	private ModelIdProvider modelIdProvider;
 	@Inject
 	private RuleReferenceService ruleService;
+	@Inject
+	private RDataTypeCache cache;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
@@ -222,7 +226,7 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, modelIdProvider, this, typeProvider);
+		return cache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
 	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
@@ -233,5 +237,4 @@ public class RObjectFactory {
 	public RMetaAttribute buildRMetaAttribute(RosettaMetaType rosettaMetaType) {
 		return new RMetaAttribute(rosettaMetaType.getName(), typeSystem.typeCallToRType(rosettaMetaType.getTypeCall()));
 	}
-
 }

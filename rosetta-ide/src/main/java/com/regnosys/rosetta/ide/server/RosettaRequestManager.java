@@ -17,7 +17,7 @@
 package com.regnosys.rosetta.ide.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.regnosys.rosetta.cache.IRequestScopedCache;
+import com.regnosys.rosetta.cache.RequestScopedCacheManager;
 
 import org.eclipse.xtext.ide.server.concurrent.AbstractRequest;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
@@ -50,7 +50,7 @@ public class RosettaRequestManager extends RequestManager {
 	                        .setDaemon(true)
 	                        .setNameFormat("rosetta-language-server-request-timeout-%d")
 	                        .build());
-	private final IRequestScopedCache requestCache;
+	private final RequestScopedCacheManager requestCacheManager;
 
 	/*
 	 * TODO: contribute to Xtext
@@ -73,9 +73,9 @@ public class RosettaRequestManager extends RequestManager {
 		
 		Object serviceProvider = serviceProviderRegistry.getExtensionToFactoryMap().get("rosetta");
 		if (serviceProvider instanceof IResourceServiceProvider) {
-			this.requestCache = ((IResourceServiceProvider) serviceProvider).get(IRequestScopedCache.class);
+			this.requestCacheManager = ((IResourceServiceProvider) serviceProvider).get(RequestScopedCacheManager.class);
 		} else {
-			this.requestCache = null;
+			this.requestCacheManager = null;
 		}
 	}
 
@@ -102,16 +102,29 @@ public class RosettaRequestManager extends RequestManager {
 			cfs[i] = request.get();
 		}
 		CompletableFuture<Void> cancelAll = CompletableFuture.allOf(cfs);
-		if (requestCache != null) {
-			cancelAll = cancelAll.thenRun(() -> requestCache.clear());
-		}
 		return cancelAll;
 	}
 	
 	@Override
 	public <V> CompletableFuture<V> runRead(Function1<? super CancelIndicator, ? extends V> cancellable) {
-		return super.runRead((cancelIndicator) -> {		    
-		    try {
+		 return super.runRead(runCancellableWithTimeout(cancellable));
+	}
+
+	@Override
+	public <U, V> CompletableFuture<V> runWrite(
+			Function0<? extends U> nonCancellable,
+			Function2<? super CancelIndicator, ? super U, ? extends V> cancellable) {
+		return super.runWrite(() -> {
+			if (requestCacheManager != null) {
+				requestCacheManager.clearAll();
+			}
+			return nonCancellable.apply();
+		}, (cancelIndicator, intermediate) -> runCancellableWithTimeout((_cancelIndicator) -> cancellable.apply(_cancelIndicator, intermediate)).apply(cancelIndicator));
+	}
+	
+	private <V> Function1<? super CancelIndicator, ? extends V> runCancellableWithTimeout(Function1<? super CancelIndicator, ? extends V> cancellable) {
+		return (cancelIndicator) -> {
+			try {
 		    	if (timeout == null) {
 		    		return cancellable.apply(cancelIndicator);
 		    	}
@@ -125,28 +138,6 @@ public class RosettaRequestManager extends RequestManager {
 				}
 				throw new RuntimeException(ex);
 			}
-		});
-	}
-
-	@Override
-	public <U, V> CompletableFuture<V> runWrite(
-			Function0<? extends U> nonCancellable,
-			Function2<? super CancelIndicator, ? super U, ? extends V> cancellable) {
-		return super.runWrite(nonCancellable, (cancelIndicator, intermediate) -> {		    
-		    try {
-		    	if (timeout == null) {
-		    		return cancellable.apply(cancelIndicator, intermediate);
-		    	}
-				return CompletableFuture.supplyAsync(
-						() -> cancellable.apply(cancelIndicator, intermediate),
-						scheduler
-					).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-			} catch (Exception ex) {
-				if (ex instanceof RuntimeException) {
-					throw (RuntimeException)ex;
-				}
-				throw new RuntimeException(ex);
-			}
-		});
+		};
 	}
 }

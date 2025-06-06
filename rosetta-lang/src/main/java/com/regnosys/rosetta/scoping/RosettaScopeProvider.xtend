@@ -4,7 +4,6 @@
 package com.regnosys.rosetta.scoping
 
 import com.google.common.base.Predicate
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
@@ -69,6 +68,7 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 /**
  * This class contains custom scoping description.
