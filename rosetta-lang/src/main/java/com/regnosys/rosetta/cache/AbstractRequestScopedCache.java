@@ -25,7 +25,7 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 	private final Cache<K, Object> managedCache;
 	
 	public AbstractRequestScopedCache(CacheBuilder<Object, Object> managedCache) {
-		this.managedCache = managedCache.recordStats().build();
+		this.managedCache = managedCache.build();
 	}
 	
 	@SuppressWarnings("unchecked")
