@@ -2,6 +2,9 @@ package com.regnosys.rosetta.cache;
 
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -11,6 +14,8 @@ import jakarta.inject.Provider;
 
 
 public abstract class AbstractRequestScopedCache<K, V> implements IRequestScopedCache<K, V> {
+	private static Logger LOGGER = LoggerFactory.getLogger(AbstractRequestScopedCache.class);
+	
 	public static final String REQUEST_SCOPED_CACHE_ENABLED_VARIABLE_NAME = "ENABLE_REQUEST_SCOPED_CACHE";
 	private static final boolean REQUEST_SCOPED_CACHE_ENABLED = EnvironmentUtil.getBooleanOrDefault(REQUEST_SCOPED_CACHE_ENABLED_VARIABLE_NAME, true);
 	
@@ -20,7 +25,7 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 	private final Cache<K, Object> managedCache;
 	
 	public AbstractRequestScopedCache(CacheBuilder<Object, Object> managedCache) {
-		this.managedCache = managedCache.build();
+		this.managedCache = managedCache.recordStats().build();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -51,6 +56,7 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 	
 	@Override
 	public void clear() {
+		LOGGER.debug("Clearing cache {} with approximate size {}", this.getClass().getCanonicalName(), managedCache.size());
 		managedCache.invalidateAll();
 	}
 	

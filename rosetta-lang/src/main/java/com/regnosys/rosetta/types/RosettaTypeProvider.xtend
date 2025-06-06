@@ -95,7 +95,6 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
-import com.regnosys.rosetta.cache.caches.ExpressionTypeCache
 import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
@@ -105,7 +104,6 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 	@Inject extension TypeSystem
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
-	@Inject ExpressionTypeCache cache
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
 	@Inject AnnotationPathExpressionUtil annotationPathUtil
@@ -261,7 +259,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		if (expression === null) {
 			return NOTHING_WITH_ANY_META
 		}
-		cache.get(expression, [doSwitch(expression, cycleTracker)])
+		doSwitch(expression, cycleTracker)
 	}
 	
 	def typeOfImplicitVariable(EObject context) {

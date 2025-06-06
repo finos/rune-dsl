@@ -31,7 +31,6 @@ import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.Validate;
 
-import com.regnosys.rosetta.cache.caches.RulesInputTypeCache;
 import com.regnosys.rosetta.interpreter.RosettaInterpreter;
 import com.regnosys.rosetta.interpreter.RosettaInterpreterContext;
 import com.regnosys.rosetta.interpreter.RosettaValue;
@@ -64,8 +63,6 @@ public class TypeSystem {
 	@Inject
 	private RuleReferenceService ruleService;
 	@Inject
-	private RulesInputTypeCache cache;
-	@Inject
 	private SubtypeRelation subtypeRelation;
 	@Inject
 	private RosettaInterpreter interpreter;
@@ -76,23 +73,21 @@ public class TypeSystem {
 
 	public RType getRulesInputType(RDataType data, RosettaExternalRuleSource source) {
 		Objects.requireNonNull(data);
-        return cache.get(source, data, () -> {
-        	return ruleService.<RType>traverse(
-        			source,
-        			data,
-        			builtins.ANY,
-        			(acc, context) -> {
-        				if (context.isExplicitlyEmpty()) {
-        					return acc;
-        				}
-        				RType ruleInputType = getRuleInputType(context.getRule());
-        				if (builtins.NOTHING.equals(ruleInputType)) {
-        					return acc;
-        				}
-        				return meet(acc, ruleInputType);
-        			}
-        		);
-        });
+    	return ruleService.<RType>traverse(
+    			source,
+    			data,
+    			builtins.ANY,
+    			(acc, context) -> {
+    				if (context.isExplicitlyEmpty()) {
+    					return acc;
+    				}
+    				RType ruleInputType = getRuleInputType(context.getRule());
+    				if (builtins.NOTHING.equals(ruleInputType)) {
+    					return acc;
+    				}
+    				return meet(acc, ruleInputType);
+    			}
+    		);
 	}
     
     public RType getRuleInputType(RosettaRule rule) {

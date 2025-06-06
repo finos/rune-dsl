@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.rules;
 
-import com.regnosys.rosetta.cache.caches.RuleComputationCache;
 import com.regnosys.rosetta.rosetta.*;
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
@@ -24,8 +23,6 @@ public class RuleReferenceService {
 
     @Inject
     private AnnotationPathExpressionUtil pathExpressionUtil;
-	@Inject
-	private RuleComputationCache cache;
 
     /**
      * Traverse the tree structure defined by the attributes and their nested attributes of a given data type, together with their associated rule references.
@@ -156,9 +153,6 @@ public class RuleReferenceService {
 		return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute);
 	}
 	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute) {
-		return cache.get(source, type, attribute, () -> doComputeRulePathMapInContext(source, type, attribute));
-	}
-	private RulePathMap doComputeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute) {
         // First, compute parents from super sources and super types.
 		RulePathMap parentInSameContext = null;
         List<RulePathMap> parentsInDescendingPriority = new ArrayList<>();

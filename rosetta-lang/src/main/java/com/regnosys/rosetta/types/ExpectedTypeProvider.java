@@ -9,7 +9,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
 import com.google.inject.ImplementedBy;
-import com.regnosys.rosetta.cache.caches.ExpectedTypeCache;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
@@ -101,14 +100,12 @@ public interface ExpectedTypeProvider {
 		private final RosettaTypeProvider typeProvider;
 		private final TypeSystem typeSystem;
 		private final ExpectedTypeSwitch expressionSwitch;
-		private final ExpectedTypeCache cache;
 		
 		@Inject
-		public Impl(RBuiltinTypeService builtins, RosettaTypeProvider typeProvider, TypeSystem typeSystem, ExpectedTypeCache cache) {
+		public Impl(RBuiltinTypeService builtins, RosettaTypeProvider typeProvider, TypeSystem typeSystem) {
 			this.builtins = builtins;
 			this.typeProvider = typeProvider;
 			this.typeSystem = typeSystem;
-			this.cache = cache;
 			this.expressionSwitch = new ExpectedTypeSwitch();
 		}
 		
@@ -127,9 +124,6 @@ public interface ExpectedTypeProvider {
 		}
 		@Override
 		public RMetaAnnotatedType getExpectedType(EObject owner, EReference reference, int index) {
-			return cache.get(owner, reference, index, () -> this.doGetExpectedType(owner, reference, index));
-		}
-		private RMetaAnnotatedType doGetExpectedType(EObject owner, EReference reference, int index) {
 			if (OPERATION__EXPRESSION.equals(reference) && owner instanceof Operation) {
 				Operation op = (Operation)owner;
 				if(op.getPath() == null) {
