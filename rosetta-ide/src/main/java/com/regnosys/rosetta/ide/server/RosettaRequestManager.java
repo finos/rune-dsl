@@ -115,7 +115,9 @@ public class RosettaRequestManager extends RequestManager {
 			Function0<? extends U> nonCancellable,
 			Function2<? super CancelIndicator, ? super U, ? extends V> cancellable) {
 		return super.runWrite(() -> {
-			requestCacheManager.clearAll();
+			if (requestCacheManager != null) {
+				requestCacheManager.clearAll();
+			}
 			return nonCancellable.apply();
 		}, (cancelIndicator, intermediate) -> runCancellableWithTimeout((_cancelIndicator) -> cancellable.apply(_cancelIndicator, intermediate)).apply(cancelIndicator));
 	}
