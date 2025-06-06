@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.cache.caches;
 
-import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.regnosys.rosetta.cache.AbstractRequestScopedCache;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rules.RulePathMap;
@@ -11,8 +11,10 @@ import jakarta.inject.Provider;
 
 
 public class RuleComputationCache extends AbstractRequestScopedCache<RuleComputationCache.RuleContext, RulePathMap> {
-	public RuleComputationCache(Cache<RuleContext, Object> managedCache) {
-		super(managedCache);
+	public RuleComputationCache() {
+		super(
+				CacheBuilder.newBuilder()
+			);
 	}
 	
 	/**

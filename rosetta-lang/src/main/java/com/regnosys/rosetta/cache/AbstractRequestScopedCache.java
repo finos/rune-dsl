@@ -1,6 +1,10 @@
 package com.regnosys.rosetta.cache;
 
+import java.util.concurrent.ExecutionException;
+
+import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.regnosys.rosetta.utils.EnvironmentUtil;
 
 import jakarta.inject.Provider;
@@ -11,12 +15,12 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 	private static final boolean REQUEST_SCOPED_CACHE_ENABLED = EnvironmentUtil.getBooleanOrDefault(REQUEST_SCOPED_CACHE_ENABLED_VARIABLE_NAME, true);
 	
 	// A special object representing a cached null value.
-	private final Object NULL_SENTINEL = new Object();
+	private final Object NULL_ENTRY = new Object();
 	
 	private final Cache<K, Object> managedCache;
 	
-	public AbstractRequestScopedCache(Cache<K, Object> managedCache) {
-		this.managedCache = managedCache;
+	public AbstractRequestScopedCache(CacheBuilder<Object, Object> managedCache) {
+		this.managedCache = managedCache.build();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -26,25 +30,33 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 			return loader.get();
 		}
 		
-		// If value is present - no need to synchronize.
-		Object v = managedCache.getIfPresent(key);
-		if (v == NULL_SENTINEL) return null;
-		if (v != null) return (V) v;
-
-		// If value is not present - perform get and put in same synchronize block.
-		synchronized (this) {
-		    v = managedCache.getIfPresent(key);
-		    if (v == NULL_SENTINEL) return null;
-		    if (v != null) return (V) v;
-
-		    V computed = loader.get();
-		    managedCache.put(key, computed != null ? computed : NULL_SENTINEL);
-		    return computed;
+		Object result;
+		try {
+			result = managedCache.get(key, () -> {
+				V value = loader.get();
+				if (value == null) {
+					return NULL_ENTRY;
+				}
+				return value;
+			});
+		} catch (ExecutionException e) {
+			result = handleLoaderException(e);
 		}
+		
+		if (result == NULL_ENTRY) {
+			return null;
+		}
+		return (V) result;
 	}
 	
 	@Override
 	public void clear() {
 		managedCache.invalidateAll();
+	}
+	
+	protected V handleLoaderException(ExecutionException e) {
+		Throwable cause = e.getCause();
+	    Throwables.throwIfUnchecked(cause);
+	    throw new RuntimeException(e);
 	}
 }
