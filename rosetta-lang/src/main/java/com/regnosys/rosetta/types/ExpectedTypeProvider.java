@@ -9,7 +9,6 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
 import com.google.inject.ImplementedBy;
-import com.regnosys.rosetta.cache.IRequestScopedCache;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
@@ -77,7 +76,6 @@ import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -102,14 +100,12 @@ public interface ExpectedTypeProvider {
 		private final RosettaTypeProvider typeProvider;
 		private final TypeSystem typeSystem;
 		private final ExpectedTypeSwitch expressionSwitch;
-		private final IRequestScopedCache cache;
 		
 		@Inject
-		public Impl(RBuiltinTypeService builtins, RosettaTypeProvider typeProvider, TypeSystem typeSystem, IRequestScopedCache cache) {
+		public Impl(RBuiltinTypeService builtins, RosettaTypeProvider typeProvider, TypeSystem typeSystem) {
 			this.builtins = builtins;
 			this.typeProvider = typeProvider;
 			this.typeSystem = typeSystem;
-			this.cache = cache;
 			this.expressionSwitch = new ExpectedTypeSwitch();
 		}
 		
@@ -128,84 +124,48 @@ public interface ExpectedTypeProvider {
 		}
 		@Override
 		public RMetaAnnotatedType getExpectedType(EObject owner, EReference reference, int index) {
-			return cache.<RMetaAnnotatedType>get(new CacheKey(owner, reference, index), () -> {
-				if (OPERATION__EXPRESSION.equals(reference) && owner instanceof Operation) {
-					Operation op = (Operation)owner;
-					if(op.getPath() == null) {
-						return typeProvider.getRTypeOfSymbol(op.getAssignRoot());
-					}
-					List<Segment> path = op.pathAsSegmentList();
-					return typeProvider.getRTypeOfFeature(path.get(path.size() - 1).getFeature(), null);
-				} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
-					ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
-					return typeProvider.getRTypeOfFeature(pair.getKey(), null);
-				}  else if (WITH_META_ENTRY__VALUE.equals(reference) && owner instanceof WithMetaEntry) {
-					WithMetaEntry entry = (WithMetaEntry) owner;
-					return typeProvider.getRTypeOfFeature(entry.getKey(), reference);
-				} else if (owner instanceof RosettaExpression) {
-					return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
-				} else if (INLINE_FUNCTION__BODY.equals(reference)) {
-					EObject operation = owner.eContainer();
-					if (operation instanceof ReduceOperation) {
-						return getExpectedTypeFromContainer(operation);
-					} else if (operation instanceof FilterOperation) {
-						return builtins.BOOLEAN_WITH_NO_META;
-					} else if (operation instanceof MapOperation) {
-						return getExpectedTypeFromContainer(operation);
-					} else if (operation instanceof ThenOperation) {
-						return getExpectedTypeFromContainer(operation);
-					} else if (operation instanceof ComparingFunctionalOperation) {
-						return builtins.BOOLEAN_WITH_NO_META;
-					} else {
-						LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
-					}
-				} else if (owner instanceof SwitchCaseOrDefault) {
-					SwitchCaseOrDefault switchCase = (SwitchCaseOrDefault) owner;
-					SwitchOperation op = switchCase.getSwitchOperation();
-					if (SWITCH_CASE_OR_DEFAULT__EXPRESSION.equals(reference)) {
-						return getExpectedTypeFromContainer(op);
-					}
+			if (OPERATION__EXPRESSION.equals(reference) && owner instanceof Operation) {
+				Operation op = (Operation)owner;
+				if(op.getPath() == null) {
+					return typeProvider.getRTypeOfSymbol(op.getAssignRoot());
 				}
-				return null;
-			});
+				List<Segment> path = op.pathAsSegmentList();
+				return typeProvider.getRTypeOfFeature(path.get(path.size() - 1).getFeature(), null);
+			} else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair) {
+				ConstructorKeyValuePair pair = (ConstructorKeyValuePair) owner;
+				return typeProvider.getRTypeOfFeature(pair.getKey(), null);
+			}  else if (WITH_META_ENTRY__VALUE.equals(reference) && owner instanceof WithMetaEntry) {
+				WithMetaEntry entry = (WithMetaEntry) owner;
+				return typeProvider.getRTypeOfFeature(entry.getKey(), reference);
+			} else if (owner instanceof RosettaExpression) {
+				return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
+			} else if (INLINE_FUNCTION__BODY.equals(reference)) {
+				EObject operation = owner.eContainer();
+				if (operation instanceof ReduceOperation) {
+					return getExpectedTypeFromContainer(operation);
+				} else if (operation instanceof FilterOperation) {
+					return builtins.BOOLEAN_WITH_NO_META;
+				} else if (operation instanceof MapOperation) {
+					return getExpectedTypeFromContainer(operation);
+				} else if (operation instanceof ThenOperation) {
+					return getExpectedTypeFromContainer(operation);
+				} else if (operation instanceof ComparingFunctionalOperation) {
+					return builtins.BOOLEAN_WITH_NO_META;
+				} else {
+					LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
+				}
+			} else if (owner instanceof SwitchCaseOrDefault) {
+				SwitchCaseOrDefault switchCase = (SwitchCaseOrDefault) owner;
+				SwitchOperation op = switchCase.getSwitchOperation();
+				if (SWITCH_CASE_OR_DEFAULT__EXPRESSION.equals(reference)) {
+					return getExpectedTypeFromContainer(op);
+				}
+			}
+			return null;
 		}
+
+		private static record Context(EReference reference, int index) {}
 		
-		private static class CacheKey {
-			private final EObject owner;
-			private final EReference reference;
-			private final int index;
-			public CacheKey(EObject owner, EReference reference, int index) {
-				this.owner = owner;
-				this.reference = reference;
-				this.index = index;
-			}
-			
-			@Override
-			public int hashCode() {
-				return Objects.hash(CacheKey.class, index, owner, reference);
-			}
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null)
-					return false;
-				if (getClass() != obj.getClass())
-					return false;
-				CacheKey other = (CacheKey) obj;
-				return index == other.index && Objects.equals(owner, other.owner)
-						&& Objects.equals(reference, other.reference);
-			}
-		}
-		private static class Context {
-			public final EReference reference;
-			public final int index;
-			
-			public Context(EReference reference, int index) {
-				this.reference = reference;
-				this.index = index;
-			}
-		}
 		private class ExpectedTypeSwitch extends RosettaExpressionSwitch<RMetaAnnotatedType, Context> {
 			public RMetaAnnotatedType doSwitch(RosettaExpression expr, EReference reference, int index) {
 				return doSwitch(expr, new Context(reference, index));

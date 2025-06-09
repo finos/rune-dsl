@@ -1,6 +1,8 @@
 package com.regnosys.rosetta.generator.java.expression
 
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression

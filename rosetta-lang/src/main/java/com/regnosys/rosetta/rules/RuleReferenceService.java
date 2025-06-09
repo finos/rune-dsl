@@ -65,15 +65,9 @@ public class RuleReferenceService {
      * @return The end state.
      */
     public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState) {
-        return traverse(source, type, initialState, updateState, new RuleComputationCache());
+		return traverse(source, type, initialState, updateState, new HashMap<>(), new ArrayList<>(), new HashSet<>());
     }
-
-    public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, RuleComputationCache computationCache) {
-        T traverse = traverse(source, type, initialState, updateState, computationCache, new HashMap<>(), new ArrayList<>(), new HashSet<>());
-        return traverse;
-    }
-
-    private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, RuleComputationCache computationCache, Map<List<String>, RuleResult> nestedRuleContext, List<RAttribute> path, Set<RDataType> visited) {
+	private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, Map<List<String>, RuleResult> nestedRuleContext, List<RAttribute> path, Set<RDataType> visited) {		
         boolean isCycle = !visited.add(type);
         if (isCycle && nestedRuleContext.isEmpty()) {
             return initialState;
@@ -89,8 +83,7 @@ public class RuleReferenceService {
             if (ruleResult != null) {
                 currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
             } else {
-                // We have - 2 parents
-                RulePathMap pathMap = computeRulePathMapInContext(source, type, attr, computationCache, true);
+				RulePathMap pathMap = computeRulePathMapInContext(source, type, attr);
                 ruleResult = pathMap.get(List.of());
                 if (ruleResult != null) {
                     currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
@@ -102,9 +95,9 @@ public class RuleReferenceService {
                     if (attrType instanceof RDataType) {
                         Map<List<String>, RuleResult> subcontext = getSubcontextForAttribute(attr, nestedRuleContext);
                         if (!isCycle) {
-                            pathMap.addToMapIfNotPresent(subcontext);
+                            pathMap.addRulesToMapIfNotPresent(subcontext);
                         }
-                        currentState = traverse(source, (RDataType) attrType, currentState, updateState, computationCache, subcontext, attrPath, new HashSet<>(visited));
+						currentState = traverse(source, (RDataType) attrType, currentState, updateState, subcontext, attrPath, new HashSet<>(visited));
                     }
                 }
             }
@@ -156,33 +149,12 @@ public class RuleReferenceService {
                 ));
     }
 
-    public RulePathMap computeRulePathMap(RAttribute attribute, RuleComputationCache computationCache) {
-        return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute, computationCache);
-    }
-    public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
-        return computeRulePathMapInContext(source, type, attribute, computationCache, true);
-    }
-    
-    private RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache, boolean traverseParentRuleSources) {
-
-        RuleTypeMap typeMap = computationCache.get(source);
-        if (typeMap == null) {
-            typeMap = new RuleTypeMap();
-            computationCache.add(source, typeMap);
-        }
-
-        RuleAttributeMap attrMap = typeMap.get(type);
-        if (attrMap == null) {
-            attrMap = new RuleAttributeMap();
-            typeMap.add(type, attrMap);
-        }
-
-        RulePathMap existingPathMap = attrMap.get(attribute);
-        if (existingPathMap != null) {
-            return existingPathMap;
-        }
-
+	public RulePathMap computeRulePathMap(RAttribute attribute) {
+		return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute);
+	}
+	public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute) {
         // First, compute parents from super sources and super types.
+		RulePathMap parentInSameContext = null;
         List<RulePathMap> parentsInDescendingPriority = new ArrayList<>();
 
         if (source != null) {
@@ -194,35 +166,31 @@ public class RuleReferenceService {
                 // Due to attribute overrides, the attribute in the super type might be a different attribute with the same name.
                 RAttribute attrInSuperType = superType.getAttributeByName(attribute.getName());
                 if (attrInSuperType != null) {
-                    RulePathMap parentMap = computeRulePathMapInContext(source, superType, attrInSuperType, computationCache, false);
-                    parentsInDescendingPriority.add(parentMap);
+                	parentInSameContext = computeRulePathMapInContext(source, superType, attrInSuperType);
                 }
             }
-            if (traverseParentRuleSources) {
-                if (source.getSuperRuleSources().isEmpty()) {
-                    RulePathMap parentMap = computeRulePathMapInContext(null, type, attribute, computationCache, traverseParentRuleSources);
-                    parentsInDescendingPriority.add(parentMap);
-                } else {
-                    source.getSuperRuleSources().stream()
-                            .map(superSource -> computeRulePathMapInContext(superSource, type, attribute, computationCache, traverseParentRuleSources))
-                            .forEach(parentMap -> parentsInDescendingPriority.add(parentMap));
-                }
+            
+            if (source.getSuperRuleSources().isEmpty()) {
+                RulePathMap parentMap = computeRulePathMapInContext(null, type, attribute);
+                parentsInDescendingPriority.add(parentMap);
+            } else {
+                source.getSuperRuleSources().stream()
+                        .map(superSource -> computeRulePathMapInContext(superSource, type, attribute))
+                        .forEach(parentMap -> parentsInDescendingPriority.add(parentMap));
             }
         } else {
             // Outside rule source:
             // check if attribute overrides another attribute.
             RAttribute parentAttribute = attribute.getParentAttribute();
             if (parentAttribute != null) {
-                RulePathMap parentMap = computeRulePathMapInContext(null, parentAttribute.getEnclosingType(), parentAttribute, computationCache, traverseParentRuleSources);
-                parentsInDescendingPriority.add(parentMap);
+            	parentInSameContext = computeRulePathMapInContext(null, parentAttribute.getEnclosingType(), parentAttribute);
             }
         }
         String ruleSourceName = Optional.ofNullable(source).map(RosettaNamed::getName).orElse("no-source");
         String typeName = type.getName();
         String attributeName = attribute.getName();
 
-        RulePathMap pathMap = new RulePathMap(String.join("-", ruleSourceName, typeName, attributeName), parentsInDescendingPriority);
-        attrMap.add(attribute, pathMap);
+        RulePathMap pathMap = new RulePathMap(String.join("-", ruleSourceName, typeName, attributeName), parentInSameContext, parentsInDescendingPriority);
 
         // Second, add own rule annotations
         if (source == null) {
