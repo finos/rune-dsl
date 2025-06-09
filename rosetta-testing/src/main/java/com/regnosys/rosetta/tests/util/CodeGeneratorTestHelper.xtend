@@ -56,24 +56,7 @@ class CodeGeneratorTestHelper {
 	}
 	
 	protected def Map<String, String> generateCode(List<Resource> resources) {
-		val fsa = new RegisteringFileSystemAccess()
-		val ctx = new GeneratorContext()=> [
-			cancelIndicator = CancelIndicator.NullImpl
-		]
-		val resourceSet = resources.head.resourceSet
-		try {
-			resourceSet.beforeAllGenerate(fsa, ctx)
-			resources.forEach[
-				try {
-					beforeGenerate(fsa, ctx)
-					doGenerate(fsa, ctx)
-				} finally {
-					afterGenerate(fsa, ctx)
-				}
-			]
-		} finally {
-			resourceSet.afterAllGenerate(fsa, ctx)
-		}
+		val fsa = generateCodeWithFSA(resources)
 		
 		val generatedCode = newLinkedHashMap
 		fsa.generatedFiles.forEach [
