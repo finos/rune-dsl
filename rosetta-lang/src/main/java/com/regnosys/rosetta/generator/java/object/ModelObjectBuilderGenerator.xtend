@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.JavaEnhancedForLoop
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
@@ -31,6 +30,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.rosetta.model.lib.annotations.RosettaIgnore
 
 class ModelObjectBuilderGenerator {
@@ -40,7 +40,7 @@ class ModelObjectBuilderGenerator {
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TypeCoercionService
 
-	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaScope scope) {
+	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaStatementScope scope) {
 		val superInterface = javaType.interfaces.head
 		val extendSuperImpl = superInterface instanceof JavaPojoInterface && javaType.ownProperties.forall[parentProperty === null || parentProperty.type == type]
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
@@ -122,7 +122,7 @@ class ModelObjectBuilderGenerator {
 		'''
 	}
 
-	private def StringConcatenationClient builderGetters(Iterable<JavaPojoProperty> properties, boolean extended, JavaScope scope) '''
+	private def StringConcatenationClient builderGetters(Iterable<JavaPojoProperty> properties, boolean extended, JavaStatementScope scope) '''
 		«FOR prop : properties»
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			
@@ -174,7 +174,7 @@ class ModelObjectBuilderGenerator {
 		«ENDFOR»
 	'''
 	
-	private def StringConcatenationClient derivedIncompatibleGettersForProperty(JavaExpression originalField, JavaPojoProperty originalProp, JavaPojoProperty prop, JavaScope scope) {
+	private def StringConcatenationClient derivedIncompatibleGettersForProperty(JavaExpression originalField, JavaPojoProperty originalProp, JavaPojoProperty prop, JavaStatementScope scope) {
 		val parent = prop.parentProperty
 		if (parent === null) {
 			return null
@@ -241,7 +241,7 @@ class ModelObjectBuilderGenerator {
 	}
 	
 	
-	private def StringConcatenationClient setters(JavaPojoInterface javaType, JavaScope scope)
+	private def StringConcatenationClient setters(JavaPojoInterface javaType, JavaStatementScope scope)
 		'''
 		«FOR prop : javaType.allProperties»
 			
@@ -249,7 +249,7 @@ class ModelObjectBuilderGenerator {
 		«ENDFOR»
 		'''
 	
-	private def StringConcatenationClient doSetter(JavaPojoInterface javaType, JavaPojoProperty mainProp, JavaPojoProperty currentProp, JavaScope scope) {
+	private def StringConcatenationClient doSetter(JavaPojoInterface javaType, JavaPojoProperty mainProp, JavaPojoProperty currentProp, JavaStatementScope scope) {
 		val builderType = javaType.toBuilderType
 		val mainPropType = mainProp.type
 		val propType = currentProp.type

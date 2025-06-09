@@ -27,6 +27,7 @@ import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.util.types.JavaType;
 
 public class JavaPojoProperty {
+	private final JavaPojoInterface pojo;
 	private final String name;
 	private final String runeName;
 	private final String serializedName;
@@ -39,11 +40,12 @@ public class JavaPojoProperty {
 	private final boolean hasLocation; // used in builder `getOrCreate`
 	private final List<AttributeMetaType> attributeMetaTypes;
 
-	public JavaPojoProperty(String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
-		this(name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, null);
+	public JavaPojoProperty(JavaPojoInterface pojo, String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
+		this(pojo, name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, null);
 	}
-	private JavaPojoProperty(String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, JavaPojoProperty parentProperty) {
-		this.name = name;
+	private JavaPojoProperty(JavaPojoInterface pojo, String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, JavaPojoProperty parentProperty) {
+		this.pojo = pojo;
+        this.name = name;
 		this.runeName = runeName;
 		this.serializedName = serializedName;
 		this.getterCompatibilityName = getterCompatibilityName;
@@ -55,8 +57,8 @@ public class JavaPojoProperty {
 		this.attributeMetaTypes = attributeMetaTypes;
 		this.parentProperty = parentProperty;
 	}
-	public JavaPojoProperty specialize(String getterCompatibilityName, String setterCompatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation, List<AttributeMetaType> attributeMetaTypes) {
-		return new JavaPojoProperty(name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
+	public JavaPojoProperty specialize(JavaPojoInterface pojo, String getterCompatibilityName, String setterCompatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation, List<AttributeMetaType> attributeMetaTypes) {
+		return new JavaPojoProperty(pojo, name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
 	}
 	
 	public boolean isCompatibleWithParent() {
@@ -133,7 +135,7 @@ public class JavaPojoProperty {
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(getterCompatibilityName, setterCompatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type, attributeMetaTypes);
+		return Objects.hash(pojo, getterCompatibilityName, setterCompatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type, attributeMetaTypes);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -144,7 +146,8 @@ public class JavaPojoProperty {
 		if (getClass() != obj.getClass())
 			return false;
 		JavaPojoProperty other = (JavaPojoProperty) obj;
-		return Objects.equals(getterCompatibilityName, other.getterCompatibilityName) && Objects.equals(setterCompatibilityName, other.setterCompatibilityName) && hasLocation == other.hasLocation
+		return Objects.equals(pojo, other.pojo)
+                && Objects.equals(getterCompatibilityName, other.getterCompatibilityName) && Objects.equals(setterCompatibilityName, other.setterCompatibilityName) && hasLocation == other.hasLocation
 				&& Objects.equals(javadoc, other.javadoc) && meta == other.meta && Objects.equals(name, other.name) 
 				&& Objects.equals(runeName, other.runeName) && Objects.equals(serializedName, other.serializedName)
 				&& Objects.equals(attributeMetaTypes, other.attributeMetaTypes) && Objects.equals(parentProperty, other.parentProperty) 

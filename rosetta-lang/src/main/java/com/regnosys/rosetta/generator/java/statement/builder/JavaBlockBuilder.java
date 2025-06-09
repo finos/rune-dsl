@@ -23,7 +23,7 @@ import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaBlock;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
@@ -67,7 +67,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	}
 	
 	@Override
-	public JavaBlockBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaBlockBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
 		if (after instanceof JavaBlockBuilder) {
 			return this.then((JavaBlockBuilder)after, combineExpressions, scope);
 		}
@@ -83,7 +83,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		}
 		return new JavaBlockBuilder(result, combined);
 	}
-	public JavaBlockBuilder then(JavaBlockBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaBlockBuilder then(JavaBlockBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
 		JavaStatementList result = new JavaStatementList();
 		result.addAll(this.statements);
 		result.addAll(after.statements);
@@ -118,7 +118,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	}
 
 	@Override
-	public JavaBlockBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
+	public JavaBlockBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope) {
 		JavaStatementList result = new JavaStatementList();
 		result.addAll(this.statements);
 		JavaStatementBuilder declaration = this.lastStatement.declareAsVariable(isFinal, variableId, scope);
@@ -132,7 +132,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	}
 	
 	@Override
-	public JavaStatementBuilder collapseToSingleExpression(JavaScope scope) {
+	public JavaStatementBuilder collapseToSingleExpression(JavaStatementScope scope) {
 		JavaStatementList result = new JavaStatementList();
 		result.addAll(this.statements);
 		JavaStatementBuilder collapsed = this.lastStatement.collapseToSingleExpression(scope);

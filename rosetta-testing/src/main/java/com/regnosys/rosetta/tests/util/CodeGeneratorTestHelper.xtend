@@ -1,8 +1,6 @@
 package com.regnosys.rosetta.tests.util
 
 import com.regnosys.rosetta.generator.RosettaGenerator
-import com.regnosys.rosetta.generator.RosettaInternalGenerator
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.rosetta.model.lib.meta.FieldWithMeta
 import java.io.File
@@ -20,7 +18,6 @@ import static com.google.common.collect.ImmutableMap.*
 import com.rosetta.model.lib.RosettaModelObject
 import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.metafields.MetaFields
 
@@ -28,22 +25,6 @@ class CodeGeneratorTestHelper {
 
 	@Inject extension RosettaGenerator
 	@Inject extension ModelHelper
-	@Inject extension ModelIdProvider
-
-	def generateCode(CharSequence model, RosettaInternalGenerator generator) {
-		val fsa = new RegisteringFileSystemAccess()
-		val eResource = model.parseRosettaWithNoErrors.eResource;
-		
-		eResource.contents.filter(RosettaModel).forEach[
-			val root = new RootPackage(it.toDottedPath)
-			val version = version
-			generator.generate(root, fsa, elements, version)	
-		]
-		
-		fsa.generatedFiles
-			.filter[javaClassName !== null]
-			.toMap([javaClassName], [contents.toString])		
-	}
 	
 	def generateCode(CharSequence... models) {
 		val eResources = models.parseRosettaWithNoErrors.map[it.eResource];

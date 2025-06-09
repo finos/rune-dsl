@@ -3,7 +3,6 @@ package com.regnosys.rosetta.generator.java.function
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.RosettaReport
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.types.RObjectFactory
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -32,6 +31,7 @@ import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.rules.RuleReferenceService
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class LabelProviderGenerator {
 	@Inject extension ImportManagerExtension
@@ -73,7 +73,7 @@ class LabelProviderGenerator {
 		val javaClass = typeTranslator.toLabelProviderJavaClass(f)
 		val fileName = javaClass.canonicalName.withForwardSlashes + '.java'
 		
-		val topScope = new JavaScope(javaClass.packageName)
+		val topScope = new JavaStatementScope(javaClass.packageName)
 		val StringConcatenationClient classBody = classBody(f, attributeToRuleMap, javaClass, topScope)
 
 		val content = buildClass(javaClass.packageName, classBody, topScope)
@@ -84,7 +84,7 @@ class LabelProviderGenerator {
 		RFunction function,
 		Map<RAttribute, RosettaRule> attributeToRuleMap,
 		JavaClass<LabelProvider> javaClass,
-		JavaScope topScope
+		JavaStatementScope topScope
 	) {
 		val className = topScope.createIdentifier(function, javaClass.simpleName)
 		val classScope = topScope.classScope(javaClass.simpleName)

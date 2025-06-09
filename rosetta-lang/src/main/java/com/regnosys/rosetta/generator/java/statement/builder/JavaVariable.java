@@ -19,7 +19,7 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.rosetta.util.types.JavaType;
 
 /**
@@ -36,7 +36,7 @@ public class JavaVariable extends JavaExpression {
 	}
 	
 	@Override
-	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
+	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope) {
 		if (scope.getIdentifier(this).map(scopeId -> !scopeId.equals(id)).orElse(true)) {
 			scope.createSynonym(this, id);
 		}
