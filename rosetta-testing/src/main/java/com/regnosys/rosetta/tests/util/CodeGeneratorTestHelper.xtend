@@ -36,10 +36,10 @@ class CodeGeneratorTestHelper {
 		generateCode(#[eResource])
 	}
 	
-	def generateCode(List<Resource> resources) {
+	def Map<String, String> generateCode(List<Resource> resources) {
 		val fsa = new RegisteringFileSystemAccess()
 		val ctx = new GeneratorContext()=> [
-			cancelIndicator =  CancelIndicator.NullImpl
+			cancelIndicator = CancelIndicator.NullImpl
 		]
 		val resourceSet = resources.head.resourceSet
 		try {
@@ -56,7 +56,7 @@ class CodeGeneratorTestHelper {
 			resourceSet.afterAllGenerate(fsa, ctx)
 		}
 		
-		val generatedCode = newHashMap
+		val generatedCode = newLinkedHashMap
 		fsa.generatedFiles.forEach [
 			if (it.getJavaClassName() !== null) {
 				generatedCode.put(it.getJavaClassName(), it.getContents().toString());
@@ -64,6 +64,29 @@ class CodeGeneratorTestHelper {
 		]
 		
 		return generatedCode
+	}
+	
+	def generateCodeWithFSA(List<Resource> resources) {
+		val fsa = new RegisteringFileSystemAccess()
+		val ctx = new GeneratorContext()=> [
+			cancelIndicator = CancelIndicator.NullImpl
+		]
+		val resourceSet = resources.head.resourceSet
+		try {
+			resourceSet.beforeAllGenerate(fsa, ctx)
+			resources.forEach[
+				try {
+					beforeGenerate(fsa, ctx)
+					doGenerate(fsa, ctx)
+				} finally {
+					afterGenerate(fsa, ctx)
+				}
+			]
+		} finally {
+			resourceSet.afterAllGenerate(fsa, ctx)
+		}
+		
+		return fsa
 	}
 	
 	def generateCode(RosettaModel model) {

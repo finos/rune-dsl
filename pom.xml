@@ -84,8 +84,8 @@
 	</developers>
 
 	<properties>
-		<maven.compiler.release>11</maven.compiler.release>
-		<java.enforced.version>[17,18)</java.enforced.version>
+		<maven.compiler.release>21</maven.compiler.release>
+		<java.enforced.version>[21,22)</java.enforced.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Release -->
@@ -472,6 +472,22 @@
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 					<stagingProgressTimeoutMinutes>${stagingTimeoutInMinutes}</stagingProgressTimeoutMinutes>
 				</configuration>
+			</plugin>
+			<!-- Prevent maven-source-plugin from running twice during a release -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>none</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<skipSource>true</skipSource>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 

@@ -282,7 +282,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return nonErrorItems()
 				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.filter(item -> comparableGetter.apply(item).get() != null)
-				.min(Comparator.comparing(item -> comparableGetter.apply(item).get()))
+				.min(Comparator.comparing(item -> comparableGetter.apply(item).get(), Comparator.nullsLast(Comparator.naturalOrder())))
 				.orElse(MapperS.ofNull());
 				
 	}
@@ -308,7 +308,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 		return nonErrorItems()
 				.<MapperS<T>>map(item -> new MapperS<>(item))
 				.filter(item -> comparableGetter.apply(item).get() != null)
-				.max(Comparator.comparing(item -> comparableGetter.apply(item).get()))
+				.max(Comparator.comparing(item -> comparableGetter.apply(item).get(), Comparator.nullsFirst(Comparator.naturalOrder())))
 				.orElse(MapperS.ofNull());
 	}
 	
@@ -333,7 +333,7 @@ public class MapperC<T> implements MapperBuilder<T> {
 	 */
 	public <F extends Comparable<F>> MapperC<T> sort(Function<MapperS<T>, MapperS<F>> comparableGetter) {
 		return new MapperC<>(nonErrorItems()
-				.sorted(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get()))
+				.sorted(Comparator.comparing(item -> comparableGetter.apply(new MapperS<>(item)).get(), Comparator.nullsLast(Comparator.naturalOrder())))
 				.collect(Collectors.toList()));
 	}
 	

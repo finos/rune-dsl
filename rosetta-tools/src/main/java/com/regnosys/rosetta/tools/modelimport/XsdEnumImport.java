@@ -102,6 +102,9 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty(),
 				Optional.of(enumValueMap)));
 	}
 }

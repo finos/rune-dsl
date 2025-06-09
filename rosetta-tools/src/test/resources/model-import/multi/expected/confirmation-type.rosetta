@@ -117,7 +117,7 @@ type Fra extends Product: <"A forward rate agreement product definition. A type 
 
     buyerSellerModel BuyerSellerModel (1..1)
     adjustedEffectiveDate RequiredIdentifierDate (1..1) <"The start date of the calculation period. This date should already be adjusted for any applicable business day convention. This is also the date when the observed rate is applied, the reset date.">
-    adjustedTerminationDate date (1..1) <"The end date of the calculation period. This date should already be adjusted for any applicable business day convention.">
+    adjustedTerminationDate zonedDateTime (1..1) <"The end date of the calculation period. This date should already be adjusted for any applicable business day convention.">
     paymentDate AdjustableDate (1..1) <"The payment date. This date is subject to adjustment in accordance with any applicable business day convention.">
     fixingDateOffset RelativeDateOffset (1..1) <"Specifies the fixing date relative to the reset date in terms of a business days offset and an associated set of financial business centers. Normally these offset calculation rules will be those specified in the ISDA definition for the relevant floating rate index (ISDA\'s Floating Rate Option). However, non-standard offset calculation rules may apply for a trade if mutually agreed by the principal parties to the transaction. The href attribute on the dateRelativeTo element should reference the id attribute on the adjustedEffectiveDate element.">
     dayCountFraction DayCountFraction (1..1) <"The day count fraction.">
@@ -186,7 +186,7 @@ type FxFlexibleForward extends Product: <"A flexible term fx forward product def
     executionPeriodDates FxFlexibleForwardExecutionPeriod (1..1) <"The period during which the client has the right to execute a transaction, on any business day defined by reference to the specified business centers, subject to the constraints of the minimum execution amount and aggregate total notional amount. * Period dates are inclusive i.e. the expiry date is the final date on which execution may occur.">
     fxFlexibleForwardSequence FxFlexibleForwardSequence (0..1)
     settlementDateOffset RelativeDateOffset (0..1) <"The date on which delivery of the transacted currency amounts will occur, expressed as an offset from the execution date. * This property is optional in the schema, allowing it to be omitted by systems which do not support it; however this information would be expected in contractual documentation (e.g. termsheet, confirmation).">
-    finalSettlementDate date (0..1) <"The final date for settlement. This is the date on which any residual exchange amount will be delivered. * This is an adjusted date i.e. a good business day for delivery in the location(s) specified in executionPeriodDates /businessCenters">
+    finalSettlementDate zonedDateTime (0..1) <"The final date for settlement. This is the date on which any residual exchange amount will be delivered. * This is an adjusted date i.e. a good business day for delivery in the location(s) specified in executionPeriodDates /businessCenters">
     forwardRate FxFlexibleForwardRate (1..1) <"Definition of the forward exchange rate for transactions executed during the execution period.">
     additionalPayment Payment (0..1) <"Fee paid by the client at inception (analagous to an option premium).">
 
@@ -194,7 +194,7 @@ type FxForwardVolatilityAgreement extends Product: <"An FX Forward Volatility Ag
 
     buyerSellerModel BuyerSellerModel (1..1)
     quotedCurrencyPair QuotedCurrencyPair (1..1) <"A currency Pair the straddle is based on.">
-    fixingDate date (1..1) <"The date when the underlying options are priced using the agreed forwardVolatilityStrikePrice and other market factors as agreed by the parties. Also known as \"Effective Date\" or \"Reference Date\".">
+    fixingDate zonedDateTime (1..1) <"The date when the underlying options are priced using the agreed forwardVolatilityStrikePrice and other market factors as agreed by the parties. Also known as \"Effective Date\" or \"Reference Date\".">
     fixingTime BusinessCenterTime (0..1) <"The time of the fixing date when the underlying options are priced using the agreed forwardVolatilityStrikePrice and other market factors as agreed by the parties.">
     forwardVolatilityStrikePrice PositiveDecimal (1..1) <"the Volatility level as agreed on the Trade Date.">
     straddle FxStraddle (1..1) <"details of the straddle (underlying options).">
@@ -235,8 +235,8 @@ type FxVolatilitySwap extends FxPerformanceSwap: <"An FX volatility swap transac
 type TermDeposit extends Product: <"A term deposit product definition. A class defining the content model for a term deposit product.">
 
     payerReceiverModel PayerReceiverModel (1..1)
-    startDate date (1..1) <"The start date of the calculation period.">
-    maturityDate date (1..1) <"The end date of the calculation period. This date should already be adjusted for any applicable business day convention.">
+    startDate zonedDateTime (1..1) <"The start date of the calculation period.">
+    maturityDate zonedDateTime (1..1) <"The end date of the calculation period. This date should already be adjusted for any applicable business day convention.">
     fxTenorModel FxTenorModel (0..1)
     principal PositiveMoney (1..1) <"The principal amount of the trade.">
     fixedRate PositiveDecimal (1..1) <"The calculation period fixed rate. A per annum rate, expressed as a decimal. A fixed rate of 5% would be represented as 0.05.">
@@ -1107,7 +1107,7 @@ type ValuationSet: <"A set of valuation inputs and results. This structure can b
 type DelayedDraw extends AbstractFacility: <"A revolver facility. A facility which can be drawn at any point during a pre-defined period after the initial deal closing date,">
 
     delayedDraw boolean (1..1) <"A flag to determine whether the Term Loan has a delayed draw feature.">
-    mustDrawByDate date (0..1) <"The date by which funds must be drawn.">
+    mustDrawByDate zonedDateTime (0..1) <"The date by which funds must be drawn.">
 
 type LetterOfCreditFacility extends AbstractFacility: <"A letter of credit facility. A facility designed to issue letter of credit products.">
 
@@ -1119,7 +1119,7 @@ type AmendmentFeePayment extends NonRecurringFeePayment: <"A fee charged to the 
 
 type BreakageFeePayment extends NonRecurringFeePayment: <"A fee calculated as the cost of breaking financing against a loan contract which is repaid early.">
 
-    breakageFeeClaimDate date (0..1) <"The date by which any breakage costs (if applicable) must be submitted by Lenders to the Agent.">
+    breakageFeeClaimDate zonedDateTime (0..1) <"The date by which any breakage costs (if applicable) must be submitted by Lenders to the Agent.">
     breakageFeeCalculatedBy BreakageCalculatedByEnum (0..1) <"Where breakage cost is applicable, this enumeration defines who is calculating it - agent bank or lender.">
 
 type FacilityExtensionFeePayment extends NonRecurringFeePayment: <"This fee represents any fee paid by the borrower to the syndicate lenders for extending an existing facility.">
@@ -1232,8 +1232,8 @@ type LcRateChange extends AbstractLcEvent: <"An event representing a change in t
 
 type LcRenewal extends AbstractLcEvent: <"An event representing a change in the maturity date on an outstanding letter of credit.">
 
-    finalExpiryDate date (1..1) <"The final letter of credit expiry date (as defined by the evergreen option).">
-    maturityDate date (0..1) <"The original maturity date of the letter of credit.">
+    finalExpiryDate zonedDateTime (1..1) <"The final letter of credit expiry date (as defined by the evergreen option).">
+    maturityDate zonedDateTime (0..1) <"The original maturity date of the letter of credit.">
 
 type LcTermination extends AbstractLcEvent: <"An event representing either the expiry or cancellation of a letter of credit">
 
@@ -1612,7 +1612,7 @@ type Commodity extends IdentifiedAsset: <"Identifies the underlying asset when i
 type ConvertibleBond extends Bond: <"Identifies the underlying asset when it is a convertible bond.">
 
     underlyingEquity EquityAsset (0..1) <"Specifies the equity in which the convertible bond can be converted.">
-    redemptionDate date (0..1) <"Earlier date between the convertible bond put dates and its maturity date.">
+    redemptionDate zonedDateTime (0..1) <"Earlier date between the convertible bond put dates and its maturity date.">
 
 type Deposit extends UnderlyingAsset: <"Identifies a simple underlying asset that is a term deposit.">
 
@@ -1630,8 +1630,8 @@ type Future extends ExchangeTraded: <"Identifies the underlying asset when it is
 
     multiplier PositiveDecimal (0..1) <"The multiplier is the minimum number of the underlying - index or stock - that a participant has to trade while taking a position in the Future contract. The purpose of the multiplier is to inflate the value of the contract to add leverage to the trade. The multiplier for the Dow is 10, for the Nasdaq it is 100 and it is 250 for the Standard and Poor\'s index.">
     futureContractReference String (0..1) <"Native identifier for the contract on the listing exchange.">
-    maturity date (0..1) <"The date when the future contract expires.">
-    contractYearMonth int (0..1) <"The contract month of the futures contract. i.e. F13 WTI NYMEX Contract is 2013-01.">
+    maturity zonedDateTime (0..1) <"The date when the future contract expires.">
+    contractYearMonth string (0..1) <"The contract month of the futures contract. i.e. F13 WTI NYMEX Contract is 2013-01.">
     underlyer ExchangeTradedContractUnderlyer (0..1) <"Underlyer of the option e.g. a listed future.">
     settlementType SettlementTypeEnum (0..1) <"Settlement method for the contract (Cash, Physical). This value is used to populate the \"Delivery Type\" field for regulatory reporting (CFTC, ESMA).">
 
@@ -1649,8 +1649,8 @@ type Loan extends UnderlyingAsset: <"Identifies a simple underlying asset that i
     loanChoice LoanChoice (0..*)
     lien Lien (0..1) <"Specifies the seniority level of the lien.">
     facilityType FacilityType (0..1) <"The type of loan facility (letter of credit, revolving, ...).">
-    maturity date (0..1) <"The date when the principal amount of the loan becomes due and payable.">
-    creditAgreementDate date (0..1) <"The credit agreement date is the closing date (the date where the agreement has been signed) for the loans in the credit agreement. Funding of the facilities occurs on (or sometimes a little after) the Credit Agreement date. This underlyer attribute is used to help identify which of the company\'s outstanding loans are being referenced by knowing to which credit agreement it belongs. ISDA Standards Terms Supplement term: Date of Original Credit Agreement.">
+    maturity zonedDateTime (0..1) <"The date when the principal amount of the loan becomes due and payable.">
+    creditAgreementDate zonedDateTime (0..1) <"The credit agreement date is the closing date (the date where the agreement has been signed) for the loans in the credit agreement. Funding of the facilities occurs on (or sometimes a little after) the Credit Agreement date. This underlyer attribute is used to help identify which of the company\'s outstanding loans are being referenced by knowing to which credit agreement it belongs. ISDA Standards Terms Supplement term: Date of Original Credit Agreement.">
     tranche UnderlyingAssetTranche (0..1) <"The loan tranche that is subject to the derivative transaction. It will typically be referenced as the Bloomberg tranche number. ISDA Standards Terms Supplement term: Bloomberg Tranche Number.">
     seniority CreditSeniority (0..1) <"The seniority. E.g. senior, senior secured etc.">
 
@@ -2055,10 +2055,10 @@ type CalculationSequence:
 
 type CalculationPeriod: <"A type defining the parameters used in the calculation of a fixed or floating rate calculation period amount. This type forms part of cashflows representation of a swap stream.">
 
-    unadjustedStartDate date (0..1)
-    unadjustedEndDate date (0..1)
-    adjustedStartDate date (0..1) <"The calculation period start date, adjusted according to any relevant business day convention.">
-    adjustedEndDate date (0..1) <"The calculation period end date, adjusted according to any relevant business day convention.">
+    unadjustedStartDate zonedDateTime (0..1)
+    unadjustedEndDate zonedDateTime (0..1)
+    adjustedStartDate zonedDateTime (0..1) <"The calculation period start date, adjusted according to any relevant business day convention.">
+    adjustedEndDate zonedDateTime (0..1) <"The calculation period end date, adjusted according to any relevant business day convention.">
     calculationPeriodNumberOfDays int(min: 1) (0..1) <"The number of days from the adjusted effective / start date to the adjusted termination / end date calculated in accordance with the applicable day count fraction.">
     notionalAmount number (0..1) <"The amount that a cashflow will accrue interest on.">
     fxLinkedNotionalAmount FxLinkedNotionalAmount (0..1) <"The amount that a cashflow will accrue interest on. This is the calculated amount of the fx linked - ie the other currency notional amount multiplied by the appropriate fx spot rate.">
@@ -2091,9 +2091,9 @@ type CalculationPeriodDates: <"A type defining the parameters used to generate t
     relativeTerminationDate RelativeDateOffset (0..1) <"The term/maturity of the swap, express as a tenor (typically in years).">
     calculationPeriodDatesAdjustments BusinessDayAdjustments (1..1) <"The business day convention to apply to each calculation period end date if it would otherwise fall on a day that is not a business day in the specified financial business centers.">
     firstPeriodStartDate AdjustableDate (0..1) <"The start date of the calculation period if the date falls before the effective date. It must only be specified if it is not equal to the effective date. This date may be subject to adjustment in accordance with a business day convention.">
-    firstRegularPeriodStartDate date (0..1) <"The start date of the regular part of the calculation period schedule. It must only be specified if there is an initial stub calculation period. This day may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.">
-    firstCompoundingPeriodEndDate date (0..1) <"The end date of the initial compounding period when compounding is applicable. It must only be specified when the compoundingMethod element is present and not equal to a value of None. This date may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.">
-    lastRegularPeriodEndDate date (0..1) <"The end date of the regular part of the calculation period schedule. It must only be specified if there is a final stub calculation period. This day may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.">
+    firstRegularPeriodStartDate zonedDateTime (0..1) <"The start date of the regular part of the calculation period schedule. It must only be specified if there is an initial stub calculation period. This day may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.">
+    firstCompoundingPeriodEndDate zonedDateTime (0..1) <"The end date of the initial compounding period when compounding is applicable. It must only be specified when the compoundingMethod element is present and not equal to a value of None. This date may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.">
+    lastRegularPeriodEndDate zonedDateTime (0..1) <"The end date of the regular part of the calculation period schedule. It must only be specified if there is a final stub calculation period. This day may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.">
     stubPeriodType StubPeriodTypeEnum (0..1) <"Method to allocate any irregular period remaining after regular periods have been allocated between the effective and termination date.">
     calculationPeriodFrequency CalculationPeriodFrequency (1..1) <"The frequency at which calculation period end dates occur with the regular part of the calculation period schedule and their roll date convention.">
     id string (1..1)
@@ -2124,8 +2124,8 @@ type CancelableProvisionAdjustedDates: <"A type to define the adjusted dates for
 
 type CancellationEvent: <"The adjusted dates for a specific cancellation date, including the adjusted exercise date and adjusted termination date.">
 
-    adjustedExerciseDate date (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
-    adjustedEarlyTerminationDate date (1..1) <"The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.">
+    adjustedExerciseDate zonedDateTime (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
+    adjustedEarlyTerminationDate zonedDateTime (1..1) <"The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.">
     id string (0..1)
 
 type Cashflows: <"A type defining the cashflow representation of a swap trade.">
@@ -2188,11 +2188,11 @@ type Discounting: <"A type defining discounting information. The 2000 ISDA defin
 
 type EarlyTerminationEvent: <"A type to define the adjusted dates associated with an early termination provision.">
 
-    adjustedExerciseDate date (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
-    adjustedEarlyTerminationDate date (1..1) <"The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.">
-    adjustedCashSettlementValuationDate date (1..1) <"The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.">
-    adjustedCashSettlementPaymentDate date (1..1) <"The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business dat convention.">
-    adjustedExerciseFeePaymentDate date (0..1) <"The date on which the exercise fee amount is paid. This date should already be adjusted for any applicable business day convention.">
+    adjustedExerciseDate zonedDateTime (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
+    adjustedEarlyTerminationDate zonedDateTime (1..1) <"The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.">
+    adjustedCashSettlementValuationDate zonedDateTime (1..1) <"The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.">
+    adjustedCashSettlementPaymentDate zonedDateTime (1..1) <"The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business dat convention.">
+    adjustedExerciseFeePaymentDate zonedDateTime (0..1) <"The date on which the exercise fee amount is paid. This date should already be adjusted for any applicable business day convention.">
     id string (0..1)
 
 type EarlyTerminationProvision: <"A type defining an early termination provision for a swap. This early termination is at fair value, i.e. on termination the fair value of the product must be settled between the parties.">
@@ -2211,11 +2211,11 @@ type EarlyTerminationProvisionSequence:
 
 type ExerciseEvent: <"A type defining the adjusted dates associated with a particular exercise event.">
 
-    adjustedExerciseDate date (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
-    adjustedRelevantSwapEffectiveDate date (1..1) <"The effective date of the underlying swap associated with a given exercise date. This date should already be adjusted for any applicable business day convention.">
-    adjustedCashSettlementValuationDate date (0..1) <"The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.">
-    adjustedCashSettlementPaymentDate date (0..1) <"The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business dat convention.">
-    adjustedExerciseFeePaymentDate date (0..1) <"The date on which the exercise fee amount is paid. This date should already be adjusted for any applicable business day convention.">
+    adjustedExerciseDate zonedDateTime (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
+    adjustedRelevantSwapEffectiveDate zonedDateTime (1..1) <"The effective date of the underlying swap associated with a given exercise date. This date should already be adjusted for any applicable business day convention.">
+    adjustedCashSettlementValuationDate zonedDateTime (0..1) <"The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.">
+    adjustedCashSettlementPaymentDate zonedDateTime (0..1) <"The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business dat convention.">
+    adjustedExerciseFeePaymentDate zonedDateTime (0..1) <"The date on which the exercise fee amount is paid. This date should already be adjusted for any applicable business day convention.">
     id string (0..1)
 
 type ExercisePeriod: <"This defines the time interval to the start of the exercise period, i.e. the earliest exercise date, and the frequency of subsequent exercise dates (if any).">
@@ -2238,8 +2238,8 @@ type ExtendibleProvisionAdjustedDates: <"A type defining the adjusted dates asso
 
 type ExtensionEvent: <"A type to define the adjusted dates associated with an individual extension event.">
 
-    adjustedExerciseDate date (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
-    adjustedExtendedTerminationDate date (1..1) <"The termination date if an extendible provision is exercised. This date should already be adjusted for any applicable business day convention.">
+    adjustedExerciseDate zonedDateTime (1..1) <"The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.">
+    adjustedExtendedTerminationDate zonedDateTime (1..1) <"The termination date if an extendible provision is exercised. This date should already be adjusted for any applicable business day convention.">
     id string (0..1)
 
 type FallbackReferencePriceType: <"The method, prioritzed by the order it is listed in this element, to get a replacement rate for the disrupted settlement rate option.">
@@ -2276,8 +2276,8 @@ type FxFixingDate extends Offset: <"A type that is extending the Offset structur
 
 type FxLinkedNotionalAmount: <"A type to describe the cashflow representation for fx linked notionals.">
 
-    resetDate date (0..1)
-    adjustedFxSpotFixingDate date (0..1) <"The date on which the fx spot rate is observed. This date should already be adjusted for any applicable business day convention.">
+    resetDate zonedDateTime (0..1)
+    adjustedFxSpotFixingDate zonedDateTime (0..1) <"The date on which the fx spot rate is observed. This date should already be adjusted for any applicable business day convention.">
     observedFxSpotRate number (0..1) <"The actual observed fx spot rate.">
     notionalAmount number (0..1) <"The calculation period notional amount.">
 
@@ -2317,9 +2317,9 @@ type MandatoryEarlyTermination: <"A type to define an early termination provisio
 
 type MandatoryEarlyTerminationAdjustedDates: <"A type defining the adjusted dates associated with a mandatory early termination provision.">
 
-    adjustedEarlyTerminationDate date (1..1) <"The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.">
-    adjustedCashSettlementValuationDate date (1..1) <"The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.">
-    adjustedCashSettlementPaymentDate date (1..1) <"The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business dat convention.">
+    adjustedEarlyTerminationDate zonedDateTime (1..1) <"The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.">
+    adjustedCashSettlementValuationDate zonedDateTime (1..1) <"The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.">
+    adjustedCashSettlementPaymentDate zonedDateTime (1..1) <"The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business dat convention.">
 
 type NonDeliverableSettlement: <"A type defining the parameters used when the reference currency of the swapStream is non-deliverable.">
 
@@ -2342,8 +2342,8 @@ type NotionalStepRule: <"A type defining a parametric representation of the noti
 
     calculationPeriodDatesReference CalculationPeriodDatesReference (1..1) <"A pointer style reference to the associated calculation period dates component defined elsewhere in the document.">
     stepFrequency Frequency (1..1) <"The frequency at which the notional step changes occur. This frequency must be an integer multiple of the stream calculation period frequency.">
-    firstNotionalStepDate date (1..1) <"Effective date of the first change in notional (i.e. a calculation period start date).">
-    lastNotionalStepDate date (1..1) <"Effective date of the last change in notional (i.e. a calculation period start date).">
+    firstNotionalStepDate zonedDateTime (1..1) <"Effective date of the first change in notional (i.e. a calculation period start date).">
+    lastNotionalStepDate zonedDateTime (1..1) <"Effective date of the last change in notional (i.e. a calculation period start date).">
     notionalStepAmount number (0..1) <"The explicit amount that the notional changes on each step date. This can be a positive or negative amount.">
     notionalStepRuleSequence NotionalStepRuleSequence (0..1)
 
@@ -2371,8 +2371,8 @@ type OptionalEarlyTerminationAdjustedDates: <"A type defining the adjusted dates
 
 type PaymentCalculationPeriod: <"A type defining the adjusted payment date and associated calculation period parameters required to calculate the actual or projected payment amount. This type forms part of the cashflow representation of a swap stream.">
 
-    unadjustedPaymentDate date (0..1)
-    adjustedPaymentDate date (0..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component (all dates the Cashflows type are adjusted payment dates).">
+    unadjustedPaymentDate zonedDateTime (0..1)
+    adjustedPaymentDate zonedDateTime (0..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component (all dates the Cashflows type are adjusted payment dates).">
     calculationPeriod CalculationPeriod (0..*) <"The parameters used in the calculation of a fixed or floating rate calculation period amount. A list of calculation period elements may be ordered in the document by ascending start date. An FpML document which contains an unordered list of calcularion periods is still regarded as a conformant document.">
     fixedPaymentAmount number (0..1) <"A known fixed payment amount.">
     discountFactor number (0..1) <"A decimal value representing the discount factor used to calculate the present value of cash flow.">
@@ -2390,8 +2390,8 @@ type PaymentDates: <"A type defining parameters used to generate the payment dat
     resetDatesReference ResetDatesReference (0..1) <"A pointer style reference to the associated reset dates component defined elsewhere in the document.">
     valuationDatesReference ValuationDatesReference (0..1) <"A pointer style reference to the associated valuation dates component defined elsewhere in the document. Implemented for Brazilian-CDI Swaps where it will refer to the settlemementProvision/nonDeliverableSettlement/fxFixingDate structure.">
     paymentFrequency Frequency (1..1) <"The frequency at which regular payment dates occur. If the payment frequency is equal to the frequency defined in the calculation period dates component then one calculation period contributes to each payment amount. If the payment frequency is less frequent than the frequency defined in the calculation period dates component then more than one calculation period will contribute to the payment amount. A payment frequency more frequent than the calculation period frequency or one that is not a multiple of the calculation period frequency is invalid. If the payment frequency is of value T (term), the period is defined by the swap\\swapStream\\calculationPerioDates\\effectiveDate and the swap\\swapStream\\calculationPerioDates\\terminationDate.">
-    firstPaymentDate date (0..1) <"The first unadjusted payment date. This day may be subject to adjustment in accordance with any business day convention specified in paymentDatesAdjustments. This element must only be included if there is an initial stub. This date will normally correspond to an unadjusted calculation period start or end date. This is true even if early or delayed payment is specified to be applicable since the actual first payment date will be the specified number of days before or after the applicable adjusted calculation period start or end date with the resulting payment date then being adjusted in accordance with any business day convention specified in paymentDatesAdjustments.">
-    lastRegularPaymentDate date (0..1) <"The last regular unadjusted payment date. This day may be subject to adjustment in accordance with any business day convention specified in paymentDatesAdjustments. This element must only be included if there is a final stub. All calculation periods after this date contribute to the final payment. The final payment is made relative to the final set of calculation periods or the final reset date as the case may be. This date will normally correspond to an unadjusted calculation period start or end date. This is true even if early or delayed payment is specified to be applicable since the actual last regular payment date will be the specified number of days before or after the applicable adjusted calculation period start or end date with the resulting payment date then being adjusted in accordance with any business day convention specified in paymentDatesAdjustments.">
+    firstPaymentDate zonedDateTime (0..1) <"The first unadjusted payment date. This day may be subject to adjustment in accordance with any business day convention specified in paymentDatesAdjustments. This element must only be included if there is an initial stub. This date will normally correspond to an unadjusted calculation period start or end date. This is true even if early or delayed payment is specified to be applicable since the actual first payment date will be the specified number of days before or after the applicable adjusted calculation period start or end date with the resulting payment date then being adjusted in accordance with any business day convention specified in paymentDatesAdjustments.">
+    lastRegularPaymentDate zonedDateTime (0..1) <"The last regular unadjusted payment date. This day may be subject to adjustment in accordance with any business day convention specified in paymentDatesAdjustments. This element must only be included if there is a final stub. All calculation periods after this date contribute to the final payment. The final payment is made relative to the final set of calculation periods or the final reset date as the case may be. This date will normally correspond to an unadjusted calculation period start or end date. This is true even if early or delayed payment is specified to be applicable since the actual last regular payment date will be the specified number of days before or after the applicable adjusted calculation period start or end date with the resulting payment date then being adjusted in accordance with any business day convention specified in paymentDatesAdjustments.">
     payRelativeTo PayRelativeToEnum (1..1) <"Specifies whether the payments occur relative to each adjusted calculation period start date, adjusted calculation period end date or each reset date. The reset date is applicable in the case of certain euro (former French Franc) floating rate indices. Calculation period start date means relative to the start of the first calculation period contributing to a given payment. Similarly, calculation period end date means the end of the last calculation period contributing to a given payment.The valuation date is applicable for Brazilian-CDI swaps.">
     paymentDaysOffset Offset (0..1) <"If early payment or delayed payment is required, specifies the number of days offset that the payment occurs relative to what would otherwise be the unadjusted payment date. The offset can be specified in terms of either calendar or business days. Even in the case of a calendar days offset, the resulting payment date, adjusted for the specified calendar days offset, will still be adjusted in accordance with the specified payment dates adjustments. This element should only be included if early or delayed payment is applicable, i.e. if the periodMultiplier element value is not equal to zero. An early payment would be indicated by a negative periodMultiplier element value and a delayed payment (or payment lag) would be indicated by a positive periodMultiplier element value.">
     paymentDatesAdjustments BusinessDayAdjustments (1..1) <"The business day convention to apply to each payment date if it would otherwise fall on a day that is not a business day in the specified financial business centers.">
@@ -2410,8 +2410,8 @@ type PriceSourceDisruptionType: <"A type defining the parameters used to get a p
 
 type PrincipalExchange: <"A type defining a principal exchange amount and adjusted exchange date. The type forms part of the cashflow representation of a swap stream.">
 
-    unadjustedPrincipalExchangeDate date (0..1)
-    adjustedPrincipalExchangeDate date (0..1) <"The principal exchange date. This date should already be adjusted for any applicable business day convention.">
+    unadjustedPrincipalExchangeDate zonedDateTime (0..1)
+    adjustedPrincipalExchangeDate zonedDateTime (0..1) <"The principal exchange date. This date should already be adjusted for any applicable business day convention.">
     principalExchangeAmount number (0..1) <"The principal exchange amount. This amount should be positive if the stream payer is paying the exchange amount and signed negative if they are receiving it.">
     discountFactor number (0..1) <"The value representing the discount factor used to calculate the present value of the principal exchange amount.">
     presentValuePrincipalExchangeAmount Money (0..1) <"The amount representing the present value of the principal exchange.">
@@ -2529,7 +2529,7 @@ type CutName: <"Allows for an option expiry cut time to be described by name, as
 type DualCurrencyFeature: <"Describes the parameters for a dual currency option transaction.">
 
     currency Currency (1..1) <"The Alternate currency i.e. the currency in which the deposit will be redeemed in the event that the spot rate fixes below the strike rate at the specified fixing date and time.">
-    fixingDate date (1..1) <"The date on which the fx spot rate is compared against the strike rate, in order to determine the delivery currency. This is the expiry date of a put option on the Deposit/Alternate currency couple. Also known as \"valuation date\" or \"reference date\".">
+    fixingDate zonedDateTime (1..1) <"The date on which the fx spot rate is compared against the strike rate, in order to determine the delivery currency. This is the expiry date of a put option on the Deposit/Alternate currency couple. Also known as \"valuation date\" or \"reference date\".">
     fixingTime BusinessCenterTime (0..1) <"The time at which the fx spot rate observation is made i.e. the option cut off time on the expiry date. Also known as \"valuation time\".">
     strike DualCurrencyStrikePrice (1..1) <"The rate at which the deposit will be converted to the Alternate currency, in the event that the spot rate is strictly lower than the strike rate at the specified fixing date and time.">
     spotRate number (0..1) <"The spot rate at the time the trade was agreed.">
@@ -2581,14 +2581,14 @@ type FxAsianFeatureSequence:
 
 type FxAverageRateObservation: <"A type that, for average rate options, is used to describe each specific observation date, as opposed to a parametric frequency of rate observations.">
 
-    date date (1..1) <"A specific date for which an observation against a particular rate will be made and will be used for subsequent computations.">
+    date zonedDateTime (1..1) <"A specific date for which an observation against a particular rate will be made and will be used for subsequent computations.">
     averageRateWeightingFactor number (1..1) <"An optional factor that can be used for weighting certain observation dates. Typically, firms will weight each date with a factor of 1 if there are standard, unweighted adjustments.">
     rate NonNegativeDecimal (0..1) <"The observed rate of exchange between the two option currencies. In the absence of rateObservationQuoteBasis, the rate is assumed to be quoted as per option strike/strikeQuoteBasis.">
 
 type FxAverageRateObservationSchedule: <"A type that describes average rate options rate observations. This is used to describe a parametric frequency of rate observations against a particular rate. Typical frequencies might include daily, every Friday, etc.">
 
-    startDate date (1..1) <"The start of the period over which observations are made to determine whether a trigger has occurred.">
-    endDate date (1..1) <"The end of the period over which observations are made to determine whether a trigger event has occurred.">
+    startDate zonedDateTime (1..1) <"The start of the period over which observations are made to determine whether a trigger has occurred.">
+    endDate zonedDateTime (1..1) <"The end of the period over which observations are made to determine whether a trigger event has occurred.">
     calculationPeriodFrequency CalculationPeriodFrequency (1..1) <"The frequency at which calculation period end dates occur with the regular part of the calculation period schedule and their roll date convention.">
 
 type FxBarrierFeature: <"Describes the properties of an FX barrier.">
@@ -2606,27 +2606,27 @@ type FxBarrierFeature: <"Describes the properties of an FX barrier.">
 
 type FxBarrierFeatureSequence:
 
-    observationStartDate date (1..1) <"The date on which the observation period for an american barrier starts. If the start date is not present, then the date and time of the start of the period is deemed to be the date and time the transaction was entered into.">
+    observationStartDate zonedDateTime (1..1) <"The date on which the observation period for an american barrier starts. If the start date is not present, then the date and time of the start of the period is deemed to be the date and time the transaction was entered into.">
     observationStartTime BusinessCenterTime (0..1) <"The time on the start date at which the observation period for an american barrier starts. If the time is not present and the start date is equivalent to the transaction date, the time is deemed to be the time the transaction was entered into. If the time is not present and the start date is other than the transaction date, then the time is deemed to be the same as the expiration time.">
     fxBarrierFeatureSequenceSequence FxBarrierFeatureSequenceSequence (0..1)
 
 type FxBarrierFeatureSequenceSequence:
 
-    observationEndDate date (1..1) <"The date on which the observation period for an american barrier ends. If the end date is not present, then the date and time of the end of the period is deemed to be the date and time of expiration.">
+    observationEndDate zonedDateTime (1..1) <"The date on which the observation period for an american barrier ends. If the end date is not present, then the date and time of the end of the period is deemed to be the date and time of expiration.">
     observationEndTime BusinessCenterTime (0..1) <"The time on the end date at which the observation period for an american barrier ends. If the time is not present, then the time is deemed to be the same as the expiration time.">
 
 type FxBusinessCenterDateTime:
 
-    date date (1..1)
+    date zonedDateTime (1..1)
     time BusinessCenterTime (0..1)
 
 type FxDigitalAmericanExercise extends Exercise: <"Descrines the characteristics for American exercise in FX digital options.">
 
     commencementDate AdjustableOrRelativeDate (1..1) <"The earliest date on which the option can be exercised.">
-    expiryDate date (1..1) <"The latest date on which the option can be exercised.">
+    expiryDate zonedDateTime (1..1) <"The latest date on which the option can be exercised.">
     expiryTime BusinessCenterTime (0..1) <"Time at which the option expires on the expiry date, at the specified business center. This component represents the formal definition of option expiry time.">
     cutName CutName (0..1) <"A code by which the expiry time is known in the market. This element is available to supplement the formal definition of expiry time, and must not be used in absence of the expiryTime element.">
-    latestValueDate date (1..1) <"The latest date on which both currencies traded will settle.">
+    latestValueDate zonedDateTime (1..1) <"The latest date on which both currencies traded will settle.">
 
 type FxDigitalOptionSequence0:
 
@@ -2664,10 +2664,10 @@ type FxDisruptionProvisions: <"Describes a set of disruption events and the fall
 
 type FxEuropeanExercise extends Exercise: <"Describes the characteristics for European exercise of FX products.">
 
-    expiryDate date (1..1) <"Represents a standard expiry date as defined for an FX OTC option.">
+    expiryDate zonedDateTime (1..1) <"Represents a standard expiry date as defined for an FX OTC option.">
     expiryTime BusinessCenterTime (0..1) <"Time at which the option expires on the expiry date, at the specified business center. This component represents the formal definition of option expiry time.">
     cutName CutName (0..1) <"A code by which the expiry time is known in the market. This element is available to supplement the formal definition of expiry time, and must not be used in absence of the expiryTime element.">
-    valueDate date (1..1) <"The date on which both currencies traded will settle.">
+    valueDate zonedDateTime (1..1) <"The date on which both currencies traded will settle.">
 
 type FxFallbackReferencePrice extends FxDisruptionFallback: <"Describes an alternative set of price sources">
 
@@ -2676,18 +2676,18 @@ type FxFallbackReferencePrice extends FxDisruptionFallback: <"Describes an alter
 type FxFixingScheduleSimple: <"Describes the FX fixing schedule, a single continuous observation period which follows the applicable business day schedule for the quoted rate source.">
 
     fxFixingScheduleSimpleSequence FxFixingScheduleSimpleSequence (0..1)
-    endDate date (0..1) <"The end of the period over which observations are made to determine whether a trigger event has occurred.">
+    endDate zonedDateTime (0..1) <"The end of the period over which observations are made to determine whether a trigger event has occurred.">
     dayType DayTypeEnum (0..1) <"Specifies whether the schedule follows the business or calendar days.">
     businessCentersOrReferenceModel BusinessCentersOrReferenceModel (0..1)
-    fixingDate date (0..*) <"An explicit list of dates in the schedule. For documentation purpose only.">
+    fixingDate zonedDateTime (0..*) <"An explicit list of dates in the schedule. For documentation purpose only.">
 
     condition Choice:
         required choice fxFixingScheduleSimpleSequence, endDate
 
 type FxFixingScheduleSimpleSequence:
 
-    startDate date (1..1) <"The start of the period over which observations are made to determine whether a trigger has occurred.">
-    endDate date (1..1) <"The end of the period over which observations are made to determine whether a trigger event has occurred.">
+    startDate zonedDateTime (1..1) <"The start of the period over which observations are made to determine whether a trigger has occurred.">
+    endDate zonedDateTime (1..1) <"The end of the period over which observations are made to determine whether a trigger event has occurred.">
 
 type FxFlexibleForwardSequence:
 
@@ -2696,8 +2696,8 @@ type FxFlexibleForwardSequence:
 
 type FxFlexibleForwardExecutionPeriod:
 
-    startDate date (1..1) <"Start date of the execution period/window.">
-    expiryDate date (1..1) <"Expiry (maturity) date of the execution period.">
+    startDate zonedDateTime (1..1) <"Start date of the execution period/window.">
+    expiryDate zonedDateTime (1..1) <"Expiry (maturity) date of the execution period.">
     businessCenters BusinessCenters (1..1) <"Business centers for determination of execution period business days.">
     id string (1..1)
 
@@ -2754,7 +2754,7 @@ type FxPerformanceSwap extends Product: <"Describes an FX volatility and varianc
     floatingLeg FxPerformanceFloatingLeg (1..1) <"Floating FX Rate component describes the Floating FX Rate Payer of the rate determined in accordance with the Floating FX Rate Option specified in the Definitions.">
     fixingInformationSource FxSpotRateSource (1..1) <"Fixing Information source parameters to determine the rate observed for each good business day within the Fixing Schedule.">
     fixingSchedule FxFixingScheduleSimple (1..1) <"Parametric schedule of rate observation dates.">
-    valuationDate date (0..1) <"Final Observation Date when Settlement Amount and Settlement Amount Payer determination date.">
+    valuationDate zonedDateTime (0..1) <"Final Observation Date when Settlement Amount and Settlement Amount Payer determination date.">
     valuationDateOffset FxValuationDateOffset (0..1) <"Valuation date offset relative to the Final Observation Date and can be: [Final Observation Date][The first Business Day following the Final Observation Date].">
     settlementDate AdjustableOrAdjustedDate (1..1) <"The date on which the Settlement Amount will be settled.">
     annualizationFactor number (1..1) <"This specifies the numerator of an annualization factor. Frequently this number is equal to the number of rate observations in a year e.g. Daily Observations: 252.">
@@ -2814,13 +2814,13 @@ type FxTouch: <"Describes an american or discrete touch or no-touch trigger appl
 
 type FxTouchSequence:
 
-    observationStartDate date (1..1) <"The date on which the observation period for an american trigger starts. If the start date is not present, then the date and time of the start of the period is deemed to be the date and time the transaction was entered into.">
+    observationStartDate zonedDateTime (1..1) <"The date on which the observation period for an american trigger starts. If the start date is not present, then the date and time of the start of the period is deemed to be the date and time the transaction was entered into.">
     observationStartTime BusinessCenterTime (0..1) <"The time on the start date at which the observation period for an american trigger starts. If the time is not present and the start date is equivalent to the transaction date, the time is deemed to be the time the transaction was entered into. If the time is not present and the start date is other than the transaction date, then the time is deemed to be the same as the expiration time.">
     fxTouchSequenceSequence FxTouchSequenceSequence (0..1)
 
 type FxTouchSequenceSequence:
 
-    observationEndDate date (1..1) <"The date on which the observation period for an american trigger ends. If the end date is not present, then the date and time of the end of the period is deemed to be the date and time of expiration.">
+    observationEndDate zonedDateTime (1..1) <"The date on which the observation period for an american trigger ends. If the end date is not present, then the date and time of the end of the period is deemed to be the date and time of expiration.">
     observationEndTime BusinessCenterTime (0..1) <"The time on the end date at which the observation period for an american trigger ends. If the time is not present, then the time is deemed to be the same as the expiration time.">
 
 type FxTrigger extends FxTriggerBase: <"Describes a european trigger applied to an FX digtal option.">
@@ -2857,7 +2857,7 @@ type FxCoreDetailsModel: <"The elements common to FX spot, forward and swap legs
     exchangedCurrency2 Payment (1..1) <"This is the second of the two currency flows that define a single leg of a standard foreign exchange transaction.">
     dealtCurrency DealtCurrencyEnum (0..1) <"Indicates which currency was dealt.">
     fxTenorModel FxTenorModel (0..1)
-    valueDate date (0..1) <"The date on which both currencies traded will settle.">
+    valueDate zonedDateTime (0..1) <"The date on which both currencies traded will settle.">
     fxCoreDetailsModelSequence FxCoreDetailsModelSequence (0..1)
     exchangeRate ExchangeRate (1..1) <"The rate of exchange between the two currencies.">
     nonDeliverableSettlement FxCashSettlement (0..1) <"Used to describe a particular type of FX forward transaction that is settled in a single currency (for example, a non-deliverable forward).">
@@ -2868,8 +2868,8 @@ type FxCoreDetailsModel: <"The elements common to FX spot, forward and swap legs
 
 type FxCoreDetailsModelSequence:
 
-    currency1ValueDate date (1..1) <"The date on which the currency1 amount will be settled. To be used in a split value date scenario.">
-    currency2ValueDate date (1..1) <"The date on which the currency2 amount will be settled. To be used in a split value date scenario.">
+    currency1ValueDate zonedDateTime (1..1) <"The date on which the currency1 amount will be settled. To be used in a split value date scenario.">
+    currency2ValueDate zonedDateTime (1..1) <"The date on which the currency2 amount will be settled. To be used in a split value date scenario.">
 
 type FxRateObservationModel: <"The elements common to FX rate observation.">
 
@@ -2907,12 +2907,12 @@ type FxComplexBarrierBase:
 
 type FxComplexBarrierBaseSequence0:
 
-    observationStartDate date (1..1) <"The date on which the observation period for an american barrier starts. If the start date is not present, then the date and time of the start of the period is deemed to be the date and time the transaction was entered into.">
+    observationStartDate zonedDateTime (1..1) <"The date on which the observation period for an american barrier starts. If the start date is not present, then the date and time of the start of the period is deemed to be the date and time the transaction was entered into.">
     observationStartTime BusinessCenterTime (0..1) <"The time on the start date at which the observation period for an american barrier starts. If the time is not present and the start date is equivalent to the transaction date, the time is deemed to be the time the transaction was entered into. If the time is not present and the start date is other than the transaction date, then the time is deemed to be the same as the expiration time.">
 
 type FxComplexBarrierBaseSequence1:
 
-    observationEndDate date (1..1) <"The date on which the observation period for an american barrier ends. If the end date is not present, then the date and time of the end of the period is deemed to be the date and time of expiration.">
+    observationEndDate zonedDateTime (1..1) <"The date on which the observation period for an american barrier ends. If the end date is not present, then the date and time of the end of the period is deemed to be the date and time of expiration.">
     observationEndTime BusinessCenterTime (0..1) <"The time on the end date at which the observation period for an american barrier ends. If the time is not present, then the time is deemed to be the same as the expiration time.">
 
 type FxComplexBarrierBaseReference extends Reference: <"Reference to a barrier structure defined within the parametric representation.">
@@ -2936,7 +2936,7 @@ type FxExchangedCurrency: <"Indicates the direction who pays and receives a spec
 
 type FxExpirySchedule extends FxSchedule: <"Defines the expiry/observation schedule of the target.">
 
-    finalExpiryDate date (0..1) <"The final expiry date facilitates informing the final date without having to process all expiry dates in the schedule.">
+    finalExpiryDate zonedDateTime (0..1) <"The final expiry date facilitates informing the final date without having to process all expiry dates in the schedule.">
     expiryTime BusinessCenterTime (0..1) <"Time of expiration of each expiry date.">
 
 type FxKnockoutCount:
@@ -2989,13 +2989,13 @@ type FxSchedule: <"The FxSchedule may be expressed as explicit adjusted dates, o
 type FxScheduleSequence0:
 
     dateAdjustments BusinessDayAdjustments (0..1) <"Date adjustments applied to the adjusted dates including the business day convention and the business centers.">
-    adjustedDate date (1..*) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
+    adjustedDate zonedDateTime (1..*) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
 
 type FxScheduleSequence1:
 
     parametricScheduleModel ParametricScheduleModel (0..1)
     dateOffset FxDateOffset (0..1) <"The representation of the schedule as an offset relative to another schedule. For example, the settlement schedule may be relative to the expiry schedule by an FxForward offset.">
-    adjustedDate date (0..*) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
+    adjustedDate zonedDateTime (0..*) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
 
     condition Choice:
         required choice parametricScheduleModel, dateOffset
@@ -3011,7 +3011,7 @@ type FxSettlementPeriodBarrier:
 
 type FxSettlementSchedule extends FxSchedule:
 
-    finalSettlementDate date (0..1) <"The final settlement date facilitates informing the final date without having to process all settlement dates in the schedule.">
+    finalSettlementDate zonedDateTime (0..1) <"The final settlement date facilitates informing the final date without having to process all settlement dates in the schedule.">
 
 type FxStrike extends Schedule: <"Strike is expressed as Schedule, with an initial value and optional steps.">
 
@@ -3155,13 +3155,13 @@ type FxTargetReference extends Reference: <"Reference to a target structure.">
 
 type SettlementPeriod:
 
-    expiryDate date (1..1) <"Expiry date for the settlement period.">
-    settlementDate date (1..1) <"Settlement date for the settlement period.">
+    expiryDate zonedDateTime (1..1) <"Expiry date for the settlement period.">
+    settlementDate zonedDateTime (1..1) <"Settlement date for the settlement period.">
     notionalAmount number (1..1) <"Notional Amount for the settlement period.">
 
 type SettlementPeriodFixingDates:
 
-    fixingDate date (0..*) <"Observation date in a fixing period.">
+    fixingDate zonedDateTime (0..*) <"Observation date in a fixing period.">
     settlementPeriodFixingDatesSequence SettlementPeriodFixingDatesSequence (0..1)
     numberOfFixings int (0..1) <"Number of fixings between the fixing start and end date.">
 
@@ -3170,8 +3170,8 @@ type SettlementPeriodFixingDates:
 
 type SettlementPeriodFixingDatesSequence:
 
-    startDate date (1..1) <"Start date of the period.">
-    endDate date (1..1) <"End date of the period.">
+    startDate zonedDateTime (1..1) <"Start date of the period.">
+    endDate zonedDateTime (1..1) <"End date of the period.">
 
 type SettlementPeriodLeverage:
 
@@ -3218,7 +3218,7 @@ type FxTargetRegionBoundModelSequence:
 type ParametricScheduleModel: <"The schedule defined by the set of parameters to be able to calculate the schedule of adjusted date. The combination of the [start/endDate + dayType + businessCenters] will be used only to represent a daily schedule and the combination of [start/endDate + observationFrequency + dateAdjustments] for parametric representation of the schedules other than daily schedule.">
 
     parametricScheduleModelSequence0 ParametricScheduleModelSequence0 (0..1)
-    endDate date (0..1) <"End of the schedule.">
+    endDate zonedDateTime (0..1) <"End of the schedule.">
     parametricScheduleModelSequence1 ParametricScheduleModelSequence1 (0..1)
     parametricScheduleModelSequence2 ParametricScheduleModelSequence2 (0..1)
 
@@ -3230,8 +3230,8 @@ type ParametricScheduleModel: <"The schedule defined by the set of parameters to
 
 type ParametricScheduleModelSequence0:
 
-    startDate date (1..1) <"Start of the schedule.">
-    endDate date (0..1) <"End of the schedule.">
+    startDate zonedDateTime (1..1) <"Start of the schedule.">
+    endDate zonedDateTime (0..1) <"End of the schedule.">
 
 type ParametricScheduleModelSequence1:
 
@@ -3327,7 +3327,7 @@ type FxAccrualRegion: <"Defines a region of spot rate where the notional for the
     observableReference FxRateObservableReference (1..1) <"Identifies the FX rate used as the basis for the condition (the accrual region).">
     fxAccrualRegionBoundModel FxAccrualRegionBoundModel (1..1)
     fxAccrualRegionSequence0 FxAccrualRegionSequence0 (0..1)
-    endDate date (0..1) <"Defines the end date of the observation period for the barrier. If ommitted, the last barrier observation point is understood to be the last fixing date in the fixing schedule.">
+    endDate zonedDateTime (0..1) <"Defines the end date of the observation period for the barrier. If ommitted, the last barrier observation point is understood to be the last fixing date in the fixing schedule.">
     accrualFactor Schedule (0..1) <"A multiplier applied to the notional amount per fixing of each currency to specify the amount accrued each time the spot rate fixes within the accrual region. If the accrualFactor is omitted, the factor is one.">
     fxAccrualRegionSequence1 FxAccrualRegionSequence1 (0..1)
 
@@ -3339,8 +3339,8 @@ type FxAccrualRegion: <"Defines a region of spot rate where the notional for the
 
 type FxAccrualRegionSequence0:
 
-    startDate date (1..1) <"Defines the end date of the observation period for the barrier. If omitted, the last barrier observation point is understood to be the last fixing date in the fixing schedule.">
-    endDate date (0..1) <"Defines the end date of the observation period for the barrier. If omitted, the last barrier observation point is understood to be the last fixing date in the fixing schedule.">
+    startDate zonedDateTime (1..1) <"Defines the end date of the observation period for the barrier. If omitted, the last barrier observation point is understood to be the last fixing date in the fixing schedule.">
+    endDate zonedDateTime (0..1) <"Defines the end date of the observation period for the barrier. If omitted, the last barrier observation point is understood to be the last fixing date in the fixing schedule.">
 
 type FxAccrualRegionSequence1:
 
@@ -3405,7 +3405,7 @@ type FxAccrualTriggerReference extends Reference: <"Reference to a trigger struc
 type FxAdjustedDateAndDateAdjustments: <"Defines the expiry/observation schedule of the target.">
 
     dateAdjustments BusinessDayAdjustments (0..1) <"Date adjustments applied to the adjusted dates including the business day convention and the business centers. The date adjustments are as specified in the definitions.">
-    adjustedDate date (1..1) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
+    adjustedDate zonedDateTime (1..1) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
 
 type FxAverageRate extends FxAveragingProcess:
 
@@ -3430,7 +3430,7 @@ type FxExpiryDate extends FxAdjustedDateAndDateAdjustments: <"Defines the expiry
 
 type FxFixingObservation:
 
-    date date (1..1) <"A specific date for which an observation against a particular rate will be made and will be used for subsequent computations.">
+    date zonedDateTime (1..1) <"A specific date for which an observation against a particular rate will be made and will be used for subsequent computations.">
     weight number (0..1) <"An optional factor that can be used for weighting certain observation dates. Typically, firms will weight each date with a factor of 1 if there are standard, unweighted adjustments. If omitted, weight is defaulted to 1.">
 
 type FxFixingSchedule: <"Describes a schedule of fixing dates as a parametric description, an explicit list of dates or both.">
@@ -3444,13 +3444,13 @@ type FxFixingSchedule: <"Describes a schedule of fixing dates as a parametric de
 type FxFixingScheduleSequence0:
 
     dateAdjustments BusinessDayAdjustments (0..1) <"Date adjustments applied to the adjusted dates including the business day convention and the business centers.">
-    fixingDate date (1..*) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
+    fixingDate zonedDateTime (1..*) <"List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.">
 
 type FxFixingScheduleSequence1:
 
     parametricScheduleModel ParametricScheduleModel (1..1)
     numberOfFixings int(min: 0) (0..1) <"The number of fixing points in the fixing schedule.">
-    fixingDate date (0..*) <"An explicit list of dates in the schedule. Where a conflict every existed between parametric and explicit dates, the explicit list of dates would takes precedence.">
+    fixingDate zonedDateTime (0..*) <"An explicit list of dates in the schedule. Where a conflict every existed between parametric and explicit dates, the explicit list of dates would takes precedence.">
 
     condition Choice:
         optional choice numberOfFixings, fixingDate
@@ -3560,7 +3560,7 @@ type EquityDerivativeBase extends Product: <"A type for defining the common feat
 
     buyerSellerModel BuyerSellerModel (1..1)
     optionType EquityOptionTypeEnum (1..1) <"The type of option transaction.">
-    equityEffectiveDate date (0..1) <"Effective date for a forward starting option.">
+    equityEffectiveDate zonedDateTime (0..1) <"Effective date for a forward starting option.">
     underlyer Underlyer (1..1) <"Specifies the underlying component, which can be either one or many and consists in either equity, index or convertible bond component, or a combination of these.">
     notional NonNegativeMoney (0..1) <"The notional amount.">
     equityExercise EquityExerciseValuationSettlement (1..1) <"The parameters for defining how the equity option can be exercised, how it is valued and how it is settled.">
@@ -3651,7 +3651,7 @@ type AdditionalTerm:
 
 type AdjustedPaymentDates:
 
-    adjustedPaymentDate date (1..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but my be specified to allow the fee structure to also serve as a cashflow type component (all dates the the Cashflows type are adjusted payment dates).">
+    adjustedPaymentDate zonedDateTime (1..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but my be specified to allow the fee structure to also serve as a cashflow type component (all dates the the Cashflows type are adjusted payment dates).">
     paymentAmount Money (1..1) <"The currency amount of the payment.">
 
 type BasketReferenceInformation: <"CDS Basket Reference Information">
@@ -3789,7 +3789,7 @@ type FloatingAmountCalculation:
     calculationAmount CalculationAmount (0..1) <"The notional amount used in the calculation of fixed amounts where an amount is calculated on a formula basis, i.e. fixed amount = fixed rate payer calculation amount x fixed rate x fixed rate day count fraction. ISDA 2003 Term: Fixed Rate Payer Calculation Amount.">
     floatingRate FloatingRateCalculation (1..1) <"The calculation period floating rate.">
     dayCountFraction DayCountFraction (0..1) <"The day count fraction. ISDA 2003 Term: Fixed Rate Day Count Fraction.">
-    initialFixingDate date (0..1)
+    initialFixingDate zonedDateTime (0..1)
     finalFixingDate AdjustableDate (0..1)
 
 type FloatingAmountEvents:
@@ -3843,7 +3843,7 @@ type IndexReferenceInformation: <"A type defining a Credit Default Swap Index.">
     indexReferenceInformationSequence1 IndexReferenceInformationSequence1 (0..1)
     indexSeries int(min: 1) (0..1) <"A CDS index series identifier, e.g. 1, 2, 3 etc.">
     indexAnnexVersion int(min: 1) (0..1) <"A CDS index series version identifier, e.g. 1, 2, 3 etc.">
-    indexAnnexDate date (0..1) <"A CDS index series annex date.">
+    indexAnnexDate zonedDateTime (0..1) <"A CDS index series annex date.">
     indexAnnexSource IndexAnnexSource (0..1) <"A CDS index series annex source.">
     excludedReferenceEntity LegalEntity (0..*) <"Excluded reference entity.">
     tranche Tranche (0..1) <"This element contains CDS tranche terms.">
@@ -3871,8 +3871,8 @@ type IndexReferenceInformationSequence2:
 type InitialPayment extends PaymentBase:
 
     payerReceiverModel PayerReceiverModel (1..1)
-    adjustablePaymentDate date (0..1) <"A fixed payment date that shall be subject to adjustment in accordance with the applicable business day convention if it would otherwise fall on a day that is not a business day. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component.">
-    adjustedPaymentDate date (0..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component.">
+    adjustablePaymentDate zonedDateTime (0..1) <"A fixed payment date that shall be subject to adjustment in accordance with the applicable business day convention if it would otherwise fall on a day that is not a business day. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component.">
+    adjustedPaymentDate zonedDateTime (0..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component.">
     paymentAmount Money (1..1) <"A fixed payment amount.">
 
 type InterestShortFall:
@@ -3932,9 +3932,9 @@ type PCDeliverableObligationCharac:
 type PeriodicPayment extends PaymentBase:
 
     paymentFrequency Period (0..1) <"The time interval between regular fixed rate payer payment dates.">
-    firstPeriodStartDate date (0..1) <"The start date of the initial calculation period if such date is not equal to the trade’s effective date. It must only be specified if it is not equal to the effective date. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component (or in a transaction supplement FpML representation defined within the referenced general terms confirmation agreement).">
-    firstPaymentDate date (0..1) <"The first unadjusted fixed rate payer payment date. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component (or in a transaction supplement FpML representation defined within the referenced general terms confirmation agreement). ISDA 2003 Term: Fixed Rate Payer Payment Date">
-    lastRegularPaymentDate date (0..1) <"The last regular unadjusted fixed rate payer payment date. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component (or in a transaction supplement FpML representation defined within the referenced general terms confirmation agreement). This element should only be included if there is a final payment stub, i.e. where the last regular unadjusted fixed rate payer payment date is not equal to the scheduled termination date. ISDA 2003 Term: Fixed Rate Payer Payment Date">
+    firstPeriodStartDate zonedDateTime (0..1) <"The start date of the initial calculation period if such date is not equal to the trade’s effective date. It must only be specified if it is not equal to the effective date. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component (or in a transaction supplement FpML representation defined within the referenced general terms confirmation agreement).">
+    firstPaymentDate zonedDateTime (0..1) <"The first unadjusted fixed rate payer payment date. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component (or in a transaction supplement FpML representation defined within the referenced general terms confirmation agreement). ISDA 2003 Term: Fixed Rate Payer Payment Date">
+    lastRegularPaymentDate zonedDateTime (0..1) <"The last regular unadjusted fixed rate payer payment date. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component (or in a transaction supplement FpML representation defined within the referenced general terms confirmation agreement). This element should only be included if there is a final payment stub, i.e. where the last regular unadjusted fixed rate payer payment date is not equal to the scheduled termination date. ISDA 2003 Term: Fixed Rate Payer Payment Date">
     rollConvention RollConventionEnum (0..1) <"Used in conjunction with the effectiveDate, scheduledTerminationDate, firstPaymentDate, lastRegularPaymentDate and paymentFrequency to determine the regular fixed rate payer payment dates.">
     fixedAmount Money (0..1) <"A fixed payment amount. ISDA 2003 Term: Fixed Amount">
     fixedAmountCalculation FixedAmountCalculation (0..1) <"This element contains all the terms relevant to calculating a fixed amount where the fixed amount is calculated by reference to a per annum fixed rate. There is no corresponding ISDA 2003 Term. The equivalent is Sec 5.1 \"Calculation of Fixed Amount\" but this in itself is not a defined Term.">
@@ -4035,7 +4035,7 @@ type ReferencePoolItem: <"This type contains all the constituent weight and refe
 type SettledEntityMatrix:
 
     matrixSource MatrixSource (1..1) <"Relevant settled entity matrix source.">
-    publicationDate date (0..1) <"Specifies the publication date of the applicable version of the matrix. When this element is omitted, the Standard Terms Supplement defines rules for which version of the matrix is applicable.">
+    publicationDate zonedDateTime (0..1) <"Specifies the publication date of the applicable version of the matrix. When this element is omitted, the Standard Terms Supplement defines rules for which version of the matrix is applicable.">
 
 type SettlementTermsReference extends Reference: <"Reference to a settlement terms derived construct (cashSettlementTerms or physicalSettlementTerms).">
 
@@ -4043,8 +4043,8 @@ type SettlementTermsReference extends Reference: <"Reference to a settlement ter
 
 type SinglePayment extends PaymentBase:
 
-    adjustablePaymentDate date (1..1) <"A fixed amount payment date that shall be subject to adjustment in accordance with the applicable business day convention if it would otherwise fall on a day that is not a business day. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component. ISDA 2003 Term: Fixed Rate Payer Payment Date">
-    adjustedPaymentDate date (0..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component.">
+    adjustablePaymentDate zonedDateTime (1..1) <"A fixed amount payment date that shall be subject to adjustment in accordance with the applicable business day convention if it would otherwise fall on a day that is not a business day. The applicable business day convention and business day are those specified in the dateAdjustments element within the generalTerms component. ISDA 2003 Term: Fixed Rate Payer Payment Date">
+    adjustedPaymentDate zonedDateTime (0..1) <"The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component.">
     fixedAmount Money (1..1) <"A fixed payment amount. ISDA 2003 Term: Fixed Amount">
 
 type SingleValuationDate:
@@ -4868,8 +4868,8 @@ type EEPParameters: <"Excess Emission Penalty related parameters.">
 
 type EEPRiskPeriod: <"TBD.">
 
-    startDate date (1..1)
-    endDate date (1..1)
+    startDate zonedDateTime (1..1)
+    endDate zonedDateTime (1..1)
 
 type ElectricityDelivery: <"The physical delivery conditions for electricity.">
 
@@ -4956,7 +4956,7 @@ type EnvironmentalProduct: <"A type defining the characteristics of the environm
 
     productType EnvironmentalProductTypeEnum (1..1) <"Specifies the type of environmental allowance or credit. Examples include allowances or credit issued by the European Union (E.U.) or by the State of California in the Unites States.">
     compliancePeriod EnvironmentalProductComplaincePeriod (0..1) <"Applies to E.U. Emissions Allowance Transactions. Describes Specified Compliance Period for which the Allowances are issued.">
-    vintage int (0..*) <"Applies to U.S. Emissions Allowance Transactions. The year(s) of the applicable Emissions Product(s) as specified in an Emissions Transaction.">
+    vintage string (0..*) <"Applies to U.S. Emissions Allowance Transactions. The year(s) of the applicable Emissions Product(s) as specified in an Emissions Transaction.">
     applicableLaw EnvironmentalProductApplicableLaw (0..1) <"Applies to U.S. Emissions Allowance Transactions. Used to specify the Applicable Emissions Law when this is not defined in Emissions Product Definitions Exhibit.">
     trackingSystem EnvironmentalTrackingSystem (0..1) <"Applies to U.S. Emissions Allowance Transactions. Used to specify the Tracking System when this is not defined in Emissions Product Definitions Exhibit.">
 
@@ -4967,8 +4967,8 @@ type EnvironmentalProductApplicableLaw: <"TBD.">
 
 type EnvironmentalProductComplaincePeriod:
 
-    startYear int (1..1) <"The first year of the Compliance Period.">
-    endYear int (1..1) <"The last year of the Commpliance Period.">
+    startYear string (1..1) <"The first year of the Compliance Period.">
+    endYear string (1..1) <"The last year of the Commpliance Period.">
 
 type EnvironmentalTrackingSystem: <"For US Emissions Allowance Transactions. A system where all electronic certificates are stored and emissions are tracked.">
 
@@ -5844,8 +5844,8 @@ type CreditEventNoticeDocument: <"An event type that records the occurrence of a
     publiclyAvailableInformation Resource (0..*) <"A public information source, e.g. a particular newspaper or electronic news service, that may publish relevant information used in the determination of whether or not a credit event has occurred.">
     notifyingPartyReference PartyReference (1..1)
     notifiedPartyReference PartyReference (1..1)
-    creditEventNoticeDate date (1..1)
-    creditEventDate date (1..1)
+    creditEventNoticeDate zonedDateTime (1..1)
+    creditEventDate zonedDateTime (1..1)
 
 type FailureToPayEvent extends CreditEvent:
 
@@ -5943,7 +5943,7 @@ type AbstractLoanAllocationPaymentNotification extends AbstractLoanTradingNotifi
 type AbstractLoanAllocationSettlementEvent extends AbstractLoanEvent: <"An abstract structure defining fundamental settlement event information.">
 
     allocationReference LoanAllocationReference (1..1) <"Reference to the loan trade allocation.">
-    settlementDate date (1..1) <"Date on which settlement will occur.">
+    settlementDate zonedDateTime (1..1) <"Date on which settlement will occur.">
 
 type AbstractLoanAllocationSummary: <"An underlying structure defining fundamental allocation event information.">
 
@@ -5967,13 +5967,13 @@ type AbstractLoanTradePaymentNotification extends AbstractLoanTradingNotificatio
 
 type AbstractLoanTradingNotification extends CorrectableRequestMessage: <"An underlying abstract structure for all syndicated loan servicing notifications; the wrapper for events which occur through the life-cycle of a loan trade.">
 
-    noticeDate date (1..1) <"The business date on which the notice is valid (and was communicated).">
+    noticeDate zonedDateTime (1..1) <"The business date on which the notice is valid (and was communicated).">
     partyReference PartyReference (1..1) <"The party sending the notification.">
     role LoanTradingPartyRole (1..1) <"The role of the party that is sending the notification.">
 
 type AbstractLoanTrade extends AbstractLoanTradeSummary: <"An underlying structure defining fundamental master loan trade event information.">
 
-    tradeDate date (1..1) <"The trade date associated with a specified trade record.">
+    tradeDate zonedDateTime (1..1) <"The trade date associated with a specified trade record.">
     buyerSellerModel BuyerSellerModel (1..1)
     _type LoanTradingTypeEnum (1..1) <"Primary or Secondary.">
     whenIssuedFlag boolean (1..1) <"A flag to indicate the dependency of a secondary market loan trade upon the closing of a primary market loan structuring and syndication process.">
@@ -5997,11 +5997,11 @@ type AbstractLoanPartyProfileNotification extends CorrectableRequestMessage: <"A
 type AbstractLoanServicingEvent extends AbstractLoanEvent: <"An abstract base type defining common features of a syndicated loan servicing business event. Such events are originated by the borrower and are required to be communicated to the lender syndicate by agents.">
 
     businessEventPartiesModel BusinessEventPartiesModel (1..1)
-    effectiveDate date (1..1) <"The date on which the associated business event is effective.">
+    effectiveDate zonedDateTime (1..1) <"The date on which the associated business event is effective.">
 
 type AbstractLoanStatement extends CorrectableRequestMessage: <"An abstract base type for all syndicated loan statement notifications; the wrapper for deal/facility/contract definitions and facility/contract positions at a particular point in time (snapshot).">
 
-    statementDate date (1..1) <"The date as of which the embedded information is valid.">
+    statementDate zonedDateTime (1..1) <"The date as of which the embedded information is valid.">
     comments String (0..1) <"A free-form, manually entered field which will be used by users directly for additional information.">
 
 type AbstractLoanContractEvent extends AbstractLoanServicingEvent: <"An abstract base type for all loan contract-level business events.">
@@ -6010,7 +6010,7 @@ type AbstractLoanContractEvent extends AbstractLoanServicingEvent: <"An abstract
 
 type AbstractPartyProfile extends AbstractPartyProfileId: <"An abstract base type that describes a party profile.">
 
-    effectiveDate date (1..1) <"The business date on which the information conveyed within the party profile becomes effective.">
+    effectiveDate zonedDateTime (1..1) <"The business date on which the information conveyed within the party profile becomes effective.">
     partyReference PartyReference (1..1) <"The party whose details are being communicated within the notification.">
     relatedParty RelatedParty (0..*) <"Other parties that may be related to the receiver party. Examples: custodian or trustee; or, to convey company hierarchy (for use in the context of \'blacklists\').">
     documentation PartyProfileDocumentation (0..1) <"Description of the tax form registered by the party.">
@@ -6021,7 +6021,7 @@ type AbstractPartyProfileId: <"An abstract base type that identifies a party pro
 
 type AbstractServicingNotification extends CorrectableRequestMessage: <"An abstract base type for all syndicated loan servicing notifications; the wrapper for loan events which occur through the life-cycle of a deal.">
 
-    noticeDate date (1..1) <"The business date on which the notice is valid (and was communicated).">
+    noticeDate zonedDateTime (1..1) <"The business date on which the notice is valid (and was communicated).">
     isGlobalOnly boolean (1..1) <"Indicates whether the embedded business event is \'global\', i.e. NOT lender specific.">
     eventPayment EventPayment (0..*) <"The payments/wiring instructions associated with all embedded loan events.">
 
@@ -6161,7 +6161,7 @@ type CashPayable: <"A structure taht represents payable cash, together with refe
 
 type CommitmentChange: <"A structure which specifies the commitment changes occurring throughout the life of a facility.">
 
-    date date (1..1) <"The date on which a facility increase/decrease has/will occur.">
+    date zonedDateTime (1..1) <"The date on which a facility increase/decrease has/will occur.">
     adjustment AdjustmentType (1..1) <"The total remaining commitment amount (in facility currency), once the adjustnment has been applied.">
     remaining MoneyWithParticipantShare (1..1) <"The total remaining commitment amount (in facility currency), once the adjustnment has been applied.">
 
@@ -6179,7 +6179,7 @@ type DealIdentifier extends IdentifiedAsset: <"A unique reference to a syndicate
 type DealSummary extends DealIdentifier: <"A short form of a deal.">
 
     dealRolesModel DealRolesModel (1..1)
-    creditAgreementDate date (1..1) <"The credit agreement date is also known as the \'closing date\' (the date on which the agreement was signed). Funding of the facilities occurs either on or after (in the case of a Delayed Draw) the Credit Agreement date.">
+    creditAgreementDate zonedDateTime (1..1) <"The credit agreement date is also known as the \'closing date\' (the date on which the agreement was signed). Funding of the facilities occurs either on or after (in the case of a Delayed Draw) the Credit Agreement date.">
     currency Currency (0..1) <"Deal denomination currency.">
     dealSummarySequence DealSummarySequence (0..1)
 
@@ -6298,7 +6298,7 @@ type FloatingRateAccrual extends FloatingRateOptionBase: <"A full definition of 
 
 type FloatingRateAccrualSequence:
 
-    rateFixingDate date (1..1) <"The date on which the underlying interest rate is fixed. It is an actual (adjusted) date. Note: This should default to the effective date of the loan contract in the case of a PRIME base rate.">
+    rateFixingDate zonedDateTime (1..1) <"The date on which the underlying interest rate is fixed. It is an actual (adjusted) date. Note: This should default to the effective date of the loan contract in the case of a PRIME base rate.">
     baseRate number (0..1) <"The actual underlying base rate associated with the period, defined as a percentage.">
     floatingRateAccrualSequenceSequence FloatingRateAccrualSequenceSequence (0..1)
 
@@ -6380,8 +6380,8 @@ type LenderClassification: <"A list of lender clasifications. These are used to 
 
 type LetterOfCredit extends LetterOfCreditSummary: <"A definition of an unfunded borrowing (guarantee) instrument known as a Letter of Credit.">
 
-    expiryDate date (1..1) <"Expiry date of the letter of credit.">
-    finalExpiryDate date (0..1) <"Final expiry date of the letter of credit, once the evergreen option has been exercised.">
+    expiryDate zonedDateTime (1..1) <"Expiry date of the letter of credit.">
+    finalExpiryDate zonedDateTime (0..1) <"Final expiry date of the letter of credit, once the evergreen option has been exercised.">
     lcAccrual LcAccrual (1..1) <"The letter of credit fee rate details.">
     purpose LcPurpose (0..1) <"Defines the purpose of a letter of credit.">
     letterOfCreditFeaturesModel LetterOfCreditFeaturesModel (1..1)
@@ -6395,7 +6395,7 @@ type LetterOfCreditSummary: <"A short form definition of a letter of credit.">
 
     identifier FacilityContractIdentifier (1..*) <"A unique identifier for a letter of credit.">
     _type LcType (1..1) <"The letter of credit type for which a fee rate is being provided.">
-    effectiveDate date (1..1) <"Effective date of the letter of credit.">
+    effectiveDate zonedDateTime (1..1) <"Effective date of the letter of credit.">
     letterOfCreditRolesModel LetterOfCreditRolesModel (1..1)
     amount MoneyWithParticipantShare (1..1) <"The letter of credit notional amount. The amount is represented at the global and (optionally) at the lender-specific level.">
 
@@ -6460,7 +6460,7 @@ type LoanAllocationSettlementEvent extends AbstractLoanAllocationSettlementEvent
 type LoanAllocationTransferFeeDueEvent extends AbstractLoanAllocationEvent: <"A structure that defines details related to the admin agent\'s determination of transfer fee(s) owed on an allocation.">
 
     amount NonNegativeMoney (1..1) <"Amount of transfer fee due to the admin agent for the allocation.">
-    dueDate date (1..1) <"The business date on which the transfer fee is due.">
+    dueDate zonedDateTime (1..1) <"The business date on which the transfer fee is due.">
 
 type LoanAllocationTransferFeeOwedEvent extends AbstractLoanAllocationEvent: <"A structure that defines details related to the admin agent\'s determination of transfer fee(s) owed on an allocation.">
 
@@ -6496,8 +6496,8 @@ type LoanBulkServicingNotificationChoiceChoice:
 
 type LoanContract extends LoanContractSummary: <"A funded borrowing instrument which utilizes a portion of an available under a single facility (line of credit) within a bank deal (credit agreement).">
 
-    repricingDate date (0..1) <"The maturity date of the loan contract. In the case of a PRIME-based loan, this field should be set to the maturity date of the facility.">
-    maturityDate date (0..1) <"The maturity date of the loan contract. In the case of a PRIME-based loan, this field should be set to the maturity date of the facility.">
+    repricingDate zonedDateTime (0..1) <"The maturity date of the loan contract. In the case of a PRIME-based loan, this field should be set to the maturity date of the facility.">
+    maturityDate zonedDateTime (0..1) <"The maturity date of the loan contract. In the case of a PRIME-based loan, this field should be set to the maturity date of the facility.">
     fixedRateAccrual FixedRateAccrual (0..1) <"Defines the base rate and additional charges associated with the loan contract.">
     floatingRateAccrual FloatingRateAccrual (0..1) <"Defines the base rate and additional charges associated with the loan contract.">
     facilityFxRate FxTerms (0..1) <"Defines a single (current) FX rate used to calculate utilization in the facility currency. Used in the case where the loan contract currency is different to the facility currency.">
@@ -6512,13 +6512,13 @@ type LoanContractAdjustment extends AbstractLoanContractEvent: <"An event repres
 
 type LoanContractBaseRateSet extends AbstractLoanContractEvent: <"An event representing the initial setting of the rate on a single (new) loan contract.">
 
-    fixingDate date (1..1) <"The date on which the underlying interest rate is fixed. It is an actual (adjusted) date. Note: This should default to the effective date of the loan contract in the case of a PRIME base rate.">
+    fixingDate zonedDateTime (1..1) <"The date on which the underlying interest rate is fixed. It is an actual (adjusted) date. Note: This should default to the effective date of the loan contract in the case of a PRIME base rate.">
     rate number (1..1)
 
 type LoanContractMaturityChange extends AbstractLoanContractEvent: <"An event representing a change of maturity date on a one or more outstanding loan contracts.">
 
-    currentMaturityDate date (1..1) <"The new loan contract maturity date.">
-    priorMaturityDate date (0..1) <"The previous loan contract maturity date.">
+    currentMaturityDate zonedDateTime (1..1) <"The new loan contract maturity date.">
+    priorMaturityDate zonedDateTime (0..1) <"The previous loan contract maturity date.">
 
 type LoanContractReference extends Reference: <"A reference to a loan contract.">
 
@@ -6527,7 +6527,7 @@ type LoanContractReference extends Reference: <"A reference to a loan contract."
 type LoanContractSummary: <"A short form of a loan contract.">
 
     identifier FacilityContractIdentifier (1..*) <"A unique identifier for a loan contract.">
-    effectiveDate date (1..1) <"The effective date of the loan contract. This is the date on which the funds are passed to the borrower. It is an actual (adjusted) date.">
+    effectiveDate zonedDateTime (1..1) <"The effective date of the loan contract. This is the date on which the funds are passed to the borrower. It is an actual (adjusted) date.">
     borrowerPartyReference PartyReference (1..1) <"A reference to the borrower against a loan contract.">
     guarantorPartyReference PartyReference (0..1) <"Party references to any guarantors associated with the facility borrower.">
     amount MoneyWithParticipantShare (1..1)
@@ -6554,7 +6554,7 @@ type LoanSettlementDateAvailabilityEvent extends AbstractLoanAllocationEvent: <"
     amount Money (1..*) <"The amount settled.">
     specificDates DateList (0..1) <"Specific date or dates on which a trade may be settled.">
     periodModel PeriodModel (0..1)
-    onOrAfterDate date (0..1) <"Date on or after which a trade can be settled.">
+    onOrAfterDate zonedDateTime (0..1) <"Date on or after which a trade can be settled.">
     loanSettlementDateAvailabilityEventSequence LoanSettlementDateAvailabilityEventSequence (0..1)
     noSettlePeriod LoanAllocationNoSettlePeriod (0..*) <"A period during which no settlement of a trade can occur, other than non-business days.">
 
@@ -6569,14 +6569,14 @@ type LoanSettlementDateAvailabilityEventSequence:
 type LoanSettlementDateFinalizationEvent extends AbstractLoanAllocationEvent: <"An event structure defining the trade settlement date.">
 
     amount Money (1..1) <"The amount settled.">
-    settlementDate date (1..1) <"The settlement date associated with a single loan trade allocation.">
+    settlementDate zonedDateTime (1..1) <"The settlement date associated with a single loan trade allocation.">
 
 type LoanTradeEvent extends AbstractLoanTradeEvent: <"An event structure defining counterparty-to-counterparty loan trade information. This structure contains the main (e.g. fund manager/main counterparty) trade details.">
 
 type LoanTradeTransferFeeDueEvent extends AbstractLoanTradeEvent: <"A structure that defines details related to the admin agent\'s determination of transfer fee(s) owed on a trade.">
 
     amount NonNegativeMoney (1..1) <"Amount of transfer fee owed to the admin agent for the trade.">
-    dueDate date (1..1) <"The business date on which the transfer fee is due.">
+    dueDate zonedDateTime (1..1) <"The business date on which the transfer fee is due.">
 
 type LoanTradeTransferFeeOwedEvent extends AbstractLoanTradeEvent: <"A structure that defines details related to the admin agent\'s determination of transfer fee(s) owed on an allocation.">
 
@@ -6682,9 +6682,9 @@ type LoanTradingPartyRole: <"A type that describes a role played by a party in a
 
 type LoanTradingSettlementTaskDates: <"A structure that details key dates related to a task that is a prerequisite to trade settlement.">
 
-    raisedDate date (1..1) <"The date on which the settlement task was raised.">
-    expectedDate date (0..1) <"The date by which the settlement task is expected to be completed.">
-    clearedDate date (0..1) <"The date on which the settlement task was either cleared or cancelled.">
+    raisedDate zonedDateTime (1..1) <"The date on which the settlement task was raised.">
+    expectedDate zonedDateTime (0..1) <"The date by which the settlement task is expected to be completed.">
+    clearedDate zonedDateTime (0..1) <"The date on which the settlement task was either cleared or cancelled.">
 
 type LoanTransfer extends AbstractLoanTrade: <"An event structure defining counterparty-to-admin agent loan trade information.">
 
@@ -6780,7 +6780,7 @@ type PartyProfileIdentifier: <"A type that identifies a party profile record.">
 
 type PaymentProjection: <"A structure that represents interest payment projections.">
 
-    nextPaymentDate date (1..1) <"The next payment for the associated event type is due on this date. This is an actual (adjusted) date.">
+    nextPaymentDate zonedDateTime (1..1) <"The next payment for the associated event type is due on this date. This is an actual (adjusted) date.">
     projectedAmount MoneyWithParticipantShare (0..1) <"Projected amount payable on the next payment date.">
 
 type PeriodRate: <"A structure that represents a rate applicable against a well-defined or open-ended period.">
@@ -6834,7 +6834,7 @@ type TaskIdentifier: <"A type defining a task identifier issued by the indicated
 type TaxForm: <"A structure that defines a tax form registration.">
 
     taxFormType TaxFormType (1..1) <"Type of tax form registered.">
-    taxFormExpiryDate date (0..1) <"Date of expiration of this tax form.">
+    taxFormExpiryDate zonedDateTime (0..1) <"Date of expiration of this tax form.">
 
 type TaxFormType: <"A scheme that describes tax form types.">
 
@@ -6919,9 +6919,9 @@ type FacilityCommitmentModel: <"A model that describes facility commitment infor
 
 type FacilityDatesModel: <"A model that defines all relevant dates related to a specific facility.">
 
-    startDate date (1..1) <"The start date of the facility.">
-    expiryDate date (0..1) <"The latest date that a drawdown can be made effective against the facility.">
-    maturityDate date (0..1) <"The maturity date of the facility.">
+    startDate zonedDateTime (1..1) <"The start date of the facility.">
+    expiryDate zonedDateTime (0..1) <"The latest date that a drawdown can be made effective against the facility.">
+    maturityDate zonedDateTime (0..1) <"The maturity date of the facility.">
 
 type FacilityDetailsModel: <"A model used to reference a facility by either identifier or summary, within various notifications.">
 
@@ -7083,8 +7083,8 @@ type LoanTradingTransferFeeDeterminationModel: <"A model which contains factors 
 
 type PeriodOptionalEndModel: <"A model that describes a period, with an optional end date.">
 
-    startDate date (1..1) <"Date on which this period begins.">
-    endDate date (0..1) <"Date on which this period ends.">
+    startDate zonedDateTime (1..1) <"Date on which this period begins.">
+    endDate zonedDateTime (0..1) <"Date on which this period ends.">
 
 type PeriodWithDaysModel: <"A model that describes a period, with an element to define number of days within the period.">
 
@@ -7406,7 +7406,7 @@ type ContractualDefinitions: <"The definitions, such as those published by ISDA,
 type ContractualMatrix:
 
     matrixType MatrixType (1..1) <"Identifies the form of applicable matrix.">
-    publicationDate date (0..1) <"Specifies the publication date of the applicable version of the matrix. When this element is omitted, the ISDA supplemental language for incorporation of the relevant matrix will generally define rules for which version of the matrix is applicable.">
+    publicationDate zonedDateTime (0..1) <"Specifies the publication date of the applicable version of the matrix. When this element is omitted, the ISDA supplemental language for incorporation of the relevant matrix will generally define rules for which version of the matrix is applicable.">
     matrixTerm MatrixTerm (0..1) <"Defines any applicable key into the relevant matrix. For example, the Transaction Type would be the single term required for the Credit Derivatives Physical Settlement Matrix. This element should be omitted in the case of the 2000 ISDA Definitions Settlement Matrix for Early Termination and Swaptions.">
 
 type ContractualSupplement: <"A contractual supplement (such as those published by ISDA) that will apply to the trade.">
@@ -7417,7 +7417,7 @@ type ContractualSupplement: <"A contractual supplement (such as those published 
 type ContractualTermsSupplement: <"A contractual supplement (such as those published by ISDA) and its publication date that will apply to the trade.">
 
     _type ContractualSupplement (1..1) <"Identifies the form of applicable contractual supplement.">
-    publicationDate date (0..1) <"Specifies the publication date of the applicable version of the contractual supplement.">
+    publicationDate zonedDateTime (0..1) <"Specifies the publication date of the applicable version of the contractual supplement.">
 
 type CorrespondentInformation: <"A type that describes the information to identify a correspondent bank that will make delivery of the funds on the paying bank\'s behalf in the country where the payment is to be made.">
 
@@ -7437,7 +7437,7 @@ type CreditSeniority:
 type CreditSupportAgreement: <"The agreement executed between the parties and intended to govern collateral arrangement for all OTC derivatives transactions between those parties.">
 
     _type CreditSupportAgreementType (1..1) <"The type of ISDA Credit Support Agreement">
-    date date (1..1) <"The date of the agreement executed between the parties and intended to govern collateral arrangements for all OTC derivatives transactions between those parties.">
+    date zonedDateTime (1..1) <"The date of the agreement executed between the parties and intended to govern collateral arrangements for all OTC derivatives transactions between those parties.">
     identifier CreditSupportAgreementIdentifier (0..1) <"An identifier used to uniquely identify the CSA">
 
 type CreditSupportAgreementIdentifier:
@@ -7462,7 +7462,7 @@ type Currency: <"The code representation of a currency or fund. By default it is
 
 type DateList: <"List of Dates">
 
-    date date (1..*)
+    date zonedDateTime (1..*)
 
 type DateOffset extends Offset: <"A type defining an offset used in calculating a date when this date is defined in reference to another date through a date offset. The type includes the convention for adjusting the date and an optional sequence element to indicate the order in a sequence of multiple date offsets.">
 
@@ -7470,8 +7470,8 @@ type DateOffset extends Offset: <"A type defining an offset used in calculating 
 
 type DateRange: <"A type defining a contiguous series of calendar dates. The date range is defined as all the dates between and including the first and the last date. The first date must fall before the last date.">
 
-    unadjustedFirstDate date (1..1) <"The first date of a date range.">
-    unadjustedLastDate date (1..1) <"The last date of a date range.">
+    unadjustedFirstDate zonedDateTime (1..1) <"The first date of a date range.">
+    unadjustedLastDate zonedDateTime (1..1) <"The last date of a date range.">
 
 type DateReference extends Reference: <"Reference to an identified date or a complex date structure.">
 
@@ -7626,7 +7626,7 @@ type Frequency: <"A type defining a time frequency, e.g. one day, three months. 
 type FutureValueAmount extends NonNegativeMoney: <"A type defining a currency amount as at a future value date.">
 
     calculationPeriodNumberOfDays int(min: 1) (1..1) <"The number of days from the adjusted calculation period start date to the adjusted value date, calculated in accordance with the applicable day count fraction.">
-    valueDate date (1..1) <"Adjusted value date of the future value amount.">
+    valueDate zonedDateTime (1..1) <"Adjusted value date of the future value amount.">
 
 type FxCashSettlement: <"A type that is used for describing cash settlement of an option / non deliverable forward. It includes the currency to settle into together with the fixings required to calculate the currency amount.">
 
@@ -7657,7 +7657,7 @@ type FxInformationSource extends InformationSource:
 type FxFixing: <"A type that specifies the source for and timing of a fixing of an exchange rate. This is used in the agreement of non-deliverable forward trades as well as various types of FX OTC options that require observations against a particular rate.">
 
     quotedCurrencyPair QuotedCurrencyPair (1..1) <"Defines the two currencies for an FX trade and the quotation relationship between the two currencies.">
-    fixingDate date (0..1) <"Describes the specific date when a non-deliverable forward or cash-settled option will \"fix\" against a particular rate, which will be used to compute the ultimate cash settlement. This element should be omitted where a single, discrete fixing date cannot be identified e.g. on an american option, where fixing may occur at any date on a continuous range.">
+    fixingDate zonedDateTime (0..1) <"Describes the specific date when a non-deliverable forward or cash-settled option will \"fix\" against a particular rate, which will be used to compute the ultimate cash settlement. This element should be omitted where a single, discrete fixing date cannot be identified e.g. on an american option, where fixing may occur at any date on a continuous range.">
     fxSpotRateSource FxSpotRateSource (0..1) <"Specifies the methodology (reference source and, optionally, fixing time) to be used for determining a currency conversion rate.">
 
 type FxRate: <"A type describing the rate of a currency conversion: pair of currency, quotation mode and exchange rate.">
@@ -7711,7 +7711,7 @@ type IdentifiedCurrencyReference extends Reference: <"Reference to a currency wi
 
 type IdentifiedDate: <"A date which can be referenced elsewhere.">
 
-    value date (1..1)
+    value zonedDateTime (1..1)
     id string (0..1)
 
 type IdentifiedPayerReceiver: <"A type extending the PayerReceiverEnum type wih an id attribute.">
@@ -7829,7 +7829,7 @@ type MasterAgreement: <"An entity for defining the agreement executed between th
     masterAgreementId MasterAgreementId (0..*) <"An identifier that has been created to identify the master agreement.">
     masterAgreementType MasterAgreementType (1..1) <"The agreement executed between the parties and intended to govern product-specific derivatives transactions between those parties.">
     masterAgreementVersion MasterAgreementVersion (0..1) <"The version of the master agreement.">
-    masterAgreementDate date (0..1) <"The date on which the master agreement was signed.">
+    masterAgreementDate zonedDateTime (0..1) <"The date on which the master agreement was signed.">
 
 type MasterAgreementId: <"A master agreement identifier allocated by a party. FpML does not define the domain values associated with this element. Note that the domain values for this element are not strictly an enumerated list.">
 
@@ -7849,8 +7849,8 @@ type MasterAgreementVersion:
 type MasterConfirmation: <"An entity for defining the master confirmation agreement executed between the parties.">
 
     masterConfirmationType MasterConfirmationType (1..1) <"The type of master confirmation executed between the parties.">
-    masterConfirmationDate date (1..1) <"The date of the confirmation executed between the parties and intended to govern all relevant transactions between those parties.">
-    masterConfirmationAnnexDate date (0..1) <"The date that an annex to the master confirmation was executed between the parties.">
+    masterConfirmationDate zonedDateTime (1..1) <"The date of the confirmation executed between the parties and intended to govern all relevant transactions between those parties.">
+    masterConfirmationAnnexDate zonedDateTime (0..1) <"The date that an annex to the master confirmation was executed between the parties.">
     masterConfirmationAnnexType MasterConfirmationAnnexType (0..1) <"The type of master confirmation annex executed between the parties.">
 
 type MasterConfirmationAnnexType:
@@ -7976,7 +7976,7 @@ type OtherAgreement: <"An entity for defining the an agreement executed between 
     identifier OtherAgreementId (0..*) <"An identifier that has been created to identify the agreement.">
     _type OtherAgreementType (1..1) <"The agreement executed between the parties and intended to govern product-specific derivatives transactions between those parties.">
     version OtherAgreementVersion (0..1) <"The version of the agreement.">
-    date date (0..1) <"The date on which the agreement was signed.">
+    date zonedDateTime (0..1) <"The date on which the agreement was signed.">
 
 type OtherAgreementId: <"A agreement identifier allocated by a party. FpML does not define the domain values associated with this element. Note that the domain values for this element are not strictly an enumerated list.">
 
@@ -8118,7 +8118,7 @@ type Person: <"A type that represents information about a person connected with 
     personId PersonId (0..*) <"An identifier assigned by a system for uniquely identifying the individual">
     businessUnitReference BusinessUnitReference (0..1) <"The unit for which the indvidual works.">
     contactInfo ContactInformation (0..1) <"Information on how to contact the individual using various means.">
-    dateOfBirth date (0..1) <"The birth date of the person, e.g. 1970-01-01">
+    dateOfBirth zonedDateTime (0..1) <"The birth date of the person, e.g. 1970-01-01">
     country CountryCode (0..1) <"The ISO 3166 standard code for the country where the individual works.">
     id string (0..1)
 
@@ -8210,8 +8210,8 @@ type Rate: <"The abstract base class for all types which define interest rate st
 
 type RateObservation: <"A type defining parameters associated with an individual observation or fixing. This type forms part of the cashflow representation of a stream.">
 
-    resetDate date (0..1) <"The reset date.">
-    adjustedFixingDate date (0..1) <"The adjusted fixing date, i.e. the actual date the rate is observed. The date should already be adjusted for any applicable business day convention.">
+    resetDate zonedDateTime (0..1) <"The reset date.">
+    adjustedFixingDate zonedDateTime (0..1) <"The adjusted fixing date, i.e. the actual date the rate is observed. The date should already be adjusted for any applicable business day convention.">
     observedRate number (0..1) <"The actual observed rate before any required rate treatment is applied, e.g. before converting a rate quoted on a discount basis to an equivalent yield. An observed rate of 5% would be represented as 0.05.">
     treatedRate number (0..1) <"The observed rate after any required rate treatment is applied. A treated rate of 5% would be represented as 0.05.">
     observationWeight int(min: 1) (1..1) <"The number of days weighting to be associated with the rate observation, i.e. the number of days such rate is in effect. This is applicable in the case of a weighted average method of calculation where more than one reset date is established for a single calculation period.">
@@ -8297,7 +8297,7 @@ type RequestedAction:
 
 type RequiredIdentifierDate: <"A date with a required identifier which can be referenced elsewhere.">
 
-    value date (1..1)
+    value zonedDateTime (1..1)
     id string (1..1)
 
 type ResetFrequency extends Frequency: <"A type defining the reset frequency. In the case of a weekly reset, also specifies the day of the week that the reset occurs. If the reset frequency is greater than the calculation period frequency the this implies that more or more reset dates is established for each calculation period and some form of rate averaginhg is applicable. The specific averaging method of calculation is specified in FloatingRateCalculation. In case the reset frequency is of value T (term), the period is defined by the swap\\swapStream\\calculationPerioDates\\effectiveDate and the swap\\swapStream\\calculationPerioDates\\terminationDate.">
@@ -8465,7 +8465,7 @@ type Step extends StepBase: <"A type defining a step date and step value pair. T
 
 type StepBase: <"A type defining a step date and step value pair. This step definitions are used to define varying rate or amount schedules, e.g. a notional amortization or a step-up coupon schedule.">
 
-    stepDate date (1..1) <"The date on which the associated stepValue becomes effective. This day may be subject to adjustment in accordance with a business day convention.">
+    stepDate zonedDateTime (1..1) <"The date on which the associated stepValue becomes effective. This day may be subject to adjustment in accordance with a business day convention.">
     id string (0..1)
 
 type StreetAddress: <"A type that describes the set of street and building number information that identifies a postal address within a city.">
@@ -8631,8 +8631,8 @@ type PaymentDiscountingModel: <"A model group for representing the discounting e
 
 type PeriodModel:
 
-    startDate date (1..1) <"Date on which this period begins.">
-    endDate date (1..1) <"Date on which this period ends.">
+    startDate zonedDateTime (1..1) <"Date on which this period begins.">
+    endDate zonedDateTime (1..1) <"Date on which this period ends.">
 
 type PremiumModel: <"A model group for representing the option premium when expressed in a way other than an amount.">
 
@@ -8992,7 +8992,7 @@ type LegAmount: <"A type describing the amount that will paid or received on eac
 
 type MakeWholeProvisions: <"A type to hold early exercise provisions.">
 
-    makeWholeDate date (1..1) <"Date through which option can not be exercised without penalty.">
+    makeWholeDate zonedDateTime (1..1) <"Date through which option can not be exercised without penalty.">
     recallSpread number (1..1) <"Spread used if exercised before make whole date. Early termination penalty. Expressed in bp, e.g. 25 bp.">
 
 type NettedSwapBase extends Product: <"An abstract base class for all swap types which have a single netted leg, such as Variance Swaps, and Correlation Swaps.">
@@ -9408,7 +9408,7 @@ type MortgageSector: <"A type describing the typology of mortgage obligations.">
 
 type PendingPayment extends PaymentBase: <"A structure representing a pending dividend or coupon payment.">
 
-    paymentDate date (1..1) <"The date that the dividend or coupon is due.">
+    paymentDate zonedDateTime (1..1) <"The date that the dividend or coupon is due.">
     amount Money (1..1) <"The amount of the dividend or coupon payment. Value of dividends or coupon between ex and pay date. Stock: if we are between ex-date and pay-date and the dividend is payable under the swap, then this should be the ex-div amount * # of securities. Bond: regardless of where we are vis-a-vis resets: (coupon % * face of bonds on swap * (bond day count fraction using days last coupon pay date of the bond through today).">
     accruedInterest Money (0..1) <"Accrued interest on the dividend or coupon payment. When the TRS is structured to pay a dividend or coupon on reset after payable date, you may earn interest on these amounts. This field indicates the interest accrued on dividend/coupon from pay date to statement date. This will only apply to a handful of agreements where dividendss are held to the next reset AND you receive/pay interest on unpaid amounts.">
 
@@ -9528,7 +9528,7 @@ type CommodityProductModelSequence:
 
     commodityProductModelSequenceChoice CommodityProductModelSequenceChoice (0..1)
     deliveryDate AdjustableDate (0..1) <"The Delivery Date is a fixed, single day.">
-    deliveryDateYearMonth int (0..1) <"The Delivery Date is a fixed, single month.">
+    deliveryDateYearMonth string (0..1) <"The Delivery Date is a fixed, single month.">
     deliveryDateRollConvention Offset (0..1) <"The \'deliveryDateRollConvention\' specifies, for a Commodity Transaction that references a listed future via the \'deliveryDates\' element, the day on which the specified future will roll to the next nearby month prior to the expiration of the referenced future. If the future will not roll at all - i.e. the price will be taken from the expiring contract, 0 should be specified here. If the future will roll to the next nearby on the last trading day - i.e. the price will be taken from the next nearby on the last trading day, then 1 should be specified and so on.">
     deliveryDateExpirationConvention Offset (0..1) <"The \'deliveryDateExpirationConvention\' specifies, for a Commodity Transaction that references a listed future via the \'deliveryDates\' element, the day on which the specified future will expire ahead of the actual expiration of the referenced future. For example: Z21 Contract expires on 19Nov21, with an adjust of 2D the \"expire\" will be 16Nov21. DeliveryDateRollConvention takes precedence. Example: Pricing on the Z21 Contract with NearbyContractDay and a deliveryDateRoll of 10D, Sampling of the F22 Contract will occur on 8Nov21 through the last Date of the Z21 Contract. With an ExpConvention of 5D, the last sampling date on the F22 contract will be 12Nov21.">
 
@@ -9583,7 +9583,7 @@ type FixedIncomeSecurityContentModel: <"A group that specifies Bond Content elem
     seniority CreditSeniority (0..1) <"The repayment precedence of a debt instrument.">
     couponType CouponType (0..1) <"Specifies if the bond has a variable coupon, step-up/down coupon or a zero-coupon.">
     couponRate number (0..1) <"Specifies the coupon rate (expressed in percentage) of a fixed income security or convertible bond.">
-    maturity date (0..1) <"The date when the principal amount of a security becomes due and payable.">
+    maturity zonedDateTime (0..1) <"The date when the principal amount of a security becomes due and payable.">
 
     condition Choice:
         optional choice issuerName, issuerPartyReference
@@ -9605,7 +9605,7 @@ type QuotationCharacteristicsModel: <"A group collecting a set of characteristic
     informationSource InformationSource (0..*) <"The information source where a published or displayed market rate will be obtained, e.g. Telerate Page 3750.">
     pricingModel PricingModel (0..1) <".">
     time zonedDateTime (0..1) <"When the quote was observed or when a calculated value was generated.">
-    valuationDate date (0..1) <"When the quote was computed.">
+    valuationDate zonedDateTime (0..1) <"When the quote was computed.">
     expiryTime zonedDateTime (0..1) <"When does the quote cease to be valid.">
     cashflowType CashflowType (0..1) <"For cash flows, the type of the cash flows. Examples include: Coupon payment, Premium Fee, Settlement Fee, Brokerage Fee, etc.">
 
@@ -10008,7 +10008,7 @@ type CreditLimitUtilizationPositionSequence:
 type DeClear: <"A structure describing a declear event. The deClear event allows a firm to request that a trade be removed from clearing, or a clearing service to request consent for this, or to report that is has been done.">
 
     tradeIdentifier PartyTradeIdentifier (1..*)
-    effectiveDate date (1..1)
+    effectiveDate zonedDateTime (1..1)
     reason DeclearReason (0..1)
 
 type DeclearReason: <"A type that describes why a trade was removed from clearing.">
@@ -10074,8 +10074,8 @@ type NoTouchLowerBarrierObservationSequence1:
 
 type NoTouchRateObservation:
 
-    observationStartDate date (1..1)
-    observationEndDate date (1..1)
+    observationStartDate zonedDateTime (1..1)
+    observationEndDate zonedDateTime (1..1)
     noTouchRateObservationSequence0 NoTouchRateObservationSequence0 (0..1)
     upperBarrier NoTouchUpperBarrierObservation (0..1)
     noTouchRateObservationSequence1 NoTouchRateObservationSequence1 (0..1)
@@ -10149,14 +10149,14 @@ type LimitType:
 type ObservedPrice:
 
     price NonNegativeMoney (1..1) <"The observed rate value which triggered the barrier event.">
-    date date (0..1) <"The date when the rate was observed.">
+    date zonedDateTime (0..1) <"The date when the rate was observed.">
     time time (0..1) <"The time when the rate ws observed.">
     informationSource InformationSource (0..1) <"The source of the observation.">
 
 type ObservedRate:
 
     rate number (1..1) <"The observed rate value which triggered the barrier event.">
-    date date (0..1) <"The date when the rate was observed.">
+    date zonedDateTime (0..1) <"The date when the rate was observed.">
     time time (0..1) <"The time when the rate ws observed.">
     informationSource InformationSource (0..1) <"The source of the observation.">
 
@@ -10202,7 +10202,7 @@ type OptionExercise extends AbstractEvent: <"A structure describing an option ex
 
 type OptionExerciseSequence:
 
-    exerciseDate date (0..1)
+    exerciseDate zonedDateTime (0..1)
     exerciseTime time (0..1)
 
 type OptionExerciseAmounts:
@@ -10243,7 +10243,7 @@ type OptionExpiry extends AbstractEvent: <"A structure describing an option expi
 
     originalTrade Trade (0..1) <"Fully describes the original trade (prior to the exercise).">
     tradeIdentifier PartyTradeIdentifier (0..*)
-    date date (1..1)
+    date zonedDateTime (1..1)
     time time (1..1)
     exerciseProcedure ExerciseProcedureOption (0..1)
     actionOnExpiration ActionOnExpiration (0..1)
@@ -10254,7 +10254,7 @@ type OptionExpiry extends AbstractEvent: <"A structure describing an option expi
 type OptionExpiryBase: <"A structure describing an option expiring.">
 
     tradeIdentifier PartyTradeIdentifier (1..*)
-    date date (1..1)
+    date zonedDateTime (1..1)
     time time (1..1)
 
 type PackageHeader: <"Identifying information for a tradePackage (a bundle of trades).">
@@ -10328,7 +10328,7 @@ type TradeChangeContent: <"A structure describing a non-negotiated trade resulti
     oldTradeIdentifier PartyTradeIdentifier (0..1) <"The original qualified trade identifier.">
     oldTrade Trade (0..1) <"The original trade details.">
     trade Trade (1..1) <"A full description of the amended trade.">
-    effectiveDate date (1..1) <"The date on which the change become effective">
+    effectiveDate zonedDateTime (1..1) <"The date on which the change become effective">
     changeEvent ChangeEvent (1..1)
     payment Payment (0..1) <"Describes a payment made in settlement of the change.">
 
@@ -10359,7 +10359,7 @@ type TradeLegSizeChange: <"A structure describing a change to the size of a sing
 type TradeMaturity: <"A structure describing a trade maturing.">
 
     tradeIdentifier PartyTradeIdentifier (1..*)
-    date date (1..1)
+    date zonedDateTime (1..1)
 
 type TradeNotionalChange extends TradeChangeBase: <"A structure describing a change to the size of a trade.">
 
@@ -10440,7 +10440,7 @@ type TouchRateObservationSequence:
 
 type TriggerRateObservation:
 
-    observationDate date (1..1) <"The date on which the rate observation occurred, in order to trigger the barrier event.observationDate">
+    observationDate zonedDateTime (1..1) <"The date on which the rate observation occurred, in order to trigger the barrier event.observationDate">
     observationTime BusinessCenterTime (0..1) <"The time at which the observation occurred.">
     informationSource InformationSource (0..1)
     triggerRateObservationSequence0 TriggerRateObservationSequence0 (0..1)
@@ -10470,7 +10470,7 @@ type Withdrawal: <"A structure describing the removal of a trade from a service,
 
     withdrawalSequence WithdrawalSequence (0..1)
     trade Trade (0..1) <"The full trade representation that is being withdrawn.">
-    effectiveDate date (1..1)
+    effectiveDate zonedDateTime (1..1)
     requestedAction RequestedWithdrawalAction (0..1)
     reason WithdrawalReason (0..*)
     reportingRegime ReportingRegimeIdentifier (0..*) <"DEPRECATED. The supervisor/regulator to which this withdrawal applies">
@@ -10496,9 +10496,9 @@ type WithdrawalReason: <"A type that describes why a trade was withdrawn.">
 
 type AgreementAndEffectiveDatesModel: <"A model group defining agreement and effective dates.">
 
-    agreementDate date (1..1) <"The date on which the change was agreed.">
+    agreementDate zonedDateTime (1..1) <"The date on which the change was agreed.">
     executionDateTime ExecutionDateTime (0..1) <"The date and time at which the negotiated change to the terms of the original contract was agreed, such as via telephone or electronic trading system (i.e., agreement date/time).">
-    effectiveDate date (1..1) <"The date on which the change become effective.">
+    effectiveDate zonedDateTime (1..1) <"The date on which the change become effective.">
 
 type ChangeEventsBaseModel: <"Choice between change-related events.">
 
@@ -10617,9 +10617,9 @@ type NovationAmountsOldModelSequence2:
 
 type NovationDatesModel:
 
-    novationDate date (1..1) <"Specifies the date that one party\'s legal obligations with regard to a trade are transferred to another party. It corresponds to the Novation Date section of the 2004 ISDA Novation Definitions, section 1.16.">
+    novationDate zonedDateTime (1..1) <"Specifies the date that one party\'s legal obligations with regard to a trade are transferred to another party. It corresponds to the Novation Date section of the 2004 ISDA Novation Definitions, section 1.16.">
     executionDateTime ExecutionDateTime (0..1) <"The date and time at which the change was agreed.">
-    novationTradeDate date (0..1) <"Specifies the date the parties agree to assign or novate a Contract. If this element is not specified, the novationContractDate will be deemed to be the novationDate. It corresponds to the Novation Trade Date section of the 2004 ISDA Novation Definitions, section 1.17.">
+    novationTradeDate zonedDateTime (0..1) <"Specifies the date the parties agree to assign or novate a Contract. If this element is not specified, the novationContractDate will be deemed to be the novationDate. It corresponds to the Novation Trade Date section of the 2004 ISDA Novation Definitions, section 1.17.">
 
 type NovationRolesModel: <"The roles of the parties involved in the novation.">
 
@@ -10879,7 +10879,7 @@ type ImplementationSpecification: <"A version of a specification document used b
 
     name NormalizedString (0..1)
     version ImplementationSpecificationVersion (0..1)
-    date date (0..1)
+    date zonedDateTime (0..1)
 
 type ImplementationSpecificationVersion:
 
@@ -11499,7 +11499,7 @@ type FacilityExecutionExceptionDeclaration: <"Provides supporting evidence when 
 
 type FirstPeriodStartDate:
 
-    value date (1..1)
+    value zonedDateTime (1..1)
     href string (1..1)
 
 type InstrumentTradeQuantity: <"A structure describing the amount of an instrument that was traded.">
@@ -11513,8 +11513,8 @@ type InstrumentTradeQuantity: <"A structure describing the amount of an instrume
 type InstrumentTradePricing: <"A structure describing the price paid for the instrument.">
 
     quote BasicQuotation (1..*)
-    couponStartDate date (0..1) <"The date interest started accruing for the accrued interest calculation on an interest bearing security.">
-    exDividendDate date (0..1) <"The date when a distribution of dividends or interest is deducted from a securities asset, or set aside for payment to the original bondholders. From the ex-date, any dividends that are owing on the security are paid to the original owner. As a consequence of this, on the ex-date, the securities price typically drops by the amount of the distribution (plus or minus any market activity).">
+    couponStartDate zonedDateTime (0..1) <"The date interest started accruing for the accrued interest calculation on an interest bearing security.">
+    exDividendDate zonedDateTime (0..1) <"The date when a distribution of dividends or interest is deducted from a securities asset, or set aside for payment to the original bondholders. From the ex-date, any dividends that are owing on the security are paid to the original owner. As a consequence of this, on the ex-date, the securities price typically drops by the amount of the distribution (plus or minus any market activity).">
     tradedFlatOfAccrued boolean (0..1) <"Whether the accrued interest in included when the trade settles. (\"true\" means accrued interest is not included when the trade settles.)">
 
 type InstrumentTradePrincipal: <"A structure describing the value in \"native\" currency of an instrument that was traded.">
@@ -11696,7 +11696,7 @@ type ProductComponentIdentifier: <"Deprecated: A type defining a USI for the a s
 
 type ProductSummary: <"Summary information about the product that was traded. This is intended primarily for trade reporting by TRs.">
 
-    finalSettlementDate date (0..1)
+    finalSettlementDate zonedDateTime (0..1)
     settlementType SettlementTypeEnum (0..1)
     seniority CreditSeniority (0..1) <"DEPRECATED. Use instead the field within credit products: indexReferenceInformation/seniority (RPTWG decision 2017-09)">
     indexFactor number (0..1) <"DEPRECATED. Use instead the field within credit products: indexReferenceInformation/indexFactor (RPTWG decision 2017-09)">
@@ -11927,7 +11927,7 @@ type AllocationContentModel:
     collateral Collateral (0..1) <"The sum that must be posted upfront to collateralize against counterparty credit risk.">
     creditChargeAmount Money (0..1) <"Special credit fee assessed to certain institutions.">
     approvals Approvals (0..1) <"A container for approval states in the workflow.">
-    masterConfirmationDate date (0..1) <"The date of the confirmation executed between the parties and intended to govern the allocated trade between those parties.">
+    masterConfirmationDate zonedDateTime (0..1) <"The date of the confirmation executed between the parties and intended to govern the allocated trade between those parties.">
     relatedParty RelatedParty (0..*) <"Specifies any relevant parties to the allocation which should be referenced.">
 
 type CalculationAgentModel:
@@ -12125,7 +12125,7 @@ type TimeDimension: <"The time dimensions of a term-structure. The user must sup
 
 type TimeDimensionSequence:
 
-    date date (1..1) <"The absolute date corresponding to this term point, for example January 3, 2005.">
+    date zonedDateTime (1..1) <"The absolute date corresponding to this term point, for example January 3, 2005.">
     tenor Period (0..1) <"The amount of time from the base date of the pricing input to the specified term point, e.g. 6M or 5Y.">
 
 type Valuation: <"A valuation of an valuable object - an asset or a pricing input. This is an abstract type, used as a base for values of pricing structures such as yield curves as well as asset values.">

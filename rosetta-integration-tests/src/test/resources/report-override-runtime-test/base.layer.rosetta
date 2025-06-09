@@ -1,0 +1,15 @@
+namespace base.layer: <"">
+
+enum TradeEnum:
+    A
+    B
+    C
+    D
+
+type Event:
+    [rootType]
+    trade TradeEnum (1..1)
+
+type Instruction extends Event:
+    [rootType]
+    id int (1..1)

@@ -10,6 +10,12 @@ type Cow extends AnimalBase:
 
 type Goat extends AnimalBase:
 
+type Fish extends AnimalBase:
+
+type Shark extends Fish:
+
+type Salmon extends Fish:
+
 type AnimalBase:
 
     name string (0..1)

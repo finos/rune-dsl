@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
@@ -109,7 +109,7 @@ public class RosettaTestModelService {
 	    }
 	    XtextResource resource = (XtextResource) resources.get(0);
 	    
-	    String source = CharStreams.toString(new InputStreamReader(resourceSet.getURIConverter().createInputStream(resource.getURI(), resourceSet.getLoadOptions()), Charsets.UTF_8));
+	    String source = CharStreams.toString(new InputStreamReader(resourceSet.getURIConverter().createInputStream(resource.getURI(), resourceSet.getLoadOptions()), StandardCharsets.UTF_8));
 	    RosettaModel model = (RosettaModel) resource.getContents().get(0);
 	    return new RosettaTestModel(source, model, expressionParser);
 	}

@@ -31,7 +31,8 @@ public class JavaPojoProperty {
 	private final String name;
 	private final String runeName;
 	private final String serializedName;
-	private final String compatibilityName;
+	private final String getterCompatibilityName;
+	private final String setterCompatibilityName;
 	private final JavaType type;
 	private final String javadoc;
 	private final JavaPojoProperty parentProperty;
@@ -39,15 +40,16 @@ public class JavaPojoProperty {
 	private final boolean hasLocation; // used in builder `getOrCreate`
 	private final List<AttributeMetaType> attributeMetaTypes;
 
-	public JavaPojoProperty(JavaPojoInterface pojo, String name, String runeName, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
-		this(pojo, name, runeName, serializedName, compatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, null);
+	public JavaPojoProperty(JavaPojoInterface pojo, String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
+		this(pojo, name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, null);
 	}
-	private JavaPojoProperty(JavaPojoInterface pojo, String name, String runeName, String serializedName, String compatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, JavaPojoProperty parentProperty) {
+	private JavaPojoProperty(JavaPojoInterface pojo, String name, String runeName, String serializedName, String getterCompatibilityName, String setterCompatibilityName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, JavaPojoProperty parentProperty) {
 		this.pojo = pojo;
-		this.name = name;
+        this.name = name;
 		this.runeName = runeName;
 		this.serializedName = serializedName;
-		this.compatibilityName = compatibilityName;
+		this.getterCompatibilityName = getterCompatibilityName;
+		this.setterCompatibilityName = setterCompatibilityName;
 		this.type = type;
 		this.javadoc = javadoc;
 		this.meta = meta;
@@ -55,8 +57,8 @@ public class JavaPojoProperty {
 		this.attributeMetaTypes = attributeMetaTypes;
 		this.parentProperty = parentProperty;
 	}
-	public JavaPojoProperty specialize(JavaPojoInterface pojo, String compatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation, List<AttributeMetaType> attributeMetaTypes) {
-		return new JavaPojoProperty(pojo, name, runeName, serializedName, compatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
+	public JavaPojoProperty specialize(JavaPojoInterface pojo, String getterCompatibilityName, String setterCompatibilityName, JavaType newType, String newJavadoc, AttributeMeta newMeta, boolean newHasLocation, List<AttributeMetaType> attributeMetaTypes) {
+		return new JavaPojoProperty(pojo, name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
 	}
 	
 	public boolean isCompatibleWithParent() {
@@ -72,11 +74,29 @@ public class JavaPojoProperty {
 	public String getSerializedName() {
 		return serializedName;
 	}
+	public String getGetterCompatibilityName() {
+		return getterCompatibilityName;
+	}
+	public String getSetterCompatibilityName() {
+		return setterCompatibilityName;
+	}
 	public String getGetterName() {
-		return "get" + StringUtils.capitalize(compatibilityName);
+		return "get" + StringUtils.capitalize(getterCompatibilityName);
 	}
 	public String getGetOrCreateName() {
-		return "getOrCreate" + StringUtils.capitalize(compatibilityName);
+		return "getOrCreate" + StringUtils.capitalize(getterCompatibilityName);
+	}
+	public String getSetterName() {
+		return "set" + StringUtils.capitalize(setterCompatibilityName);
+	}
+	public String getAdderName() {
+		return "add" + StringUtils.capitalize(setterCompatibilityName);
+	}
+	public String getValueSetterName() {
+		return "set" + StringUtils.capitalize(setterCompatibilityName) + "Value";
+	}
+	public String getValueAdderName() {
+		return "add" + StringUtils.capitalize(setterCompatibilityName) + "Value";
 	}
 	public JavaType getType() {
 		return type;
@@ -115,7 +135,7 @@ public class JavaPojoProperty {
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(pojo, compatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type, attributeMetaTypes);
+		return Objects.hash(pojo, getterCompatibilityName, setterCompatibilityName, hasLocation, javadoc, meta, name, runeName, serializedName, parentProperty, type, attributeMetaTypes);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -127,7 +147,7 @@ public class JavaPojoProperty {
 			return false;
 		JavaPojoProperty other = (JavaPojoProperty) obj;
 		return Objects.equals(pojo, other.pojo)
-				&& Objects.equals(compatibilityName, other.compatibilityName) && hasLocation == other.hasLocation
+                && Objects.equals(getterCompatibilityName, other.getterCompatibilityName) && Objects.equals(setterCompatibilityName, other.setterCompatibilityName) && hasLocation == other.hasLocation
 				&& Objects.equals(javadoc, other.javadoc) && meta == other.meta && Objects.equals(name, other.name) 
 				&& Objects.equals(runeName, other.runeName) && Objects.equals(serializedName, other.serializedName)
 				&& Objects.equals(attributeMetaTypes, other.attributeMetaTypes) && Objects.equals(parentProperty, other.parentProperty) 

@@ -35,8 +35,8 @@ public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 	@Override
 	public Collection<JavaPojoProperty> getOwnProperties() {
 		return List.of(
-				new JavaPojoProperty(this, "value", null, DATA, "value", valueType, null, null, false, List.of()),
-				new JavaPojoProperty(this, "meta", null, META, "meta", typeUtil.META_FIELDS, null, null, false, List.of())
+				new JavaPojoProperty(this, "value", null, DATA, "value", "value", valueType, null, null, false, List.of()),
+				new JavaPojoProperty(this, "meta", null, META, "meta", "meta", typeUtil.META_FIELDS, null, null, false, List.of())
 			);
 	}
 }
