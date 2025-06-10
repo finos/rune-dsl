@@ -2,7 +2,6 @@ package com.regnosys.rosetta.validation
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
@@ -101,6 +100,7 @@ import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists
 import com.regnosys.rosetta.utils.ImportManagementService
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 /*
  * Do not write any more validators in here for the following reasons:
