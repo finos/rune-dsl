@@ -28,6 +28,28 @@ public class ReportValidatorTest extends AbstractValidatorTest {
 				WARNING (null) 'Specifying a label in a reporting rule is deprecated. Add a `label` annotation instead' at 6:30, length 13, on RuleReferenceAnnotation
 				""");
 	}
+
+	@Test
+	void testRuleReferenceCanBeAddedToRuleSourceForNestedType() {
+		assertNoIssues("""
+
+			type OutputObj:
+				nested Nested (1..1)
+			
+			type Nested:
+				n string (0..1)
+			
+			reporting rule Rule1 from number:
+				empty
+			
+			rule source X {
+				OutputObj:
+					+ nested
+						[ruleReference for n Rule1]
+			}
+			""");
+	}
+	
 	
 	@Test
 	void testInvalidInputType() {
