@@ -27,10 +27,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -70,6 +67,11 @@ public class RosettaXMLConfiguration {
 			.filter(e -> e.getValue().getSubstitutionFor().map(t -> t.equals(symbolId)).orElse(false))
 			.map(e -> e.getKey())
 			.collect(Collectors.toList());
+	}
+
+	@JsonIgnore
+	public SortedMap<ModelSymbolId, TypeXMLConfiguration> getTypeConfigMap() {
+		return typeConfigMap;
 	}
 
 	@Override

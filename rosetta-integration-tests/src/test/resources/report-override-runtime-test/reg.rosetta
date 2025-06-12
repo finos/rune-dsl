@@ -1,0 +1,29 @@
+namespace reg: <"">
+
+import common.layer.* as common
+import cde.layer.* as cde
+import base.layer.*
+
+body Authority Reg
+corpus Reg Trade
+
+eligibility rule Ok from Instruction:
+    True
+    
+report Reg Trade in T+1
+    from Instruction when Ok
+    with type RegReport with source RegRules
+
+type RegReport extends common.CommonReport:
+
+rule source RegRules
+{
+    RegReport:
+        - notation
+        + notation
+            [ruleReference PriceNotation]
+}
+
+reporting rule PriceNotation from Instruction:
+    extract cde.price.NotationEnum -> X
+        as "The notation"

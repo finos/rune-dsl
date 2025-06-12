@@ -28,6 +28,10 @@
     <name>Rosetta DSL SDK</name>
     <artifactId>com.regnosys.rosetta</artifactId>
 
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+    
     <description>
         Responsibilities: defining the core of the Rosetta DSL, including
         - the AST
@@ -173,6 +177,12 @@
                         <groupId>com.regnosys.rosetta</groupId>
                         <artifactId>com.regnosys.rosetta.xcore</artifactId>
                         <version>${project.version}</version>
+                        <exclusions>
+						     <exclusion>
+						         <groupId>org.eclipse.emf</groupId>
+						         <artifactId>org.eclipse.emf.ecore</artifactId>
+						     </exclusion>
+						</exclusions>
                     </dependency>
                 </dependencies>
             </plugin>

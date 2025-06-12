@@ -31,6 +31,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
+import com.rosetta.model.lib.annotations.RosettaIgnore
 
 class ModelObjectGenerator {
 	
@@ -134,8 +135,12 @@ class ModelObjectGenerator {
 				«builderType» «setValueMethodName»(«propType.valueType» «builderScope.methodScope(setValueMethodName).createUniqueIdentifier(prop.name)»);
 				«ENDIF»
 			«ELSE»
+				«val setMultiMethodName = prop.setterName»
+				«val setMultiValueMethodName = prop.valueSetterName»
 				«val addMethodName = "add" + prop.name.toFirstUpper»
 				«val addValueMethodName = addMethodName + "Value"»
+				«val addMultiMethodName = prop.adderName»
+				«val addMultiValueMethodName = prop.valueAdderName»
 				«val itemType = propType.itemType»
 				«IF !isMainPojo»@Override«ENDIF»
 				«builderType» «addMethodName»(«itemType» «builderScope.methodScope(addMethodName).createUniqueIdentifier(prop.name)»);
@@ -148,14 +153,14 @@ class ModelObjectGenerator {
 				«builderType» «addValueMethodName»(«itemType.valueType» «builderScope.methodScope(addValueMethodName).createUniqueIdentifier(prop.name)», int _idx);
 				«ENDIF»
 				«IF !isMainPojo»@Override«ENDIF»
-				«builderType» «addMethodName»(«propType» «builderScope.methodScope(addMethodName).createUniqueIdentifier(prop.name)»);
+				«builderType» «addMultiMethodName»(«propType» «builderScope.methodScope(addMultiMethodName).createUniqueIdentifier(prop.name)»);
 				«IF !isMainPojo»@Override«ENDIF»
-				«builderType» «setMethodName»(«propType» «builderScope.methodScope(setMethodName).createUniqueIdentifier(prop.name)»);
+				«builderType» «setMultiMethodName»(«propType» «builderScope.methodScope(setMultiMethodName).createUniqueIdentifier(prop.name)»);
 				«IF itemType instanceof RJavaWithMetaValue»
 				«IF !isMainPojo»@Override«ENDIF»
-				«builderType» «addValueMethodName»(«LIST.wrapExtends(itemType.valueType)» «builderScope.methodScope(addValueMethodName).createUniqueIdentifier(prop.name)»);
+				«builderType» «addMultiValueMethodName»(«LIST.wrapExtends(itemType.valueType)» «builderScope.methodScope(addMultiValueMethodName).createUniqueIdentifier(prop.name)»);
 				«IF !isMainPojo»@Override«ENDIF»
-				«builderType» «setValueMethodName»(«LIST.wrapExtends(itemType.valueType)» «builderScope.methodScope(setValueMethodName).createUniqueIdentifier(prop.name)»);
+				«builderType» «setMultiValueMethodName»(«LIST.wrapExtends(itemType.valueType)» «builderScope.methodScope(setMultiValueMethodName).createUniqueIdentifier(prop.name)»);
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -257,7 +262,7 @@ class ModelObjectGenerator {
 		protected void setBuilderFields(«javaType.toBuilderType» builder) {
 			«IF extended»super.setBuilderFields(builder);«ENDIF»
 			«FOR prop : properties»
-				«method(Optional, "ofNullable")»(«prop.getterName»()).ifPresent(builder::set«prop.name.toFirstUpper»);
+				«method(Optional, "ofNullable")»(«prop.getterName»()).ifPresent(builder::«prop.setterName»);
 			«ENDFOR»
 		}
 		'''
@@ -272,6 +277,7 @@ class ModelObjectGenerator {
 		val getterScope = scope.methodScope(parent.getterName)
 		'''
 		@Override
+		@«RosettaIgnore»
 		public «parent.type» «parent.getterName»() «originalField.addCoercions(parent.type, getterScope).completeAsReturn.toBlock»
 		
 		«derivedIncompatibleGettersForProperty(originalField, parent, scope)»

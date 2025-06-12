@@ -85,6 +85,8 @@
   },
   "fpml.confirmation.AccrualOptionChangeNotification" : {
     "xmlElementName" : "accrualOptionChangeNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accrualOptionChangeNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -136,17 +138,21 @@
   },
   "fpml.confirmation.AccruingFeeChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup",
-    "xmlElementName" : "accruingFeeChange"
+    "xmlElementName" : "accruingFeeChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChange",
+    "abstract" : false
   },
   "fpml.confirmation.AccruingFeeChangeNotification" : {
     "xmlElementName" : "accruingFeeChangeNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "accruingFeeChangeGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup"
       },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -156,6 +162,8 @@
   "fpml.confirmation.AccruingFeeExpiry" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup",
     "xmlElementName" : "accruingFeeExpiry",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeExpiry",
+    "abstract" : false,
     "attributes" : {
       "_type" : {
         "xmlName" : "type"
@@ -184,6 +192,8 @@
   },
   "fpml.confirmation.AccruingFeePaymentNotification" : {
     "xmlElementName" : "accruingFeePaymentNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accruingFeePaymentNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -220,6 +230,8 @@
   },
   "fpml.confirmation.AccruingPikPaymentNotification" : {
     "xmlElementName" : "accruingPikPaymentNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accruingPikPaymentNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -353,7 +365,9 @@
   },
   "fpml.confirmation.Adjustment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
-    "xmlElementName" : "adjustment"
+    "xmlElementName" : "adjustment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/adjustment",
+    "abstract" : false
   },
   "fpml.confirmation.AffectedTransactions" : {
     "attributes" : {
@@ -384,6 +398,8 @@
   },
   "fpml.confirmation.AllocationAcknowledgement" : {
     "xmlElementName" : "allocationAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/allocationAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -391,6 +407,8 @@
   },
   "fpml.confirmation.AllocationApproved" : {
     "xmlElementName" : "allocationApproved",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/allocationApproved",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -403,6 +421,8 @@
   },
   "fpml.confirmation.AllocationException" : {
     "xmlElementName" : "allocationException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/allocationException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -410,6 +430,8 @@
   },
   "fpml.confirmation.AllocationRefused" : {
     "xmlElementName" : "allocationRefused",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/allocationRefused",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -432,11 +454,15 @@
   },
   "fpml.confirmation.AmendmentFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
-    "xmlElementName" : "amendmentFeePayment"
+    "xmlElementName" : "amendmentFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/amendmentFeePayment",
+    "abstract" : false
   },
   "fpml.confirmation.AmericanExercise" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise",
-    "xmlElementName" : "americanExercise"
+    "xmlElementName" : "americanExercise",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/americanExercise",
+    "abstract" : false
   },
   "fpml.confirmation.AmountAdjustmentEnum" : {
     "enumValues" : {
@@ -500,6 +526,8 @@
   },
   "fpml.confirmation.ApprovalStatusNotification" : {
     "xmlElementName" : "approvalStatusNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/approvalStatusNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -623,11 +651,15 @@
   },
   "fpml.confirmation.Bankruptcy" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
-    "xmlElementName" : "bankruptcy"
+    "xmlElementName" : "bankruptcy",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/bankruptcy",
+    "abstract" : false
   },
   "fpml.confirmation.BaseRateSet" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
-    "xmlElementName" : "baseRateSet"
+    "xmlElementName" : "baseRateSet",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/baseRateSet",
+    "abstract" : false
   },
   "fpml.confirmation.BasicQuotation" : {
     "attributes" : {
@@ -642,6 +674,8 @@
   "fpml.confirmation.Basket" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "basket",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/basket",
+    "abstract" : false,
     "attributes" : {
       "basketIdentifierModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -651,6 +685,8 @@
   "fpml.confirmation.BasketChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
     "xmlElementName" : "basketChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/basketChange",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -662,7 +698,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       },
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
@@ -715,11 +751,15 @@
   },
   "fpml.confirmation.BermudaExercise" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise",
-    "xmlElementName" : "bermudaExercise"
+    "xmlElementName" : "bermudaExercise",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/bermudaExercise",
+    "abstract" : false
   },
   "fpml.confirmation.Bond" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "bond",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/bond",
+    "abstract" : false,
     "attributes" : {
       "fixedIncomeSecurityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -732,10 +772,10 @@
   "fpml.confirmation.BondChoiceModel" : {
     "attributes" : {
       "bond" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/bond"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/bond"
       },
       "convertibleBond" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond"
       }
     }
   },
@@ -752,13 +792,15 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "equity" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/equity"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/equity"
       }
     }
   },
   "fpml.confirmation.BondOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "bondOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/bondOption",
+    "abstract" : false,
     "attributes" : {
       "bondChoiceModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -775,13 +817,15 @@
   "fpml.confirmation.BondReference" : {
     "attributes" : {
       "bond" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/bond"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/bond"
       }
     }
   },
   "fpml.confirmation.Borrowing" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
-    "xmlElementName" : "borrowing"
+    "xmlElementName" : "borrowing",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/borrowing",
+    "abstract" : false
   },
   "fpml.confirmation.BreakageCalculatedByEnum" : {
     "enumValues" : {
@@ -791,7 +835,9 @@
   },
   "fpml.confirmation.BreakageFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
-    "xmlElementName" : "breakageFeePayment"
+    "xmlElementName" : "breakageFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/breakageFeePayment",
+    "abstract" : false
   },
   "fpml.confirmation.BrokerConfirmationType" : {
     "attributes" : {
@@ -805,11 +851,15 @@
   },
   "fpml.confirmation.BrokerEquityOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "brokerEquityOption"
+    "xmlElementName" : "brokerEquityOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/brokerEquityOption",
+    "abstract" : false
   },
   "fpml.confirmation.BulletPayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "bulletPayment"
+    "xmlElementName" : "bulletPayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/bulletPayment",
+    "abstract" : false
   },
   "fpml.confirmation.BullionDeliveryLocation" : {
     "attributes" : {
@@ -824,6 +874,8 @@
   "fpml.confirmation.BullionPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg",
     "xmlElementName" : "bullionPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/bullionPhysicalLeg",
+    "abstract" : false,
     "attributes" : {
       "commodityFixedPhysicalQuantityModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -962,13 +1014,15 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "rateCalculation" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation"
       }
     }
   },
   "fpml.confirmation.CalculationAgentDetermination" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
-    "xmlElementName" : "calculationAgentDetermination"
+    "xmlElementName" : "calculationAgentDetermination",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/calculationAgentDetermination",
+    "abstract" : false
   },
   "fpml.confirmation.CalculationAgentPartyEnum" : {
     "enumValues" : {
@@ -1055,7 +1109,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "exercise" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -1068,6 +1122,8 @@
   },
   "fpml.confirmation.CanonicalizationMethod" : {
     "xmlElementName" : "CanonicalizationMethod",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/CanonicalizationMethod",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1083,11 +1139,15 @@
   },
   "fpml.confirmation.CapFloor" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "capFloor"
+    "xmlElementName" : "capFloor",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/capFloor",
+    "abstract" : false
   },
   "fpml.confirmation.Cash" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "cash"
+    "xmlElementName" : "cash",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/cash",
+    "abstract" : false
   },
   "fpml.confirmation.CashPayable" : {
     "attributes" : {
@@ -1153,6 +1213,8 @@
   },
   "fpml.confirmation.ChangeEvent" : {
     "xmlElementName" : "changeEvent",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1170,6 +1232,8 @@
   },
   "fpml.confirmation.ClearingAcknowledgement" : {
     "xmlElementName" : "clearingAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1177,6 +1241,8 @@
   },
   "fpml.confirmation.ClearingConfirmed" : {
     "xmlElementName" : "clearingConfirmed",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingConfirmed",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1201,6 +1267,8 @@
   },
   "fpml.confirmation.ClearingEligibility" : {
     "xmlElementName" : "clearingEligibility",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingEligibility",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1216,6 +1284,8 @@
   },
   "fpml.confirmation.ClearingEligibilityAcknowledgement" : {
     "xmlElementName" : "clearingEligibilityAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingEligibilityAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1223,6 +1293,8 @@
   },
   "fpml.confirmation.ClearingEligibilityException" : {
     "xmlElementName" : "clearingEligibilityException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingEligibilityException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1230,6 +1302,8 @@
   },
   "fpml.confirmation.ClearingException" : {
     "xmlElementName" : "clearingException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1247,6 +1321,8 @@
   },
   "fpml.confirmation.ClearingRefused" : {
     "xmlElementName" : "clearingRefused",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingRefused",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1275,6 +1351,8 @@
   },
   "fpml.confirmation.ClearingStatus" : {
     "xmlElementName" : "clearingStatus",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/clearingStatus",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1341,7 +1419,9 @@
   },
   "fpml.confirmation.CoalPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
-    "xmlElementName" : "coalPhysicalLeg"
+    "xmlElementName" : "coalPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/coalPhysicalLeg",
+    "abstract" : false
   },
   "fpml.confirmation.CoalProduct" : {
     "attributes" : {
@@ -1418,6 +1498,8 @@
   },
   "fpml.confirmation.CollateralAllocationAccepted" : {
     "xmlElementName" : "collateralAllocationAccepted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/collateralAllocationAccepted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1425,6 +1507,8 @@
   },
   "fpml.confirmation.CollateralAllocationAcknowledgement" : {
     "xmlElementName" : "collateralAllocationAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/collateralAllocationAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1432,6 +1516,8 @@
   },
   "fpml.confirmation.CollateralAllocationRejected" : {
     "xmlElementName" : "collateralAllocationRejected",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/collateralAllocationRejected",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -1501,11 +1587,15 @@
   },
   "fpml.confirmation.CommitmentAdjustment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
-    "xmlElementName" : "commitmentAdjustment"
+    "xmlElementName" : "commitmentAdjustment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commitmentAdjustment",
+    "abstract" : false
   },
   "fpml.confirmation.Commodity" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "commodity",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodity",
+    "abstract" : false,
     "attributes" : {
       "commodityProductModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -1549,6 +1639,8 @@
   "fpml.confirmation.CommodityBasketOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityBasketOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityBasketOption",
+    "abstract" : false,
     "attributes" : {
       "commodityBasketOptionFeaturesModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -1687,6 +1779,8 @@
   "fpml.confirmation.CommodityDigitalOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityDigitalOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityDigitalOption",
+    "abstract" : false,
     "attributes" : {
       "commodityDigitalOptionFeaturesModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -1770,9 +1864,11 @@
   "fpml.confirmation.CommodityForward" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityForward",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityForward",
+    "abstract" : false,
     "attributes" : {
       "commodityForwardLeg" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg"
       },
       "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -1863,6 +1959,8 @@
   "fpml.confirmation.CommodityInterestLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg",
     "xmlElementName" : "commodityInterestLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityInterestLeg",
+    "abstract" : false,
     "attributes" : {
       "commodityCalculationPeriodsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -1969,6 +2067,8 @@
   "fpml.confirmation.CommodityOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commodityOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityOption",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2038,12 +2138,14 @@
   },
   "fpml.confirmation.CommodityPerformanceSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "commodityPerformanceSwap"
+    "xmlElementName" : "commodityPerformanceSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwap",
+    "abstract" : false
   },
   "fpml.confirmation.CommodityPerformanceSwapBase" : {
     "attributes" : {
       "commodityPerformanceSwapLeg" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg"
       },
       "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2070,7 +2172,7 @@
   "fpml.confirmation.CommodityPhysicalOptionModel" : {
     "attributes" : {
       "commodityForward" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForward"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/commodityForward"
       }
     }
   },
@@ -2214,6 +2316,8 @@
   "fpml.confirmation.CommodityReturnLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg",
     "xmlElementName" : "commodityReturnLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityReturnLeg",
+    "abstract" : false,
     "attributes" : {
       "commodityCalculationPeriodsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2243,6 +2347,8 @@
   "fpml.confirmation.CommoditySwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commoditySwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commoditySwap",
+    "abstract" : false,
     "attributes" : {
       "commoditySwapDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2252,7 +2358,7 @@
   "fpml.confirmation.CommoditySwapDetailsModel" : {
     "attributes" : {
       "commoditySwapLeg" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg"
       },
       "commodityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2262,6 +2368,8 @@
   "fpml.confirmation.CommoditySwaption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "commoditySwaption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commoditySwaption",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2315,6 +2423,8 @@
   "fpml.confirmation.CommodityVarianceLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityPerformanceSwapLeg",
     "xmlElementName" : "commodityVarianceLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/commodityVarianceLeg",
+    "abstract" : false,
     "attributes" : {
       "commodityCalculationPeriodsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2389,6 +2499,8 @@
   },
   "fpml.confirmation.ConfirmationAcknowledgement" : {
     "xmlElementName" : "confirmationAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/confirmationAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2396,6 +2508,8 @@
   },
   "fpml.confirmation.ConfirmationAgreed" : {
     "xmlElementName" : "confirmationAgreed",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/confirmationAgreed",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2414,7 +2528,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "partiesAndAccountsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2423,6 +2537,8 @@
   },
   "fpml.confirmation.ConfirmationDisputed" : {
     "xmlElementName" : "confirmationDisputed",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/confirmationDisputed",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2441,7 +2557,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "partiesAndAccountsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2450,6 +2566,8 @@
   },
   "fpml.confirmation.ConfirmationException" : {
     "xmlElementName" : "confirmationException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/confirmationException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2477,6 +2595,8 @@
   },
   "fpml.confirmation.ConfirmationStatus" : {
     "xmlElementName" : "confirmationStatus",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/confirmationStatus",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2492,6 +2612,8 @@
   },
   "fpml.confirmation.ConsentAcknowledgement" : {
     "xmlElementName" : "consentAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/consentAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2499,6 +2621,8 @@
   },
   "fpml.confirmation.ConsentException" : {
     "xmlElementName" : "consentException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/consentException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2506,6 +2630,8 @@
   },
   "fpml.confirmation.ConsentGranted" : {
     "xmlElementName" : "consentGranted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/consentGranted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2527,6 +2653,8 @@
   },
   "fpml.confirmation.ConsentRefused" : {
     "xmlElementName" : "consentRefused",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/consentRefused",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2595,11 +2723,15 @@
   },
   "fpml.confirmation.ConvertibleBond" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "convertibleBond"
+    "xmlElementName" : "convertibleBond",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond",
+    "abstract" : false
   },
   "fpml.confirmation.CorporateAction" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
     "xmlElementName" : "corporateAction",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/corporateAction",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2671,7 +2803,9 @@
   },
   "fpml.confirmation.CorrelationSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "correlationSwap"
+    "xmlElementName" : "correlationSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/correlationSwap",
+    "abstract" : false
   },
   "fpml.confirmation.CorrespondentInformation" : {
     "attributes" : {
@@ -2703,6 +2837,8 @@
   "fpml.confirmation.CreditCurve" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "creditCurve",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditCurve",
+    "abstract" : false,
     "attributes" : {
       "creditCurveCharacteristicsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2719,6 +2855,8 @@
   "fpml.confirmation.CreditCurveValuation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
     "xmlElementName" : "creditCurveValuation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditCurveValuation",
+    "abstract" : false,
     "attributes" : {
       "recoveryRateModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2728,6 +2866,8 @@
   "fpml.confirmation.CreditDefaultSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "creditDefaultSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditDefaultSwap",
+    "abstract" : false,
     "attributes" : {
       "creditDefaultSwapChoice" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -2736,7 +2876,9 @@
   },
   "fpml.confirmation.CreditDefaultSwapOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "creditDefaultSwapOption"
+    "xmlElementName" : "creditDefaultSwapOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditDefaultSwapOption",
+    "abstract" : false
   },
   "fpml.confirmation.CreditDocument" : {
     "attributes" : {
@@ -2750,6 +2892,8 @@
   },
   "fpml.confirmation.CreditEventAcknowledgement" : {
     "xmlElementName" : "creditEventAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditEventAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2757,6 +2901,8 @@
   },
   "fpml.confirmation.CreditEventException" : {
     "xmlElementName" : "creditEventException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditEventException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2764,6 +2910,8 @@
   },
   "fpml.confirmation.CreditEventNotice" : {
     "xmlElementName" : "creditEventNotice",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditEventNotice",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2772,12 +2920,14 @@
   "fpml.confirmation.CreditEventNoticeDocument" : {
     "attributes" : {
       "creditEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/creditEvent"
       }
     }
   },
   "fpml.confirmation.CreditEventNotification" : {
     "xmlElementName" : "creditEventNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditEventNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2785,6 +2935,8 @@
   },
   "fpml.confirmation.CreditEventNotificationRetracted" : {
     "xmlElementName" : "creditEventNotificationRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/creditEventNotificationRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2907,6 +3059,8 @@
   },
   "fpml.confirmation.DSAKeyValue" : {
     "xmlElementName" : "DSAKeyValue",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/DSAKeyValue",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -2953,6 +3107,8 @@
   },
   "fpml.confirmation.DataDocument" : {
     "xmlElementName" : "dataDocument",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/dataDocument",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3022,7 +3178,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "facilityGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup"
       }
     }
   },
@@ -3035,6 +3191,8 @@
   },
   "fpml.confirmation.DealStatement" : {
     "xmlElementName" : "dealStatement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/dealStatement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3068,15 +3226,21 @@
   },
   "fpml.confirmation.DefaultRateChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
-    "xmlElementName" : "defaultRateChange"
+    "xmlElementName" : "defaultRateChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/defaultRateChange",
+    "abstract" : false
   },
   "fpml.confirmation.DefaultRateExpiry" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
-    "xmlElementName" : "defaultRateExpiry"
+    "xmlElementName" : "defaultRateExpiry",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/defaultRateExpiry",
+    "abstract" : false
   },
   "fpml.confirmation.DelayedDraw" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
-    "xmlElementName" : "delayedDraw"
+    "xmlElementName" : "delayedDraw",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/delayedDraw",
+    "abstract" : false
   },
   "fpml.confirmation.DeliveryDatesEnum" : {
     "enumValues" : {
@@ -3227,7 +3391,9 @@
   },
   "fpml.confirmation.Deposit" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
-    "xmlElementName" : "deposit"
+    "xmlElementName" : "deposit",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/deposit",
+    "abstract" : false
   },
   "fpml.confirmation.DerivativeCalculationMethod" : {
     "attributes" : {
@@ -3295,6 +3461,8 @@
   },
   "fpml.confirmation.DigestMethod" : {
     "xmlElementName" : "DigestMethod",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/DigestMethod",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3310,6 +3478,8 @@
   },
   "fpml.confirmation.DigestValue" : {
     "xmlElementName" : "DigestValue",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/DigestValue",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3454,11 +3624,15 @@
   },
   "fpml.confirmation.DividendSwapOptionTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "dividendSwapOptionTransactionSupplement"
+    "xmlElementName" : "dividendSwapOptionTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/dividendSwapOptionTransactionSupplement",
+    "abstract" : false
   },
   "fpml.confirmation.DividendSwapTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "dividendSwapTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/dividendSwapTransactionSupplement",
+    "abstract" : false,
     "attributes" : {
       "equityUnderlyerProvisionsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3483,7 +3657,9 @@
   },
   "fpml.confirmation.DualExchangeRate" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
-    "xmlElementName" : "dualExchangeRate"
+    "xmlElementName" : "dualExchangeRate",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/dualExchangeRate",
+    "abstract" : false
   },
   "fpml.confirmation.EarlyTerminationDateEnum" : {
     "enumValues" : {
@@ -3546,7 +3722,9 @@
   },
   "fpml.confirmation.ElectricityPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
-    "xmlElementName" : "electricityPhysicalLeg"
+    "xmlElementName" : "electricityPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/electricityPhysicalLeg",
+    "abstract" : false
   },
   "fpml.confirmation.ElectricityProduct" : {
     "attributes" : {
@@ -3621,6 +3799,8 @@
   "fpml.confirmation.EnvironmentalPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
     "xmlElementName" : "environmentalPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/environmentalPhysicalLeg",
+    "abstract" : false,
     "attributes" : {
       "businessCentersOrReferenceModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3671,7 +3851,9 @@
   },
   "fpml.confirmation.Equity" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "equity"
+    "xmlElementName" : "equity",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/equity",
+    "abstract" : false
   },
   "fpml.confirmation.EquityAmericanExercise" : {
     "attributes" : {
@@ -3720,15 +3902,21 @@
   },
   "fpml.confirmation.EquityForward" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "equityForward"
+    "xmlElementName" : "equityForward",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/equityForward",
+    "abstract" : false
   },
   "fpml.confirmation.EquityOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "equityOption"
+    "xmlElementName" : "equityOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/equityOption",
+    "abstract" : false
   },
   "fpml.confirmation.EquityOptionTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "equityOptionTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/equityOptionTransactionSupplement",
+    "abstract" : false,
     "attributes" : {
       "indexAnnexFallbackModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3759,6 +3947,8 @@
   "fpml.confirmation.EquitySwapTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "equitySwapTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/equitySwapTransactionSupplement",
+    "abstract" : false,
     "attributes" : {
       "mutualOrOptionalEarlyTerminationModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3784,7 +3974,9 @@
   },
   "fpml.confirmation.EuropeanExercise" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise",
-    "xmlElementName" : "europeanExercise"
+    "xmlElementName" : "europeanExercise",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/europeanExercise",
+    "abstract" : false
   },
   "fpml.confirmation.EventId" : {
     "attributes" : {
@@ -3838,7 +4030,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "proposedMatchModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -3867,6 +4059,8 @@
   },
   "fpml.confirmation.EventStatusException" : {
     "xmlElementName" : "eventStatusException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/eventStatusException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3874,6 +4068,8 @@
   },
   "fpml.confirmation.EventStatusResponse" : {
     "xmlElementName" : "eventStatusResponse",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/eventStatusResponse",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3899,7 +4095,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       }
     }
   },
@@ -3959,7 +4155,9 @@
   },
   "fpml.confirmation.ExchangeRestrictions" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
-    "xmlElementName" : "exchangeRestrictions"
+    "xmlElementName" : "exchangeRestrictions",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/exchangeRestrictions",
+    "abstract" : false
   },
   "fpml.confirmation.ExchangeTraded" : {
     "attributes" : {
@@ -3974,13 +4172,15 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
   "fpml.confirmation.ExchangeTradedFund" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "exchangeTradedFund"
+    "xmlElementName" : "exchangeTradedFund",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/exchangeTradedFund",
+    "abstract" : false
   },
   "fpml.confirmation.ExchangeTradedOption" : {
     "attributes" : {
@@ -3991,6 +4191,8 @@
   },
   "fpml.confirmation.ExecutionAcknowledgement" : {
     "xmlElementName" : "executionAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -3998,6 +4200,8 @@
   },
   "fpml.confirmation.ExecutionAdvice" : {
     "xmlElementName" : "executionAdvice",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionAdvice",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4016,7 +4220,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "eventValuationModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4028,6 +4232,8 @@
   },
   "fpml.confirmation.ExecutionAdviceAcknowledgement" : {
     "xmlElementName" : "executionAdviceAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionAdviceAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4035,6 +4241,8 @@
   },
   "fpml.confirmation.ExecutionAdviceException" : {
     "xmlElementName" : "executionAdviceException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionAdviceException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4042,6 +4250,8 @@
   },
   "fpml.confirmation.ExecutionAdviceRetracted" : {
     "xmlElementName" : "executionAdviceRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionAdviceRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4060,7 +4270,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "partiesAndAccountsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4079,6 +4289,8 @@
   },
   "fpml.confirmation.ExecutionException" : {
     "xmlElementName" : "executionException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4086,6 +4298,8 @@
   },
   "fpml.confirmation.ExecutionNotification" : {
     "xmlElementName" : "executionNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4098,7 +4312,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       },
       "eventValuationModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4110,6 +4324,8 @@
   },
   "fpml.confirmation.ExecutionRetracted" : {
     "xmlElementName" : "executionRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/executionRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4212,7 +4428,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "exercise" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -4252,7 +4468,9 @@
   },
   "fpml.confirmation.FacilityExtensionFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
-    "xmlElementName" : "facilityExtensionFeePayment"
+    "xmlElementName" : "facilityExtensionFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityExtensionFeePayment",
+    "abstract" : false
   },
   "fpml.confirmation.FacilityFeature" : {
     "attributes" : {
@@ -4279,13 +4497,15 @@
   },
   "fpml.confirmation.FacilityNotification" : {
     "xmlElementName" : "facilityNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "facilityEventGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup"
       },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4304,6 +4524,8 @@
   },
   "fpml.confirmation.FacilityOutstandingsPositionStatement" : {
     "xmlElementName" : "facilityOutstandingsPositionStatement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityOutstandingsPositionStatement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4326,6 +4548,8 @@
   },
   "fpml.confirmation.FacilityPositionStatement" : {
     "xmlElementName" : "facilityPositionStatement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityPositionStatement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -4338,13 +4562,15 @@
   },
   "fpml.confirmation.FacilityRateChangeNotification" : {
     "xmlElementName" : "facilityRateChangeNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "facilityRateChangeGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup"
       },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4363,13 +4589,15 @@
   },
   "fpml.confirmation.FacilityStatement" : {
     "xmlElementName" : "facilityStatement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityStatement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "facilityGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup"
       }
     }
   },
@@ -4388,7 +4616,9 @@
   },
   "fpml.confirmation.FacilityTermination" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
-    "xmlElementName" : "facilityTermination"
+    "xmlElementName" : "facilityTermination",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/facilityTermination",
+    "abstract" : false
   },
   "fpml.confirmation.FacilityType" : {
     "attributes" : {
@@ -4402,11 +4632,15 @@
   },
   "fpml.confirmation.FailureToPay" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
-    "xmlElementName" : "failureToPay"
+    "xmlElementName" : "failureToPay",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/failureToPay",
+    "abstract" : false
   },
   "fpml.confirmation.FallbackReferencePrice" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
-    "xmlElementName" : "fallbackReferencePrice"
+    "xmlElementName" : "fallbackReferencePrice",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fallbackReferencePrice",
+    "abstract" : false
   },
   "fpml.confirmation.FeaturePayment" : {
     "attributes" : {
@@ -4460,7 +4694,9 @@
   },
   "fpml.confirmation.FixedLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
-    "xmlElementName" : "fixedLeg"
+    "xmlElementName" : "fixedLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fixedLeg",
+    "abstract" : false
   },
   "fpml.confirmation.FixedPrice" : {
     "attributes" : {
@@ -4540,7 +4776,9 @@
   },
   "fpml.confirmation.FloatingLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
-    "xmlElementName" : "floatingLeg"
+    "xmlElementName" : "floatingLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/floatingLeg",
+    "abstract" : false
   },
   "fpml.confirmation.FloatingPriceLeg" : {
     "attributes" : {
@@ -4584,7 +4822,9 @@
   },
   "fpml.confirmation.FloatingRateCalculation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation",
-    "xmlElementName" : "floatingRateCalculation"
+    "xmlElementName" : "floatingRateCalculation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/floatingRateCalculation",
+    "abstract" : false
   },
   "fpml.confirmation.FloatingRateCalculationReference" : {
     "attributes" : {
@@ -4637,6 +4877,8 @@
   "fpml.confirmation.Fra" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fra",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fra",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4657,11 +4899,15 @@
   },
   "fpml.confirmation.FundingFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
-    "xmlElementName" : "fundingFeePayment"
+    "xmlElementName" : "fundingFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fundingFeePayment",
+    "abstract" : false
   },
   "fpml.confirmation.Future" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "future"
+    "xmlElementName" : "future",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/future",
+    "abstract" : false
   },
   "fpml.confirmation.FutureId" : {
     "attributes" : {
@@ -4675,7 +4921,9 @@
   },
   "fpml.confirmation.Fx" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
-    "xmlElementName" : "fx"
+    "xmlElementName" : "fx",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fx",
+    "abstract" : false
   },
   "fpml.confirmation.FxAccrual" : {
     "attributes" : {
@@ -4708,6 +4956,8 @@
   "fpml.confirmation.FxAccrualDigitalOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxAccrualDigitalOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxAccrualDigitalOption",
+    "abstract" : false,
     "attributes" : {
       "fxExpiryDateOrScheduleModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4720,6 +4970,8 @@
   "fpml.confirmation.FxAccrualForward" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxAccrualForward",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxAccrualForward",
+    "abstract" : false,
     "attributes" : {
       "fxExpiryDateOrScheduleModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4764,6 +5016,8 @@
   "fpml.confirmation.FxAccrualOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxAccrualOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxAccrualOption",
+    "abstract" : false,
     "attributes" : {
       "putCallCurrencyModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4957,6 +5211,8 @@
   "fpml.confirmation.FxCurve" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "fxCurve",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxCurve",
+    "abstract" : false,
     "attributes" : {
       "fxCurveCharacteristicsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4965,11 +5221,15 @@
   },
   "fpml.confirmation.FxCurveValuation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
-    "xmlElementName" : "fxCurveValuation"
+    "xmlElementName" : "fxCurveValuation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxCurveValuation",
+    "abstract" : false
   },
   "fpml.confirmation.FxDigitalOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxDigitalOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxDigitalOption",
+    "abstract" : false,
     "attributes" : {
       "fxDigitalOptionSequence0" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -4982,14 +5242,14 @@
   "fpml.confirmation.FxDisruptionEvents" : {
     "attributes" : {
       "fxDisruptionEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent"
       }
     }
   },
   "fpml.confirmation.FxDisruptionFallbacks" : {
     "attributes" : {
       "fxDisruptionFallback" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback"
       }
     }
   },
@@ -5044,6 +5304,8 @@
   "fpml.confirmation.FxFlexibleForward" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxFlexibleForward",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxFlexibleForward",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5066,6 +5328,8 @@
   "fpml.confirmation.FxForwardVolatilityAgreement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxForwardVolatilityAgreement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxForwardVolatilityAgreement",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5087,7 +5351,9 @@
   },
   "fpml.confirmation.FxOption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "fxOption"
+    "xmlElementName" : "fxOption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxOption",
+    "abstract" : false
   },
   "fpml.confirmation.FxOptionFeatures" : {
     "attributes" : {
@@ -5116,6 +5382,8 @@
   "fpml.confirmation.FxRangeAccrual" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxRangeAccrual",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxRangeAccrual",
+    "abstract" : false,
     "attributes" : {
       "payerReceiverModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5190,6 +5458,8 @@
   "fpml.confirmation.FxSingleLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxSingleLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxSingleLeg",
+    "abstract" : false,
     "attributes" : {
       "fxCoreDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5211,7 +5481,9 @@
   },
   "fpml.confirmation.FxSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "fxSwap"
+    "xmlElementName" : "fxSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxSwap",
+    "abstract" : false
   },
   "fpml.confirmation.FxSwapLeg" : {
     "attributes" : {
@@ -5258,6 +5530,8 @@
   "fpml.confirmation.FxTargetKnockoutForward" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "fxTargetKnockoutForward",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxTargetKnockoutForward",
+    "abstract" : false,
     "attributes" : {
       "fxTargetKnockoutForwardSequence" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5389,11 +5663,15 @@
   },
   "fpml.confirmation.FxVarianceSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "fxVarianceSwap"
+    "xmlElementName" : "fxVarianceSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxVarianceSwap",
+    "abstract" : false
   },
   "fpml.confirmation.FxVolatilitySwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "fxVolatilitySwap"
+    "xmlElementName" : "fxVolatilitySwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/fxVolatilitySwap",
+    "abstract" : false
   },
   "fpml.confirmation.FxWeightedFixingSchedule" : {
     "attributes" : {
@@ -5441,7 +5719,9 @@
   },
   "fpml.confirmation.GasPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
-    "xmlElementName" : "gasPhysicalLeg"
+    "xmlElementName" : "gasPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/gasPhysicalLeg",
+    "abstract" : false
   },
   "fpml.confirmation.GasPhysicalQuantity" : {
     "attributes" : {
@@ -5540,6 +5820,8 @@
   "fpml.confirmation.GenericProduct" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "genericProduct",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/genericProduct",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5666,7 +5948,9 @@
   },
   "fpml.confirmation.Index" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "index"
+    "xmlElementName" : "index",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/index",
+    "abstract" : false
   },
   "fpml.confirmation.IndexAnnexSource" : {
     "attributes" : {
@@ -5681,6 +5965,8 @@
   "fpml.confirmation.IndexChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent",
     "xmlElementName" : "indexChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/indexChange",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -5742,7 +6028,9 @@
   },
   "fpml.confirmation.InflationRateCalculation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/rateCalculation",
-    "xmlElementName" : "inflationRateCalculation"
+    "xmlElementName" : "inflationRateCalculation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/inflationRateCalculation",
+    "abstract" : false
   },
   "fpml.confirmation.InformationProvider" : {
     "attributes" : {
@@ -5791,22 +6079,24 @@
   "fpml.confirmation.InstrumentSetSequence" : {
     "attributes" : {
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       },
       "curveInstrument" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument"
       }
     }
   },
   "fpml.confirmation.InstrumentTradeDetails" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "instrumentTradeDetails",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/instrumentTradeDetails",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
@@ -5846,6 +6136,8 @@
   "fpml.confirmation.InterestCapitalization" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "interestCapitalization",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/interestCapitalization",
+    "abstract" : false,
     "attributes" : {
       "periodModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -5857,7 +6149,9 @@
   },
   "fpml.confirmation.InterestLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg",
-    "xmlElementName" : "interestLeg"
+    "xmlElementName" : "interestLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/interestLeg",
+    "abstract" : false
   },
   "fpml.confirmation.InterestLegCalculationPeriodDates" : {
     "attributes" : {
@@ -5875,7 +6169,9 @@
   },
   "fpml.confirmation.InterestPayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
-    "xmlElementName" : "interestPayment"
+    "xmlElementName" : "interestPayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/interestPayment",
+    "abstract" : false
   },
   "fpml.confirmation.InterestRateStream" : {
     "attributes" : {
@@ -5941,6 +6237,8 @@
   },
   "fpml.confirmation.KeyInfo" : {
     "xmlElementName" : "KeyInfo",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/KeyInfo",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -5961,36 +6259,38 @@
     "attributes" : {
       "keyName" : {
         "xmlName" : "KeyName",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/KeyName"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/KeyName"
       },
       "keyValue" : {
         "xmlName" : "KeyValue",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/KeyValue"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/KeyValue"
       },
       "retrievalMethod" : {
         "xmlName" : "RetrievalMethod",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/RetrievalMethod"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/RetrievalMethod"
       },
       "x509Data" : {
         "xmlName" : "X509Data",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/X509Data"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/X509Data"
       },
       "pgpData" : {
         "xmlName" : "PGPData",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/PGPData"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/PGPData"
       },
       "spkiData" : {
         "xmlName" : "SPKIData",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SPKIData"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/SPKIData"
       },
       "mgmtData" : {
         "xmlName" : "MgmtData",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/MgmtData"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/MgmtData"
       }
     }
   },
   "fpml.confirmation.KeyName" : {
     "xmlElementName" : "KeyName",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/KeyName",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6003,6 +6303,8 @@
   },
   "fpml.confirmation.KeyValue" : {
     "xmlElementName" : "KeyValue",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/KeyValue",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6012,11 +6314,11 @@
     "attributes" : {
       "dsaKeyValue" : {
         "xmlName" : "DSAKeyValue",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/DSAKeyValue"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/DSAKeyValue"
       },
       "rsaKeyValue" : {
         "xmlName" : "RSAKeyValue",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/RSAKeyValue"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/RSAKeyValue"
       }
     }
   },
@@ -6053,7 +6355,9 @@
   },
   "fpml.confirmation.LcAdjustment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
-    "xmlElementName" : "lcAdjustment"
+    "xmlElementName" : "lcAdjustment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcAdjustment",
+    "abstract" : false
   },
   "fpml.confirmation.LcAutoAdjustEnum" : {
     "enumValues" : {
@@ -6064,15 +6368,21 @@
   },
   "fpml.confirmation.LcFxRevaluation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
-    "xmlElementName" : "lcFxRevaluation"
+    "xmlElementName" : "lcFxRevaluation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcFxRevaluation",
+    "abstract" : false
   },
   "fpml.confirmation.LcIssuance" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
-    "xmlElementName" : "lcIssuance"
+    "xmlElementName" : "lcIssuance",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcIssuance",
+    "abstract" : false
   },
   "fpml.confirmation.LcIssuanceFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
     "xmlElementName" : "lcIssuanceFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcIssuanceFeePayment",
+    "abstract" : false,
     "attributes" : {
       "periodModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -6081,13 +6391,15 @@
   },
   "fpml.confirmation.LcNotification" : {
     "xmlElementName" : "lcNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "lcEventGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup"
       },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -6119,15 +6431,21 @@
   },
   "fpml.confirmation.LcRateChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
-    "xmlElementName" : "lcRateChange"
+    "xmlElementName" : "lcRateChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcRateChange",
+    "abstract" : false
   },
   "fpml.confirmation.LcRenewal" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
-    "xmlElementName" : "lcRenewal"
+    "xmlElementName" : "lcRenewal",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcRenewal",
+    "abstract" : false
   },
   "fpml.confirmation.LcTermination" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup",
-    "xmlElementName" : "lcTermination"
+    "xmlElementName" : "lcTermination",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/lcTermination",
+    "abstract" : false
   },
   "fpml.confirmation.LcType" : {
     "attributes" : {
@@ -6212,7 +6530,9 @@
   },
   "fpml.confirmation.LetterOfCreditFacility" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
-    "xmlElementName" : "letterOfCreditFacility"
+    "xmlElementName" : "letterOfCreditFacility",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/letterOfCreditFacility",
+    "abstract" : false
   },
   "fpml.confirmation.LetterOfCreditReference" : {
     "attributes" : {
@@ -6295,6 +6615,8 @@
   "fpml.confirmation.Loan" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "loan",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loan",
+    "abstract" : false,
     "attributes" : {
       "loanChoice" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -6329,6 +6651,8 @@
   },
   "fpml.confirmation.LoanAllocationConfirmationNotification" : {
     "xmlElementName" : "loanAllocationConfirmationNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationConfirmationNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6358,6 +6682,8 @@
   },
   "fpml.confirmation.LoanAllocationNotification" : {
     "xmlElementName" : "loanAllocationNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6384,6 +6710,8 @@
   },
   "fpml.confirmation.LoanAllocationSettlementDateAvailabilityNotification" : {
     "xmlElementName" : "loanAllocationSettlementDateAvailabilityNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationSettlementDateAvailabilityNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6399,6 +6727,8 @@
   },
   "fpml.confirmation.LoanAllocationSettlementDateFinalizationNotification" : {
     "xmlElementName" : "loanAllocationSettlementDateFinalizationNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationSettlementDateFinalizationNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6414,6 +6744,8 @@
   },
   "fpml.confirmation.LoanAllocationSettlementNotification" : {
     "xmlElementName" : "loanAllocationSettlementNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationSettlementNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6436,6 +6768,8 @@
   },
   "fpml.confirmation.LoanAllocationSettlementTaskNotification" : {
     "xmlElementName" : "loanAllocationSettlementTaskNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationSettlementTaskNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6461,6 +6795,8 @@
   },
   "fpml.confirmation.LoanAllocationTransferFeeDueNotification" : {
     "xmlElementName" : "loanAllocationTransferFeeDueNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationTransferFeeDueNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6483,6 +6819,8 @@
   },
   "fpml.confirmation.LoanAllocationTransferFeeOwedNotification" : {
     "xmlElementName" : "loanAllocationTransferFeeOwedNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanAllocationTransferFeeOwedNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6498,6 +6836,8 @@
   },
   "fpml.confirmation.LoanBulkServicingNotification" : {
     "xmlElementName" : "loanBulkServicingNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanBulkServicingNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6514,16 +6854,16 @@
   "fpml.confirmation.LoanBulkServicingNotificationChoice0" : {
     "attributes" : {
       "facilityFeePaymentGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup"
       },
       "facilityEventGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup"
       },
       "loanContractEventGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup"
       },
       "lcEventGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/lcEventGroup"
       }
     }
   },
@@ -6549,13 +6889,15 @@
   },
   "fpml.confirmation.LoanContractNotification" : {
     "xmlElementName" : "loanContractNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanContractNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "loanContractEventGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup"
       },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -6584,6 +6926,8 @@
   },
   "fpml.confirmation.LoanNotificationAcknowledgement" : {
     "xmlElementName" : "loanNotificationAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanNotificationAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6596,6 +6940,8 @@
   },
   "fpml.confirmation.LoanNotificationException" : {
     "xmlElementName" : "loanNotificationException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanNotificationException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6615,6 +6961,8 @@
   },
   "fpml.confirmation.LoanNotificationRetracted" : {
     "xmlElementName" : "loanNotificationRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanNotificationRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6627,6 +6975,8 @@
   },
   "fpml.confirmation.LoanPartyEventInstructionOverrideNotification" : {
     "xmlElementName" : "loanPartyEventInstructionOverrideNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanPartyEventInstructionOverrideNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6634,6 +6984,8 @@
   },
   "fpml.confirmation.LoanPartyProfileNotification" : {
     "xmlElementName" : "loanPartyProfileNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanPartyProfileNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6641,6 +6993,8 @@
   },
   "fpml.confirmation.LoanPartyTradingInstructionOverrideNotification" : {
     "xmlElementName" : "loanPartyTradingInstructionOverrideNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanPartyTradingInstructionOverrideNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6653,7 +7007,9 @@
   },
   "fpml.confirmation.LoanPrepayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
-    "xmlElementName" : "prepayment"
+    "xmlElementName" : "prepayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/prepayment",
+    "abstract" : false
   },
   "fpml.confirmation.LoanSettlementDateAvailabilityEvent" : {
     "attributes" : {
@@ -6677,6 +7033,8 @@
   },
   "fpml.confirmation.LoanTradeConfirmationNotification" : {
     "xmlElementName" : "loanTradeConfirmationNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTradeConfirmationNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6689,6 +7047,8 @@
   },
   "fpml.confirmation.LoanTradeNotification" : {
     "xmlElementName" : "loanTradeNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTradeNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6715,6 +7075,8 @@
   },
   "fpml.confirmation.LoanTradeSettlementTaskNotification" : {
     "xmlElementName" : "loanTradeSettlementTaskNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTradeSettlementTaskNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6737,6 +7099,8 @@
   },
   "fpml.confirmation.LoanTradeTransferFeeDueNotification" : {
     "xmlElementName" : "loanTradeTransferFeeDueNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTradeTransferFeeDueNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6756,6 +7120,8 @@
   },
   "fpml.confirmation.LoanTradeTransferFeeOwedNotification" : {
     "xmlElementName" : "loanTradeTransferFeeOwedNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTradeTransferFeeOwedNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6882,6 +7248,8 @@
   },
   "fpml.confirmation.LoanTransferNotification" : {
     "xmlElementName" : "loanTransferNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTransferNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6894,6 +7262,8 @@
   },
   "fpml.confirmation.LoanTransferSettlementNotification" : {
     "xmlElementName" : "loanTransferSettlementNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTransferSettlementNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6919,11 +7289,15 @@
   },
   "fpml.confirmation.MandatoryCostRateChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
-    "xmlElementName" : "mandatoryCostRateChange"
+    "xmlElementName" : "mandatoryCostRateChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/mandatoryCostRateChange",
+    "abstract" : false
   },
   "fpml.confirmation.MandatoryCostRateExpiry" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
-    "xmlElementName" : "mandatoryCostRateExpiry"
+    "xmlElementName" : "mandatoryCostRateExpiry",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/mandatoryCostRateExpiry",
+    "abstract" : false
   },
   "fpml.confirmation.MandatoryEarlyTermination" : {
     "attributes" : {
@@ -6941,6 +7315,8 @@
   },
   "fpml.confirmation.Manifest" : {
     "xmlElementName" : "Manifest",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/Manifest",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -6950,7 +7326,7 @@
     "attributes" : {
       "reference" : {
         "xmlName" : "Reference",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Reference"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Reference"
       },
       "id" : {
         "xmlName" : "Id",
@@ -6966,16 +7342,18 @@
   },
   "fpml.confirmation.Market" : {
     "xmlElementName" : "market",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/market",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "pricingStructure" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure"
       },
       "pricingStructureValuation" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation"
       },
       "id" : {
         "xmlRepresentation" : "ATTRIBUTE"
@@ -7119,6 +7497,8 @@
   },
   "fpml.confirmation.MaturityAcknowledgement" : {
     "xmlElementName" : "maturityAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/maturityAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7126,10 +7506,14 @@
   },
   "fpml.confirmation.MaturityChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
-    "xmlElementName" : "maturityChange"
+    "xmlElementName" : "maturityChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/maturityChange",
+    "abstract" : false
   },
   "fpml.confirmation.MaturityException" : {
     "xmlElementName" : "maturityException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/maturityException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7137,6 +7521,8 @@
   },
   "fpml.confirmation.MaturityNotification" : {
     "xmlElementName" : "maturityNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/maturityNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7161,7 +7547,7 @@
     "attributes" : {
       "signature" : {
         "xmlName" : "Signature",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Signature"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Signature"
       }
     }
   },
@@ -7177,6 +7563,8 @@
   },
   "fpml.confirmation.MessageRejected" : {
     "xmlElementName" : "messageRejected",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/messageRejected",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7185,6 +7573,8 @@
   "fpml.confirmation.MetalPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commodityForwardLeg",
     "xmlElementName" : "metalPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/metalPhysicalLeg",
+    "abstract" : false,
     "attributes" : {
       "commodityFixedPhysicalQuantityModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -7205,6 +7595,8 @@
   },
   "fpml.confirmation.MgmtData" : {
     "xmlElementName" : "MgmtData",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/MgmtData",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7228,6 +7620,8 @@
   "fpml.confirmation.MiscFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "miscFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/miscFeePayment",
+    "abstract" : false,
     "attributes" : {
       "_type" : {
         "xmlName" : "type"
@@ -7244,6 +7638,8 @@
   "fpml.confirmation.Mortgage" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "mortgage",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/mortgage",
+    "abstract" : false,
     "attributes" : {
       "fixedIncomeSecurityContentModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -7279,7 +7675,9 @@
   },
   "fpml.confirmation.MutualFund" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "mutualFund"
+    "xmlElementName" : "mutualFund",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/mutualFund",
+    "abstract" : false
   },
   "fpml.confirmation.MutualOrOptionalEarlyTerminationModel" : {
     "attributes" : {
@@ -7323,7 +7721,9 @@
   },
   "fpml.confirmation.NoFaultTermination" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
-    "xmlElementName" : "noFaultTermination"
+    "xmlElementName" : "noFaultTermination",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/noFaultTermination",
+    "abstract" : false
   },
   "fpml.confirmation.NoTouchLowerBarrierObservation" : {
     "attributes" : {
@@ -7373,7 +7773,9 @@
   },
   "fpml.confirmation.NonDeliverableSubstitute" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
-    "xmlElementName" : "nonDeliverableSubstitute"
+    "xmlElementName" : "nonDeliverableSubstitute",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/nonDeliverableSubstitute",
+    "abstract" : false
   },
   "fpml.confirmation.NonNegativeSchedule" : {
     "attributes" : {
@@ -7394,13 +7796,15 @@
   },
   "fpml.confirmation.NonRecurringFeePaymentNotification" : {
     "xmlElementName" : "nonRecurringFeePaymentNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/nonRecurringFeePaymentNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "facilityFeePaymentGroup" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup"
       },
       "facilityDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -7546,7 +7950,9 @@
   },
   "fpml.confirmation.ObligationAcceleration" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
-    "xmlElementName" : "obligationAcceleration"
+    "xmlElementName" : "obligationAcceleration",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/obligationAcceleration",
+    "abstract" : false
   },
   "fpml.confirmation.ObligationCategoryEnum" : {
     "enumValues" : {
@@ -7560,11 +7966,15 @@
   },
   "fpml.confirmation.ObligationDefault" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
-    "xmlElementName" : "obligationDefault"
+    "xmlElementName" : "obligationDefault",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/obligationDefault",
+    "abstract" : false
   },
   "fpml.confirmation.OilPhysicalLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/commoditySwapLeg",
-    "xmlElementName" : "oilPhysicalLeg"
+    "xmlElementName" : "oilPhysicalLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/oilPhysicalLeg",
+    "abstract" : false
   },
   "fpml.confirmation.OilProduct" : {
     "attributes" : {
@@ -7593,7 +8003,7 @@
   "fpml.confirmation.OptionBaseExtended" : {
     "attributes" : {
       "exercise" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       },
       "optionDenominationModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -7605,7 +8015,9 @@
   },
   "fpml.confirmation.OptionElement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "option"
+    "xmlElementName" : "option",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/option",
+    "abstract" : false
   },
   "fpml.confirmation.OptionExercise" : {
     "attributes" : {
@@ -7648,6 +8060,8 @@
   },
   "fpml.confirmation.OptionExpirationNotification" : {
     "xmlElementName" : "optionExpirationNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/optionExpirationNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7692,7 +8106,7 @@
   "fpml.confirmation.OptionalEarlyTermination" : {
     "attributes" : {
       "exercise" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -7792,6 +8206,8 @@
   },
   "fpml.confirmation.OutstandingContractsStatement" : {
     "xmlElementName" : "outstandingContractsStatement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/outstandingContractsStatement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -7824,6 +8240,8 @@
   },
   "fpml.confirmation.PGPData" : {
     "xmlElementName" : "PGPData",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/PGPData",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -8149,11 +8567,15 @@
   },
   "fpml.confirmation.PenaltyRateChange" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
-    "xmlElementName" : "penaltyRateChange"
+    "xmlElementName" : "penaltyRateChange",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/penaltyRateChange",
+    "abstract" : false
   },
   "fpml.confirmation.PenaltyRateExpiry" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityRateChangeGroup",
-    "xmlElementName" : "penaltyRateExpiry"
+    "xmlElementName" : "penaltyRateExpiry",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/penaltyRateExpiry",
+    "abstract" : false
   },
   "fpml.confirmation.Period" : {
     "attributes" : {
@@ -8240,7 +8662,7 @@
   "fpml.confirmation.PhysicalSettlement" : {
     "attributes" : {
       "product" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/product"
       }
     }
   },
@@ -8324,6 +8746,8 @@
   },
   "fpml.confirmation.PrepaymentNotification" : {
     "xmlElementName" : "prepaymentNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/prepaymentNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -8356,6 +8780,8 @@
   "fpml.confirmation.PriceMateriality" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
     "xmlElementName" : "priceMateriality",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/priceMateriality",
+    "abstract" : false,
     "attributes" : {
       "prioritizedRateSourceModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -8381,7 +8807,9 @@
   },
   "fpml.confirmation.PriceSourceDisruption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionEvent",
-    "xmlElementName" : "priceSourceDisruption"
+    "xmlElementName" : "priceSourceDisruption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/priceSourceDisruption",
+    "abstract" : false
   },
   "fpml.confirmation.PricingContext" : {
     "attributes" : {
@@ -8671,6 +9099,8 @@
   },
   "fpml.confirmation.RSAKeyValue" : {
     "xmlElementName" : "RSAKeyValue",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/RSAKeyValue",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -8695,7 +9125,9 @@
   },
   "fpml.confirmation.RateIndex" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
-    "xmlElementName" : "rateIndex"
+    "xmlElementName" : "rateIndex",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/rateIndex",
+    "abstract" : false
   },
   "fpml.confirmation.RateObservation" : {
     "attributes" : {
@@ -8766,6 +9198,8 @@
   },
   "fpml.confirmation.ReferenceElement" : {
     "xmlElementName" : "Reference",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/Reference",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -8784,16 +9218,16 @@
   "fpml.confirmation.ReferenceObligation" : {
     "attributes" : {
       "bond" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/bond"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/bond"
       },
       "convertibleBond" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/convertibleBond"
       },
       "mortgage" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/mortgage"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/mortgage"
       },
       "loan" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loan"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/loan"
       },
       "referenceObligationChoice" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -8804,15 +9238,15 @@
     "attributes" : {
       "transforms" : {
         "xmlName" : "Transforms",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Transforms"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Transforms"
       },
       "digestMethod" : {
         "xmlName" : "DigestMethod",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/DigestMethod"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/DigestMethod"
       },
       "digestValue" : {
         "xmlName" : "DigestValue",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/DigestValue"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/DigestValue"
       },
       "id" : {
         "xmlName" : "Id",
@@ -8889,6 +9323,8 @@
   "fpml.confirmation.Repayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/loanContractEventGroup",
     "xmlElementName" : "repayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/repayment",
+    "abstract" : false,
     "attributes" : {
       "repaymentTypeModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -8898,6 +9334,8 @@
   "fpml.confirmation.Repo" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "repo",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/repo",
+    "abstract" : false,
     "attributes" : {
       "repoSequence" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -9032,10 +9470,14 @@
   },
   "fpml.confirmation.RepudiationMoratorium" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
-    "xmlElementName" : "repudiationMoratorium"
+    "xmlElementName" : "repudiationMoratorium",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/repudiationMoratorium",
+    "abstract" : false
   },
   "fpml.confirmation.RequestAllocation" : {
     "xmlElementName" : "requestAllocation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestAllocation",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9048,6 +9490,8 @@
   },
   "fpml.confirmation.RequestAllocationRetracted" : {
     "xmlElementName" : "requestAllocationRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestAllocationRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9060,6 +9504,8 @@
   },
   "fpml.confirmation.RequestClearing" : {
     "xmlElementName" : "requestClearing",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestClearing",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9081,6 +9527,8 @@
   },
   "fpml.confirmation.RequestClearingEligibility" : {
     "xmlElementName" : "requestClearingEligibility",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestClearingEligibility",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9096,6 +9544,8 @@
   },
   "fpml.confirmation.RequestClearingRetracted" : {
     "xmlElementName" : "requestClearingRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestClearingRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9111,6 +9561,8 @@
   },
   "fpml.confirmation.RequestCollateralAllocation" : {
     "xmlElementName" : "requestCollateralAllocation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestCollateralAllocation",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9123,6 +9575,8 @@
   },
   "fpml.confirmation.RequestConfirmation" : {
     "xmlElementName" : "requestConfirmation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestConfirmation",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9138,6 +9592,8 @@
   },
   "fpml.confirmation.RequestConfirmationRetracted" : {
     "xmlElementName" : "requestConfirmationRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestConfirmationRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9145,6 +9601,8 @@
   },
   "fpml.confirmation.RequestConsent" : {
     "xmlElementName" : "requestConsent",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestConsent",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9172,6 +9630,8 @@
   },
   "fpml.confirmation.RequestConsentRetracted" : {
     "xmlElementName" : "requestConsentRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestConsentRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9190,6 +9650,8 @@
   },
   "fpml.confirmation.RequestEventStatus" : {
     "xmlElementName" : "requestEventStatus",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestEventStatus",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9202,6 +9664,8 @@
   },
   "fpml.confirmation.RequestExecution" : {
     "xmlElementName" : "requestExecution",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestExecution",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9217,6 +9681,8 @@
   },
   "fpml.confirmation.RequestExecutionRetracted" : {
     "xmlElementName" : "requestExecutionRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestExecutionRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9246,6 +9712,8 @@
   },
   "fpml.confirmation.RequestRetransmission" : {
     "xmlElementName" : "requestRetransmission",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestRetransmission",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9261,6 +9729,8 @@
   },
   "fpml.confirmation.RequestTradeReferenceInformationUpdate" : {
     "xmlElementName" : "requestTradeReferenceInformationUpdate",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestTradeReferenceInformationUpdate",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9276,6 +9746,8 @@
   },
   "fpml.confirmation.RequestTradeReferenceInformationUpdateRetracted" : {
     "xmlElementName" : "requestTradeReferenceInformationUpdateRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/requestTradeReferenceInformationUpdateRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9401,7 +9873,9 @@
   },
   "fpml.confirmation.RestructuringElement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/creditEvent",
-    "xmlElementName" : "restructuring"
+    "xmlElementName" : "restructuring",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/restructuring",
+    "abstract" : false
   },
   "fpml.confirmation.RestructuringType" : {
     "attributes" : {
@@ -9415,6 +9889,8 @@
   },
   "fpml.confirmation.RetrievalMethod" : {
     "xmlElementName" : "RetrievalMethod",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/RetrievalMethod",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9424,7 +9900,7 @@
     "attributes" : {
       "transforms" : {
         "xmlName" : "Transforms",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Transforms"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Transforms"
       },
       "uri" : {
         "xmlName" : "URI",
@@ -9438,11 +9914,15 @@
   },
   "fpml.confirmation.ReturnLeg" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg",
-    "xmlElementName" : "returnLeg"
+    "xmlElementName" : "returnLeg",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/returnLeg",
+    "abstract" : false
   },
   "fpml.confirmation.ReturnSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "returnSwap"
+    "xmlElementName" : "returnSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/returnSwap",
+    "abstract" : false
   },
   "fpml.confirmation.ReturnSwapAdditionalPayment" : {
     "attributes" : {
@@ -9464,7 +9944,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "returnSwapLeg" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/returnSwapLeg"
       }
     }
   },
@@ -9505,7 +9985,9 @@
   },
   "fpml.confirmation.Revolver" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
-    "xmlElementName" : "revolver"
+    "xmlElementName" : "revolver",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/revolver",
+    "abstract" : false
   },
   "fpml.confirmation.RollConventionEnum" : {
     "enumValues" : {
@@ -9544,6 +10026,8 @@
   "fpml.confirmation.Rollover" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityEventGroup",
     "xmlElementName" : "rollover",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/rollover",
+    "abstract" : false,
     "attributes" : {
       "rolloverChoice" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -9552,6 +10036,8 @@
   },
   "fpml.confirmation.RolloverNotification" : {
     "xmlElementName" : "rolloverNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/rolloverNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9602,6 +10088,8 @@
   },
   "fpml.confirmation.SPKIData" : {
     "xmlElementName" : "SPKIData",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/SPKIData",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9701,6 +10189,8 @@
   },
   "fpml.confirmation.ServiceNotification" : {
     "xmlElementName" : "serviceNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/serviceNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9708,6 +10198,8 @@
   },
   "fpml.confirmation.ServiceNotificationException" : {
     "xmlElementName" : "serviceNotificationException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/serviceNotificationException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9818,7 +10310,9 @@
   },
   "fpml.confirmation.SettlementPostponement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
-    "xmlElementName" : "settlementPostponement"
+    "xmlElementName" : "settlementPostponement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/settlementPostponement",
+    "abstract" : false
   },
   "fpml.confirmation.SettlementPriceDefaultElection" : {
     "attributes" : {
@@ -9895,6 +10389,8 @@
   },
   "fpml.confirmation.Signature" : {
     "xmlElementName" : "Signature",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/Signature",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9902,6 +10398,8 @@
   },
   "fpml.confirmation.SignatureMethod" : {
     "xmlElementName" : "SignatureMethod",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/SignatureMethod",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9920,6 +10418,8 @@
   },
   "fpml.confirmation.SignatureProperties" : {
     "xmlElementName" : "SignatureProperties",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/SignatureProperties",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9929,7 +10429,7 @@
     "attributes" : {
       "signatureProperty" : {
         "xmlName" : "SignatureProperty",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignatureProperty"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/SignatureProperty"
       },
       "id" : {
         "xmlName" : "Id",
@@ -9939,6 +10439,8 @@
   },
   "fpml.confirmation.SignatureProperty" : {
     "xmlElementName" : "SignatureProperty",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/SignatureProperty",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -9963,19 +10465,19 @@
     "attributes" : {
       "signedInfo" : {
         "xmlName" : "SignedInfo",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignedInfo"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/SignedInfo"
       },
       "signatureValue" : {
         "xmlName" : "SignatureValue",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignatureValue"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/SignatureValue"
       },
       "keyInfo" : {
         "xmlName" : "KeyInfo",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/KeyInfo"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/KeyInfo"
       },
       "object" : {
         "xmlName" : "Object",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Object"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Object"
       },
       "id" : {
         "xmlName" : "Id",
@@ -9985,6 +10487,8 @@
   },
   "fpml.confirmation.SignatureValue" : {
     "xmlElementName" : "SignatureValue",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/SignatureValue",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10003,6 +10507,8 @@
   },
   "fpml.confirmation.SignedInfo" : {
     "xmlElementName" : "SignedInfo",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/SignedInfo",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10012,15 +10518,15 @@
     "attributes" : {
       "canonicalizationMethod" : {
         "xmlName" : "CanonicalizationMethod",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/CanonicalizationMethod"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/CanonicalizationMethod"
       },
       "signatureMethod" : {
         "xmlName" : "SignatureMethod",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/SignatureMethod"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/SignatureMethod"
       },
       "reference" : {
         "xmlName" : "Reference",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Reference"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Reference"
       },
       "id" : {
         "xmlName" : "Id",
@@ -10031,6 +10537,8 @@
   "fpml.confirmation.SimpleCreditDefaultSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
     "xmlElementName" : "simpleCreditDefaultSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/simpleCreditDefaultSwap",
+    "abstract" : false,
     "attributes" : {
       "creditEntityModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -10039,11 +10547,15 @@
   },
   "fpml.confirmation.SimpleFra" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
-    "xmlElementName" : "simpleFra"
+    "xmlElementName" : "simpleFra",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/simpleFra",
+    "abstract" : false
   },
   "fpml.confirmation.SimpleIRSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/curveInstrument",
-    "xmlElementName" : "simpleIrSwap"
+    "xmlElementName" : "simpleIrSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/simpleIrSwap",
+    "abstract" : false
   },
   "fpml.confirmation.SimplePayment" : {
     "attributes" : {
@@ -10062,7 +10574,7 @@
   "fpml.confirmation.SingleUnderlyer" : {
     "attributes" : {
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
@@ -10117,7 +10629,9 @@
   },
   "fpml.confirmation.StandardProduct" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "standardProduct"
+    "xmlElementName" : "standardProduct",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/standardProduct",
+    "abstract" : false
   },
   "fpml.confirmation.StandardSettlementStyleEnum" : {
     "enumValues" : {
@@ -10142,9 +10656,11 @@
   "fpml.confirmation.Strategy" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "strategy",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/strategy",
+    "abstract" : false,
     "attributes" : {
       "product" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/product"
       }
     }
   },
@@ -10223,7 +10739,9 @@
   },
   "fpml.confirmation.Swap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "swap"
+    "xmlElementName" : "swap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/swap",
+    "abstract" : false
   },
   "fpml.confirmation.SwapCurveValuation" : {
     "attributes" : {
@@ -10235,12 +10753,14 @@
   "fpml.confirmation.Swaption" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "swaption",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/swaption",
+    "abstract" : false,
     "attributes" : {
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
       "exercise" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/exercise"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/exercise"
       }
     }
   },
@@ -10292,6 +10812,8 @@
   "fpml.confirmation.TermDeposit" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "termDeposit",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/termDeposit",
+    "abstract" : false,
     "attributes" : {
       "payerReceiverModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -10303,7 +10825,9 @@
   },
   "fpml.confirmation.TermLoan" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityGroup",
-    "xmlElementName" : "termLoan"
+    "xmlElementName" : "termLoan",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/termLoan",
+    "abstract" : false
   },
   "fpml.confirmation.TermPoint" : {
     "attributes" : {
@@ -10377,7 +10901,7 @@
   "fpml.confirmation.Trade" : {
     "attributes" : {
       "product" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/product"
       },
       "calculationAgentModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -10412,6 +10936,8 @@
   },
   "fpml.confirmation.TradeChangeAdvice" : {
     "xmlElementName" : "tradeChangeAdvice",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/tradeChangeAdvice",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10427,6 +10953,8 @@
   },
   "fpml.confirmation.TradeChangeAdviceAcknowledgement" : {
     "xmlElementName" : "tradeChangeAdviceAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/tradeChangeAdviceAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10434,6 +10962,8 @@
   },
   "fpml.confirmation.TradeChangeAdviceException" : {
     "xmlElementName" : "tradeChangeAdviceException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/tradeChangeAdviceException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10441,6 +10971,8 @@
   },
   "fpml.confirmation.TradeChangeAdviceRetracted" : {
     "xmlElementName" : "tradeChangeAdviceRetracted",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/tradeChangeAdviceRetracted",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10464,7 +10996,7 @@
   "fpml.confirmation.TradeChangeContent" : {
     "attributes" : {
       "changeEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/changeEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/changeEvent"
       }
     }
   },
@@ -10610,6 +11142,8 @@
   },
   "fpml.confirmation.TradeReferenceInformationUpdateAcknowledgement" : {
     "xmlElementName" : "tradeReferenceInformationUpdateAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/tradeReferenceInformationUpdateAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10617,6 +11151,8 @@
   },
   "fpml.confirmation.TradeReferenceInformationUpdateException" : {
     "xmlElementName" : "tradeReferenceInformationUpdateException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/tradeReferenceInformationUpdateException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10632,7 +11168,7 @@
   "fpml.confirmation.TradeUnderlyer2" : {
     "attributes" : {
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       },
       "payerReceiverModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -10671,7 +11207,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       }
     }
   },
@@ -10688,7 +11224,7 @@
         "xmlRepresentation" : "VIRTUAL"
       },
       "additionalEvent" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/additionalEvent"
       }
     }
   },
@@ -10724,6 +11260,8 @@
   },
   "fpml.confirmation.Transform" : {
     "xmlElementName" : "Transform",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/Transform",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10749,6 +11287,8 @@
   },
   "fpml.confirmation.Transforms" : {
     "xmlElementName" : "Transforms",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/Transforms",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10758,7 +11298,7 @@
     "attributes" : {
       "transform" : {
         "xmlName" : "Transform",
-        "substitutionGroup" : "http://www.w3.org/2000/09/xmldsig#/Transform"
+        "elementRef" : "http://www.w3.org/2000/09/xmldsig#/Transform"
       }
     }
   },
@@ -10812,7 +11352,7 @@
   "fpml.confirmation.UnderlyingAssetOrReferenceModel" : {
     "attributes" : {
       "underlyingAsset" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset"
       }
     }
   },
@@ -10845,7 +11385,9 @@
   },
   "fpml.confirmation.UpfrontFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
-    "xmlElementName" : "upfrontFeePayment"
+    "xmlElementName" : "upfrontFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/upfrontFeePayment",
+    "abstract" : false
   },
   "fpml.confirmation.UtilizationModel" : {
     "attributes" : {
@@ -10893,16 +11435,18 @@
   },
   "fpml.confirmation.ValuationDocument" : {
     "xmlElementName" : "valuationDocument",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/valuationDocument",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
       "market" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/market"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/market"
       },
       "valuationSet" : {
-        "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/valuationSet"
+        "elementRef" : "http://www.fpml.org/FpML-5/confirmation/valuationSet"
       }
     }
   },
@@ -10920,7 +11464,9 @@
   },
   "fpml.confirmation.ValuationPostponement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/fxDisruptionFallback",
-    "xmlElementName" : "valuationPostponement"
+    "xmlElementName" : "valuationPostponement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/valuationPostponement",
+    "abstract" : false
   },
   "fpml.confirmation.ValuationReference" : {
     "attributes" : {
@@ -10945,6 +11491,8 @@
   },
   "fpml.confirmation.ValuationSet" : {
     "xmlElementName" : "valuationSet",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/valuationSet",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -10973,15 +11521,21 @@
   },
   "fpml.confirmation.VarianceOptionTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "varianceOptionTransactionSupplement"
+    "xmlElementName" : "varianceOptionTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/varianceOptionTransactionSupplement",
+    "abstract" : false
   },
   "fpml.confirmation.VarianceSwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "varianceSwap"
+    "xmlElementName" : "varianceSwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/varianceSwap",
+    "abstract" : false
   },
   "fpml.confirmation.VarianceSwapTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "varianceSwapTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/varianceSwapTransactionSupplement",
+    "abstract" : false,
     "attributes" : {
       "equityUnderlyerProvisionsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -11010,6 +11564,8 @@
   },
   "fpml.confirmation.VerificationStatusAcknowledgement" : {
     "xmlElementName" : "verificationStatusAcknowledgement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/verificationStatusAcknowledgement",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -11017,6 +11573,8 @@
   },
   "fpml.confirmation.VerificationStatusException" : {
     "xmlElementName" : "verificationStatusException",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/verificationStatusException",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -11024,6 +11582,8 @@
   },
   "fpml.confirmation.VerificationStatusNotification" : {
     "xmlElementName" : "verificationStatusNotification",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/verificationStatusNotification",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -11057,19 +11617,27 @@
   },
   "fpml.confirmation.VolatilityMatrixValuation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
-    "xmlElementName" : "volatilityMatrixValuation"
+    "xmlElementName" : "volatilityMatrixValuation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/volatilityMatrixValuation",
+    "abstract" : false
   },
   "fpml.confirmation.VolatilityRepresentation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
-    "xmlElementName" : "volatilityRepresentation"
+    "xmlElementName" : "volatilityRepresentation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/volatilityRepresentation",
+    "abstract" : false
   },
   "fpml.confirmation.VolatilitySwap" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
-    "xmlElementName" : "volatilitySwap"
+    "xmlElementName" : "volatilitySwap",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/volatilitySwap",
+    "abstract" : false
   },
   "fpml.confirmation.VolatilitySwapTransactionSupplement" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/product",
     "xmlElementName" : "volatilitySwapTransactionSupplement",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/volatilitySwapTransactionSupplement",
+    "abstract" : false,
     "attributes" : {
       "equityUnderlyerProvisionsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -11078,11 +11646,15 @@
   },
   "fpml.confirmation.WaiverFeePayment" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
-    "xmlElementName" : "waiverFeePayment"
+    "xmlElementName" : "waiverFeePayment",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/waiverFeePayment",
+    "abstract" : false
   },
   "fpml.confirmation.Warrant" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
-    "xmlElementName" : "warrant"
+    "xmlElementName" : "warrant",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/warrant",
+    "abstract" : false
   },
   "fpml.confirmation.WeatherCalculationPeriods" : {
     "attributes" : {
@@ -11188,6 +11760,8 @@
   },
   "fpml.confirmation.X509Data" : {
     "xmlElementName" : "X509Data",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/X509Data",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
@@ -11232,6 +11806,8 @@
   "fpml.confirmation.YieldCurve" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructure",
     "xmlElementName" : "yieldCurve",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/yieldCurve",
+    "abstract" : false,
     "attributes" : {
       "yieldCurveCharacteristicsModel" : {
         "xmlRepresentation" : "VIRTUAL"
@@ -11240,10 +11816,14 @@
   },
   "fpml.confirmation.YieldCurveValuation" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/pricingStructureValuation",
-    "xmlElementName" : "yieldCurveValuation"
+    "xmlElementName" : "yieldCurveValuation",
+    "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/yieldCurveValuation",
+    "abstract" : false
   },
   "fpml.confirmation._Object" : {
     "xmlElementName" : "Object",
+    "xmlElementFullyQualifiedName" : "http://www.w3.org/2000/09/xmldsig#/Object",
+    "abstract" : false,
     "xmlAttributes" : {
       "xmlns" : "http://www.w3.org/2000/09/xmldsig#",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"

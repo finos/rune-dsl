@@ -73,18 +73,21 @@ public class RosettaStandaloneBuilder extends StandaloneBuilder {
 	}
 
 	private boolean needsBeforeAllCall = false;
-	private ResourceSet currentResourceSet;
+	private ResourceSet currentResourceSet = null;
 	private JavaIoFileSystemAccess currentFileSystemAccess;
 	@Override
 	public boolean launch() {
 		needsBeforeAllCall = true;
+		currentResourceSet = null;
 		
 		boolean success = super.launch();
 		
-		LOG.info("Starting after all generation");
-		GeneratorContext context = new GeneratorContext();
-		context.setCancelIndicator(CancelIndicator.NullImpl);
-		getRosettaGenerator().afterAllGenerate(currentResourceSet, currentFileSystemAccess, context);
+		if (success && currentResourceSet != null) {
+			LOG.info("Starting after all generation");
+			GeneratorContext context = new GeneratorContext();
+			context.setCancelIndicator(CancelIndicator.NullImpl);
+			getRosettaGenerator().afterAllGenerate(currentResourceSet, currentFileSystemAccess, context);
+		}
 		
 		return success;
 	}

@@ -28,7 +28,12 @@
 	<xs:element name="animal" type="AnimalBase" abstract="true" />
 	<xs:element name="cow" type="Cow" substitutionGroup="animal" />
 	<xs:element name="goat" type="Goat" substitutionGroup="animal" />
-	
+	<!-- Element names: `Shark`s should be serialised as an element named `shark`, `Salmon`s should be serialised as an element named `salmon`. -->
+	<!-- The `fish` substitution group transitively substitutes to the `animal` substitution group	-->
+	<xs:element name="fish" type="Fish" abstract="true" substitutionGroup="animal"/>
+	<xs:element name="shark" type="Shark" substitutionGroup="fish"/>
+	<xs:element name="salmon" type="Salmon" substitutionGroup="fish"/>
+
 	<!-- Types: `Cow` and `Goat` extend from `Animal` -->
 	<xs:complexType name="AnimalBase">
 	  <xs:attribute name="name" type="xs:string" />
@@ -42,5 +47,21 @@
 	  <xs:complexContent>
 	    <xs:extension base="AnimalBase" />
 	  </xs:complexContent>
+	</xs:complexType>
+	<!-- Types: `Shark` and `Salmon` extend from `Fish`-->
+	<xs:complexType name="Fish">
+		<xs:complexContent>
+			<xs:extension base="AnimalBase"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Shark">
+		<xs:complexContent>
+			<xs:extension base="Fish"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="Salmon">
+		<xs:complexContent>
+			<xs:extension base="Fish"/>
+		</xs:complexContent>
 	</xs:complexType>
 </xs:schema>

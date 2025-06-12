@@ -388,6 +388,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.of(attributeConfig),
 				Optional.empty()
 			);
@@ -411,7 +412,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VALUE),
-    					Optional.empty()));
+    					Optional.empty(),
+						Optional.empty()));
             }
             
             completeTypeConfiguration(attributeConfig, Streams.concat(getChildElement(ct).stream(), getAttributes(ct)), false, xsdMapping, result);
@@ -426,18 +428,19 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             } else {
             	elemNameOverride = Optional.of(elem.getName());
             }
-            Optional<String> substitutionGroup;
+            Optional<String> elementRef;
             if (util.isTopLevelElement(elem)) {
-            	substitutionGroup = Optional.of(util.getQualifiedName(elem));
+            	elementRef = Optional.of(util.getQualifiedName(elem));
             } else {
-            	substitutionGroup = Optional.empty();
+            	elementRef = Optional.empty();
             }
-            if (elemNameOverride.isPresent() || substitutionGroup.isPresent()) {
+            if (elemNameOverride.isPresent() || elementRef.isPresent()) {
             	currentConfig.put(attr.getName(), new AttributeXMLConfiguration(
             			elemNameOverride,
 						Optional.empty(),
 						Optional.empty(),
-						substitutionGroup));
+						Optional.empty(),
+						elementRef));
             }
         } else if (abstractElement instanceof XsdGroup group) {
             Attribute attr = xsdMapping.getAttribute(group);
@@ -445,6 +448,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 					Optional.empty(),
 					Optional.empty(),
 					Optional.of(AttributeXMLRepresentation.VIRTUAL),
+					Optional.empty(),
 					Optional.empty()));
         } else if (abstractElement instanceof XsdAttribute xsdAttr) {
         	Attribute attr = xsdMapping.getAttribute(xsdAttr);
@@ -452,6 +456,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         			xsdAttr.getName().equals(attr.getName()) ? Optional.empty() : Optional.of(xsdAttr.getName()),
 					Optional.empty(),
 					Optional.of(AttributeXMLRepresentation.ATTRIBUTE),
+					Optional.empty(),
 					Optional.empty()));
         } else if (abstractElement instanceof XsdSequence seq) {
             if (isChoiceGroup || isMulti(seq.getMaxOccurs()) || seq.getMinOccurs() == 0) {
@@ -463,7 +468,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VIRTUAL),
-    					Optional.empty()));
+    					Optional.empty(),
+						Optional.empty()));
             } else {
                 seq.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, false, xsdMapping, result));
             }
@@ -477,7 +483,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VIRTUAL),
-    					Optional.empty()));
+    					Optional.empty(),
+						Optional.empty()));
             } else {
                 all.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, false, xsdMapping, result));
             }
@@ -491,7 +498,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     					Optional.empty(),
     					Optional.empty(),
     					Optional.of(AttributeXMLRepresentation.VIRTUAL),
-    					Optional.empty()));
+    					Optional.empty(),
+						Optional.empty()));
             } else {
                 choice.getXsdElements().forEach(child -> getAttributeConfigurationRecursively(currentConfig, child, true, xsdMapping, result));
             }
@@ -504,6 +512,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.of(currentConfig),
 				Optional.empty());
         result.put(data, config);

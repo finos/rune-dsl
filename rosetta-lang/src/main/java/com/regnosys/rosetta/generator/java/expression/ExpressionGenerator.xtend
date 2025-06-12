@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
@@ -148,6 +147,7 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1144,14 +1144,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	
 	override protected caseConstructorExpression(RosettaConstructorExpression expr, Context context) {
 		val metaAnnotatedType = typeProvider.getRMetaAnnotatedType(expr)
-		val rType = metaAnnotatedType.RType.stripFromTypeAliases
-		val type = if (rType instanceof RChoiceType) {
-			rType.asRDataType
-		} else {
-			rType
-		}
 		val clazz = metaAnnotatedType.toJavaReferenceType
-		if (type instanceof RDataType) {
+		if (clazz instanceof JavaPojoInterface) {
 			if (expr.values.empty) {
 				JavaExpression.from('''
 					«clazz».builder()
@@ -1162,12 +1156,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				expr.values.map[pair|
 					val attr = pair.key as Attribute
 					val attrExpr = pair.value
+					
+					val prop = clazz.findProperty(attr.name)
 					val assignAsKey = attrExpr instanceof AsKeyOperation
 					val requiresValueAssignment = requiresValueAssignment(assignAsKey, attr, attrExpr)
 					
+					val setterName = requiresValueAssignment ? prop.valueSetterName : prop.setterName
+					
 					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isFeatureMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
-						.mapExpression[JavaExpression.from('''.set«attr.name.toFirstUpper»«IF requiresValueAssignment»Value«ENDIF»(«it»)''', null)]
+						.mapExpression[JavaExpression.from('''.«setterName»(«it»)''', null)]
 				].reduce[acc,attrCode|
 					acc.then(attrCode, [allSetCode,setAttr|
 						JavaExpression.from(
@@ -1189,7 +1187,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			}
 		} else { // type instanceof RRecordType
 			val featureMap = expr.values.toMap([key.name], [evaluateConstructorValue(key, value, false, false, context.scope)])
-			recordUtil.recordConstructor(type as RRecordType, featureMap, context.scope)
+			recordUtil.recordConstructor(metaAnnotatedType.RType as RRecordType, featureMap, context.scope)
 		}
 	}
 	

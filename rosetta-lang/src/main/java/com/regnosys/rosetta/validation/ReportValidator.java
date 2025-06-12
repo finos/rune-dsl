@@ -37,7 +37,6 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
-import com.regnosys.rosetta.rules.RuleComputationCache;
 import com.regnosys.rosetta.rules.RulePathMap;
 import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.rules.RuleReferenceService.RuleReferenceContext;
@@ -134,21 +133,20 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	public void checkReportType(Data data) {
 		RDataType rData = objectFactory.buildRDataType(data);
-		checkReportInputType(data, null, rData, new RuleComputationCache());
+		checkReportInputType(data, null, rData);
 	}
 	
 	@Check
 	public void checkExternalRuleSource(RosettaExternalRuleSource source) {
-		RuleComputationCache computationCache = new RuleComputationCache();
 		for (RosettaExternalClass externalClass: source.getExternalClasses()) {
 			RDataType data = objectFactory.buildRDataType(externalClass.getData());
-			checkReportInputType(externalClass, source, data, computationCache);
+			checkReportInputType(externalClass, source, data);
 			
 			// TODO: somehow generalize this with the one for inline attributes
 			externalClass.getRegularAttributes().forEach(annotatedAttr -> {
 				RAttribute attribute = data.getAttributeByName(annotatedAttr.getAttributeRef().getName());
 				if (attribute != null) {
-					checkOwnRuleReferenceAnnotations(source, data, attribute, computationCache);
+					checkOwnRuleReferenceAnnotations(source, data, attribute);
 				}
 			});
 		}
@@ -164,12 +162,12 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 					error("You can only add rule references on the attribute of a type", attr, ATTRIBUTE__RULE_REFERENCES, i);
 				}
 			} else {
-				checkOwnRuleReferenceAnnotations(null, attribute.getEnclosingType(), attribute, new RuleComputationCache());
+				checkOwnRuleReferenceAnnotations(null, attribute.getEnclosingType(), attribute);
 			}
 		}
 	}
-	private void checkOwnRuleReferenceAnnotations(RosettaExternalRuleSource source, RDataType type, RAttribute attribute, RuleComputationCache computationCache) {
-		RulePathMap ruleMap = ruleService.computeRulePathMapInContext(source, type, attribute, computationCache);
+	private void checkOwnRuleReferenceAnnotations(RosettaExternalRuleSource source, RDataType type, RAttribute attribute) {
+		RulePathMap ruleMap = ruleService.computeRulePathMapInContext(source, type, attribute);
 		Map<List<String>, RuleResult> parentRules = ruleMap.getParentRules();
 		Map<List<String>, RuleResult> ownRules = ruleMap.getOwnRules();
 		ownRules.forEach((path, ruleResult) -> {
@@ -205,7 +203,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 		});
 	}
 	
-	private void checkReportInputType(EObject objectBeingChecked, RosettaExternalRuleSource source, RDataType type, RuleComputationCache computationCache) {
+	private void checkReportInputType(EObject objectBeingChecked, RosettaExternalRuleSource source, RDataType type) {
 		ruleService.<RType>traverse(
 				source,
 				type,
@@ -226,15 +224,14 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 						return current;
 					}
 					return newCurrent;
-				},
-				computationCache
+				}
 			);
 	}
 	private void inputTypeErrorForRule(EObject objectBeingChecked, RuleReferenceContext context, RType previousInputType, RType inputType) {
 		EObject origin = context.getRuleOrigin();
 		EObject container = EcoreUtil2.getContainerOfType(origin, objectBeingChecked.getClass());
 		RosettaRule rule = context.getRule();
-		if (container.equals(objectBeingChecked)) {
+		if (objectBeingChecked.equals(container)) {
 			// If the cause of the error is contained in the object being checked, we can raise a specific error.
 			if (origin instanceof RuleReferenceAnnotation) {
 				// Because of a rule reference annotation

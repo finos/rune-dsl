@@ -1,0 +1,12 @@
+namespace cde.layer.price: <"">
+import base.layer.*
+
+enum NotationEnum:
+    W
+    X
+    Y
+    Z
+
+reporting rule PriceNotationBase from Instruction:
+    extract NotationEnum -> Y
+        as "The notation"
