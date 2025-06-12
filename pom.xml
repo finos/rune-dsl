@@ -41,7 +41,7 @@
 		This parent project manages dependencies of the modules that make up the
 		Rosetta DSL.
 	</description>
-	<url>https://github.com/REGnosys/rosetta-dsl</url>
+	<url>https://github.com/finos/rune-dsl</url>
 
 	<organization>
 		<name>REGnosys</name>
@@ -49,14 +49,14 @@
 	</organization>
 
 	<scm>
-		<url>https://github.com/REGnosys/rosetta-dsl</url>
-		<connection>scm:git:https://github.com/REGnosys/rosetta-dsl.git</connection>
-		<developerConnection>scm:git:ssh://github.com/REGnosys/rosetta-dsl.git</developerConnection>
+		<url>https://github.com/finos/rune-dsl</url>
+		<connection>scm:git:https://github.com/finos/rune-dsl.git</connection>
+		<developerConnection>scm:git:ssh://github.com/finos/rune-dsl.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
-		<url>https://github.com/REGnosys/rosetta-dsl/issues</url>
+		<url>https://github.com/finos/rune-dsl/issues</url>
 		<system>GitHub Issues</system>
 	</issueManagement>
 
