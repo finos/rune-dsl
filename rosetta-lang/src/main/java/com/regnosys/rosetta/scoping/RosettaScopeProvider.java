@@ -300,12 +300,16 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	}
 	
 	@Override
+	protected List<ImportNormalizer> getImplicitImports(boolean ignoreCase) {
+		return List.of(createImportedNamespaceResolver(LIB_NAMESPACE + ".*", ignoreCase));
+	}
+	
+	@Override
 	protected List<ImportNormalizer> internalGetImportedNamespaceResolvers(EObject context, boolean ignoreCase) {
-		if (!(context instanceof RosettaModel)) {
+		if (!(context instanceof RosettaModel model)) {
 			return Collections.emptyList();
 		}
-		RosettaModel model = (RosettaModel) context;
-		List<ImportNormalizer> imports = new ArrayList<>();
+        List<ImportNormalizer> imports = new ArrayList<>();
 		model.getImports().forEach(imp -> {
 			var resolver = createImportedNamespaceResolver(imp.getImportedNamespace(), imp.getNamespaceAlias(), ignoreCase);
 			if (resolver != null) {
@@ -313,11 +317,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 			}
 		});
 		//This import allows two models with the same namespace to reference each other
-		String namespace = model.getName();
-		if (!namespace.equals(LIB_NAMESPACE)) {
-			imports.add(doCreateImportNormalizer(getQualifiedNameConverter().toQualifiedName(namespace), true, ignoreCase));
-		}
-		imports.add(createImportedNamespaceResolver(LIB_NAMESPACE + ".*", ignoreCase)); // TODO: add test to verify IResourceDescription#getImportedNames returns no duplicates with different qualified names
+		imports.add(doCreateImportNormalizer(getQualifiedNameConverter().toQualifiedName(model.getName()), true, ignoreCase));
 		return imports;
 	}
 
@@ -352,7 +352,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 		}
 	}
 
-	private ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, QualifiedName namespaceAlias,  boolean wildcard, boolean ignoreCase) {
+	private ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, QualifiedName namespaceAlias, boolean wildcard, boolean ignoreCase) {
 		if (namespaceAlias == null) {
 			return doCreateImportNormalizer(importedNamespace, wildcard, ignoreCase);
 		}

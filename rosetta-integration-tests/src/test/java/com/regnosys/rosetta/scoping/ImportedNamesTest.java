@@ -56,8 +56,10 @@ public class ImportedNamesTest {
                 qualifiedName("b.string"),
                 qualifiedName("b.x"),
                 qualifiedName("com.rosetta.model.a.f"),
-                qualifiedName("com.rosetta.model.string"),
-                qualifiedName("com.rosetta.model.x")
+                qualifiedName("com.rosetta.model.b.a.f"),
+                qualifiedName("com.rosetta.model.b.string"),
+                qualifiedName("com.rosetta.model.b.x"),
+                qualifiedName("com.rosetta.model.string")
         );
         
         var actual = Lists.newArrayList(importedNamesForModelB);

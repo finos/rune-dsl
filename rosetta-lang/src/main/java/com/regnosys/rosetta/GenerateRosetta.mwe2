@@ -68,9 +68,7 @@ Workflow {
 				// set to true to get a debug Grammar
 				debugGrammar = true
 			}
-			scopeProvider = ImportNamespacesScopingFragment2 {
-				generateStub = false
-			}
+			scopeProvider = ImportNamespacesScopingFragment2 {}
 			serializer = RosettaSerializerFragment {
 				generateStub = false
 			}
