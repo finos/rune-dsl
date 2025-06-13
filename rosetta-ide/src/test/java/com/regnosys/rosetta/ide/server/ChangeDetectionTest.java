@@ -282,9 +282,9 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		makeChange(nsA, 2, 0, "", "break me");
 		List<Diagnostic> issues = getDiagnostics().get(nsB);
-//
-//		assertIssues("Error [[3, 25] .. [3, 28]]: Couldn't resolve reference to RosettaSymbol 'a.Y'.\n" +
-//				"Error [[3, 32] .. [3, 33]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+
+		assertIssues("Error [[3, 25] .. [3, 28]]: Couldn't resolve reference to RosettaSymbol 'a.Y'.\n" +
+				"Error [[3, 32] .. [3, 33]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
 
 		makeChange(nsA, 2, 0, "break me", "");
 
