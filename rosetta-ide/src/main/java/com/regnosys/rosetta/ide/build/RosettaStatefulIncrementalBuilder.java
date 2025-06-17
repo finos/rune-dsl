@@ -29,13 +29,13 @@ import java.util.stream.Stream;
  * This class handles errors thrown during code generation and sends them back to the
  * client in the form of diagnostics.
  * 
- * It also supports turning on logging build statistics by setting an environment variable to `true`.
- * See {@code INCREMENTAL_BUILDER_STATISTICS_VARIABLE_NAME}.
+ * It also supports turning on logging of build statistics by setting an environment variable to `true`.
  * If enabled, for each build, it will log:
  * 1. At the start of the build, which files are dirty.
  * 2. At the end of the build, how many source files were validated, how many target files were generated or deleted,
  *    and whether the build actually finished. The latter may not be true if the build was canceled or an unexpected
  *    error occurred during the build.
+ * See {@code INCREMENTAL_BUILDER_STATISTICS_VARIABLE_NAME} for the name of the variable.
  */
 public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrementalBuilder {
     public static final String ISSUE_CODE = RosettaStatefulIncrementalBuilder.class.getName() + ".generationError";
