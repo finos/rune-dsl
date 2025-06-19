@@ -8,6 +8,12 @@ import org.eclipse.xtext.scoping.impl.IDelegatingScopeProvider;
 
 import java.util.Stack;
 
+/*
+ * Fix change detection when recursive scope provider calls are involved.
+ * The original implementation would nullify the `wrapper` of the scope provider after the call to a nested scope provider call
+ * - this implementation restores the previous `wrapper` by keeping track of recursive calls in a stack.
+ * TODO: contribute to Xtext
+ */
 public class RosettaLinkingService extends DefaultLinkingService {
     private final Stack<ImportedNamesAdapter> adapterStack = new Stack<>();
 
