@@ -136,7 +136,7 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 ## Get in touch with the Rune Team
 
- Get in touch with the Rune team by creating a [GitHub issue](https://github.com/REGnosys/rune-dsl/issues/new) and labelling it with "help wanted".
+ Get in touch with the Rune team by creating a [GitHub issue](https://github.com/finos/rune-dsl/issues/new) and labelling it with "help wanted".
 
  We encourage the community to get in touch via the [FINOS Slack](https://www.finos.org/blog/finos-announces-new-community-slack).
 
