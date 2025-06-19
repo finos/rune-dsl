@@ -1,8 +1,10 @@
 package com.regnosys.rosetta;
 
+import com.regnosys.rosetta.scoping.RosettaLinkingService;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.generator.IOutputConfigurationProvider;
+import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.parser.IEncodingProvider;
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService;
@@ -119,5 +121,10 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	public Class<? extends ResourceFormatterService> bindResourceFormatterService() {
 		return XtextResourceFormatter.class;
+	}
+	
+	@Override
+	public Class<? extends ILinkingService> bindILinkingService() {
+		return RosettaLinkingService.class;
 	}
 }
