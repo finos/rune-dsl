@@ -49,7 +49,7 @@ The Rune DSL comprises 2 components, both open-source:
 
 The [Rune DSL repository](https://github.com/finos/rune-dsl/) contains the definition of the language. It is based on the [Eclipe Modelling Framework](https://www.eclipse.org/modeling/emf/).
 
-The language components available in the Rune DSL and their syntax are detailed in the [Rune Modelling Components](https://docs.rosetta-technology.io/rosetta/rosetta-dsl/rosetta-modelling-component/) section of the documentation.
+The language components available in the Rune DSL and their syntax are detailed in the [Rune Modelling Components](https://docs.rosetta-technology.io/rosetta/rune-dsl/rune-modelling-component/) section of the documentation.
 
 A [demonstration model](https://github.com/rosetta-models/demo), also available in open source, provides a set of working examples of those modelling components. Snippets extracted from this model are being used to support the DSL documentation.
 
@@ -59,7 +59,7 @@ Code generators remove the need for software developers to translate the model s
 
 To make models agnostic to the technology platform in which they are being implemented, other code generators have been provided in a variety of languages. A separate [code generator repository](https://github.com/REGnosys/rosetta-code-generators), also open source, allows the community to create and share code generators in potentially any software language.
 
-The [Code Generator documentation](https://docs.rosetta-technology.io/rosetta/rosetta-dsl/rosetta-code-generators/) details the available code generators, the code generation mechanism and how to write and test one.
+The [Code Generator documentation](https://docs.rosetta-technology.io/rosetta/rune-dsl/rosetta-code-generators/) details the available code generators, the code generation mechanism and how to write and test one.
 
 ## Development setup
 
@@ -136,7 +136,7 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 ## Get in touch with the Rune Team
 
- Get in touch with the Rune team by creating a [GitHub issue](https://github.com/REGnosys/rosetta-dsl/issues/new) and labelling it with "help wanted".
+ Get in touch with the Rune team by creating a [GitHub issue](https://github.com/finos/rune-dsl/issues/new) and labelling it with "help wanted".
 
  We encourage the community to get in touch via the [FINOS Slack](https://www.finos.org/blog/finos-announces-new-community-slack).
 

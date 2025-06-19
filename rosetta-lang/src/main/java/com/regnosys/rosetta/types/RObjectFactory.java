@@ -177,6 +177,9 @@ public class RObjectFactory {
 				card, attr.getRuleReferences(), attr.getLabels(), attr);
 	}
 	public RCardinality buildRCardinality(RosettaCardinality card) {
+		if (card == null) {
+			return RCardinality.OPTIONAL;
+		}
 		if (card.isUnbounded()) {
 			if (card.getInf() == 0) {
 				return RCardinality.UNBOUNDED;

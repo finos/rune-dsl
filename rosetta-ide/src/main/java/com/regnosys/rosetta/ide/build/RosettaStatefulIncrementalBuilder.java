@@ -105,9 +105,9 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
     }
     private void logBuildStatistics(@Nullable IncrementalBuilder.Result buildResult) {
         if (buildResult == null) {
-            LOGGER.info("Build did not finish - validated {} files, generated {} files, deleted {} files", sourceFilesValidated, targetFilesGenerated, targetFilesDeleted);
+            LOGGER.info("Build STOPPED  - validated {} files, generated {} files, deleted {} files", sourceFilesValidated, targetFilesGenerated, targetFilesDeleted);
         } else {
-            LOGGER.info("Build finished - validated {} files, generated {} files, deleted {} files", sourceFilesValidated, targetFilesGenerated, targetFilesDeleted);
+            LOGGER.info("Build FINISHED - validated {} files, generated {} files, deleted {} files", sourceFilesValidated, targetFilesGenerated, targetFilesDeleted);
         }
     }
     
