@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class RosettaConfigurationFileProvider implements Provider<URL>, javax.inject.Provider<URL> {
-    public static final String DEFAULT_FILE_NAME = "rosetta-config.yml";
+    public static final String FILE_NAME = "rosetta-config.yml";
     private final String fileName;
     private final boolean loadFromClasspath;
 
@@ -19,7 +19,7 @@ public class RosettaConfigurationFileProvider implements Provider<URL>, javax.in
 
     @Inject
     public RosettaConfigurationFileProvider() {
-        this(true, DEFAULT_FILE_NAME);
+        this(true, FILE_NAME);
     }
 
     private RosettaConfigurationFileProvider(boolean loadFromClasspath, String fileName) {
