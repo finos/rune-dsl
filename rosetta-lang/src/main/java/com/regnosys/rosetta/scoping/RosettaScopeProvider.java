@@ -67,12 +67,13 @@ import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
+
 import com.regnosys.rosetta.RosettaEcoreUtil;
 
 /**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
+ * This class contains a custom scoping description.
+ * <p>
+ * See <a href="https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping">Xtext docs</a>
  * on how and when to use it.
  */
 public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
@@ -148,10 +149,10 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 				if (context instanceof Operation op) {
 					var receiverType = typeProvider.getRTypeOfSymbol(op.getAssignRoot());
 					
-					// All features accessible from reciever type including meta attributes
+					// All features accessible from receiver type including meta attributes
 					var features = ecoreUtil.allFeatures(receiverType, context, t -> !(t instanceof REnumType));
 					
-					// We also want to allow the scope provider to return the meta for type of the attribute (e.g. metatda key)
+					// We also want to allow the scope provider to return the meta for the type of the attribute (e.g., metadata key)
 					if (receiverType.getRType() instanceof RDataType) {
 						features = Iterables.concat(features, ecoreUtil.getMetaDescriptions(((RDataType)receiverType.getRType()).getMetaAttributes(), context));
 					}
@@ -205,25 +206,23 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					}
 					
 					var inline = EcoreUtil2.getContainerOfType(context, InlineFunction.class);
-					if(inline != null) {
-						var ps = getSymbolParentScope(context, reference, IScope.NULLSCOPE);
+					if (inline != null) {
+						var ps = getSymbolParentScope(context, reference);
 						return ReversedSimpleScope.scopeFor(
 							implicitFeatures,
 							ps
 						);
 					}
 					var container = EcoreUtil2.getContainerOfType(context, Function.class);
-					if(container != null) {
-						var ps = filteredScope(getSymbolParentScope(context, reference, IScope.NULLSCOPE), descr ->
-							!descr.getEClass().equals(DATA)
-						);
+					if (container != null) {
+						var ps = getSymbolParentScope(context, reference);
 						return ReversedSimpleScope.scopeFor(
 							implicitFeatures,
 							ps
 						);
 					}
 					
-					var ps = getSymbolParentScope(context, reference, defaultScope(context, reference));
+					var ps = getSymbolParentScope(context, reference);
 					return ReversedSimpleScope.scopeFor(
 						implicitFeatures,
 						ps
@@ -358,21 +357,35 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 		}
 		return new AliasAwareImportNormalizer(importedNamespace, namespaceAlias, wildcard, ignoreCase);
 	}
-
-	private IScope defaultScope(EObject object, EReference reference) {
-		return filteredScope(super.getScope(object, reference), it -> !it.getEClass().equals(FUNCTION_DISPATCH));
+	
+	@Override
+	protected ImportNormalizer doCreateImportNormalizer(QualifiedName importedNamespace, boolean wildcard, boolean ignoreCase) {
+		return new PatchedImportNormalizer(importedNamespace, wildcard, ignoreCase);
 	}
 
-	private IScope getSymbolParentScope(EObject object, EReference reference, IScope outer) { // TODO: remove outer
+	private IScope defaultScope(EObject object, EReference reference) {
+		return super.getScope(object, reference);
+	}
+	
+	@Override
+	protected IScope getLocalElementsScope(IScope parent, final EObject context,
+										   final EReference reference) {
+		IScope localElementsScope = super.getLocalElementsScope(parent, context, reference);
+		if (context instanceof RosettaModel model) {
+			localElementsScope = Scopes.scopeFor(Iterables.filter(model.getElements(), elem -> reference.getEReferenceType().isSuperTypeOf(elem.eClass()) && !(elem instanceof FunctionDispatch)), localElementsScope);
+		}
+		return localElementsScope;
+	}
+
+	private IScope getSymbolParentScope(EObject object, EReference reference) {
 		if (object.eContainer() == null) {
 			return defaultScope(object, reference);
 		}
-		var parentScope = getSymbolParentScope(object.eContainer(), reference, outer);
+		var parentScope = getSymbolParentScope(object.eContainer(), reference);
 		if (object instanceof InlineFunction inlFunc) {
 			return Scopes.scopeFor(inlFunc.getParameters(), parentScope);
 		} else if (object instanceof Function func) {
-			List<EObject> features = new ArrayList<>();
-			features.addAll(functionExtensions.getInputs(func));
+            List<EObject> features = new ArrayList<>(functionExtensions.getInputs(func));
 			var out = functionExtensions.getOutput(func);
 			if (out != null)
 				features.add(out);
@@ -383,9 +396,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 		} else if (object instanceof RosettaTypeAlias ta) {
 			return Scopes.scopeFor(ta.getParameters(), parentScope);
 		} else if (object instanceof Condition c) {
-			return filteredScope(parentScope, descr -> c.isPostCondition() || !descr.getEObjectOrProxy().eContainingFeature().equals(FUNCTION__OUTPUT));
-		} else if (object instanceof RosettaModel) {
-			return filteredScope(defaultScope(object, reference), descr -> List.of(DATA, ROSETTA_ENUMERATION, FUNCTION, ROSETTA_EXTERNAL_FUNCTION, ROSETTA_RULE).contains(descr.getEClass()));
+			return filteredScope(parentScope, descr -> c.isPostCondition() || descr.getEObjectOrProxy().eContainingFeature() != FUNCTION__OUTPUT);
 		}
 		return parentScope;
 	}

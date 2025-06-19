@@ -3,13 +3,13 @@ package com.regnosys.rosetta.scoping;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
 
-public class AliasAwareImportNormalizer extends ImportNormalizer {	
+public class AliasAwareImportNormalizer extends PatchedImportNormalizer {	
 	private final ImportNormalizer aliasNormalizer;
 
 	public AliasAwareImportNormalizer(QualifiedName importedNamespace, QualifiedName namespaceAlias, boolean wildCard,
 			boolean ignoreCase) {
 		super(importedNamespace, wildCard, ignoreCase);
-		this.aliasNormalizer = new ImportNormalizer(namespaceAlias, wildCard, ignoreCase);
+		this.aliasNormalizer = new PatchedImportNormalizer(namespaceAlias, wildCard, ignoreCase);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 	@Override
 	public String toString() {
 		return getImportedNamespacePrefix().toString() + (hasWildCard() ? ".*" : "")
-				+ "as " + aliasNormalizer.getImportedNamespacePrefix();
+				+ " as " + aliasNormalizer.getImportedNamespacePrefix();
 	}
 
 	@Override
@@ -51,14 +51,16 @@ public class AliasAwareImportNormalizer extends ImportNormalizer {
 			return true;
 		if (obj == null)
 			return false;
-		if (super.equals(obj) == false) {
+		if (getClass() != obj.getClass())
 			return false;
+		AliasAwareImportNormalizer other = (AliasAwareImportNormalizer)obj;
+		if (other.hasWildCard() != hasWildCard() || other.isIgnoreCase() != isIgnoreCase())
+			return false;
+		if (!aliasNormalizer.equals(other.aliasNormalizer))
+			return false;
+		if (isIgnoreCase()) {
+			return other.getImportedNamespacePrefix().equalsIgnoreCase(getImportedNamespacePrefix());
 		}
-		if (obj instanceof AliasAwareImportNormalizer) {
-			AliasAwareImportNormalizer other = (AliasAwareImportNormalizer) obj;
-			return other.aliasNormalizer.equals(aliasNormalizer);
-		}
-		return false;
+		return other.getImportedNamespacePrefix().equals(getImportedNamespacePrefix());
 	}
-
 }
