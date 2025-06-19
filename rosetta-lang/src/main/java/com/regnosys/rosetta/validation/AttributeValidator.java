@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation;
 
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
@@ -12,7 +13,6 @@ import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.rosetta.simple.Data;
-import com.regnosys.rosetta.rules.RuleComputationCache;
 import com.regnosys.rosetta.rules.RulePathMap;
 import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.rules.RuleResult;
@@ -41,6 +41,8 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	private TypeSystem typeSystem;
 	@Inject
 	private RuleReferenceService ruleService;
+	@Inject
+	private RBuiltinTypeService builtins;
 	
 	@Check
 	public void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
@@ -59,9 +61,8 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 		if (attrType instanceof RChoiceType) {
 			attrType = ((RChoiceType)attrType).asRDataType();
 		}
-		if (attrType instanceof RDataType) {
-			RDataType attrDataType = (RDataType) attrType;
-			if (ecoreUtil.hasReferenceAnnotation(attr) 
+		if (attrType instanceof RDataType attrDataType) {
+            if (ecoreUtil.hasReferenceAnnotation(attr) 
 					&& !(attrDataType.hasMetaAttribute("key") || attrDataType.getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute("key")))) {
 				// TODO: make error instead
 				warning(attrDataType.getName() + " must be annotated with [metadata key] as reference annotation is used", attr,
@@ -85,7 +86,7 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					// Check types
 					RMetaAnnotatedType overriddenType = attribute.getRMetaAnnotatedType();
 					RMetaAnnotatedType parentAttrType = parentAttribute.getRMetaAnnotatedType();
-					if (!typeSystem.isSubtypeOf(overriddenType, parentAttrType)) {
+					if (!typeSystem.isSubtypeOf(overriddenType, parentAttrType) && !builtins.NOTHING.equals(parentAttrType.getRType())) {
 						error("The overridden type should be a subtype of the parent type " + parentAttrType, attr, ROSETTA_TYPED__TYPE_CALL);
 					}
 					// Check cardinality
@@ -94,8 +95,7 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 					}
 					// Check inherited rule references are compatible
 					if (!overriddenType.equals(parentAttrType) || !attribute.getCardinality().equals(parentAttribute.getCardinality())) {
-						RuleComputationCache map = new RuleComputationCache();
-						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute, map);
+						RulePathMap ruleMap = ruleService.computeRulePathMap(attribute);
 						Map<List<String>, RuleResult> inheritedRules = ruleMap.getInheritedRules();
 						inheritedRules.forEach((path, ruleResult) -> {
 							RosettaRule rule = ruleResult.getRule();
