@@ -54,11 +54,9 @@ public class ImportedNamesTest {
                 qualifiedName("a.f"),
                 qualifiedName("b.a.f"),
                 qualifiedName("b.string"),
-                qualifiedName("b.x"),
                 qualifiedName("com.rosetta.model.a.f"),
                 qualifiedName("com.rosetta.model.b.a.f"),
                 qualifiedName("com.rosetta.model.b.string"),
-                qualifiedName("com.rosetta.model.b.x"),
                 qualifiedName("com.rosetta.model.string")
         );
         
