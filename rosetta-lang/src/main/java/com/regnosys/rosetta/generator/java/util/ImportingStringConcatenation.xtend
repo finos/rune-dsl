@@ -18,7 +18,7 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	Map<DottedPath, DottedPath> imports = newHashMap
 	Map<DottedPath, DottedPath> staticImports = newHashMap
 	
-	JavaStatementScope scope;
+	JavaFileScope scope;
 		
 	new(JavaStatementScope topScope) {
 		this.scope = topScope;

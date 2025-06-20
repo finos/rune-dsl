@@ -20,9 +20,9 @@ public class JavaGlobalScope extends AbstractJavaScope<JavaGlobalScope> {
 		super("Global Java scope");
 	}
 	
-	public JavaClassScope createClassScopeAndIdentifier(JavaTypeDeclaration<?> clazz) {
+	public JavaClassScope createClassScopeAndRegisterIdentifier(JavaTypeDeclaration<?> clazz) {
 		JavaPackageScope packageScope = getOrCreatePackageScope(clazz.getPackageName());
-		return packageScope.createClassScope(clazz);
+		return packageScope.createClassScopeAndRegisterIdentifier(clazz);
 	}
 	
 	@Override

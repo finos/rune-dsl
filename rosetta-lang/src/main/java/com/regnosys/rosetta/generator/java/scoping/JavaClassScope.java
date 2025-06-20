@@ -16,11 +16,12 @@ public class JavaClassScope extends AbstractJavaScope<AbstractJavaScope<?>> {
 		this.superClassScope = superClassScope;
 	}
 
-	public JavaStatementScope methodScope(String methodName) {
-		return childScope("Method[" + methodName + "]");
+	public JavaMethodScope methodScope(Object methodKey, String methodName) {
+		this.createIdentifier(methodKey, methodName);
+		return new JavaMethodScope(methodName, this);
 	}
-	private JavaStatementScope childScope(String description) {
-		return new JavaStatementScope(description, this);
+	public JavaMethodScope methodOverrideScope(Object methodKey) {
+		return new JavaMethodScope(this.getIdentifierOrThrow(methodKey).getDesiredName(), this);
 	}
 
 	@Override

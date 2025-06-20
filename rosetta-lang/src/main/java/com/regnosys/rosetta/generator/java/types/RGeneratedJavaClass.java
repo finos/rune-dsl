@@ -28,6 +28,9 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 	public static <U> RGeneratedJavaClass<? extends U> create(JavaPackageName packageName, String simpleName, TypeReference<U> supertypeRef) {
 		return new SimpleGeneratedJavaClass<>(packageName, simpleName, supertypeRef);
 	}
+	public static <U> RGeneratedJavaClass<? extends U> create(JavaPackageName packageName, String simpleName, JavaClass<U> superclass) {
+		return new SimpleGeneratedJavaClass<>(packageName, simpleName, superclass);
+	}
 
 	@Override
 	public boolean isSubtypeOf(JavaType other) {
@@ -80,6 +83,9 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 	private static class SimpleGeneratedJavaClass<U> extends RGeneratedJavaClass<U> {		
 		private final Type supertype;
 		private final Class<? super U> rawSupertype;
+		
+		private JavaTypeDeclaration<? super U> superclassDeclaration;
+		private JavaClass<? super U> superclass;
 
 		private SimpleGeneratedJavaClass(JavaPackageName packageName, String simpleName, Type supertype, Class<? super U> rawSupertype) {
 			super(packageName, simpleName);
@@ -92,36 +98,49 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 		public SimpleGeneratedJavaClass(JavaPackageName packageName, String simpleName, TypeReference<U> supertypeRef) {
 			this(packageName, simpleName, supertypeRef.getType(), JavaParameterizedType.extractRawClass(supertypeRef.getType()));
 		}
+		public SimpleGeneratedJavaClass(JavaPackageName packageName, String simpleName, JavaClass<? super U> superclass) {
+			super(packageName, simpleName);
+			this.supertype = null;
+			this.rawSupertype = null;
+			this.superclassDeclaration = superclass;
+			this.superclass = superclass;
+		}
 
 		@Override
 		public JavaTypeDeclaration<? super U> getSuperclassDeclaration() {
-			if (rawSupertype.isInterface()) {
+			if (rawSupertype != null && rawSupertype.isInterface()) {
 				return JavaClass.OBJECT;
 			}
-			return JavaTypeDeclaration.from(rawSupertype);
+			if (superclassDeclaration == null) {
+				superclassDeclaration = JavaTypeDeclaration.from(rawSupertype);
+			}
+			return superclassDeclaration;
 		}
 		
 		@SuppressWarnings("unchecked")
 		@Override
 		public JavaClass<? super U> getSuperclass() {
-			if (rawSupertype.isInterface()) {
+			if (rawSupertype != null && rawSupertype.isInterface()) {
 				return JavaClass.OBJECT;
 			}
-			return (JavaClass<? super U>) JavaClass.from(supertype, Collections.emptyMap());
+			if (superclass == null) {
+				superclass = (JavaClass<? super U>) JavaClass.from(supertype, Collections.emptyMap());
+			}
+			return superclass;
 		}
 		
 		@Override
 		public List<JavaTypeDeclaration<?>> getInterfaceDeclarations() {
-			if (rawSupertype.isInterface()) {
-				return Arrays.asList(JavaTypeDeclaration.from(rawSupertype));
+			if (rawSupertype != null && rawSupertype.isInterface()) {
+				return Collections.singletonList(JavaTypeDeclaration.from(rawSupertype));
 			}
 			return Collections.emptyList();
 		}
 		
 		@Override
 		public List<JavaClass<?>> getInterfaces() {
-			if (rawSupertype.isInterface()) {
-				return Arrays.asList(JavaClass.from(supertype, Collections.emptyMap()));
+			if (rawSupertype != null && rawSupertype.isInterface()) {
+				return Collections.singletonList(JavaClass.from(supertype, Collections.emptyMap()));
 			}
 			return Collections.emptyList();
 		}
