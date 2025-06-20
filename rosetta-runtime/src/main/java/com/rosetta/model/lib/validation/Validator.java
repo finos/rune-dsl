@@ -53,8 +53,13 @@ public interface Validator<T> {
 	}
 	
 	/**
-	 * This method is purely here to remain backwards compatible and will be removed in the future.
+	 * These methods are purely here to remain backwards compatible and will be removed in the future.
 	 */
+	@SuppressWarnings("unchecked")
+	@Deprecated
+	default List<ValidationResult<?>> getValidationResults(RosettaPath path, RosettaModelObject objectToBeValidated) {
+		return getValidationResults(path, (T)objectToBeValidated);
+	}
 	@SuppressWarnings("unchecked")
 	@Deprecated
 	default ValidationResult<T> validate(RosettaPath path, RosettaModelObject objectToBeValidated) {
