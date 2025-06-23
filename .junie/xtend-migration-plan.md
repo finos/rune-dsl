@@ -18,7 +18,7 @@ When migrating Xtend code to Java, follow these principles:
 
 ### Prerequisites
 1. Take into account all guidelines as written in the migration plan.
-2. Read the Xtend documentation located in the xtend-website folder.
+2. Read the Xtend documentation located in the xtend-docs folder.
 3. Analyze existing Java code to find best practices and coding style.
 
 ### Migration Process
