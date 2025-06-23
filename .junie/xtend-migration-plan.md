@@ -13,7 +13,6 @@ When migrating Xtend code to Java, follow these principles:
 5. Test thoroughly after migration to ensure functionality is preserved.
 6. When you fail to migrate a method/test, indicate this in a comment at the top of the file, and add a note in the migration plan to highlight this.
 7. When failing to migrate a method/test, add the original Xtend source code of that method or test as a comment inside the migrated method.
-8. When migrating tests, run the tests before the migration and note down the number of tests it runs. Add it as a note in the migration plan. Once done with the migration, verify that the number of tests has not changed.
 
 ## Step-by-Step Migration Guide for AI
 
@@ -37,6 +36,17 @@ To migrate a test file, perform the following steps:
 10. Verify that the number of tests that ran is the same as noted down before. If not, make a note of it in the migration plan.
 11. Delete the Xtend source file.
 12. Tick off the file in the migration plan.
+
+To migrate a non-test file, perform the following steps:
+
+1. Look at the Xtend source code of the class to migrate.
+2. Look at the corresponding generated Java code under xtend-gen.
+3. Create a Java version of the class (the resulting code should look as closely as possible to the original Xtend code).
+4. Remove the generated Java file to make sure there is no duplicate classes.
+5. Review the resulting Java file and make sure that all methods of the original Xtend file are still present.
+6. Delete the Xtend source file.
+7. Tick off the file in the migration plan. If you failed to migrate anything, make a note of it.
+
 
 ## Files to Migrate
 
