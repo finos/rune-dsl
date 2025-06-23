@@ -6,11 +6,37 @@ This document outlines the plan for migrating Xtend code to Java in the rune-dsl
 
 When migrating Xtend code to Java, follow these principles:
 
-1. The generated Java code from an Xtend file can be used to understand the semantics, but the goal is to rewrite in idiomatic Java.
+1. The generated Java code from an Xtend file should only be used as inspiration. The resulting Java code should use best practices such as meaningful variable names and using triple quote multiline strings instead of hard-to-read string builder patterns.
 2. Avoid using Xtend-specific libraries in the migrated Java code.
-3. Use modern Java features (streams, lambdas) instead of Xtend-specific constructs like extension methods.
+3. Replace Xtend-specific libraries and extension methods with Java's standard operations such as streams and lambdas.
 4. Pay special attention to string templates (triple quotes) as they require careful migration.
 5. Test thoroughly after migration to ensure functionality is preserved.
+6. When you fail to migrate a method/test, indicate this in a comment at the top of the file, and add a note in the migration plan to highlight this.
+7. When failing to migrate a method/test, add the original Xtend source code of that method or test as a comment inside the migrated method.
+8. When migrating tests, run the tests before the migration and note down the number of tests it runs. Add it as a note in the migration plan. Once done with the migration, verify that the number of tests has not changed.
+
+## Step-by-Step Migration Guide for AI
+
+### Prerequisites
+1. Take into account all guidelines as written in the migration plan.
+2. Read the Xtend documentation located in the xtend-website folder.
+3. Analyze existing Java code to find best practices and coding style.
+
+### Migration Process
+To migrate a test file, perform the following steps:
+
+1. Run the generated Java test and note down the number of tests it ran in the migration plan.
+2. Look at the Xtend source code of the test to migrate.
+3. Look at the corresponding generated Java code under xtend-gen.
+4. Create a Java version of the test (the resulting code should look as closely as possible to the original Xtend code).
+5. Remove the generated Java file to make sure there is no duplicate classes.
+6. Run the new Java test.
+7. Try to fix failing tests.
+8. Rerun and try to fix failing tests once more.
+9. If you do not succeed, copy the original Xtend source code of the test as a comment in the migrated method, highlight this with a comment at the top of the file, and add a note to the migration plan.
+10. Verify that the number of tests that ran is the same as noted down before. If not, make a note of it in the migration plan.
+11. Delete the Xtend source file.
+12. Tick off the file in the migration plan.
 
 ## Files to Migrate
 
@@ -74,10 +100,10 @@ No project files to migrate.
 - [ ] RosettaFragmentProviderTest
 - [ ] RosettaExpressionsTest
 - [ ] ExpressionParserTest
-- [ ] RosettaTypeProviderXtendTest
-- [ ] SubtypeRelationTest
-- [ ] ChoiceValidatorTest
-- [ ] EnumValidatorTest
+- [x] RosettaTypeProviderXtendTest
+- [x] SubtypeRelationTest
+- [x] ChoiceValidatorTest
+- [x] EnumValidatorTest
 - [ ] RosettaValidatorTest
 - [ ] TypeValidatorTest
 
