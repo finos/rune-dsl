@@ -7,7 +7,7 @@ This document outlines the plan for migrating Xtend code to Java in the rune-dsl
 When migrating Xtend code to Java, follow these principles:
 
 1. The generated Java code from an Xtend file should only be used as inspiration. The resulting Java code should use best practices such as meaningful variable names and using triple quote multiline strings instead of hard-to-read string builder patterns.
-2. Avoid using Xtend-specific libraries in the migrated Java code.
+2. Avoid using Xtend-specific libraries in the migrated Java code. Remove annotations such as `@Extension`.
 3. Replace Xtend-specific libraries and extension methods with Java's standard operations such as streams and lambdas.
 4. Pay special attention to string templates (triple quotes) as they require careful migration.
 5. Test thoroughly after migration to ensure functionality is preserved.
@@ -110,7 +110,7 @@ No project files to migrate.
 - [ ] RosettaFragmentProviderTest
 - [ ] RosettaExpressionsTest
 - [ ] ExpressionParserTest
-- [x] RosettaTypeProviderXtendTest
+- [ ] RosettaTypeProviderXtendTest
 - [x] SubtypeRelationTest
 - [x] ChoiceValidatorTest
 - [x] EnumValidatorTest

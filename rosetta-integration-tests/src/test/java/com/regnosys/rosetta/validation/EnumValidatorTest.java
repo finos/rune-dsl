@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
-import org.eclipse.xtext.xbase.lib.Extension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -17,11 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class EnumValidatorTest implements RosettaIssueCodes {
     @Inject
-    @Extension
     private ValidationTestHelper validationTestHelper;
 
     @Inject
-    @Extension
     private ModelHelper modelHelper;
 
     @Test
@@ -91,7 +88,7 @@ public class EnumValidatorTest implements RosettaIssueCodes {
             func Foo:
                 output:
                     result TestEnumDeprecated (1..1)
-                
+            
                 set result:
                     TestEnumDeprecated -> ONE
             """);
@@ -113,7 +110,7 @@ public class EnumValidatorTest implements RosettaIssueCodes {
             func Foo:
                 output:
                     result TestEnumDeprecated (1..1)
-                
+            
                 set result:
                     TestEnumDeprecated -> ONE
             """);

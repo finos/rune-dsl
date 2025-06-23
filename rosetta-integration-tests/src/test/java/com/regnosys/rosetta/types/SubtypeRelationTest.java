@@ -10,11 +10,9 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RStringType;
 import java.util.Collections;
-import java.util.List;
 import javax.inject.Inject;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.eclipse.xtext.xbase.lib.Extension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,27 +21,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class SubtypeRelationTest {
     @Inject
-    @Extension
     private SubtypeRelation subtypeRelation;
 
     @Inject
-    @Extension
     private ModelHelper modelHelper;
 
     @Inject
-    @Extension
     private RObjectFactory rObjectFactory;
 
     @Inject
-    @Extension
     private ExpressionParser expressionParser;
 
     @Inject
-    @Extension
     private RosettaTypeProvider rosettaTypeProvider;
 
     @Inject
-    @Extension
     private RBuiltinTypeService builtinTypeService;
 
     private Data getData(RosettaModel model, String name) {
@@ -72,7 +64,6 @@ public class SubtypeRelationTest {
             type B extends A:
             
             type C extends A:
-                
             """);
 
         RMetaAnnotatedType fieldBType = rosettaTypeProvider.getRTypeOfSymbol(expressionParser.parseAttribute("""
@@ -107,8 +98,8 @@ public class SubtypeRelationTest {
             """));
 
         RMetaAnnotatedType result = subtypeRelation.join(fieldA, fieldB);
-        Assertions.assertTrue(result.getRType() instanceof RStringType);
-        RMetaAttribute resultMetaAttribute = result.getMetaAttributes().get(0);
+        Assertions.assertInstanceOf(RStringType.class, result.getRType());
+        RMetaAttribute resultMetaAttribute = result.getMetaAttributes().getFirst();
         Assertions.assertEquals("scheme", resultMetaAttribute.getName());
         Assertions.assertEquals(builtinTypeService.UNCONSTRAINED_STRING, resultMetaAttribute.getRType());
     }
