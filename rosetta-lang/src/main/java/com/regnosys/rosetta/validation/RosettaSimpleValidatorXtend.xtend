@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.validation
 
-import com.google.common.collect.HashMultimap
+/*import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
@@ -1160,3 +1160,4 @@ class RosettaSimpleValidatorXtend extends AbstractDeclarativeRosettaValidator {
 		}
 	}
 }
+*/
