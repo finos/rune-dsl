@@ -49,7 +49,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				func Foo:
 					[projection]
 				""", """
-                ERROR (null) 'The `projection` annotation must have a target format such as JSON or XML' at 5:6, length 10, on AnnotationRef
+                ERROR (null) 'The `projection` annotation must have a target format such as JSON or XML' at 5:3, length 10, on AnnotationRef
                 """);
     }
 
@@ -67,7 +67,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				func Foo:
 					[ingest]
 				""", """
-                ERROR (null) 'The `ingest` annotation must have a source format such as JSON or XML' at 5:2, length 6, on AnnotationRef
+                ERROR (null) 'The `ingest` annotation must have a source format such as JSON or XML' at 5:3, length 6, on AnnotationRef
                 """);
     }
 
@@ -78,7 +78,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					[ingest JSON]
 					[enrich]
 				""", """
-                ERROR (null) 'Only one transform annotation allowed.' at 6:1, length 8, on AnnotationRef
+                ERROR (null) 'Only one transform annotation allowed.' at 6:2, length 8, on AnnotationRef
                 """);
     }
 
@@ -2231,19 +2231,17 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void enumSynonymWithPatternShouldBeValid() {
         var model = modelHelper.parseRosetta("""
-                enum Enumerate : X Y Z
+				enum Enumerate : X Y Z
 
-                synonym source TEST_Base
-                synonym source TEST extends TEST_Base {
+				synonym source TEST_Base
+				synonym source TEST extends TEST_Base {
+					enums
 
-                    enums
-
-                    Enumerate:
-                    + X
-                            [value "bar" pattern "([A-Z)" "$1"]
-                }
-
-                """);
+					Enumerate:
+						+ X
+							[value "bar" pattern "([A-Z)" "$1"]
+				}
+				""");
         validationTestHelper.assertError(model, ROSETTA_ENUM_SYNONYM, null,
                 """
                         Pattern to match must be a valid regular expression - Unclosed character class near index 5
@@ -2254,90 +2252,89 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldGenerateRuleCardinalityWarning() {
         var model = modelHelper.parseRosetta("""
-                   body Authority TEST_REG
-                   corpus TEST_REG MiFIR
+				body Authority TEST_REG
+				corpus TEST_REG MiFIR
 
-                   report TEST_REG MiFIR in T+1
-                   from Bar
-                   when FooRule
-                   with type BarReport
+				report TEST_REG MiFIR in T+1
+				from Bar
+				when FooRule
+				with type BarReport
 
-                   eligibility rule FooRule from Bar:
-                   filter bar1 exists
+				eligibility rule FooRule from Bar:
+				filter bar1 exists
 
-                   reporting rule Aa from Bar:
-                   extract bar1 as "A"
+				reporting rule Aa from Bar:
+				extract bar1 as "A"
 
-                   type Bar:
-                   bar1 string (0..*)
+				type Bar:
+				bar1 string (0..*)
 
-                   type BarReport:
-                   aa string (1..1)
-                [ruleReference Aa]
-                """);
+				type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+				""");
         validationTestHelper.assertWarning(model, RULE_REFERENCE_ANNOTATION, null, "Expected single cardinality, but rule has multi cardinality");
     }
 
     @Test
     void shouldGenerateRuleTypeError() {
         var model = modelHelper.parseRosetta("""
-                   body Authority TEST_REG
-                   corpus TEST_REG MiFIR
+				body Authority TEST_REG
+				corpus TEST_REG MiFIR
 
-                   report TEST_REG MiFIR in T+1
-                   from Bar
-                   when FooRule
-                   with type BarReport
+				report TEST_REG MiFIR in T+1
+				from Bar
+				when FooRule
+				with type BarReport
 
-                   eligibility rule FooRule from Bar:
-                   filter barA exists
+				eligibility rule FooRule from Bar:
+				filter barA exists
 
-                   reporting rule Aa from Bar:
-                   extract barA as "A"
+				reporting rule Aa from Bar:
+				extract barA as "A"
 
-                   reporting rule Bb from Bar:
-                   extract barB as "B"
+				reporting rule Bb from Bar:
+				extract barB as "B"
 
-                   reporting rule Cc from Bar:
-                   extract barC as "C"
+				reporting rule Cc from Bar:
+				extract barC as "C"
 
-                   reporting rule Dd from Bar:
-                   extract barD as "D"
+				reporting rule Dd from Bar:
+				extract barD as "D"
 
-                   reporting rule Ee from Bar:
-                   extract barE as "E"
+				reporting rule Ee from Bar:
+				extract barE as "E"
 
-                   reporting rule Ff from Bar:
-                   extract barF as "F"
+				reporting rule Ff from Bar:
+				extract barF as "F"
 
-                   type Bar:
-                   barA date (0..1)
-                   barB time (0..1)
-                   barC zonedDateTime (0..1)
-                   barD int (0..1)
-                   barE number (0..1)
-                   barF BazEnum (0..1)
+				type Bar:
+				barA date (0..1)
+				barB time (0..1)
+				barC zonedDateTime (0..1)
+				barD int (0..1)
+				barE number (0..1)
+				barF BazEnum (0..1)
 
-                   enum BazEnum:
-                   X
-                           Y
-                   Z
+				enum BazEnum:
+				X
+				Y
+				Z
 
-                   type BarReport:
-                   aa string (1..1)
-                [ruleReference Aa]
-                   bb string (1..1)
-                [ruleReference Bb]
-                   cc string (1..1)
-                [ruleReference Cc]
-                   dd string (1..1)
-                [ruleReference Dd]
-                   ee string (1..1)
-                [ruleReference Ee]
-                   ff string (1..1)
-                [ruleReference Ff]
-
-                """);
+				type BarReport:
+				aa string (1..1)
+					[ruleReference Aa]
+				bb string (1..1)
+					[ruleReference Bb]
+				cc string (1..1)
+					[ruleReference Cc]
+				dd string (1..1)
+					[ruleReference Dd]
+				ee string (1..1)
+					[ruleReference Ee]
+				ff string (1..1)
+					[ruleReference Ff]
+				""");
         validationTestHelper.assertError(model, RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type date");
         validationTestHelper.assertError(model, RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type time");
         validationTestHelper.assertError(model, RULE_REFERENCE_ANNOTATION, null, "Expected type string, but rule has type zonedDateTime");
@@ -2349,28 +2346,28 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateRuleTypeErrorUsingReturn() {
         var model = modelHelper.parseRosetta("""
-                   body Authority TEST_REG
-                   corpus TEST_REG MiFIR
+				body Authority TEST_REG
+				corpus TEST_REG MiFIR
 
-                   report TEST_REG MiFIR in T+1
-                   from Bar
-                   when FooRule
-                   with type BarReport
+				report TEST_REG MiFIR in T+1
+				from Bar
+				when FooRule
+				with type BarReport
 
-                   eligibility rule FooRule from Bar:
-                   filter bar1 exists
+				eligibility rule FooRule from Bar:
+				filter bar1 exists
 
-                   reporting rule A from Bar:
-                   "Not Modelled"
-                   as "A"
+				reporting rule A from Bar:
+				"Not Modelled"
+				as "A"
 
-                   type Bar:
-                   bar1 string (0..1)
+				type Bar:
+				bar1 string (0..1)
 
-                   type BarReport:
-                   a string (1..1)
-                [ruleReference A]
-                """);
+				type BarReport:
+				a string (1..1)
+					[ruleReference A]
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2378,23 +2375,23 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateCountCardinalityErrorForExtract() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foos Foo (0..*)
+				type Bar:
+					foos Foo (0..*)
 
-                type Foo:
-                attr string (1..1)
+				type Foo:
+					attr string (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                fooCounts int (0..*)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						fooCounts int (0..*)
 
-                add fooCounts:
-                bars
-                extract bar [ bar -> foos ]
-                then extract foosItem [ foosItem count ]
-                """);
+					add fooCounts:
+						bars
+						extract bar [ bar -> foos ]
+						then extract foosItem [ foosItem count ]
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2402,23 +2399,23 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateCountCardinalityErrorDefaultParameterForExtract() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foos Foo (0..*)
+				type Bar:
+					foos Foo (0..*)
 
-                type Foo:
-                attr string (1..1)
+				type Foo:
+					attr string (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                fooCounts int (0..*)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						fooCounts int (0..*)
 
-                add fooCounts:
-                bars
-                extract item -> foos
-                then extract item count
-                """);
+					add fooCounts:
+						bars
+						extract item -> foos
+						then extract item count
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2426,25 +2423,25 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateCountCardinalityErrorForNestedExtract() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foos Foo (0..*)
+				type Bar:
+					foos Foo (0..*)
 
-                type Foo:
-                amount number (1..1)
+				type Foo:
+					amount number (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                result boolean (1..1)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						result boolean (1..1)
 
-                alias results:
-                bars -> foos
-                extract item -> amount > 0
+					alias results:
+						bars -> foos
+						extract item -> amount > 0
 
-                set result:
-                results all = True
-                """);
+					set result:
+						results all = True
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2452,25 +2449,25 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateCountCardinalityErrorDefaultParameterForNestedExtract() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foos Foo (0..*)
+				type Bar:
+					foos Foo (0..*)
 
-                type Foo:
-                amount number (1..1)
+				type Foo:
+					amount number (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                result boolean (1..1)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						result boolean (1..1)
 
-                alias results:
-                bars -> foos
-                extract foo [ foo -> amount > 0 ]
+					alias results:
+						bars -> foos
+						extract foo [ foo -> amount > 0 ]
 
-                set result:
-                results all = True
-                """);
+					set result:
+						results all = True
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2478,25 +2475,25 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateErrorForExtractListOperation() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foo Foo (1..1)
+				type Bar:
+					foo Foo (1..1)
 
-                type Foo:
-                amount number (1..1)
+				type Foo:
+					amount number (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                result number (1..1)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						result number (1..1)
 
-                set result:
-                bars
-                extract item -> foo
-                then extract item -> amount
-                then distinct
-                then only-element
-                """);
+					set result:
+						bars
+						extract item -> foo
+						then extract item -> amount
+						then distinct
+						then only-element
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2504,23 +2501,23 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldGenerateNoErrorForFeatureCallAfterListOperation() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foo Foo (1..1)
+				type Bar:
+					foo Foo (1..1)
 
-                type Foo:
-                amount number (1..1)
+				type Foo:
+					amount number (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                result number (1..1)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						result number (1..1)
 
-                set result:
-                bars
-                extract item -> foo
-                then distinct only-element -> amount
-                """);
+					set result:
+						bars
+						extract item -> foo
+						then distinct only-element -> amount
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2529,22 +2526,22 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Disabled
     void shouldGenerateErrorForFeatureCallAfterListOperation2() {
         var model = modelHelper.parseRosetta("""
-                type Bar:
-                foo Foo (1..1)
+				type Bar:
+					foo Foo (1..1)
 
-                type Foo:
-                amount number (1..1)
+				type Foo:
+					amount number (1..1)
 
-                func FuncFoo:
-                inputs:
-                bars Bar (0..*)
-                output:
-                result number (1..1)
+				func FuncFoo:
+					inputs:
+						bars Bar (0..*)
+					output:
+						result number (1..1)
 
-                set result:
-                if bars exists
-                then bars extract [ item -> foo ] distinct only-element -> amount
-                """);
+					set result:
+						if bars exists
+						then bars extract [ item -> foo ] distinct only-element -> amount
+				""");
         // then clause should generate syntax error (see test above shouldGenerateErrorForFeatureCallAfterListOperation)
         validationTestHelper.assertError(model, ROSETTA_MODEL, Diagnostic.SYNTAX_DIAGNOSTIC, "missing EOF at '->'");
     }
@@ -2552,18 +2549,18 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateCardinalityWarning() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                n1 number (0..1)
-                n2 number (0..1)
-                n3 number (0..1)
-                output:
-                result boolean (0..1)
+				func FuncFoo:
+					inputs:
+						n1 number (0..1)
+						n2 number (0..1)
+						n3 number (0..1)
+					output:
+						result boolean (0..1)
 
-                set result:
-                if n1 exists and n2 exists and n3 exists
-                then n1 + n2 = n3
-                """);
+					set result:
+						if n1 exists and n2 exists and n3 exists
+						then n1 + n2 = n3
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2571,27 +2568,27 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateCardinalityWarning2() {
         var model = modelHelper.parseRosetta("""
-                   func FuncFoo:
-                   inputs:
-                   n1 number (0..1)
-                   n2 number (0..1)
-                   n3 number (0..1)
-                   output:
-                   result boolean (0..1)
+				func FuncFoo:
+					inputs:
+						n1 number (0..1)
+						n2 number (0..1)
+						n3 number (0..1)
+					output:
+						result boolean (0..1)
 
-                   alias n3Alias:
-                   GetNumberList( n3 ) only-element
+					alias n3Alias:
+						GetNumberList( n3 ) only-element
 
-                   set result:
-                   n1 + n2 = n3Alias
+					set result:
+						n1 + n2 = n3Alias
 
-                   func GetNumberList:
-                [codeImplementation]
-                   inputs:
-                   x number (1..1)
-                   output:
-                   xs number (0..*)
-                """);
+				func GetNumberList:
+					[codeImplementation]
+					inputs:
+						x number (1..1)
+					output:
+						xs number (0..*)
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2599,172 +2596,172 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldGenerateListFilterNoExpressionError() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                filteredFoo Foo (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						filteredFoo Foo (0..*)
 
-                add filteredFoo:
-                foos
-                        filter
+					add filteredFoo:
+						foos
+						filter
 
-                type Foo:
-                x string (1..1)
-                """);
+				type Foo:
+					x string (1..1)
+				""");
         validationTestHelper.assertError(model, FILTER_OPERATION, null, "Missing an expression.");
     }
 
     @Test
     void shouldGenerateListFilterParametersError() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                filteredFoo Foo (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						filteredFoo Foo (0..*)
 
-                add filteredFoo:
-                foos
-                filter a, b [ a -> attr ]
+					add filteredFoo:
+						foos
+						filter a, b [ a -> attr ]
 
-                type Foo:
-                attr boolean (1..1)
-                """);
+				type Foo:
+					attr boolean (1..1)
+				""");
         validationTestHelper.assertError(model, INLINE_FUNCTION, null, "Function must have 1 named parameter.");
     }
 
     @Test
     void shouldGenerateListFilterExpressionTypeError() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                filteredFoo Foo (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						filteredFoo Foo (0..*)
 
-                add filteredFoo:
-                foos
-                filter [ item -> x ]
+					add filteredFoo:
+						foos
+						filter [ item -> x ]
 
-                type Foo:
-                x string (1..1)
-                """);
+				type Foo:
+					x string (1..1)
+				""");
         validationTestHelper.assertError(model, INLINE_FUNCTION, null, "Expression must evaluate to a boolean.");
     }
 
     @Test
     void shouldGenerateListExtractNoExpressionError() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                        extract
+					add strings:
+						foos
+						extract
 
-                type Foo:
-                x string (1..1)
-                """);
+				type Foo:
+					x string (1..1)
+				""");
         validationTestHelper.assertError(model, MAP_OPERATION, null, "Missing an expression.");
     }
 
     @Test
     void shouldGenerateListExtractParametersError() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                extract a, b [ a -> x ]
+					add strings:
+						foos
+						extract a, b [ a -> x ]
 
-                type Foo:
-                x string (1..1)
-                """);
+				type Foo:
+					x string (1..1)
+				""");
         validationTestHelper.assertError(model, INLINE_FUNCTION, null, "Function must have 1 named parameter.");
     }
 
     @Test
     void extractWithNamedFunctionReferenceShouldGenerateNoError() {
         var model = modelHelper.parseRosetta("""
-                func DoSomething:
-                inputs:
-                a Foo (1..1)
-                output:
-                result string (1..1)
+				func DoSomething:
+					inputs:
+						a Foo (1..1)
+					output:
+						result string (1..1)
 
-                set result:
-                a -> x
+					set result:
+						a -> x
 
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                extract DoSomething
+					add strings:
+						foos
+						extract DoSomething
 
-                type Foo:
-                x string (1..1)
-                """);
+				type Foo:
+					x string (1..1)
+				""");
         validationTestHelper.assertNoIssues(model);
     }
 
     @Test
     void shouldGenerateListExtractParametersErrorNamedFunctionReference() {
         var model = modelHelper.parseRosetta("""
-                func DoSomething:
-                inputs:
-                a Foo (1..1)
-                b boolean (1..1)
-                output:
-                result string (1..1)
+				func DoSomething:
+					inputs:
+						a Foo (1..1)
+						b boolean (1..1)
+					output:
+						result string (1..1)
 
-                set result:
-                a -> x
+					set result:
+						a -> x
 
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                extract DoSomething
+					add strings:
+						foos
+						extract DoSomething
 
-                type Foo:
-                x string (1..1)
-                """);
+				type Foo:
+					x string (1..1)
+				""");
         validationTestHelper.assertError(model, ROSETTA_SYMBOL_REFERENCE, null, "Expected 2 arguments, but got 0 instead");
     }
 
     @Test
     void shouldNotGenerateListExtractExpressionCardinalityError() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                extract a [ a -> xs ] // list of lists
-                then flatten
+					add strings:
+						foos
+						extract a [ a -> xs ] // list of lists
+						then flatten
 
-                type Foo:
-                xs string (0..*)
-                """);
+				type Foo:
+					xs string (0..*)
+				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
     }
@@ -2772,52 +2769,52 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void shouldNotGenerateListExtractExpressionCardinalityError2() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                extract a [ a -> bars ] // list of list<bar>
-                then extract bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
-                then flatten // list<string>
+					add strings:
+						foos
+						extract a [ a -> bars ] // list of list<bar>
+						then extract bars [ bars -> x ] // list of list<string> (maintain same list cardinality)
+						then flatten // list<string>
 
-                type Foo:
-                bars Bar (0..*)
+				type Foo:
+					bars Bar (0..*)
 
-                type Bar:
-                x string (0..1)
-                """);
+				type Bar:
+					x string (0..1)
+				""");
         validationTestHelper.assertNoIssues(model);
     }
 
     @Test
     void shouldNotGenerateListExtractExpressionCardinalityError3() {
         var model = modelHelper.parseRosetta("""
-                func FuncFoo:
-                inputs:
-                foos Foo (0..*)
-                output:
-                strings string (0..*)
+				func FuncFoo:
+					inputs:
+						foos Foo (0..*)
+					output:
+						strings string (0..*)
 
-                add strings:
-                foos
-                extract a [ a -> bars ] // list of list<bar>
-                then extract bars [ bars -> bazs ] // list of list<baz>
-                then extract bazs [ bazs -> x ] // list of list<string>
-                then flatten // list<string>
+					add strings:
+						foos
+						extract a [ a -> bars ] // list of list<bar>
+						then extract bars [ bars -> bazs ] // list of list<baz>
+						then extract bazs [ bazs -> x ] // list of list<string>
+						then flatten // list<string>
 
-                type Foo:
-                bars Bar (0..*)
+				type Foo:
+					bars Bar (0..*)
 
-                type Bar:
-                bazs Baz (0..*)
+				type Bar:
+					bazs Baz (0..*)
 
-                type Baz:
-                x string (0..1)
-                """);
+				type Baz:
+					x string (0..1)
+				""");
         validationTestHelper.assertNoIssues(model);
     }
 

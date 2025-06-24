@@ -111,7 +111,7 @@ import com.regnosys.rosetta.RosettaEcoreUtil
  * 
  */
 @Deprecated
-class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
+class RosettaSimpleValidatorXtend extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaEcoreUtil
 	@Inject extension RosettaTypeProvider
