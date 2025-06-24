@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.validation
 
-import com.google.common.collect.HashMultimap
+/*import com.google.common.collect.HashMultimap
 import com.google.common.collect.LinkedHashMultimap
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
@@ -102,16 +102,16 @@ import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
 import com.regnosys.rosetta.RosettaEcoreUtil
 
-/*
+ *
  * Do not write any more validators in here for the following reasons:
  * 1. We are moving away from Xtend to Java for all test and implementation code
  * 2. This approach to putting every validator type in one place is messy and hard to navigate, better to split into classes by type of validator
  * 
  * The appropriate validators can be found by looking for [ValidatorType]Validator.java where validator type could be Expression for example ExpressionValidator.java
  * 
- */
+ *
 @Deprecated
-class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
+class RosettaSimpleValidatorXtend extends AbstractDeclarativeRosettaValidator {
 
 	@Inject extension RosettaEcoreUtil
 	@Inject extension RosettaTypeProvider
@@ -250,9 +250,9 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 			.head !== null
 	}
 	
-	/**
+	 **
 	 * Returns the object that directly encloses the given object with parentheses or brackets, or the first encountered root element.
-	 */
+	 *
 	def EObject getEnclosingCodeBlock(EObject obj) {
 		return getEnclosingCodeBlock(NodeModelUtils.findActualNodeFor(obj), obj)
 	}
@@ -1160,3 +1160,4 @@ class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator {
 		}
 	}
 }
+*/

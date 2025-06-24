@@ -225,4 +225,99 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		Assertions.assertNotNull(newLabelProviderCode, "Label provider does not exist at " + labelProviderPath);
 		Assertions.assertNotEquals(originalLabelProviderCode, newLabelProviderCode);
 	}
+
+	@Test
+	void testBreakingAndFixingOneTypeInNamespaceHasNoIssues() {
+		String nsA = createModel("a.rosetta", """
+				namespace a
+				
+				type Y: y string (0..1)
+
+				""");
+		String nsB = createModel("b.rosetta", """
+				namespace b
+
+				type X: x string (1..1)
+			
+				reporting rule R from X: a.Y {...}
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsA, 2, 0, "", "break me");
+		List<Diagnostic> issues = getDiagnostics().get(nsB);
+
+		assertIssues("Error [[4, 25] .. [4, 28]]: Couldn't resolve reference to RosettaType 'a.Y'.\n" +
+				"Error [[4, 30] .. [4, 33]]: There are no optional attributes left\n", issues);
+
+		makeChange(nsA, 2, 0, "break me", "");
+
+		// There should again be no issue. 
+		assertNoIssues();
+	}
+
+	
+	@Test
+	void testBreakingAndFixingOneFuncInNamespaceHasNoIssues() {
+		String nsA = createModel("a.rosetta", """
+				namespace a
+				
+				func SSS:
+					output: r string (1..1)
+					set r: "foo"
+
+				""");
+		String nsB = createModel("b.rosetta", """
+				namespace b
+
+				type X:
+					x string (1..1)
+			
+				reporting rule R from X: a.SSS
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsA, 2, 0, "", "break me");
+		List<Diagnostic> issues = getDiagnostics().get(nsB);
+
+		assertIssues("Error [[5, 25] .. [5, 30]]: Couldn't resolve reference to RosettaSymbol 'a.SSS'.\n", issues);
+
+		makeChange(nsA, 2, 0, "break me", "");
+
+		// There should again be no issue. 
+		assertNoIssues();
+	}
+	
+
+	@Test
+	void testBreakingAndFixingOneEnumInNamespaceHasNoIssues() {
+		String nsA = createModel("a.rosetta", """
+				namespace a
+				
+				enum Y: Q
+				""");
+		String nsB = createModel("b.rosetta", """
+				namespace b
+
+				type X: x string (1..1)
+				reporting rule R from X: a.Y -> Q
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsA, 2, 0, "", "break me");
+		List<Diagnostic> issues = getDiagnostics().get(nsB);
+
+		assertIssues("Error [[3, 25] .. [3, 28]]: Couldn't resolve reference to RosettaSymbol 'a.Y'.\n" +
+				"Error [[3, 32] .. [3, 33]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+
+		makeChange(nsA, 2, 0, "break me", "");
+
+		// There should again be no issue. 
+		assertNoIssues();
+	}
 }

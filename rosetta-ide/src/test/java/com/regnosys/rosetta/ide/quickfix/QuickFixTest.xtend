@@ -154,7 +154,7 @@ class QuickFixTest extends AbstractRosettaLanguageServerTest {
 					a int (1..1)
 			'''}
 			it.assertCodeActionResolution = [
-				assertEquals(7, size) //duplicate import
+				assertEquals(3, size) //duplicate import
 			
 				val sorted = it.sortWith[a,b| ru.comparePositions(a.diagnostics.head.range.start, b.diagnostics.head.range.start)]
 				
