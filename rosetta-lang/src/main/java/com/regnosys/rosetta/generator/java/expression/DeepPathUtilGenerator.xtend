@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaPrimitiveType
 import java.util.Map
@@ -17,7 +16,6 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.rosetta.expression.ExistsModifier
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.HashSet
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
@@ -25,6 +23,8 @@ import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 class DeepPathUtilGenerator {
 	@Inject extension ImportManagerExtension
@@ -39,7 +39,7 @@ class DeepPathUtilGenerator {
 		val javaClass = choiceType.toDeepPathUtilJavaClass
 		val fileName =  javaClass.canonicalName.withForwardSlashes + ".java"
 
-		val topScope = new JavaScope(javaClass.packageName)
+		val topScope = new JavaStatementScope(javaClass.packageName)
 
 		val content = buildClass(javaClass.packageName, classBody(choiceType, javaClass, topScope), topScope)
 
@@ -49,7 +49,7 @@ class DeepPathUtilGenerator {
 	private def StringConcatenationClient classBody(
 		RDataType choiceType,
 		JavaClass<?> javaClass,
-		JavaScope topScope
+		JavaStatementScope topScope
 	) {		
 		val classScope = topScope.classScope(javaClass.simpleName)
 		val deepFeatures = choiceType.findDeepFeatures
@@ -98,7 +98,7 @@ class DeepPathUtilGenerator {
 		'''
 	}
 
-	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
+	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {
 		val attrs = choiceType.allAttributes.toList
 		val deepFeatureType = deepFeature.toMetaJavaType
 		var JavaStatementBuilder acc = JavaLiteral.NULL

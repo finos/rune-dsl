@@ -23,7 +23,7 @@ import java.util.function.Function;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
 import com.rosetta.util.types.JavaType;
@@ -89,7 +89,7 @@ import com.rosetta.util.types.JavaType;
  */
 public abstract class JavaStatementBuilder {
 	
-	public static JavaStatementBuilder invokeMethod(List<JavaStatementBuilder> arguments, Function<JavaExpression, ? extends JavaStatementBuilder> methodInvoker, JavaScope scope) {
+	public static JavaStatementBuilder invokeMethod(List<JavaStatementBuilder> arguments, Function<JavaExpression, ? extends JavaStatementBuilder> methodInvoker, JavaStatementScope scope) {
 		if (arguments.isEmpty()) {
 			return methodInvoker.apply(null);
 		}
@@ -153,7 +153,7 @@ public abstract class JavaStatementBuilder {
 	/**
 	 * Assign all expressions to a new variable, and return a new builder ending with that variable.
 	 */
-	public abstract JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope);
+	public abstract JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope);
 	
 	/**
 	 * If this statement builder ends with multiple branches, assign all expressions to a new variable
@@ -161,12 +161,12 @@ public abstract class JavaStatementBuilder {
 	 * 
 	 * If this statement builder does not end in multiple branches, return itself unmodified.
 	 */
-	public abstract JavaStatementBuilder collapseToSingleExpression(JavaScope scope);
+	public abstract JavaStatementBuilder collapseToSingleExpression(JavaStatementScope scope);
 	
 	/**
 	 * Append another statement builder to this one, and combine this expression with the other using the given operation.
 	 */
-	public abstract JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope);
+	public abstract JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope);
 	
 	/**
 	 * Convert this statement builder into a valid lambda body.

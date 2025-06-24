@@ -19,12 +19,20 @@ package com.rosetta.util.types;
 import java.util.List;
 import java.util.Map;
 
+import com.rosetta.util.DottedPath;
+
 public interface JavaTypeDeclaration<T> {
 	public static <T> JavaTypeDeclaration<T> from(Class<T> c) {
 		if (c.getTypeParameters().length >= 1) {
 			return JavaGenericTypeDeclaration.from(c);
 		}
 		return JavaClass.from(c);
+	}
+	
+	DottedPath getPackageName();
+	String getSimpleName();
+	default DottedPath getCanonicalName() {
+		return getPackageName().child(getSimpleName());
 	}
 	
 	JavaTypeDeclaration<? super T> getSuperclassDeclaration();

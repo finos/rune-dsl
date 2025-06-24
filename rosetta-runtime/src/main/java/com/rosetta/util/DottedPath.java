@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
-public class DottedPath implements Comparable<DottedPath> {
+public final class DottedPath implements Comparable<DottedPath> {
 	protected final String[] segments;
 	
 	protected DottedPath(String... segments) {
