@@ -12,14 +12,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.JavaTestModel;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.path.RosettaPath;
+
+import java.util.List;
+import java.util.Map;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class TypeAliasConditionTest extends AbstractConditionTest {
 	@Inject
 	private RosettaTestModelService testModelService;
+	
+	@Inject
+    private CodeGeneratorTestHelper codeGeneratorTestHelper;
 	
 	@Test
 	void testSimpleTypeAliasCondition() {
@@ -303,6 +310,40 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 			results,
 			(v1) -> assertSuccess(v1, "FooAliasCondA", "T.atr1"),
 			(v2) -> assertFailure(v2, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
+		);
+	}
+	
+	@Test
+	void testConditionsFromTypeAliasInMultiCardinalityEmptyAttribute() {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type T:
+					foos Foo (0..*)
+				
+				typeAlias Foo:
+					Bar
+					
+					condition C1:
+						item <> 42
+				
+				typeAlias Bar:
+					int
+					
+					condition C2:
+						item > 0
+				""").compile();
+		RosettaModelObject t = model.evaluateExpression(RosettaModelObject.class, """
+				T {
+				  foos: empty
+				}
+				""");
+		
+		var validator = getTypeFormatValidator(t);
+		
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		
+		assertResults(
+			results,
+			(v1) -> assertSuccess(v1, "T", "T")
 		);
 	}
 }
