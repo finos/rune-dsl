@@ -12,21 +12,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.JavaTestModel;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.path.RosettaPath;
-
-import java.util.List;
-import java.util.Map;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class TypeAliasConditionTest extends AbstractConditionTest {
 	@Inject
 	private RosettaTestModelService testModelService;
-	
-	@Inject
-    private CodeGeneratorTestHelper codeGeneratorTestHelper;
 	
 	@Test
 	void testSimpleTypeAliasCondition() {
