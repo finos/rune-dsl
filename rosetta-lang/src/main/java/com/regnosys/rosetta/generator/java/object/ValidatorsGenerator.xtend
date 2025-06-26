@@ -290,7 +290,9 @@ class ValidatorsGenerator {
 		} else {
 			if (!hierarchy.aliases.flatMap[conditions].empty) {
 				val prop = javaType.findProperty(attr.name)
-				val attrVarExpr = prop.applyGetter(JavaExpression.from('''o''', javaType))
+				//Requires review: Safe guard for NullPointerException when calling size() method with null property
+				val attrVarExpr = prop.applyGetterWithNullableWrapper(JavaExpression.from('''o''', javaType))
+
 				val forIndex = scope.createUniqueIdentifier("i")
 				return attrVarExpr.declareAsVariable(true, attr.name, scope)
 					.complete[attrVar|
