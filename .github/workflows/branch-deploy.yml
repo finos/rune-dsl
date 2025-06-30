@@ -37,8 +37,7 @@ jobs:
         run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
       - uses: ./.github/actions/maven-build
         with:
-          build-command: deploy
-          run-tests: ${{ inputs.run-tests }}
+          maven-args: clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
