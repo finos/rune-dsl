@@ -5,7 +5,7 @@ inputs:
   maven-args:
     description: Full Maven command arguments.
     required: false
-    default: ''
+    default: package
   run-tests:
     description: Whether or not to run tests. The default is true.
     required: false
