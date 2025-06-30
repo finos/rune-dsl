@@ -39,5 +39,7 @@ jobs:
         with:
           maven-args: clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
+          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
+          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
