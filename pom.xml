@@ -89,8 +89,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Release -->
-        <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
-        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
         <distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
         <distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
         <organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
