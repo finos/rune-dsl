@@ -333,7 +333,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
