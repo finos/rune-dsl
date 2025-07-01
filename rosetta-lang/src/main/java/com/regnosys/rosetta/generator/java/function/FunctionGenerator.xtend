@@ -307,8 +307,9 @@ class FunctionGenerator {
 					}
 					
 					protected «output.toBuilderType» assignOutput(«output.toBuilderType» «assignOutputScope.getIdentifierOrThrow(output)»«IF !inputs.empty», «ENDIF»«inputs.inputsAsParameters(assignOutputScope)») {
+						«val functionHasDeepOperations = operations.filter[o|o.pathTail.size > 0].size > 0»
 						«FOR operation : operations»
-							«assign(assignOutputScope, operation, function, aliasOut, output).asStatementList»
+							«assign(assignOutputScope, operation, function, aliasOut, output, functionHasDeepOperations).asStatementList»
 							
 						«ENDFOR»
 						return «IF !needsBuilder(output)»«assignOutputScope.getIdentifierOrThrow(output)»«ELSE»«Optional».ofNullable(«assignOutputScope.getIdentifierOrThrow(output)»)
@@ -407,14 +408,14 @@ class FunctionGenerator {
 		return op.expression instanceof AsKeyOperation
 	}
 
-	private def JavaStatement assign(JavaScope scope, ROperation op, RFunction function, Map<RShortcut, Boolean> outs, RAttribute attribute) {
+	private def JavaStatement assign(JavaScope scope, ROperation op, RFunction function, Map<RShortcut, Boolean> outs, RAttribute attribute, boolean functionHasDeepOperations) {
 		if (op.pathTail.isEmpty) {
 			// assign function output object
 			val expressionType = attribute.toMetaJavaType
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
 			val effectiveExprType = javaExpr.expressionType
 			if (needsBuilder(attribute)) {
-				javaExpr = javaExpr.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', attribute.toBuilderType)]
+				javaExpr = javaExpr.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»«IF functionHasDeepOperations && !effectiveExprType.isList», () -> «effectiveExprType».builder()«ENDIF»)''', attribute.toBuilderType)]
 			} else {
 				val needsToCopy = 
 					op.ROperationType == ROperationType.SET

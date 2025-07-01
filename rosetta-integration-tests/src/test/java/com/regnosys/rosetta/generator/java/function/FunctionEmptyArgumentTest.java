@@ -31,20 +31,21 @@ public class FunctionEmptyArgumentTest {
                 
                 func MyFunc:
                     inputs:
-                       foo Foo (0..1)
+                       inputFoo Foo (0..1)
                        attr2 string (1..1)
                     output:
-                       enrichedFoo Foo (1..1)
+                       outputFoo Foo (1..1)
                 
-                    set enrichedFoo: foo
+                    set outputFoo: inputFoo
                 
-                    set enrichedFoo -> attr2: attr2
+                    set outputFoo -> attr2: attr2
                 """;
 
+        
         var code = generatorTestHelper.generateCode(model);
-
+        
         var classes = generatorTestHelper.compileToClasses(code);
-
+        
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, null, "attr2Value");
