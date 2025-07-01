@@ -65,7 +65,7 @@ jobs:
       run: pip install xq
     - uses: ./.github/actions/maven-build
       with:
-        maven-args: install
+        build-command: install
         run-tests: false
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.4.0:aggregate-download-licenses

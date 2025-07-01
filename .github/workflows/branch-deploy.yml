@@ -35,9 +35,8 @@ jobs:
         uses: ./.github/actions/normalize-branch-name
       - name: Set version
         run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
-      - uses: ./.github/actions/maven-build
-        with:
-          maven-args: clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+      - name: Build and publish with Maven
+        run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release ${{ inputs.run-tests == false && ' -DskipTests' || '' }}
         env:
           GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
           GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
