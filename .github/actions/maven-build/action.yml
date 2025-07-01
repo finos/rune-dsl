@@ -2,9 +2,10 @@ name: Maven Build
 description: Run a Maven Build
 
 inputs:
-  maven-args:
-    description: Full Maven command arguments.
+  build-command:
+    description: The Maven command to build the project. The default is `package`.
     required: false
+    # type: string  - `type` field is not supported (yet). See comment below.
     default: package
   run-tests:
     description: Whether or not to run tests. The default is true.
@@ -27,4 +28,4 @@ runs:
         server-password: CI_DEPLOY_PASSWORD
     - name: Build with Maven
       shell: bash
-      run: mvn ${{ inputs.maven-args }}${{ inputs.run-tests == 'false' && ' -DskipTests' || '' }}
+      run: mvn -B clean ${{ inputs.build-command }}${{ inputs.run-tests == 'false' && ' -DskipTests' || '' }}

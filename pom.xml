@@ -92,7 +92,6 @@
         <distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
         <distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
         <organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
-        <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
 
         <!-- Dependency management -->
         <xtext.version>2.38.0</xtext.version>
@@ -141,37 +140,6 @@
         <module>rosetta-maven-plugin</module>
         <module>rosetta-profiling</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                                <configuration>
-                                    <passphraseServerId>${gpg.keyname}</passphraseServerId>
-                                    <passphraseEnvName>${gpg.passphrase}</passphraseEnvName>
-                                    <gpgArguments>
-				        <arg>--pinentry-mode</arg>
-				        <arg>loopback</arg>
-                                    </gpgArguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -606,6 +574,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven-javadoc-plugin.version}</version>
 					<configuration>
 						<failOnError>false</failOnError>
 					</configuration>
