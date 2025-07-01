@@ -17,10 +17,8 @@ import java.util.function.Consumer
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.util.DottedPath
 
 class FunctionGeneratorHelper {
@@ -29,7 +27,6 @@ class FunctionGeneratorHelper {
 	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject RegisteringFileSystemAccess fsa
-	@Inject extension ModelIdProvider
 
 	final Injector injector
 	
@@ -43,7 +40,7 @@ class FunctionGeneratorHelper {
 	}
 	
 	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		createFunc(classes, funcName, rootPackage.functions)
+		createFunc(classes, funcName, rootPackage.child("functions"))
 	}
 	def createFunc(Map<String, Class<?>> classes, String funcName, DottedPath packageName) {
 		injector.getInstance(classes.get(packageName + '.' + funcName)) as RosettaFunction
@@ -60,13 +57,13 @@ class FunctionGeneratorHelper {
 
 	def void assertToGeneratedFunction(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(new RootPackage(it.toDottedPath), fsa, it.elements.filter(Function).filter[operations.nullOrEmpty].head, "test")
+			generator.generate(fsa, it.elements.filter(Function).filter[operations.nullOrEmpty].head, "test")
 		])
 	}
 
 	def void assertToGeneratedCalculation(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(new RootPackage(it.toDottedPath), fsa, it.elements.filter(Function).filter[!operations.nullOrEmpty].head, "test")
+			generator.generate(fsa, it.elements.filter(Function).filter[!operations.nullOrEmpty].head, "test")
 		])
 	}
 

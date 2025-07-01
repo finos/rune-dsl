@@ -19,6 +19,13 @@ public abstract class AbstractJavaScope<T extends AbstractJavaScope<?>> extends 
 		return SourceVersion.isName(name);
 	}
 	
+	public JavaFileScope getFileScope() {
+		if (getParent() == null) {
+			return null;
+		}
+		return getParent().getFileScope();
+	}
+	
 	@Override
 	public JavaClassScope getClassScope(JavaTypeDeclaration<?> clazz) {
 		return getParent().getClassScope(clazz);

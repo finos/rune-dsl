@@ -44,7 +44,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	private final ModelGeneratorUtil generatorUtil;
 
 	public RJavaPojoInterface(RDataType type, TypeSystem typeSystem, JavaTypeTranslator typeTranslator, JavaTypeUtil typeUtil, ModelGeneratorUtil generatorUtil) {
-		super(JavaPackageName.escape(type.getNamespace()), type.getName());
+		super(JavaPackageName.escape(type.getNamespace()), type.getName(), typeUtil);
 		this.type = type;
 		
 		this.typeSystem = typeSystem;

@@ -73,10 +73,10 @@ class ModelMetaGeneratorTest {
 		'''.generateCode
 		val classes = code.compileToClasses
 
-		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.FooMeta').declaredConstructor.newInstance)
+		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.FooMeta').declaredConstructor.newInstance)
 		assertThat(fooMeta.getQualifyFunctions(funcFactory).size, is(2))
 		
-		val barMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.BarMeta').declaredConstructor.newInstance)
+		val barMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.BarMeta').declaredConstructor.newInstance)
 		assertThat(barMeta.getQualifyFunctions(funcFactory).size, is(0))
 		
 	}
@@ -209,7 +209,7 @@ class ModelMetaGeneratorTest {
 		
 		val classes = code.compileToClasses
 
-		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.FooMeta').declaredConstructor.newInstance)
+		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.FooMeta').declaredConstructor.newInstance)
 		val validator = fooMeta.validator
 		val typeFormatValidator = fooMeta.typeFormatValidator
 		
@@ -267,7 +267,7 @@ class ModelMetaGeneratorTest {
 				c number(min: 0, max: 10) (1..1)
 		'''.generateCode.compileToClasses
 		
-		val aMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.AMeta').declaredConstructor.newInstance)
+		val aMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.AMeta').declaredConstructor.newInstance)
 		val aTypeFormatValidator = aMeta.typeFormatValidator
 		
 		val invalidA1 = classes.createInstanceUsingBuilder('A', of(
@@ -280,7 +280,7 @@ class ModelMetaGeneratorTest {
             resA1.failureReason.get
 		)
 		
-		val bMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.BMeta').declaredConstructor.newInstance)
+		val bMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.BMeta').declaredConstructor.newInstance)
 		val bTypeFormatValidator = bMeta.typeFormatValidator
 		
 		val invalidB1 = classes.createInstanceUsingBuilder('B', of(
@@ -324,7 +324,7 @@ class ModelMetaGeneratorTest {
 				bigInteger number(digits: 20, fractionalDigits: 0) (1..1)
 		'''.generateCode.compileToClasses
 		
-		val aMeta = RosettaMetaData.cast(classes.get(rootPackage.meta + '.AMeta').declaredConstructor.newInstance)
+		val aMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.AMeta').declaredConstructor.newInstance)
 		val aTypeFormatValidator = aMeta.typeFormatValidator
 		
 		val invalidA1 = classes.createInstanceUsingBuilder('A', of(

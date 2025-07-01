@@ -18,9 +18,7 @@ package com.regnosys.rosetta.generator.java.scoping;
 
 
 public class JavaStatementScope extends AbstractJavaScope<AbstractJavaScope<?>> {
-	// private final Set<DottedPath> defaultPackages = new HashSet<>();
-
-	JavaStatementScope(String description, AbstractJavaScope<?> parent) {
+	public JavaStatementScope(String description, AbstractJavaScope<?> parent) {
 		super(description, parent);
 	}
 
@@ -30,29 +28,4 @@ public class JavaStatementScope extends AbstractJavaScope<AbstractJavaScope<?>> 
 	private JavaStatementScope childScope(String description) {
 		return new JavaStatementScope(description, this);
 	}
-	
-	// Make sure identifiers from package "java.lang" are always in scope.
-//	@Override
-//	public Optional<GeneratedIdentifier> getIdentifier(Object obj) {
-//		return super.getIdentifier(obj).or(() -> {
-//			JavaType t = JavaType.from(obj);
-//			if (t != null) {
-//				if (t instanceof JavaClass) {
-//					JavaClass<?> clazz = (JavaClass<?>)t;
-//					String desiredName = clazz.getSimpleName();
-//					if (this.getIdentifiers().stream().anyMatch(id -> id.getDesiredName().equals(desiredName))) {
-//						// Another class with the same name is already imported. Use the canonical name instead.
-//						return Optional.of(overwriteIdentifier(clazz, clazz.getCanonicalName().withDots()));
-//					}
-//					if (this.defaultPackages.contains(clazz.getPackageName())) {
-//						// Classes from namespaces that are implicitly imported can be directly referenced.
-//						return Optional.of(overwriteIdentifier(clazz, clazz.getSimpleName()));
-//					}
-//					// The class needs an import first.
-//					return Optional.empty();
-//				}
-//			}
-//			return Optional.empty();
-//		});
-//	}
 }

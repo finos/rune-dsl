@@ -1,12 +1,17 @@
 package com.regnosys.rosetta.generator.java;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Stream;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.generator.IFileSystemAccess2;
 
+import com.regnosys.rosetta.generator.GenerationException;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope;
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
@@ -19,10 +24,12 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 	@Inject
 	private ImportManagerExtension importManager;
 	
+	private List<GenerationException> generationExceptions = null;
 	private Map<T, C> objectToTypeRepresentationMap = null;
 	private JavaGlobalScope globalScope = null;
 	
 	protected abstract Stream<T> streamObjects(RosettaModel model);
+	protected abstract EObject getSource(T object);
 	protected abstract C createTypeRepresentation(T object);
 	protected abstract void registerMethods(T object, C typeRepresentation, JavaClassScope scope);
 	protected abstract StringConcatenationClient generate(T object, C typeRepresentation, String version, JavaClassScope scope);
@@ -31,14 +38,24 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 		if (objectToTypeRepresentationMap != null) {
 			throw new IllegalStateException("Method `registerClassesAndMethods` has been called a second time before calling `generateClasses`.");
 		}
+		this.generationExceptions = new ArrayList<>();
 		this.objectToTypeRepresentationMap = new LinkedHashMap<>();
 		this.globalScope = globalScope;
 		streamObjects(model)
 			.forEach(object -> {
-				C typeRepresentation = createTypeRepresentation(object);
-				JavaClassScope classScope = globalScope.createClassScopeAndIdentifier(typeRepresentation);
-				registerMethods(object, typeRepresentation, classScope);
-				objectToTypeRepresentationMap.put(object, typeRepresentation);
+				try {
+					C typeRepresentation = createTypeRepresentation(object);
+					JavaClassScope classScope = globalScope.createClassScopeAndRegisterIdentifier(typeRepresentation);
+					registerMethods(object, typeRepresentation, classScope);
+					objectToTypeRepresentationMap.put(object, typeRepresentation);
+				} catch (CancellationException e) {
+					throw e;
+				} catch (GenerationException e) {
+					generationExceptions.add(e);
+				} catch (Exception e) {
+					EObject source = getSource(object);
+					generationExceptions.add(new GenerationException(e.getMessage(), source.eResource().getURI(), source, e));
+				}
 			});
 	}
 	public void generateClasses(String version, IFileSystemAccess2 fsa) {
@@ -46,11 +63,24 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 			throw new IllegalStateException("Method `generateClasses` has been called without calling `registerClassesAndMethods`.");
 		}
 		objectToTypeRepresentationMap.forEach((object, typeRepresentation) -> {
-			JavaClassScope classScope = globalScope.getClassScope(typeRepresentation);
-			StringConcatenationClient classCode = generate(object, typeRepresentation, version, classScope);
-			String javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, null);
-			fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
+			try {
+				JavaClassScope classScope = globalScope.getClassScope(typeRepresentation);
+				StringConcatenationClient classCode = generate(object, typeRepresentation, version, classScope);
+				String javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, null);
+				fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
+			} catch (CancellationException e) {
+				throw e;
+			} catch (GenerationException e) {
+				generationExceptions.add(e);
+			} catch (Exception e) {
+				EObject source = getSource(object);
+				generationExceptions.add(new GenerationException(e.getMessage(), source.eResource().getURI(), source, e));
+			}
 		});
 		objectToTypeRepresentationMap = null;
+	}
+	
+	public List<GenerationException> getGenerationExceptions() {
+		return generationExceptions;
 	}
 }

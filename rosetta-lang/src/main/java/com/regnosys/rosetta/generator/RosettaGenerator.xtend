@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import java.util.List
 import com.regnosys.rosetta.generator.java.JavaClassGenerator
 import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 /**
  * Generates code from your model files on save.
@@ -68,6 +69,7 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ReportGenerator reportGenerator
 	@Inject DeepPathUtilGenerator deepPathUtilGenerator
 	@Inject LabelProviderGenerator labelProviderGenerator
+	@Inject JavaTypeUtil typeUtil
 	
 	@Inject DeepFeatureCallUtil deepFeatureCallUtil
 
@@ -155,26 +157,18 @@ class RosettaGenerator implements IGenerator2 {
 					return
 				}
 				val version = model.version
-				
+								
 				val globalScope = new JavaGlobalScope
-				val List<JavaClassGenerator> javaGenerators = null
+				globalScope.initializeRuntimeScopes(typeUtil)
+				val List<JavaClassGenerator<?, ?>> javaGenerators = null
 				javaGenerators.forEach[generator|
-					generator.streamObjects(model)
-						.forEach
+					generator.registerClassesAndMethods(model, globalScope)
 				]
-
-				val List<GenerationException> aggregatedGenerationExceptions = newArrayList
-				model.elements.forEach [rootElement|
-					try {
-						rootElement.doGenerate(fsa, version, context)
-					} catch (CancellationException e) {
-						throw e
-					} catch (GenerationException e) {
-						aggregatedGenerationExceptions.add(e)
-					} catch (Exception e) {
-						aggregatedGenerationExceptions.add(new GenerationException(e.message, resource.URI, rootElement, e));
-					}
+				javaGenerators.forEach[generator|
+					generator.generateClasses(version, fsa2)
 				]
+				
+				val aggregatedGenerationExceptions = javaGenerators.flatMap[generationExceptions].toList
 				if (!aggregatedGenerationExceptions.empty) {
 					if (aggregatedGenerationExceptions.size === 1) {
 						throw aggregatedGenerationExceptions.get(0)

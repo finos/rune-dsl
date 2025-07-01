@@ -154,8 +154,8 @@ public abstract class JavaGenericTypeDeclaration<T> implements JavaTypeDeclarati
 		return getBaseType().getPackageName();
 	}
 	@Override
-	public String getSimpleName() {
-		return getBaseType().getSimpleName();
+	public DottedPath getNestedTypeName() {
+		return getBaseType().getNestedTypeName();
 	}
 	
 	@Override

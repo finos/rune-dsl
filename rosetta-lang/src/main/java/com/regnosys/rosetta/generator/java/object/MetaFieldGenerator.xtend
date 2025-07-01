@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaModel
@@ -19,6 +18,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.regnosys.rosetta.types.RType
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.rosetta.util.DottedPath
 
 class MetaFieldGenerator {
 	@Inject extension ImportManagerExtension
@@ -39,8 +39,7 @@ class MetaFieldGenerator {
 			return
 		}
 		for (attr : model.eAllOfType(Attribute).map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]) {
-			val targetModel = attr.RMetaAnnotatedType.RType.namespace
-			val targetPackage = new RootPackage(targetModel)
+			val targetPackage = attr.RMetaAnnotatedType.RType.namespace
 			val metaJt = attr.toForcedMetaItemJavaType
 
 			if (ctx.cancelIndicator.canceled) {
@@ -57,7 +56,7 @@ class MetaFieldGenerator {
 		}
 	}
 
-	private def CharSequence fieldWithMeta(RootPackage root, RJavaFieldWithMeta metaJavaType, RType valueType) {						
+	private def CharSequence fieldWithMeta(DottedPath root, RJavaFieldWithMeta metaJavaType, RType valueType) {						
 		val scope = new JavaStatementScope(metaJavaType.packageName)
 		
 		val StringConcatenationClient body = '''
@@ -71,18 +70,18 @@ class MetaFieldGenerator {
 		buildClass(metaJavaType.packageName, body, scope)
 	}
 	
-	private def referenceWithMeta(RootPackage root, RJavaReferenceWithMeta metaJavaType, RType valueType) {					
-		val scope = new JavaStatementScope(root.metaField)
+	private def referenceWithMeta(DottedPath root, RJavaReferenceWithMeta metaJavaType, RType valueType) {					
+		val scope = new JavaStatementScope(root.child("metaField"))
 		
 		val StringConcatenationClient body = '''
-			«metaJavaType.classBody(scope, new GeneratedJavaClass<Object>(root.metaField, metaJavaType.simpleName + "Meta", Object), "1")»
+			«metaJavaType.classBody(scope, new GeneratedJavaClass<Object>(root.child("metaField"), metaJavaType.simpleName + "Meta", Object), "1")»
 			
 			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»>{
 			
 			}
 		'''
 		
-		buildClass(root.metaField, body, scope)
+		buildClass(root.child("metaField"), body, scope)
 	}
 
 	/** generate once per resource marker */

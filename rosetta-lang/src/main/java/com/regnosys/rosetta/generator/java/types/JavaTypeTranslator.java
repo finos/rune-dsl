@@ -30,15 +30,12 @@ import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
-import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
+import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.*;
-import com.rosetta.util.types.generated.GeneratedJavaClass;
-import com.rosetta.util.types.generated.GeneratedJavaGenericTypeDeclaration;
 
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
@@ -94,7 +91,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaParameterizedType<List<?>> toPolymorphicList(JavaReferenceType t) {
 		return typeUtil.wrapExtends(typeUtil.LIST, t);
 	}
-	public JavaClass<? extends RosettaFunction> toFunctionJavaClass(RFunction func) {
+	public RGeneratedJavaClass<? extends RosettaFunction> toFunctionJavaClass(RFunction func) {
 		switch (func.getOrigin()) {
 		case FUNCTION:
 			return toJavaFunctionClass(func.getSymbolId());
@@ -106,32 +103,37 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			throw new IllegalStateException("Unknown origin of RFunction: " + func.getOrigin());
 		}			 
 	}
-	public JavaClass<? extends RosettaFunction> toFunctionJavaClass(Function func) {
+	public RGeneratedJavaClass<? extends RosettaFunction> toFunctionJavaClass(Function func) {
 		return toJavaFunctionClass(modelIdProvider.getSymbolId(func));
 	}
-	public JavaClass<? extends RosettaFunction> toFunctionJavaClass(RosettaExternalFunction func) {
+	public RGeneratedJavaClass<? extends RosettaFunction> toFunctionJavaClass(RosettaExternalFunction func) {
 		return RGeneratedJavaClass.create(JavaPackageName.escape(packages.defaultLibFunctions()), func.getName(), RosettaFunction.class);
 	}
-	public JavaClass<? extends ReportFunction<?, ?>> toReportFunctionJavaClass(RosettaReport report) {
+	public RGeneratedJavaClass<? extends ReportFunction<?, ?>> toReportFunctionJavaClass(RosettaReport report) {
 		return toJavaReportClass(modelIdProvider.getReportId(report));
 	}
-	private JavaClass<? extends RosettaFunction> toJavaFunctionClass(ModelSymbolId functionId) {
+	private RGeneratedJavaClass<? extends RosettaFunction> toJavaFunctionClass(ModelSymbolId functionId) {
 		DottedPath funcPackageName = functionId.getNamespace().child("functions");
 		String funcSimpleName = functionId.getName();
 		return RGeneratedJavaClass.create(JavaPackageName.escape(funcPackageName), funcSimpleName, RosettaFunction.class);
 	}
-	private JavaClass<? extends ReportFunction<?, ?>> toJavaReportClass(ModelReportId reportId) {
+	private RGeneratedJavaClass<? extends ReportFunction<?, ?>> toJavaReportClass(ModelReportId reportId) {
 		DottedPath reportPackageName = reportId.getNamespace().child("reports");
 		String reportSimpleName = reportId.joinRegulatoryReference() + "ReportFunction";
 		return RGeneratedJavaClass.create(JavaPackageName.escape(reportPackageName), reportSimpleName, new TypeReference<ReportFunction<?, ?>>() {});
 	}
-	private JavaClass<? extends RosettaFunction> toJavaRuleClass(ModelSymbolId ruleId) {
+	private RGeneratedJavaClass<? extends RosettaFunction> toJavaRuleClass(ModelSymbolId ruleId) {
 		DottedPath rulePackageName = ruleId.getNamespace().child("reports");
 		String ruleSimpleName = ruleId.getName() + "Rule";
 		return RGeneratedJavaClass.create(JavaPackageName.escape(rulePackageName), ruleSimpleName, new TypeReference<ReportFunction<?, ?>>() {});
 	}
 	
-	public JavaClass<? extends LabelProvider> toLabelProviderJavaClass(RFunction function) {
+	public RGeneratedJavaClass<? extends RosettaMetaData<?>> toJavaMetaDataClass(JavaPojoInterface pojoClass) {
+		JavaParameterizedType<RosettaMetaData<?>> superType = JavaParameterizedType.from(typeUtil.ROSETTA_META_DATA, pojoClass);
+		return RGeneratedJavaClass.create(JavaPackageName.escape(pojoClass.getPackageName().child("meta")), pojoClass.getSimpleName() + "Meta", superType);
+	}
+	
+	public RGeneratedJavaClass<? extends LabelProvider> toLabelProviderJavaClass(RFunction function) {
 		DottedPath packageName = function.getNamespace().child("labels");
 		String simpleName = function.getAlphanumericName() + "LabelProvider";
 		return RGeneratedJavaClass.create(JavaPackageName.escape(packageName), simpleName, LabelProvider.class);
@@ -347,22 +349,22 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	
 	// TODO
-	public JavaClass<?> toImplType(JavaClass<?> type) {
-		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Impl", Object.class);
-	}
-	public JavaClass<?> toBuilderType(JavaClass<?> type) {
-		if (type.equals(JavaClass.from(RosettaModelObject.class))) {
-			return JavaClass.from(RosettaModelObjectBuilder.class);
-		}
-		GeneratedJavaClass<Object> base = new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Builder", Object.class);
-		if (type instanceof JavaParameterizedType<?>) {
-			return JavaParameterizedType.from(new GeneratedJavaGenericTypeDeclaration<>(base, "T"), ((JavaParameterizedType<?>)type).getArguments());
-		}
-		return base;
-	}
-	public JavaClass<?> toBuilderImplType(JavaClass<?> type) {
-		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "BuilderImpl", Object.class);
-	}
+//	public JavaClass<?> toImplType(JavaClass<?> type) {
+//		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Impl", Object.class);
+//	}
+//	public JavaClass<?> toBuilderType(JavaClass<?> type) {
+//		if (type.equals(JavaClass.from(RosettaModelObject.class))) {
+//			return JavaClass.from(RosettaModelObjectBuilder.class);
+//		}
+//		GeneratedJavaClass<Object> base = new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Builder", Object.class);
+//		if (type instanceof JavaParameterizedType<?>) {
+//			return JavaParameterizedType.from(new GeneratedJavaGenericTypeDeclaration<>(base, "T"), ((JavaParameterizedType<?>)type).getArguments());
+//		}
+//		return base;
+//	}
+//	public JavaClass<?> toBuilderImplType(JavaClass<?> type) {
+//		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "BuilderImpl", Object.class);
+//	}
 	
 	public JavaClass<?> toValidatorClass(JavaPojoInterface t) {
 		return RGeneratedJavaClass.create(JavaPackageName.escape(validation(t.getPackageName())), t.getSimpleName() + "Validator", Object.class);

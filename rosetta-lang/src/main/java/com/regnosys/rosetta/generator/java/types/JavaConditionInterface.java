@@ -41,7 +41,7 @@ public class JavaConditionInterface extends RGeneratedJavaClass<Object> {
 	private final JavaTypeTranslator typeTranslator;
 	
 	private JavaConditionInterface(Condition condition, JavaPackageName packageName, String simpleName, RosettaTypeProvider typeProvider, TypeSystem typeSystem, JavaTypeUtil typeUtil, JavaTypeTranslator typeTranslator) {
-		super(packageName, simpleName);
+		super(packageName, DottedPath.of(simpleName));
 		
 		this.condition = condition;
 		

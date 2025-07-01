@@ -64,7 +64,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<?>> {
 	/**
 	 * May be null.
 	 */
-	protected Scope getParent() {
+	public Scope getParent() {
 		return this.parent;
 	}
 	
@@ -108,6 +108,12 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<?>> {
 	
 	protected Map<Object, GeneratedIdentifier> getOwnIdentifiersMap() {
 		return identifiers;
+	}
+
+	public boolean isNameTaken(String desiredName) {
+		return
+				getOwnIdentifiersMap().values().stream().anyMatch(id -> desiredName.equals(id.getDesiredName()))
+				|| getParent() != null && getParent().isNameTaken(desiredName);
 	}
 	
 	/**

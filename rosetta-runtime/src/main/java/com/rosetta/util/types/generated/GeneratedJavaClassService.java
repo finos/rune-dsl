@@ -22,7 +22,6 @@ import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.reports.ReportFunction;
-import com.rosetta.model.lib.reports.Tabulator;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 

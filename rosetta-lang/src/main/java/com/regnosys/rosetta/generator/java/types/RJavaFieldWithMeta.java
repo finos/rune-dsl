@@ -17,7 +17,7 @@ public class RJavaFieldWithMeta extends RJavaWithMetaValue {
 	private final JavaParameterizedType<FieldWithMeta<?>> fieldWithMetaParameterisedType;
 	
 	public RJavaFieldWithMeta(JavaReferenceType valueType, JavaPackageName packageName, JavaTypeUtil typeUtil) {
-		super(valueType, packageName, "FieldWithMeta" + valueType.getSimpleName());
+		super(valueType, packageName, "FieldWithMeta" + valueType.getSimpleName(), typeUtil);
 		this.typeUtil = typeUtil;
 		this.fieldWithMetaParameterisedType = typeUtil.wrap(typeUtil.FIELD_WITH_META, valueType);
 	}

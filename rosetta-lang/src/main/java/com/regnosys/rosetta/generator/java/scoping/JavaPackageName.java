@@ -17,6 +17,9 @@ public class JavaPackageName {
 		String[] escapedNames = unescapedPackageName.stream().map(n -> escape(n)).toArray(String[]::new);
 		return new JavaPackageName(DottedPath.of(escapedNames));
 	}
+	public static JavaPackageName splitOnDotsAndEscape(String unescapedPackageName) {
+		return escape(DottedPath.splitOnDots(unescapedPackageName));
+	}
 	
 	private static String escape(String name) {
 		if (!SourceVersion.isIdentifier(name)) {

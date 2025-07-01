@@ -8,8 +8,8 @@ import com.rosetta.util.types.JavaReferenceType;
 public abstract class RJavaWithMetaValue extends JavaPojoInterface {
 	protected final JavaReferenceType valueType;
 	
-	public RJavaWithMetaValue(JavaReferenceType valueType, JavaPackageName packageName, String simpleName) {
-		super(packageName, simpleName);
+	public RJavaWithMetaValue(JavaReferenceType valueType, JavaPackageName packageName, String simpleName, JavaTypeUtil typeUtil) {
+		super(packageName, simpleName, typeUtil);
 		this.valueType = valueType;
 	}
 

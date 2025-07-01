@@ -25,6 +25,7 @@ import com.regnosys.rosetta.generator.java.enums.EnumHelper;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.types.REnumType;
+import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaTypeDeclaration;
 
@@ -35,7 +36,7 @@ public class RJavaEnum extends RGeneratedJavaClass<Object> {
 	private List<RJavaEnumValue> enumValues = null;
 
 	public RJavaEnum(REnumType enumeration) {
-		super(JavaPackageName.escape(enumeration.getNamespace()), enumeration.getName());
+		super(JavaPackageName.escape(enumeration.getNamespace()), DottedPath.of(enumeration.getName()));
 		this.enumeration = enumeration;
 	}
 	

@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.tests.util
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
@@ -8,6 +7,7 @@ import org.eclipse.xtext.EcoreUtil2
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService
 import java.util.ArrayList
 import jakarta.inject.Inject
+import com.rosetta.util.DottedPath
 
 class ModelHelper {
 
@@ -53,9 +53,9 @@ class ModelHelper {
 		'''
 	}
 	
-	val rootpack = new RootPackage("com.rosetta.test.model")
+	val rootpack = DottedPath.splitOnDots("com.rosetta.test.model")
 
-	final def RootPackage rootPackage() {
+	final def DottedPath rootPackage() {
 		return rootpack
 	}
 

@@ -1,5 +1,8 @@
 package com.regnosys.rosetta.generator.java.scoping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class JavaFileScope extends AbstractJavaScope<JavaPackageScope> {
@@ -9,10 +12,18 @@ public class JavaFileScope extends AbstractJavaScope<JavaPackageScope> {
 	}
 
 	public JavaClassScope createClassScope(JavaTypeDeclaration<?> clazz) {
-		JavaClassScope superClassScope = null;
+		List<JavaClassScope> superClassScopes = new ArrayList<>();
 		if (clazz.getSuperclassDeclaration() != null) {
-			superClassScope = getClassScope(clazz.getSuperclassDeclaration());
+			superClassScopes.add(getClassScope(clazz.getSuperclassDeclaration()));
 		}
-		return new JavaClassScope(clazz.getSimpleName(), this, superClassScope);
+		for (var interf : clazz.getInterfaceDeclarations()) {
+			superClassScopes.add(getClassScope(interf));
+		}
+		return new JavaClassScope(clazz.getSimpleName(), this, superClassScopes);
+	}
+	
+	@Override
+	public JavaFileScope getFileScope() {
+		return this;
 	}
 }

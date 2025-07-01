@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.enums
 
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.rosetta.model.lib.annotations.RosettaEnum
 import com.rosetta.model.lib.annotations.RosettaSynonym
@@ -9,29 +8,33 @@ import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.generator.java.types.RJavaEnum
+import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 
-class EnumGenerator {
-	@Inject extension ImportManagerExtension
+class EnumGenerator extends RObjectJavaClassGenerator<REnumType, RJavaEnum> {
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelGeneratorUtil
-
-	def generate(IFileSystemAccess2 fsa, REnumType enumeration, String version) {
-		fsa.generateFile(root.withForwardSlashes + '/' + enumeration.name + '.java', enumeration.toJava(version))
+	@Inject extension RObjectFactory
+	
+	override protected streamObjects(RosettaModel model) {
+		model.elements.stream.filter[it instanceof RosettaEnumeration].map[it as RosettaEnumeration].map[buildREnumType]
 	}
-
-	private def String toJava(REnumType e, String version) {
-		val scope = new JavaStatementScope(root)
-		
-		val javaEnum = e.toJavaReferenceType
-		
-		val StringConcatenationClient classBody = '''
+	override protected createTypeRepresentation(REnumType object) {
+		object.toJavaReferenceType
+	}
+	override protected registerMethods(REnumType object, RJavaEnum typeRepresentation, JavaClassScope scope) {
+	}
+	override protected generate(REnumType e, RJavaEnum javaEnum, String version, JavaClassScope scope) {
+		'''
 		«javadoc(e.EObject.definition, e.EObject.references, version)»
 		@«RosettaEnum»("«e.name»")
 		public enum «e.name» {
@@ -78,10 +81,7 @@ class EnumGenerator {
 			}
 		}
 		'''
-
-		buildClass(root, classBody, scope)
 	}
-	
 	
 	private def StringConcatenationClient contributeAnnotations(RosettaEnumValue e) '''
 	«FOR synonym : e.enumSynonyms»
@@ -89,5 +89,6 @@ class EnumGenerator {
 			@«RosettaSynonym»(value = "«synonym.synonymValue»", source = "«source.getName»")
 		«ENDFOR»
 	«ENDFOR»
-	'''	
+	'''
+	
 }

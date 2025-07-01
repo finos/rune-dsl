@@ -18,6 +18,8 @@ import java.util.Objects
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType
 
 class ModelObjectBoilerPlate {
 
@@ -28,7 +30,7 @@ class ModelObjectBoilerPlate {
 	val toBuilder = [JavaClass<?> t|t.simpleName + "Builder"]
 	val identity = [JavaClass<?> t|t.simpleName]
 
-	def StringConcatenationClient builderBoilerPlate(JavaPojoInterface javaType, boolean extended, JavaStatementScope scope) {
+	def StringConcatenationClient builderBoilerPlate(JavaPojoInterface javaType, boolean extended, JavaClassScope scope) {
 		val properties = extended ? javaType.ownProperties : javaType.allProperties
 		'''
 			«javaType.contributeEquals(extended, properties, scope)»
@@ -64,12 +66,8 @@ class ModelObjectBoilerPlate {
 	def boolean isScopedKey(JavaPojoProperty prop) {
 		return prop.attributeMetaTypes.contains(AttributeMetaType.SCOPED_KEY)
 	}
-	
-	def StringConcatenationClient implementsClause(JavaPojoInterface javaType) {
-		'''«FOR i : javaType.interfaces SEPARATOR ', '»«i»«ENDFOR»'''
-	}
 
-	def StringConcatenationClient boilerPlate(JavaPojoInterface javaType, boolean extended, JavaStatementScope scope) {
+	def StringConcatenationClient boilerPlate(JavaPojoInterface javaType, boolean extended, JavaClassScope scope) {
 		val properties = extended ? javaType.ownProperties : javaType.allProperties
 		'''
 			«javaType.contributeEquals(extended, properties, scope)»
@@ -94,14 +92,14 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeHashCode(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaStatementScope scope) {
-		val methodScope = scope.methodScope("hashCode")
+	private def StringConcatenationClient contributeHashCode(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaClassScope scope) {
+		val methodScope = scope.createMethodOverrideScope("hashCode")
 		'''
 		@Override
 		public int hashCode() {
 			int _result = «IF extended»super.hashCode()«ELSE»0«ENDIF»;
 			«FOR prop : properties»
-				«prop.contributeHashCode(methodScope)»
+				«prop.contributeHashCode(methodScope.bodyScope)»
 			«ENDFOR»
 			return _result;
 		}
@@ -109,8 +107,8 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeToString(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, (JavaClass<?>)=>String classNameFunc, JavaStatementScope scope) {
-		val methodScope = scope.methodScope("toString")
+	private def StringConcatenationClient contributeToString(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, (JavaClass<?>)=>String classNameFunc, JavaClassScope scope) {
+		val methodScope = scope.createMethodOverrideScope("toString")
 		'''
 		@Override
 		public «String» toString() {
@@ -123,8 +121,8 @@ class ModelObjectBoilerPlate {
 		'''
 	}
 
-	private def StringConcatenationClient contributeEquals(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaStatementScope scope) {
-		val methodScope = scope.methodScope("equals")
+	private def StringConcatenationClient contributeEquals(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaClassScope scope) {
+		val methodScope = scope.createMethodOverrideScope("equals")
 		'''
 		@Override
 		public boolean equals(«Object» o) {
@@ -135,7 +133,7 @@ class ModelObjectBoilerPlate {
 			«IF !properties.empty»«javaType» _that = getType().cast(o);«ENDIF»
 		
 			«FOR prop : properties»
-				«prop.contributeToEquals(methodScope)»
+				«prop.contributeToEquals(methodScope.bodyScope)»
 			«ENDFOR»
 			return true;
 		}
@@ -151,33 +149,39 @@ class ModelObjectBoilerPlate {
 	«ENDIF»
 	'''
 	
-	def StringConcatenationClient processMethod(JavaPojoInterface javaType) '''
+	def StringConcatenationClient processMethod(JavaPojoInterface javaType, JavaClassScope pojoScope) {
+		'''
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR prop : javaType.allProperties»
+				«val getterName = pojoScope.getIdentifierOrThrow(prop.getOperationKey(JavaPojoPropertyOperationType.GETTER))»
 				«IF prop.type.isRosettaModelObject»
-					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.type.itemType».class, «prop.getterName»()«prop.metaFlags»);
+					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.type.itemType».class, «getterName»()«prop.metaFlags»);
 				«ELSE»
-					processor.processBasic(path.newSubPath("«prop.name»"), «prop.type.itemType».class, «prop.getterName»(), this«prop.metaFlags»);
+					processor.processBasic(path.newSubPath("«prop.name»"), «prop.type.itemType».class, «getterName»(), this«prop.metaFlags»);
 				«ENDIF»
 			«ENDFOR»
 		}
 		
-	'''
+		'''
+	}
 	
-	def StringConcatenationClient builderProcessMethod(JavaPojoInterface javaType) '''
+	def StringConcatenationClient builderProcessMethod(JavaPojoInterface javaType, JavaClassScope builderScope) {
+		 '''
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR prop : javaType.allProperties»
+				«val getterName = builderScope.getIdentifierOrThrow(prop.getOperationKey(JavaPojoPropertyOperationType.GETTER))»
 				«IF prop.type.isRosettaModelObject»
-					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.toBuilderTypeSingle».class, «prop.getterName»()«prop.metaFlags»);
+					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.toBuilderTypeSingle».class, «getterName»()«prop.metaFlags»);
 				«ELSE»
-					processor.processBasic(path.newSubPath("«prop.name»"), «prop.type.itemType».class, «prop.getterName»(), this«prop.metaFlags»);
+					processor.processBasic(path.newSubPath("«prop.name»"), «prop.type.itemType».class, «getterName»(), this«prop.metaFlags»);
 				«ENDIF»
 			«ENDFOR»
 		}
 		
-	'''
+		'''
+	}
 
 	private def StringConcatenationClient getMetaFlags(JavaPojoProperty prop) {
 		if (prop.meta !== null) {

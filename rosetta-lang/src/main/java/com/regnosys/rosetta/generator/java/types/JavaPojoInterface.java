@@ -21,14 +21,17 @@ import java.util.NoSuchElementException;
 
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaType;
-import com.rosetta.util.types.JavaTypeDeclaration;
 
-public abstract class JavaPojoInterface extends RGeneratedJavaClass<RosettaModelObject> {	
+public abstract class JavaPojoInterface extends RGeneratedJavaClass<RosettaModelObject> {
+	private final JavaTypeUtil typeUtil;
 	
-	protected JavaPojoInterface(JavaPackageName packageName, String simpleName) {
-		super(packageName, simpleName);
+	protected JavaPojoInterface(JavaPackageName packageName, String simpleName, JavaTypeUtil typeUtil) {
+		super(packageName, DottedPath.of(simpleName));
+		
+		this.typeUtil = typeUtil;
 	}
 	
 	public abstract String getJavadoc();
@@ -56,6 +59,16 @@ public abstract class JavaPojoInterface extends RGeneratedJavaClass<RosettaModel
 		return getAllProperties().stream().filter(prop -> prop.getName().equals(propertyName))
 			.findAny()
 			.orElseThrow(() -> new NoSuchElementException("No property named " + propertyName + " in pojo " + this));
+	}
+	
+	public JavaPojoBuilderInterface toBuilderInterface() {
+		return new JavaPojoBuilderInterface(this, typeUtil);
+	}
+	public JavaPojoImpl toImplClass() {
+		return new JavaPojoImpl(this);
+	}
+	public JavaPojoBuilderImpl toBuilderImplClass() {
+		return new JavaPojoBuilderImpl(this);
 	}
 
 	@Override

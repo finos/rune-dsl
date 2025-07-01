@@ -22,6 +22,10 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
+import com.regnosys.rosetta.generator.GeneratedIdentifier;
+import com.regnosys.rosetta.generator.java.scoping.AbstractJavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.util.types.JavaType;
@@ -61,8 +65,29 @@ public class JavaPojoProperty {
 		return new JavaPojoProperty(pojo, name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
 	}
 	
-	public boolean isCompatibleWithParent() {
+	public GeneratedIdentifier getOperationIdentifier(JavaPojoPropertyOperationType operationType, AbstractJavaScope<?> scope) {
+		return scope.getIdentifierOrThrow(getOperationKey(operationType));
+	}
+	public OperationKey getOperationKey(JavaPojoPropertyOperationType operationType) {
+		return new OperationKey(this, operationType);
+	}
+	public static record OperationKey(JavaPojoProperty prop, JavaPojoPropertyOperationType type) {
+		public String getDesiredOperationName() {
+			if (type == JavaPojoPropertyOperationType.GETTER || type == JavaPojoPropertyOperationType.GET_OR_CREATE) {
+				return type.getPrefix() + StringUtils.capitalize(prop.getterCompatibilityName) + type.getPostfix();
+			}
+			return type.getPrefix() + StringUtils.capitalize(prop.setterCompatibilityName) + type.getPostfix();
+		}
+	}
+	
+	public boolean isCompatibleTypeWithParent() {
 		return parentProperty == null || type.isSubtypeOf(parentProperty.type);
+	}
+	public boolean isSameTypeAsParent() {
+		return parentProperty == null || type.equals(parentProperty.type);
+	}
+	public boolean getterOverridesParentGetter() {
+		return parentProperty != null && getterCompatibilityName.equals(parentProperty.getterCompatibilityName);
 	}
 	
 	public String getName() {
@@ -79,24 +104,6 @@ public class JavaPojoProperty {
 	}
 	public String getSetterCompatibilityName() {
 		return setterCompatibilityName;
-	}
-	public String getGetterName() {
-		return "get" + StringUtils.capitalize(getterCompatibilityName);
-	}
-	public String getGetOrCreateName() {
-		return "getOrCreate" + StringUtils.capitalize(getterCompatibilityName);
-	}
-	public String getSetterName() {
-		return "set" + StringUtils.capitalize(setterCompatibilityName);
-	}
-	public String getAdderName() {
-		return "add" + StringUtils.capitalize(setterCompatibilityName);
-	}
-	public String getValueSetterName() {
-		return "set" + StringUtils.capitalize(setterCompatibilityName) + "Value";
-	}
-	public String getValueAdderName() {
-		return "add" + StringUtils.capitalize(setterCompatibilityName) + "Value";
 	}
 	public JavaType getType() {
 		return type;
@@ -117,13 +124,14 @@ public class JavaPojoProperty {
 		return parentProperty;
 	}
 	
-	public JavaExpression applyGetter(JavaExpression expr) {
+	public JavaExpression applyGetter(JavaExpression expr, JavaScope anyScope) {
+		JavaClassScope pojoScope = anyScope.getClassScope(pojo);
 		return JavaExpression.from(new StringConcatenationClient() {
 			@Override
 			protected void appendTo(TargetStringConcatenation target) {
 				target.append(expr);
 				target.append('.');
-				target.append(getGetterName());
+				target.append(pojoScope.getIdentifierOrThrow(getOperationKey(JavaPojoPropertyOperationType.GETTER)));
 				target.append("()");
 			}
 		}, type);
@@ -131,7 +139,7 @@ public class JavaPojoProperty {
 	
 	@Override
 	public String toString() {
-		return JavaPojoProperty.class.getSimpleName() + "[" + type.getSimpleName() + " " + getGetterName() + "()]";
+		return JavaPojoProperty.class.getSimpleName() + "[" + type.getSimpleName() + " " + getterCompatibilityName + "]";
 	}
 	@Override
 	public int hashCode() {

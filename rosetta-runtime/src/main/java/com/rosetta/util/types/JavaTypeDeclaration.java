@@ -30,9 +30,12 @@ public interface JavaTypeDeclaration<T> {
 	}
 	
 	DottedPath getPackageName();
-	String getSimpleName();
+	DottedPath getNestedTypeName();
+	default String getSimpleName() {
+		return getNestedTypeName().last();
+	}
 	default DottedPath getCanonicalName() {
-		return getPackageName().child(getSimpleName());
+		return getPackageName().concat(getNestedTypeName());
 	}
 	
 	JavaTypeDeclaration<? super T> getSuperclassDeclaration();

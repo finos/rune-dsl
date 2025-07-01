@@ -20,6 +20,7 @@ import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.metafields.MetaFields
+import com.rosetta.util.DottedPath
 
 class CodeGeneratorTestHelper {
 
@@ -36,7 +37,7 @@ class CodeGeneratorTestHelper {
 		generateCode(#[eResource])
 	}
 	
-	protected def Map<String, String> generateCode(List<Resource> resources) {
+	def Map<String, String> generateCode(List<Resource> resources) {
 		val fsa = generateCodeWithFSA(resources)
 		
 		val generatedCode = newLinkedHashMap
@@ -95,7 +96,7 @@ class CodeGeneratorTestHelper {
 		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet)
 	}
 
-	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet) {
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, DottedPath namespace, String className, Map<String, Object> itemsToSet) {
 		classes.createInstanceUsingBuilder(namespace, className, itemsToSet, of())
 	}
 
@@ -103,7 +104,7 @@ class CodeGeneratorTestHelper {
 		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet, itemsToAddToList)
 	}
 
-	def createBuilderInstance(Map<String, Class<?>> classes, RootPackage namespace, String className) {
+	def createBuilderInstance(Map<String, Class<?>> classes, DottedPath namespace, String className) {
 		classes.get(namespace + '.' + className).getMethod("builder").invoke(null) as RosettaModelObjectBuilder
 	}
 
@@ -120,7 +121,7 @@ class CodeGeneratorTestHelper {
 				rosettaClassBuilderInstance, value);
 	}
 
-	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, DottedPath namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
     val clazz = classes.get(namespace + '.' + className)
     if (clazz === null) {
       throw new RuntimeException('''Class «namespace + '.' + className» not found''')
@@ -166,14 +167,6 @@ class CodeGeneratorTestHelper {
 			if (clazz !== null && !p.isAssignableFrom(clazz)) return false
 		}
 		return true
-	}
-
-	def createCalculationInstance(Map<String, Class<?>> classes, String className) {
-		val fqn = rootPackage.functions + '.' + className
-		val foundClazz = classes.get(fqn)
-		if(foundClazz === null)
-			throw new IllegalStateException('''No generated class '«fqn»' found''')
-		return foundClazz.declaredConstructor.newInstance
 	}
 
 	@Deprecated

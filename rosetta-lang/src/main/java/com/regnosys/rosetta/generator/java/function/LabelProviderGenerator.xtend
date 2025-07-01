@@ -1,16 +1,12 @@
 package com.regnosys.rosetta.generator.java.function
 
-import org.eclipse.xtext.generator.IFileSystemAccess2
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.types.RObjectFactory
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.types.RFunction
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.rosetta.util.types.JavaClass
-import com.rosetta.model.lib.functions.LabelProvider
 import java.util.Map
 import com.regnosys.rosetta.types.RDataType
 import com.rosetta.util.DottedPath
@@ -31,10 +27,12 @@ import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.rules.RuleReferenceService
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.rosetta.RosettaModel
 
-class LabelProviderGenerator {
-	@Inject extension ImportManagerExtension
+class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJavaClass<?>> {
 	@Inject RObjectFactory rObjectFactory
 	@Inject RosettaTypeProvider typeProvider
 	@Inject JavaTypeTranslator typeTranslator
@@ -43,52 +41,46 @@ class LabelProviderGenerator {
 	@Inject RuleReferenceService ruleService
 	@Inject AnnotationPathExpressionUtil annotationPathUtil
 	
-	def void generateForFunctionIfApplicable(IFileSystemAccess2 fsa, Function func) {
-		if (util.shouldGenerateLabelProvider(func)) {
-			val rFunction = rObjectFactory.buildRFunction(func)
-			generate(fsa, rFunction, emptyMap)
-		}
+	
+	override protected streamObjects(RosettaModel model) {
+		model.elements.stream.map[
+			if (it instanceof Function && util.shouldGenerateLabelProvider(it as Function)) {
+				return rObjectFactory.buildRFunction(it as Function)
+			} else if (it instanceof RosettaReport) {
+				return rObjectFactory.buildRFunction(it)
+			}
+			null
+		].filter[it !== null]
 	}
-	def void generateForReport(IFileSystemAccess2 fsa, RosettaReport report) {
-		val rFunction = rObjectFactory.buildRFunction(report)
-		val attributeToRuleMap = ruleService.traverse(
-			report.ruleSource,
-			rFunction.output.RMetaAnnotatedType.RType as RDataType,
-			newHashMap,
-			[map,context|
-				if (context.rule !== null && context.rule.identifier !== null) {
-					val origin = context.ruleOrigin
-					if (origin instanceof RuleReferenceAnnotation) {
-						if (origin.path === null) {
-							map.put(context.targetAttribute, context.rule)
+	override protected createTypeRepresentation(RFunction function) {
+		typeTranslator.toLabelProviderJavaClass(function)
+	}
+	override protected registerMethods(RFunction function, RGeneratedJavaClass<?> typeRepresentation, JavaClassScope scope) {
+	}
+	override protected generate(RFunction function, RGeneratedJavaClass<?> labelClass, String version, JavaClassScope classScope) {
+		val functionOrigin = function.EObject
+		val attributeToRuleMap = if (functionOrigin instanceof RosettaReport) {
+			ruleService.traverse(
+				functionOrigin.ruleSource,
+				function.output.RMetaAnnotatedType.RType as RDataType,
+				newHashMap,
+				[map,context|
+					if (context.rule !== null && context.rule.identifier !== null) {
+						val origin = context.ruleOrigin
+						if (origin instanceof RuleReferenceAnnotation) {
+							if (origin.path === null) {
+								map.put(context.targetAttribute, context.rule)
+							}
 						}
 					}
-				}
-				map
-			]
-		)
-		generate(fsa, rFunction, attributeToRuleMap)
-	}
-	private def void generate(IFileSystemAccess2 fsa, RFunction f, Map<RAttribute, RosettaRule> attributeToRuleMap) {
-		val javaClass = typeTranslator.toLabelProviderJavaClass(f)
-		val fileName = javaClass.canonicalName.withForwardSlashes + '.java'
+					map
+				]
+			)
+		} else {
+			emptyMap
+		}
 		
-		val topScope = new JavaStatementScope(javaClass.packageName)
-		val StringConcatenationClient classBody = classBody(f, attributeToRuleMap, javaClass, topScope)
-
-		val content = buildClass(javaClass.packageName, classBody, topScope)
-		fsa.generateFile(fileName, content)
-	}
-	
-	private def StringConcatenationClient classBody(
-		RFunction function,
-		Map<RAttribute, RosettaRule> attributeToRuleMap,
-		JavaClass<LabelProvider> javaClass,
-		JavaStatementScope topScope
-	) {
-		val className = topScope.createIdentifier(function, javaClass.simpleName)
-		val classScope = topScope.classScope(javaClass.simpleName)
-		val constructorScope = classScope.methodScope("constructor")
+		val constructorScope = classScope.createUniqueMethodScope("constructor")
 
 		val Map<RDataType, Map<DottedPath, String>> labelsPerNode = newLinkedHashMap
 		val edgesPerNode = newLinkedHashMap
@@ -110,8 +102,8 @@ class LabelProviderGenerator {
 		]
 
 		'''
-			public class «className» extends «GraphBasedLabelProvider» {
-				public «className»() {
+			public class «labelClass» extends «GraphBasedLabelProvider» {
+				public «labelClass»() {
 					super(new «LabelNode»());
 					
 					«FOR node : labelsPerNode.keySet»
@@ -139,6 +131,7 @@ class LabelProviderGenerator {
 			}
 		'''
 	}
+	
 	private def StringConcatenationClient representAsList(DottedPath path) {
 		'''«Arrays».asList(«path.stream.map[StringEscapeUtils.escapeJava(it)].collect(Collectors.joining("\", \"", "\"", "\""))»)'''
 	}
@@ -257,4 +250,5 @@ class LabelProviderGenerator {
 			)
 		}
 	}
+	
 }

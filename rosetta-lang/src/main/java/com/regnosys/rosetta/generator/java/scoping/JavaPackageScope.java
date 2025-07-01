@@ -18,7 +18,7 @@ public class JavaPackageScope extends AbstractJavaScope<JavaGlobalScope> {
 			throw new IllegalStateException("There is already a class scope defined for class `" + clazz.getCanonicalName() + "`.\n" + this);
 		}
 		this.createIdentifier(clazz, clazz.getSimpleName());
-		JavaFileScope fileScope = new JavaFileScope(clazz.getCanonicalName().withForwardSlashes() + ".java", this);
+		JavaFileScope fileScope = createFileScope(clazz.getCanonicalName().withForwardSlashes() + ".java");
 		JavaClassScope classScope = fileScope.createClassScope(clazz);
 		classScopes.put(clazz, classScope);
 		return classScope;
@@ -28,6 +28,10 @@ public class JavaPackageScope extends AbstractJavaScope<JavaGlobalScope> {
 			throw new IllegalStateException("No scope defined for class `" + clazz.getCanonicalName() + "`.\n" + this);
 		}
 		return this.classScopes.get(clazz);
+	}
+	
+	public JavaFileScope createFileScope(String fileName) {
+		return new JavaFileScope(fileName, this);
 	}
 	
 	@Override

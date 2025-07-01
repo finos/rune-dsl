@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.scoping;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaTypeDeclaration;
 
@@ -13,11 +14,15 @@ import com.rosetta.util.types.JavaTypeDeclaration;
  */
 public class JavaGlobalScope extends AbstractJavaScope<JavaGlobalScope> {
 	private final Map<DottedPath, JavaPackageScope> packages = new HashMap<>();
-	// TODO: add existing packages (rosetta-runtime)
-	// TODO: auto-import java.lang in importing string concatenation client
 	
 	public JavaGlobalScope() {
 		super("Global Java scope");
+	}
+	
+	public void initializeRuntimeScopes(JavaTypeUtil typeUtil) {
+		JavaClassScope rosettaModelObjectScope = createClassScopeAndRegisterIdentifier(typeUtil.ROSETTA_MODEL_OBJECT);
+		rosettaModelObjectScope.createUniqueIdentifier("getType");
+		rosettaModelObjectScope.createUniqueIdentifier("getValueType");
 	}
 	
 	public JavaClassScope createClassScopeAndRegisterIdentifier(JavaTypeDeclaration<?> clazz) {
@@ -36,5 +41,18 @@ public class JavaGlobalScope extends AbstractJavaScope<JavaGlobalScope> {
 	
 	private JavaPackageScope getOrCreatePackageScope(DottedPath packageName) {
 		return packages.computeIfAbsent(packageName, (p) -> new JavaPackageScope(p, this));
+	}
+	
+	@Override
+	public boolean isNameTaken(String desiredName) {
+		if (super.isNameTaken(desiredName)) {
+			return true;
+		}
+		try {
+			Class.forName("java.lang." + desiredName);
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 }

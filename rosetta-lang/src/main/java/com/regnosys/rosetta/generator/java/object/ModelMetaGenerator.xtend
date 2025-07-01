@@ -1,13 +1,11 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.rosetta.model.lib.annotations.RosettaMeta
-import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.model.lib.qualify.QualifyFunctionFactory
 import com.rosetta.model.lib.qualify.QualifyResult
 import com.rosetta.model.lib.validation.Validator
@@ -16,36 +14,34 @@ import java.util.Arrays
 import java.util.Collections
 import java.util.List
 import java.util.Set
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import com.rosetta.model.lib.validation.ValidatorFactory
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import jakarta.inject.Inject
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.types.RObjectFactory
 
-class ModelMetaGenerator {
+class ModelMetaGenerator extends RObjectJavaClassGenerator<RDataType, RGeneratedJavaClass<?>> {
 
-	@Inject extension ImportManagerExtension
 	@Inject RosettaConfigExtension confExt
 	@Inject RosettaFunctionExtensions funcExt
 	@Inject extension JavaTypeTranslator
 	@Inject extension ModelGeneratorUtil
+	@Inject extension RObjectFactory
 	
-	def generate(IFileSystemAccess2 fsa, RDataType t, String version) {
-		val className = '''«t.name»Meta'''
-		
-		val scope = new JavaStatementScope(root.meta)
-		
-		val classBody = t.metaClassBody(className, version)
-		val javaFileContents = buildClass(root.meta, classBody, scope)
-		fsa.generateFile('''«root.meta.withForwardSlashes»/«className».java''', javaFileContents)
+	override protected streamObjects(RosettaModel model) {
+		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType]
 	}
-	
-	private def StringConcatenationClient metaClassBody(RDataType t, String className, String version) {
+	override protected createTypeRepresentation(RDataType t) {
+		t.toJavaReferenceType.toJavaMetaDataClass
+	}
+	override protected registerMethods(RDataType t, RGeneratedJavaClass<?> typeRepresentation, JavaClassScope scope) {
+	}
+	override protected generate(RDataType t, RGeneratedJavaClass<?> metaClass, String version, JavaClassScope scope) {
 		val dataClass = t.toJavaType
 		val validator = dataClass.toValidatorClass
 		val typeFormatValidator = dataClass.toTypeFormatValidatorClass
@@ -56,7 +52,7 @@ class ModelMetaGenerator {
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
-			public class «className» implements «RosettaMetaData»<«dataClass»> {
+			public class «metaClass» implements «metaClass.interfaces.head»> {
 			
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {
@@ -118,4 +114,5 @@ class ModelMetaGenerator {
 		val funcs = models.flatMap[elements].filter(Function).toSet
 		return funcs.filter[funcExt.isQualifierFunctionFor(it,type)].toSet
 	}
+	
 }

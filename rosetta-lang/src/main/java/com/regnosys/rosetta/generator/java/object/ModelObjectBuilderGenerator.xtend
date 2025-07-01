@@ -32,6 +32,7 @@ import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.rosetta.model.lib.annotations.RosettaIgnore
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 
 class ModelObjectBuilderGenerator {
 	
@@ -40,7 +41,7 @@ class ModelObjectBuilderGenerator {
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TypeCoercionService
 
-	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaStatementScope scope) {
+	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaClassScope scope) {
 		val superInterface = javaType.interfaces.head
 		val extendSuperImpl = superInterface instanceof JavaPojoInterface && javaType.ownProperties.forall[parentProperty === null || parentProperty.type == type]
 		val builderScope = scope.classScope('''«javaType»BuilderImpl''')
