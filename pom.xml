@@ -160,6 +160,10 @@
                                 <configuration>
                                     <passphraseServerId>${gpg.keyname}</passphraseServerId>
                                     <passphraseEnvName>${gpg.passphrase}</passphraseEnvName>
+                                    <gpgArguments>
+				        <arg>--pinentry-mode</arg>
+				        <arg>loopback</arg>
+                                    </gpgArguments>
                                 </configuration>
                             </execution>
                         </executions>
