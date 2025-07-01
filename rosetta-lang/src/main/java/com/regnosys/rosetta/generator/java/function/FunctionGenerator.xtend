@@ -415,7 +415,7 @@ class FunctionGenerator {
 			var javaExpr = expressionGenerator.javaCode(op.expression, expressionType, scope)
 			val effectiveExprType = javaExpr.expressionType
 			if (needsBuilder(attribute)) {
-				javaExpr = javaExpr.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»«IF functionHasDeepOperations && !effectiveExprType.isList», () -> «effectiveExprType».builder()«ENDIF»)''', attribute.toBuilderType)]
+				javaExpr = javaExpr.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»«IF functionHasDeepOperations», () -> «effectiveExprType».builder()«ENDIF»)''', attribute.toBuilderType)]
 			} else {
 				val needsToCopy = 
 					op.ROperationType == ROperationType.SET
