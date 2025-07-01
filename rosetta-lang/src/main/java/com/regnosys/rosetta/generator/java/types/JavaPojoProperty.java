@@ -127,21 +127,6 @@ public class JavaPojoProperty {
 		}, type);
 	}
 	
-	//Requires review: Safe guard for NullPointerException on multi-cardinality null properties
-	public JavaExpression applyGetterWithNullableWrapper(JavaExpression expr) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("java.util.Optional.ofNullable(");
-				target.append(expr);
-				target.append('.');
-				target.append(getGetterName());
-				target.append("()");
-				target.append(").orElse(new java.util.ArrayList<>())");
-			}
-		}, type);
-	}
-	
 	@Override
 	public String toString() {
 		return JavaPojoProperty.class.getSimpleName() + "[" + type.getSimpleName() + " " + getGetterName() + "()]";

@@ -4,6 +4,7 @@ import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath
@@ -290,8 +291,7 @@ class ValidatorsGenerator {
 		} else {
 			if (!hierarchy.aliases.flatMap[conditions].empty) {
 				val prop = javaType.findProperty(attr.name)
-				//Requires review: Safe guard for NullPointerException when calling size() method with null property
-				val attrVarExpr = prop.applyGetterWithNullableWrapper(JavaExpression.from('''o''', javaType))
+				val attrVarExpr = prop.applyGetter(JavaExpression.from('''o''', javaType))
 
 				val forIndex = scope.createUniqueIdentifier("i")
 				return attrVarExpr.declareAsVariable(true, attr.name, scope)
@@ -311,11 +311,14 @@ class ValidatorsGenerator {
 								)
 							}
 						}
-						new JavaForLoop(
-							new JavaLocalVariableDeclarationStatement(false, JavaPrimitiveType.INT, forIndex, JavaExpression.from('''0''', JavaPrimitiveType.INT)),
-							JavaExpression.from('''«forIndex» < «attrVar».size()''', JavaPrimitiveType.BOOLEAN),
-							JavaExpression.from('''«forIndex»++''', JavaPrimitiveType.INT),
-							forBody
+						new JavaIfThenStatement(
+							JavaExpression.from('''«attrVar» != null''', JavaPrimitiveType.BOOLEAN),
+							new JavaForLoop(
+								new JavaLocalVariableDeclarationStatement(false, JavaPrimitiveType.INT, forIndex, JavaExpression.from('''0''', JavaPrimitiveType.INT)),
+								JavaExpression.from('''«forIndex» < «attrVar».size()''', JavaPrimitiveType.BOOLEAN),
+								JavaExpression.from('''«forIndex»++''', JavaPrimitiveType.INT),
+								forBody
+							)
 						)
 					]
 			}
