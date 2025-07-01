@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.rosetta.model.lib.validation.Validator;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -121,7 +122,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -157,7 +158,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -192,7 +193,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -224,7 +225,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -262,7 +263,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -297,7 +298,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,

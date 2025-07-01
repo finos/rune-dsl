@@ -25,13 +25,16 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.path.RosettaPath;
 
 public interface Validator<T> {
-	
+
 	default List<ValidationResult<?>> getValidationResults(RosettaPath path, T objectToBeValidated) {
 		return Lists.newArrayList(validate(path, (RosettaModelObject) objectToBeValidated)); // @Compat: for backwards compatibility. Old generated code will not have an implementation for this method.
 	}
 
+	/**
+	 * @deprecated Since 9.7.0: use `getValidationResults` instead.
+	 */
 	@SuppressWarnings("unchecked")
-	@Deprecated // Since 9.7.0: use `getValidationResults` instead.
+	@Deprecated
 	default ValidationResult<T> validate(RosettaPath path, T objectToBeValidated) {
 		List<ValidationResult<?>> results = getValidationResults(path, objectToBeValidated);
 		if (results.isEmpty()) {
@@ -41,7 +44,7 @@ public interface Validator<T> {
 		if (results.size() == 1) {
 			return (ValidationResult<T>) first;
 		}
-		
+
 		String error = results.stream()
 				.filter(res -> res.getFailureReason().isPresent())
 				.map(res -> res.getFailureReason().get())
@@ -51,9 +54,17 @@ public interface Validator<T> {
 		}
 		return ValidationResult.success(first.getName(), first.getValidationType(), first.getModelObjectName(), path, first.getDefinition());
 	}
-	
+
 	/**
-	 * This method is purely here to remain backwards compatible and will be removed in the future.
+	 * @deprecated Since 9.58.1: this method is here to remain backwards compatible and will be removed in the future.
+	 */
+	@SuppressWarnings("unchecked")
+	@Deprecated
+	default List<ValidationResult<?>> getValidationResults(RosettaPath path, RosettaModelObject objectToBeValidated) {
+		return getValidationResults(path, (T)objectToBeValidated);
+	}
+	/**
+	 * @deprecated Since 9.58.1: this method is here to remain backwards compatible and will be removed in the future.
 	 */
 	@SuppressWarnings("unchecked")
 	@Deprecated
