@@ -30,6 +30,39 @@ public class FunctionGeneratorMetaTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canSetMetaLocationUsingWithMeta() {
+        var model = """
+                metaType location string
+
+                func MyFunc:
+                    inputs:
+                        inputField string (1..1)
+                        keyValue string (1..1)
+                    output: 
+                        outString string (1..1)
+                          [metadata location]
+                                        
+                    set outString:
+                        inputField with-meta { location: keyValue }
+                 """;
+
+        var code = generatorTestHelper.generateCode(model);
+                
+        var classes = generatorTestHelper.compileToClasses(code);        
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, "someValue", "someLocationValue");
+                
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+                "value", "someValue",
+                "meta", MetaFields.builder().setScopedKey("someLocationValue")
+        ));
+
+        assertEquals(expected, result);   
+    }
 
     //TODO: enable this test when fixing the empty with-meta issue
     @Disabled
@@ -959,7 +992,7 @@ public class FunctionGeneratorMetaTest {
                 "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
             			"field", "someValue"
             		)),
-                "meta", MetaFields.builder().setLocation("someAddress")
+                "meta", MetaFields.builder().setScopedKey("someAddress")
         ));
 
         assertEquals(expected, result);    	
@@ -987,7 +1020,7 @@ public class FunctionGeneratorMetaTest {
         
         var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
-                "meta", MetaFields.builder().setLocation("someAddress")
+                "meta", MetaFields.builder().setScopedKey("someAddress")
         ));
 
         assertEquals(expected, result);    	
