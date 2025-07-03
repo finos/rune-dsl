@@ -22,10 +22,6 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
-import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.scoping.AbstractJavaScope;
-import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
-import com.regnosys.rosetta.generator.java.scoping.JavaScope;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.util.types.JavaType;
@@ -65,19 +61,11 @@ public class JavaPojoProperty {
 		return new JavaPojoProperty(pojo, name, runeName, serializedName, getterCompatibilityName, setterCompatibilityName, newType, newJavadoc, newMeta, newHasLocation, attributeMetaTypes, this);
 	}
 	
-	public GeneratedIdentifier getOperationIdentifier(JavaPojoPropertyOperationType operationType, AbstractJavaScope<?> scope) {
-		return scope.getIdentifierOrThrow(getOperationKey(operationType));
-	}
-	public OperationKey getOperationKey(JavaPojoPropertyOperationType operationType) {
-		return new OperationKey(this, operationType);
-	}
-	public static record OperationKey(JavaPojoProperty prop, JavaPojoPropertyOperationType type) {
-		public String getDesiredOperationName() {
-			if (type == JavaPojoPropertyOperationType.GETTER || type == JavaPojoPropertyOperationType.GET_OR_CREATE) {
-				return type.getPrefix() + StringUtils.capitalize(prop.getterCompatibilityName) + type.getPostfix();
-			}
-			return type.getPrefix() + StringUtils.capitalize(prop.setterCompatibilityName) + type.getPostfix();
+	public String getOperationName(JavaPojoPropertyOperationType operationType) {
+		if (operationType == JavaPojoPropertyOperationType.GET || operationType == JavaPojoPropertyOperationType.GET_OR_CREATE) {
+			return operationType.getPrefix() + StringUtils.capitalize(this.getterCompatibilityName) + operationType.getPostfix();
 		}
+		return operationType.getPrefix() + StringUtils.capitalize(this.setterCompatibilityName) + operationType.getPostfix();
 	}
 	
 	public boolean isCompatibleTypeWithParent() {
@@ -124,14 +112,13 @@ public class JavaPojoProperty {
 		return parentProperty;
 	}
 	
-	public JavaExpression applyGetter(JavaExpression expr, JavaScope anyScope) {
-		JavaClassScope pojoScope = anyScope.getClassScope(pojo);
+	public JavaExpression applyGetter(JavaExpression expr) {
 		return JavaExpression.from(new StringConcatenationClient() {
 			@Override
 			protected void appendTo(TargetStringConcatenation target) {
 				target.append(expr);
 				target.append('.');
-				target.append(pojoScope.getIdentifierOrThrow(getOperationKey(JavaPojoPropertyOperationType.GETTER)));
+				target.append(getOperationName(JavaPojoPropertyOperationType.GET));
 				target.append("()");
 			}
 		}, type);

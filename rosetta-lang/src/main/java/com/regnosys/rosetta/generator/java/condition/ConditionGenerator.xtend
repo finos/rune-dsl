@@ -45,9 +45,6 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 	override protected createTypeRepresentation(Condition object) {
 		object.toConditionJavaClass
 	}
-	override protected registerMethods(Condition object, JavaConditionInterface typeRepresentation, JavaClassScope scope) {
-		
-	}
 	override protected generate(Condition condition, JavaConditionInterface conditionClass, String version, JavaClassScope classScope) {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, CONDITION__EXPRESSION))
 		val deps = dependencies.javaDependencies(condition.expression)
@@ -57,7 +54,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 			[entry|entry.value]
 		)
 		
-		val getValidationResultsScope = classScope.createUniqueMethodScope("getValidationResults")
+		val getValidationResultsScope = classScope.createMethodScope("getValidationResults")
 		val pathId = getValidationResultsScope.createUniqueIdentifier("path")
 		val instanceId = getValidationResultsScope.createIdentifier(implicitVarRepr, conditionClass.instanceType.name.toFirstLower)
 		params.forEach[param,type|getValidationResultsScope.createIdentifier(param)]
@@ -67,12 +64,12 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 		
 		deps.forEach[defaultClassScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
 		
-		val defaultClassGetValidationResultsScope = defaultClassScope.createMethodOverrideScope("getValidationResults")
+		val defaultClassGetValidationResultsScope = defaultClassScope.createMethodScope("getValidationResults")
 		val defaultClassGetValidationResultsBodyScope = defaultClassGetValidationResultsScope.bodyScope
 		val defaultClassResultId = defaultClassGetValidationResultsBodyScope.createUniqueIdentifier("result")
 		val defaultClassFailureMessageId = defaultClassGetValidationResultsBodyScope.createUniqueIdentifier("failureMessage")
 		
-		val defaultClassExecuteScope = defaultClassScope.createUniqueMethodScope("execute")
+		val defaultClassExecuteScope = defaultClassScope.createMethodScope("execute")
 		val defaultClassExecuteInstanceId = defaultClassExecuteScope.createIdentifier(implicitVarRepr, conditionClass.instanceType.name.toFirstLower)
 		params.forEach[param,type|defaultClassExecuteScope.createIdentifier(param)]
 		val defaultClassExecuteBodyScope = defaultClassExecuteScope.bodyScope

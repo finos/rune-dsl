@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.generator.IFileSystemAccess2;
+import org.eclipse.xtext.util.CancelIndicator;
 
 import com.regnosys.rosetta.generator.GenerationException;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
@@ -31,7 +32,6 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 	protected abstract Stream<T> streamObjects(RosettaModel model);
 	protected abstract EObject getSource(T object);
 	protected abstract C createTypeRepresentation(T object);
-	protected abstract void registerMethods(T object, C typeRepresentation, JavaClassScope scope);
 	protected abstract StringConcatenationClient generate(T object, C typeRepresentation, String version, JavaClassScope scope);
 	
 	public void registerClassesAndMethods(RosettaModel model, JavaGlobalScope globalScope) {
@@ -45,8 +45,7 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 			.forEach(object -> {
 				try {
 					C typeRepresentation = createTypeRepresentation(object);
-					JavaClassScope classScope = globalScope.createClassScopeAndRegisterIdentifier(typeRepresentation);
-					registerMethods(object, typeRepresentation, classScope);
+					globalScope.createClassScopeAndRegisterIdentifier(typeRepresentation);
 					objectToTypeRepresentationMap.put(object, typeRepresentation);
 				} catch (CancellationException e) {
 					throw e;
@@ -58,15 +57,18 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 				}
 			});
 	}
-	public void generateClasses(String version, IFileSystemAccess2 fsa) {
+	public void generateClasses(String version, IFileSystemAccess2 fsa, CancelIndicator cancelIndicator) {
 		if (objectToTypeRepresentationMap == null) {
 			throw new IllegalStateException("Method `generateClasses` has been called without calling `registerClassesAndMethods`.");
 		}
 		objectToTypeRepresentationMap.forEach((object, typeRepresentation) -> {
+			if (cancelIndicator.isCanceled()) {
+				throw new CancellationException();
+			}
 			try {
 				JavaClassScope classScope = globalScope.getClassScope(typeRepresentation);
 				StringConcatenationClient classCode = generate(object, typeRepresentation, version, classScope);
-				String javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, null);
+				String javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
 				fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
 			} catch (CancellationException e) {
 				throw e;

@@ -44,6 +44,7 @@ import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
 import com.rosetta.model.metafields.MetaAndTemplateFields;
 import com.rosetta.model.metafields.MetaFields;
 import com.rosetta.util.types.JavaClass;
@@ -106,6 +107,7 @@ public class JavaTypeUtil {
 	public final JavaClass<RosettaModelObjectBuilder> ROSETTA_MODEL_OBJECT_BUILDER = JavaClass.from(RosettaModelObjectBuilder.class);
 	public final JavaGenericTypeDeclaration<RosettaMetaData<?>> ROSETTA_META_DATA = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<Validator<?>> VALIDATOR = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<ValidatorWithArg<?, ?>> VALIDATOR_WITH_ARG = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	
 	private final Map<JavaTypeDeclaration<?>, JavaTypeDeclaration<?>> builderMap = Map.of(
 				ROSETTA_MODEL_OBJECT, ROSETTA_MODEL_OBJECT_BUILDER,
@@ -118,7 +120,7 @@ public class JavaTypeUtil {
 				REFERENCE_WITH_META, REFERENCE_WITH_META_BUILDER
 			);
 	public JavaClass<?> toBuilder(JavaClass<?> type) {
-		return (JavaClass<?>)toBuilder(type);
+		return (JavaClass<?>)toBuilder((JavaTypeDeclaration<?>) type);
 	}
 	public JavaTypeDeclaration<?> toBuilder(JavaTypeDeclaration<?> type) {
 		JavaTypeDeclaration<?> base = type;

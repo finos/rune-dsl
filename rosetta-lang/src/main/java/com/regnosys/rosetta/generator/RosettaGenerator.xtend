@@ -11,12 +11,8 @@ import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator
 import com.regnosys.rosetta.generator.java.object.ModelObjectGenerator
-import com.regnosys.rosetta.generator.java.object.ValidatorsGenerator
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.simple.Data
-import com.regnosys.rosetta.rosetta.simple.Function
 import com.rosetta.util.DemandableLock
 import java.util.Map
 import java.util.concurrent.CancellationException
@@ -31,20 +27,16 @@ import com.regnosys.rosetta.generator.java.reports.RuleGenerator
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator
 import jakarta.inject.Inject
-import com.regnosys.rosetta.rosetta.RosettaRule
-import com.regnosys.rosetta.rosetta.RosettaReport
 import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
-import com.regnosys.rosetta.utils.DeepFeatureCallUtil
-import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaEnumeration
-import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
-import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import java.util.List
 import com.regnosys.rosetta.generator.java.JavaClassGenerator
 import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.object.validators.CardinalityValidatorGenerator
+import com.regnosys.rosetta.generator.java.object.validators.TypeFormatValidatorGenerator
+import com.regnosys.rosetta.generator.java.object.validators.OnlyExistsValidatorGenerator
 
 /**
  * Generates code from your model files on save.
@@ -63,23 +55,20 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject RuleGenerator ruleGenerator
 
 	@Inject ModelObjectGenerator dataGenerator
-	@Inject ValidatorsGenerator validatorsGenerator
-	@Inject extension RosettaFunctionExtensions
+	@Inject CardinalityValidatorGenerator cardinalityValidatorGenerator
+	@Inject TypeFormatValidatorGenerator typeFormatValidatorGenerator
+	@Inject OnlyExistsValidatorGenerator onlyExistsValidatorGenerator
 	@Inject FunctionGenerator funcGenerator
 	@Inject ReportGenerator reportGenerator
 	@Inject DeepPathUtilGenerator deepPathUtilGenerator
 	@Inject LabelProviderGenerator labelProviderGenerator
 	@Inject JavaTypeUtil typeUtil
-	
-	@Inject DeepFeatureCallUtil deepFeatureCallUtil
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
 
 	@Inject
 	RosettaGeneratorsConfiguration config;
-	
-	@Inject extension RObjectFactory
 
 	// For files that are
 	val ignoredFiles = #{'model-no-code-gen.rosetta', 'basictypes.rosetta', 'annotations.rosetta'}
@@ -160,12 +149,26 @@ class RosettaGenerator implements IGenerator2 {
 								
 				val globalScope = new JavaGlobalScope
 				globalScope.initializeRuntimeScopes(typeUtil)
-				val List<JavaClassGenerator<?, ?>> javaGenerators = null
+				val List<JavaClassGenerator<?, ?>> javaGenerators = #[
+					conditionGenerator,
+					dataGenerator,
+					metaGenerator,
+					cardinalityValidatorGenerator,
+					typeFormatValidatorGenerator,
+					onlyExistsValidatorGenerator,
+					deepPathUtilGenerator,
+					funcGenerator,
+					labelProviderGenerator,
+					ruleGenerator,
+					reportGenerator,
+					enumGenerator,
+					metaFieldGenerator
+				]
 				javaGenerators.forEach[generator|
 					generator.registerClassesAndMethods(model, globalScope)
 				]
 				javaGenerators.forEach[generator|
-					generator.generateClasses(version, fsa2)
+					generator.generateClasses(version, fsa2, context.cancelIndicator)
 				]
 				
 				val aggregatedGenerationExceptions = javaGenerators.flatMap[generationExceptions].toList
@@ -182,7 +185,6 @@ class RosettaGenerator implements IGenerator2 {
 						map.entrySet.forEach[fsa.generateFile(key, generator.outputConfiguration.getName, value)]
 					], lock)
 				]
-				metaFieldGenerator.generate(resource, fsa, context)
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected")
 			} catch (AggregateGenerationException | GenerationException e) {
@@ -198,43 +200,6 @@ class RosettaGenerator implements IGenerator2 {
 			} finally {
 				LOGGER.trace("ending the main generate method")
 				lock.releaseWriteLock
-			}
-		}
-	}
-	private def void doGenerate(RosettaRootElement elem, IFileSystemAccess2 fsa, String version, IGeneratorContext context) {
-		if (context.cancelIndicator.canceled) {
-			throw new CancellationException
-		}
-		if (elem instanceof RosettaTypeWithConditions) {
-			elem.conditions.forEach [ cond |
-				conditionGenerator.generate(fsa, cond, version)
-			]
-		}
-		switch (elem) {
-			Data: {
-				val t = elem.buildRDataType
-				dataGenerator.generate(fsa, t, version)
-				metaGenerator.generate(fsa, t, version)
-				validatorsGenerator.generate(fsa, t, version)
-				if (deepFeatureCallUtil.isEligibleForDeepFeatureCall(t)) {
-					deepPathUtilGenerator.generate(fsa, t, version)
-				}
-			}
-			Function: {
-				if (!elem.isDispatchingFunction) {
-					funcGenerator.generate(fsa, elem, version)
-				}
-				labelProviderGenerator.generateForFunctionIfApplicable(fsa, elem)
-			}
-			RosettaRule: {
-				ruleGenerator.generate(fsa, elem, version)
-			}
-			RosettaReport: {
-				reportGenerator.generate(fsa, elem, version)
-				labelProviderGenerator.generateForReport(fsa, elem)
-			}
-			RosettaEnumeration: {
-				enumGenerator.generate(fsa, elem.buildREnumType, version)
 			}
 		}
 	}

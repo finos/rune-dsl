@@ -27,7 +27,6 @@ import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.rosetta.model.lib.annotations.RosettaIgnore
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
@@ -38,7 +37,6 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoBuilderInterface
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 import com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType
 import com.rosetta.util.types.JavaType
-import java.util.function.Function
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope
 import com.regnosys.rosetta.generator.java.types.JavaPojoImpl
 
@@ -58,32 +56,11 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 	override protected createTypeRepresentation(RDataType t) {
 		t.toJavaReferenceType
 	}
-	override protected registerMethods(RDataType t, JavaPojoInterface javaType, JavaClassScope pojoScope) {
-		for (prop : javaType.ownProperties) {
-			registerOperation(prop, GETTER, pojoScope)
-			
-			val propType = prop.type
-			registerOperation(prop, SETTER, pojoScope)
-			if (propType instanceof RJavaWithMetaValue) {
-				registerOperation(prop, SETTER_VALUE, pojoScope)
-			}
-			if (propType.isList) {
-				registerOperation(prop, ADDER, pojoScope)
-				if (propType instanceof RJavaWithMetaValue) {
-					registerOperation(prop, ADDER_VALUE, pojoScope)
-				}
-			}
-		}
-	}
-	private def void registerOperation(JavaPojoProperty prop, JavaPojoPropertyOperationType operationType, JavaClassScope pojoScope) {
-		val opKey = prop.getOperationKey(operationType)
-		pojoScope.createIdentifier(opKey, opKey.desiredOperationName)
-	}
 	override protected generate(RDataType t, JavaPojoInterface javaType, String version, JavaClassScope pojoScope) {
 		classBody(javaType, pojoScope, javaType.toJavaMetaDataClass, version)
 	}
 
-	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaClassScope pojoScope, JavaClass<?> metaType, String version) {
+	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaClassScope pojoScope, JavaClass<?> metaType, String version) {		
 		val superInterface = javaType.superPojo
 		val extendSuperImpl = superInterface !== null && javaType.ownProperties.forall[isCompatibleTypeWithParent]
 		val metaDataIdentifier = pojoScope.createUniqueIdentifier("metaData");
@@ -92,6 +69,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		val implClass = javaType.toImplClass
 		val implScope = pojoScope.createNestedClassScopeAndRegisterIdentifier(implClass)
 		val builderImplClass = javaType.toBuilderImplClass
+		val builderImplScope = pojoScope.createNestedClassScopeAndRegisterIdentifier(builderImplClass)
 		val modelShortName = javaType.packageName.first
 		'''
 			«javaType.javadoc»
@@ -128,7 +106,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 				}
 
 				«startComment('''Builder Implementation of «javaType.simpleName»''')»
-				«javaType.builderClass(interfaceScope)»
+				«javaType.builderClass(builderImplClass, builderImplScope)»
 			}
 		'''
 	}
@@ -138,13 +116,13 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		«FOR prop : javaType.ownProperties»
 			«IF prop.type.isRosettaModelObject»
 				«IF !prop.type.isList»
-					«prop.toBuilderTypeSingle» «prop.getOrCreateName»();
+					«prop.toBuilderTypeSingle» «prop.getOperationName(GET_OR_CREATE)»();
 					@Override
-					«prop.toBuilderTypeSingle» «prop.getterName»();
+					«prop.toBuilderTypeSingle» «prop.getOperationName(GET)»();
 				«ELSE»
-					«prop.toBuilderTypeSingle» «prop.getOrCreateName»(int _index);
+					«prop.toBuilderTypeSingle» «prop.getOperationName(GET_OR_CREATE)»(int index);
 					@Override
-					«List»<? extends «prop.toBuilderTypeSingle»> «prop.getterName»();
+					«List»<? extends «prop.toBuilderTypeSingle»> «prop.getOperationName(GET)»();
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -155,12 +133,11 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		arg
 	}
 	private def StringConcatenationClient setterMethod(JavaPojoProperty prop, JavaType mainBuilderType, JavaPojoPropertyOperationType operationType, boolean isOverride, JavaClassScope builderScope, (JavaMethodScope) => StringConcatenationClient computeParameters) {
-		val opKey = prop.getOperationKey(operationType)
-		val scope = builderScope.createOverloadMethodScope(opKey, opKey.desiredOperationName)
-		val methodName = scope.getIdentifierOrThrow(opKey)
+		val opName = prop.getOperationName(operationType)
+		val scope = builderScope.createMethodScope(opName)
 		'''
 		«IF isOverride»@Override«ENDIF»
-		«mainBuilderType» «methodName»(«computeParameters.apply(scope)»);
+		«mainBuilderType» «opName»(«computeParameters.apply(scope)»);
 		'''
 	}
 	protected def StringConcatenationClient pojoBuilderInterfaceSetterMethods(JavaPojoInterface mainType, JavaPojoBuilderInterface mainBuilderType, JavaPojoInterface currentType, JavaClassScope builderScope) {
@@ -170,23 +147,23 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		«FOR prop : currentType.ownProperties»
 			«val propType = prop.type»
 			«IF !propType.isList»
-				«setterMethod(prop, mainBuilderType, SETTER, !isMainPojo, builderScope, [scope|scc('''«propType» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, SET, !isMainPojo, builderScope, [scope|scc('''«propType» «scope.createUniqueIdentifier(prop.name)»''')])»
 				«IF propType instanceof RJavaWithMetaValue»
-				«setterMethod(prop, mainBuilderType, SETTER_VALUE, !isMainPojo, builderScope, [scope|scc('''«propType.valueType» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, SET_VALUE, !isMainPojo, builderScope, [scope|scc('''«propType.valueType» «scope.createUniqueIdentifier(prop.name)»''')])»
 				«ENDIF»
 			«ELSE»
 				«val itemType = propType.itemType»
-				«setterMethod(prop, mainBuilderType, ADDER, !isMainPojo, builderScope, [scope|scc('''«itemType» «scope.createUniqueIdentifier(prop.name)»''')])»
-				«setterMethod(prop, mainBuilderType, ADDER, !isMainPojo, builderScope, [scope|scc('''«itemType» «scope.createUniqueIdentifier(prop.name)», int _idx''')])»
+				«setterMethod(prop, mainBuilderType, ADD, !isMainPojo, builderScope, [scope|scc('''«itemType» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, ADD, !isMainPojo, builderScope, [scope|scc('''«itemType» «scope.createUniqueIdentifier(prop.name)», int idx''')])»
 				«IF itemType instanceof RJavaWithMetaValue»
-				«setterMethod(prop, mainBuilderType, ADDER_VALUE, !isMainPojo, builderScope, [scope|scc('''«itemType.valueType» «scope.createUniqueIdentifier(prop.name)»''')])»
-				«setterMethod(prop, mainBuilderType, ADDER_VALUE, !isMainPojo, builderScope, [scope|scc('''«itemType.valueType» «scope.createUniqueIdentifier(prop.name)», int _idx''')])»
+				«setterMethod(prop, mainBuilderType, ADD_VALUE, !isMainPojo, builderScope, [scope|scc('''«itemType.valueType» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, ADD_VALUE, !isMainPojo, builderScope, [scope|scc('''«itemType.valueType» «scope.createUniqueIdentifier(prop.name)», int idx''')])»
 				«ENDIF»
-				«setterMethod(prop, mainBuilderType, ADDER, !isMainPojo, builderScope, [scope|scc('''«propType» «scope.createUniqueIdentifier(prop.name)»''')])»
-				«setterMethod(prop, mainBuilderType, SETTER, !isMainPojo, builderScope, [scope|scc('''«propType» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, ADD, !isMainPojo, builderScope, [scope|scc('''«propType» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, SET, !isMainPojo, builderScope, [scope|scc('''«propType» «scope.createUniqueIdentifier(prop.name)»''')])»
 				«IF itemType instanceof RJavaWithMetaValue»
-				«setterMethod(prop, mainBuilderType, ADDER_VALUE, !isMainPojo, builderScope, [scope|scc('''«LIST.wrapExtends(itemType.valueType)» «scope.createUniqueIdentifier(prop.name)»''')])»
-				«setterMethod(prop, mainBuilderType, SETTER_VALUE, !isMainPojo, builderScope, [scope|scc('''«LIST.wrapExtends(itemType.valueType)» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, ADD_VALUE, !isMainPojo, builderScope, [scope|scc('''«LIST.wrapExtends(itemType.valueType)» «scope.createUniqueIdentifier(prop.name)»''')])»
+				«setterMethod(prop, mainBuilderType, SET_VALUE, !isMainPojo, builderScope, [scope|scc('''«LIST.wrapExtends(itemType.valueType)» «scope.createUniqueIdentifier(prop.name)»''')])»
 				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
@@ -223,7 +200,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		«FOR prop : javaType.ownProperties»
 			«prop.getJavadoc»
 			«IF prop.getterOverridesParentGetter»@Override«ENDIF»
-			«prop.getType» «prop.getOperationIdentifier(GETTER, pojoScope)»();
+			«prop.getType» «prop.getOperationName(GET)»();
 		«ENDFOR»
 		'''
 	}
@@ -273,7 +250,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
-			public «prop.type» «prop.getOperationIdentifier(GETTER, implScope)»() «field.completeAsReturn.toBlock»
+			public «prop.type» «prop.getOperationName(GET)»() «field.completeAsReturn.toBlock»
 			
 			«IF !extended»«derivedIncompatibleGettersForProperty(field, prop, implScope)»«ENDIF»
 		«ENDFOR»
@@ -292,7 +269,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		protected void setBuilderFields(«builderType» builder) {
 			«IF extended»super.setBuilderFields(builder);«ENDIF»
 			«FOR prop : properties»
-				«method(Optional, "ofNullable")»(«prop.getOperationIdentifier(GETTER, implScope)»()).ifPresent(builder::«prop.getOperationIdentifier(SETTER, implScope)»);
+				«method(Optional, "ofNullable")»(«prop.getOperationName(GET)»()).ifPresent(builder::«prop.getOperationName(SET)»);
 			«ENDFOR»
 		}
 		'''
@@ -304,19 +281,19 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		} else if (prop.getterOverridesParentGetter) {
 			return derivedIncompatibleGettersForProperty(originalField, parent, implScope)
 		}
-		val opKey = parent.getOperationKey(GETTER)
-		val getterScope = implScope.createOverrideMethodScope(opKey)
+		val opName = parent.getOperationName(GET)
+		val getterScope = implScope.createMethodScope(opName)
 		'''
 		@Override
 		@«RosettaIgnore»
-		public «parent.type» «parent.getOperationIdentifier(GETTER, implScope)»() «originalField.addCoercions(parent.type, getterScope.bodyScope).completeAsReturn.toBlock»
+		public «parent.type» «opName»() «originalField.addCoercions(parent.type, getterScope.bodyScope).completeAsReturn.toBlock»
 		
 		«derivedIncompatibleGettersForProperty(originalField, parent, implScope)»
 		'''
 	}
 
 	private def StringConcatenationClient propertyFromBuilder(JavaPojoProperty prop, JavaClassScope scope) {
-		val getterName = prop.getOperationIdentifier(GETTER, scope)
+		val getterName = prop.getOperationName(GET)
 		if(prop.type.isRosettaModelObject) {
 			if (prop.type.isList)
 				'''ofNullable(builder.«getterName»()).filter(_l->!_l.isEmpty()).map(«prop.buildRosettaObjectList»).orElse(null)'''

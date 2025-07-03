@@ -9,7 +9,7 @@ public class JavaPojoBuilderImpl extends RGeneratedJavaClass<RosettaModelObjectB
 private final JavaPojoInterface pojoInterface;
 
 	protected JavaPojoBuilderImpl(JavaPojoInterface pojoInterface) {
-		super(pojoInterface.getEscapedPackageName(), pojoInterface.getNestedTypeName().child(pojoInterface.getSimpleName() + "Builder"));
+		super(pojoInterface.getEscapedPackageName(), pojoInterface.getNestedTypeName().child(pojoInterface.getSimpleName() + "BuilderImpl"));
 		this.pojoInterface = pojoInterface;
 	}
 

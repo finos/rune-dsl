@@ -18,6 +18,8 @@ public class JavaNameEscapingTest {
 	
 	// TODO: also check source code to make sure these tests keep testing what they should test.
 	
+	// TODO: add test for complex attribute named `result` and multicardinality (complex?) `index` and (complex?) `meta`
+	
 	@Test
 	void testAttributeGetterOverlapsWithInheritedMethod() {
 		modelService.toJavaTestModel("""

@@ -19,7 +19,7 @@ import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
-import com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType
+import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 
 class ModelObjectBoilerPlate {
 
@@ -93,7 +93,7 @@ class ModelObjectBoilerPlate {
 	}
 
 	private def StringConcatenationClient contributeHashCode(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaClassScope scope) {
-		val methodScope = scope.createMethodOverrideScope("hashCode")
+		val methodScope = scope.createMethodScope("hashCode")
 		'''
 		@Override
 		public int hashCode() {
@@ -108,7 +108,7 @@ class ModelObjectBoilerPlate {
 	}
 
 	private def StringConcatenationClient contributeToString(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, (JavaClass<?>)=>String classNameFunc, JavaClassScope scope) {
-		val methodScope = scope.createMethodOverrideScope("toString")
+		val methodScope = scope.createMethodScope("toString")
 		'''
 		@Override
 		public «String» toString() {
@@ -122,7 +122,7 @@ class ModelObjectBoilerPlate {
 	}
 
 	private def StringConcatenationClient contributeEquals(JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaClassScope scope) {
-		val methodScope = scope.createMethodOverrideScope("equals")
+		val methodScope = scope.createMethodScope("equals")
 		'''
 		@Override
 		public boolean equals(«Object» o) {
@@ -143,9 +143,9 @@ class ModelObjectBoilerPlate {
 
 	private def StringConcatenationClient contributeToEquals(JavaPojoProperty prop, JavaStatementScope scope) '''
 	«IF prop.type.isList»
-		if (!«ListEquals».listEquals(«scope.getIdentifierOrThrow(prop)», _that.«prop.getterName»())) return false;
+		if (!«ListEquals».listEquals(«scope.getIdentifierOrThrow(prop)», _that.«prop.getOperationName(GET)»())) return false;
 	«ELSE»
-		if (!«Objects».equals(«scope.getIdentifierOrThrow(prop)», _that.«prop.getterName»())) return false;
+		if (!«Objects».equals(«scope.getIdentifierOrThrow(prop)», _that.«prop.getOperationName(GET)»())) return false;
 	«ENDIF»
 	'''
 	
@@ -154,7 +154,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «Processor» processor) {
 			«FOR prop : javaType.allProperties»
-				«val getterName = pojoScope.getIdentifierOrThrow(prop.getOperationKey(JavaPojoPropertyOperationType.GETTER))»
+				«val getterName = prop.getOperationName(GET)»
 				«IF prop.type.isRosettaModelObject»
 					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.type.itemType».class, «getterName»()«prop.metaFlags»);
 				«ELSE»
@@ -171,7 +171,7 @@ class ModelObjectBoilerPlate {
 		@Override
 		default void process(«RosettaPath» path, «BuilderProcessor» processor) {
 			«FOR prop : javaType.allProperties»
-				«val getterName = builderScope.getIdentifierOrThrow(prop.getOperationKey(JavaPojoPropertyOperationType.GETTER))»
+				«val getterName = prop.getOperationName(GET)»
 				«IF prop.type.isRosettaModelObject»
 					processRosetta(path.newSubPath("«prop.name»"), processor, «prop.toBuilderTypeSingle».class, «getterName»()«prop.metaFlags»);
 				«ELSE»

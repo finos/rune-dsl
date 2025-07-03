@@ -1,14 +1,14 @@
 package com.regnosys.rosetta.generator.java.types;
 
 public enum JavaPojoPropertyOperationType {
-	GETTER("get"),
+	GET("get"),
 	GET_OR_CREATE("getOrCreate"),
 	
-	SETTER("set"),
-	SETTER_VALUE("set", "Value"),
+	SET("set"),
+	SET_VALUE("set", "Value"),
 	
-	ADDER("add"),
-	ADDER_VALUE("add", "Value");
+	ADD("add"),
+	ADD_VALUE("add", "Value");
 	
 	private final String prefix;
 	private final String postfix;

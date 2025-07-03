@@ -43,8 +43,7 @@ class ExpressionJavaEvaluatorService {
 		
 		val globalScope = new JavaGlobalScope()
 		val classScope = globalScope.createClassScopeAndRegisterIdentifier(RGeneratedJavaClass.create(JavaPackageName.escape(packageName), className, Object))
-		val evaluateKey = new Object()
-		val evaluateScope = classScope.methodScope(evaluateKey, methodName)
+		val evaluateScope = classScope.createMethodScope(methodName)
 		val evaluateBodyScope = evaluateScope.bodyScope
 		
 		val dependencies = dependencyProvider.javaDependencies(expr)

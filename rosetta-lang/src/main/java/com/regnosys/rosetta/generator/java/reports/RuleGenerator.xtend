@@ -1,8 +1,6 @@
 package com.regnosys.rosetta.generator.java.reports
 
 import jakarta.inject.Inject
-import org.eclipse.xtext.generator.IFileSystemAccess2
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RObjectFactory
 import com.rosetta.model.lib.reports.ReportFunction
@@ -10,23 +8,26 @@ import com.rosetta.util.types.JavaParameterizedType
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.fasterxml.jackson.core.type.TypeReference
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
+import com.regnosys.rosetta.types.RFunction
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.rosetta.model.lib.functions.RosettaFunction
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 
-class RuleGenerator {
+class RuleGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJavaClass<? extends RosettaFunction>> {
 	@Inject extension JavaTypeTranslator
 	@Inject extension RObjectFactory
-	@Inject extension ImportManagerExtension
 	@Inject FunctionGenerator functionGenerator
 
-	
-	def generate(IFileSystemAccess2 fsa, RosettaRule rule, String version) {
-		val rFunctionRule = buildRFunction(rule)
-		val clazz = rFunctionRule.toFunctionJavaClass
-		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunctionRule.inputs.head.toMetaJavaType, rFunctionRule.output.toMetaJavaType)
-		val topScope = new JavaStatementScope(clazz.packageName)
-		val classBody = functionGenerator.rBuildClass(rFunctionRule, false, #[baseInterface], emptyMap, true, topScope)
-		
-		val content = buildClass(clazz.packageName, classBody, topScope)
-		fsa.generateFile(clazz.canonicalName.withForwardSlashes + ".java", content)
+	override protected streamObjects(RosettaModel model) {
+		model.elements.stream.filter[it instanceof RosettaRule].map[it as RosettaRule].map[buildRFunction]
+	}
+	override protected createTypeRepresentation(RFunction rFunction) {
+		rFunction.toFunctionJavaClass
+	}
+	override protected generate(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
+		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunction.inputs.head.toMetaJavaType, rFunction.output.toMetaJavaType)
+		return functionGenerator.rBuildClass(rFunction, clazz, false, #[baseInterface], emptyMap, true, scope)
 	}
 }

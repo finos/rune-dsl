@@ -139,7 +139,6 @@ import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.rosetta.model.metafields.MetaFields
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 import com.rosetta.model.lib.meta.Reference
-import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.TypeParameter
@@ -148,6 +147,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1161,7 +1161,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					val assignAsKey = attrExpr instanceof AsKeyOperation
 					val requiresValueAssignment = requiresValueAssignment(assignAsKey, attr, attrExpr)
 					
-					val setterName = requiresValueAssignment ? prop.valueSetterName : prop.setterName
+					val setterName = prop.getOperationName(requiresValueAssignment ? SET_VALUE : SET)
 					
 					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isFeatureMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
@@ -1374,7 +1374,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		].toList
 
 		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
-				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
+				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType instanceof JavaPojoInterface».toBuilder()«ENDIF»''', argumentJavaType instanceof JavaPojoInterface ? argumentJavaType.toBuilderInterface : argumentJavaType.itemType)]
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
@@ -1447,9 +1447,5 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	
 	private def String toPojoSetter(String metaEntryName) {
 		metaEntryName.toPojoPropertyName.toFirstUpper
-	}
-	
-	private def boolean needsBuilder(JavaClass<?> javaClass) {
-		javaClass instanceof JavaPojoInterface
 	}
 }

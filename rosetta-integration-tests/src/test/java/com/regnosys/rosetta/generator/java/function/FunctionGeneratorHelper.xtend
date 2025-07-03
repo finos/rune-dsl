@@ -4,7 +4,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -20,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*
 import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
 import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
+import org.eclipse.xtext.util.CancelIndicator
 
 class FunctionGeneratorHelper {
 
@@ -57,13 +58,15 @@ class FunctionGeneratorHelper {
 
 	def void assertToGeneratedFunction(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(fsa, it.elements.filter(Function).filter[operations.nullOrEmpty].head, "test")
+			generator.registerClassesAndMethods(it, new JavaGlobalScope)
+			generator.generateClasses("test", fsa, CancelIndicator.NullImpl)
 		])
 	}
 
 	def void assertToGeneratedCalculation(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(fsa, it.elements.filter(Function).filter[!operations.nullOrEmpty].head, "test")
+			generator.registerClassesAndMethods(it, new JavaGlobalScope)
+			generator.generateClasses("test", fsa, CancelIndicator.NullImpl)
 		])
 	}
 

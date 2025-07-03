@@ -43,11 +43,6 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	override protected createTypeRepresentation(RDataType choiceType) {
 		choiceType.toDeepPathUtilJavaClass
 	}
-	override protected registerMethods(RDataType choiceType, JavaClass<?> typeRepresentation, JavaClassScope scope) {
-		choiceType.findDeepFeatures.forEach[deepFeature|
-			scope.createMethodScope(deepFeature, '''choose«deepFeature.name.toFirstUpper»''')
-		]
-	}
 	override protected generate(RDataType choiceType, JavaClass<?> javaClass, String version, JavaClassScope classScope) {
 		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
@@ -84,7 +79,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 				
 				«ENDIF»
 				«FOR deepFeature : deepFeatures»
-					«val deepFeatureScope = classScope.getMethodScope(deepFeature)»
+					«val deepFeatureScope = classScope.createMethodScope('''choose«deepFeature.name.toFirstUpper»''')»
 					«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
 					«val methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeaturesMap, deepFeatureScope.bodyScope)»
 					public «methodBody.expressionType» «classScope.getIdentifierOrThrow(deepFeature)»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»

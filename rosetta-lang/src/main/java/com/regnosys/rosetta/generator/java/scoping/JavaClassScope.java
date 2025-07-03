@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.scoping;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,8 +14,6 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 public class JavaClassScope extends AbstractJavaScope<AbstractJavaScope<?>> {
 	private final List<JavaClassScope> superClassScopes;
 	
-	private final Map<Object, JavaMethodScope> methodScopes = new HashMap<>();
-	
 	JavaClassScope(String className, AbstractJavaScope<?> parentScope, List<JavaClassScope> superClassScopes) {
 		super("Class[" + className + "]", parentScope);
 		this.superClassScopes = superClassScopes;
@@ -27,50 +24,17 @@ public class JavaClassScope extends AbstractJavaScope<AbstractJavaScope<?>> {
 		this.getPackageScope().createIdentifier(clazz, clazz.getNestedTypeName().withDots());
 		
 		List<JavaClassScope> superClassScopes = new ArrayList<>();
-		if (clazz.getSuperclassDeclaration() != null) {
-			superClassScopes.add(getClassScope(clazz.getSuperclassDeclaration()));
-		}
-		for (var interf : clazz.getInterfaceDeclarations()) {
-			superClassScopes.add(getClassScope(interf));
-		}
+//		if (clazz.getSuperclassDeclaration() != null) {
+//			superClassScopes.add(getClassScope(clazz.getSuperclassDeclaration()));
+//		}
+//		for (var interf : clazz.getInterfaceDeclarations()) {
+//			superClassScopes.add(getClassScope(interf));
+//		}
 		return new JavaClassScope(clazz.getSimpleName(), this, superClassScopes);
 	}
 
-	public JavaMethodScope getMethodScope(Object methodKey) {
-		JavaMethodScope scope = methodScopes.get(methodKey);
-		if (scope == null) {
-			throw new IllegalStateException("No method with key " + methodKey + " exists. You should first create it.");
-		}
-		return scope;
-	}
-	public JavaMethodScope createMethodScope(Object methodKey, String methodName, boolean isOverride) {
-		if (isOverride) {
-			return createOverrideMethodScope(methodKey);
-		}
-		return createMethodScope(methodKey, methodName);
-	}
-	public JavaMethodScope createMethodScope(Object methodKey, String methodName) {
-		// TODO: consider not creating identifiers in these methods to force us to register them up front.
-		this.createIdentifier(methodKey, methodName);
-		JavaMethodScope scope = new JavaMethodScope(methodName, this);
-		methodScopes.put(methodKey, scope);
-		return scope;
-	}
-	public JavaMethodScope createUniqueMethodScope(String methodName) {
-		this.createUniqueIdentifier(methodName);
+	public JavaMethodScope createMethodScope(String methodName) {
 		return new JavaMethodScope(methodName, this);
-	}
-	public JavaMethodScope createOverrideMethodScope(Object methodKey) {
-		return createMethodScopeWithoutIdentifier(methodKey);
-	}
-	public JavaMethodScope createOverloadMethodScope(Object methodKey, String methodName) {
-		this.getOrCreateIdentifier(methodKey, methodName);
-		return createMethodScopeWithoutIdentifier(methodKey);
-	}
-	private JavaMethodScope createMethodScopeWithoutIdentifier(Object methodKey) {
-		JavaMethodScope scope = new JavaMethodScope(this.getIdentifierOrThrow(methodKey).getDesiredName(), this);
-		methodScopes.put(methodKey, scope);
-		return scope;
 	}
 	
 	public JavaPackageScope getPackageScope() {

@@ -39,8 +39,6 @@ class ModelMetaGenerator extends RObjectJavaClassGenerator<RDataType, RGenerated
 	override protected createTypeRepresentation(RDataType t) {
 		t.toJavaReferenceType.toJavaMetaDataClass
 	}
-	override protected registerMethods(RDataType t, RGeneratedJavaClass<?> typeRepresentation, JavaClassScope scope) {
-	}
 	override protected generate(RDataType t, RGeneratedJavaClass<?> metaClass, String version, JavaClassScope scope) {
 		val dataClass = t.toJavaType
 		val validator = dataClass.toValidatorClass
