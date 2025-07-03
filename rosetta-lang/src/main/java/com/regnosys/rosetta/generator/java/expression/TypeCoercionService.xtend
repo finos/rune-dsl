@@ -312,6 +312,8 @@ class TypeCoercionService {
 					// Case Mapper to List
 					if (actual.hasWildcardArgument && !expected.hasWildcardArgument) {
 						[JavaExpression.from('''new «ArrayList»<>(«it».getMulti())''', LIST.wrap(expected.itemType))]
+					} else if (actual.hasWildcardArgument) {
+						[JavaExpression.from('''«it».getMulti()''', LIST.wrapExtends(expected.itemType))]
 					} else {
 						[JavaExpression.from('''«it».getMulti()''', LIST.wrap(expected.itemType))]
 					}
