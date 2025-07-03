@@ -32,6 +32,38 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
+    void canAccessMetaLocationCorrectly() {
+        var model = """
+                metaType location string
+
+                func MyFunc:
+                    inputs:
+                        inputField string (1..1)
+                          [metadata location]
+                    output: 
+                        outString string (1..1)
+                                        
+                    set outString: inputField -> location
+                 """;
+
+        var code = generatorTestHelper.generateCode(model);
+                
+        var classes = generatorTestHelper.compileToClasses(code);        
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+                "value", "someValue",
+                "meta", MetaFields.builder().setScopedKey("someLocationValue")
+        ));
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("someLocationValue", result);   
+
+    }
+    
+    @Test
     void canSetMetaLocationUsingWithMeta() {
         var model = """
                 metaType location string
