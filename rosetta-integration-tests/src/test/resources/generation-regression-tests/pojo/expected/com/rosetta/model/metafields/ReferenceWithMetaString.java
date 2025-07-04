@@ -9,9 +9,7 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneMetaType;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.Reference;
-import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
-import com.rosetta.model.lib.meta.ReferenceWithMeta.ReferenceWithMetaBuilder;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -238,34 +236,34 @@ public interface ReferenceWithMetaString extends RosettaModelObject, ReferenceWi
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("value")
 		@RuneAttribute("@data")
+		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setValue(String _value) {
 			this.value = _value == null ? null : _value;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("globalReference")
 		@RuneAttribute("@ref")
+		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setGlobalReference(String _globalReference) {
 			this.globalReference = _globalReference == null ? null : _globalReference;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("externalReference")
 		@RuneAttribute("@ref:external")
+		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setExternalReference(String _externalReference) {
 			this.externalReference = _externalReference == null ? null : _externalReference;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("address")
 		@RuneAttribute("@ref:scoped")
 		@RuneMetaType
+		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setReference(Reference _reference) {
 			this.reference = _reference == null ? null : _reference.toBuilder();
 			return this;
@@ -346,6 +344,6 @@ public interface ReferenceWithMetaString extends RosettaModelObject, ReferenceWi
 	}
 }
 
-class ReferenceWithMetaStringMeta extends BasicRosettaMetaData<ReferenceWithMetaString>{
+class ReferenceWithMetaStringMeta extends BasicRosettaMetaData<ReferenceWithMetaString> {
 
 }

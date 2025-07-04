@@ -4,7 +4,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.functions.ConditionValidator
@@ -17,11 +16,12 @@ import java.util.function.Consumer
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess
 
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.util.DottedPath
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.types.RFunction
 
 class FunctionGeneratorHelper {
 
@@ -29,7 +29,7 @@ class FunctionGeneratorHelper {
 	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject RegisteringFileSystemAccess fsa
-	@Inject extension ModelIdProvider
+	@Inject ImportManagerExtension importManager
 
 	final Injector injector
 	
@@ -43,7 +43,7 @@ class FunctionGeneratorHelper {
 	}
 	
 	def createFunc(Map<String, Class<?>> classes, String funcName) {
-		createFunc(classes, funcName, rootPackage.functions)
+		createFunc(classes, funcName, rootPackage.child("functions"))
 	}
 	def createFunc(Map<String, Class<?>> classes, String funcName, DottedPath packageName) {
 		injector.getInstance(classes.get(packageName + '.' + funcName)) as RosettaFunction
@@ -60,14 +60,28 @@ class FunctionGeneratorHelper {
 
 	def void assertToGeneratedFunction(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(new RootPackage(it.toDottedPath), fsa, it.elements.filter(Function).filter[operations.nullOrEmpty].head, "test")
+			val func = generator.streamObjects(it)
+				.filter[operations.nullOrEmpty]
+				.findAny.orElseThrow
+			generate(func)
 		])
 	}
 
 	def void assertToGeneratedCalculation(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.generate(new RootPackage(it.toDottedPath), fsa, it.elements.filter(Function).filter[!operations.nullOrEmpty].head, "test")
+			val func = generator.streamObjects(it)
+				.filter[!operations.nullOrEmpty]
+				.findAny.orElseThrow
+			generate(func)
 		])
+	}
+	
+	private def void generate(RFunction func) {
+		val typeRepresentation = generator.createTypeRepresentation(func);
+		val classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
+		val classCode = generator.generate(func, typeRepresentation, "test", classScope);
+		val javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
+		fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
 	}
 
 	def protected void assertToGenerated(CharSequence actualModel, CharSequence expected,

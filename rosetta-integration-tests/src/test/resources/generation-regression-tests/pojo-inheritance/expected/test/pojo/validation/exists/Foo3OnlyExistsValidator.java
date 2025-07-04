@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 import com.rosetta.model.metafields.FieldWithMetaString;
 import java.util.List;
@@ -39,9 +38,9 @@ public class Foo3OnlyExistsValidator implements ValidatorWithArg<Foo3, Set<Strin
 				.collect(Collectors.toSet());
 		
 		if (setFields.equals(fields)) {
-			return success("Foo3", ValidationType.ONLY_EXISTS, "Foo3", path, "");
+			return success("Foo3", ValidationResult.ValidationType.ONLY_EXISTS, "Foo3", path, "");
 		}
-		return failure("Foo3", ValidationType.ONLY_EXISTS, "Foo3", path, "",
+		return failure("Foo3", ValidationResult.ValidationType.ONLY_EXISTS, "Foo3", path, "",
 				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 	}
 }

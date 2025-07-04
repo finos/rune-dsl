@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.metafields.FieldWithMetaString;
 import java.util.List;
@@ -36,9 +35,9 @@ public class PojoValidator implements Validator<Pojo> {
 			.stream()
 			.map(res -> {
 				if (!isNullOrEmpty(res.getError())) {
-					return failure("Pojo", ValidationType.CARDINALITY, "Pojo", path, "", res.getError());
+					return failure("Pojo", ValidationResult.ValidationType.CARDINALITY, "Pojo", path, "", res.getError());
 				}
-				return success("Pojo", ValidationType.CARDINALITY, "Pojo", path, "");
+				return success("Pojo", ValidationResult.ValidationType.CARDINALITY, "Pojo", path, "");
 			})
 			.collect(toList());
 	}

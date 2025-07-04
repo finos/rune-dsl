@@ -59,18 +59,21 @@ public class RosettaTestModelService {
 	/**
 	 * Load a test model from a character sequence. It will assert that there are no issues in the model.
 	 */
-	public RosettaTestModel toTestModel(CharSequence source) {
-		return toTestModel(source, true);
+	public RosettaTestModel toTestModel(CharSequence source, CharSequence... other) {
+		return toTestModel(source, true, other);
 	}
 	/**
 	 * Load a test model from a character sequence, optionally asserting that there are no issues in the model.
 	 */
-	public RosettaTestModel toTestModel(CharSequence source, boolean assertNoIssues) {
+	public RosettaTestModel toTestModel(CharSequence source, boolean assertNoIssues, CharSequence... other) {
 		RosettaModel model;
+		CharSequence[] sources = new CharSequence[other.length + 1];
+		sources[0] = source;
+		System.arraycopy(other, 0, sources, 1, other.length);
 		if (assertNoIssues) {
-			model = modelHelper.parseRosettaWithNoIssues(source);
+			model = modelHelper.parseRosettaWithNoIssues(sources).get(0);
 		} else {
-			model = modelHelper.parseRosetta(source);
+			model = modelHelper.parseRosetta(sources).get(0);
 		}
 		return new RosettaTestModel(source, model, expressionParser);
 	}
@@ -114,9 +117,9 @@ public class RosettaTestModelService {
 	/**
 	 * Load a test model from a character sequence, and generate Java code.
 	 */
-	public JavaTestModel toJavaTestModel(CharSequence source) {
-		RosettaTestModel rosettaModel = toTestModel(source);
-		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getModel());
+	public JavaTestModel toJavaTestModel(CharSequence source, CharSequence... other) {
+		RosettaTestModel rosettaModel = toTestModel(source, other);
+		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getModel().eResource().getResourceSet().getResources());
 		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
 	}
 	

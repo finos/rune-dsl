@@ -10,7 +10,7 @@ public class AggregateGenerationException extends RuntimeException {
     private final List<GenerationException> generationExceptions;
     
     public AggregateGenerationException(String message, URI resourceUri, List<GenerationException> generationExceptions) {
-        super(message);
+        super(message, generationExceptions.get(0));
         this.resourceUri = resourceUri;
         this.generationExceptions = generationExceptions;
     }

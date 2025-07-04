@@ -157,7 +157,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.BarReport;
-                import com.rosetta.test.model.BarReport.BarReportBuilder;
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
@@ -303,7 +302,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.BarReport;
-                import com.rosetta.test.model.BarReport.BarReportBuilder;
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
@@ -442,7 +440,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.BarReport;
-                import com.rosetta.test.model.BarReport.BarReportBuilder;
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
@@ -572,7 +569,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.BarReport;
-                import com.rosetta.test.model.BarReport.BarReportBuilder;
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
@@ -701,7 +697,8 @@ public class RosettaRuleGeneratorTest {
         //println(code)
         var reportJava = code.get("com.rosetta.test.model.reports.TEST_REGMiFIRReportFunction");
         assertThat(reportJava, CoreMatchers.notNullValue());
-        var expected = """
+        var expected =
+        		"""
                 package com.rosetta.test.model.reports;
                 
                 import com.google.inject.ImplementedBy;
@@ -711,7 +708,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.BarReport;
-                import com.rosetta.test.model.BarReport.BarReportBuilder;
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
@@ -820,7 +816,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.BarReport;
-                import com.rosetta.test.model.BarReport.BarReportBuilder;
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
@@ -1046,7 +1041,6 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.mapper.MapperS;
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Input;
-                import com.rosetta.test.model.Input.InputBuilder;
                 import java.util.Optional;
                 import javax.inject.Inject;
                 

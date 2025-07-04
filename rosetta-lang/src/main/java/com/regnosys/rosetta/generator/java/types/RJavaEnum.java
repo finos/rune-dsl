@@ -18,27 +18,25 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
 import com.regnosys.rosetta.generator.java.enums.EnumHelper;
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RObjectFactory;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
-import com.rosetta.util.types.JavaPrimitiveType;
-import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeDeclaration;
 
-public class RJavaEnum extends JavaClass<Object> {	
+public class RJavaEnum extends RGeneratedJavaClass<Object> {	
 	private final REnumType enumeration;
 	
 	private RJavaEnum parent = null;
 	private List<RJavaEnumValue> enumValues = null;
 
 	public RJavaEnum(REnumType enumeration) {
+		super(JavaPackageName.escape(enumeration.getNamespace()), DottedPath.of(enumeration.getName()));
 		this.enumeration = enumeration;
 	}
 	
@@ -68,22 +66,6 @@ public class RJavaEnum extends JavaClass<Object> {
 	}
 
 	@Override
-	public boolean isSubtypeOf(JavaType other) {
-		if (other instanceof JavaPrimitiveType) {
-			return false;
-		}
-		if (other.equals(JavaClass.OBJECT)) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public String getSimpleName() {
-		return enumeration.getName();
-	}
-
-	@Override
 	public JavaClass<? super Object> getSuperclassDeclaration() {
 		return JavaClass.OBJECT;
 	}
@@ -100,7 +82,7 @@ public class RJavaEnum extends JavaClass<Object> {
 	
 	@Override
 	public List<JavaClass<?>> getInterfaces() {
-		return getInterfaceDeclarations();
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -112,15 +94,4 @@ public class RJavaEnum extends JavaClass<Object> {
 	public boolean isFinal() {
 		return true;
 	}
-
-	@Override
-	public Class<?> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
-		return Class.forName(getCanonicalName().toString(), true, classLoader);
-	}
-
-	@Override
-	public DottedPath getPackageName() {
-		return enumeration.getNamespace();
-	}
-
 }

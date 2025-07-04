@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.Validator;
 import java.util.List;
 import test.pojo.Baz;
@@ -27,9 +26,9 @@ public class BazTypeFormatValidator implements Validator<Baz> {
 			.stream()
 			.map(res -> {
 				if (!isNullOrEmpty(res.getError())) {
-					return failure("Baz", ValidationType.TYPE_FORMAT, "Baz", path, "", res.getError());
+					return failure("Baz", ValidationResult.ValidationType.TYPE_FORMAT, "Baz", path, "", res.getError());
 				}
-				return success("Baz", ValidationType.TYPE_FORMAT, "Baz", path, "");
+				return success("Baz", ValidationResult.ValidationType.TYPE_FORMAT, "Baz", path, "");
 			})
 			.collect(toList());
 	}

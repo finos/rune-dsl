@@ -35,8 +35,8 @@ class ExternalHashcodeGeneratorTest {
 				enumerationList Enum (1..*)
 		'''.generateCode
 		//code.writeClasses("shouldGenerateExternalHashMethod")		
-		val classess = code.compileToClasses
-		val poro = classess.get(rootPackage + '.PlainOldRosettaObject')
+		val classes = code.compileToClasses
+		val poro = classes.get(rootPackage + '.PlainOldRosettaObject')
 
 		assertThat(poro.declaredMethods.map[name], hasItem('process'))
 	}

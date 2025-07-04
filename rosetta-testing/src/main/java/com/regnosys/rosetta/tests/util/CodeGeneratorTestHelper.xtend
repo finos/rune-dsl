@@ -1,8 +1,6 @@
 package com.regnosys.rosetta.tests.util
 
 import com.regnosys.rosetta.generator.RosettaGenerator
-import com.regnosys.rosetta.generator.RosettaInternalGenerator
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.rosetta.model.lib.meta.FieldWithMeta
 import java.io.File
@@ -20,30 +18,14 @@ import static com.google.common.collect.ImmutableMap.*
 import com.rosetta.model.lib.RosettaModelObject
 import jakarta.inject.Inject
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
-import com.regnosys.rosetta.utils.ModelIdProvider
 import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.metafields.MetaFields
+import com.rosetta.util.DottedPath
 
 class CodeGeneratorTestHelper {
 
 	@Inject extension RosettaGenerator
 	@Inject extension ModelHelper
-	@Inject extension ModelIdProvider
-
-	def generateCode(CharSequence model, RosettaInternalGenerator generator) {
-		val fsa = new RegisteringFileSystemAccess()
-		val eResource = model.parseRosettaWithNoErrors.eResource;
-		
-		eResource.contents.filter(RosettaModel).forEach[
-			val root = new RootPackage(it.toDottedPath)
-			val version = version
-			generator.generate(root, fsa, elements, version)	
-		]
-		
-		fsa.generatedFiles
-			.filter[javaClassName !== null]
-			.toMap([javaClassName], [contents.toString])		
-	}
 	
 	def generateCode(CharSequence... models) {
 		val eResources = models.parseRosettaWithNoErrors.map[it.eResource];
@@ -55,7 +37,7 @@ class CodeGeneratorTestHelper {
 		generateCode(#[eResource])
 	}
 	
-	protected def Map<String, String> generateCode(List<Resource> resources) {
+	def Map<String, String> generateCode(List<Resource> resources) {
 		val fsa = generateCodeWithFSA(resources)
 		
 		val generatedCode = newLinkedHashMap
@@ -114,7 +96,7 @@ class CodeGeneratorTestHelper {
 		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet)
 	}
 
-	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet) {
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, DottedPath namespace, String className, Map<String, Object> itemsToSet) {
 		classes.createInstanceUsingBuilder(namespace, className, itemsToSet, of())
 	}
 
@@ -122,7 +104,7 @@ class CodeGeneratorTestHelper {
 		classes.createInstanceUsingBuilder(rootPackage, className, itemsToSet, itemsToAddToList)
 	}
 
-	def createBuilderInstance(Map<String, Class<?>> classes, RootPackage namespace, String className) {
+	def createBuilderInstance(Map<String, Class<?>> classes, DottedPath namespace, String className) {
 		classes.get(namespace + '.' + className).getMethod("builder").invoke(null) as RosettaModelObjectBuilder
 	}
 
@@ -139,7 +121,7 @@ class CodeGeneratorTestHelper {
 				rosettaClassBuilderInstance, value);
 	}
 
-	def createInstanceUsingBuilder(Map<String, Class<?>> classes, RootPackage namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
+	def createInstanceUsingBuilder(Map<String, Class<?>> classes, DottedPath namespace, String className, Map<String, Object> itemsToSet, Map<String, List<?>> itemsToAddToList) {
     val clazz = classes.get(namespace + '.' + className)
     if (clazz === null) {
       throw new RuntimeException('''Class «namespace + '.' + className» not found''')
@@ -185,14 +167,6 @@ class CodeGeneratorTestHelper {
 			if (clazz !== null && !p.isAssignableFrom(clazz)) return false
 		}
 		return true
-	}
-
-	def createCalculationInstance(Map<String, Class<?>> classes, String className) {
-		val fqn = rootPackage.functions + '.' + className
-		val foundClazz = classes.get(fqn)
-		if(foundClazz === null)
-			throw new IllegalStateException('''No generated class '«fqn»' found''')
-		return foundClazz.declaredConstructor.newInstance
 	}
 
 	@Deprecated

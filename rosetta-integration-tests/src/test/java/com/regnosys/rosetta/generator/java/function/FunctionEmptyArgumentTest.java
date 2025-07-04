@@ -4,6 +4,7 @@ import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.util.DottedPath;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ public class FunctionEmptyArgumentTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, null, "attr2Value");
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
                 "attr2", "attr2Value"
         ));
 

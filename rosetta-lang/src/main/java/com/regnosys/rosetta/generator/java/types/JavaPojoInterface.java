@@ -19,12 +19,21 @@ package com.regnosys.rosetta.generator.java.types;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaType;
-import com.rosetta.util.types.JavaTypeDeclaration;
 
-public abstract class JavaPojoInterface extends JavaClass<RosettaModelObject> {	
+public abstract class JavaPojoInterface extends RGeneratedJavaClass<RosettaModelObject> {
+	private final JavaTypeUtil typeUtil;
+	
+	protected JavaPojoInterface(JavaPackageName packageName, String simpleName, JavaTypeUtil typeUtil) {
+		super(packageName, DottedPath.of(simpleName));
+		
+		this.typeUtil = typeUtil;
+	}
+	
 	public abstract String getJavadoc();
 	public abstract String getRosettaName();
 	public abstract String getVersion();
@@ -51,6 +60,16 @@ public abstract class JavaPojoInterface extends JavaClass<RosettaModelObject> {
 			.findAny()
 			.orElseThrow(() -> new NoSuchElementException("No property named " + propertyName + " in pojo " + this));
 	}
+	
+	public JavaPojoBuilderInterface toBuilderInterface() {
+		return new JavaPojoBuilderInterface(this, typeUtil);
+	}
+	public JavaPojoImpl toImplClass() {
+		return new JavaPojoImpl(this);
+	}
+	public JavaPojoBuilderImpl toBuilderImplClass() {
+		return new JavaPojoBuilderImpl(this);
+	}
 
 	@Override
 	public JavaClass<? super RosettaModelObject> getSuperclassDeclaration() {
@@ -60,23 +79,5 @@ public abstract class JavaPojoInterface extends JavaClass<RosettaModelObject> {
 	@Override
 	public JavaClass<? super RosettaModelObject> getSuperclass() {
 		return getSuperclassDeclaration();
-	}
-
-	@Override
-	public boolean extendsDeclaration(JavaTypeDeclaration<?> other) {
-		if (other instanceof JavaClass) {
-			return this.isSubtypeOf((JavaClass<?>)other);
-		}
-		return false;
-	}
-
-	@Override
-	public boolean isFinal() {
-		return false;
-	}
-
-	@Override
-	public Class<? extends RosettaModelObject> loadClass(ClassLoader classLoader) throws ClassNotFoundException {
-		return Class.forName(getCanonicalName().toString(), true, classLoader).asSubclass(RosettaModelObject.class);
 	}
 }

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.*
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.regnosys.rosetta.tests.util.ExpressionParser
 import com.rosetta.util.DottedPath
 import javax.inject.Inject
@@ -22,8 +21,8 @@ import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclaratio
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RObjectFactory
 import com.regnosys.rosetta.tests.util.ModelHelper
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -37,6 +36,7 @@ class ExpressionGeneratorTest {
 	@Inject extension ModelHelper
 	@Inject extension JavaDependencyProvider
 	@Inject extension JavaIdentifierRepresentationService
+	@Inject ExpressionScopeUtility scopeUtil
 	
 	
 	private def void assertJavaCode(String expectedCode, CharSequence expr, Class<?> expectedType) {
@@ -51,7 +51,8 @@ class ExpressionGeneratorTest {
 		val dependencies = parsedExpr.javaDependencies
 		
 		val pkg = DottedPath.of("test", "ns")
-		val scope = new JavaScope(pkg)
+		val scope = scopeUtil.createTestExpressionScope(pkg)
+		val fileScope = scope.getFileScope()
 		
 		val List<StringConcatenationClient> dependencyStatements = newArrayList
 		dependencies
@@ -66,7 +67,7 @@ class ExpressionGeneratorTest {
 		statements.add(parsedExpr.javaCode(expectedType, scope).completeAsReturn)
 		
 		val actual = statements.reduce[s1, s2|s1.append(s2)]
-		assertEquals(expectedCode, buildClass(pkg, '''«FOR dep : dependencyStatements SEPARATOR "\n" AFTER "\n\n"»«dep»«ENDFOR»«actual»''', scope).replace("package test.ns;", "").trim + System.lineSeparator)
+		assertEquals(expectedCode, buildClass(pkg, '''«FOR dep : dependencyStatements SEPARATOR "\n" AFTER "\n\n"»«dep»«ENDFOR»«actual»''', fileScope).replace("package test.ns;", "").trim + System.lineSeparator)
 	}
 	
 	@Test

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.metafields.FieldWithMetaString;
 import java.util.List;
@@ -30,9 +29,9 @@ public class QuxValidator implements Validator<Qux> {
 			.stream()
 			.map(res -> {
 				if (!isNullOrEmpty(res.getError())) {
-					return failure("Qux", ValidationType.CARDINALITY, "Qux", path, "", res.getError());
+					return failure("Qux", ValidationResult.ValidationType.CARDINALITY, "Qux", path, "", res.getError());
 				}
-				return success("Qux", ValidationType.CARDINALITY, "Qux", path, "");
+				return success("Qux", ValidationResult.ValidationType.CARDINALITY, "Qux", path, "");
 			})
 			.collect(toList());
 	}

@@ -58,7 +58,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -163,7 +162,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -306,7 +304,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo2;
-				import com.rosetta.test.model.Foo2.Foo2Builder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -414,7 +411,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.metafields.FieldWithMetaString;
 				import com.rosetta.test.model.FooWithScheme;
-				import com.rosetta.test.model.FooWithScheme.FooWithSchemeBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -977,7 +973,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
 				import java.util.List;
 				import java.util.Optional;
@@ -1621,7 +1616,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import com.rosetta.test.model.Bar;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -1962,7 +1956,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperListOfLists;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
 				import java.util.Collections;
@@ -2106,7 +2099,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
 				import java.util.Collections;
@@ -3380,7 +3372,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -3822,7 +3813,6 @@ class ListOperationTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.Validator;
 import java.util.List;
 import test.pojo.Pojo;
@@ -32,9 +31,9 @@ public class PojoTypeFormatValidator implements Validator<Pojo> {
 			.stream()
 			.map(res -> {
 				if (!isNullOrEmpty(res.getError())) {
-					return failure("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "", res.getError());
+					return failure("Pojo", ValidationResult.ValidationType.TYPE_FORMAT, "Pojo", path, "", res.getError());
 				}
-				return success("Pojo", ValidationType.TYPE_FORMAT, "Pojo", path, "");
+				return success("Pojo", ValidationResult.ValidationType.TYPE_FORMAT, "Pojo", path, "");
 			})
 			.collect(toList());
 	}

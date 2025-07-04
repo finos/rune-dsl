@@ -4,10 +4,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.regnosys.rosetta.RosettaRuntimeModule;
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator;
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator;
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
+import com.regnosys.rosetta.generator.java.types.RJavaEnum;
 import com.regnosys.rosetta.ide.RosettaIdeModule;
 import com.regnosys.rosetta.ide.RosettaIdeSetup;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
@@ -19,8 +20,8 @@ import jakarta.inject.Provider;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.ISetup;
-import org.eclipse.xtext.generator.IFileSystemAccess2;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider.Registry;
@@ -173,7 +174,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
 
     static class BrokenEnumGenerator extends EnumGenerator {
         @Override
-        public void generate(RosettaJavaPackages.RootPackage root, IFileSystemAccess2 fsa, REnumType enumeration, String version) {
+        protected StringConcatenationClient generate(REnumType e, RJavaEnum javaEnum, String version, JavaClassScope scope) {
             throw new RuntimeException("Broken enum generator");
         }
     }

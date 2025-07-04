@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.rosetta.util.types.JavaType
 import java.math.BigDecimal
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import static org.junit.jupiter.api.Assertions.*
@@ -23,6 +22,7 @@ import com.rosetta.util.types.JavaPrimitiveType
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -30,6 +30,7 @@ class TypeCoercionTest {
 	@Inject TypeCoercionService coercionService
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeUtil typeUtil
+	@Inject ExpressionScopeUtility scopeUtil
 	
 	private def void assertCoercion(String expectedCode, StringConcatenationClient expr, Class<?> actual, JavaType expected) {
 		assertCoercion(expectedCode, expr, JavaType.from(actual), expected)
@@ -42,13 +43,11 @@ class TypeCoercionTest {
 	}
 	private def void assertCoercion(String expectedCode, StringConcatenationClient expr, JavaType actual, JavaType expected) {
 		val pkg = DottedPath.of("test", "ns")
-		val scope = new JavaScope(pkg)
+		val scope = scopeUtil.createTestExpressionScope(pkg)
 		
 		val coercedExpr = coercionService.addCoercions(JavaExpression.from(expr, actual), expected, scope)
-		assertEquals(expectedCode, buildClass(pkg, '''«coercedExpr.completeAsReturn»''', scope).replace("package test.ns;", "").trim + System.lineSeparator)
+		assertEquals(expectedCode, buildClass(pkg, '''«coercedExpr.completeAsReturn»''', scope.getFileScope()).replace("package test.ns;", "").trim + System.lineSeparator)
 	}
-	
-
 	
 	@Test
 	def void testConvertBigDecimalToFieldWithMetaInteger() {
@@ -63,7 +62,7 @@ class TypeCoercionTest {
 		}
 		'''
 		
-		val expectedType = new RJavaFieldWithMeta(INTEGER, DottedPath.of("test"), typeUtil)
+		val expectedType = new RJavaFieldWithMeta(INTEGER, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil)
 		
 		assertCoercion(expected, '''BigDecimal.valueOf(10)''', BigDecimal, expectedType)	
 		
@@ -87,7 +86,7 @@ class TypeCoercionTest {
 		}
 		'''
 		
-		val actualType = new RJavaFieldWithMeta(INTEGER, DottedPath.of("test"), typeUtil)
+		val actualType = new RJavaFieldWithMeta(INTEGER, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil)
 		
 		assertCoercion(expected, '''FieldWithMetaInteger.builder().setValue(10).build()''', actualType, BigDecimal)	
 	}
@@ -109,8 +108,8 @@ class TypeCoercionTest {
 		}
 		'''
 		
-		val actualType = new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil)
-		val expectedType = new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		val actualType = new RJavaReferenceWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil)
+		val expectedType = new RJavaFieldWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil)
 		
 		assertCoercion(expected, '''ReferenceWithMetaString.builder().setValue("foo").build()''', actualType, expectedType)	
 	}
@@ -132,8 +131,8 @@ class TypeCoercionTest {
 		}
 		'''
 		
-		val actualType = new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil)
-		val expectedType = new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil)
+		val actualType = new RJavaFieldWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil)
+		val expectedType = new RJavaReferenceWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil)
 		
 		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', actualType, expectedType)	
 	}
@@ -150,7 +149,7 @@ class TypeCoercionTest {
 			return string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
 		}
 		'''		
-		assertCoercion(expected, '''"foo"''', String, new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil))
+		assertCoercion(expected, '''"foo"''', String, new RJavaFieldWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil))
 		
 		val expected2 = '''
 		import test.ReferenceWithMetaString;
@@ -161,7 +160,7 @@ class TypeCoercionTest {
 			return string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
 		}
 		'''
-		assertCoercion(expected2, '''"foo"''', String, new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil))		
+		assertCoercion(expected2, '''"foo"''', String, new RJavaReferenceWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil))		
 	}
 	
 	@Test
@@ -176,7 +175,7 @@ class TypeCoercionTest {
 		}
 		'''
 						
-		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', new RJavaFieldWithMeta(STRING, DottedPath.of("test"), typeUtil), String)	
+		assertCoercion(expected, '''FieldWithMetaString.builder().setValue("foo").build()''', new RJavaFieldWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil), String)	
 		
 		val expected2 = '''
 		import test.ReferenceWithMetaString;
@@ -188,7 +187,7 @@ class TypeCoercionTest {
 		}
 		'''	
 				
-		assertCoercion(expected2, '''ReferenceWithMetaString.builder().setValue("foo").build();''', new RJavaReferenceWithMeta(STRING, DottedPath.of("test"), typeUtil), String)
+		assertCoercion(expected2, '''ReferenceWithMetaString.builder().setValue("foo").build();''', new RJavaReferenceWithMeta(STRING, JavaPackageName.splitOnDotsAndEscape("test"), typeUtil), String)
 	}
 	
 	@Test

@@ -75,7 +75,7 @@ class CalculationFunctionGeneratorTest {
 					}
 				}
 				
-				@ImplementedBy(PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
+				@ImplementedBy(PeriodEnumFunc.PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
 				public static abstract class PeriodEnumFuncMONTH implements RosettaFunction {
 				
 					/**
@@ -93,7 +93,7 @@ class CalculationFunctionGeneratorTest {
 				
 					protected abstract MapperS<Integer> i(PeriodEnum in1, Period in2);
 				
-					public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFuncMONTH {
+					public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFunc.PeriodEnumFuncMONTH {
 						@Override
 						protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
 							BigDecimal out = null;
@@ -286,7 +286,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.model.lib.records.Date;
 			import com.rosetta.test.model.FoncOut;
-			import com.rosetta.test.model.FoncOut.FoncOutBuilder;
 			import com.rosetta.test.model.FuncIn;
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
@@ -395,7 +394,6 @@ class CalculationFunctionGeneratorTest {
 			import com.rosetta.model.lib.records.Date;
 			import com.rosetta.test.model.FuncIn;
 			import com.rosetta.test.model.FuncOut;
-			import com.rosetta.test.model.FuncOut.FuncOutBuilder;
 			import java.time.LocalDateTime;
 			import java.time.LocalTime;
 			import java.util.Optional;
@@ -500,7 +498,6 @@ class CalculationFunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.OtherType;
-				import com.rosetta.test.model.OtherType.OtherTypeBuilder;
 				import com.rosetta.test.model.WithMeta;
 				import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
 				import java.util.Collections;
@@ -687,7 +684,6 @@ class CalculationFunctionGeneratorTest {
 			import com.google.inject.ImplementedBy;
 			import com.rosetta.model.lib.functions.RosettaFunction;
 			import com.rosetta.model.lib.mapper.MapperS;
-			import com.rosetta.test.model.Math;
 			import com.rosetta.test.model.MathInput;
 			import javax.inject.Inject;
 			
@@ -700,7 +696,7 @@ class CalculationFunctionGeneratorTest {
 				@Inject protected MathFunc.MathFuncINCR mathFuncINCR;
 				@Inject protected MathFunc.MathFuncDECR mathFuncDECR;
 				
-				public String evaluate(Math in1, MathInput in2) {
+				public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
 					switch (in1) {
 						case INCR:
 							return mathFuncINCR.evaluate(in1, in2);
@@ -711,7 +707,7 @@ class CalculationFunctionGeneratorTest {
 					}
 				}
 				
-				@ImplementedBy(MathFuncINCR.MathFuncINCRDefault.class)
+				@ImplementedBy(MathFunc.MathFuncINCR.MathFuncINCRDefault.class)
 				public static abstract class MathFuncINCR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
@@ -723,29 +719,29 @@ class CalculationFunctionGeneratorTest {
 					* @param in2 
 					* @return arg1 
 					*/
-					public String evaluate(Math in1, MathInput in2) {
+					public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
 						String arg1 = doEvaluate(in1, in2);
 						
 						return arg1;
 					}
 				
-					protected abstract String doEvaluate(Math in1, MathInput in2);
+					protected abstract String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2);
 				
-					public static class MathFuncINCRDefault extends MathFuncINCR {
+					public static class MathFuncINCRDefault extends MathFunc.MathFuncINCR {
 						@Override
-						protected String doEvaluate(Math in1, MathInput in2) {
+						protected String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2) {
 							String arg1 = null;
 							return assignOutput(arg1, in1, in2);
 						}
 						
-						protected String assignOutput(String arg1, Math in1, MathInput in2) {
+						protected String assignOutput(String arg1, com.rosetta.test.model.Math in1, MathInput in2) {
 							arg1 = addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get());
 							
 							return arg1;
 						}
 					}
 				}
-				@ImplementedBy(MathFuncDECR.MathFuncDECRDefault.class)
+				@ImplementedBy(MathFunc.MathFuncDECR.MathFuncDECRDefault.class)
 				public static abstract class MathFuncDECR implements RosettaFunction {
 					
 					// RosettaFunction dependencies
@@ -757,22 +753,22 @@ class CalculationFunctionGeneratorTest {
 					* @param in2 
 					* @return arg1 
 					*/
-					public String evaluate(Math in1, MathInput in2) {
+					public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
 						String arg1 = doEvaluate(in1, in2);
 						
 						return arg1;
 					}
 				
-					protected abstract String doEvaluate(Math in1, MathInput in2);
+					protected abstract String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2);
 				
-					public static class MathFuncDECRDefault extends MathFuncDECR {
+					public static class MathFuncDECRDefault extends MathFunc.MathFuncDECR {
 						@Override
-						protected String doEvaluate(Math in1, MathInput in2) {
+						protected String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2) {
 							String arg1 = null;
 							return assignOutput(arg1, in1, in2);
 						}
 						
-						protected String assignOutput(String arg1, Math in1, MathInput in2) {
+						protected String assignOutput(String arg1, com.rosetta.test.model.Math in1, MathInput in2) {
 							arg1 = subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get());
 							
 							return arg1;

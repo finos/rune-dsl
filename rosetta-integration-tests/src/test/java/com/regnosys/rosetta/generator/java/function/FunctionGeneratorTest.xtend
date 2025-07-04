@@ -1,12 +1,10 @@
 package com.regnosys.rosetta.generator.java.function
 
 import com.google.common.collect.ImmutableList
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper
 import com.regnosys.rosetta.tests.util.ModelHelper
 import com.rosetta.model.lib.RosettaModelObject
-import com.rosetta.model.lib.meta.FieldWithMeta
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.records.Date
@@ -33,6 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.Assert.assertThrows
 import static org.junit.jupiter.api.Assertions.*
+import com.rosetta.util.DottedPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -55,7 +54,7 @@ class FunctionGeneratorTest {
 		code.compileToClasses
  		val classes = code.compileToClasses
 		
-		val facRule = classes.createFunc("FacRule", rootPackage.reports)
+		val facRule = classes.createFunc("FacRule", rootPackage.child("reports"))
 				
 		assertEquals(120, facRule.invokeFunc(Integer, #[5]))
 	}
@@ -167,7 +166,7 @@ class FunctionGeneratorTest {
         
         val test = classes.createFunc("Test")
         
-      	val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
+      	val myInput = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
         		"a" -> "aValue",
         		"c" -> BigDecimal.valueOf(20)
@@ -225,11 +224,11 @@ class FunctionGeneratorTest {
         val test = classes.createFunc("Test")	
 		
         val myInputs = #[
-        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+        	classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 				"value" -> 6,
 				"meta" -> MetaFields.builder.setScheme("myScheme")
 			}),
-        	classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+        	classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 				"value" -> 5,
 				"meta" -> MetaFields.builder.setScheme("myScheme")
 			})
@@ -321,7 +320,7 @@ class FunctionGeneratorTest {
         val test = classes.createFunc("Test")
                         
         val myInput = classes.createInstanceUsingBuilder("Foo", #{
-        	"myEnum" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", #{
+        	"myEnum" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", #{
         		"value" -> classes.createEnumInstance("MyEnum", "B"),
         		"meta" -> MetaFields.builder.setScheme("myScheme")
         	})
@@ -356,14 +355,14 @@ class FunctionGeneratorTest {
         
         val test = classes.createFunc("Test")
         
-        val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+        val myInput = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
 				"meta" -> MetaFields.builder.setExternalKey("myExternalKey").setGlobalKey("myGlobalKey")
 			})
 		})
 		
 		val expected = classes.createInstanceUsingBuilder("Bar", #{
-			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"b" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 				"externalReference" -> "myExternalKey",
 				"globalReference" -> "myGlobalKey"
 			})
@@ -396,13 +395,13 @@ class FunctionGeneratorTest {
         
         val test = classes.createFunc("Test")
         
-        val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+        val myInput = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 			"value" -> "someInput",
 			"meta" -> MetaFields.builder.setScheme("myScheme")
 		})
 		
 		val expected = classes.createInstanceUsingBuilder("Bar", #{
-			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"b" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 				"value" -> "someInput",
 				"meta" -> MetaFields.builder.setScheme("myScheme")
 			})
@@ -444,7 +443,7 @@ class FunctionGeneratorTest {
         val test = classes.createFunc("Test")
         
         val myInput = classes.createInstanceUsingBuilder("FooContainer" , #{
-        	"foo" ->  classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+        	"foo" ->  classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 				"value" -> classes.createInstanceUsingBuilder("Foo", #{
 					"meta" -> MetaFields.builder.setExternalKey("myExternalKey").setGlobalKey("myGlobalKey")
 				})
@@ -452,7 +451,7 @@ class FunctionGeneratorTest {
         })
 		
 		val expected = classes.createInstanceUsingBuilder("Bar", #{
-			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"b" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 				"externalReference" -> "myExternalKey",
 				"globalReference" -> "myGlobalKey"
 			})
@@ -489,14 +488,14 @@ class FunctionGeneratorTest {
         
         val test = classes.createFunc("Test")
         
-       val myInput = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+       val myInput = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
 				"meta" -> MetaFields.builder.setExternalKey("myExternalKey").setGlobalKey("myGlobalKey")
 			})
 		})
 		
 		val expected = classes.createInstanceUsingBuilder("Bar", #{
-			"b" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+			"b" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 				"externalReference" -> "myExternalKey",
 				"globalReference" -> "myGlobalKey"
 			})
@@ -608,7 +607,7 @@ class FunctionGeneratorTest {
         val test = classes.createFunc("Test")
         
 		val a = classes.createFieldWithMetaString("foo", "myScheme")
-		val b = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+		val b = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
 			"value" -> "foo",
 			"reference" -> (Reference.builder.reference = "myRef").build
 		})
@@ -645,7 +644,7 @@ class FunctionGeneratorTest {
         
         val test = classes.createFunc("Test")
 
-		val fooWithReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
+		val fooWithReference = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", #{
 			"value" -> classes.createInstanceUsingBuilder("Foo", #{
 				"a" -> classes.createInstanceUsingBuilder("A", #{
 					"attr" -> 99
@@ -678,28 +677,28 @@ class FunctionGeneratorTest {
 		val someFunc = classes.createFunc("SomeFunc")
 			
 		val myInput = #[
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+			classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
 				"value" -> 5,
 				"reference" -> (Reference.builder.reference = "myRef").build
 			}),
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+			classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
 				"value" -> 10,
 				"reference" ->  (Reference.builder.reference = "myRef2").build
 			}), 
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
+			classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "ReferenceWithMetaInteger", #{
 				"value" -> 15,
 				"reference" ->  (Reference.builder.reference = "myRef3").build
 			})
 		]
 			
 		val expected = #[
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+			classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
 				"value" -> BigDecimal.valueOf(5)
     		}),
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+			classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
 				"value" -> BigDecimal.valueOf(10)
     		}),
-			classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
+			classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaBigDecimal", #{
 				"value" -> BigDecimal.valueOf(15)
     		})
 		]
@@ -929,7 +928,7 @@ class FunctionGeneratorTest {
 			"number" -> BigDecimal.valueOf(42)
 		})
 		val fooStrWithScheme = classes.createInstanceUsingBuilder("Foo", #{
-			"MyString" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+			"MyString" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 				"meta" -> MetaFields.builder.setScheme("myScheme"),
 				"value" -> "abc123"
 			})
@@ -1130,7 +1129,7 @@ class FunctionGeneratorTest {
 		
 		val classes = code.compileToClasses
 		val a = classes.createInstanceUsingBuilder("A", #{
-    		"a" -> #[classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
+    		"a" -> #[classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "ReferenceWithMetaString", #{
     			"value" -> "Hello"
     		})]
         })
@@ -1244,10 +1243,10 @@ class FunctionGeneratorTest {
         
         val test = classes.createFunc("Test");
         val aB = classes.createInstanceUsingBuilder("A", #{
-	    		"B" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaB", #{
+	    		"B" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaB", #{
 	    			"value" -> classes.createInstanceUsingBuilder("B", #{
 	    				"meta" -> MetaFields.builder.setKey(#[Key.builder.setKeyValue("myKey")]),
-	    				"id" -> classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", #{
+	    				"id" -> classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", #{
 	    					"meta" -> MetaFields.builder.setScheme("myScheme"),
 	    					"value" -> "abc123"
 	    				})
@@ -1292,11 +1291,11 @@ class FunctionGeneratorTest {
 	    		"B" -> classes.createInstanceUsingBuilder("B", #{
     				"prop" -> 
     					#[
-    						classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+    						classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 		    					"meta" -> MetaFields.builder.setScheme("myScheme"),
 		    					"value" -> 42
 		    				}),
-		    				classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
+		    				classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaInteger", #{
 		    					"meta" -> MetaFields.builder.setScheme("otherScheme"),
 		    					"value" -> 0
 		    				})
@@ -1740,7 +1739,7 @@ class FunctionGeneratorTest {
 		val objectWithKey = classes.createInstanceUsingBuilder('TypeWithKey', #{
 			"meta" -> MetaFields.builder.setExternalKey("external").setGlobalKey("global")
 		})
-		val objectWithKeyReference = classes.createInstanceUsingBuilder(new RootPackage("com.rosetta.test.model.metafields"), 'ReferenceWithMetaTypeWithKey', #{
+		val objectWithKeyReference = classes.createInstanceUsingBuilder(DottedPath.splitOnDots("com.rosetta.test.model.metafields"), 'ReferenceWithMetaTypeWithKey', #{
 			"externalReference" -> "external",
 			"globalReference" -> "global"
 		})
@@ -3309,9 +3308,7 @@ class FunctionGeneratorTest {
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.agreement.Bar;
 			import com.rosetta.test.model.agreement.Foo;
-			import com.rosetta.test.model.agreement.Foo.FooBuilder;
 			import com.rosetta.test.model.agreement.Top;
-			import com.rosetta.test.model.agreement.Top.TopBuilder;
 			import java.util.Optional;
 			import javax.inject.Inject;
 			
@@ -4510,7 +4507,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
 				import java.util.List;
@@ -4614,7 +4610,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -5252,7 +5247,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
@@ -5342,7 +5336,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -5498,7 +5491,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -5581,7 +5573,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -6126,7 +6117,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
-				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
@@ -6162,7 +6152,7 @@ class FunctionGeneratorTest {
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return Arrays.asList(ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
+							return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {

@@ -211,8 +211,8 @@ public abstract class JavaParameterizedType<T> extends JavaClass<T> {
 	}
 	
 	@Override
-	public String getSimpleName() {
-		return getGenericTypeDeclaration().getBaseType().getSimpleName();
+	public DottedPath getNestedTypeName() {
+		return getGenericTypeDeclaration().getBaseType().getNestedTypeName();
 	}
 	
 	@Override

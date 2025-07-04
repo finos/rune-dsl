@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
@@ -64,6 +63,7 @@ public class RObjectFactory {
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
+				function,
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				function.getInputs().stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
@@ -86,6 +86,7 @@ public class RObjectFactory {
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
+				rule,
 				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
@@ -118,7 +119,8 @@ public class RObjectFactory {
 		inputAttribute.setCard(cardinality);
 		
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
-		return new RFunction( 
+		return new RFunction(
+			report,
 			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),

@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.inject.Inject;
 
@@ -31,6 +32,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.Templatable;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.Mapper;
@@ -40,7 +42,9 @@ import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
+import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.lib.validation.ValidatorWithArg;
 import com.rosetta.model.metafields.MetaAndTemplateFields;
 import com.rosetta.model.metafields.MetaFields;
 import com.rosetta.util.types.JavaClass;
@@ -49,6 +53,7 @@ import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 import com.rosetta.util.types.JavaTypeArgument;
+import com.rosetta.util.types.JavaTypeDeclaration;
 import com.rosetta.util.types.JavaWildcardTypeArgument;
 
 public class JavaTypeUtil {
@@ -71,18 +76,26 @@ public class JavaTypeUtil {
 	public final JavaClass<com.rosetta.model.lib.records.Date> DATE = JavaClass.from(com.rosetta.model.lib.records.Date.class);
 	public final JavaClass<LocalDateTime> LOCAL_DATE_TIME = JavaClass.from(LocalDateTime.class);
 	public final JavaClass<ZonedDateTime> ZONED_DATE_TIME = JavaClass.from(ZonedDateTime.class);
+	
 	public final JavaClass<GlobalKey> GLOBAL_KEY = JavaClass.from(GlobalKey.class);
+	public final JavaClass<GlobalKey.GlobalKeyBuilder> GLOBAL_KEY_BUILDER = JavaClass.from(GlobalKey.GlobalKeyBuilder.class);
 	public final JavaClass<Templatable> TEMPLATABLE = JavaClass.from(Templatable.class);
+	public final JavaClass<Templatable.TemplatableBuilder> TEMPLATABLE_BUILDER = JavaClass.from(Templatable.TemplatableBuilder.class);
 	public final JavaClass<Reference> REFERENCE = JavaClass.from(Reference.class);
+	public final JavaClass<Reference.ReferenceBuilder> REFERENCE_BUILDER = JavaClass.from(Reference.ReferenceBuilder.class);
 	public final JavaClass<MetaFields> META_FIELDS = JavaClass.from(MetaFields.class);
+	public final JavaClass<MetaFields.MetaFieldsBuilder> META_FIELDS_BUILDER = JavaClass.from(MetaFields.MetaFieldsBuilder.class);
 	public final JavaClass<MetaAndTemplateFields> META_AND_TEMPLATE_FIELDS = JavaClass.from(MetaAndTemplateFields.class);
+	public final JavaClass<MetaAndTemplateFields.MetaAndTemplateFieldsBuilder> META_AND_TEMPLATE_FIELDS_BUILDER = JavaClass.from(MetaAndTemplateFields.MetaAndTemplateFieldsBuilder.class);
+	public final JavaGenericTypeDeclaration<FieldWithMeta<?>> FIELD_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<FieldWithMeta.FieldWithMetaBuilder<?>> FIELD_WITH_META_BUILDER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<ReferenceWithMeta<?>> REFERENCE_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<ReferenceWithMeta.ReferenceWithMetaBuilder<?>> REFERENCE_WITH_META_BUILDER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	
 	public final JavaClass<Object> OBJECT = JavaClass.OBJECT;
 	public final JavaClass<Cloneable> CLONEABLE = JavaClass.CLONEABLE;
 	public final JavaClass<Serializable> SERIALIZABLE = JavaClass.SERIALIZABLE;
 	
-	public final JavaGenericTypeDeclaration<FieldWithMeta<?>> FIELD_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
-	public final JavaGenericTypeDeclaration<ReferenceWithMeta<?>> REFERENCE_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});	
 	public final JavaGenericTypeDeclaration<List<?>> LIST = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<Mapper<?>> MAPPER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<MapperS<?>> MAPPER_S = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
@@ -91,7 +104,55 @@ public class JavaTypeUtil {
 	public final JavaGenericTypeDeclaration<MapperListOfLists<?>> MAPPER_LIST_OF_LISTS = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	
 	public final JavaClass<RosettaModelObject> ROSETTA_MODEL_OBJECT = JavaClass.from(RosettaModelObject.class);
+	public final JavaClass<RosettaModelObjectBuilder> ROSETTA_MODEL_OBJECT_BUILDER = JavaClass.from(RosettaModelObjectBuilder.class);
+	public final JavaGenericTypeDeclaration<RosettaMetaData<?>> ROSETTA_META_DATA = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<Validator<?>> VALIDATOR = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	public final JavaGenericTypeDeclaration<ValidatorWithArg<?, ?>> VALIDATOR_WITH_ARG = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	
+	private final Map<JavaTypeDeclaration<?>, JavaTypeDeclaration<?>> builderMap = Map.of(
+				ROSETTA_MODEL_OBJECT, ROSETTA_MODEL_OBJECT_BUILDER,
+				GLOBAL_KEY, GLOBAL_KEY_BUILDER,
+				TEMPLATABLE, TEMPLATABLE_BUILDER,
+				REFERENCE, REFERENCE_BUILDER,
+				META_FIELDS, META_FIELDS_BUILDER,
+				META_AND_TEMPLATE_FIELDS, META_AND_TEMPLATE_FIELDS_BUILDER,
+				FIELD_WITH_META, FIELD_WITH_META_BUILDER,
+				REFERENCE_WITH_META, REFERENCE_WITH_META_BUILDER
+			);
+	public boolean hasBuilderType(JavaType type) {
+		return !toBuilder(type).equals(type);
+	}
+	public JavaType toBuilder(JavaType type) {
+		if (type instanceof JavaClass<?> c) {
+			return toBuilder(c);
+		}
+		// No builder type found
+		return type;
+	}
+	public JavaClass<?> toBuilder(JavaClass<?> type) {
+		return (JavaClass<?>)toBuilder((JavaTypeDeclaration<?>) type);
+	}
+	public JavaTypeDeclaration<?> toBuilder(JavaTypeDeclaration<?> type) {
+		if (type instanceof JavaPojoInterface pojo) {
+			return pojo.toBuilderInterface();
+		}
+		
+		JavaTypeDeclaration<?> base = type;
+		if (type instanceof JavaParameterizedType<?> paramType) {
+			base = paramType.getGenericTypeDeclaration();
+		}
+		
+		var baseBuilder = builderMap.get(base);
+		if (baseBuilder == null) {
+			// No builder type found
+			return type;
+		}
+		
+		if (type instanceof JavaParameterizedType<?> paramType) {
+			return JavaParameterizedType.from((JavaGenericTypeDeclaration<?>)baseBuilder, paramType.getArguments());
+		}
+		return baseBuilder;
+	}
 
 	public <T> JavaParameterizedType<T> wrap(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
 		return JavaParameterizedType.from(wrapperType, itemType.toReferenceType());

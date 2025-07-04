@@ -4,7 +4,6 @@ import com.regnosys.rosetta.tests.util.ExpressionParser
 import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.rosetta.util.types.JavaType
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.tests.compiler.InMemoryJavacCompiler
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
@@ -13,7 +12,10 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.google.inject.Injector
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 
 class ExpressionJavaEvaluatorService {
 	@Inject
@@ -39,14 +41,14 @@ class ExpressionJavaEvaluatorService {
 		val className = "TestExpressionEvaluator"
 		val methodName = "evaluate"
 		
-		val packageScope = new JavaScope(packageName)
-		val classScope = packageScope.classScope(className)
-		val evaluateScope = classScope.methodScope(methodName)
+		val classScope = JavaClassScope.createAndRegisterIdentifier(RGeneratedJavaClass.create(JavaPackageName.escape(packageName), className, Object))
+		val evaluateScope = classScope.createMethodScope(methodName)
+		val evaluateBodyScope = evaluateScope.bodyScope
 		
 		val dependencies = dependencyProvider.javaDependencies(expr)
 		dependencies.forEach[classScope.createIdentifier(toDependencyInstance, simpleName.toFirstLower)]
 		
-		val javaCode = expressionGenerator.javaCode(expr, expectedType, evaluateScope)
+		val javaCode = expressionGenerator.javaCode(expr, expectedType, evaluateBodyScope)
 		val StringConcatenationClient content = '''
 			public class «className» {
 				«FOR dep : dependencies»
@@ -58,7 +60,7 @@ class ExpressionJavaEvaluatorService {
 			}
 		'''
 		
-		val sourceCode = buildClass(packageName, content, packageScope)
+		val sourceCode = buildClass(packageName, content, classScope.getFileScope())
 		val expressionCompiler = InMemoryJavacCompiler
 				.newInstance()
 				.useParentClassLoader(classLoader)

@@ -9,9 +9,7 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneMetaType;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.Reference;
-import com.rosetta.model.lib.meta.Reference.ReferenceBuilder;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
-import com.rosetta.model.lib.meta.ReferenceWithMeta.ReferenceWithMetaBuilder;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -20,7 +18,6 @@ import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
 import test.pojo.Child;
-import test.pojo.Child.ChildBuilder;
 
 import static java.util.Optional.ofNullable;
 
@@ -258,35 +255,35 @@ public interface ReferenceWithMetaChild extends RosettaModelObject, ReferenceWit
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("value")
 		@RuneAttribute("@data")
 		@RuneMetaType
+		@Override
 		public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder setValue(Child _value) {
 			this.value = _value == null ? null : _value.toBuilder();
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("globalReference")
 		@RuneAttribute("@ref")
+		@Override
 		public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder setGlobalReference(String _globalReference) {
 			this.globalReference = _globalReference == null ? null : _globalReference;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("externalReference")
 		@RuneAttribute("@ref:external")
+		@Override
 		public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder setExternalReference(String _externalReference) {
 			this.externalReference = _externalReference == null ? null : _externalReference;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("address")
 		@RuneAttribute("@ref:scoped")
 		@RuneMetaType
+		@Override
 		public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder setReference(Reference _reference) {
 			this.reference = _reference == null ? null : _reference.toBuilder();
 			return this;
@@ -368,6 +365,6 @@ public interface ReferenceWithMetaChild extends RosettaModelObject, ReferenceWit
 	}
 }
 
-class ReferenceWithMetaChildMeta extends BasicRosettaMetaData<ReferenceWithMetaChild>{
+class ReferenceWithMetaChildMeta extends BasicRosettaMetaData<ReferenceWithMetaChild> {
 
 }

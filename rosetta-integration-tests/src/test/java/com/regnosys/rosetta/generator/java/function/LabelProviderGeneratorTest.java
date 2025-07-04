@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.function;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess;
 import org.eclipse.xtext.xbase.testing.RegisteringFileSystemAccess.GeneratedFile;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
@@ -53,11 +54,8 @@ public class LabelProviderGeneratorTest {
 	private RosettaTestModel loadModel(String runeSourceCode) throws IOException {
 		return testModelService.toTestModel(runeSourceCode);
 	}
-	private void generateLabelProviderForFunction(RosettaTestModel model, String functionName) {
-		labelProviderGenerator.generateForFunctionIfApplicable(fsa, model.getFunction(functionName));
-	}
-	private void generateLabelProviderForReport(RosettaTestModel model, String body, String... corpusList) {
-		labelProviderGenerator.generateForReport(fsa, model.getReport(body, corpusList));
+	private void generateLabelProvider(RosettaTestModel model) {
+		labelProviderGenerator.generateClasses(model.getModel(), "test", fsa, CancelIndicator.NullImpl);
 	}
 	
 	private List<String> getGeneratedFileNames() {
@@ -90,7 +88,7 @@ public class LabelProviderGeneratorTest {
 		GeneratedFile file = getSingleGeneratedFile();
 		Assertions.assertEquals(expectedGeneratedPath, file.getPath().replace("/test-project/src-gen/main/java", ""));
 		String actualSource = file.getContents().toString();
-		String expectedSource = Resources.toString(getClass().getResource("/label-annotations/" + expectationFileName), Charsets.UTF_8);
+		String expectedSource = Resources.toString(getClass().getResource("/label-annotations/" + expectationFileName), StandardCharsets.UTF_8);
 		Assertions.assertEquals(expectedSource, actualSource);
 	}
 	private void assertLabels(String... pathLabelExpectations) {
@@ -127,7 +125,7 @@ public class LabelProviderGeneratorTest {
 						foo Foo (1..1)
 				""");
 		
-		generateLabelProviderForFunction(model, "MyFunc");
+		generateLabelProvider(model);
 		
 		assertNoGeneratedFiles();
 	}
@@ -149,7 +147,7 @@ public class LabelProviderGeneratorTest {
 						foo Foo (1..1)
 				""");
 		
-		generateLabelProviderForFunction(model, "MyFunc");
+		generateLabelProvider(model);
 		
 		assertSingleGeneratedFile("func-ingest/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
 		assertLabels(
@@ -191,7 +189,7 @@ public class LabelProviderGeneratorTest {
 					as "Other from rule"
 				""");
 		
-		generateLabelProviderForReport(model, "Body", "Corpus");
+		generateLabelProvider(model);
 		
 		assertSingleGeneratedFile("report-with-rule-references/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
 		assertLabels(
@@ -252,7 +250,7 @@ public class LabelProviderGeneratorTest {
 				}
 				""");
 		
-		generateLabelProviderForReport(model, "Body", "Corpus");
+		generateLabelProvider(model);
 		
 		assertSingleGeneratedFile("report-with-external-source/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
 		assertLabels(
@@ -324,7 +322,7 @@ public class LabelProviderGeneratorTest {
 					as "Bar attribute from rule"
 				""");
 		
-		generateLabelProviderForReport(model, "Body", "Corpus");
+		generateLabelProvider(model);
 		
 		assertSingleGeneratedFile("report-with-complex-labels/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
 		assertLabels(
@@ -377,7 +375,7 @@ public class LabelProviderGeneratorTest {
 						foo Foo (1..1)
 				""");
 		
-		generateLabelProviderForFunction(model, "MyFunc");
+		generateLabelProvider(model);
 		
 		assertSingleGeneratedFile("func-circular/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
 		assertLabels(

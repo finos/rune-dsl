@@ -15,7 +15,6 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
-import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
 import com.rosetta.util.ListEquals;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,19 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import test.pojo.Child;
-import test.pojo.Child.ChildBuilder;
-import test.pojo.Foo1;
-import test.pojo.Foo1.Foo1Builder;
-import test.pojo.Foo2;
-import test.pojo.Foo2.Foo2Builder;
-import test.pojo.Foo2.Foo2BuilderImpl;
-import test.pojo.Foo2.Foo2Impl;
-import test.pojo.Parent;
-import test.pojo.Parent.ParentBuilder;
 import test.pojo.meta.Foo2Meta;
 import test.pojo.metafields.ReferenceWithMetaChild;
-import test.pojo.metafields.ReferenceWithMetaChild.ReferenceWithMetaChildBuilder;
 
 import static java.util.Optional.ofNullable;
 
@@ -97,7 +85,7 @@ public interface Foo2 extends Foo1 {
 		ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getOrCreateParentListOverriddenAsSingleReferenceWithMetaChild();
 		@Override
 		ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getParentListOverriddenAsSingleReferenceWithMetaChild();
-		Child.ChildBuilder getOrCreateOtherParentList(int _index);
+		Child.ChildBuilder getOrCreateOtherParentList(int index);
 		@Override
 		List<? extends Child.ChildBuilder> getOtherParentList();
 		@Override
@@ -109,7 +97,7 @@ public interface Foo2 extends Foo1 {
 		@Override
 		Foo2.Foo2Builder addParentList(Parent parentList);
 		@Override
-		Foo2.Foo2Builder addParentList(Parent parentList, int _idx);
+		Foo2.Foo2Builder addParentList(Parent parentList, int idx);
 		@Override
 		Foo2.Foo2Builder addParentList(List<? extends Parent> parentList);
 		@Override
@@ -117,7 +105,7 @@ public interface Foo2 extends Foo1 {
 		@Override
 		Foo2.Foo2Builder addOtherParentList(Parent otherParentList);
 		@Override
-		Foo2.Foo2Builder addOtherParentList(Parent otherParentList, int _idx);
+		Foo2.Foo2Builder addOtherParentList(Parent otherParentList, int idx);
 		@Override
 		Foo2.Foo2Builder addOtherParentList(List<? extends Parent> otherParentList);
 		@Override
@@ -130,8 +118,8 @@ public interface Foo2 extends Foo1 {
 		Foo2.Foo2Builder setParent(Child parent);
 		Foo2.Foo2Builder setParentList(ReferenceWithMetaChild parentList);
 		Foo2.Foo2Builder setParentListValue(Child parentList);
-		Foo2.Foo2Builder addOtherParentList(Child otherParentList);
-		Foo2.Foo2Builder addOtherParentList(Child otherParentList, int _idx);
+		Foo2.Foo2Builder addOtherParentListOverriddenAsChild(Child otherParentList);
+		Foo2.Foo2Builder addOtherParentListOverriddenAsChild(Child otherParentList, int idx);
 		Foo2.Foo2Builder addOtherParentListOverriddenAsChild(List<? extends Child> otherParentList);
 		Foo2.Foo2Builder setOtherParentListOverriddenAsChild(List<? extends Child> otherParentList);
 
@@ -360,7 +348,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		public Parent.ParentBuilder getOrCreateParentList(int _index) {
+		public Parent.ParentBuilder getOrCreateParentList(int index) {
 			final ReferenceWithMetaChild referenceWithMetaChild = getOrCreateParentListOverriddenAsSingleReferenceWithMetaChild();
 			return referenceWithMetaChild == null ? null : referenceWithMetaChild.getValue().toBuilder();
 		}
@@ -373,13 +361,11 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		public Child.ChildBuilder getOrCreateOtherParentList(int _index) {
-		
+		public Child.ChildBuilder getOrCreateOtherParentList(int index) {
 			if (otherParentList==null) {
 				this.otherParentList = new ArrayList<>();
 			}
-			Child.ChildBuilder result;
-			return getIndex(otherParentList, _index, () -> {
+			return getIndex(otherParentList, index, () -> {
 						Child.ChildBuilder newOtherParentList = Child.builder();
 						return newOtherParentList;
 					});
@@ -405,24 +391,24 @@ public interface Foo2 extends Foo1 {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("attr")
 		@RuneAttribute("attr")
+		@Override
 		public Foo2.Foo2Builder setAttr(Integer _attr) {
 			this.attr = _attr == null ? null : _attr;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("numberAttr")
 		@RuneAttribute("numberAttr")
+		@Override
 		public Foo2.Foo2Builder setNumberAttr(BigInteger _numberAttr) {
 			this.numberAttr = _numberAttr == null ? null : _numberAttr;
 			return this;
 		}
 		
-		@Override
 		@RosettaIgnore
+		@Override
 		public Foo2.Foo2Builder setNumberAttr(BigDecimal _numberAttr) {
 			final BigInteger ifThenElseResult;
 			if (_numberAttr == null) {
@@ -433,16 +419,16 @@ public interface Foo2 extends Foo1 {
 			return setNumberAttr(ifThenElseResult);
 		}
 		
-		@Override
 		@RosettaAttribute("parent")
 		@RuneAttribute("parent")
+		@Override
 		public Foo2.Foo2Builder setParent(Child _parent) {
 			this.parent = _parent == null ? null : _parent.toBuilder();
 			return this;
 		}
 		
-		@Override
 		@RosettaIgnore
+		@Override
 		public Foo2.Foo2Builder setParent(Parent _parent) {
 			final Child ifThenElseResult;
 			if (_parent == null) {
@@ -453,9 +439,9 @@ public interface Foo2 extends Foo1 {
 			return setParent(ifThenElseResult);
 		}
 		
-		@Override
 		@RosettaAttribute("parentList")
 		@RuneAttribute("parentList")
+		@Override
 		public Foo2.Foo2Builder setParentList(ReferenceWithMetaChild _parentList) {
 			this.parentList = _parentList == null ? null : _parentList.toBuilder();
 			return this;
@@ -467,20 +453,9 @@ public interface Foo2 extends Foo1 {
 			return this;
 		}
 		
-		@Override
 		@RosettaIgnore
-		public Foo2.Foo2Builder addParentList(Parent parentList0) {
-			final ReferenceWithMetaChild ifThenElseResult;
-			if (parentList0 == null) {
-				ifThenElseResult = ReferenceWithMetaChild.builder().build();
-			} else {
-				ifThenElseResult = parentList0 instanceof Child ? ReferenceWithMetaChild.builder().setValue(Child.class.cast(parentList0)).build() : ReferenceWithMetaChild.builder().setValue(null).build();
-			}
-			return setParentList(ifThenElseResult);
-		}
-		
 		@Override
-		public Foo2.Foo2Builder addParentList(Parent _parentList, int _idx) {
+		public Foo2.Foo2Builder addParentList(Parent _parentList) {
 			final ReferenceWithMetaChild ifThenElseResult;
 			if (_parentList == null) {
 				ifThenElseResult = ReferenceWithMetaChild.builder().build();
@@ -490,7 +465,18 @@ public interface Foo2 extends Foo1 {
 			return setParentList(ifThenElseResult);
 		}
 		
-		@Override 
+		@Override
+		public Foo2.Foo2Builder addParentList(Parent _parentList, int idx) {
+			final ReferenceWithMetaChild ifThenElseResult;
+			if (_parentList == null) {
+				ifThenElseResult = ReferenceWithMetaChild.builder().build();
+			} else {
+				ifThenElseResult = _parentList instanceof Child ? ReferenceWithMetaChild.builder().setValue(Child.class.cast(_parentList)).build() : ReferenceWithMetaChild.builder().setValue(null).build();
+			}
+			return setParentList(ifThenElseResult);
+		}
+		
+		@Override
 		public Foo2.Foo2Builder addParentList(List<? extends Parent> parentLists) {
 			final Parent _parent = MapperC.of(parentLists).get();
 			final ReferenceWithMetaChild ifThenElseResult;
@@ -502,8 +488,8 @@ public interface Foo2 extends Foo1 {
 			return setParentList(ifThenElseResult);
 		}
 		
-		@Override 
 		@RosettaIgnore
+		@Override
 		public Foo2.Foo2Builder setParentList(List<? extends Parent> parentLists) {
 			final Parent _parent = MapperC.of(parentLists).get();
 			final ReferenceWithMetaChild ifThenElseResult;
@@ -515,10 +501,10 @@ public interface Foo2 extends Foo1 {
 			return setParentList(ifThenElseResult);
 		}
 		
-		@Override
 		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
-		public Foo2.Foo2Builder addOtherParentList(Child _otherParentList) {
+		@Override
+		public Foo2.Foo2Builder addOtherParentListOverriddenAsChild(Child _otherParentList) {
 			if (_otherParentList != null) {
 				this.otherParentList.add(_otherParentList.toBuilder());
 			}
@@ -526,12 +512,12 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		public Foo2.Foo2Builder addOtherParentList(Child _otherParentList, int _idx) {
-			getIndex(this.otherParentList, _idx, () -> _otherParentList.toBuilder());
+		public Foo2.Foo2Builder addOtherParentListOverriddenAsChild(Child _otherParentList, int idx) {
+			getIndex(this.otherParentList, idx, () -> _otherParentList.toBuilder());
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Foo2.Foo2Builder addOtherParentListOverriddenAsChild(List<? extends Child> otherParentLists) {
 			if (otherParentLists != null) {
 				for (final Child toAdd : otherParentLists) {
@@ -541,8 +527,8 @@ public interface Foo2 extends Foo1 {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("otherParentList")
+		@Override
 		public Foo2.Foo2Builder setOtherParentListOverriddenAsChild(List<? extends Child> otherParentLists) {
 			if (otherParentLists == null) {
 				this.otherParentList = new ArrayList<>();
@@ -554,30 +540,30 @@ public interface Foo2 extends Foo1 {
 			return this;
 		}
 		
-		@Override
 		@RosettaIgnore
-		public Foo2.Foo2Builder addOtherParentList(Parent otherParentList0) {
-			final Child ifThenElseResult;
-			if (otherParentList0 == null) {
-				ifThenElseResult = null;
-			} else {
-				ifThenElseResult = otherParentList0 instanceof Child ? Child.class.cast(otherParentList0) : null;
-			}
-			return addOtherParentList(ifThenElseResult);
-		}
-		
 		@Override
-		public Foo2.Foo2Builder addOtherParentList(Parent _otherParentList, int _idx) {
+		public Foo2.Foo2Builder addOtherParentList(Parent _otherParentList) {
 			final Child ifThenElseResult;
 			if (_otherParentList == null) {
 				ifThenElseResult = null;
 			} else {
 				ifThenElseResult = _otherParentList instanceof Child ? Child.class.cast(_otherParentList) : null;
 			}
-			return addOtherParentList(ifThenElseResult, _idx);
+			return addOtherParentListOverriddenAsChild(ifThenElseResult);
 		}
 		
-		@Override 
+		@Override
+		public Foo2.Foo2Builder addOtherParentList(Parent _otherParentList, int idx) {
+			final Child ifThenElseResult;
+			if (_otherParentList == null) {
+				ifThenElseResult = null;
+			} else {
+				ifThenElseResult = _otherParentList instanceof Child ? Child.class.cast(_otherParentList) : null;
+			}
+			return addOtherParentListOverriddenAsChild(ifThenElseResult, idx);
+		}
+		
+		@Override
 		public Foo2.Foo2Builder addOtherParentList(List<? extends Parent> otherParentLists) {
 			return addOtherParentListOverriddenAsChild(otherParentLists.stream()
 				.<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
@@ -585,8 +571,8 @@ public interface Foo2 extends Foo1 {
 			);
 		}
 		
-		@Override 
 		@RosettaIgnore
+		@Override
 		public Foo2.Foo2Builder setOtherParentList(List<? extends Parent> otherParentLists) {
 			return setOtherParentListOverriddenAsChild(otherParentLists.stream()
 				.<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
@@ -594,9 +580,9 @@ public interface Foo2 extends Foo1 {
 			);
 		}
 		
-		@Override
 		@RosettaAttribute("stringAttr")
 		@RuneAttribute("stringAttr")
+		@Override
 		public Foo2.Foo2Builder setStringAttr(FieldWithMetaString _stringAttr) {
 			this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();
 			return this;
