@@ -422,7 +422,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
         public MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey) {
             this.key = new ArrayList<>();
             if (scopedKey!=null)  {
-                this.key = Lists.newArrayList(Key.builder().setKeyValue(scopedKey));
+                this.key = Lists.newArrayList(Key.builder().setKeyValue(scopedKey).setScope("DOCUMENT"));
             }
             return this;
         }

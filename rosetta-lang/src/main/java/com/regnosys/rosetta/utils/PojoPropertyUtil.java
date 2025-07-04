@@ -17,6 +17,8 @@ public class PojoPropertyUtil {
 	            return "externalKey";
 	        case "address":
 	            return "reference";
+            case "location":
+                return "scopedKey";
 	        default:
 	            return rosettaName;
 	    }
