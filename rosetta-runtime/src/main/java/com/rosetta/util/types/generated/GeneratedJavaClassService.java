@@ -25,7 +25,6 @@ import com.rosetta.model.lib.reports.ReportFunction;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 
-// TODO: deprecate, replace?
 public class GeneratedJavaClassService {
 	public JavaClass<ReportFunction<?, ?>> toJavaReportFunction(ModelReportId id) {
 		DottedPath packageName = id.getNamespace().child("reports");

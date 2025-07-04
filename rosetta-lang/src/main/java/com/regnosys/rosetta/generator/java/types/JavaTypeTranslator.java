@@ -318,9 +318,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public RJavaEnum toJavaType(REnumType type) {
 		return caseEnumType(type, null);
 	}
-	public JavaType toJavaType(Optional<RType> type) {
-		return type.map(t -> toJavaType(t)).orElse(typeUtil.OBJECT);
-	}
 	
 	public JavaClass<?> toPolymorphicListOrSingleJavaType(RMetaAnnotatedType type, boolean isMany) {
 		if (isMany) {
@@ -349,24 +346,6 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		} else
 			return toJavaReferenceType(type);
 	}
-	
-	// TODO
-//	public JavaClass<?> toImplType(JavaClass<?> type) {
-//		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Impl", Object.class);
-//	}
-//	public JavaClass<?> toBuilderType(JavaClass<?> type) {
-//		if (type.equals(JavaClass.from(RosettaModelObject.class))) {
-//			return JavaClass.from(RosettaModelObjectBuilder.class);
-//		}
-//		GeneratedJavaClass<Object> base = new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "Builder", Object.class);
-//		if (type instanceof JavaParameterizedType<?>) {
-//			return JavaParameterizedType.from(new GeneratedJavaGenericTypeDeclaration<>(base, "T"), ((JavaParameterizedType<?>)type).getArguments());
-//		}
-//		return base;
-//	}
-//	public JavaClass<?> toBuilderImplType(JavaClass<?> type) {
-//		return new GeneratedJavaClass<>(type.getPackageName(), type.getSimpleName() + "." + type.getSimpleName() + "BuilderImpl", Object.class);
-//	}
 	
 	public RGeneratedJavaClass<? extends Validator<?>> toValidatorClass(JavaPojoInterface t) {
 		return RGeneratedJavaClass.createImplementingInterface(JavaPackageName.escape(validation(t.getPackageName())), t.getSimpleName() + "Validator", JavaParameterizedType.from(typeUtil.VALIDATOR, t));
