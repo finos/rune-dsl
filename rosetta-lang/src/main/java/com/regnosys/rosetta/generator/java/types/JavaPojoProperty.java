@@ -18,6 +18,7 @@ package com.regnosys.rosetta.generator.java.types;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
@@ -27,6 +28,12 @@ import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.util.types.JavaType;
 
 public class JavaPojoProperty {
+	private static final Set<String> OPERATION_NAMES_TO_ESCAPE =
+			Set.of(
+					"getClass", // from java.lang.Object
+					"getType" // from com.rosetta.model.lib.RosettaModelObject
+				);
+	
 	private final JavaPojoInterface pojo;
 	private final String name;
 	private final String runeName;
@@ -62,10 +69,19 @@ public class JavaPojoProperty {
 	}
 	
 	public String getOperationName(JavaPojoPropertyOperationType operationType) {
+		String compatibilityName;
 		if (operationType == JavaPojoPropertyOperationType.GET || operationType == JavaPojoPropertyOperationType.GET_OR_CREATE) {
-			return operationType.getPrefix() + StringUtils.capitalize(this.getterCompatibilityName) + operationType.getPostfix();
+			compatibilityName = this.getterCompatibilityName;
+		} else {
+			compatibilityName = this.setterCompatibilityName;
 		}
-		return operationType.getPrefix() + StringUtils.capitalize(this.setterCompatibilityName) + operationType.getPostfix();
+		return escapeOperationName(operationType.getPrefix() + StringUtils.capitalize(compatibilityName) + operationType.getPostfix());
+	}
+	private String escapeOperationName(String opName) {
+		if (OPERATION_NAMES_TO_ESCAPE.contains(opName)) {
+			return "_" + opName;
+		}
+		return opName;
 	}
 	
 	public boolean isCompatibleTypeWithParent() {

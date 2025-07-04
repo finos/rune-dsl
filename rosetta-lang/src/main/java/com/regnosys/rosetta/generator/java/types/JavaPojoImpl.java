@@ -16,7 +16,7 @@ public class JavaPojoImpl extends RGeneratedJavaClass<RosettaModelObject> {
 	@Override
 	public JavaClass<? super RosettaModelObject> getSuperclassDeclaration() {
 		JavaPojoInterface superPojo = pojoInterface.getSuperPojo();
-		if (superPojo != null && superPojo.getOwnProperties().stream().allMatch(JavaPojoProperty::isCompatibleTypeWithParent)) {
+		if (superPojo != null && pojoInterface.getOwnProperties().stream().allMatch(JavaPojoProperty::isCompatibleTypeWithParent)) {
 			return superPojo.toImplClass();
 		}
 		return JavaClass.OBJECT;

@@ -5,7 +5,6 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.types.RObjectFactory
 import com.rosetta.model.lib.meta.BasicRosettaMetaData
-import com.rosetta.util.types.generated.GeneratedJavaClass
 import jakarta.inject.Inject
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -18,6 +17,9 @@ import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.rosetta.util.types.JavaGenericTypeDeclaration
+import com.rosetta.util.types.JavaParameterizedType
 
 class MetaFieldGenerator extends RObjectJavaClassGenerator<RAttribute, RJavaWithMetaValue> {
 	@Inject extension ModelObjectGenerator
@@ -43,23 +45,32 @@ class MetaFieldGenerator extends RObjectJavaClassGenerator<RAttribute, RJavaWith
 	}
 
 	private def StringConcatenationClient fieldWithMeta(DottedPath root, RJavaFieldWithMeta metaJavaType, RType valueType, JavaClassScope scope) {								
+		val dummyMetaClass = createAndRegisterDummyMetaClass(metaJavaType, scope)
 		'''
-			«metaJavaType.classBody(scope, new GeneratedJavaClass<Object>(metaJavaType.packageName, metaJavaType.simpleName + "Meta", Object), "1")»
+			«metaJavaType.classBody(scope, dummyMetaClass, "1")»
 			
-			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»> {
+			«dummyMetaClass.asClassDeclaration» {
 			
 			}
 		'''
 	}
 	
 	private def StringConcatenationClient referenceWithMeta(DottedPath root, RJavaReferenceWithMeta metaJavaType, RType valueType, JavaClassScope scope) {							
+		val dummyMetaClass = createAndRegisterDummyMetaClass(metaJavaType, scope)
 		'''
-			«metaJavaType.classBody(scope, new GeneratedJavaClass<Object>(root.child("metaField"), metaJavaType.simpleName + "Meta", Object), "1")»
+			«metaJavaType.classBody(scope, dummyMetaClass, "1")»
 			
-			class «metaJavaType.simpleName»Meta extends «BasicRosettaMetaData»<«metaJavaType.simpleName»> {
+			«dummyMetaClass.asClassDeclaration» {
 			
 			}
 		'''
+	}
+	
+	private def RGeneratedJavaClass<?> createAndRegisterDummyMetaClass(RJavaWithMetaValue metaJavaType, JavaClassScope scope) {
+		val interf = JavaParameterizedType.from(JavaGenericTypeDeclaration.from(BasicRosettaMetaData), metaJavaType)
+		val dummyMetaClass = RGeneratedJavaClass.createWithSuperclass(metaJavaType.escapedPackageName, metaJavaType.simpleName + "Meta", interf)
+		scope.fileScope.createIdentifier(dummyMetaClass, dummyMetaClass.simpleName)
+		dummyMetaClass
 	}
 
 	/** generate once per resource marker */

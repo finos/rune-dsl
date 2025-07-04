@@ -19,8 +19,9 @@ import static org.junit.jupiter.api.Assertions.*
 import java.lang.reflect.InvocationTargetException
 import javax.inject.Inject
 import com.rosetta.util.DottedPath
-import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
-import org.eclipse.xtext.util.CancelIndicator
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
+import com.regnosys.rosetta.types.RFunction
 
 class FunctionGeneratorHelper {
 
@@ -28,6 +29,7 @@ class FunctionGeneratorHelper {
 	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
 	@Inject RegisteringFileSystemAccess fsa
+	@Inject ImportManagerExtension importManager
 
 	final Injector injector
 	
@@ -58,16 +60,28 @@ class FunctionGeneratorHelper {
 
 	def void assertToGeneratedFunction(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.registerClassesAndMethods(it, new JavaGlobalScope)
-			generator.generateClasses("test", fsa, CancelIndicator.NullImpl)
+			val func = generator.streamObjects(it)
+				.filter[operations.nullOrEmpty]
+				.findAny.orElseThrow
+			generate(func)
 		])
 	}
 
 	def void assertToGeneratedCalculation(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
-			generator.registerClassesAndMethods(it, new JavaGlobalScope)
-			generator.generateClasses("test", fsa, CancelIndicator.NullImpl)
+			val func = generator.streamObjects(it)
+				.filter[!operations.nullOrEmpty]
+				.findAny.orElseThrow
+			generate(func)
 		])
+	}
+	
+	private def void generate(RFunction func) {
+		val typeRepresentation = generator.createTypeRepresentation(func);
+		val classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
+		val classCode = generator.generate(func, typeRepresentation, "test", classScope);
+		val javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
+		fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
 	}
 
 	def protected void assertToGenerated(CharSequence actualModel, CharSequence expected,

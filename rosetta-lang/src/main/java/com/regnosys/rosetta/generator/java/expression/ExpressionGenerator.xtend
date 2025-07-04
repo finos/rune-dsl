@@ -1374,7 +1374,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		].toList
 
 		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
-				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType instanceof JavaPojoInterface».toBuilder()«ENDIF»''', argumentJavaType instanceof JavaPojoInterface ? argumentJavaType.toBuilderInterface : argumentJavaType.itemType)]
+				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.hasBuilderType».toBuilder()«ENDIF»''', argumentJavaType.toBuilder)]
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {

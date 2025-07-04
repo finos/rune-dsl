@@ -2,7 +2,6 @@ package test.pojo;
 
 import com.google.common.collect.ImmutableList;
 import com.rosetta.model.lib.GlobalKey;
-import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -17,24 +16,15 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
-import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
 import com.rosetta.model.metafields.MetaFields;
-import com.rosetta.model.metafields.MetaFields.MetaFieldsBuilder;
 import com.rosetta.util.ListEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import test.pojo.Foo;
-import test.pojo.Foo.FooBuilder;
-import test.pojo.Pojo;
-import test.pojo.Pojo.PojoBuilder;
-import test.pojo.Pojo.PojoBuilderImpl;
-import test.pojo.Pojo.PojoImpl;
 import test.pojo.meta.PojoMeta;
 import test.pojo.metafields.ReferenceWithMetaFoo;
-import test.pojo.metafields.ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder;
 
 import static java.util.Optional.ofNullable;
 
@@ -102,25 +92,25 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateSimpleAttrWithMeta();
 		@Override
 		FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithMeta();
-		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithMeta(int _index);
+		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithMeta(int index);
 		@Override
 		List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithMeta();
 		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateSimpleAttrWithId();
 		@Override
 		FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithId();
-		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithId(int _index);
+		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithId(int index);
 		@Override
 		List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithId();
 		Foo.FooBuilder getOrCreateComplexAttr();
 		@Override
 		Foo.FooBuilder getComplexAttr();
-		Foo.FooBuilder getOrCreateMultiComplexAttr(int _index);
+		Foo.FooBuilder getOrCreateMultiComplexAttr(int index);
 		@Override
 		List<? extends Foo.FooBuilder> getMultiComplexAttr();
 		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateComplexAttrWithRef();
 		@Override
 		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getComplexAttrWithRef();
-		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateMultiComplexAttrWithRef(int _index);
+		ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateMultiComplexAttrWithRef(int index);
 		@Override
 		List<? extends ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> getMultiComplexAttrWithRef();
 		MetaFields.MetaFieldsBuilder getOrCreateMeta();
@@ -128,15 +118,15 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		MetaFields.MetaFieldsBuilder getMeta();
 		Pojo.PojoBuilder setSimpleAttr(String simpleAttr);
 		Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr);
-		Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr, int _idx);
+		Pojo.PojoBuilder addMultiSimpleAttr(String multiSimpleAttr, int idx);
 		Pojo.PojoBuilder addMultiSimpleAttr(List<String> multiSimpleAttr);
 		Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttr);
 		Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString simpleAttrWithMeta);
 		Pojo.PojoBuilder setSimpleAttrWithMetaValue(String simpleAttrWithMeta);
 		Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta);
-		Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta, int _idx);
+		Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString multiSimpleAttrWithMeta, int idx);
 		Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta);
-		Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta, int _idx);
+		Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String multiSimpleAttrWithMeta, int idx);
 		Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta);
 		Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMeta);
 		Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(List<? extends String> multiSimpleAttrWithMeta);
@@ -144,24 +134,24 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString simpleAttrWithId);
 		Pojo.PojoBuilder setSimpleAttrWithIdValue(String simpleAttrWithId);
 		Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId);
-		Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId, int _idx);
+		Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString multiSimpleAttrWithId, int idx);
 		Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId);
-		Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId, int _idx);
+		Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String multiSimpleAttrWithId, int idx);
 		Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId);
 		Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithId);
 		Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId);
 		Pojo.PojoBuilder setMultiSimpleAttrWithIdValue(List<? extends String> multiSimpleAttrWithId);
 		Pojo.PojoBuilder setComplexAttr(Foo complexAttr);
 		Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr);
-		Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr, int _idx);
+		Pojo.PojoBuilder addMultiComplexAttr(Foo multiComplexAttr, int idx);
 		Pojo.PojoBuilder addMultiComplexAttr(List<? extends Foo> multiComplexAttr);
 		Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttr);
 		Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo complexAttrWithRef);
 		Pojo.PojoBuilder setComplexAttrWithRefValue(Foo complexAttrWithRef);
 		Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef);
-		Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef, int _idx);
+		Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo multiComplexAttrWithRef, int idx);
 		Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef);
-		Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef, int _idx);
+		Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo multiComplexAttrWithRef, int idx);
 		Pojo.PojoBuilder addMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef);
 		Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef);
 		Pojo.PojoBuilder addMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef);
@@ -432,13 +422,11 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithMeta(int _index) {
-		
+		public FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithMeta(int index) {
 			if (multiSimpleAttrWithMeta==null) {
 				this.multiSimpleAttrWithMeta = new ArrayList<>();
 			}
-			FieldWithMetaString.FieldWithMetaStringBuilder result;
-			return getIndex(multiSimpleAttrWithMeta, _index, () -> {
+			return getIndex(multiSimpleAttrWithMeta, index, () -> {
 						FieldWithMetaString.FieldWithMetaStringBuilder newMultiSimpleAttrWithMeta = FieldWithMetaString.builder();
 						return newMultiSimpleAttrWithMeta;
 					});
@@ -472,13 +460,11 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithId(int _index) {
-		
+		public FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateMultiSimpleAttrWithId(int index) {
 			if (multiSimpleAttrWithId==null) {
 				this.multiSimpleAttrWithId = new ArrayList<>();
 			}
-			FieldWithMetaString.FieldWithMetaStringBuilder result;
-			return getIndex(multiSimpleAttrWithId, _index, () -> {
+			return getIndex(multiSimpleAttrWithId, index, () -> {
 						FieldWithMetaString.FieldWithMetaStringBuilder newMultiSimpleAttrWithId = FieldWithMetaString.builder();
 						return newMultiSimpleAttrWithId;
 					});
@@ -512,13 +498,11 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Foo.FooBuilder getOrCreateMultiComplexAttr(int _index) {
-		
+		public Foo.FooBuilder getOrCreateMultiComplexAttr(int index) {
 			if (multiComplexAttr==null) {
 				this.multiComplexAttr = new ArrayList<>();
 			}
-			Foo.FooBuilder result;
-			return getIndex(multiComplexAttr, _index, () -> {
+			return getIndex(multiComplexAttr, index, () -> {
 						Foo.FooBuilder newMultiComplexAttr = Foo.builder();
 						return newMultiComplexAttr;
 					});
@@ -552,13 +536,11 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateMultiComplexAttrWithRef(int _index) {
-		
+		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getOrCreateMultiComplexAttrWithRef(int index) {
 			if (multiComplexAttrWithRef==null) {
 				this.multiComplexAttrWithRef = new ArrayList<>();
 			}
-			ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder result;
-			return getIndex(multiComplexAttrWithRef, _index, () -> {
+			return getIndex(multiComplexAttrWithRef, index, () -> {
 						ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder newMultiComplexAttrWithRef = ReferenceWithMetaFoo.builder();
 						return newMultiComplexAttrWithRef;
 					});
@@ -585,17 +567,17 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("simpleAttr")
 		@RuneAttribute("simpleAttr")
+		@Override
 		public Pojo.PojoBuilder setSimpleAttr(String _simpleAttr) {
 			this.simpleAttr = _simpleAttr == null ? null : _simpleAttr;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("multiSimpleAttr")
 		@RuneAttribute("multiSimpleAttr")
+		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr) {
 			if (_multiSimpleAttr != null) {
 				this.multiSimpleAttr.add(_multiSimpleAttr);
@@ -604,12 +586,12 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr, int _idx) {
-			getIndex(this.multiSimpleAttr, _idx, () -> _multiSimpleAttr);
+		public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr, int idx) {
+			getIndex(this.multiSimpleAttr, idx, () -> _multiSimpleAttr);
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttr(List<String> multiSimpleAttrs) {
 			if (multiSimpleAttrs != null) {
 				for (final String toAdd : multiSimpleAttrs) {
@@ -619,8 +601,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("multiSimpleAttr")
+		@Override
 		public Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttrs) {
 			if (multiSimpleAttrs == null) {
 				this.multiSimpleAttr = new ArrayList<>();
@@ -631,9 +613,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("simpleAttrWithMeta")
 		@RuneAttribute("simpleAttrWithMeta")
+		@Override
 		public Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString _simpleAttrWithMeta) {
 			this.simpleAttrWithMeta = _simpleAttrWithMeta == null ? null : _simpleAttrWithMeta.toBuilder();
 			return this;
@@ -645,9 +627,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("multiSimpleAttrWithMeta")
 		@RuneAttribute("multiSimpleAttrWithMeta")
+		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta) {
 			if (_multiSimpleAttrWithMeta != null) {
 				this.multiSimpleAttrWithMeta.add(_multiSimpleAttrWithMeta.toBuilder());
@@ -656,8 +638,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta, int _idx) {
-			getIndex(this.multiSimpleAttrWithMeta, _idx, () -> _multiSimpleAttrWithMeta.toBuilder());
+		public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta, int idx) {
+			getIndex(this.multiSimpleAttrWithMeta, idx, () -> _multiSimpleAttrWithMeta.toBuilder());
 			return this;
 		}
 		
@@ -668,12 +650,12 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String _multiSimpleAttrWithMeta, int _idx) {
-			this.getOrCreateMultiSimpleAttrWithMeta(_idx).setValue(_multiSimpleAttrWithMeta);
+		public Pojo.PojoBuilder addMultiSimpleAttrWithMetaValue(String _multiSimpleAttrWithMeta, int idx) {
+			this.getOrCreateMultiSimpleAttrWithMeta(idx).setValue(_multiSimpleAttrWithMeta);
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 			if (multiSimpleAttrWithMetas != null) {
 				for (final FieldWithMetaString toAdd : multiSimpleAttrWithMetas) {
@@ -683,8 +665,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("multiSimpleAttrWithMeta")
+		@Override
 		public Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
 			if (multiSimpleAttrWithMetas == null) {
 				this.multiSimpleAttrWithMeta = new ArrayList<>();
@@ -715,9 +697,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("simpleAttrWithId")
 		@RuneAttribute("simpleAttrWithId")
+		@Override
 		public Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString _simpleAttrWithId) {
 			this.simpleAttrWithId = _simpleAttrWithId == null ? null : _simpleAttrWithId.toBuilder();
 			return this;
@@ -729,9 +711,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("multiSimpleAttrWithId")
 		@RuneAttribute("multiSimpleAttrWithId")
+		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId) {
 			if (_multiSimpleAttrWithId != null) {
 				this.multiSimpleAttrWithId.add(_multiSimpleAttrWithId.toBuilder());
@@ -740,8 +722,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId, int _idx) {
-			getIndex(this.multiSimpleAttrWithId, _idx, () -> _multiSimpleAttrWithId.toBuilder());
+		public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId, int idx) {
+			getIndex(this.multiSimpleAttrWithId, idx, () -> _multiSimpleAttrWithId.toBuilder());
 			return this;
 		}
 		
@@ -752,12 +734,12 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String _multiSimpleAttrWithId, int _idx) {
-			this.getOrCreateMultiSimpleAttrWithId(_idx).setValue(_multiSimpleAttrWithId);
+		public Pojo.PojoBuilder addMultiSimpleAttrWithIdValue(String _multiSimpleAttrWithId, int idx) {
+			this.getOrCreateMultiSimpleAttrWithId(idx).setValue(_multiSimpleAttrWithId);
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 			if (multiSimpleAttrWithIds != null) {
 				for (final FieldWithMetaString toAdd : multiSimpleAttrWithIds) {
@@ -767,8 +749,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("multiSimpleAttrWithId")
+		@Override
 		public Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
 			if (multiSimpleAttrWithIds == null) {
 				this.multiSimpleAttrWithId = new ArrayList<>();
@@ -799,17 +781,17 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("complexAttr")
 		@RuneAttribute("complexAttr")
+		@Override
 		public Pojo.PojoBuilder setComplexAttr(Foo _complexAttr) {
 			this.complexAttr = _complexAttr == null ? null : _complexAttr.toBuilder();
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("multiComplexAttr")
 		@RuneAttribute("multiComplexAttr")
+		@Override
 		public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr) {
 			if (_multiComplexAttr != null) {
 				this.multiComplexAttr.add(_multiComplexAttr.toBuilder());
@@ -818,12 +800,12 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr, int _idx) {
-			getIndex(this.multiComplexAttr, _idx, () -> _multiComplexAttr.toBuilder());
+		public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr, int idx) {
+			getIndex(this.multiComplexAttr, idx, () -> _multiComplexAttr.toBuilder());
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Pojo.PojoBuilder addMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 			if (multiComplexAttrs != null) {
 				for (final Foo toAdd : multiComplexAttrs) {
@@ -833,8 +815,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("multiComplexAttr")
+		@Override
 		public Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
 			if (multiComplexAttrs == null) {
 				this.multiComplexAttr = new ArrayList<>();
@@ -846,9 +828,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("complexAttrWithRef")
 		@RuneAttribute("complexAttrWithRef")
+		@Override
 		public Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo _complexAttrWithRef) {
 			this.complexAttrWithRef = _complexAttrWithRef == null ? null : _complexAttrWithRef.toBuilder();
 			return this;
@@ -860,9 +842,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("multiComplexAttrWithRef")
 		@RuneAttribute("multiComplexAttrWithRef")
+		@Override
 		public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef) {
 			if (_multiComplexAttrWithRef != null) {
 				this.multiComplexAttrWithRef.add(_multiComplexAttrWithRef.toBuilder());
@@ -871,8 +853,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef, int _idx) {
-			getIndex(this.multiComplexAttrWithRef, _idx, () -> _multiComplexAttrWithRef.toBuilder());
+		public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef, int idx) {
+			getIndex(this.multiComplexAttrWithRef, idx, () -> _multiComplexAttrWithRef.toBuilder());
 			return this;
 		}
 		
@@ -883,12 +865,12 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo _multiComplexAttrWithRef, int _idx) {
-			this.getOrCreateMultiComplexAttrWithRef(_idx).setValue(_multiComplexAttrWithRef.toBuilder());
+		public Pojo.PojoBuilder addMultiComplexAttrWithRefValue(Foo _multiComplexAttrWithRef, int idx) {
+			this.getOrCreateMultiComplexAttrWithRef(idx).setValue(_multiComplexAttrWithRef.toBuilder());
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Pojo.PojoBuilder addMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 			if (multiComplexAttrWithRefs != null) {
 				for (final ReferenceWithMetaFoo toAdd : multiComplexAttrWithRefs) {
@@ -898,8 +880,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("multiComplexAttrWithRef")
+		@Override
 		public Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
 			if (multiComplexAttrWithRefs == null) {
 				this.multiComplexAttrWithRef = new ArrayList<>();
@@ -930,10 +912,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("meta")
 		@RuneAttribute("meta")
 		@RuneMetaType
+		@Override
 		public Pojo.PojoBuilder setMeta(MetaFields _meta) {
 			this.meta = _meta == null ? null : _meta.toBuilder();
 			return this;

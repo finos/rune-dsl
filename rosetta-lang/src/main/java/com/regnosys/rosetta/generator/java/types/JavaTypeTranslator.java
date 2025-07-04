@@ -132,7 +132,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	public RGeneratedJavaClass<? extends RosettaMetaData<?>> toJavaMetaDataClass(JavaPojoInterface pojoClass) {
 		JavaParameterizedType<RosettaMetaData<?>> superType = JavaParameterizedType.from(typeUtil.ROSETTA_META_DATA, pojoClass);
-		return RGeneratedJavaClass.create(JavaPackageName.escape(pojoClass.getPackageName().child("meta")), pojoClass.getSimpleName() + "Meta", superType);
+		return RGeneratedJavaClass.createImplementingInterface(JavaPackageName.escape(pojoClass.getPackageName().child("meta")), pojoClass.getSimpleName() + "Meta", superType);
 	}
 	
 	public RGeneratedJavaClass<? extends LabelProvider> toLabelProviderJavaClass(RFunction function) {
@@ -369,14 +369,14 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 //	}
 	
 	public RGeneratedJavaClass<? extends Validator<?>> toValidatorClass(JavaPojoInterface t) {
-		return RGeneratedJavaClass.create(JavaPackageName.escape(validation(t.getPackageName())), t.getSimpleName() + "Validator", JavaParameterizedType.from(typeUtil.VALIDATOR, t));
+		return RGeneratedJavaClass.createImplementingInterface(JavaPackageName.escape(validation(t.getPackageName())), t.getSimpleName() + "Validator", JavaParameterizedType.from(typeUtil.VALIDATOR, t));
 	}
 	public RGeneratedJavaClass<? extends Validator<?>> toTypeFormatValidatorClass(JavaPojoInterface t) {
-		return RGeneratedJavaClass.create(JavaPackageName.escape(validation(t.getPackageName())), t.getSimpleName() + "TypeFormatValidator", JavaParameterizedType.from(typeUtil.VALIDATOR, t));
+		return RGeneratedJavaClass.createImplementingInterface(JavaPackageName.escape(validation(t.getPackageName())), t.getSimpleName() + "TypeFormatValidator", JavaParameterizedType.from(typeUtil.VALIDATOR, t));
 	}
 	public RGeneratedJavaClass<? extends Validator<?>> toOnlyExistsValidatorClass(JavaPojoInterface t) {
 		var argType = JavaParameterizedType.from(JavaGenericTypeDeclaration.from(new TypeReference<Set<?>>() {}), typeUtil.STRING);
-		return RGeneratedJavaClass.create(JavaPackageName.escape(existsValidation(t.getPackageName())), t.getSimpleName() + "OnlyExistsValidator", JavaParameterizedType.from(typeUtil.VALIDATOR_WITH_ARG, t, argType));
+		return RGeneratedJavaClass.createImplementingInterface(JavaPackageName.escape(existsValidation(t.getPackageName())), t.getSimpleName() + "OnlyExistsValidator", JavaParameterizedType.from(typeUtil.VALIDATOR_WITH_ARG, t, argType));
 	}
 	
 	private DottedPath metaField(DottedPath p) {

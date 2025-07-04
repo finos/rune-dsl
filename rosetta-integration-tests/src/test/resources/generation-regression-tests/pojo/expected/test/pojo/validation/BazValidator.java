@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.metafields.ReferenceWithMetaString;
 import java.util.List;
@@ -30,9 +29,9 @@ public class BazValidator implements Validator<Baz> {
 			.stream()
 			.map(res -> {
 				if (!isNullOrEmpty(res.getError())) {
-					return failure("Baz", ValidationType.CARDINALITY, "Baz", path, "", res.getError());
+					return failure("Baz", ValidationResult.ValidationType.CARDINALITY, "Baz", path, "", res.getError());
 				}
-				return success("Baz", ValidationType.CARDINALITY, "Baz", path, "");
+				return success("Baz", ValidationResult.ValidationType.CARDINALITY, "Baz", path, "");
 			})
 			.collect(toList());
 	}

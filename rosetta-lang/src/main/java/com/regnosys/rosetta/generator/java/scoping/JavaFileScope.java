@@ -1,29 +1,55 @@
 package com.regnosys.rosetta.generator.java.scoping;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
-import com.rosetta.util.types.JavaTypeDeclaration;
+import com.regnosys.rosetta.generator.GeneratedIdentifier;
+import com.rosetta.util.DottedPath;
+import com.rosetta.util.types.JavaClass;
 
-public class JavaFileScope extends AbstractJavaScope<JavaPackageScope> {
+public class JavaFileScope extends AbstractJavaScope<AbstractJavaScope<?>> {
+	private static final DottedPath JAVA_LANG = DottedPath.of("java", "lang");
+	
+	private final DottedPath packageName;
 
-	protected JavaFileScope(String fileName, JavaPackageScope parentScope) {
-		super("File[" + fileName + "]", parentScope);
+	public JavaFileScope(String fileName, DottedPath packageName) {
+		super("File[" + fileName + "]", null);
+		this.packageName = packageName;
 	}
-
-	public JavaClassScope createClassScope(JavaTypeDeclaration<?> clazz) {
-		List<JavaClassScope> superClassScopes = new ArrayList<>();
-//		if (clazz.getSuperclassDeclaration() != null) {
-//			superClassScopes.add(getClassScope(clazz.getSuperclassDeclaration()));
-//		}
-//		for (var interf : clazz.getInterfaceDeclarations()) {
-//			superClassScopes.add(getClassScope(interf));
-//		}
-		return new JavaClassScope(clazz.getSimpleName(), this, superClassScopes);
+	
+	public DottedPath getPackageName() {
+		return packageName;
 	}
 	
 	@Override
 	public JavaFileScope getFileScope() {
 		return this;
+	}
+	
+	@Override
+	public Optional<GeneratedIdentifier> getIdentifier(Object obj) {
+		return super.getIdentifier(obj)
+				.or(() -> {
+					if (obj instanceof JavaClass<?> c && JAVA_LANG.equals(c.getPackageName()) && !isNameExplicitlyTaken(c.getSimpleName())) {
+						return Optional.of(this.overwriteIdentifier(c, c.getSimpleName()));
+					}
+					return Optional.empty();
+				});
+	}
+	
+	@Override
+	public boolean isNameTaken(String desiredName) {
+		return isNameExplicitlyTaken(desiredName) || isNameImplicitlyTaken(desiredName);
+	}
+	
+	private boolean isNameExplicitlyTaken(String desiredName) {
+		return super.isNameTaken(desiredName);
+	}
+	private boolean isNameImplicitlyTaken(String desiredName) {
+		try {
+			Class.forName(JAVA_LANG.child(desiredName).withDots());
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 }

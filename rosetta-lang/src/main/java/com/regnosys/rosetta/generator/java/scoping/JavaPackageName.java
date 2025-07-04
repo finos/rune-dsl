@@ -26,7 +26,7 @@ public class JavaPackageName {
 			throw new IllegalStateException("`" + name + "` cannot be escaped to a valid Java identifier");
 		}
 		while (!SourceVersion.isName(name)) {
-			name += "_" + name;
+			name = "_" + name;
 		}
 		return name;
 	}

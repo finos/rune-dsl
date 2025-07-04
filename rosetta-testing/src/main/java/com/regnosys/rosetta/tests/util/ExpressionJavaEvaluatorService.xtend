@@ -13,9 +13,9 @@ import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.google.inject.Injector
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 
 class ExpressionJavaEvaluatorService {
 	@Inject
@@ -41,8 +41,7 @@ class ExpressionJavaEvaluatorService {
 		val className = "TestExpressionEvaluator"
 		val methodName = "evaluate"
 		
-		val globalScope = new JavaGlobalScope()
-		val classScope = globalScope.createClassScopeAndRegisterIdentifier(RGeneratedJavaClass.create(JavaPackageName.escape(packageName), className, Object))
+		val classScope = JavaClassScope.createAndRegisterIdentifier(RGeneratedJavaClass.create(JavaPackageName.escape(packageName), className, Object))
 		val evaluateScope = classScope.createMethodScope(methodName)
 		val evaluateBodyScope = evaluateScope.bodyScope
 		

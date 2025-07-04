@@ -16,7 +16,7 @@ private final JavaPojoInterface pojoInterface;
 	@Override
 	public JavaClass<? super RosettaModelObjectBuilder> getSuperclassDeclaration() {
 		JavaPojoInterface superPojo = pojoInterface.getSuperPojo();
-		if (superPojo != null && superPojo.getOwnProperties().stream().allMatch(JavaPojoProperty::isSameTypeAsParent)) {
+		if (superPojo != null && pojoInterface.getOwnProperties().stream().allMatch(JavaPojoProperty::isSameTypeAsParent)) {
 			return superPojo.toBuilderImplClass();
 		}
 		return JavaClass.OBJECT;

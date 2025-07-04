@@ -3308,9 +3308,7 @@ class FunctionGeneratorTest {
 			import com.rosetta.model.lib.mapper.MapperS;
 			import com.rosetta.test.model.agreement.Bar;
 			import com.rosetta.test.model.agreement.Foo;
-			import com.rosetta.test.model.agreement.Foo.FooBuilder;
 			import com.rosetta.test.model.agreement.Top;
-			import com.rosetta.test.model.agreement.Top.TopBuilder;
 			import java.util.Optional;
 			import javax.inject.Inject;
 			
@@ -4509,7 +4507,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import com.rosetta.test.model.Foo;
 				import java.util.ArrayList;
 				import java.util.List;
@@ -4613,7 +4610,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperC;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -5251,7 +5247,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
@@ -5341,7 +5336,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Bar.BarBuilder;
 				import java.util.ArrayList;
 				import java.util.Collections;
 				import java.util.List;
@@ -5497,7 +5491,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -5580,7 +5573,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.ModelObjectValidator;
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.test.model.Foo;
-				import com.rosetta.test.model.Foo.FooBuilder;
 				import java.util.Collections;
 				import java.util.List;
 				import java.util.Optional;
@@ -6125,7 +6117,6 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
-				import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import com.rosetta.test.model.functions.FuncFoo;
@@ -6161,7 +6152,7 @@ class FunctionGeneratorTest {
 							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
 								failureMessage = "Condition has failed.";
 							}
-							return Arrays.asList(ValidationResult.failure(NAME, ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
+							return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
 						}
 						
 						private ComparisonResult executeDataRule(Foo foo) {

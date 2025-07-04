@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.generator.java.function;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +19,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.inject.Injector;
-import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModel;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
@@ -56,8 +55,7 @@ public class LabelProviderGeneratorTest {
 		return testModelService.toTestModel(runeSourceCode);
 	}
 	private void generateLabelProvider(RosettaTestModel model) {
-		labelProviderGenerator.registerClassesAndMethods(model.getModel(), new JavaGlobalScope());
-		labelProviderGenerator.generateClasses("test", fsa, CancelIndicator.NullImpl);
+		labelProviderGenerator.generateClasses(model.getModel(), "test", fsa, CancelIndicator.NullImpl);
 	}
 	
 	private List<String> getGeneratedFileNames() {
@@ -90,7 +88,7 @@ public class LabelProviderGeneratorTest {
 		GeneratedFile file = getSingleGeneratedFile();
 		Assertions.assertEquals(expectedGeneratedPath, file.getPath().replace("/test-project/src-gen/main/java", ""));
 		String actualSource = file.getContents().toString();
-		String expectedSource = Resources.toString(getClass().getResource("/label-annotations/" + expectationFileName), Charsets.UTF_8);
+		String expectedSource = Resources.toString(getClass().getResource("/label-annotations/" + expectationFileName), StandardCharsets.UTF_8);
 		Assertions.assertEquals(expectedSource, actualSource);
 	}
 	private void assertLabels(String... pathLabelExpectations) {

@@ -82,7 +82,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 					«val deepFeatureScope = classScope.createMethodScope('''choose«deepFeature.name.toFirstUpper»''')»
 					«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
 					«val methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeaturesMap, deepFeatureScope.bodyScope)»
-					public «methodBody.expressionType» «classScope.getIdentifierOrThrow(deepFeature)»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
+					public «methodBody.expressionType» choose«deepFeature.name.toFirstUpper»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
 					
 				«ENDFOR»
 			}

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
@@ -30,15 +29,21 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 	public static <U> RGeneratedJavaClass<? extends U> create(JavaPackageName packageName, String simpleName, TypeReference<U> supertypeRef) {
 		return new SimpleGeneratedJavaClass<>(packageName, DottedPath.of(simpleName), supertypeRef);
 	}
-	public static <U> RGeneratedJavaClass<? extends U> create(JavaPackageName packageName, String simpleName, JavaClass<U> superclass) {
-		return new SimpleGeneratedJavaClass<>(packageName, DottedPath.of(simpleName), superclass);
+	public static <U> RGeneratedJavaClass<? extends U> createWithSuperclass(JavaPackageName packageName, String simpleName, JavaClass<U> superclass) {
+		return new SimpleGeneratedJavaClass<>(packageName, DottedPath.of(simpleName), superclass, null);
+	}
+	public static <U> RGeneratedJavaClass<? extends U> createImplementingInterface(JavaPackageName packageName, String simpleName, JavaClass<U> interf) {
+		return new SimpleGeneratedJavaClass<>(packageName, DottedPath.of(simpleName), null, interf);
 	}
 	
 	public <U> RGeneratedJavaClass<? extends U> createNestedClass(String simpleName, Class<U> superclassOrInterface) {
 		return new SimpleGeneratedJavaClass<>(packageName, this.getNestedTypeName().child(simpleName), superclassOrInterface);
 	}
-	public <U> RGeneratedJavaClass<? extends U> createNestedClass(String simpleName, JavaClass<U> superclass) {
-		return new SimpleGeneratedJavaClass<>(packageName, this.getNestedTypeName().child(simpleName), superclass);
+	public <U> RGeneratedJavaClass<? extends U> createNestedClassWithSuperclass(String simpleName, JavaClass<U> superclass) {
+		return new SimpleGeneratedJavaClass<>(packageName, this.getNestedTypeName().child(simpleName), superclass, null);
+	}
+	public <U> RGeneratedJavaClass<? extends U> createNestedClassImplementingInterface(String simpleName, JavaClass<U> interf) {
+		return new SimpleGeneratedJavaClass<>(packageName, this.getNestedTypeName().child(simpleName), null, interf);
 	}
 	
 	public StringConcatenationClient asClassDeclaration() {
@@ -141,6 +146,9 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 		
 		private JavaTypeDeclaration<? super U> superclassDeclaration;
 		private JavaClass<? super U> superclass;
+		
+		private JavaTypeDeclaration<? super U> interfaceDeclaration;
+		private JavaClass<? super U> interf;
 
 		private SimpleGeneratedJavaClass(JavaPackageName packageName, DottedPath nestedTypeName, Type supertype, Class<? super U> rawSupertype) {
 			super(packageName, nestedTypeName);
@@ -153,17 +161,31 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 		public SimpleGeneratedJavaClass(JavaPackageName packageName, DottedPath nestedTypeName, TypeReference<U> supertypeRef) {
 			this(packageName, nestedTypeName, supertypeRef.getType(), JavaParameterizedType.extractRawClass(supertypeRef.getType()));
 		}
-		public SimpleGeneratedJavaClass(JavaPackageName packageName, DottedPath nestedTypeName, JavaClass<? super U> superclass) {
+		public SimpleGeneratedJavaClass(JavaPackageName packageName, DottedPath nestedTypeName, JavaClass<? super U> superclass, JavaClass<? super U> interf) {
 			super(packageName, nestedTypeName);
 			this.supertype = null;
 			this.rawSupertype = null;
-			this.superclassDeclaration = superclass;
-			this.superclass = superclass;
+			if (superclass != null) {
+				if (superclass instanceof JavaParameterizedType<? super U> t) {
+					this.superclassDeclaration = t.getGenericTypeDeclaration();
+				} else {
+					this.superclassDeclaration = superclass;
+				}
+				this.superclass = superclass;
+			}
+			if (interf != null) {
+				if (interf instanceof JavaParameterizedType<? super U> t) {
+					this.interfaceDeclaration = t.getGenericTypeDeclaration();
+				} else {
+					this.interfaceDeclaration = superclass;
+				}
+				this.interf = interf;
+			}
 		}
 
 		@Override
 		public JavaTypeDeclaration<? super U> getSuperclassDeclaration() {
-			if (rawSupertype != null && rawSupertype.isInterface()) {
+			if (rawSupertype != null && rawSupertype.isInterface() || this.interfaceDeclaration != null) {
 				return JavaClass.OBJECT;
 			}
 			if (superclassDeclaration == null) {
@@ -175,7 +197,7 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 		@SuppressWarnings("unchecked")
 		@Override
 		public JavaClass<? super U> getSuperclass() {
-			if (rawSupertype != null && rawSupertype.isInterface()) {
+			if (rawSupertype != null && rawSupertype.isInterface() || this.interf != null) {
 				return JavaClass.OBJECT;
 			}
 			if (superclass == null) {
@@ -186,18 +208,29 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 		
 		@Override
 		public List<JavaTypeDeclaration<?>> getInterfaceDeclarations() {
-			if (rawSupertype != null && rawSupertype.isInterface()) {
-				return Collections.singletonList(JavaTypeDeclaration.from(rawSupertype));
+			if (interfaceDeclaration == null) {
+				if (rawSupertype != null && rawSupertype.isInterface()) {
+					interfaceDeclaration = JavaTypeDeclaration.from(rawSupertype);
+				}
 			}
-			return Collections.emptyList();
+			if (interfaceDeclaration == null) {
+				return Collections.emptyList();
+			}
+			return Collections.singletonList(interfaceDeclaration);
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
 		public List<JavaClass<?>> getInterfaces() {
-			if (rawSupertype != null && rawSupertype.isInterface()) {
-				return Collections.singletonList(JavaClass.from(supertype, Collections.emptyMap()));
+			if (interf == null) {
+				if (rawSupertype != null && rawSupertype.isInterface()) {
+					interf = (JavaClass<? super U>) JavaClass.from(supertype, Collections.emptyMap());
+				}
 			}
-			return Collections.emptyList();
+			if (interf == null) {
+				return Collections.emptyList();
+			}
+			return Collections.singletonList(interf);
 		}
 	}
 }

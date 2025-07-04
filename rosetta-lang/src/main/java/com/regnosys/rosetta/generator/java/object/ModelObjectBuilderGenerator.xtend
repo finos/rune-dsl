@@ -231,7 +231,7 @@ class ModelObjectBuilderGenerator {
 			«IF !parent.type.isList»
 				
 				@Override
-				public «parent.toBuilderTypeSingle» «scope.getIdentifierOrThrow(getOrCreateName)»() «
+				public «parent.toBuilderTypeSingle» «getOrCreateName»() «
 					JavaExpression.from('''«originalProp.getOperationName(GET_OR_CREATE)»()''', originalProp.type.itemType)
 						.addCoercions(parent.type.itemType, getOrCreateScope.bodyScope)
 						.mapExpressionIfNotNull[toBuilder]
@@ -241,7 +241,7 @@ class ModelObjectBuilderGenerator {
 				«val indexId = getOrCreateScope.createUniqueIdentifier("index")»
 				
 				@Override
-				public «parent.toBuilderTypeSingle» «scope.getIdentifierOrThrow(getOrCreateName)»(int «indexId») «
+				public «parent.toBuilderTypeSingle» «getOrCreateName»(int «indexId») «
 					JavaExpression.from('''«originalProp.getOperationName(GET_OR_CREATE)»(«IF originalProp.type.isList»«indexId»«ENDIF»)''', originalProp.type.itemType)
 						.addCoercions(parent.type.itemType, getOrCreateScope.bodyScope)
 						.mapExpressionIfNotNull[toBuilder]
@@ -587,19 +587,14 @@ class ModelObjectBuilderGenerator {
 	}
 
 	def JavaType toBuilderTypeSingle(JavaPojoProperty prop) {
-		val itemType = prop.type.itemType
-		if (itemType instanceof JavaPojoInterface) {
-			itemType.toBuilderInterface
-		} else {
-			itemType
-		}
+		prop.type.itemType.toBuilder
 	}
 	
 	// TODO: replace with coercions
 	private def JavaExpression toBuilder(JavaExpression expr) {
 		val t = expr.expressionType
-		if(t instanceof JavaPojoInterface) {
-			JavaExpression.from('''«expr».toBuilder()''', t.toBuilderInterface)
+		if(t.hasBuilderType) {
+			JavaExpression.from('''«expr».toBuilder()''', t.toBuilder)
 		} else {
 			expr
 		}

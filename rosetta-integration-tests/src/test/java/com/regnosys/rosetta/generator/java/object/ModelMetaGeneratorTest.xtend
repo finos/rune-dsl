@@ -116,7 +116,6 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.validation.ValidationResult;
-			import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
 			import java.math.BigDecimal;
@@ -145,9 +144,9 @@ class ModelMetaGeneratorTest {
 						.stream()
 						.map(res -> {
 							if (!isNullOrEmpty(res.getError())) {
-								return failure("Foo", ValidationType.CARDINALITY, "Foo", path, "", res.getError());
+								return failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
 							}
-							return success("Foo", ValidationType.CARDINALITY, "Foo", path, "");
+							return success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
 						})
 						.collect(toList());
 				}
@@ -164,7 +163,6 @@ class ModelMetaGeneratorTest {
 			import com.rosetta.model.lib.expression.ComparisonResult;
 			import com.rosetta.model.lib.path.RosettaPath;
 			import com.rosetta.model.lib.validation.ValidationResult;
-			import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 			import com.rosetta.model.lib.validation.Validator;
 			import com.rosetta.test.model.Foo;
 			import java.math.BigDecimal;
@@ -195,9 +193,9 @@ class ModelMetaGeneratorTest {
 						.stream()
 						.map(res -> {
 							if (!isNullOrEmpty(res.getError())) {
-								return failure("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
+								return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
 							}
-							return success("Foo", ValidationType.TYPE_FORMAT, "Foo", path, "");
+							return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "");
 						})
 						.collect(toList());
 				}

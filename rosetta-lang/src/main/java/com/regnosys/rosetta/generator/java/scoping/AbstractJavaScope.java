@@ -3,9 +3,8 @@ package com.regnosys.rosetta.generator.java.scoping;
 import javax.lang.model.SourceVersion;
 
 import com.regnosys.rosetta.generator.GeneratorScope;
-import com.rosetta.util.types.JavaTypeDeclaration;
 
-public abstract class AbstractJavaScope<T extends AbstractJavaScope<?>> extends GeneratorScope<T> implements JavaScope {
+public abstract class AbstractJavaScope<T extends AbstractJavaScope<?>> extends GeneratorScope<T> {
 
 	protected AbstractJavaScope(String description) {
 		super(description);
@@ -24,14 +23,5 @@ public abstract class AbstractJavaScope<T extends AbstractJavaScope<?>> extends 
 			return null;
 		}
 		return getParent().getFileScope();
-	}
-	
-	@Override
-	public JavaClassScope getClassScope(JavaTypeDeclaration<?> clazz) {
-		return getParent().getClassScope(clazz);
-	}
-	@Override
-	public JavaPackageScope getPackageScope(JavaPackageName packageName) {
-		return getParent().getPackageScope(packageName);
 	}
 }

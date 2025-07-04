@@ -50,7 +50,7 @@ class ModelMetaGenerator extends RObjectJavaClassGenerator<RDataType, RGenerated
 		'''
 			«emptyJavadocWithVersion(version)»
 			@«RosettaMeta»(model=«dataClass».class)
-			public class «metaClass» implements «metaClass.interfaces.head»> {
+			public «metaClass.asClassDeclaration» {
 			
 				@Override
 				public «List»<«Validator»<? super «dataClass»>> dataRules(«ValidatorFactory» factory) {

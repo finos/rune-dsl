@@ -32,8 +32,6 @@ import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator
 import java.util.List
 import com.regnosys.rosetta.generator.java.JavaClassGenerator
-import com.regnosys.rosetta.generator.java.scoping.JavaGlobalScope
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.object.validators.CardinalityValidatorGenerator
 import com.regnosys.rosetta.generator.java.object.validators.TypeFormatValidatorGenerator
 import com.regnosys.rosetta.generator.java.object.validators.OnlyExistsValidatorGenerator
@@ -62,7 +60,6 @@ class RosettaGenerator implements IGenerator2 {
 	@Inject ReportGenerator reportGenerator
 	@Inject DeepPathUtilGenerator deepPathUtilGenerator
 	@Inject LabelProviderGenerator labelProviderGenerator
-	@Inject JavaTypeUtil typeUtil
 
 	@Inject
 	ResourceAwareFSAFactory fsaFactory;
@@ -146,9 +143,7 @@ class RosettaGenerator implements IGenerator2 {
 					return
 				}
 				val version = model.version
-								
-				val globalScope = new JavaGlobalScope
-				globalScope.initializeRuntimeScopes(typeUtil)
+				
 				val List<JavaClassGenerator<?, ?>> javaGenerators = #[
 					conditionGenerator,
 					dataGenerator,
@@ -164,14 +159,11 @@ class RosettaGenerator implements IGenerator2 {
 					enumGenerator,
 					metaFieldGenerator
 				]
-				javaGenerators.forEach[generator|
-					generator.registerClassesAndMethods(model, globalScope)
-				]
-				javaGenerators.forEach[generator|
-					generator.generateClasses(version, fsa2, context.cancelIndicator)
-				]
+				val aggregatedGenerationExceptions =
+					javaGenerators.flatMap[generator|
+						generator.generateClasses(model, version, fsa2, context.cancelIndicator)
+					].toList
 				
-				val aggregatedGenerationExceptions = javaGenerators.flatMap[generationExceptions].toList
 				if (!aggregatedGenerationExceptions.empty) {
 					if (aggregatedGenerationExceptions.size === 1) {
 						throw aggregatedGenerationExceptions.get(0)

@@ -119,10 +119,24 @@ public class JavaTypeUtil {
 				FIELD_WITH_META, FIELD_WITH_META_BUILDER,
 				REFERENCE_WITH_META, REFERENCE_WITH_META_BUILDER
 			);
+	public boolean hasBuilderType(JavaType type) {
+		return !toBuilder(type).equals(type);
+	}
+	public JavaType toBuilder(JavaType type) {
+		if (type instanceof JavaClass<?> c) {
+			return toBuilder(c);
+		}
+		// No builder type found
+		return type;
+	}
 	public JavaClass<?> toBuilder(JavaClass<?> type) {
 		return (JavaClass<?>)toBuilder((JavaTypeDeclaration<?>) type);
 	}
 	public JavaTypeDeclaration<?> toBuilder(JavaTypeDeclaration<?> type) {
+		if (type instanceof JavaPojoInterface pojo) {
+			return pojo.toBuilderInterface();
+		}
+		
 		JavaTypeDeclaration<?> base = type;
 		if (type instanceof JavaParameterizedType<?> paramType) {
 			base = paramType.getGenericTypeDeclaration();
@@ -130,7 +144,8 @@ public class JavaTypeUtil {
 		
 		var baseBuilder = builderMap.get(base);
 		if (baseBuilder == null) {
-			throw new IllegalArgumentException("Type " + type + " does not have a known builder type.");
+			// No builder type found
+			return type;
 		}
 		
 		if (type instanceof JavaParameterizedType<?> paramType) {
