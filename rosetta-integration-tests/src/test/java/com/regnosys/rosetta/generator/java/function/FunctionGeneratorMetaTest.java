@@ -52,7 +52,7 @@ public class FunctionGeneratorMetaTest {
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
         
-        var input = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
                 "meta", MetaFields.builder().setScopedKey("someLocationValue")
         ));
@@ -88,7 +88,7 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, "someValue", "someLocationValue");
                 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
                 "meta", MetaFields.builder().setScopedKey("someLocationValue")
         ));

@@ -12,11 +12,6 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @InjectWith(RosettaTestInjectorProvider.class)
 @TestInstance(Lifecycle.PER_CLASS)
 public class JavaNameEscapingTest extends AbstractJavaGeneratorRegressionTest {
-	
-	// TODO: also check source code to make sure these tests keep testing what they should test.
-	
-	// TODO: add test for complex attribute named `result` and multicardinality (complex?) `index` and (complex?) `meta`
-	
 	@Override
 	protected String getTestRootResourceFolder() {
 		return "generation-regression-tests/name-escaping";
