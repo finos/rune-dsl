@@ -484,7 +484,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			val lambdaParam1 = lambdaScope1.createUniqueIdentifier("a")
 			val lambdaScope2 = scope.lambdaScope
 			val lambdaParam2 = lambdaScope2.createUniqueIdentifier("a")
-			'''.map("getMeta", «lambdaParam1»->«lambdaParam1».getMeta()).map("get«meta.name.toFirstUpper»", «lambdaParam2»->«lambdaParam2».get«meta.name.toFirstUpper»())'''
+			'''.map("getMeta", «lambdaParam1»->«lambdaParam1».getMeta()).map("get«meta.name.toFirstUpper»", «lambdaParam2»->«lambdaParam2».get«meta.name.toPojoPropertyName.toFirstUpper»())'''
 		}
 	}
 

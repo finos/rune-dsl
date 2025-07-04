@@ -306,4 +306,38 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 			(v2) -> assertFailure(v2, "FooAliasCondB", "T.atr1", "[String] [foo] should not equal [String] [foo]")
 		);
 	}
+	
+	@Test
+	void testConditionsFromTypeAliasInMultiCardinalityEmptyAttribute() {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type T:
+					foos Foo (0..*)
+				
+				typeAlias Foo:
+					Bar
+					
+					condition C1:
+						item <> 42
+				
+				typeAlias Bar:
+					int
+					
+					condition C2:
+						item > 0
+				""").compile();
+		RosettaModelObject t = model.evaluateExpression(RosettaModelObject.class, """
+				T {
+				  foos: empty
+				}
+				""");
+		
+		var validator = getTypeFormatValidator(t);
+		
+		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		
+		assertResults(
+			results,
+			(v1) -> assertSuccess(v1, "T", "T")
+		);
+	}
 }
