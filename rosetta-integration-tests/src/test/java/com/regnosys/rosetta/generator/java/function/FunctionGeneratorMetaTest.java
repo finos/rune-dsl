@@ -123,9 +123,7 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
-        
-        generatorTestHelper.writeClasses(code, "canCreateMetaTypeUsingConstructorAndEmptyWithMeta");
-        
+                
         var classes = generatorTestHelper.compileToClasses(code);        
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
