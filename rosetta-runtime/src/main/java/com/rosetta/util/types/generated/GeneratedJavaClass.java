@@ -63,6 +63,11 @@ public class GeneratedJavaClass<T> extends JavaClass<T> {
 	}
 	
 	@Override
+	public DottedPath getNestedTypeName() {
+		return DottedPath.of(simpleName);
+	}
+	
+	@Override
 	public DottedPath getPackageName() {
 		return packageName;
 	}

@@ -3,7 +3,6 @@ package test.pojo.validation.exists;
 import com.google.common.collect.ImmutableMap;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 import java.util.Map;
 import java.util.Set;
@@ -28,9 +27,9 @@ public class ParentOnlyExistsValidator implements ValidatorWithArg<Parent, Set<S
 				.collect(Collectors.toSet());
 		
 		if (setFields.equals(fields)) {
-			return success("Parent", ValidationType.ONLY_EXISTS, "Parent", path, "");
+			return success("Parent", ValidationResult.ValidationType.ONLY_EXISTS, "Parent", path, "");
 		}
-		return failure("Parent", ValidationType.ONLY_EXISTS, "Parent", path, "",
+		return failure("Parent", ValidationResult.ValidationType.ONLY_EXISTS, "Parent", path, "",
 				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
 	}
 }

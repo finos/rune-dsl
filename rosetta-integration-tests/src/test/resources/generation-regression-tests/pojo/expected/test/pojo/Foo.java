@@ -1,7 +1,6 @@
 package test.pojo;
 
 import com.rosetta.model.lib.GlobalKey;
-import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -15,12 +14,7 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.MetaFields;
-import com.rosetta.model.metafields.MetaFields.MetaFieldsBuilder;
 import java.util.Objects;
-import test.pojo.Foo;
-import test.pojo.Foo.FooBuilder;
-import test.pojo.Foo.FooBuilderImpl;
-import test.pojo.Foo.FooImpl;
 import test.pojo.meta.FooMeta;
 
 import static java.util.Optional.ofNullable;
@@ -164,10 +158,10 @@ public interface Foo extends RosettaModelObject, GlobalKey {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("meta")
 		@RuneAttribute("meta")
 		@RuneMetaType
+		@Override
 		public Foo.FooBuilder setMeta(MetaFields _meta) {
 			this.meta = _meta == null ? null : _meta.toBuilder();
 			return this;

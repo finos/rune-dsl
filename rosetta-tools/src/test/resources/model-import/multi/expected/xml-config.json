@@ -28,9 +28,6 @@
       "buyerSellerModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
-      "_type" : {
-        "xmlName" : "type"
-      },
       "loanTradingSettlementTermsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -163,18 +160,10 @@
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeChangeGroup",
     "xmlElementName" : "accruingFeeExpiry",
     "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/accruingFeeExpiry",
-    "abstract" : false,
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
+    "abstract" : false
   },
   "fpml.confirmation.AccruingFeeOption" : {
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "periodOptionalEndModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -501,13 +490,6 @@
       },
       "applicableTransactionTypeScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
-      }
-    }
-  },
-  "fpml.confirmation.Approval" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -1425,9 +1407,6 @@
   },
   "fpml.confirmation.CoalProduct" : {
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "commodityUSCoalProductModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -1550,13 +1529,6 @@
       },
       "unitContractModel" : {
         "xmlRepresentation" : "VIRTUAL"
-      }
-    }
-  },
-  "fpml.confirmation.CollateralValueAllocation" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -2637,9 +2609,6 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "portfolioReferenceBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -2660,9 +2629,6 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "portfolioReferenceBaseModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -2714,13 +2680,6 @@
       }
     }
   },
-  "fpml.confirmation.ContractualTermsSupplement" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
-  },
   "fpml.confirmation.ConvertibleBond" : {
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/underlyingAsset",
     "xmlElementName" : "convertibleBond",
@@ -2735,13 +2694,6 @@
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
-    }
-  },
-  "fpml.confirmation.CorporateActionEvent" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
     }
   },
   "fpml.confirmation.CorporateActionType" : {
@@ -2987,13 +2939,6 @@
       },
       "creditSeniorityScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
-      }
-    }
-  },
-  "fpml.confirmation.CreditSupportAgreement" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -3725,13 +3670,6 @@
     "xmlElementName" : "electricityPhysicalLeg",
     "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/electricityPhysicalLeg",
     "abstract" : false
-  },
-  "fpml.confirmation.ElectricityProduct" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
   },
   "fpml.confirmation.ElectricityProductTypeEnum" : {
     "enumValues" : {
@@ -5733,13 +5671,6 @@
       }
     }
   },
-  "fpml.confirmation.GasProduct" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
-  },
   "fpml.confirmation.GasProductTypeEnum" : {
     "enumValues" : {
       "BUTANE" : "Butane",
@@ -6413,9 +6344,6 @@
     "attributes" : {
       "periodModel" : {
         "xmlRepresentation" : "VIRTUAL"
-      },
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -6543,9 +6471,6 @@
   },
   "fpml.confirmation.LetterOfCreditSummary" : {
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "letterOfCreditRolesModel" : {
         "xmlRepresentation" : "VIRTUAL"
       }
@@ -6756,13 +6681,6 @@
       },
       "facilityLoanContractDetailsModel" : {
         "xmlRepresentation" : "VIRTUAL"
-      }
-    }
-  },
-  "fpml.confirmation.LoanAllocationSettlementTask" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -7066,13 +6984,6 @@
       }
     }
   },
-  "fpml.confirmation.LoanTradeSettlementTask" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
-  },
   "fpml.confirmation.LoanTradeSettlementTaskNotification" : {
     "xmlElementName" : "loanTradeSettlementTaskNotification",
     "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/loanTradeSettlementTaskNotification",
@@ -7137,13 +7048,6 @@
       "FLAT" : "Flat",
       "SETTLED_WITH_ACCRUED" : "SettledWithAccrued",
       "SETTLED_WITHOUT_ACCRUED" : "SettledWithoutAccrued"
-    }
-  },
-  "fpml.confirmation.LoanTradingAccruingFeeAccrual" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
     }
   },
   "fpml.confirmation.LoanTradingAccruingFeeTypeEnum" : {
@@ -7621,12 +7525,7 @@
     "substitutionGroup" : "http://www.fpml.org/FpML-5/confirmation/facilityFeePaymentGroup",
     "xmlElementName" : "miscFeePayment",
     "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/miscFeePayment",
-    "abstract" : false,
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
+    "abstract" : false
   },
   "fpml.confirmation.MoneyBase" : {
     "attributes" : {
@@ -7976,13 +7875,6 @@
     "xmlElementFullyQualifiedName" : "http://www.fpml.org/FpML-5/confirmation/oilPhysicalLeg",
     "abstract" : false
   },
-  "fpml.confirmation.OilProduct" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
-  },
   "fpml.confirmation.OilProductType" : {
     "attributes" : {
       "value" : {
@@ -8164,13 +8056,6 @@
       },
       "otcClassificationScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
-      }
-    }
-  },
-  "fpml.confirmation.OtherAgreement" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -9256,7 +9141,7 @@
         "xmlName" : "URI",
         "xmlRepresentation" : "ATTRIBUTE"
       },
-      "_type" : {
+      "type" : {
         "xmlName" : "Type",
         "xmlRepresentation" : "ATTRIBUTE"
       }
@@ -9286,9 +9171,6 @@
     "attributes" : {
       "partyAndAccountReferencesModel" : {
         "xmlRepresentation" : "VIRTUAL"
-      },
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -9608,9 +9490,6 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "portfolioReferenceModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -9637,9 +9516,6 @@
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
     },
     "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      },
       "tradingAndPostTradeEventsModel" : {
         "xmlRepresentation" : "VIRTUAL"
       },
@@ -9906,7 +9782,7 @@
         "xmlName" : "URI",
         "xmlRepresentation" : "ATTRIBUTE"
       },
-      "_type" : {
+      "type" : {
         "xmlName" : "Type",
         "xmlRepresentation" : "ATTRIBUTE"
       }
@@ -10603,13 +10479,6 @@
       "UN_WEIGHTED_AVERAGE" : "UnWeightedAverage"
     }
   },
-  "fpml.confirmation.SpreadSchedule" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
-    }
-  },
   "fpml.confirmation.SpreadScheduleReference" : {
     "attributes" : {
       "href" : {
@@ -10791,13 +10660,6 @@
       },
       "taxFormTypeScheme" : {
         "xmlRepresentation" : "ATTRIBUTE"
-      }
-    }
-  },
-  "fpml.confirmation.TelephoneNumber" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
       }
     }
   },
@@ -11156,13 +11018,6 @@
     "xmlAttributes" : {
       "xmlns" : "http://www.fpml.org/FpML-5/confirmation",
       "xmlns:xsi" : "http://www.w3.org/2001/XMLSchema-instance"
-    }
-  },
-  "fpml.confirmation.TradeTimestamp" : {
-    "attributes" : {
-      "_type" : {
-        "xmlName" : "type"
-      }
     }
   },
   "fpml.confirmation.TradeUnderlyer2" : {

@@ -14,12 +14,7 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
-import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
 import java.util.Objects;
-import test.pojo.Qux;
-import test.pojo.Qux.QuxBuilder;
-import test.pojo.Qux.QuxBuilderImpl;
-import test.pojo.Qux.QuxImpl;
 import test.pojo.meta.QuxMeta;
 
 import static java.util.Optional.ofNullable;
@@ -165,10 +160,10 @@ public interface Qux extends RosettaModelObject {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("qux")
 		@RuneAttribute("qux")
 		@RuneScopedAttributeKey
+		@Override
 		public Qux.QuxBuilder setQux(FieldWithMetaString _qux) {
 			this.qux = _qux == null ? null : _qux.toBuilder();
 			return this;
