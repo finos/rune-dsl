@@ -133,7 +133,6 @@ class DocumentationSamples {
 			import java.util.Optional;
 			import javax.inject.Inject;
 			import test.reg.EuropeanParliamentReport;
-			import test.reg.EuropeanParliamentReport.EuropeanParliamentReportBuilder;
 			import test.reg.VehicleOwnership;
 			import test.reg.labels.EuropeanParliamentEmissionPerformanceStandardsEULabelProvider;
 			

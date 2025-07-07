@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.reports;
 
 import com.google.common.collect.Maps;
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage;
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
@@ -48,16 +47,16 @@ public class ReportOverrideRuntimeTest {
 
         Class<Enum> tradeEnum = (Class<Enum>) classes.get("base.layer.TradeEnum");
         Class<Enum> notationEnum = (Class<Enum>) classes.get("cde.layer.price.NotationEnum");
-        RosettaModelObject modelObject = generatorTestHelper.createInstanceUsingBuilder(classes, new RootPackage("base.layer"), "Instruction",
+        RosettaModelObject modelObject = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("base.layer"), "Instruction",
                 Map.of("id", 999, "trade", Enum.valueOf(tradeEnum, "A")));
 
-        var expectedRegTradeReportFuncResult = generatorTestHelper.createInstanceUsingBuilder(classes, new RootPackage("reg"), "RegReport", Map.of("notation", Enum.valueOf(notationEnum, "X")));
+        var expectedRegTradeReportFuncResult = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("reg"), "RegReport", Map.of("notation", Enum.valueOf(notationEnum, "X")));
 
         var regTradeReportFunc = functionGeneratorHelper.createFunc(classes, "RegTradeReportFunction", DottedPath.of("reg.reports"));
         var regTradeReportFuncResult = functionGeneratorHelper.invokeFunc(regTradeReportFunc, modelObject.getType(), modelObject);
         assertEquals(expectedRegTradeReportFuncResult, regTradeReportFuncResult);
 
-        var expectedExtRegTradeReportFuncResult = generatorTestHelper.createInstanceUsingBuilder(classes, new RootPackage("ext"), "ExtRegReport", Map.of("notation", Enum.valueOf(notationEnum, "X")));
+        var expectedExtRegTradeReportFuncResult = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("ext"), "ExtRegReport", Map.of("notation", Enum.valueOf(notationEnum, "X")));
 
         var extRegTradeReportFunc = functionGeneratorHelper.createFunc(classes, "RegTradeExtReportFunction", DottedPath.of("ext.reports"));
         var extRegTradeReportFuncResult = functionGeneratorHelper.invokeFunc(extRegTradeReportFunc, modelObject.getType(), modelObject);

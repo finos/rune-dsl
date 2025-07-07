@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.generator;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,8 +29,8 @@ import java.util.Set;
 import com.google.common.collect.LinkedListMultimap;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 
-public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {	
-	private final Optional<Scope> parent;
+public abstract class GeneratorScope<Scope extends GeneratorScope<?>> {	
+	private final Scope parent;
 	private final Map<Object, GeneratedIdentifier> identifiers = new LinkedHashMap<>();
 	private final Map<Object, Object> keySynonyms = new HashMap<>();
 	
@@ -38,25 +39,18 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	
 	private final String description;
 	
-	public GeneratorScope(String description) {
-		this.description = description;
-		this.parent = Optional.empty();
+	protected GeneratorScope(String description) {
+		this(description, null);
 	}
 	
 	protected GeneratorScope(String description, Scope parent) {
 		this.description = description;
-		this.parent = Optional.of(parent);
+		this.parent = parent;
 	}
-	
-	/**
-	 * Create a child scope from this one.
-	 * The implementation should simply call the constructor,
-	 * e.g., `return new MyScope(this.implicitVarUtil, this);`.
-	 */
-	public abstract Scope childScope(String description);
+
 	/**
 	 * Determine whether `name` is a valid identifier in the target language.
-	 * E.g., this method should return `false` if `name` is a keyword in the target language.
+	 * E.g., this method should return `false` if `name` is a reserved keyword in the target language.
 	 */
 	public abstract boolean isValidIdentifier(String name);
 
@@ -67,7 +61,10 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	public boolean isClosed() {
 		return this.isClosed;
 	}
-	public Optional<Scope> getParent() {
+	/**
+	 * May be null.
+	 */
+	public Scope getParent() {
 		return this.parent;
 	}
 	
@@ -78,10 +75,11 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 			b.append(" <unclosed>");
 		}
 		b.append(":");
-		if (this.identifiers.isEmpty()) {
+		Map<Object, GeneratedIdentifier> ownIdentifiers = getOwnIdentifiersMap();
+		if (ownIdentifiers.isEmpty()) {
 			b.append(" <no identifiers>");
 		} else {
-			this.identifiers.entrySet().forEach(e ->
+			ownIdentifiers.entrySet().forEach(e ->
 					b.append("\n\t").append(normalizeKey(e.getKey())).append(" -> \"").append(e.getValue().getDesiredName()).append("\""));
 		}
 		this.keySynonyms.entrySet().forEach(e -> 
@@ -91,9 +89,9 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 			.append(" -> ")
 			.append(normalizeKey(e.getValue())));
 		
-		parent.ifPresent(p -> {
-			b.append("\n").append(p.getDebugInfo().replaceAll("(?m)^", "\t"));
-		});
+		if (parent != null) {
+			b.append("\n").append(parent.getDebugInfo().replaceAll("(?m)^", "\t"));
+		}
 		return b.toString();
 	}
 	private String normalizeKey(Object key) {
@@ -108,12 +106,14 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		return b.toString();
 	}
 	
-	public Set<GeneratedIdentifier> getIdentifiers() {
-		Set<GeneratedIdentifier> result = this.parent
-				.map(p -> p.getIdentifiers())
-				.orElseGet(() -> new HashSet<>());
-		result.addAll(identifiers.values());
-		return result;
+	protected Map<Object, GeneratedIdentifier> getOwnIdentifiersMap() {
+		return identifiers;
+	}
+
+	public boolean isNameTaken(String desiredName) {
+		return
+				getOwnIdentifiersMap().values().stream().anyMatch(id -> desiredName.equals(id.getDesiredName()))
+				|| getParent() != null && getParent().isNameTaken(desiredName);
 	}
 	
 	/**
@@ -121,9 +121,9 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	 * scope, if it exists.
 	 */
 	public Optional<GeneratedIdentifier> getIdentifier(Object obj) {
-		return parent
+		return Optional.ofNullable(parent)
 				.flatMap(p -> p.getIdentifier(obj))
-				.or(() -> Optional.ofNullable(this.identifiers.get(obj)))
+				.or(() -> Optional.ofNullable(getOwnIdentifiersMap().get(obj)))
 				.or(() -> Optional.ofNullable(this.keySynonyms.get(obj)).flatMap(key -> getIdentifier(key)));				
 	}
 	/**
@@ -249,7 +249,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		if (!this.isClosed) {
 			this.close();
 		}
-		return this.parent
+		return Optional.ofNullable(parent)
 				.flatMap(p -> p.getActualName(identifier))
 				.or(() -> {
 					if (this.actualNames == null) {
@@ -261,9 +261,7 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 	private void computeActualNames() {
 		this.actualNames = new HashMap<>();
 		
-		Set<String> takenNames = parent
-			.map(p -> p.getTakenNames())
-			.orElseGet(() -> new HashSet<>());
+		Set<String> takenNames = getAllTakenNamesFromParent();
 		LinkedListMultimap<String, GeneratedIdentifier> idsByDesiredName = localIdentifiersByDesiredName();
 		for (String desiredName: idsByDesiredName.keySet()) {
 			List<GeneratedIdentifier> ids = idsByDesiredName.get(desiredName);
@@ -298,14 +296,21 @@ public abstract class GeneratorScope<Scope extends GeneratorScope<Scope>> {
 		identifiers.values().stream().distinct().forEach(id -> result.put(id.getDesiredName(), id));
 		return result;
 	}
-	protected Set<String> getTakenNames() {
-		Set<String> result = parent
-				.map(p -> p.getTakenNames())
-				.orElseGet(() -> new HashSet<>());
+	protected Set<String> getAllTakenNames() {
+		Set<String> result = getAllTakenNamesFromParent();
+		result.addAll(this.getOwnTakenNames());
+		return result;
+	}
+	protected Collection<String> getOwnTakenNames() {
 		if (this.actualNames == null) {
 			this.computeActualNames();
 		}
-		result.addAll(this.actualNames.values());
-		return result;
+		return this.actualNames.values();
+	}
+	protected Set<String> getAllTakenNamesFromParent() {
+		if (parent == null) {
+			return new HashSet<>();
+		}
+		return parent.getAllTakenNames();
 	}
 }

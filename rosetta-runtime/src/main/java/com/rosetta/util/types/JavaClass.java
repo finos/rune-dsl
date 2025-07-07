@@ -41,10 +41,20 @@ public abstract class JavaClass<T> implements JavaReferenceType, JavaTypeDeclara
 	protected static class JavaClassImpl<T> extends JavaClass<T> {
 		private final Class<T> backingClass;
 		private final DottedPath packageName;
+		private final DottedPath nestedTypeName;
 
 		public JavaClassImpl(Class<T> backingClass) {
-			this.packageName = DottedPath.splitOnDots(backingClass.getCanonicalName()).parent();
+			this.packageName = DottedPath.splitOnDots(backingClass.getPackage().getName());
 			this.backingClass = backingClass;
+			
+			List<String> parts = new ArrayList<>();
+			Class<?> current = backingClass;
+		    while (current != null) {
+		        parts.add(current.getSimpleName());
+		        current = current.getDeclaringClass();
+		    }
+		    Collections.reverse(parts);
+		    this.nestedTypeName = DottedPath.of(parts.toArray(new String[0]));
 		}
 		
 		public Class<T> getBackingClass() {
@@ -130,8 +140,8 @@ public abstract class JavaClass<T> implements JavaReferenceType, JavaTypeDeclara
 		}
 
 		@Override
-		public String getSimpleName() {
-			return backingClass.getSimpleName();
+		public DottedPath getNestedTypeName() {
+			return nestedTypeName;
 		}
 
 		@Override
@@ -176,15 +186,13 @@ public abstract class JavaClass<T> implements JavaReferenceType, JavaTypeDeclara
 		}
 		return new JavaClassImpl<>(c);
 	}
-		
-	public abstract DottedPath getPackageName();
-	
-	public DottedPath getCanonicalName() {
-		return getPackageName().child(getSimpleName());
-	}
 	
 	public abstract JavaClass<? super T> getSuperclass();
 	public abstract List<JavaClass<?>> getInterfaces();
+	@Override
+	public String getSimpleName() {
+		return JavaTypeDeclaration.super.getSimpleName();
+	}
 	
 	@Override
 	public JavaClass<T> applySubstitution(Map<JavaTypeVariable, JavaTypeArgument> substitution) {

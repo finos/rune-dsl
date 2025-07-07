@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.regnosys.rosetta.generator.java;
+package com.regnosys.rosetta.generator.java.scoping;
 
 import com.regnosys.rosetta.generator.IdentifierRepresentationService;
 import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;

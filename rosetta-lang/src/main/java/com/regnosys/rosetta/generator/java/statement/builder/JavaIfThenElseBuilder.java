@@ -22,7 +22,7 @@ import java.util.function.Function;
 import org.eclipse.xtend2.lib.StringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaBlock;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenElseStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement;
@@ -81,7 +81,7 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	}
 
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
 		return this.collapseToSingleExpression(scope)
 				.then(after, combineExpressions, scope);
 	}
@@ -108,7 +108,7 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	}
 
 	@Override
-	public JavaBlockBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
+	public JavaBlockBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope) {
 		GeneratedIdentifier id = scope.createIdentifier(this, variableId);
 		if (elseBranch instanceof JavaLiteral) {
 			return new JavaBlockBuilder(
@@ -129,7 +129,7 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	}
 	
 	@Override
-	public JavaStatementBuilder collapseToSingleExpression(JavaScope scope) {
+	public JavaStatementBuilder collapseToSingleExpression(JavaStatementScope scope) {
 		return this.declareAsVariable(true, "ifThenElseResult", scope);
 	}
 

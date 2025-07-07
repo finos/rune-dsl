@@ -1,7 +1,6 @@
 package test.pojo;
 
 import com.rosetta.model.lib.GlobalKey;
-import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -15,16 +14,7 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.MetaFields;
-import com.rosetta.model.metafields.MetaFields.MetaFieldsBuilder;
 import java.util.Objects;
-import test.pojo.Child;
-import test.pojo.Child.ChildBuilder;
-import test.pojo.Child.ChildBuilderImpl;
-import test.pojo.Child.ChildImpl;
-import test.pojo.Parent;
-import test.pojo.Parent.ParentBuilder;
-import test.pojo.Parent.ParentBuilderImpl;
-import test.pojo.Parent.ParentImpl;
 import test.pojo.meta.ChildMeta;
 
 import static java.util.Optional.ofNullable;
@@ -171,10 +161,10 @@ public interface Child extends Parent, GlobalKey {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("meta")
 		@RuneAttribute("meta")
 		@RuneMetaType
+		@Override
 		public Child.ChildBuilder setMeta(MetaFields _meta) {
 			this.meta = _meta == null ? null : _meta.toBuilder();
 			return this;
@@ -208,7 +198,6 @@ public interface Child extends Parent, GlobalKey {
 		@Override
 		public Child.ChildBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
 			super.merge(other, merger);
-			
 			Child.ChildBuilder o = (Child.ChildBuilder) other;
 			
 			merger.mergeRosetta(getMeta(), o.getMeta(), this::setMeta);

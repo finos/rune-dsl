@@ -1,7 +1,6 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.JavaScope
+import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
@@ -140,7 +139,6 @@ import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta
 import com.rosetta.model.metafields.MetaFields
 import static extension com.regnosys.rosetta.utils.PojoPropertyUtil.*
 import com.rosetta.model.lib.meta.Reference
-import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.TypeParameter
@@ -149,12 +147,16 @@ import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
 import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
+import com.rosetta.util.types.JavaClass
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
 	static class Context {
 		public JavaType expectedType;
-		public JavaScope scope;
+		public JavaStatementScope scope;
 	}
 
 	@Inject protected RosettaTypeProvider typeProvider
@@ -178,7 +180,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
-	def JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, JavaScope scope) {
+	def JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, JavaStatementScope scope) {
 		try {
 			val rawResult = doSwitch(expr, new Context => [{
 				it.expectedType = expectedType
@@ -200,7 +202,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		expr.mapExpression[JavaExpression.from('''«runtimeMethod(methodName)»(«it»)''', resultType)]
 	}	
 
-	private def JavaStatementBuilder callableWithArgsCall(RosettaCallableWithArgs callable, List<RosettaExpression> arguments, JavaScope scope) {
+	private def JavaStatementBuilder callableWithArgsCall(RosettaCallableWithArgs callable, List<RosettaExpression> arguments, JavaStatementScope scope) {
 		return switch (callable) {
 			Function,
 			RosettaRule: {
@@ -261,7 +263,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 	}
 
-	private def JavaStatementBuilder implicitVariable(EObject context, JavaScope scope) {
+	private def JavaStatementBuilder implicitVariable(EObject context, JavaStatementScope scope) {
 		val itemType = typeProvider.typeOfImplicitVariable(context).toJavaReferenceType
 		val definingContainer = context.findContainerDefiningImplicitVariable.get
 		val JavaType actualType = if (definingContainer instanceof RosettaTypeWithConditions || definingContainer instanceof RosettaRule) {
@@ -284,7 +286,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		new JavaVariable(scope.getIdentifierOrThrow(context.implicitVarInContext), actualType)
 	}
 	
-	def StringConcatenationClient aliasCallArgs(RShortcut alias, RFunction function, JavaScope scope) {
+	def StringConcatenationClient aliasCallArgs(RShortcut alias, RFunction function, JavaStatementScope scope) {
 		val output = function.output
 		val inputs = function.inputs
 		'''
@@ -292,7 +294,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 
-	private def StringConcatenationClient aliasCallArgs(ShortcutDeclaration alias, JavaScope scope) {
+	private def StringConcatenationClient aliasCallArgs(ShortcutDeclaration alias, JavaStatementScope scope) {
 		val func = EcoreUtil2.getContainerOfType(alias, Function)
 		val output = rObjectFactory.buildRAttributeWithEnclosingType(null, funcExt.getOutput(func))
 		val inputs = funcExt.getInputs(func).map[rObjectFactory.buildRAttributeWithEnclosingType(null, it)]
@@ -306,21 +308,21 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)	
 	}
 	
-	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, JavaScope scope) {
+	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, JavaStatementScope scope) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		val StringConcatenationClient right = feature.buildMapFunc(scope)
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtends(receiverCode.expressionType.itemType), scope)
 		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, cardinalityProvider.isFeatureMulti(feature), scope)
 	}
 	
-	def JavaStatementBuilder recordCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaRecordFeature feature, JavaScope scope) {
+	def JavaStatementBuilder recordCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaRecordFeature feature, JavaStatementScope scope) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		val StringConcatenationClient right = '''.<«resultItemType»>map("«feature.name.toFirstUpper»", «recordUtil.recordFeatureToLambda(receiverType.RType as RRecordType, feature, scope)»)'''
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
 		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, cardinalityProvider.isFeatureMulti(feature), scope)
 	}
 	
-	def JavaStatementBuilder attributeCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RAttribute attr, boolean isDeepFeature, JavaType expectedType, JavaScope scope) {		
+	def JavaStatementBuilder attributeCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RAttribute attr, boolean isDeepFeature, JavaType expectedType, JavaStatementScope scope) {
 		val receiverRType = receiverType.RType
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
@@ -350,7 +352,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, attr.isMulti, scope)
 	}
 	
-	private def JavaStatementBuilder featureCall(JavaStatementBuilder mapperReceiverCode, JavaType resultItemType, StringConcatenationClient right, JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, boolean isMulti, JavaScope scope) {
+	private def JavaStatementBuilder featureCall(JavaStatementBuilder mapperReceiverCode, JavaType resultItemType, StringConcatenationClient right, JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, boolean isMulti, JavaStatementScope scope) {
 		val resultWrapper = if (mapperReceiverCode.expressionType.isMapperS && !isMulti) {
 			MAPPER_S as JavaGenericTypeDeclaration<?>
 		} else {
@@ -476,7 +478,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		'''«CardinalityOperator».«if (cardOp === CardinalityModifier.NONE) defaultOp.toString.toFirstUpper else cardOp.toString.toFirstUpper»'''
 	}
 
-	private def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, JavaScope scope) {
+	private def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, JavaStatementScope scope) {
 		if (meta.name == "reference") {
 			val lambdaScope = scope.lambdaScope
 			val lambdaParam = lambdaScope.createUniqueIdentifier("a")
@@ -490,7 +492,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 	}
 
-	private def Pair<StringConcatenationClient, JavaType> inlineFunction(InlineFunction ref, JavaType expectedType, JavaScope scope) {
+	private def Pair<StringConcatenationClient, JavaType> inlineFunction(InlineFunction ref, JavaType expectedType, JavaStatementScope scope) {
 		val lambdaScope = scope.lambdaScope
 		val paramIds = if (ref.parameters.size == 0) {
 				#[lambdaScope.createIdentifier(ref.implicitVarInContext, defaultImplicitVariable.name)]
@@ -517,7 +519,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			.mapExpression[JavaExpression.from('''«runtimeMethod('choice')»(«it», «Arrays».asList(«usedAttributes.join(", ")['"' + name + '"']»), «ChoiceRuleValidationMethod».«validationType.name()»)''', COMPARISON_RESULT)]
 	}
 
-	private def JavaStatementBuilder buildListOperationNoBody(RosettaUnaryOperation op, String name, JavaType expectedArgumentType, (JavaType) => JavaType argumentTypeToReturnType, JavaScope scope) {
+	private def JavaStatementBuilder buildListOperationNoBody(RosettaUnaryOperation op, String name, JavaType expectedArgumentType, (JavaType) => JavaType argumentTypeToReturnType, JavaStatementScope scope) {
 		val argCode = op.argument.javaCode(expectedArgumentType, scope)
 			.collapseToSingleExpression(scope)
 		argCode
@@ -530,7 +532,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 
-	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, boolean autoUnwrapMeta, JavaScope scope) {
+	private def JavaStatementBuilder buildSingleItemListOperationOptionalBody(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, boolean autoUnwrapMeta, JavaStatementScope scope) {
 		if (op.function === null) {
 			if (autoUnwrapMeta && expectedArgumentType.itemType instanceof RJavaFieldWithMeta) {
 				buildUnwrappingListOperation(op, name, expectedArgumentType, expectedArgumentType.itemType as RJavaFieldWithMeta, expectedBodyType, argumentAndBodyTypeToReturnType, scope)
@@ -542,7 +544,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 	}
 
-	private def JavaStatementBuilder buildSingleItemListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+	private def JavaStatementBuilder buildSingleItemListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaStatementScope scope) {
 		val argCode = op.argument.javaCode(expectedArgumentType, scope)
 			.collapseToSingleExpression(scope)
 		val inlineFunctionCodeAndBodyType = op.function.inlineFunction(expectedBodyType, scope)
@@ -558,7 +560,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	
-	private def JavaStatementBuilder buildUnwrappingListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, RJavaWithMetaValue expectedItemType,  JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaScope scope) {
+	private def JavaStatementBuilder buildUnwrappingListOperation(RosettaFunctionalOperation op, String name, JavaType expectedArgumentType, RJavaWithMetaValue expectedItemType,  JavaType expectedBodyType, (JavaType, JavaType) => JavaType argumentAndBodyTypeToReturnType, JavaStatementScope scope) {
 		val argCode = op.argument.javaCode(expectedArgumentType, scope)
 			.collapseToSingleExpression(scope)
 		val lambdaPara = new JavaVariable(scope.createUniqueIdentifier("lambdaParam"), MAPPER_S.wrap(expectedItemType))
@@ -713,7 +715,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		binaryExpr(expr, context)
 	}
 	
-	def JavaStatementBuilder exists(JavaStatementBuilder arg, ExistsModifier modifier, JavaScope scope) {
+	def JavaStatementBuilder exists(JavaStatementBuilder arg, ExistsModifier modifier, JavaStatementScope scope) {
 		val methodName = if (modifier === ExistsModifier.SINGLE)
 				'singleExists'
 			else if (modifier === ExistsModifier.MULTIPLE)
@@ -1163,7 +1165,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 					val assignAsKey = attrExpr instanceof AsKeyOperation
 					val requiresValueAssignment = requiresValueAssignment(assignAsKey, attr, attrExpr)
 					
-					val setterName = requiresValueAssignment ? prop.valueSetterName : prop.setterName
+					val setterName = prop.getOperationName(requiresValueAssignment ? SET_VALUE : SET)
 					
 					evaluateConstructorValue(attr, attrExpr, cardinalityProvider.isFeatureMulti(attr), assignAsKey, context.scope)
 						.collapseToSingleExpression(context.scope)
@@ -1203,7 +1205,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	
-	private def JavaStatementBuilder evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaScope scope) {
+	private def JavaStatementBuilder evaluateConstructorValue(RosettaFeature feature, RosettaExpression value, boolean isMulti, boolean assignAsKey, JavaStatementScope scope) {
 		if (assignAsKey) {
 			val metaClass = (feature as Attribute).buildRAttribute.toMetaJavaType.itemType
 			if (isMulti) {
@@ -1365,7 +1367,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)	
 		val withMetaJavaType = deriveJavaTypeWithDefault(withMetaRMetaType, context.expectedType)
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
-		val argumentJavaType = deriveJavaTypeWithDefault(argumentrMetaType, withMetaJavaType instanceof RJavaWithMetaValue ? withMetaJavaType.valueType : withMetaJavaType)		
+		val argumentJavaType = deriveJavaTypeWithDefault(argumentrMetaType, withMetaJavaType instanceof RJavaWithMetaValue ? withMetaJavaType.valueType : withMetaJavaType)
 		
 		val metaEntries = expr.entries.map [ entry |
 			{
@@ -1376,7 +1378,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		].toList
 
 		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
-				.mapExpression[JavaExpression.from('''«it»«IF it.needsBuilder».toBuilder()«ENDIF»''', it.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
+				.mapExpression[JavaExpression.from('''«it»«IF it.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.toBuilder)]
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
@@ -1453,16 +1455,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 		return withMetaRMetaType.toJavaReferenceType
 	}
-	
+
 	private def String toPojoSetter(String metaEntryName) {
 		metaEntryName.toPojoPropertyName.toFirstUpper
 	}
-	
-	private def boolean needsBuilder(JavaType javaType) {
-		javaType instanceof JavaPojoInterface
-	}
-	
+
 	private def boolean needsBuilder(JavaExpression expr) {
-		expr != JavaLiteral.NULL && expr.expressionType.needsBuilder
+		expr != JavaLiteral.NULL && expr.expressionType.hasBuilderType
 	}
 }
