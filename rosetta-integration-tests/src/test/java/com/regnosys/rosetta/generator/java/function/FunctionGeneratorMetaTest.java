@@ -210,7 +210,7 @@ public class FunctionGeneratorMetaTest {
         var code = generatorTestHelper.generateCode(model);
         
         var classes = generatorTestHelper.compileToClasses(code);        
-                
+        
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
