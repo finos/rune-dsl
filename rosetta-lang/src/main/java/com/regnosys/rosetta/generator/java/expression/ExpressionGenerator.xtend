@@ -1363,9 +1363,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
  		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)	
-		val withMetaJavaType = deriveWithMetaJavaType(withMetaRMetaType, context)
+		val withMetaJavaType = deriveJavaTypeWithDefault(withMetaRMetaType, context.expectedType)
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
-		val argumentJavaType = argumentrMetaType.toJavaReferenceType
+		val argumentJavaType = deriveJavaTypeWithDefault(argumentrMetaType, withMetaJavaType instanceof RJavaWithMetaValue ? withMetaJavaType.valueType : withMetaJavaType)		
 		
 		val metaEntries = expr.entries.map [ entry |
 			{
@@ -1376,7 +1376,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		].toList
 
 		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
-				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
+				.mapExpression[JavaExpression.from('''«it»«IF it.needsBuilder».toBuilder()«ENDIF»''', it.needsBuilder ? argumentJavaType.toBuilderType : argumentJavaType.itemType)]
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
@@ -1447,11 +1447,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			withMetaJavaType)
 	}
 	
-	private def JavaClass<?> deriveWithMetaJavaType(RMetaAnnotatedType withMetaRMetaType, Context context) {
-		if (withMetaRMetaType.RType === biultinTypeService.NOTHING && context.expectedType instanceof JavaClass) {
-			return context.expectedType	as JavaClass<?>
+	private def JavaClass<?> deriveJavaTypeWithDefault(RMetaAnnotatedType withMetaRMetaType, JavaType defaultType) {
+		if (withMetaRMetaType.RType == biultinTypeService.NOTHING && defaultType instanceof JavaClass) {
+			return defaultType as JavaClass<?>
 		}
-		
 		return withMetaRMetaType.toJavaReferenceType
 	}
 	
@@ -1459,7 +1458,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		metaEntryName.toPojoPropertyName.toFirstUpper
 	}
 	
-	private def boolean needsBuilder(JavaClass<?> javaClass) {
-		javaClass instanceof JavaPojoInterface
+	private def boolean needsBuilder(JavaType javaType) {
+		javaType instanceof JavaPojoInterface
+	}
+	
+	private def boolean needsBuilder(JavaExpression expr) {
+		expr != JavaLiteral.NULL && expr.expressionType.needsBuilder
 	}
 }
