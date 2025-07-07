@@ -8,7 +8,6 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -96,10 +95,8 @@ public class FunctionGeneratorMetaTest {
         assertEquals(expected, result);   
     }
 
-    //TODO: enable this test when fixing the empty with-meta issue
-    @Disabled
     @Test
-    void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
+    void canCreateMetaTypeUsingConstructorAndEmptyWithMeta() {
         var model = """
             metaType key string
             metaType reference string
@@ -126,6 +123,8 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
+        
+        generatorTestHelper.writeClasses(code, "canCreateMetaTypeUsingConstructorAndEmptyWithMeta");
         
         var classes = generatorTestHelper.compileToClasses(code);        
                 

@@ -148,6 +148,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
 import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -171,6 +172,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension RObjectFactory
+	@Inject RBuiltinTypeService biultinTypeService
 
 	/**
 	 * convert a rosetta expression to code
@@ -1361,7 +1363,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
  		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)	
-		val withMetaJavaType =  withMetaRMetaType.toJavaReferenceType
+		val withMetaJavaType = deriveWithMetaJavaType(withMetaRMetaType, context)
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
 		val argumentJavaType = argumentrMetaType.toJavaReferenceType
 		
@@ -1443,6 +1445,14 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 		throw new IllegalStateException("caseWithMetaOperation with Java meta or Java POJO expected types: " +
 			withMetaJavaType)
+	}
+	
+	private def JavaClass<?> deriveWithMetaJavaType(RMetaAnnotatedType withMetaRMetaType, Context context) {
+		if (withMetaRMetaType.RType === biultinTypeService.NOTHING && context.expectedType instanceof JavaClass) {
+			return context.expectedType	as JavaClass<?>
+		}
+		
+		return withMetaRMetaType.toJavaReferenceType
 	}
 	
 	private def String toPojoSetter(String metaEntryName) {
