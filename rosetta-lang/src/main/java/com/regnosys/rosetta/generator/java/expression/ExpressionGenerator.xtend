@@ -174,7 +174,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension RObjectFactory
-	@Inject RBuiltinTypeService biultinTypeService
+	@Inject RBuiltinTypeService builtinTypeService
 
 	/**
 	 * convert a rosetta expression to code
@@ -1450,7 +1450,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	private def JavaClass<?> deriveJavaTypeWithDefault(RMetaAnnotatedType withMetaRMetaType, JavaType defaultType) {
-		if (withMetaRMetaType.RType == biultinTypeService.NOTHING && defaultType instanceof JavaClass) {
+		if (withMetaRMetaType.RType == builtinTypeService.NOTHING && defaultType instanceof JavaClass) {
 			return defaultType as JavaClass<?>
 		}
 		return withMetaRMetaType.toJavaReferenceType
