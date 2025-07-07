@@ -121,7 +121,7 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaBar", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes,  DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaBar", Map.of(
                 "meta", MetaFields.builder().setScheme("someScheme").build()
                 
             ));
