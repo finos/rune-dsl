@@ -1,26 +1,16 @@
-package com.regnosys.rosetta.generator.java.object
+package com.regnosys.rosetta.generator.java.object.validators
 
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.expression.ExpressionOperators
 import com.rosetta.model.lib.path.RosettaPath
-import com.rosetta.model.lib.validation.ExistenceChecker
 import com.rosetta.model.lib.validation.ValidationResult
-import com.rosetta.model.lib.validation.ValidationResult.ValidationType
-import com.rosetta.model.lib.validation.Validator
-import com.rosetta.model.lib.validation.ValidatorWithArg
-import java.util.Map
-import java.util.Set
 import java.util.stream.Collectors
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.generator.IFileSystemAccess2
 
-import com.regnosys.rosetta.generator.java.JavaScope
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.TypeSystem
@@ -35,11 +25,9 @@ import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.List
 import com.regnosys.rosetta.types.RAttribute
-import com.regnosys.rosetta.types.RCardinality
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.types.AliasHierarchy
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.google.common.collect.Streams
@@ -57,8 +45,12 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 
-class ValidatorsGenerator {
+class TypeFormatValidatorGenerator extends AbstractValidatorGenerator {
 
 	@Inject extension ImportManagerExtension
 	@Inject extension JavaTypeTranslator
@@ -68,77 +60,25 @@ class ValidatorsGenerator {
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject extension InterpreterValueJavaConverter
 	@Inject extension TypeCoercionService
-
-	def generate(RootPackage root, IFileSystemAccess2 fsa, RDataType type, String version) {
-		val javaType = type.toJavaReferenceType
-		val attrs = type.allAttributes
-		fsa.generateFile(javaType.toValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateClass(root, javaType, attrs, version))
-		fsa.generateFile(javaType.toTypeFormatValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateTypeFormatValidator(root, javaType, attrs, version))
-		fsa.generateFile(javaType.toOnlyExistsValidatorClass.canonicalName.withForwardSlashes + ".java",
-			generateOnlyExistsValidator(root, javaType, attrs, version))
-	}
-
-	private def generateClass(RootPackage root, JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
-		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, javaType.classBody(version, attributes), scope)
+	
+	override protected createValidatorClass(JavaPojoInterface pojo) {
+		pojo.toTypeFormatValidatorClass
 	}
 	
-	private def generateTypeFormatValidator(RootPackage root, JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
-		val scope = new JavaScope(root.typeValidation)
-		buildClass(root.typeValidation, javaType.typeFormatClassBody(version, attributes), scope)
-	}
-
-	private def generateOnlyExistsValidator(RootPackage root, JavaPojoInterface javaType, Iterable<RAttribute> attributes, String version) {
-		val scope = new JavaScope(root.existsValidation)
-		buildClass(root.existsValidation, javaType.onlyExistsClassBody(version, attributes), scope)
-	}
-
-	def private StringConcatenationClient classBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) '''
-		public class «javaType.toValidatorClass» implements «Validator»<«javaType»> {
-		
-			private «List»<«ComparisonResult»> getComparisonResults(«javaType» o) {
-				return «Lists».<«ComparisonResult»>newArrayList(
-						«FOR attrCheck : attributes.map[checkCardinality(javaType, it)].filter[it !== null] SEPARATOR ", "»
-							«attrCheck»
-						«ENDFOR»
-					);
-			}
-
-			@Override
-			public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» path, «javaType» o) {
-				return getComparisonResults(o)
-					.stream()
-					.map(res -> {
-						if (!«method(Strings, "isNullOrEmpty")»(res.getError())) {
-							return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationResult.ValidationType».CARDINALITY, "«javaType.rosettaName»", path, "", res.getError());
-						}
-						return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationResult.ValidationType».CARDINALITY, "«javaType.rosettaName»", path, "");
-					})
-					.collect(«method(Collectors, "toList")»());
-			}
-		
-		}
-	'''
-	
-	def private StringConcatenationClient typeFormatClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
-		val validatorClass = javaType.toTypeFormatValidatorClass
-		val packageScope = new JavaScope(validatorClass.packageName)
-		val classScope = packageScope.classScope(validatorClass.simpleName)
-		
+	override protected generate(RDataType type, RGeneratedJavaClass<?> validatorClass, JavaPojoInterface javaType, String version, JavaClassScope classScope) {
+		val attributes = type.allAttributes		
 		val pathId = classScope.createUniqueIdentifier("path")
 		
 		val aliasHierarchyPerAttribute = attributes.map[it->RMetaAnnotatedType.RType.computeAliasHierarchy].toMap([key], [value])
 		val conditionDependencies = aliasHierarchyPerAttribute.values.flatMap[aliases].flatMap[conditions].map[toConditionJavaClass].toSet
 		
-		val runConditionsScope = classScope.methodScope("runConditions")
+		val runConditionsScope = classScope.createMethodScope("runConditions")
 		val instanceId = runConditionsScope.createUniqueIdentifier("o")
 		val instanceVar = new JavaVariable(instanceId, javaType)
 		val resultsId = runConditionsScope.createUniqueIdentifier("results")
 			
 		'''
-		public class «validatorClass» implements «Validator»<«javaType»> {
+		public «validatorClass.asClassDeclaration» {
 			«FOR dep : conditionDependencies»
 				@«javax.inject.Inject»
 				protected «dep» «classScope.createIdentifier(dep.toDependencyInstance, dep.simpleName.toFirstLower)»;
@@ -155,7 +95,7 @@ class ValidatorsGenerator {
 			
 			private «List»<«ValidationResult»<?>> runConditions(«RosettaPath» «pathId», «javaType» «instanceId») {
 				«List»<«ValidationResult»<?>> «resultsId» = new «ArrayList»();
-				«FOR condCheck : attributes.map[checkTypeConditions(javaType, it, aliasHierarchyPerAttribute.get(it), pathId, instanceVar, resultsId, classScope)]»
+				«FOR condCheck : attributes.map[checkTypeConditions(javaType, it, aliasHierarchyPerAttribute.get(it), pathId, instanceVar, resultsId, runConditionsScope.bodyScope)]»
 				«condCheck.asStatementList»
 				«ENDFOR»
 				return «resultsId»;
@@ -193,55 +133,6 @@ class ValidatorsGenerator {
 		'''
 	}
 
-	def private StringConcatenationClient onlyExistsClassBody(JavaPojoInterface javaType, String version, Iterable<RAttribute> attributes) {
-		
-		'''
-		public class «javaType.toOnlyExistsValidatorClass» implements «ValidatorWithArg»<«javaType», «Set»<String>> {
-
-			/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
-			@Override
-			public <T2 extends «javaType»> «ValidationResult»<«javaType»> validate(«RosettaPath» path, T2 o, «Set»<String> fields) {
-				«Map»<String, Boolean> fieldExistenceMap = «ImmutableMap».<String, Boolean>builder()
-						«FOR attr : attributes»
-							«val prop = javaType.findProperty(attr.name)»
-							«val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType))»
-							.put("«prop.name»", «ExistenceChecker».isSet((«prop.type») «propCode»))
-						«ENDFOR»
-						.build();
-				
-				// Find the fields that are set
-				«Set»<String> setFields = fieldExistenceMap.entrySet().stream()
-						.filter(Map.Entry::getValue)
-						.map(Map.Entry::getKey)
-						.collect(«Collectors».toSet());
-				
-				if (setFields.equals(fields)) {
-					return «method(ValidationResult, "success")»("«javaType.rosettaName»", «ValidationType».ONLY_EXISTS, "«javaType.rosettaName»", path, "");
-				}
-				return «method(ValidationResult, "failure")»("«javaType.rosettaName»", «ValidationType».ONLY_EXISTS, "«javaType.rosettaName»", path, "",
-						String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
-			}
-		}
-		'''
-	}
-
-	private def StringConcatenationClient checkCardinality(JavaPojoInterface javaType, RAttribute attr) {
-		if (attr.cardinality == RCardinality.UNBOUNDED) {
-			null
-		} else {
-			val prop = javaType.findProperty(attr.name)
-			val propCode = prop.applyGetter(JavaExpression.from('''o''', javaType));
-	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
-			'''
-			«IF attr.isMulti»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («prop.type») «propCode» == null ? 0 : «propCode».size(), «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
-			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («prop.type») «propCode» != null ? 1 : 0, «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
-			«ENDIF»
-			'''
-		}
-	}
-		
 	private def List<StringConcatenationClient> checkTypeFormat(JavaPojoInterface javaType, RAttribute attr) {
 		val List<StringConcatenationClient> checks = newArrayList
 		
@@ -268,7 +159,7 @@ class ValidatorsGenerator {
 		return checks
 	}
 	
-	private def JavaStatement checkTypeConditions(JavaPojoInterface javaType, RAttribute attr, AliasHierarchy hierarchy, GeneratedIdentifier pathId, JavaVariable instanceVar, GeneratedIdentifier resultsId, JavaScope scope) {
+	private def JavaStatement checkTypeConditions(JavaPojoInterface javaType, RAttribute attr, AliasHierarchy hierarchy, GeneratedIdentifier pathId, JavaVariable instanceVar, GeneratedIdentifier resultsId, JavaStatementScope scope) {
 		if (!attr.isMulti) {
 			var conditionCalls = JavaBlock.EMPTY
 			for (alias : hierarchy.aliases) {
@@ -325,7 +216,7 @@ class ValidatorsGenerator {
 			return JavaBlock.EMPTY
 		}
 	}
-	private def JavaStatement addConditionValidationResultsCode(GeneratedIdentifier resultsId, StringConcatenationClient pathCode, JavaExpression attributeItemCode, RAliasType alias, JavaConditionInterface conditionClass, JavaScope scope) {
+	private def JavaStatement addConditionValidationResultsCode(GeneratedIdentifier resultsId, StringConcatenationClient pathCode, JavaExpression attributeItemCode, RAliasType alias, JavaConditionInterface conditionClass, JavaStatementScope scope) {
 		val conditionVar = scope.getIdentifierOrThrow(conditionClass.toDependencyInstance)
 		val arguments = newArrayList
 					
@@ -382,4 +273,5 @@ class ValidatorsGenerator {
 			'''«method(Optional, "empty")»()'''
 		}
 	}
+	
 }

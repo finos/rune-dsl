@@ -1,0 +1,4 @@
+namespace test.escaping.getclass
+
+type GetClassEscaping:
+	class int (1..1)

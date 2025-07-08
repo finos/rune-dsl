@@ -8,12 +8,10 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.Lists;
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
@@ -21,6 +19,7 @@ import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.model.metafields.MetaFields;
+import com.rosetta.util.DottedPath;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
@@ -52,7 +51,7 @@ public class FunctionGeneratorMetaTest {
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
         
-        var input = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
                 "meta", MetaFields.builder().setScopedKey("someLocationValue")
         ));
@@ -88,18 +87,52 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, "someValue", "someLocationValue");
                 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
                 "meta", MetaFields.builder().setScopedKey("someLocationValue")
         ));
 
         assertEquals(expected, result);   
     }
-
-    //TODO: enable this test when fixing the empty with-meta issue
-    @Disabled
+    
     @Test
-    void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
+    void canCreateMetaTypeUsingConstructorAndEmptyFieldWithMeta() {
+        var model = """
+            type Bar:
+                barField string (1..1)
+                 
+            
+            func MyFunc:
+                output:
+                    result Bar (0..1)
+                     [metadata scheme]
+                 
+                set result:
+                        empty with-meta {
+                            scheme: "someScheme"
+                        }
+            """;  
+
+        var code = generatorTestHelper.generateCode(model);
+                        
+        var classes = generatorTestHelper.compileToClasses(code);        
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes,  DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaBar", Map.of(
+                "meta", MetaFields.builder().setScheme("someScheme").build()
+                
+            ));
+
+
+        assertEquals(expected, result);
+    } 
+    
+
+    @Test
+    void canCreateMetaTypeUsingConstructorAndEmptyReferenceWithMeta() {
         var model = """
             metaType key string
             metaType reference string
@@ -126,15 +159,15 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
-        
+                
         var classes = generatorTestHelper.compileToClasses(code);        
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
-                "fooReference", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
+                "fooReference", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
                         "externalReference", "someRef"
         ))));
 
@@ -182,8 +215,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
-                "fooReference", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
+                "fooReference", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
                         "externalReference", "someRef"
         ))));
 
@@ -218,8 +251,8 @@ public class FunctionGeneratorMetaTest {
         
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
         
-        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
-                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
                         "fooField", "someValue"
                     )),             
                 "externalReference", "someReference"
@@ -261,7 +294,7 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", Map.of(
 				"value", generatorTestHelper.createEnumInstance(classes, "MyEnum", "B"),
 				"meta", MetaFields.builder().setScheme("someScheme").build()
 			));
@@ -298,8 +331,8 @@ public class FunctionGeneratorMetaTest {
         
         var classes = generatorTestHelper.compileToClasses(code);        
 
-        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someOtherKey").build()
             		)),
@@ -310,8 +343,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, myInput);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someKey").build()
             		)),
@@ -352,8 +385,8 @@ public class FunctionGeneratorMetaTest {
         
         var classes = generatorTestHelper.compileToClasses(code);        
 
-        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someOtherKey").build()
             		)),
@@ -364,8 +397,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, myInput);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someKey").build()
             		)),
@@ -402,7 +435,7 @@ public class FunctionGeneratorMetaTest {
                 
         var classes = generatorTestHelper.compileToClasses(code);        
 
-        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
     			"someField", "someValue",
     			"meta", MetaFields.builder().setExternalKey("someKey").build()
     		));
@@ -411,8 +444,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, myInput);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someKey").build()
             		)),
@@ -451,8 +484,8 @@ public class FunctionGeneratorMetaTest {
                 
         var classes = generatorTestHelper.compileToClasses(code);        
 
-        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var myInput = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someKey").build()
             		)),
@@ -463,8 +496,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, myInput);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someKey").build()
             		)),
@@ -509,8 +542,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
-                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue"
             		)),        		
         		"reference", Reference.builder().setReference("someAddress"),
@@ -552,8 +585,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
-                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue"
             		)),        		
         		"reference", Reference.builder().setReference("someAddress")
@@ -594,8 +627,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
-                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value",  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue"
             		)),
         		"externalReference", "someReference"
@@ -638,8 +671,8 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"someField", "someValue",
             			"meta", MetaFields.builder().setExternalKey("someKey").build()
             		)),
@@ -681,7 +714,7 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
         
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
         			"someField", "someValue",
         			"meta", MetaFields.builder().setExternalKey("someKey").build()
 		 ));
@@ -714,7 +747,7 @@ public class FunctionGeneratorMetaTest {
         
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
         			"value", "someValue",
         			"meta", MetaFields.builder().setScheme("someScheme").setExternalKey("someId").build()
         			
@@ -753,8 +786,8 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
-				"myEnumField", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaMyEnum", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+				"myEnumField", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaMyEnum", Map.of(
 						"value", generatorTestHelper.createEnumInstance(classes, "MyEnum", "B")
 					))
 
@@ -791,8 +824,8 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
-				"myEnumField", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+				"myEnumField", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaMyEnum", Map.of(
 						"value", generatorTestHelper.createEnumInstance(classes, "MyEnum", "B")
 					))
 
@@ -830,7 +863,7 @@ public class FunctionGeneratorMetaTest {
 
         var classes = generatorTestHelper.compileToClasses(code);
 
-        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
 					"barField", "barFieldValue",
 					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
        		 ));
@@ -839,9 +872,9 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
 
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
-				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
-							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
 									"barField", "barFieldValue",
 									"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
 				       		 ))
@@ -880,7 +913,7 @@ public class FunctionGeneratorMetaTest {
 
         var classes = generatorTestHelper.compileToClasses(code);
 
-        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+        var bar = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
 					"barField", "barFieldValue",
 					"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
        		 ));
@@ -889,9 +922,9 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, bar);
 
-        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
-				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
-							"value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Bar", Map.of(
+        var expected =  generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+				"barReferences", Lists.newArrayList(generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaBar", Map.of(
+							"value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
 									"barField", "barFieldValue",
 									"meta", MetaFields.builder().setExternalKey("someExternalKey").build()
 				       		 ))
@@ -931,7 +964,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme"));
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
                 "fooField", generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme")
         ));
 
@@ -963,7 +996,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme"));
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
                 "fooField", generatorTestHelper.createFieldWithMetaString(classes, "someValue", "someScheme")
         ));
 
@@ -992,7 +1025,7 @@ public class FunctionGeneratorMetaTest {
 
        var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, null, null);
        
-       var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of());
+       var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of());
        
        assertEquals(expected, result);    	
     }
@@ -1020,8 +1053,8 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
             			"field", "someValue"
             		)),
                 "meta", MetaFields.builder().setScopedKey("someAddress")
@@ -1050,7 +1083,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
                 "meta", MetaFields.builder().setScopedKey("someAddress")
         ));
@@ -1082,8 +1115,8 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class);
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
                 			"field", "someValue"
                 		)),
                 "reference", Reference.builder().setReference("someLocation")
@@ -1114,7 +1147,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, ReferenceWithMeta.class);
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "ReferenceWithMetaString", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "ReferenceWithMetaString", Map.of(
                 "value", "someValue",
                 "reference", Reference.builder().setReference("someLocation")
         ));
@@ -1146,7 +1179,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, FieldWithMeta.class, "someValue", "someExternalKey");
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                 "value", "someValue",
                 "meta", MetaFields.builder().setExternalKey("someExternalKey")
         ));
@@ -1181,7 +1214,7 @@ public class FunctionGeneratorMetaTest {
       
       var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, "someExternalReference");
       
-      var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model"), "Foo", Map.of(
+      var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
     			"a", "someA",
     			"meta", MetaFields.builder().setExternalKey("someExternalReference")
     		));
@@ -1216,7 +1249,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, ReferenceWithMeta.class, "someExternalReference");
         
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaFoo", Map.of(
                 "externalReference", "someExternalReference"
         ));
 
@@ -1248,10 +1281,10 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
                 "value", generatorTestHelper.createInstanceUsingBuilder(classes, "Foo", Map.of(
                         "a", "someValueA",
-                        "b", generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
+                        "b", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.model.metafields"), "FieldWithMetaString", Map.of(
                                 "value", "someValueB",
                                 "meta", MetaFields.builder().setScheme("innerScheme")
                         ))
@@ -1284,7 +1317,7 @@ public class FunctionGeneratorMetaTest {
 
         var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, new RosettaJavaPackages.RootPackage("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
                 "value", generatorTestHelper.createInstanceUsingBuilder(classes, "Foo", Map.of(
                         "a", "someValueA",
                         "b", "someValueB"

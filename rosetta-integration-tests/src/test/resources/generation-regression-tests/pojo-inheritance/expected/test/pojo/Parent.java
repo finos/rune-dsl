@@ -10,10 +10,6 @@ import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
-import test.pojo.Parent;
-import test.pojo.Parent.ParentBuilder;
-import test.pojo.Parent.ParentBuilderImpl;
-import test.pojo.Parent.ParentImpl;
 import test.pojo.meta.ParentMeta;
 
 

@@ -118,12 +118,7 @@ public class XsdUtil {
     }
 
     public String toAttributeName(String xsdName, ImportTargetConfig config) {
-        String name = config.getPreferences().getAttributeCasing().transform(xsdName);
-        // TODO
-        if (name.equals("type")) {
-        	return "_type";
-        }
-        return name;
+        return config.getPreferences().getAttributeCasing().transform(xsdName);
     }
     
     public String toEnumValueName(String xsdName, ImportTargetConfig config) {
