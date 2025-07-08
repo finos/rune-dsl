@@ -145,9 +145,12 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
+import com.regnosys.rosetta.RosettaEcoreUtil
+import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
+import com.rosetta.util.types.JavaClass
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -171,6 +174,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	@Inject TypeCoercionService typeCoercionService
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension RObjectFactory
+	@Inject RBuiltinTypeService builtinTypeService
 
 	/**
 	 * convert a rosetta expression to code
@@ -318,7 +322,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, cardinalityProvider.isFeatureMulti(feature), scope)
 	}
 	
-	def JavaStatementBuilder attributeCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RAttribute attr, boolean isDeepFeature, JavaType expectedType, JavaStatementScope scope) {		
+	def JavaStatementBuilder attributeCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RAttribute attr, boolean isDeepFeature, JavaType expectedType, JavaStatementScope scope) {
 		val receiverRType = receiverType.RType
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
@@ -1361,9 +1365,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
  		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)	
-		val withMetaJavaType =  withMetaRMetaType.toJavaReferenceType
+		val withMetaJavaType = deriveJavaTypeWithDefault(withMetaRMetaType, context.expectedType)
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
-		val argumentJavaType = argumentrMetaType.toJavaReferenceType
+		val argumentJavaType = deriveJavaTypeWithDefault(argumentrMetaType, withMetaJavaType instanceof RJavaWithMetaValue ? withMetaJavaType.valueType : withMetaJavaType)
 		
 		val metaEntries = expr.entries.map [ entry |
 			{
@@ -1374,7 +1378,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		].toList
 
 		val argumentExpression = expr.argument.javaCode(argumentJavaType, context.scope)
-				.mapExpression[JavaExpression.from('''«it»«IF argumentJavaType.hasBuilderType».toBuilder()«ENDIF»''', argumentJavaType.toBuilder)]
+				.mapExpression[JavaExpression.from('''«it»«IF it.needsBuilder».toBuilder()«ENDIF»''', argumentJavaType.toBuilder)]
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
@@ -1445,7 +1449,18 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			withMetaJavaType)
 	}
 	
+	private def JavaClass<?> deriveJavaTypeWithDefault(RMetaAnnotatedType withMetaRMetaType, JavaType defaultType) {
+		if (withMetaRMetaType.RType == builtinTypeService.NOTHING && defaultType instanceof JavaClass) {
+			return defaultType as JavaClass<?>
+		}
+		return withMetaRMetaType.toJavaReferenceType
+	}
+
 	private def String toPojoSetter(String metaEntryName) {
 		metaEntryName.toPojoPropertyName.toFirstUpper
+	}
+
+	private def boolean needsBuilder(JavaExpression expr) {
+		expr != JavaLiteral.NULL && expr.expressionType.hasBuilderType
 	}
 }

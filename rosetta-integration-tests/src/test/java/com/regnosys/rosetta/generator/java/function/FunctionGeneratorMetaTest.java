@@ -8,7 +8,6 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -95,11 +94,45 @@ public class FunctionGeneratorMetaTest {
 
         assertEquals(expected, result);   
     }
-
-    //TODO: enable this test when fixing the empty with-meta issue
-    @Disabled
+    
     @Test
-    void canCreateMetaTypeUsingConstructorAndWithMetaSyntaxWithIfStatement() {
+    void canCreateMetaTypeUsingConstructorAndEmptyFieldWithMeta() {
+        var model = """
+            type Bar:
+                barField string (1..1)
+                 
+            
+            func MyFunc:
+                output:
+                    result Bar (0..1)
+                     [metadata scheme]
+                 
+                set result:
+                        empty with-meta {
+                            scheme: "someScheme"
+                        }
+            """;  
+
+        var code = generatorTestHelper.generateCode(model);
+                        
+        var classes = generatorTestHelper.compileToClasses(code);        
+                
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes,  DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaBar", Map.of(
+                "meta", MetaFields.builder().setScheme("someScheme").build()
+                
+            ));
+
+
+        assertEquals(expected, result);
+    } 
+    
+
+    @Test
+    void canCreateMetaTypeUsingConstructorAndEmptyReferenceWithMeta() {
         var model = """
             metaType key string
             metaType reference string
@@ -126,7 +159,7 @@ public class FunctionGeneratorMetaTest {
             """;  
 
         var code = generatorTestHelper.generateCode(model);
-        
+                
         var classes = generatorTestHelper.compileToClasses(code);        
                 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
