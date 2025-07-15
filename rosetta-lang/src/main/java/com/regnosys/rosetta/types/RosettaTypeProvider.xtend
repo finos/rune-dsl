@@ -629,18 +629,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
- 		return expr.expectedTypeFromContainer
-// 		val metaFeatures = expr.entries.map[key].map[name]
-// 		
-// 		val rMetaAttributes = configs.findMetaTypes(expr)
-//				.map[EObjectOrProxy]
-//				.map[it as RosettaMetaType]
-//				.filter[metaFeatures.contains(it.name)]
-//				.map[buildRMetaAttribute]
-//				.toList
-//				
-//		val argumentType = expr.argument.safeRType(cycleTracker)		
-// 		argumentType.addMeta(rMetaAttributes)
+ 		expr.expectedTypeFromContainer
  	}
 
 }
