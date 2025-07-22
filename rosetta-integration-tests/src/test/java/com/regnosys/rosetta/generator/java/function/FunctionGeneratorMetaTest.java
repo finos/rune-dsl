@@ -31,6 +31,41 @@ public class FunctionGeneratorMetaTest {
     CodeGeneratorTestHelper generatorTestHelper;
     
     @Test
+    void canSetMetaOnEmptyPassedArgumentUsingWithMeta() {
+        var model = """
+            type Foo:
+            
+            func MyFunc:
+                inputs:
+                     inputFoo Foo (0..1)
+                     keyValue string (0..1)
+                 output:
+                     fooWithLocation Foo (0..1)
+                         [metadata location]
+            
+                 set fooWithLocation:
+                     inputFoo
+                         with-meta {
+                             location: keyValue
+                         }
+            """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, null, "someLocation");
+        
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes,  DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "meta", MetaFields.builder().setScopedKey("someLocation").build() 
+            ));
+        
+        assertEquals(expected, result);   
+    }
+    
+    @Test
     void canAccessMetaLocationCorrectly() {
         var model = """
                 metaType location string
