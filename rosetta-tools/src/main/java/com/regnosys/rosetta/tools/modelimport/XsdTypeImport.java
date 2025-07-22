@@ -260,6 +260,16 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         	Attribute attr = xsdMapping.getAttribute(elem);
 			if (elem.getTypeAsXsd() != null) {
 				attr.setTypeCall(xsdMapping.getRosettaTypeCall(elem.getTypeAsXsd()));
+			} else if (elem.getXsdComplexType() != null) {
+				// inline
+				XsdComplexType type = elem.getXsdComplexType();
+				if (type.getChildAsGroup() != null) {
+					attr.setTypeCall(xsdMapping.getRosettaTypeCall(type.getChildAsGroup()));
+				} else if (type.getChildAsSequence() != null) {
+					attr.setTypeCall(xsdMapping.getRosettaTypeCall(elem.getXsdComplexType()));
+				} else if (type.getChildAsAll() != null) {
+					attr.setTypeCall(xsdMapping.getRosettaTypeCall(elem.getXsdComplexType()));
+				}
 			} else {
 				// TODO
 				attr.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));

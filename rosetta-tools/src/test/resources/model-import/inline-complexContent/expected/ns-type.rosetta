@@ -1,0 +1,18 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+type Foo extends FooBase: <"Docs.">
+
+    attr1 Attr1 (1..1) <"Doc attr1.">
+
+type Attr1:
+
+    fooAttr Bar (1..*)
+
+type FooBase:
+
+    attr3 string (1..*)
+
+type Bar:
+
+    attr2 string (1..*)
