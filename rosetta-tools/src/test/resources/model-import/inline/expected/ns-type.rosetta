@@ -1,0 +1,6 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+type Foo:
+
+    fooAttr string (1..1)

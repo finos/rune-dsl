@@ -1,0 +1,11 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+type Foo:
+
+    attr1 FooGroup (1..1)
+
+type FooGroup:
+
+    bar string (1..1)
+    baz int (1..1)
