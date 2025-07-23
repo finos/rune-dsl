@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.finos.rune</groupId>
+        <groupId>com.regnosys.rosetta</groupId>
         <artifactId>rosetta-backport-parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
     
-    <groupId>org.finos.rune</groupId>
-    <artifactId>rosetta-ide</artifactId>
+    <artifactId>com.regnosys.rosetta.ide</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
 
     <properties>
@@ -19,5 +18,13 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>rune-ide</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
     
 </project>

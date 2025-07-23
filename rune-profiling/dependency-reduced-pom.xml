@@ -6,7 +6,7 @@
     <version>0.0.0.main-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>org.finos.rune.profiling</artifactId>
+  <artifactId>rune-profiling</artifactId>
   <name>Profiling tools for the Rune DSL.</name>
   <build>
     <plugins>

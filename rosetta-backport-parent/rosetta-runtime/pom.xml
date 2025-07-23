@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.finos.rune</groupId>
+        <groupId>com.regnosys.rosetta</groupId>
         <artifactId>rosetta-backport-parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
     
-    <groupId>com.regnosys.rosetta</groupId>
     <artifactId>com.regnosys.rosetta.lib</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
 

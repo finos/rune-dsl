@@ -8,7 +8,8 @@
         <artifactId>org.finos.rune.parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
-
+    
+    <groupId>com.regnosys.rosetta</groupId>
     <artifactId>rosetta-backport-parent</artifactId>
     <packaging>pom</packaging>
 
