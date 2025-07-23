@@ -20,13 +20,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.regnosys.rosetta</groupId>
-        <artifactId>com.regnosys.rosetta.parent</artifactId>
+        <groupId>org.finos.rune</groupId>
+        <artifactId>org.finos.rune.parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
-	<name>Rosetta DSL Plugin Dependencies</name>
-    <artifactId>com.regnosys.rosetta.xcore</artifactId>
+	<name>Rune DSL Plugin Dependencies</name>
+    <artifactId>org.finos.rune.xcore</artifactId>
 
     <description>
         Responsibilities: defining plugin dependencies for the xtext-maven-plugin and the Mwe2Launcher.

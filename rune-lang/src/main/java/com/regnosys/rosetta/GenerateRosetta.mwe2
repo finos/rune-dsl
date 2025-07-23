@@ -19,26 +19,26 @@ Workflow {
         }
 		configuration = {
 			project = StandardProjectConfig {
-				baseName = "rosetta"
+				baseName = "rune"
 				rootPath = parentDir
 				mavenLayout = true
 				createEclipseMetaData = false
 				runtime = {
 				    enabled = true
-				    name = "rosetta-lang"
-				    root = "${parentDir}/rosetta-lang"
-				    src = "${parentDir}/rosetta-lang/src/main/java"
-				    srcGen = "${parentDir}/rosetta-lang/src-gen/main/java"
+				    name = "rune-lang"
+				    root = "${parentDir}/rune-lang"
+				    src = "${parentDir}/rune-lang/src/main/java"
+				    srcGen = "${parentDir}/rune-lang/src-gen/main/java"
 				}
 				runtimeTest = {
 					enabled = false
 				}
 				genericIde = {
                     enabled = true
-                    name = "rosetta-ide"
-                    root = "${parentDir}/rosetta-ide"
-                    src = "${parentDir}/rosetta-ide/src/main/java"
-                    srcGen = "${parentDir}/rosetta-ide/src-gen/main/java"
+                    name = "rune-ide"
+                    root = "${parentDir}/rune-ide"
+                    src = "${parentDir}/rune-ide/src/main/java"
+                    srcGen = "${parentDir}/rune-ide/src-gen/main/java"
                 }
 				eclipsePlugin = {
 					enabled = false
@@ -91,12 +91,12 @@ Workflow {
 			fragment = ParserCompressorFragment {
 				// Enabled to produce shorter Java code and ease debugging at the expense of a little uglier (because more dense) code
 				joinLinesEagerly = true
-				grammarFile = "${parentDir}/rosetta-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
-				grammarFile = "${parentDir}/rosetta-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rune-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rune-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
 			}
 			fragment = ParserCaseExtractorFragment {
-				grammarFile = "${parentDir}/rosetta-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
-				grammarFile = "${parentDir}/rosetta-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rune-ide/src-gen/main/java/com/regnosys/rosetta/ide/contentassist/antlr/internal/InternalRosettaParser.java"
+				grammarFile = "${parentDir}/rune-lang/src-gen/main/java/com/regnosys/rosetta/parser/antlr/internal/InternalRosettaParser.java"
 			}
 		}
 	}

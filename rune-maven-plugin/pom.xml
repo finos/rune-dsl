@@ -20,14 +20,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.regnosys.rosetta</groupId>
-		<artifactId>com.regnosys.rosetta.parent</artifactId>
+		<groupId>org.finos.rune</groupId>
+		<artifactId>org.finos.rune.parent</artifactId>
 		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
-	<artifactId>rosetta-maven-plugin</artifactId>
+	<artifactId>rune-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 
-	<name>Rosetta DSL Maven Plugin</name>
+	<name>Rune DSL Maven Plugin</name>
 	<description>
 		Responsibilities: calling the Rosetta code generator from Maven.
 	</description>
@@ -38,8 +38,8 @@
 	<dependencies>
 		<!-- Inter-project dependencies -->
 		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta</artifactId>
+			<groupId>org.finos.rune</groupId>
+			<artifactId>org.finos.rune</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

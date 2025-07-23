@@ -20,13 +20,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.regnosys.rosetta</groupId>
-		<artifactId>com.regnosys.rosetta.parent</artifactId>
+		<groupId>org.finos.rune</groupId>
+		<artifactId>org.finos.rune.parent</artifactId>
 		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
 
-	<name>Rosetta DSL Scripts</name>
-	<artifactId>com.regnosys.rosetta.tools</artifactId>
+	<name>Rune DSL Scripts</name>
+	<artifactId>org.finos.rune.tools</artifactId>
 
 	<description>
 		Responsibilities: utility scripts.
@@ -55,18 +55,18 @@
 	<dependencies>
 		<!-- Inter-project dependencies -->
 		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta</artifactId>
+			<groupId>org.finos.rune</groupId>
+			<artifactId>org.finos.rune</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta.ide</artifactId>
+			<groupId>org.finos.rune</groupId>
+			<artifactId>org.finos.rune.ide</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.regnosys.rosetta</groupId>
-			<artifactId>com.regnosys.rosetta.tests</artifactId>
+			<groupId>org.finos.rune</groupId>
+			<artifactId>org.finos.rune.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -20,20 +20,20 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.regnosys.rosetta</groupId>
-        <artifactId>com.regnosys.rosetta.parent</artifactId>
+        <groupId>org.finos.rune</groupId>
+        <artifactId>org.finos.rune.parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
-    <name>Rosetta DSL SDK</name>
-    <artifactId>com.regnosys.rosetta</artifactId>
+    <name>Rune DSL SDK</name>
+    <artifactId>org.finos.rune</artifactId>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
     </properties>
     
     <description>
-        Responsibilities: defining the core of the Rosetta DSL, including
+        Responsibilities: defining the core of the Rune DSL, including
         - the AST
         - parsing
         - scoping and cross-reference resolution
@@ -45,8 +45,8 @@
     <dependencies>
         <!-- Inter-project dependencies -->
         <dependency>
-            <groupId>com.regnosys.rosetta</groupId>
-            <artifactId>com.regnosys.rosetta.lib</artifactId>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>rune-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -78,8 +78,8 @@
         <!-- This dependency is only necessary to make it work in Eclipse. TODO:
         remove this and figure out a better way. -->
         <dependency>
-            <groupId>com.regnosys.rosetta</groupId>
-            <artifactId>com.regnosys.rosetta.xcore</artifactId>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>org.finos.rune.xcore</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -174,8 +174,8 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>com.regnosys.rosetta</groupId>
-                        <artifactId>com.regnosys.rosetta.xcore</artifactId>
+                        <groupId>org.finos.rune</groupId>
+                        <artifactId>org.finos.rune.xcore</artifactId>
                         <version>${project.version}</version>
                         <exclusions>
 						     <exclusion>
@@ -235,8 +235,8 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>com.regnosys.rosetta</groupId>
-                        <artifactId>com.regnosys.rosetta.xcore</artifactId>
+                        <groupId>org.finos.rune</groupId>
+                        <artifactId>org.finos.rune.xcore</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
