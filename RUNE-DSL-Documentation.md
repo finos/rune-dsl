@@ -254,8 +254,28 @@ alias taxAmount:
 References to attributes, variables, or functions:
 
 ```
-person.name
+person -> name
 calculateTotal(prices, taxRate)
+```
+
+Attribute access uses the arrow notation (`->`) rather than dot notation:
+
+```
+trade -> price
+employee -> department
+```
+
+Attributes can be chained together:
+
+```
+trade -> instrument -> issuer -> name
+```
+
+When an attribute has multiple cardinality (e.g., (0..*) or (1..*)), accessing it automatically converts the expression to a list:
+
+```
+// If trades is a collection of Trade objects
+trades -> price  // This returns a list of prices
 ```
 
 ### Operators
@@ -315,10 +335,50 @@ Operations on collections:
 Examples:
 
 ```
-prices->filter[price > 100]
-names->extract[name->toUpperCase()]
+prices->filter price > 100
+names->extract name->toUpperCase()
 numbers->sum
 ```
+
+### Lambda Expressions
+
+Lambda expressions (also called closures) are anonymous functions that can be used with collection operations:
+
+```
+// Simple lambda with implicit parameter (item is the default variable name)
+trades->filter price > 1000
+
+// Same lambda with square brackets (required in nested expressions)
+trades->filter [price > 1000]
+
+// Lambda with explicit parameter
+trades->filter trade [trade -> price > 1000]
+
+// Multi-parameter lambda
+pairs->filter x, y [x + y > 10]
+```
+
+The syntax for lambda expressions is:
+- `collection->operation <var-name> [<var-name> -> expression]`
+- If the variable name is not specified, `item` is used implicitly
+- Square brackets can be omitted if the lambda is not part of a nested expression
+- For multiple parameters, separate them with commas
+
+### Expression Chaining
+
+Expressions can be chained together using the `then` operator:
+
+```
+// Chain multiple operations
+trades->filter price > 1000 ->extract quantity ->sum
+
+// Using 'then' for more complex transformations
+trades->filter price > 1000
+      ->then filtered [filtered->extract quantity * price]
+      ->sum
+```
+
+When using `then`, the result of the previous expression is passed as input to the next expression, allowing for more complex transformations.
 
 ### Type Conversion
 
@@ -371,7 +431,7 @@ Rules define conditions that must be satisfied:
 
 ```
 reporting rule ValidTrade from Trade:
-  trade.price > 0 and trade.quantity > 0
+  trade->price > 0 and trade->quantity > 0
 ```
 
 ### Reports
@@ -402,10 +462,10 @@ type Trade:
   quantity number (1..1) <"Quantity of the instrument">
   price number (1..1) <"Price per unit">
   currency string (1..1) <"Currency of the price">
-  
+
   condition validPrice:
     price > 0
-    
+
   condition validQuantity:
     quantity > 0
 ```
@@ -419,16 +479,16 @@ func calculateTradeValue:
     trade Trade (1..1) <"The trade to calculate value for">
   output:
     value number (1..1) <"The calculated trade value">
-    
+
   alias baseValue:
-    trade.price * trade.quantity
-    
+    trade->price * trade->quantity
+
   condition validInputs:
-    trade.price exists and trade.quantity exists
-    
+    trade->price exists and trade->quantity exists
+
   set value:
     baseValue
-    
+
   post-condition positiveValue:
     value > 0
 ```
@@ -438,6 +498,6 @@ func calculateTradeValue:
 ```
 reporting rule EligibleForEMIR from Trade:
   <"Determines if a trade is eligible for EMIR reporting">
-  trade.instrument.assetClass = AssetClass->EQUITY and
-  trade.quantity > 100
+  trade->instrument->assetClass = AssetClass->EQUITY and
+  trade->quantity > 100
 ```
