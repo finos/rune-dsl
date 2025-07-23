@@ -2,6 +2,7 @@ package com.regnosys.rosetta.ide.server;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
@@ -318,6 +319,51 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(nsA, 2, 0, "break me", "");
 
 		// There should again be no issue. 
+		assertNoIssues();
+	}
+
+
+	@Test
+	@Disabled
+	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
+		String nsA = createModel("a.rosetta", """
+				namespace demo.emissions.model
+
+				enum Y: <"Text">
+					Q
+					R
+					S
+				""");
+		String nsB = createModel("b.rosetta", """
+				namespace b
+
+				type X: x string (1..1)
+				reporting rule R from X:
+					c.Z ->> attr2
+							filter
+								item = Q
+								or item = R
+								or item = S
+				""");
+		String nsC = createModel("c.rosetta", """
+				namespace a
+
+				type Z: <"Text">
+				    attr1 int (1..1)
+				    attr2 Y (1..1)
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsA, 2, 14, "\"", "");
+		List<Diagnostic> issues = getDiagnostics().get(nsB);
+
+		assertIssues("Error [[4, 8] .. [4, 9]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+
+		makeChange(nsA, 2, 14, "", "\"");
+
+		// There should again be no issue.
 		assertNoIssues();
 	}
 }
