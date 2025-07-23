@@ -26,7 +26,7 @@
     </parent>
 
     <name>Rune DSL SDK</name>
-    <artifactId>org.finos.rune</artifactId>
+    <artifactId>rune-lang</artifactId>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -79,7 +79,7 @@
         remove this and figure out a better way. -->
         <dependency>
             <groupId>org.finos.rune</groupId>
-            <artifactId>org.finos.rune.xcore</artifactId>
+            <artifactId>rune-xcore-plugin-dependencies</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -175,7 +175,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.rune</groupId>
-                        <artifactId>org.finos.rune.xcore</artifactId>
+                        <artifactId>rune-xcore-plugin-dependencies</artifactId>
                         <version>${project.version}</version>
                         <exclusions>
 						     <exclusion>
@@ -236,7 +236,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.rune</groupId>
-                        <artifactId>org.finos.rune.xcore</artifactId>
+                        <artifactId>rune-xcore-plugin-dependencies</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>

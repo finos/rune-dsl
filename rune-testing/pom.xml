@@ -26,13 +26,13 @@
 	</parent>
 
 	<name>Rune DSL Testing Utilities</name>
-	<artifactId>org.finos.rune.tests</artifactId>
+	<artifactId>rune-testing</artifactId>
 
 	<dependencies>
 		<!-- Inter-project dependencies -->
 		<dependency>
 			<groupId>org.finos.rune</groupId>
-			<artifactId>org.finos.rune</artifactId>
+			<artifactId>rune-lang</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

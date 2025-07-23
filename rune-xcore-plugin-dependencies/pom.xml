@@ -26,7 +26,7 @@
     </parent>
 
 	<name>Rune DSL Plugin Dependencies</name>
-    <artifactId>org.finos.rune.xcore</artifactId>
+    <artifactId>rune-xcore-plugin-dependencies</artifactId>
 
     <description>
         Responsibilities: defining plugin dependencies for the xtext-maven-plugin and the Mwe2Launcher.
