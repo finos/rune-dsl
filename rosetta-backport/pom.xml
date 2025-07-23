@@ -3,12 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>org.finos.rune</groupId>
-        <artifactId>org.finos.rune.parent</artifactId>
-        <version>0.0.0.main-SNAPSHOT</version>
+        <groupId>org.finos</groupId>
+        <artifactId>finos</artifactId>
+        <version>7</version>
     </parent>
-    
+
     <groupId>com.regnosys.rosetta</groupId>
     <artifactId>rosetta-backport-parent</artifactId>
     <packaging>pom</packaging>
@@ -17,8 +18,13 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Release -->
+        <distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
+        <distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
+        <organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
     </properties>
-    
+
     <modules>
         <module>rosetta-runtime</module>
         <module>rosetta-ide</module>

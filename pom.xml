@@ -139,7 +139,6 @@
         <module>rune-tools</module>
         <module>rune-maven-plugin</module>
         <module>rune-profiling</module>
-        <module>rosetta-backport-parent</module>
     </modules>
 
     <dependencyManagement>

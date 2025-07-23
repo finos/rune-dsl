@@ -12,6 +12,11 @@
 
     <artifactId>rosetta-maven-plugin</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
+    <packaging>maven-plugin</packaging>
+    
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -20,4 +25,17 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <configuration>
+                    <mojoDependencies>
+                        <dependency>org.finos.rune:rune-maven-plugin</dependency>
+                    </mojoDependencies>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
