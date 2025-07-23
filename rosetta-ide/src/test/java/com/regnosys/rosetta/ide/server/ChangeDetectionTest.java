@@ -2,11 +2,14 @@ package com.regnosys.rosetta.ide.server;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
 public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 	@Test
@@ -318,6 +321,74 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(nsA, 2, 0, "break me", "");
 
 		// There should again be no issue. 
+		assertNoIssues();
+	}
+
+	@Test
+	@Disabled
+	void testBreakingAndFixingBeforeSaveFinishesHasNoIssues() throws Exception {
+		String aURI = createModel("a.rosetta", """
+				namespace test
+
+				type A: attr int (1..1)
+				type B:
+				""");
+		createModel("c.rosetta", """
+				namespace test
+
+				type C:
+					a A (1..1)
+				""");
+
+		StringBuilder model = new StringBuilder("""
+				namespace test
+
+				type Qux:
+				  b B (1..1)
+
+				type Qux0:
+
+				""");
+
+		for (int i = 1; i <= 10000; i++) { // large file to investigate timing issues
+			model.append("type Qux").append(i).append(":\n");
+		}
+
+		createModel("qux.rosetta", model.toString());
+
+		// There should be no issue.
+		assertNoIssues();
+
+		/*
+		 * strategy:
+		 *
+		 * 1. create break thread (T1)
+		 * 2. main thread waits for T1 to start
+		 * 3. main thread then gives the green flag to fix thread (T2) to start job
+		 * 4. wait for both to finish
+		 */
+
+		CountDownLatch breakChangeStarted = new CountDownLatch(1);
+
+		CompletableFuture<?> breakFuture = CompletableFuture.runAsync(() -> {
+			System.out.println("BREAK: starting");
+			breakChangeStarted.countDown();
+			makeChange(aURI, 2, 0, "", "//");
+			System.out.println("BREAK: finished");
+		});
+
+		breakChangeStarted.await();
+
+		CompletableFuture<?> fixFuture = CompletableFuture.runAsync(() -> {
+			System.out.println("FIX: starting");
+			makeChange(aURI, 2, 0, "//", "");
+			System.out.println("FIX: finished");
+		});
+
+		// Wait for both
+		breakFuture.get();
+		fixFuture.get();
+
 		assertNoIssues();
 	}
 }
