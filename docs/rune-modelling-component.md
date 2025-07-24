@@ -1379,7 +1379,7 @@ condition <ConditionName>: (optional: <"Description">)
   <booleanOperator>
 ```
 
-It is recommended to use unique condition names within the type they apply to and also across all other data types to ensure clarity and maintainability.
+It is recommended to use unique condition names within the type they apply to, but it does not need to be unique across all data types of a given model.
 
 ``` Haskell
 type ActualPrice:
