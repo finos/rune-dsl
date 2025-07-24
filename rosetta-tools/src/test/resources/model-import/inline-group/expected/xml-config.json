@@ -1,0 +1,19 @@
+{
+  "test.ns.Foo" : {
+    "attributes" : {
+      "fooGroup" : {
+        "xmlRepresentation" : "VIRTUAL"
+      }
+    }
+  },
+  "test.ns.FooGroup" : {
+    "attributes" : {
+      "bar" : {
+        "xmlName" : "Bar"
+      },
+      "baz" : {
+        "xmlName" : "Baz"
+      }
+    }
+  }
+}

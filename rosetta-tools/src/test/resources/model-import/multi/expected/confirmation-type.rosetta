@@ -1156,8 +1156,8 @@ type FacilityTermination extends AbstractFacilityEvent: <"An event describing th
 
 type Rollover extends AbstractFacilityEvent: <"An event representing the prepayment structure associated within a facility.">
 
-    maturingContracts string (1..1) <"A list of all contracts that are maturing during the rollover event.">
-    currentContracts string (1..1) <"A list of all contracts whose rates are resetting or contracts that are initiating as part of the rollover event.">
+    maturingContracts LoanContractDetailsModel (1..1) <"A list of all contracts that are maturing during the rollover event.">
+    currentContracts CurrentContracts (1..1) <"A list of all contracts whose rates are resetting or contracts that are initiating as part of the rollover event.">
     rolloverChoice RolloverChoice (1..*)
 
 type LoanPrepayment extends AbstractFacilityEvent: <"A structure that represents the prepayment structure associated within a facility.">
@@ -6809,6 +6809,10 @@ type RolloverChoice:
     condition Choice:
         one-of
 
+type CurrentContracts:
+
+    contract LoanContract (1..*)
+
 type SettlementDetails: <"A set of currency-specific settlement instructions.">
 
     id SettlementInstructionId (1..1) <"A unique identifier for a cash settlement details structure.">
@@ -10781,10 +10785,12 @@ type AdditionalData: <"Provides extra information not represented in the model t
     string String (0..1) <"Provides extra information as string. In case the extra information is in XML format, a CDATA section must be placed around the source message to prevent its interpretation as XML content.">
     hexadecimalBinary string (0..1) <"Provides extra information as binary contents coded in hexadecimal.">
     base64Binary string (0..1) <"Provides extra information as binary contents coded in base64.">
-    originalMessage string (0..1) <"Provides extra information as binary contents coded in base64.">
+    originalMessage OriginalMessage (0..1) <"Provides extra information as binary contents coded in base64.">
 
     condition Choice:
         required choice string, hexadecimalBinary , base64Binary , originalMessage
+
+type OriginalMessage:
 
 type Acknowledgement extends ResponseMessage:
 
