@@ -17,14 +17,43 @@ jobs:
           architecture: x64
           cache: maven
           server-id: ossrh
-          server-username: CI_DEPLOY_USERNAME
-          server-password: CI_DEPLOY_PASSWORD
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
           gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
       - name: Set version
         shell: bash
         run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
       - name: Publish package
+        run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+        env:
+          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
+          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  backport-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          architecture: x64
+          cache: maven
+          server-id: ossrh
+          server-username: CI_DEPLOY_USERNAME
+          server-password: CI_DEPLOY_PASSWORD
+          gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+      - name: Set version
+        working-directory: rosetta-backport
+        shell: bash
+        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
+      - name: Publish package
+        working-directory: rosetta-backport
         run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
           GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
