@@ -948,17 +948,7 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		
 		@Override
 		public boolean hasData() {
-			if (getSimpleAttr()!=null) return true;
-			if (getMultiSimpleAttr()!=null && !getMultiSimpleAttr().isEmpty()) return true;
-			if (getSimpleAttrWithMeta()!=null) return true;
-			if (getMultiSimpleAttrWithMeta()!=null && !getMultiSimpleAttrWithMeta().isEmpty()) return true;
-			if (getSimpleAttrWithId()!=null) return true;
-			if (getMultiSimpleAttrWithId()!=null && !getMultiSimpleAttrWithId().isEmpty()) return true;
-			if (getComplexAttr()!=null && getComplexAttr().hasData()) return true;
-			if (getMultiComplexAttr()!=null && getMultiComplexAttr().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-			if (getComplexAttrWithRef()!=null && getComplexAttrWithRef().hasData()) return true;
-			if (getMultiComplexAttrWithRef()!=null && getMultiComplexAttrWithRef().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")

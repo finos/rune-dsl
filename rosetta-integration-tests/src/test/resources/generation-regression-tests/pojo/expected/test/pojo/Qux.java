@@ -194,8 +194,7 @@ public interface Qux extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			if (getQux()!=null) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")

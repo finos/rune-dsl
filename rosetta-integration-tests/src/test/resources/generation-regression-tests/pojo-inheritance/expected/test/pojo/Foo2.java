@@ -616,13 +616,7 @@ public interface Foo2 extends Foo1 {
 		
 		@Override
 		public boolean hasData() {
-			if (getAttr()!=null) return true;
-			if (getNumberAttrOverriddenAsBigInteger()!=null) return true;
-			if (getParent()!=null && getParent().hasData()) return true;
-			if (getParentListOverriddenAsSingleReferenceWithMetaChild()!=null && getParentListOverriddenAsSingleReferenceWithMetaChild().hasData()) return true;
-			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-			if (getStringAttr()!=null) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")

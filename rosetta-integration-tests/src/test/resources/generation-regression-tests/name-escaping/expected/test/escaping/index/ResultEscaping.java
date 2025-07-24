@@ -180,8 +180,7 @@ public interface ResultEscaping extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			if (getResult()!=null && getResult().hasData()) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")

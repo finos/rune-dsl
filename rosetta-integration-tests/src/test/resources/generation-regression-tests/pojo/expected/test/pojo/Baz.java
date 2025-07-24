@@ -192,8 +192,7 @@ public interface Baz extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			if (getBaz()!=null) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")

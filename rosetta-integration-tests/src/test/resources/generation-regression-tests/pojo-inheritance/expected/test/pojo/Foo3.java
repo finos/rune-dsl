@@ -700,13 +700,7 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		public boolean hasData() {
-			if (getAttr()!=null) return true;
-			if (getNumberAttrOverriddenAsInteger()!=null) return true;
-			if (getParent()!=null && getParent().hasData()) return true;
-			if (getParentListOverriddenAsReferenceWithMetaGrandChild()!=null && getParentListOverriddenAsReferenceWithMetaGrandChild().hasData()) return true;
-			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-			if (getStringAttr()!=null) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")

@@ -77,7 +77,7 @@ class ModelObjectBuilderGenerator {
 				«IF extendSuperImpl»super.prune();«ENDIF»
 				«FOR prop : properties.filter[type.isRosettaModelObject]»
 					«IF !prop.type.isList»
-						«IF prop.isRequired || prop.type.hasRequiredProperty»
+						«IF prop.isRequired»
 							if («scope.getIdentifierOrThrow(prop)»!=null) «scope.getIdentifierOrThrow(prop)».prune();
 						«ELSE»
 							if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
@@ -89,7 +89,7 @@ class ModelObjectBuilderGenerator {
 				return this;
 			}
 			
-			«properties.hasData(extendSuperImpl, scope)»
+			«javaType.hasData(properties, extendSuperImpl, scope)»
 		
 			«properties.merge(builderInterface, extendSuperImpl, scope)»
 		
@@ -563,10 +563,13 @@ class ModelObjectBuilderGenerator {
 		'''
 	}
 	
-	private def hasData(Iterable<JavaPojoProperty> properties, boolean extended, JavaClassScope builderScope) {
+	private def hasData(JavaPojoInterface type, Iterable<JavaPojoProperty> properties, boolean extended, JavaClassScope builderScope) {
 		'''
 		@Override
 		public boolean hasData() {
+			«IF type.hasRequiredProperty»
+			return true;
+			«ELSE»
 			«IF extended»if (super.hasData()) return true;«ENDIF»
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
@@ -583,6 +586,7 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 			«ENDFOR»
 			return false;
+			«ENDIF»
 		}
 		'''
 	}

@@ -84,16 +84,21 @@ public class PruningTest {
 						foo Foo (0..1)
 
 					type Foo:
+						bar Bar (0..1)
+					
+					type Bar:
 						attr string (1..1)
 					""";
 		}
 
 		@Override
 		Stream<Instance> provideTestInstances() {
-			return Stream.of(Instance.of("Keep empty foo", """
+			return Stream.of(Instance.of("Keep empty bar", """
 					Root {
 						foo: Foo {
-							attr: empty
+							bar: Bar {
+								attr: empty
+							}
 						}
 					}
 					"""));

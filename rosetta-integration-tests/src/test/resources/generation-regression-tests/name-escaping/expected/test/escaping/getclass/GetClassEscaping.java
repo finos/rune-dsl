@@ -163,8 +163,7 @@ public interface GetClassEscaping extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			if (_getClass()!=null) return true;
-			return false;
+			return true;
 		}
 	
 		@SuppressWarnings("unchecked")
