@@ -80,8 +80,8 @@ public interface ResultEscaping extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("result")
-		@RuneAttribute("result")
+		@RosettaAttribute(value="result", isRequired=true)
+		@RuneAttribute(value="result", isRequired=true)
 		public Foo getResult() {
 			return result;
 		}
@@ -134,8 +134,8 @@ public interface ResultEscaping extends RosettaModelObject {
 		protected Foo.FooBuilder result;
 		
 		@Override
-		@RosettaAttribute("result")
-		@RuneAttribute("result")
+		@RosettaAttribute(value="result", isRequired=true)
+		@RuneAttribute(value="result", isRequired=true)
 		public Foo.FooBuilder getResult() {
 			return result;
 		}
@@ -153,8 +153,8 @@ public interface ResultEscaping extends RosettaModelObject {
 			return _result;
 		}
 		
-		@RosettaAttribute("result")
-		@RuneAttribute("result")
+		@RosettaAttribute(value="result", isRequired=true)
+		@RuneAttribute(value="result", isRequired=true)
 		@Override
 		public ResultEscaping.ResultEscapingBuilder setResult(Foo _result) {
 			this.result = _result == null ? null : _result.toBuilder();

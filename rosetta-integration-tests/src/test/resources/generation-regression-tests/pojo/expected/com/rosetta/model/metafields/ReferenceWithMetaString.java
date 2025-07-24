@@ -104,29 +104,29 @@ public interface ReferenceWithMetaString extends RosettaModelObject, ReferenceWi
 		}
 		
 		@Override
-		@RosettaAttribute("value")
-		@RuneAttribute("@data")
+		@RosettaAttribute(value="value")
+		@RuneAttribute(value="@data")
 		public String getValue() {
 			return value;
 		}
 		
 		@Override
-		@RosettaAttribute("globalReference")
-		@RuneAttribute("@ref")
+		@RosettaAttribute(value="globalReference")
+		@RuneAttribute(value="@ref")
 		public String getGlobalReference() {
 			return globalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("externalReference")
-		@RuneAttribute("@ref:external")
+		@RosettaAttribute(value="externalReference")
+		@RuneAttribute(value="@ref:external")
 		public String getExternalReference() {
 			return externalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("address")
-		@RuneAttribute("@ref:scoped")
+		@RosettaAttribute(value="address")
+		@RuneAttribute(value="@ref:scoped")
 		@RuneMetaType
 		public Reference getReference() {
 			return reference;
@@ -195,29 +195,29 @@ public interface ReferenceWithMetaString extends RosettaModelObject, ReferenceWi
 		protected Reference.ReferenceBuilder reference;
 		
 		@Override
-		@RosettaAttribute("value")
-		@RuneAttribute("@data")
+		@RosettaAttribute(value="value")
+		@RuneAttribute(value="@data")
 		public String getValue() {
 			return value;
 		}
 		
 		@Override
-		@RosettaAttribute("globalReference")
-		@RuneAttribute("@ref")
+		@RosettaAttribute(value="globalReference")
+		@RuneAttribute(value="@ref")
 		public String getGlobalReference() {
 			return globalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("externalReference")
-		@RuneAttribute("@ref:external")
+		@RosettaAttribute(value="externalReference")
+		@RuneAttribute(value="@ref:external")
 		public String getExternalReference() {
 			return externalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("address")
-		@RuneAttribute("@ref:scoped")
+		@RosettaAttribute(value="address")
+		@RuneAttribute(value="@ref:scoped")
 		@RuneMetaType
 		public Reference.ReferenceBuilder getReference() {
 			return reference;
@@ -236,32 +236,32 @@ public interface ReferenceWithMetaString extends RosettaModelObject, ReferenceWi
 			return result;
 		}
 		
-		@RosettaAttribute("value")
-		@RuneAttribute("@data")
+		@RosettaAttribute(value="value")
+		@RuneAttribute(value="@data")
 		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setValue(String _value) {
 			this.value = _value == null ? null : _value;
 			return this;
 		}
 		
-		@RosettaAttribute("globalReference")
-		@RuneAttribute("@ref")
+		@RosettaAttribute(value="globalReference")
+		@RuneAttribute(value="@ref")
 		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setGlobalReference(String _globalReference) {
 			this.globalReference = _globalReference == null ? null : _globalReference;
 			return this;
 		}
 		
-		@RosettaAttribute("externalReference")
-		@RuneAttribute("@ref:external")
+		@RosettaAttribute(value="externalReference")
+		@RuneAttribute(value="@ref:external")
 		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setExternalReference(String _externalReference) {
 			this.externalReference = _externalReference == null ? null : _externalReference;
 			return this;
 		}
 		
-		@RosettaAttribute("address")
-		@RuneAttribute("@ref:scoped")
+		@RosettaAttribute(value="address")
+		@RuneAttribute(value="@ref:scoped")
 		@RuneMetaType
 		@Override
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder setReference(Reference _reference) {

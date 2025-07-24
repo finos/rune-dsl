@@ -133,43 +133,43 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("attr")
-		@RuneAttribute("attr")
+		@RosettaAttribute(value="attr", isRequired=true)
+		@RuneAttribute(value="attr", isRequired=true)
 		public Integer getAttr() {
 			return attr;
 		}
 		
 		@Override
-		@RosettaAttribute("numberAttr")
-		@RuneAttribute("numberAttr")
+		@RosettaAttribute(value="numberAttr")
+		@RuneAttribute(value="numberAttr")
 		public BigDecimal getNumberAttr() {
 			return numberAttr;
 		}
 		
 		@Override
-		@RosettaAttribute("parent")
-		@RuneAttribute("parent")
+		@RosettaAttribute(value="parent", isRequired=true)
+		@RuneAttribute(value="parent", isRequired=true)
 		public Parent getParent() {
 			return parent;
 		}
 		
 		@Override
-		@RosettaAttribute("parentList")
-		@RuneAttribute("parentList")
+		@RosettaAttribute(value="parentList")
+		@RuneAttribute(value="parentList")
 		public List<? extends Parent> getParentList() {
 			return parentList;
 		}
 		
 		@Override
-		@RosettaAttribute("otherParentList")
-		@RuneAttribute("otherParentList")
+		@RosettaAttribute(value="otherParentList")
+		@RuneAttribute(value="otherParentList")
 		public List<? extends Parent> getOtherParentList() {
 			return otherParentList;
 		}
 		
 		@Override
-		@RosettaAttribute("stringAttr")
-		@RuneAttribute("stringAttr")
+		@RosettaAttribute(value="stringAttr", isRequired=true)
+		@RuneAttribute(value="stringAttr", isRequired=true)
 		public FieldWithMetaString getStringAttr() {
 			return stringAttr;
 		}
@@ -247,22 +247,22 @@ public interface Foo1 extends RosettaModelObject {
 		protected FieldWithMetaString.FieldWithMetaStringBuilder stringAttr;
 		
 		@Override
-		@RosettaAttribute("attr")
-		@RuneAttribute("attr")
+		@RosettaAttribute(value="attr", isRequired=true)
+		@RuneAttribute(value="attr", isRequired=true)
 		public Integer getAttr() {
 			return attr;
 		}
 		
 		@Override
-		@RosettaAttribute("numberAttr")
-		@RuneAttribute("numberAttr")
+		@RosettaAttribute(value="numberAttr")
+		@RuneAttribute(value="numberAttr")
 		public BigDecimal getNumberAttr() {
 			return numberAttr;
 		}
 		
 		@Override
-		@RosettaAttribute("parent")
-		@RuneAttribute("parent")
+		@RosettaAttribute(value="parent", isRequired=true)
+		@RuneAttribute(value="parent", isRequired=true)
 		public Parent.ParentBuilder getParent() {
 			return parent;
 		}
@@ -281,8 +281,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("parentList")
-		@RuneAttribute("parentList")
+		@RosettaAttribute(value="parentList")
+		@RuneAttribute(value="parentList")
 		public List<? extends Parent.ParentBuilder> getParentList() {
 			return parentList;
 		}
@@ -299,8 +299,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("otherParentList")
-		@RuneAttribute("otherParentList")
+		@RosettaAttribute(value="otherParentList")
+		@RuneAttribute(value="otherParentList")
 		public List<? extends Parent.ParentBuilder> getOtherParentList() {
 			return otherParentList;
 		}
@@ -317,8 +317,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("stringAttr")
-		@RuneAttribute("stringAttr")
+		@RosettaAttribute(value="stringAttr", isRequired=true)
+		@RuneAttribute(value="stringAttr", isRequired=true)
 		public FieldWithMetaString.FieldWithMetaStringBuilder getStringAttr() {
 			return stringAttr;
 		}
@@ -336,32 +336,32 @@ public interface Foo1 extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute("attr")
-		@RuneAttribute("attr")
+		@RosettaAttribute(value="attr", isRequired=true)
+		@RuneAttribute(value="attr", isRequired=true)
 		@Override
 		public Foo1.Foo1Builder setAttr(Integer _attr) {
 			this.attr = _attr == null ? null : _attr;
 			return this;
 		}
 		
-		@RosettaAttribute("numberAttr")
-		@RuneAttribute("numberAttr")
+		@RosettaAttribute(value="numberAttr")
+		@RuneAttribute(value="numberAttr")
 		@Override
 		public Foo1.Foo1Builder setNumberAttr(BigDecimal _numberAttr) {
 			this.numberAttr = _numberAttr == null ? null : _numberAttr;
 			return this;
 		}
 		
-		@RosettaAttribute("parent")
-		@RuneAttribute("parent")
+		@RosettaAttribute(value="parent", isRequired=true)
+		@RuneAttribute(value="parent", isRequired=true)
 		@Override
 		public Foo1.Foo1Builder setParent(Parent _parent) {
 			this.parent = _parent == null ? null : _parent.toBuilder();
 			return this;
 		}
 		
-		@RosettaAttribute("parentList")
-		@RuneAttribute("parentList")
+		@RosettaAttribute(value="parentList")
+		@RuneAttribute(value="parentList")
 		@Override
 		public Foo1.Foo1Builder addParentList(Parent _parentList) {
 			if (_parentList != null) {
@@ -399,8 +399,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute("otherParentList")
-		@RuneAttribute("otherParentList")
+		@RosettaAttribute(value="otherParentList")
+		@RuneAttribute(value="otherParentList")
 		@Override
 		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList) {
 			if (_otherParentList != null) {
@@ -438,8 +438,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute("stringAttr")
-		@RuneAttribute("stringAttr")
+		@RosettaAttribute(value="stringAttr", isRequired=true)
+		@RuneAttribute(value="stringAttr", isRequired=true)
 		@Override
 		public Foo1.Foo1Builder setStringAttr(FieldWithMetaString _stringAttr) {
 			this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();

@@ -143,8 +143,8 @@ class ModelObjectBuilderGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			
 			@Override
-			@«RosettaAttribute»("«prop.javaAnnotation»")
-			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			@«RosettaAttribute»(value="«prop.javaAnnotation»"«IF prop.isRequired», isRequired=true«ENDIF»)
+			@«RuneAttribute»(value="«prop.javaRuneAnnotation»"«IF prop.isRequired», isRequired=true«ENDIF»)
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -296,8 +296,8 @@ class ModelObjectBuilderGenerator {
 			«val itemType = propType.itemType»
 			«val mainItemType = mainPropType.itemType»
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				@«RosettaAttribute»(value="«currentProp.javaAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
+				@«RuneAttribute»(value="«currentProp.javaRuneAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -510,8 +510,8 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 		«ELSE»
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				@«RosettaAttribute»(value="«currentProp.javaAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
+				@«RuneAttribute»(value="«currentProp.javaRuneAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
