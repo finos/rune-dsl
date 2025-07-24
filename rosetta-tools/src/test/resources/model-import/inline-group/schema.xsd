@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sd:schema xmlns:sd="http://www.w3.org/2001/XMLSchema">
+    <sd:element name="Foo">
+        <sd:complexType>
+            <sd:group ref="FooGroup"/>
+        </sd:complexType>
+    </sd:element>
+
+    <sd:group name="FooGroup">
+        <sd:sequence>
+            <sd:element name="Bar" type="sd:string"/>
+            <sd:element name="Baz" type="sd:int"/>
+        </sd:sequence>
+    </sd:group>
+</sd:schema>
