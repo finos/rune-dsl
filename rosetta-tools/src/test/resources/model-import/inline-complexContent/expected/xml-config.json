@@ -1,0 +1,30 @@
+{
+  "test.ns.Attr1" : {
+    "attributes" : {
+      "fooAttr" : {
+        "xmlName" : "FooAttr"
+      }
+    }
+  },
+  "test.ns.Bar" : {
+    "attributes" : {
+      "attr2" : {
+        "xmlName" : "Attr2"
+      }
+    }
+  },
+  "test.ns.Foo" : {
+    "attributes" : {
+      "attr1" : {
+        "xmlName" : "Attr1"
+      }
+    }
+  },
+  "test.ns.FooBase" : {
+    "attributes" : {
+      "attr3" : {
+        "xmlName" : "Attr3"
+      }
+    }
+  }
+}
