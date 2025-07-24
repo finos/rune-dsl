@@ -96,7 +96,8 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 						generatorUtil.javadoc(attr.getDefinition(), attr.getAllDocReferences(), null),
 						attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null,
 						attr.getRMetaAnnotatedType().hasMetaAttribute("location"),
-						generateAttributeMetaTypes(attr), !attr.getCardinality().isOptional());
+						generateAttributeMetaTypes(attr),
+						!attr.getCardinality().isOptional());
 			});
 			if (type.hasMetaAttribute("key")) {
 				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
@@ -107,7 +108,8 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 						null,
 						null,
 						false,
-						List.of(), false);
+						List.of(),
+						false);
 			}
 		}
 	}
@@ -131,7 +133,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 			allProperties.put(name, newProperty);
 		} else {
 			JavaType parentType = parentProperty.getType();
-			if (!type.equals(parentType)) {
+			if (!type.equals(parentType) || isRequired != parentProperty.isRequired()) {
 				String getterCompatibilityName;
 				if (type.isSubtypeOf(parentType)) {
 					// Specialize existing property => reuse getter of parent

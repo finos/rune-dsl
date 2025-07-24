@@ -934,13 +934,13 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Pojo.PojoBuilder prune() {
-			if (simpleAttrWithMeta!=null && !simpleAttrWithMeta.prune().hasData()) simpleAttrWithMeta = null;
+			if (simpleAttrWithMeta!=null) simpleAttrWithMeta.prune();
 			multiSimpleAttrWithMeta = multiSimpleAttrWithMeta.stream().filter(b->b!=null).<FieldWithMetaString.FieldWithMetaStringBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (simpleAttrWithId!=null && !simpleAttrWithId.prune().hasData()) simpleAttrWithId = null;
+			if (simpleAttrWithId!=null) simpleAttrWithId.prune();
 			multiSimpleAttrWithId = multiSimpleAttrWithId.stream().filter(b->b!=null).<FieldWithMetaString.FieldWithMetaStringBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (complexAttr!=null && !complexAttr.prune().hasData()) complexAttr = null;
+			if (complexAttr!=null) complexAttr.prune();
 			multiComplexAttr = multiComplexAttr.stream().filter(b->b!=null).<Foo.FooBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (complexAttrWithRef!=null && !complexAttrWithRef.prune().hasData()) complexAttrWithRef = null;
+			if (complexAttrWithRef!=null) complexAttrWithRef.prune();
 			multiComplexAttrWithRef = multiComplexAttrWithRef.stream().filter(b->b!=null).<ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
 			if (meta!=null && !meta.prune().hasData()) meta = null;
 			return this;

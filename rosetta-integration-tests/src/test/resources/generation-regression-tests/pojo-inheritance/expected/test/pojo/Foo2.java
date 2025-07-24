@@ -607,10 +607,10 @@ public interface Foo2 extends Foo1 {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Foo2.Foo2Builder prune() {
-			if (parent!=null && !parent.prune().hasData()) parent = null;
-			if (parentList!=null && !parentList.prune().hasData()) parentList = null;
+			if (parent!=null) parent.prune();
+			if (parentList!=null) parentList.prune();
 			otherParentList = otherParentList.stream().filter(b->b!=null).<Child.ChildBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (stringAttr!=null && !stringAttr.prune().hasData()) stringAttr = null;
+			if (stringAttr!=null) stringAttr.prune();
 			return this;
 		}
 		

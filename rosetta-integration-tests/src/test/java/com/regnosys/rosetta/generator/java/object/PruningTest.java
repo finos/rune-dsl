@@ -254,7 +254,7 @@ public class PruningTest {
 			        Instance.of("Do not prune foo", """
 							Root {
 								foo: Foo {
-									bar: empty
+									bars: empty
 								}
 							}
 							""")

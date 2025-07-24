@@ -465,10 +465,10 @@ public interface Foo1 extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Foo1.Foo1Builder prune() {
-			if (parent!=null && !parent.prune().hasData()) parent = null;
+			if (parent!=null) parent.prune();
 			parentList = parentList.stream().filter(b->b!=null).<Parent.ParentBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
 			otherParentList = otherParentList.stream().filter(b->b!=null).<Parent.ParentBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (stringAttr!=null && !stringAttr.prune().hasData()) stringAttr = null;
+			if (stringAttr!=null) stringAttr.prune();
 			return this;
 		}
 		

@@ -75,12 +75,14 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «builderInterface» prune() {
 				«IF extendSuperImpl»super.prune();«ENDIF»
-				«FOR prop : properties»
-					«IF !prop.type.isList && prop.type.isRosettaModelObject && prop.isRequired»
-					    if («scope.getIdentifierOrThrow(prop)»==null || !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = «prop.type».builder();
-                    «ELSEIF !prop.type.isList && prop.type.isRosettaModelObject»
-						if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
-					«ELSEIF prop.type.isList && prop.type.isRosettaModelObject»
+				«FOR prop : properties.filter[type.isRosettaModelObject]»
+					«IF !prop.type.isList»
+						«IF prop.isRequired || prop.type.hasRequiredProperty»
+							if («scope.getIdentifierOrThrow(prop)»!=null) «scope.getIdentifierOrThrow(prop)».prune();
+						«ELSE»
+							if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
+						«ENDIF»
+					«ELSE»
 						«scope.getIdentifierOrThrow(prop)» = «scope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
@@ -94,6 +96,13 @@ class ModelObjectBuilderGenerator {
 			«javaType.builderBoilerPlate(extendSuperImpl, scope)»
 		}
 		'''
+	}
+	
+	private def boolean hasRequiredProperty(JavaType t) {
+		if (t instanceof JavaPojoInterface) {
+			return t.allProperties.exists[isRequired]
+		}
+		return false
 	}
 
 	private def StringConcatenationClient merge(Iterable<JavaPojoProperty> properties, JavaPojoBuilderInterface builderType, boolean extended, JavaClassScope builderScope) {

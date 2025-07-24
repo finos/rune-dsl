@@ -174,7 +174,7 @@ public interface Bar extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Bar.BarBuilder prune() {
-			if (bar!=null && !bar.prune().hasData()) bar = null;
+			if (bar!=null) bar.prune();
 			return this;
 		}
 		
