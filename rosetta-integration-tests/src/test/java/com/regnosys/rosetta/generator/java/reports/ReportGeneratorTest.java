@@ -11,7 +11,6 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages.RootPackage;
 import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
@@ -224,7 +223,7 @@ public class ReportGeneratorTest {
 
 
     private RosettaModelObject getInput(Map<String, Class<?>> classes) {
-        return generatorTestHelper.createInstanceUsingBuilder(classes, new RootPackage("com.rosetta.test.model"), "BarReportInstruction", Map.of(
+        return generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "BarReportInstruction", Map.of(
                 "bar1", "v1",
                 "bar2", "v2",
                 "bar3", "v3",
@@ -240,6 +239,6 @@ public class ReportGeneratorTest {
     }
 
     private RosettaModelObject getOutput(Map<String, Class<?>> classes, String typeName, Map<String, Object> values) {
-        return generatorTestHelper.createInstanceUsingBuilder(classes, new RootPackage("com.rosetta.test.model"), typeName, values);
+        return generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), typeName, values);
     }
 }

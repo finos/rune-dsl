@@ -13,15 +13,6 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.MetaFields;
-import com.rosetta.model.metafields.MetaFields.MetaFieldsBuilder;
-import test.pojo.Child;
-import test.pojo.Child.ChildBuilder;
-import test.pojo.Child.ChildBuilderImpl;
-import test.pojo.Child.ChildImpl;
-import test.pojo.GrandChild;
-import test.pojo.GrandChild.GrandChildBuilder;
-import test.pojo.GrandChild.GrandChildBuilderImpl;
-import test.pojo.GrandChild.GrandChildImpl;
 import test.pojo.meta.GrandChildMeta;
 
 
@@ -127,10 +118,10 @@ public interface GrandChild extends Child {
 	class GrandChildBuilderImpl extends Child.ChildBuilderImpl implements GrandChild.GrandChildBuilder {
 	
 		
-		@Override
 		@RosettaAttribute("meta")
 		@RuneAttribute("meta")
 		@RuneMetaType
+		@Override
 		public GrandChild.GrandChildBuilder setMeta(MetaFields _meta) {
 			this.meta = _meta == null ? null : _meta.toBuilder();
 			return this;
@@ -163,7 +154,6 @@ public interface GrandChild extends Child {
 		@Override
 		public GrandChild.GrandChildBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
 			super.merge(other, merger);
-			
 			GrandChild.GrandChildBuilder o = (GrandChild.GrandChildBuilder) other;
 			
 			

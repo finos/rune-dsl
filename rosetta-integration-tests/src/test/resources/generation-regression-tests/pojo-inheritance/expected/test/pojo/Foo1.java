@@ -13,19 +13,12 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
-import com.rosetta.model.metafields.FieldWithMetaString.FieldWithMetaStringBuilder;
 import com.rosetta.util.ListEquals;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import test.pojo.Foo1;
-import test.pojo.Foo1.Foo1Builder;
-import test.pojo.Foo1.Foo1BuilderImpl;
-import test.pojo.Foo1.Foo1Impl;
-import test.pojo.Parent;
-import test.pojo.Parent.ParentBuilder;
 import test.pojo.meta.Foo1Meta;
 
 import static java.util.Optional.ofNullable;
@@ -84,10 +77,10 @@ public interface Foo1 extends RosettaModelObject {
 		Parent.ParentBuilder getOrCreateParent();
 		@Override
 		Parent.ParentBuilder getParent();
-		Parent.ParentBuilder getOrCreateParentList(int _index);
+		Parent.ParentBuilder getOrCreateParentList(int index);
 		@Override
 		List<? extends Parent.ParentBuilder> getParentList();
-		Parent.ParentBuilder getOrCreateOtherParentList(int _index);
+		Parent.ParentBuilder getOrCreateOtherParentList(int index);
 		@Override
 		List<? extends Parent.ParentBuilder> getOtherParentList();
 		FieldWithMetaString.FieldWithMetaStringBuilder getOrCreateStringAttr();
@@ -97,11 +90,11 @@ public interface Foo1 extends RosettaModelObject {
 		Foo1.Foo1Builder setNumberAttr(BigDecimal numberAttr);
 		Foo1.Foo1Builder setParent(Parent parent);
 		Foo1.Foo1Builder addParentList(Parent parentList);
-		Foo1.Foo1Builder addParentList(Parent parentList, int _idx);
+		Foo1.Foo1Builder addParentList(Parent parentList, int idx);
 		Foo1.Foo1Builder addParentList(List<? extends Parent> parentList);
 		Foo1.Foo1Builder setParentList(List<? extends Parent> parentList);
 		Foo1.Foo1Builder addOtherParentList(Parent otherParentList);
-		Foo1.Foo1Builder addOtherParentList(Parent otherParentList, int _idx);
+		Foo1.Foo1Builder addOtherParentList(Parent otherParentList, int idx);
 		Foo1.Foo1Builder addOtherParentList(List<? extends Parent> otherParentList);
 		Foo1.Foo1Builder setOtherParentList(List<? extends Parent> otherParentList);
 		Foo1.Foo1Builder setStringAttr(FieldWithMetaString stringAttr);
@@ -295,13 +288,11 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		public Parent.ParentBuilder getOrCreateParentList(int _index) {
-		
+		public Parent.ParentBuilder getOrCreateParentList(int index) {
 			if (parentList==null) {
 				this.parentList = new ArrayList<>();
 			}
-			Parent.ParentBuilder result;
-			return getIndex(parentList, _index, () -> {
+			return getIndex(parentList, index, () -> {
 						Parent.ParentBuilder newParentList = Parent.builder();
 						return newParentList;
 					});
@@ -315,13 +306,11 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		public Parent.ParentBuilder getOrCreateOtherParentList(int _index) {
-		
+		public Parent.ParentBuilder getOrCreateOtherParentList(int index) {
 			if (otherParentList==null) {
 				this.otherParentList = new ArrayList<>();
 			}
-			Parent.ParentBuilder result;
-			return getIndex(otherParentList, _index, () -> {
+			return getIndex(otherParentList, index, () -> {
 						Parent.ParentBuilder newOtherParentList = Parent.builder();
 						return newOtherParentList;
 					});
@@ -347,33 +336,33 @@ public interface Foo1 extends RosettaModelObject {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("attr")
 		@RuneAttribute("attr")
+		@Override
 		public Foo1.Foo1Builder setAttr(Integer _attr) {
 			this.attr = _attr == null ? null : _attr;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("numberAttr")
 		@RuneAttribute("numberAttr")
+		@Override
 		public Foo1.Foo1Builder setNumberAttr(BigDecimal _numberAttr) {
 			this.numberAttr = _numberAttr == null ? null : _numberAttr;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("parent")
 		@RuneAttribute("parent")
+		@Override
 		public Foo1.Foo1Builder setParent(Parent _parent) {
 			this.parent = _parent == null ? null : _parent.toBuilder();
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("parentList")
 		@RuneAttribute("parentList")
+		@Override
 		public Foo1.Foo1Builder addParentList(Parent _parentList) {
 			if (_parentList != null) {
 				this.parentList.add(_parentList.toBuilder());
@@ -382,12 +371,12 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		public Foo1.Foo1Builder addParentList(Parent _parentList, int _idx) {
-			getIndex(this.parentList, _idx, () -> _parentList.toBuilder());
+		public Foo1.Foo1Builder addParentList(Parent _parentList, int idx) {
+			getIndex(this.parentList, idx, () -> _parentList.toBuilder());
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Foo1.Foo1Builder addParentList(List<? extends Parent> parentLists) {
 			if (parentLists != null) {
 				for (final Parent toAdd : parentLists) {
@@ -397,8 +386,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("parentList")
+		@Override
 		public Foo1.Foo1Builder setParentList(List<? extends Parent> parentLists) {
 			if (parentLists == null) {
 				this.parentList = new ArrayList<>();
@@ -410,9 +399,9 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("otherParentList")
 		@RuneAttribute("otherParentList")
+		@Override
 		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList) {
 			if (_otherParentList != null) {
 				this.otherParentList.add(_otherParentList.toBuilder());
@@ -421,12 +410,12 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList, int _idx) {
-			getIndex(this.otherParentList, _idx, () -> _otherParentList.toBuilder());
+		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList, int idx) {
+			getIndex(this.otherParentList, idx, () -> _otherParentList.toBuilder());
 			return this;
 		}
 		
-		@Override 
+		@Override
 		public Foo1.Foo1Builder addOtherParentList(List<? extends Parent> otherParentLists) {
 			if (otherParentLists != null) {
 				for (final Parent toAdd : otherParentLists) {
@@ -436,8 +425,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@Override 
 		@RuneAttribute("otherParentList")
+		@Override
 		public Foo1.Foo1Builder setOtherParentList(List<? extends Parent> otherParentLists) {
 			if (otherParentLists == null) {
 				this.otherParentList = new ArrayList<>();
@@ -449,9 +438,9 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("stringAttr")
 		@RuneAttribute("stringAttr")
+		@Override
 		public Foo1.Foo1Builder setStringAttr(FieldWithMetaString _stringAttr) {
 			this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();
 			return this;

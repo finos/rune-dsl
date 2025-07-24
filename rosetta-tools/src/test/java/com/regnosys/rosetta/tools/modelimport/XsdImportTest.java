@@ -201,6 +201,31 @@ public class XsdImportTest {
         runTest("substitution");
     }
 
+	@Test
+	void testInline() throws IOException, URISyntaxException {
+		runTest("inline");
+	}
+
+	@Test
+	void testInlineGroup() throws IOException, URISyntaxException {
+		runTest("inline-group");
+	}
+
+	@Test
+	void testInlineNestedGroup() throws IOException, URISyntaxException {
+		runTest("inline-nested-group");
+	}
+
+	@Test
+	void testInlineSequence() throws IOException, URISyntaxException {
+		runTest("inline-sequence");
+	}
+
+	@Test
+	void testInlineComplexContent() throws IOException, URISyntaxException {
+		runTest("inline-complexContent");
+	}
+
 	private ImportConfig mockConfig(Path basePath) {
 		ImportConfig config = new ImportConfig(basePath.resolve("schema.xsd").toString(), new ImportTargetConfig(NAMESPACE, NAMESPACE_DEFINITION, Collections.emptyMap(), null));
 		return config;

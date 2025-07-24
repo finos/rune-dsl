@@ -1,23 +1,18 @@
 package com.regnosys.rosetta.generator.java.expression
 
-import com.regnosys.rosetta.generator.java.JavaScope
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaPrimitiveType
 import java.util.Map
-import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.generator.IFileSystemAccess2
 
 import jakarta.inject.Inject
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.rosetta.expression.ExistsModifier
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
-import com.regnosys.rosetta.generator.java.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import java.util.HashSet
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
@@ -25,33 +20,30 @@ import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.types.RObjectFactory
 
-class DeepPathUtilGenerator {
-	@Inject extension ImportManagerExtension
+class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaClass<?>> {
 	@Inject extension JavaTypeTranslator
 	@Inject extension DeepFeatureCallUtil
 	@Inject extension ExpressionGenerator
 	@Inject extension TypeCoercionService
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject JavaTypeUtil typeUtil
+	@Inject extension RObjectFactory
 	
-	def void generate(IFileSystemAccess2 fsa, RDataType choiceType, String version) {
-		val javaClass = choiceType.toDeepPathUtilJavaClass
-		val fileName =  javaClass.canonicalName.withForwardSlashes + ".java"
-
-		val topScope = new JavaScope(javaClass.packageName)
-
-		val content = buildClass(javaClass.packageName, classBody(choiceType, javaClass, topScope), topScope)
-
-		fsa.generateFile(fileName, content)
+	override protected streamObjects(RosettaModel model) {
+		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType].filter[isEligibleForDeepFeatureCall]
 	}
-
-	private def StringConcatenationClient classBody(
-		RDataType choiceType,
-		JavaClass<?> javaClass,
-		JavaScope topScope
-	) {		
-		val classScope = topScope.classScope(javaClass.simpleName)
+	override protected createTypeRepresentation(RDataType choiceType) {
+		choiceType.toDeepPathUtilJavaClass
+	}
+	override protected generate(RDataType choiceType, JavaClass<?> javaClass, String version, JavaClassScope classScope) {
 		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
 		val recursiveDeepFeaturesMap = choiceType.allAttributes.toMap([it], [
@@ -87,18 +79,17 @@ class DeepPathUtilGenerator {
 				
 				«ENDIF»
 				«FOR deepFeature : deepFeatures»
-				«val methodName = '''choose«deepFeature.name.toFirstUpper»'''»
-				«val deepFeatureScope = classScope.methodScope(methodName)»
-				«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
-				«val methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeaturesMap, deepFeatureScope)»
-				public «methodBody.expressionType» «methodName»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
-				
+					«val deepFeatureScope = classScope.createMethodScope('''choose«deepFeature.name.toFirstUpper»''')»
+					«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
+					«val methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeaturesMap, deepFeatureScope.bodyScope)»
+					public «methodBody.expressionType» choose«deepFeature.name.toFirstUpper»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
+					
 				«ENDFOR»
 			}
 		'''
 	}
 
-	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaScope scope) {
+	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {
 		val attrs = choiceType.allAttributes.toList
 		val deepFeatureType = deepFeature.toMetaJavaType
 		var JavaStatementBuilder acc = JavaLiteral.NULL

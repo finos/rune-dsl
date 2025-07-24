@@ -13,12 +13,7 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.ReferenceWithMetaString;
-import com.rosetta.model.metafields.ReferenceWithMetaString.ReferenceWithMetaStringBuilder;
 import java.util.Objects;
-import test.pojo.Baz;
-import test.pojo.Baz.BazBuilder;
-import test.pojo.Baz.BazBuilderImpl;
-import test.pojo.Baz.BazImpl;
 import test.pojo.meta.BazMeta;
 
 import static java.util.Optional.ofNullable;
@@ -163,10 +158,10 @@ public interface Baz extends RosettaModelObject {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("baz")
 		@RuneAttribute("baz")
 		@RuneScopedAttributeReference
+		@Override
 		public Baz.BazBuilder setBaz(ReferenceWithMetaString _baz) {
 			this.baz = _baz == null ? null : _baz.toBuilder();
 			return this;

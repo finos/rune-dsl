@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.types
 
-import com.regnosys.rosetta.RosettaEcoreUtil
-import com.regnosys.rosetta.cache.IRequestScopedCache
 import com.regnosys.rosetta.rosetta.simple.AssignPathRoot
 import com.regnosys.rosetta.rosetta.RosettaAttributeReference
 import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
@@ -86,7 +84,6 @@ import java.util.List
 import java.util.Map
 import java.util.Optional
 import jakarta.inject.Inject
-import jakarta.inject.Provider
 import org.eclipse.emf.ecore.EObject
 
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.withMeta
@@ -98,17 +95,15 @@ import com.regnosys.rosetta.utils.RosettaConfigExtension
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
+import com.regnosys.rosetta.RosettaEcoreUtil
 
 class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Map<RosettaSymbol, RMetaAnnotatedType>> {
-	public static String EXPRESSION_RTYPE_CACHE_KEY = RosettaTypeProvider.canonicalName + ".EXPRESSION_RTYPE"
-
 
 	@Inject RosettaEcoreUtil extensions
 	@Inject extension ImplicitVariableUtil
 	@Inject extension TypeSystem
 	@Inject extension TypeFactory
 	@Inject extension RBuiltinTypeService
-	@Inject IRequestScopedCache cache
 	@Inject extension RObjectFactory
 	@Inject extension ExpectedTypeProvider
 	@Inject AnnotationPathExpressionUtil annotationPathUtil
@@ -264,14 +259,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
 		if (expression === null) {
 			return NOTHING_WITH_ANY_META
 		}
-		getRTypeFromCache(EXPRESSION_RTYPE_CACHE_KEY, expression, [doSwitch(expression, cycleTracker)])
-	}
-	
-	private def RMetaAnnotatedType getRTypeFromCache(String cacheKey, EObject object, Provider<RMetaAnnotatedType> typeProvider) {
-		if (object === null) {
-			return typeProvider.get()
-		}
-		cache.get(cacheKey -> object, typeProvider)
+		doSwitch(expression, cycleTracker)
 	}
 	
 	def typeOfImplicitVariable(EObject context) {
@@ -641,17 +629,7 @@ class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedType, Ma
  	}
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
- 		val metaFeatures = expr.entries.map[key].map[name]
- 		
- 		val rMetaAttributes = configs.findMetaTypes(expr)
-				.map[EObjectOrProxy]
-				.map[it as RosettaMetaType]
-				.filter[metaFeatures.contains(it.name)]
-				.map[buildRMetaAttribute]
-				.toList
-				
-		val argumentType = expr.argument.safeRType(cycleTracker)		
- 		argumentType.addMeta(rMetaAttributes)
+ 		expr.expectedTypeFromContainer
  	}
 
 }

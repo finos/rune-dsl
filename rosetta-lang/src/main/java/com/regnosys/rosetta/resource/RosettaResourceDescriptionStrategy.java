@@ -2,6 +2,7 @@ package com.regnosys.rosetta.resource;
 
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import org.apache.log4j.Logger;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
@@ -21,7 +22,7 @@ import jakarta.inject.Singleton;
 @Singleton
 public class RosettaResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
 
-    private final static Logger LOG = Logger.getLogger(RosettaResourceDescriptionStrategy.class);
+    private final static Logger LOGGER = Logger.getLogger(RosettaResourceDescriptionStrategy.class);
 
     @Override
     public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
@@ -29,7 +30,9 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
             return false;
         }
         try {
-            if (eObject instanceof RosettaModel) {
+            if (eObject instanceof RosettaExpression) {
+                return false;
+            } else if (eObject instanceof RosettaModel) {
                 return createRosettaModelDescription((RosettaModel) eObject, acceptor);
             } else if (eObject instanceof Attribute) {
                 return createAttributeDescription((Attribute) eObject, acceptor);
@@ -37,7 +40,8 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
                 return createRosettaRuleDescription((RosettaRule) eObject, acceptor);
             }
         } catch (Exception exc) {
-            LOG.error(exc.getMessage(), exc);
+            LOGGER.error(exc.getMessage(), exc);
+            return true;
         }
         return super.createEObjectDescriptions(eObject, acceptor);
     }

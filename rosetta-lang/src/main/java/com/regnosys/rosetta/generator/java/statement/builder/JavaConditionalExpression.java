@@ -24,7 +24,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
-import com.regnosys.rosetta.generator.java.JavaScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenElseStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
@@ -77,7 +77,7 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	}
 
 	@Override
-	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaScope scope) {
+	public JavaStatementBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
 		return this.collapseToSingleExpression(scope)
 				.then(after, combineExpressions, scope);
 	}
@@ -100,7 +100,7 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	}
 
 	@Override
-	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaScope scope) {
+	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope) {
 		JavaExpression expression = this.toExpression();
 		JavaStatementBuilder variable = expression.declareAsVariable(isFinal, variableId, scope);
 		scope.createKeySynonym(this, expression);
@@ -108,7 +108,7 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	}
 
 	@Override
-	public JavaExpression collapseToSingleExpression(JavaScope scope) {
+	public JavaExpression collapseToSingleExpression(JavaStatementScope scope) {
 		return JavaExpression.from(new StringConcatenationClient() {
 			@Override
 			protected void appendTo(TargetStringConcatenation target) {

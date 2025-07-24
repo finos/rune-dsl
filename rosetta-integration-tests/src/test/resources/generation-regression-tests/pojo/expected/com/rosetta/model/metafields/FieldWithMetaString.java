@@ -1,7 +1,6 @@
 package com.rosetta.model.metafields;
 
 import com.rosetta.model.lib.GlobalKey;
-import com.rosetta.model.lib.GlobalKey.GlobalKeyBuilder;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -11,7 +10,6 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneMetaType;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.FieldWithMeta;
-import com.rosetta.model.lib.meta.FieldWithMeta.FieldWithMetaBuilder;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
@@ -187,18 +185,18 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("value")
 		@RuneAttribute("@data")
+		@Override
 		public FieldWithMetaString.FieldWithMetaStringBuilder setValue(String _value) {
 			this.value = _value == null ? null : _value;
 			return this;
 		}
 		
-		@Override
 		@RosettaAttribute("meta")
 		@RuneAttribute("meta")
 		@RuneMetaType
+		@Override
 		public FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields _meta) {
 			this.meta = _meta == null ? null : _meta.toBuilder();
 			return this;
@@ -268,6 +266,6 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 	}
 }
 
-class FieldWithMetaStringMeta extends BasicRosettaMetaData<FieldWithMetaString>{
+class FieldWithMetaStringMeta extends BasicRosettaMetaData<FieldWithMetaString> {
 
 }

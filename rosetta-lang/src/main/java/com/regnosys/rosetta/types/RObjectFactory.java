@@ -27,6 +27,7 @@ import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
+import com.regnosys.rosetta.cache.caches.RDataTypeCache;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -57,9 +58,12 @@ public class RObjectFactory {
 	private ModelIdProvider modelIdProvider;
 	@Inject
 	private RuleReferenceService ruleService;
+	@Inject
+	private RDataTypeCache cache;
 
 	public RFunction buildRFunction(Function function) {
 		return new RFunction(
+				function,
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				function.getInputs().stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
@@ -82,6 +86,7 @@ public class RObjectFactory {
 		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
+				rule,
 				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
@@ -114,7 +119,8 @@ public class RObjectFactory {
 		inputAttribute.setCard(cardinality);
 		
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
-		return new RFunction( 
+		return new RFunction(
+			report,
 			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
@@ -173,6 +179,9 @@ public class RObjectFactory {
 				card, attr.getRuleReferences(), attr.getLabels(), attr);
 	}
 	public RCardinality buildRCardinality(RosettaCardinality card) {
+		if (card == null) {
+			return RCardinality.OPTIONAL;
+		}
 		if (card.isUnbounded()) {
 			if (card.getInf() == 0) {
 				return RCardinality.UNBOUNDED;
@@ -222,7 +231,7 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return new RDataType(data, modelIdProvider, this, typeProvider);
+		return cache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
 	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
@@ -233,5 +242,4 @@ public class RObjectFactory {
 	public RMetaAttribute buildRMetaAttribute(RosettaMetaType rosettaMetaType) {
 		return new RMetaAttribute(rosettaMetaType.getName(), typeSystem.typeCallToRType(rosettaMetaType.getTypeCall()));
 	}
-
 }

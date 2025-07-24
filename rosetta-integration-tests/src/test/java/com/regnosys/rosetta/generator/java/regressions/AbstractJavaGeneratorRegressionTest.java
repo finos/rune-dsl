@@ -116,9 +116,10 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 	void testGeneratedCodeIsAsExpected(String fileName, String relativePath, String generatedCode) {
 		String expected = expectedCode.get(relativePath);
 		updateExpectationIfAssertionFails(() -> {
-			Assertions.assertNotNull(expected, "No expected code found for generated file " + relativePath + ".");
 			Assertions.assertEquals(expected, generatedCode,
-					"The generated code for " + relativePath + " does not match the expected code.");
+					expected == null
+							? "No expected code found for generated file " + relativePath + "."
+							: "The generated code for " + relativePath + " does not match the expected code.");
 		}, () -> writeExpectationFile(relativePath, generatedCode));
 	}
 
@@ -207,8 +208,8 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 	}
 
 	private AssertionFailedError wrapAssertionFailure(String newMessage, AssertionFailedError error) {
-		return new AssertionFailedError(newMessage, error.getExpected().getEphemeralValue(),
-				error.getActual().getEphemeralValue(), error);
+		return new AssertionFailedError(newMessage, error.getExpected() == null ? null : error.getExpected().getEphemeralValue(),
+				error.getActual() == null ? null : error.getActual().getEphemeralValue(), error);
 	}
 
 	private String writeExpectationFile(String relativePath, String content) throws IOException {

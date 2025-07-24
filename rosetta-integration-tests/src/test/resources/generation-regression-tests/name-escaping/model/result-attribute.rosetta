@@ -1,0 +1,6 @@
+namespace test.escaping.result
+
+type ResultEscaping:
+	result Foo (1..1) // needs to be a complex type
+
+type Foo:

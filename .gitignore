@@ -21,7 +21,6 @@ rosetta-profiling/reports/
 **/emf-gen/
 **/src/generated/
 
-.antlr-generator-3.2.0-patch.jar
 com.regnosys.rosetta.web/
 
 .tycho-consumer-pom.xml

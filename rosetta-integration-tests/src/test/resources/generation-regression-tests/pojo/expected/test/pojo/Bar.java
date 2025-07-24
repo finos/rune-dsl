@@ -12,12 +12,6 @@ import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
-import test.pojo.Bar;
-import test.pojo.Bar.BarBuilder;
-import test.pojo.Bar.BarBuilderImpl;
-import test.pojo.Bar.BarImpl;
-import test.pojo.Qux;
-import test.pojo.Qux.QuxBuilder;
 import test.pojo.meta.BarMeta;
 
 import static java.util.Optional.ofNullable;
@@ -159,9 +153,9 @@ public interface Bar extends RosettaModelObject {
 			return result;
 		}
 		
-		@Override
 		@RosettaAttribute("bar")
 		@RuneAttribute("bar")
+		@Override
 		public Bar.BarBuilder setBar(Qux _bar) {
 			this.bar = _bar == null ? null : _bar.toBuilder();
 			return this;

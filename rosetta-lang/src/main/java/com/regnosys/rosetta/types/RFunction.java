@@ -18,6 +18,9 @@ package com.regnosys.rosetta.types;
 
 import java.util.List;
 import java.util.Objects;
+
+import org.eclipse.emf.ecore.EObject;
+
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.rosetta.model.lib.ModelId;
@@ -25,22 +28,24 @@ import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
 import com.rosetta.util.DottedPath;
 
-public class RFunction {
+public class RFunction implements RObject {
+	private final EObject eObject;
 	private ModelSymbolId symbolId;
 	private ModelReportId reportId;
-	private String definition;
-	private List<RAttribute> inputs;
-	private RAttribute output;
-	private RFunctionOrigin origin;
-	private List<Condition> preConditions;
-	private List<Condition> postConditions;
-	private List<RShortcut> shortcuts;
-	private List<ROperation> operations;
-	private List<AnnotationRef> annotations;
+	private final String definition;
+	private final List<RAttribute> inputs;
+	private final RAttribute output;
+	private final RFunctionOrigin origin;
+	private final List<Condition> preConditions;
+	private final List<Condition> postConditions;
+	private final List<RShortcut> shortcuts;
+	private final List<ROperation> operations;
+	private final List<AnnotationRef> annotations;
 	
-	private RFunction(String definition, List<RAttribute> inputs,
+	private RFunction(EObject eObject, String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
+		this.eObject = eObject;
 		this.definition = definition;
 		this.inputs = inputs;
 		this.output = output;
@@ -52,19 +57,24 @@ public class RFunction {
 		this.annotations = annotations;
 	}
 	
-	public RFunction(ModelSymbolId symbolId, String definition, List<RAttribute> inputs,
+	public RFunction(EObject eObject, ModelSymbolId symbolId, String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
-		this(definition, inputs, output, origin, preConditions, postConditions,
+		this(eObject, definition, inputs, output, origin, preConditions, postConditions,
 			shortcuts, operations, annotations);
 		this.symbolId = symbolId;
 	}
-	public RFunction(ModelReportId reportId, String definition, List<RAttribute> inputs,
+	public RFunction(EObject eObject, ModelReportId reportId, String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
-		this(definition, inputs, output, origin, preConditions, postConditions,
+		this(eObject, definition, inputs, output, origin, preConditions, postConditions,
 			shortcuts, operations, annotations);
 		this.reportId = reportId;
+	}
+	
+	@Override
+	public EObject getEObject() {
+		return eObject;
 	}
 	
 	public ModelId getId() {
