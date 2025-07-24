@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 // TODO: decouple from `AbstractXtextGeneratorMojo`/`xtext-maven-plugin`. They differ too much,
 // which makes this implementation too hacky.
-public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGeneratorMojo {
+public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMojo {
 
     @Parameter(defaultValue = "true")
     boolean addOutputDirectoriesToCompileSourceRoots = Boolean.TRUE;
@@ -96,7 +96,7 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
     // TODO: add this method to Xtext so I don't have to overwrite `internalExecute`
     // and duplicate all of the above parameters.
     protected Module createModule() {
-        return new RosettaMavenStandaloneBuilderModule();
+        return new RuneMavenStandaloneBuilderModule();
     }
 
     @Override
@@ -105,10 +105,10 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
             configureMavenOutputs();
         }
         Language language = getLanguages().stream().findFirst().orElseThrow(() -> new MojoExecutionException("Only one language supported by the Rosetta Plugin."));
-        Map<String, LanguageAccess> languages = new RosettaLanguageAccessFactory()
+        Map<String, LanguageAccess> languages = new RuneLanguageAccessFactory()
                 .createLanguageAccess(language, rosettaConfig, this.getClass().getClassLoader());
         Injector injector = Guice.createInjector(createModule());
-        RosettaStandaloneBuilder builder = injector.getInstance(RosettaStandaloneBuilder.class);
+        RuneStandaloneBuilder builder = injector.getInstance(RuneStandaloneBuilder.class);
         builder.setBaseDir(getProject().getBasedir().getAbsolutePath());
         builder.setLanguages(languages);
         builder.setEncoding(getEncoding());

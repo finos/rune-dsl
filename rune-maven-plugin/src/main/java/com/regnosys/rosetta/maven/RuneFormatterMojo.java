@@ -55,8 +55,8 @@ import com.regnosys.rosetta.formatting2.ResourceFormatterService;
  * </p>
  */
 @Mojo(name = "format")
-public class ResourceFormatterMojo extends AbstractMojo {
-	private static Logger LOGGER = LoggerFactory.getLogger(ResourceFormatterMojo.class);
+public class RuneFormatterMojo extends AbstractMojo {
+	private static Logger LOGGER = LoggerFactory.getLogger(RuneFormatterMojo.class);
 
 	/**
 	 * Path to the directory of files to be formatted

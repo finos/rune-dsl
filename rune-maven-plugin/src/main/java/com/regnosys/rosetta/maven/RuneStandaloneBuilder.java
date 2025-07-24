@@ -35,8 +35,8 @@ import com.regnosys.rosetta.generator.RosettaGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RosettaStandaloneBuilder extends StandaloneBuilder {
-	private static final Logger LOG = LoggerFactory.getLogger(RosettaStandaloneBuilder.class);
+public class RuneStandaloneBuilder extends StandaloneBuilder {
+	private static final Logger LOG = LoggerFactory.getLogger(RuneStandaloneBuilder.class);
 	
 	private LanguageAccess rosettaLanguageAccess = null;
 	// TODO: patch Xtext to make `languages` available

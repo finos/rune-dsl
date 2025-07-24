@@ -29,49 +29,46 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.eclipse.xtext.maven.Language;
 
 
-// This class is identical to `XtextTestGenerateMojo`, except its superclass.
-@Mojo(name = "testGenerate", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
-public class RosettaTestGenerateMojo extends AbstractRosettaGeneratorMojo {
+// This class is identical to `XtextGenerateMojo`, except its superclass.
+@Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
+public class RuneGenerateMojo extends AbstractRuneGeneratorMojo {
 
 	/**
 	 * Project classpath.
 	 */
-	@Parameter(defaultValue = "${project.testClasspathElements}", readonly = true, required = true)
+	@Parameter(defaultValue = "${project.compileClasspathElements}", readonly = true, required = true)
 	private List<String> classpathElements;
 
 	@Override
 	public Set<String> getClasspathElements() {
-		Set<String> classpathElementSet = newLinkedHashSet();
-		classpathElementSet.addAll(this.classpathElements);
-		classpathElementSet.remove(getProject().getBuild().getTestOutputDirectory());
-		return newLinkedHashSet(filter(classpathElementSet, emptyStringFilter()));
+		Set<String> classpathElements = newLinkedHashSet();
+		classpathElements.addAll(this.classpathElements);
+		classpathElements.remove(getProject().getBuild().getOutputDirectory());
+		classpathElements.remove(getProject().getBuild().getTestOutputDirectory());
+		Set<String> nonEmptyElements = newLinkedHashSet(filter(classpathElements, emptyStringFilter()));
+		return nonEmptyElements;
 	}
 
 	@Override
 	protected void configureMavenOutputs() {
 		for (Language language : getLanguages()) {
-			addTestCompileSourceRoots(language);
+			addCompileSourceRoots(language);
 		}
 	}
 	
 	@Override
 	protected String getClassOutputDirectory() {
-		return getProject().getBuild().getTestOutputDirectory();
-	}
-	
-	@Override
-	protected String tmpDirSuffix() {
-		return "-test";
+		return getProject().getBuild().getOutputDirectory();
 	}
 	
 	/**
-	 * Project test source roots. List of folders, where the test source models are
+	 * Project source roots. List of folders, where the source models are
 	 * located.<br>
 	 * The default value is a reference to the project's
-	 * ${project.testCompileSourceRoots}.<br>
+	 * ${project.compileSourceRoots}.<br>
 	 * When adding a new entry the default value will be overwritten not extended.
 	 */
-	@Parameter(defaultValue = "${project.testCompileSourceRoots}", required = true)
+	@Parameter(defaultValue = "${project.compileSourceRoots}", required = true)
 	private List<String> sourceRoots;
 
 	@Override

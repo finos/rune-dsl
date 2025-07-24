@@ -30,7 +30,7 @@ import java.util.Map;
  * This will setup language access with the `SingletonGeneratorResourceServiceProvider`
  * instead of the default `IResourceServiceProvider`.
  */
-public class RosettaLanguageAccessFactory {
+public class RuneLanguageAccessFactory {
 
     public Map<String, LanguageAccess> createLanguageAccess(ILanguageConfiguration languageGenConf, String rosettaConfig, ClassLoader compilerClassLoder) {
         Map<String, LanguageAccess> result = new HashMap<String, LanguageAccess>();

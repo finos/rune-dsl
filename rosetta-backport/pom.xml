@@ -12,13 +12,14 @@
 
     <groupId>com.regnosys.rosetta</groupId>
     <artifactId>rosetta-backport-parent</artifactId>
+    <version>0.0.0.main-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        
         <!-- Release -->
         <distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
         <distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
