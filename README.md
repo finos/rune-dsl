@@ -47,7 +47,7 @@ The Rune DSL comprises 2 components, both open-source:
 
 ### Syntax
 
-The [Rune DSL repository](https://github.com/finos/rune-dsl/) contains the definition of the language. It is based on the [Eclipe Modelling Framework](https://www.eclipse.org/modeling/emf/).
+The [Rune DSL repository](https://github.com/finos/rune-dsl/) contains the definition of the language. It is based on the [Eclipse Modelling Framework](https://www.eclipse.org/modeling/emf/).
 
 The language components available in the Rune DSL and their syntax are detailed in the [Rune Modelling Components](https://docs.rosetta-technology.io/rosetta/rune-dsl/rune-modelling-component/) section of the documentation.
 
@@ -125,7 +125,7 @@ For anything else please send an email to {project mailing list}.
 To submit a contribution:
 1. Fork it (<https://github.com/finos/rune-dsl/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Read our [contribution guidelines](.github/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
+3. Read our [contribution guidelines](https://github.com/finos/rune-dsl/blob/main/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
 4. Commit your changes (`git commit -am 'Add some fooBar'`)
 5. Push to the branch (`git push origin feature/fooBar`)
 6. Create a new Pull Request

@@ -1372,14 +1372,14 @@ Condition statements are included in the definition of the type that they are as
 
 - a name
 - a plain-text description - optional
-- an [operator](#operator) that applies to the the type\'s attributes and returns a boolean.
+- an [operator](#operator) that applies to the type\'s attributes and returns a boolean.
 
 ``` Haskell
 condition <ConditionName>: (optional: <"Description">)
   <booleanOperator>
 ```
 
-The condition\'s name must be unique in the context of the type that it applies to, but it does not need to be unique across all data types of a given model.
+It is recommended to use unique condition names within the type they apply to and also across all other data types to ensure clarity and maintainability.
 
 ``` Haskell
 type ActualPrice:
