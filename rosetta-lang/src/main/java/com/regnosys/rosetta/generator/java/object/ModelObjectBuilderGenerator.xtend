@@ -564,13 +564,7 @@ class ModelObjectBuilderGenerator {
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
 				«IF prop.type.isList»
-					«IF prop.type.isValueRosettaModelObject»
-						if («getter»()!=null && «getter»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
-					«ELSE»
-						if («getter»()!=null && !«getter»().isEmpty()) return true;
-					«ENDIF»
-				«ELSEIF prop.type.isValueRosettaModelObject»
-					if («getter»()!=null && «getter»().hasData()) return true;
+					if («getter»()!=null && !«getter»().isEmpty()) return true;
 				«ELSE»
 					if («getter»()!=null) return true;
 				«ENDIF»

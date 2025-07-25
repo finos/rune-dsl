@@ -474,7 +474,13 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			return true;
+			if (getAttr()!=null) return true;
+			if (getNumberAttr()!=null) return true;
+			if (getParent()!=null) return true;
+			if (getParentList()!=null && !getParentList().isEmpty()) return true;
+			if (getOtherParentList()!=null && !getOtherParentList().isEmpty()) return true;
+			if (getStringAttr()!=null) return true;
+			return false;
 		}
 	
 		@SuppressWarnings("unchecked")

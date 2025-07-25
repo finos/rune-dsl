@@ -76,36 +76,6 @@ public class PruningTest {
 	}
 
 	@Nested
-	class KeepMissingRequiredSimpleAttributes extends AbstractPruningTest {
-		@Override
-		String getModel() {
-			return """
-					type Root:
-						foo Foo (0..1)
-
-					type Foo:
-						bar Bar (0..1)
-					
-					type Bar:
-						attr string (1..1)
-					""";
-		}
-
-		@Override
-		Stream<Instance> provideTestInstances() {
-			return Stream.of(Instance.of("Keep empty bar", """
-					Root {
-						foo: Foo {
-							bar: Bar {
-								attr: empty
-							}
-						}
-					}
-					"""));
-		}
-	}
-
-	@Nested
 	class MultiComplexTypeWithOptionalAttribute extends AbstractPruningTest {
 		@Override
 		String getModel() {
@@ -195,57 +165,19 @@ public class PruningTest {
 							}
 						}
 					}
-					"""), Instance.of("Do not prune foo", """
+					"""), Instance.of("Prune foo", """
 					Root {
 						foo: Foo {
 							bar: empty
 						}
 					}
-					"""), Instance.of("Empty foo is kept", """
+					""", """
 					Root {
 						foo: empty
 					}
-					"""));
-		}
-	}
-
-	@Nested
-	class MultiComplexTypeWithRequiredAttribute extends AbstractPruningTest {
-		@Override
-		String getModel() {
-			return """
-					type Root:
-						foo Foo (0..1)
-
-					type Foo:
-						bars Bar (1..*)
-
-					type Bar:
-						attr int (0..1)
-					""";
-		}
-
-		@Override
-		Stream<Instance> provideTestInstances() {
-			return Stream.of(Instance.of("Prune bar list", """
+					"""), Instance.of("Empty foo is kept", """
 					Root {
-						foo: Foo {
-							bars: [Bar {
-								attr: empty
-							}]
-						}
-					}
-					""", """
-					Root {
-						foo: Foo {
-							bars: empty
-						}
-					}
-					"""), Instance.of("Do not prune foo", """
-					Root {
-						foo: Foo {
-							bars: empty
-						}
+						foo: empty
 					}
 					"""));
 		}

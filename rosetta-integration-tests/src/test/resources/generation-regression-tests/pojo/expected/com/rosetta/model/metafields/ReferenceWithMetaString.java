@@ -291,7 +291,7 @@ public interface ReferenceWithMetaString extends RosettaModelObject, ReferenceWi
 			if (getValue()!=null) return true;
 			if (getGlobalReference()!=null) return true;
 			if (getExternalReference()!=null) return true;
-			if (getReference()!=null && getReference().hasData()) return true;
+			if (getReference()!=null) return true;
 			return false;
 		}
 	

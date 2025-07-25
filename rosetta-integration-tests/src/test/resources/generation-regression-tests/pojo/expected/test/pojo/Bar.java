@@ -180,7 +180,8 @@ public interface Bar extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			return true;
+			if (getBar()!=null) return true;
+			return false;
 		}
 	
 		@SuppressWarnings("unchecked")

@@ -616,7 +616,13 @@ public interface Foo2 extends Foo1 {
 		
 		@Override
 		public boolean hasData() {
-			return true;
+			if (getAttr()!=null) return true;
+			if (getNumberAttrOverriddenAsBigInteger()!=null) return true;
+			if (getParent()!=null) return true;
+			if (getParentListOverriddenAsSingleReferenceWithMetaChild()!=null) return true;
+			if (getOtherParentList()!=null && !getOtherParentList().isEmpty()) return true;
+			if (getStringAttr()!=null) return true;
+			return false;
 		}
 	
 		@SuppressWarnings("unchecked")

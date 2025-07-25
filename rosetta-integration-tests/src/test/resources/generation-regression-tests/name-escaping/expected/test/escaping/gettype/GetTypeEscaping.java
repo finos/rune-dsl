@@ -163,7 +163,8 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		
 		@Override
 		public boolean hasData() {
-			return true;
+			if (_getType()!=null) return true;
+			return false;
 		}
 	
 		@SuppressWarnings("unchecked")
