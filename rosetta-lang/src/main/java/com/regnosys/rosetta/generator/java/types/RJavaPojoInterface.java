@@ -96,7 +96,8 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 						generatorUtil.javadoc(attr.getDefinition(), attr.getAllDocReferences(), null),
 						attr.getRMetaAnnotatedType().hasMetaAttribute("id") ? AttributeMeta.GLOBAL_KEY_FIELD : null,
 						attr.getRMetaAnnotatedType().hasMetaAttribute("location"),
-						generateAttributeMetaTypes(attr));
+						generateAttributeMetaTypes(attr),
+						!attr.getCardinality().isOptional());
 			});
 			if (type.hasMetaAttribute("key")) {
 				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
@@ -107,11 +108,12 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 						null,
 						null,
 						false,
-						List.of());
+						List.of(),
+						false);
 			}
 		}
 	}
-	private void addPropertyIfNecessary(String name, String runeName, String serializedName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes) {
+	private void addPropertyIfNecessary(String name, String runeName, String serializedName, JavaType type, String javadoc, AttributeMeta meta, boolean hasLocation, List<AttributeMetaType> attributeMetaTypes, boolean isRequired) {
 		JavaPojoProperty parentProperty = allProperties.get(name);
 		if (parentProperty == null) {
 			JavaPojoProperty newProperty = new JavaPojoProperty(
@@ -124,12 +126,14 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 					type,
 					javadoc,
 					meta,
-					hasLocation, attributeMetaTypes);
+					hasLocation,
+					attributeMetaTypes,
+					isRequired);
 			ownProperties.put(name, newProperty);
 			allProperties.put(name, newProperty);
 		} else {
 			JavaType parentType = parentProperty.getType();
-			if (!type.equals(parentType)) {
+			if (!type.equals(parentType) || isRequired != parentProperty.isRequired()) {
 				String getterCompatibilityName;
 				if (type.isSubtypeOf(parentType)) {
 					// Specialize existing property => reuse getter of parent
@@ -146,7 +150,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 					// Type erasures are not the same => we can overload the setter
 					setterCompatibilityName = parentProperty.getSetterCompatibilityName();
 				}
-				JavaPojoProperty newProperty = parentProperty.specialize(this, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes);
+				JavaPojoProperty newProperty = parentProperty.specialize(this, getterCompatibilityName, setterCompatibilityName, type, javadoc, meta, hasLocation, attributeMetaTypes, isRequired);
 				ownProperties.put(name, newProperty);
 				allProperties.put(name, newProperty);
 			}

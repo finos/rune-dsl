@@ -25,5 +25,6 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RosettaAttribute {
 	
-	String value()  default "";
+	String value() default "";
+	boolean isRequired() default false;
 }

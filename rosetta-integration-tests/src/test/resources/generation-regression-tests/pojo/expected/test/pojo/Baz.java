@@ -83,8 +83,8 @@ public interface Baz extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("baz")
-		@RuneAttribute("baz")
+		@RosettaAttribute(value="baz", isRequired=true)
+		@RuneAttribute(value="baz", isRequired=true)
 		@RuneScopedAttributeReference
 		public ReferenceWithMetaString getBaz() {
 			return baz;
@@ -138,8 +138,8 @@ public interface Baz extends RosettaModelObject {
 		protected ReferenceWithMetaString.ReferenceWithMetaStringBuilder baz;
 		
 		@Override
-		@RosettaAttribute("baz")
-		@RuneAttribute("baz")
+		@RosettaAttribute(value="baz", isRequired=true)
+		@RuneAttribute(value="baz", isRequired=true)
 		@RuneScopedAttributeReference
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder getBaz() {
 			return baz;
@@ -158,8 +158,8 @@ public interface Baz extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute("baz")
-		@RuneAttribute("baz")
+		@RosettaAttribute(value="baz", isRequired=true)
+		@RuneAttribute(value="baz", isRequired=true)
 		@RuneScopedAttributeReference
 		@Override
 		public Baz.BazBuilder setBaz(ReferenceWithMetaString _baz) {
@@ -186,7 +186,7 @@ public interface Baz extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Baz.BazBuilder prune() {
-			if (baz!=null && !baz.prune().hasData()) baz = null;
+			if (baz!=null) baz.prune();
 			return this;
 		}
 		

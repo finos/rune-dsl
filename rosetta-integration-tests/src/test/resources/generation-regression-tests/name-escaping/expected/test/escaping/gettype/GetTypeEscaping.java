@@ -77,8 +77,8 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("type")
-		@RuneAttribute("type")
+		@RosettaAttribute(value="type", isRequired=true)
+		@RuneAttribute(value="type", isRequired=true)
 		public Integer _getType() {
 			return type;
 		}
@@ -131,14 +131,14 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		protected Integer type;
 		
 		@Override
-		@RosettaAttribute("type")
-		@RuneAttribute("type")
+		@RosettaAttribute(value="type", isRequired=true)
+		@RuneAttribute(value="type", isRequired=true)
 		public Integer _getType() {
 			return type;
 		}
 		
-		@RosettaAttribute("type")
-		@RuneAttribute("type")
+		@RosettaAttribute(value="type", isRequired=true)
+		@RuneAttribute(value="type", isRequired=true)
 		@Override
 		public GetTypeEscaping.GetTypeEscapingBuilder setType(Integer _type) {
 			this.type = _type == null ? null : _type;

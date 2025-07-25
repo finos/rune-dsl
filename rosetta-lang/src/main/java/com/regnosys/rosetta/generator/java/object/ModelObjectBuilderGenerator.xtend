@@ -75,17 +75,21 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «builderInterface» prune() {
 				«IF extendSuperImpl»super.prune();«ENDIF»
-				«FOR prop : properties»
-					«IF !prop.type.isList && prop.type.isRosettaModelObject»
-						if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
-					«ELSEIF prop.type.isList && prop.type.isRosettaModelObject»
+				«FOR prop : properties.filter[type.isRosettaModelObject]»
+					«IF !prop.type.isList»
+						«IF prop.isRequired»
+							if («scope.getIdentifierOrThrow(prop)»!=null) «scope.getIdentifierOrThrow(prop)».prune();
+						«ELSE»
+							if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
+						«ENDIF»
+					«ELSE»
 						«scope.getIdentifierOrThrow(prop)» = «scope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
 			}
 			
-			«properties.hasData(extendSuperImpl, scope)»
+			«javaType.hasData(properties, extendSuperImpl, scope)»
 		
 			«properties.merge(builderInterface, extendSuperImpl, scope)»
 		
@@ -132,8 +136,8 @@ class ModelObjectBuilderGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			
 			@Override
-			@«RosettaAttribute»("«prop.javaAnnotation»")
-			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			@«RosettaAttribute»(value="«prop.javaAnnotation»"«IF prop.isRequired», isRequired=true«ENDIF»)
+			@«RuneAttribute»(value="«prop.javaRuneAnnotation»"«IF prop.isRequired», isRequired=true«ENDIF»)
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -285,8 +289,8 @@ class ModelObjectBuilderGenerator {
 			«val itemType = propType.itemType»
 			«val mainItemType = mainPropType.itemType»
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				@«RosettaAttribute»(value="«currentProp.javaAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
+				@«RuneAttribute»(value="«currentProp.javaRuneAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -499,8 +503,8 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 		«ELSE»
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				@«RosettaAttribute»(value="«currentProp.javaAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
+				@«RuneAttribute»(value="«currentProp.javaRuneAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -552,7 +556,7 @@ class ModelObjectBuilderGenerator {
 		'''
 	}
 	
-	private def hasData(Iterable<JavaPojoProperty> properties, boolean extended, JavaClassScope builderScope) {
+	private def hasData(JavaPojoInterface type, Iterable<JavaPojoProperty> properties, boolean extended, JavaClassScope builderScope) {
 		'''
 		@Override
 		public boolean hasData() {
@@ -560,12 +564,12 @@ class ModelObjectBuilderGenerator {
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
 				«IF prop.type.isList»
-					«IF prop.type.isValueRosettaModelObject»
+					«IF !prop.isRequired && prop.type.isValueRosettaModelObject»
 						if («getter»()!=null && «getter»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 					«ELSE»
 						if («getter»()!=null && !«getter»().isEmpty()) return true;
 					«ENDIF»
-				«ELSEIF prop.type.isValueRosettaModelObject»
+				«ELSEIF !prop.isRequired && prop.type.isValueRosettaModelObject»
 					if («getter»()!=null && «getter»().hasData()) return true;
 				«ELSE»
 					if («getter»()!=null) return true;
