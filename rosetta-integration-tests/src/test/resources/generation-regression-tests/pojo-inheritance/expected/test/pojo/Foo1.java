@@ -477,8 +477,8 @@ public interface Foo1 extends RosettaModelObject {
 			if (getAttr()!=null) return true;
 			if (getNumberAttr()!=null) return true;
 			if (getParent()!=null) return true;
-			if (getParentList()!=null && !getParentList().isEmpty()) return true;
-			if (getOtherParentList()!=null && !getOtherParentList().isEmpty()) return true;
+			if (getParentList()!=null && getParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
+			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getStringAttr()!=null) return true;
 			return false;
 		}

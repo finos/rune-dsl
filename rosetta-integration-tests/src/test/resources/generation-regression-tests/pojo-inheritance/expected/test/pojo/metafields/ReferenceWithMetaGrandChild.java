@@ -309,10 +309,10 @@ public interface ReferenceWithMetaGrandChild extends RosettaModelObject, Referen
 		
 		@Override
 		public boolean hasData() {
-			if (getValue()!=null) return true;
+			if (getValue()!=null && getValue().hasData()) return true;
 			if (getGlobalReference()!=null) return true;
 			if (getExternalReference()!=null) return true;
-			if (getReference()!=null) return true;
+			if (getReference()!=null && getReference().hasData()) return true;
 			return false;
 		}
 	

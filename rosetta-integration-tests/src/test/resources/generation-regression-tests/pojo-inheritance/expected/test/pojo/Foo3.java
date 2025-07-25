@@ -704,7 +704,7 @@ public interface Foo3 extends Foo2 {
 			if (getNumberAttrOverriddenAsInteger()!=null) return true;
 			if (getParent()!=null) return true;
 			if (getParentListOverriddenAsReferenceWithMetaGrandChild()!=null) return true;
-			if (getOtherParentList()!=null && !getOtherParentList().isEmpty()) return true;
+			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getStringAttr()!=null) return true;
 			return false;
 		}

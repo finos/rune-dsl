@@ -955,9 +955,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			if (getSimpleAttrWithId()!=null) return true;
 			if (getMultiSimpleAttrWithId()!=null && !getMultiSimpleAttrWithId().isEmpty()) return true;
 			if (getComplexAttr()!=null) return true;
-			if (getMultiComplexAttr()!=null && !getMultiComplexAttr().isEmpty()) return true;
+			if (getMultiComplexAttr()!=null && getMultiComplexAttr().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getComplexAttrWithRef()!=null) return true;
-			if (getMultiComplexAttrWithRef()!=null && !getMultiComplexAttrWithRef().isEmpty()) return true;
+			if (getMultiComplexAttrWithRef()!=null && getMultiComplexAttrWithRef().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			return false;
 		}
 	
