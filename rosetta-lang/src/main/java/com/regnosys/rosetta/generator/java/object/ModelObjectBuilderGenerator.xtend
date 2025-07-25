@@ -567,9 +567,9 @@ class ModelObjectBuilderGenerator {
 		'''
 		@Override
 		public boolean hasData() {
-			«IF type.hasRequiredProperty»
-			return true;
-			«ELSE»
+«««			«IF type.hasRequiredProperty»
+«««			return true;
+«««			«ELSE»
 			«IF extended»if (super.hasData()) return true;«ENDIF»
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
@@ -586,7 +586,7 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 			«ENDFOR»
 			return false;
-			«ENDIF»
+«««			«ENDIF»
 		}
 		'''
 	}
