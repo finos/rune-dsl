@@ -97,13 +97,6 @@ class ModelObjectBuilderGenerator {
 		}
 		'''
 	}
-	
-	private def boolean hasRequiredProperty(JavaType t) {
-		if (t instanceof JavaPojoInterface) {
-			return t.allProperties.exists[isRequired]
-		}
-		return false
-	}
 
 	private def StringConcatenationClient merge(Iterable<JavaPojoProperty> properties, JavaPojoBuilderInterface builderType, boolean extended, JavaClassScope builderScope) {
 		'''
@@ -567,9 +560,6 @@ class ModelObjectBuilderGenerator {
 		'''
 		@Override
 		public boolean hasData() {
-«««			«IF type.hasRequiredProperty»
-«««			return true;
-«««			«ELSE»
 			«IF extended»if (super.hasData()) return true;«ENDIF»
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
@@ -586,7 +576,6 @@ class ModelObjectBuilderGenerator {
 				«ENDIF»
 			«ENDFOR»
 			return false;
-«««			«ENDIF»
 		}
 		'''
 	}
