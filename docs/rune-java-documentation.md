@@ -10,7 +10,118 @@ weight: 3
 
 ## Types and enums
 
-Coming soon.
+### Structure of Generated Model Classes
+
+When a Rune model is compiled, each type defined in the model is translated into a Java class that implements the `RosettaModelObject` interface. These generated classes follow a consistent structure:
+
+1. **Immutable Objects**: The generated classes are immutable. Once created, their state cannot be changed.
+
+2. **Builder Pattern**: Each class comes with a nested builder class that implements the `RosettaModelObjectBuilder` interface. The builder is used to construct instances of the class.
+
+3. **Attributes**: The attributes defined in the Rune model each have corresponding getter methods.
+
+4. **Metadata**: Classes can include metadata fields that provide additional information about the object.
+
+5. **Utility Methods**: Various utility methods are generated, such as `toString()` for debugging, `prune()` for recursively removing empty objects, and `process(...)` for traversing the object graph.
+
+#### Example
+
+For a Rune type definition like:
+
+``` Haskell
+type Vehicle:
+    registrationID string (1..1)
+    vehicleClassification VehicleClassificationEnum (1..1)
+```
+
+The generated Java interface would include:
+
+``` Java
+@RuneDataType(value="Vehicle", builder=Vehicle.VehicleBuilderImpl.class, version="x.y.z")
+public interface Vehicle extends RosettaModelObject {
+    // Getters
+    String getRegistrationID();
+    VehicleClassificationEnum getVehicleClassification();
+    
+    // Create a new builder instance
+    public static VehicleBuilder builder() { ... }
+    
+    // Visitor pattern to traverse the object graph
+    void process(RosettaPath path, Processor processor);
+
+    // Builder interface
+    interface VehicleBuilder extends Vehicle, RosettaModelObjectBuilder {
+        // Setter methods
+        VehicleBuilder setRegistrationID(String registrationID);
+        VehicleBuilder setVehicleClassification(VehicleClassificationEnum vehicleClassification);
+
+        // Build method
+        Vehicle build();
+
+        // Pruning method
+        VehicleBuilder prune();
+
+        // Other methods
+        boolean hasData();
+    }
+}
+```
+
+### Pruning
+
+The generated builder classes include a `prune()` method that helps to clean up object graphs by removing empty nested objects. This is particularly useful when working with large, complex object structures where many optional fields might be empty.
+
+#### How Pruning Works
+
+The `prune()` method recursively traverses the object graph and sets to `null` any nested `RosettaModelObject` attributes that are considered empty. An attribute is considered empty if:
+
+1. It is `null`
+2. It is an empty list
+3. It is optional and all of its attributes are empty
+
+Non-null required attributes are never considered empty, even if all of their attributes are empty.
+
+The pruning process is implemented by:
+
+1. Recursively calling `prune()` on all nested `RosettaModelObject` attributes
+2. Filtering out `null` elements from lists and calling `prune()` on each remaining element
+3. Checking if optional objects are empty after pruning (using the `hasData()` method) and setting them to `null` if they are
+
+#### Example
+
+Consider a simple object graph:
+
+``` Java
+Vehicle vehicle = Vehicle.builder()
+    .setRegistrationID("ABC123")
+    .setOwner(Person.builder()
+        .setAddress(Address.builder().build())  // Empty address
+        .build())
+    .build();
+```
+
+After pruning:
+
+``` Java
+Vehicle.VehicleBuilder builder = vehicle.toBuilder();
+builder.prune();
+Vehicle prunedVehicle = builder.build();
+
+// The empty Address object has been pruned (set to null)
+assert prunedVehicle.getOwner().getAddress() == null;
+```
+
+#### When to Use Pruning
+
+Pruning is useful in several scenarios:
+
+1. **Before Serialization**: To reduce the size of serialized data by removing empty objects
+2. **Before Comparison**: To simplify object comparison by removing empty structures that don't contribute to the object's semantic meaning
+3. **Before Persistence**: To optimize storage by not storing empty objects
+
+{{< notice info "Note" >}}
+Pruning modifies the builder's state. If you need to preserve the original object, make sure to make a copy using `build().toBuilder()` before pruning.
+{{< /notice >}}
 
 ## Functions
 
@@ -102,9 +213,9 @@ public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunc
     @Override
     public EuropeanParliamentReport evaluate(VehicleOwnership input) {
         EuropeanParliamentReport.EuropeanParliamentReportBuilder outputBuilder = doEvaluate(input);
-        
+
         ... // build the output and perform validation
-        
+
         return output;
     }
 
