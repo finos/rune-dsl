@@ -17,8 +17,8 @@ jobs:
           architecture: x64
           cache: maven
           server-id: ossrh
-          server-username: GITHUB_ACTOR
-          server-password: GITHUB_TOKEN
+          server-username: CI_DEPLOY_USERNAME_CENTRAL
+          server-password: CI_DEPLOY_PASSWORD_CENTRAL
           gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
       - name: Set version
@@ -29,8 +29,8 @@ jobs:
         env:
           GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
           GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_DEPLOY_USERNAME_CENTRAL: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
+          CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
 
   backport-publish:
     runs-on: ubuntu-latest
