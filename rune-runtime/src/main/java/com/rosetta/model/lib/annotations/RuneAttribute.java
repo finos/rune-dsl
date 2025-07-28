@@ -8,5 +8,6 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RuneAttribute {
 
-	String value()  default "";
+	String value() default "";
+	boolean isRequired() default false;
 }

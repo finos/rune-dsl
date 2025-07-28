@@ -80,8 +80,8 @@ public interface Bar extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("bar")
-		@RuneAttribute("bar")
+		@RosettaAttribute(value="bar", isRequired=true)
+		@RuneAttribute(value="bar", isRequired=true)
 		public Qux getBar() {
 			return bar;
 		}
@@ -134,8 +134,8 @@ public interface Bar extends RosettaModelObject {
 		protected Qux.QuxBuilder bar;
 		
 		@Override
-		@RosettaAttribute("bar")
-		@RuneAttribute("bar")
+		@RosettaAttribute(value="bar", isRequired=true)
+		@RuneAttribute(value="bar", isRequired=true)
 		public Qux.QuxBuilder getBar() {
 			return bar;
 		}
@@ -153,8 +153,8 @@ public interface Bar extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute("bar")
-		@RuneAttribute("bar")
+		@RosettaAttribute(value="bar", isRequired=true)
+		@RuneAttribute(value="bar", isRequired=true)
 		@Override
 		public Bar.BarBuilder setBar(Qux _bar) {
 			this.bar = _bar == null ? null : _bar.toBuilder();
@@ -174,13 +174,13 @@ public interface Bar extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Bar.BarBuilder prune() {
-			if (bar!=null && !bar.prune().hasData()) bar = null;
+			if (bar!=null) bar.prune();
 			return this;
 		}
 		
 		@Override
 		public boolean hasData() {
-			if (getBar()!=null && getBar().hasData()) return true;
+			if (getBar()!=null) return true;
 			return false;
 		}
 	
