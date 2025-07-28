@@ -77,8 +77,8 @@ public interface GetClassEscaping extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("class")
-		@RuneAttribute("class")
+		@RosettaAttribute(value="class", isRequired=true)
+		@RuneAttribute(value="class", isRequired=true)
 		public Integer _getClass() {
 			return _class;
 		}
@@ -131,14 +131,14 @@ public interface GetClassEscaping extends RosettaModelObject {
 		protected Integer _class;
 		
 		@Override
-		@RosettaAttribute("class")
-		@RuneAttribute("class")
+		@RosettaAttribute(value="class", isRequired=true)
+		@RuneAttribute(value="class", isRequired=true)
 		public Integer _getClass() {
 			return _class;
 		}
 		
-		@RosettaAttribute("class")
-		@RuneAttribute("class")
+		@RosettaAttribute(value="class", isRequired=true)
+		@RuneAttribute(value="class", isRequired=true)
 		@Override
 		public GetClassEscaping.GetClassEscapingBuilder setClass(Integer __class) {
 			this._class = __class == null ? null : __class;

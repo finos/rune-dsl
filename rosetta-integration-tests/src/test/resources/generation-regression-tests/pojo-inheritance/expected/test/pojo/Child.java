@@ -84,8 +84,8 @@ public interface Child extends Parent, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute("meta")
-		@RuneAttribute("meta")
+		@RosettaAttribute(value="meta")
+		@RuneAttribute(value="meta")
 		@RuneMetaType
 		public MetaFields getMeta() {
 			return meta;
@@ -141,8 +141,8 @@ public interface Child extends Parent, GlobalKey {
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
-		@RosettaAttribute("meta")
-		@RuneAttribute("meta")
+		@RosettaAttribute(value="meta")
+		@RuneAttribute(value="meta")
 		@RuneMetaType
 		public MetaFields.MetaFieldsBuilder getMeta() {
 			return meta;
@@ -161,8 +161,8 @@ public interface Child extends Parent, GlobalKey {
 			return result;
 		}
 		
-		@RosettaAttribute("meta")
-		@RuneAttribute("meta")
+		@RosettaAttribute(value="meta")
+		@RuneAttribute(value="meta")
 		@RuneMetaType
 		@Override
 		public Child.ChildBuilder setMeta(MetaFields _meta) {

@@ -118,8 +118,8 @@ public interface GrandChild extends Child {
 	class GrandChildBuilderImpl extends Child.ChildBuilderImpl implements GrandChild.GrandChildBuilder {
 	
 		
-		@RosettaAttribute("meta")
-		@RuneAttribute("meta")
+		@RosettaAttribute(value="meta")
+		@RuneAttribute(value="meta")
 		@RuneMetaType
 		@Override
 		public GrandChild.GrandChildBuilder setMeta(MetaFields _meta) {
