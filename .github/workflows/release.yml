@@ -31,8 +31,19 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
           CI_DEPLOY_USERNAME_CENTRAL: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
+  
+  # It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait. 
+  delay:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GuillaumeFalourd/wait-sleep-action@v1
+        with:
+          time: '5m'
+
 
   backport-publish:
+    needs: delay
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
