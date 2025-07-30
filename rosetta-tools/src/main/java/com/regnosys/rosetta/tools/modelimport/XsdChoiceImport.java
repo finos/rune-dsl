@@ -80,9 +80,7 @@ public class XsdChoiceImport extends AbstractXsdImport<XsdSimpleType, Choice> {
                 choiceType.getAttributes().add(choiceOption);
             }
 
-            if (tc.getType() instanceof ParametrizedRosettaType) {
-                util.addTypeArguments(tc, restriction);
-            }
+            util.addTypeArguments(tc, restriction);
         }
     }
 }
