@@ -3,24 +3,24 @@ version "${project.version}"
 
 enum FooEnum:
 
-    FOO1
-    FOO2
+    FOO1 displayName "Foo1"
+    FOO2 displayName "Foo2"
 
 enum BarEnum:
 
-    BAR1
-    BAR2
+    BAR1 displayName "Bar1"
+    BAR2 displayName "Bar2"
 
 enum BazEnum:
 
-    BAZ1
-    BAZ2
+    BAZ1 displayName "Baz1"
+    BAZ2 displayName "Baz2"
 
 enum FooBarBazEnum:
 
-    FOO1
-    FOO2
-    BAR1
-    BAR2
-    BAZ1
-    BAZ2
+    FOO1 displayName "Foo1"
+    FOO2 displayName "Foo2"
+    BAR1 displayName "Bar1"
+    BAR2 displayName "Bar2"
+    BAZ1 displayName "Baz1"
+    BAZ2 displayName "Baz2"

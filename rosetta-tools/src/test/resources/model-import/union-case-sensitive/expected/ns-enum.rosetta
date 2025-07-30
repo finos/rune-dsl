@@ -3,7 +3,7 @@ version "${project.version}"
 
 enum FooEnum:
 
-    VALUE0
-    VALUE1
-    VALUE2
-    VA_LU_E
+    VALUE0 displayName "value"
+    VALUE1 displayName "Value"
+    VALUE2 displayName "VALUE"
+    VA_LU_E displayName "VaLuE"
