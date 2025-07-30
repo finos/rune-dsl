@@ -69,7 +69,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
                             attr string (1..1)
                         """,
                 """
-                        ERROR (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 8:5, length 4, on Attribute
+                        WARNING (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 8:5, length 4, on Attribute
                         """);
     }
 
