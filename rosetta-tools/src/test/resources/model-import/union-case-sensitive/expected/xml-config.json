@@ -1,0 +1,10 @@
+{
+  "test.ns.FooEnum" : {
+    "enumValues" : {
+      "VALUE0" : "value",
+      "VALUE1" : "Value",
+      "VALUE2" : "VALUE",
+      "VA_LU_E" : "VaLuE"
+    }
+  }
+}

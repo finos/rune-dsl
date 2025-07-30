@@ -1,0 +1,10 @@
+{
+  "test.ns.RefType" : {
+    "attributes" : {
+      "fooAttr" : {
+        "xmlName" : "FooAttr",
+        "xmlRepresentation" : "ATTRIBUTE"
+      }
+    }
+  }
+}

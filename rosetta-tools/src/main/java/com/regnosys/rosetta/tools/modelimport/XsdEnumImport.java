@@ -64,8 +64,22 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 			.filter(e -> !e.getValue().isEmpty())
 			.map(e -> this.registerEnumValue(e, typeMappings, targetConfig))
 			.forEach(rosettaEnumeration.getEnumValues()::add);
+
+		util.makeNamesUnique(rosettaEnumeration.getEnumValues());
+
+		addDisplayNameToEnumValues(typeMappings, enumeration);
 		
 		return rosettaEnumeration;
+	}
+
+	private void addDisplayNameToEnumValues(RosettaXsdMapping typeMappings, List<XsdEnumeration> enumeration) {
+		enumeration.forEach(ev -> {
+			RosettaEnumValue rosettaEnumValue = typeMappings.getEnumValue(ev);
+			String originalXsdName = ev.getValue();
+			if (!rosettaEnumValue.getName().equals(originalXsdName)) {
+				rosettaEnumValue.setDisplay(originalXsdName);
+			}
+		});
 	}
 
 	@Override

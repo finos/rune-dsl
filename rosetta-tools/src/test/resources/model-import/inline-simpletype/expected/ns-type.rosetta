@@ -1,0 +1,4 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+typeAlias Foo: int(min: 0, max: 100)

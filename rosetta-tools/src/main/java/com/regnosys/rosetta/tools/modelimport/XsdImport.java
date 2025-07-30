@@ -20,16 +20,14 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.*;
 import jakarta.inject.Inject;
 
-import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.core.XsdParser;
 import org.xmlet.xsdparser.xsdelements.*;
 
 import com.google.common.collect.Streams;
-import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -46,16 +44,18 @@ public class XsdImport {
 	private final XsdTypeImport xsdTypeImport;
 	private final XsdEnumImport xsdEnumImport;
 	private final XsdTypeAliasImport xsdTypeAliasImport;
+	private final XsdChoiceImport xsdChoiceImport;
 	private final RosettaXsdMapping xsdMapping;
 	private final ModelIdProvider modelIdProvider;
 
 	@Inject
-	public XsdImport(RosettaModelFactory rosettaModelFactory, XsdElementImport xsdElementImport, XsdTypeImport xsdTypeImport, XsdEnumImport xsdEnumImport, XsdTypeAliasImport xsdTypeAliasImport, RosettaXsdMapping xsdMapping, ModelIdProvider modelIdProvider) {
+	public XsdImport(RosettaModelFactory rosettaModelFactory, XsdElementImport xsdElementImport, XsdTypeImport xsdTypeImport, XsdEnumImport xsdEnumImport, XsdTypeAliasImport xsdTypeAliasImport, XsdChoiceImport xsdChoiceImport, RosettaXsdMapping xsdMapping, ModelIdProvider modelIdProvider) {
 		this.rosettaModelFactory = rosettaModelFactory;
 		this.xsdElementImport = xsdElementImport;
 		this.xsdTypeImport = xsdTypeImport;
 		this.xsdEnumImport = xsdEnumImport;
 		this.xsdTypeAliasImport = xsdTypeAliasImport;
+		this.xsdChoiceImport = xsdChoiceImport;
 		this.xsdMapping = xsdMapping;
 		this.modelIdProvider = modelIdProvider;
 	}
@@ -72,6 +72,7 @@ public class XsdImport {
 		// forward references and self-references.
 		List<? extends RosettaRootElement> enums = xsdEnumImport.registerTypes(xsdElements, xsdMapping, targetConfig);
 		List<? extends RosettaRootElement> aliases = xsdTypeAliasImport.registerTypes(xsdElements, xsdMapping, targetConfig);
+		List<? extends RosettaRootElement> choices = xsdChoiceImport.registerTypes(xsdElements, xsdMapping, targetConfig);
 		List<? extends Data> elements = xsdElementImport.registerTypes(xsdElements, xsdMapping, targetConfig);
 		List<? extends Data> types = xsdTypeImport.registerTypes(xsdElements, xsdMapping, targetConfig)
 				.stream().flatMap(Collection::stream).toList();
@@ -94,16 +95,18 @@ public class XsdImport {
 			enumModel.getElements().addAll(enums);
 		}
 		
-		if (!aliases.isEmpty() || !elements.isEmpty() || !types.isEmpty()) {
+		if (!aliases.isEmpty() || !elements.isEmpty() || !types.isEmpty() || !choices.isEmpty()) {
 			RosettaModel typeModel = rosettaModelFactory.createRosettaModel(TYPE, targetConfig);
 			typeModel.getElements().addAll(aliases);
 			typeModel.getElements().addAll(elements);
 			typeModel.getElements().addAll(types);
+			typeModel.getElements().addAll(choices);
 		}
 		
 		// Then fill in the contents of these types.
 		xsdEnumImport.completeTypes(xsdElements, xsdMapping);
 		xsdTypeAliasImport.completeTypes(xsdElements, xsdMapping);
+		xsdChoiceImport.completeTypes(xsdElements, xsdMapping);
 		xsdElementImport.completeTypes(xsdElements, xsdMapping);
 		xsdTypeImport.completeTypes(xsdElements, xsdMapping);
 
@@ -115,16 +118,25 @@ public class XsdImport {
 
 		for (XsdAbstractElement elem : elements) {
 			if (elem instanceof XsdElement xsdElement) {
-				XsdComplexType inlineType = xsdElement.getXsdComplexType();
-				if (((XsdElement) elem).getType() == null && inlineType != null) {
-					inlineType.setName(xsdElement.getRawName());
-
-					result.add(inlineType);
-
-					result.addAll(promoteInlineTypesRecursively(getChildElements(inlineType)));
-
-					continue;
+				if (xsdElement.getXsdComplexType() != null){
+					XsdComplexType inlineType = xsdElement.getXsdComplexType();
+					if (((XsdElement) elem).getType() == null && inlineType != null) {
+						inlineType.setName(xsdElement.getRawName());
+						result.add(inlineType);
+						result.addAll(promoteInlineTypesRecursively(getChildElements(inlineType)));
+						continue;
+					}
 				}
+				else if(xsdElement.getXsdSimpleType() != null) {
+					XsdSimpleType inlineType = xsdElement.getXsdSimpleType();
+					if (((XsdElement) elem).getType() == null && inlineType != null) {
+						inlineType.setName(xsdElement.getRawName());
+						result.add(inlineType);
+						result.addAll(promoteInlineTypesRecursively(getChildElements(inlineType)));
+						continue;
+					}
+				}
+
 			}
 			result.add(elem);
 			result.addAll(promoteInlineTypesRecursively(getChildElements(elem)));
