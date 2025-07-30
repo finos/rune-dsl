@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:simpleType name="FooEnum">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="Foo1"/>
+            <xsd:enumeration value="Foo2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="BarEnum">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="Bar1"/>
+            <xsd:enumeration value="Bar2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="BazEnum">
+        <xsd:restriction base="xsd:token">
+            <xsd:enumeration value="Baz1"/>
+            <xsd:enumeration value="Baz2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="FooBarBazEnum">
+        <xsd:union memberTypes="FooEnum BarEnum BazEnum" />
+    </xsd:simpleType>
+</xsd:schema>

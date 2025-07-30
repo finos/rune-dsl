@@ -1,0 +1,9 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+typeAlias FooBar: FooBar_choice
+
+choice FooBar_choice:
+
+    string(minLength: 2, maxLength: 2, pattern: "([A-Z]{2})")
+    string(minLength: 4, maxLength: 6, pattern: "([A-Z]{2}-[A-Z0-9]{1,3})")

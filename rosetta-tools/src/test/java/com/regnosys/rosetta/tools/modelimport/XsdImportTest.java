@@ -226,6 +226,36 @@ public class XsdImportTest {
 		runTest("inline-complexContent");
 	}
 
+	@Test
+	void testUnionOutline() throws IOException, URISyntaxException {
+		runTest("union-outline");
+	}
+
+	@Test
+	void testUnionMultiple() throws IOException, URISyntaxException {
+		runTest("union-multiple");
+	}
+
+	@Test
+	void testUnionInline() throws IOException, URISyntaxException {
+		runTest("union-inline");
+	}
+
+	@Test
+	void testUnionCaseSensitive() throws IOException, URISyntaxException {
+		runTest("union-case-sensitive");
+	}
+
+	@Test
+	void testUnionSimpleType() throws IOException, URISyntaxException {
+		runTest("union-simpletype");
+	}
+
+	@Test
+	void testUnionSimpleTypeInline() throws IOException, URISyntaxException {
+		runTest("union-simpletype-inline");
+	}
+
 	private ImportConfig mockConfig(Path basePath) {
 		ImportConfig config = new ImportConfig(basePath.resolve("schema.xsd").toString(), new ImportTargetConfig(NAMESPACE, NAMESPACE_DEFINITION, Collections.emptyMap(), null));
 		return config;
