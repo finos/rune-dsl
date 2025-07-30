@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
-public class TypeValidatorTest extends AbstractValidatorTest {
+class TypeValidatorTest extends AbstractValidatorTest {
     @Test
     void testTypeNameShouldBeCapitalized() {
         assertIssues("""
@@ -39,7 +39,7 @@ public class TypeValidatorTest extends AbstractValidatorTest {
                             override attr number (1..1)
                         """,
                 """
-                        ERROR (null) 'Attribute overrides should come before any new attributes.' at 9:5, length 27, on Attribute
+                        ERROR (null) 'Attribute overrides should come before any new attributes' at 9:5, length 27, on Attribute
                         """);
     }
 
@@ -54,7 +54,7 @@ public class TypeValidatorTest extends AbstractValidatorTest {
                             override attr int (1..1)
                         """,
                 """
-                        ERROR (null) 'Duplicate attribute override for 'attr'.' at 9:14, length 4, on Attribute
+                        ERROR (null) 'Attribute 'attr' already defined' at 9:14, length 4, on Attribute
                         """);
     }
 
@@ -69,7 +69,19 @@ public class TypeValidatorTest extends AbstractValidatorTest {
                             attr string (1..1)
                         """,
                 """
-                        WARNING (null) 'Duplicate attribute 'attr'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.' at 8:5, length 4, on Attribute
+                        ERROR (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 8:5, length 4, on Attribute
+                        """);
+    }
+
+    @Test
+    void testCannotHaveDuplicateAttributeOnSameType() {
+        assertIssues("""
+                        type Foo:
+                            attr number (0..1)
+                            attr number (0..1)
+                        """,
+                """
+                        ERROR (null) 'Attribute 'attr' already defined' at 6:5, length 4, on Attribute
                         """);
     }
 

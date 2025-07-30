@@ -22,7 +22,7 @@ import static com.regnosys.rosetta.validation.RosettaIssueCodes.*;
 public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private RosettaEcoreUtil ecoreUtil;
-	
+
 	@Check
 	public void checkTypeNameIsCapitalized(Data data) {
 		// TODO: also enforce on Choice's once Choice does not extend Data anymore
@@ -70,24 +70,19 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 		path.remove(path.size() - 1);
 		return false;
 	}
-	
+
 	@Check
 	public void checkAttributeNamesAreUnique(Data data) {
-		Set<String> usedNames = new HashSet<>();
+		Set<String> usedNamesInSuperType = new HashSet<>();
+		Set<String> usedNamesInType = new HashSet<>();
 		if (data.getSuperType() != null) {
-			ecoreUtil.getAllAttributes(data.getSuperType()).forEach(attr -> usedNames.add(attr.getName()));
+			ecoreUtil.getAllAttributes(data.getSuperType()).forEach(attr -> usedNamesInSuperType.add(attr.getName()));
 		}
-		Set<String> usedOverrides = new HashSet<>();
 		for (Attribute attr: data.getAttributes()) {
-			if (!attr.isOverride()) {
-				if (!usedNames.add(attr.getName())) {
-					// TODO: make this an error
-					warning("Duplicate attribute '" + attr.getName() + "'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.", attr, ROSETTA_NAMED__NAME);
-				}
-			} else {
-				if (!usedOverrides.add(attr.getName())) {
-					error("Duplicate attribute override for '" + attr.getName() + "'.", attr, ROSETTA_NAMED__NAME);
-				}
+			if (!attr.isOverride() && usedNamesInSuperType.contains(attr.getName())) {
+				error("Attribute '" + attr.getName() + "' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`", attr, ROSETTA_NAMED__NAME);
+			} else if (!usedNamesInType.add(attr.getName())) {
+				error("Attribute '" + attr.getName() + "' already defined", attr, ROSETTA_NAMED__NAME);
 			}
 		}
 	}
@@ -99,7 +94,7 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 			if (!attr.isOverride()) {
 				newAttrEncountered = true;
 			} else if (newAttrEncountered) {
-				error("Attribute overrides should come before any new attributes.", attr, null);
+				error("Attribute overrides should come before any new attributes", attr, null);
 			}
 		}
 	}
