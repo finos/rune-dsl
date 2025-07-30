@@ -20,16 +20,14 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.*;
 import jakarta.inject.Inject;
 
-import com.regnosys.rosetta.rosetta.RosettaNamed;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.xmlet.xsdparser.core.XsdParser;
 import org.xmlet.xsdparser.xsdelements.*;
 
 import com.google.common.collect.Streams;
-import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -115,16 +113,25 @@ public class XsdImport {
 
 		for (XsdAbstractElement elem : elements) {
 			if (elem instanceof XsdElement xsdElement) {
-				XsdComplexType inlineType = xsdElement.getXsdComplexType();
-				if (((XsdElement) elem).getType() == null && inlineType != null) {
-					inlineType.setName(xsdElement.getRawName());
-
-					result.add(inlineType);
-
-					result.addAll(promoteInlineTypesRecursively(getChildElements(inlineType)));
-
-					continue;
+				if (xsdElement.getXsdComplexType() != null){
+					XsdComplexType inlineType = xsdElement.getXsdComplexType();
+					if (((XsdElement) elem).getType() == null && inlineType != null) {
+						inlineType.setName(xsdElement.getRawName());
+						result.add(inlineType);
+						result.addAll(promoteInlineTypesRecursively(getChildElements(inlineType)));
+						continue;
+					}
 				}
+				else if(xsdElement.getXsdSimpleType() != null) {
+					XsdSimpleType inlineType = xsdElement.getXsdSimpleType();
+					if (((XsdElement) elem).getType() == null && inlineType != null) {
+						inlineType.setName(xsdElement.getRawName());
+						result.add(inlineType);
+						result.addAll(promoteInlineTypesRecursively(getChildElements(inlineType)));
+						continue;
+					}
+				}
+
 			}
 			result.add(elem);
 			result.addAll(promoteInlineTypesRecursively(getChildElements(elem)));

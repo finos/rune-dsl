@@ -207,6 +207,11 @@ public class XsdImportTest {
 	}
 
 	@Test
+	void testInlineSimple() throws IOException, URISyntaxException {
+		runTest("inline-simpletype");
+	}
+
+	@Test
 	void testInlineGroup() throws IOException, URISyntaxException {
 		runTest("inline-group");
 	}
