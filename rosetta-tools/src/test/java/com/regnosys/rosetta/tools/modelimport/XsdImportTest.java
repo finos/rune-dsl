@@ -232,8 +232,8 @@ public class XsdImportTest {
 	}
 
 	@Test
-	void testUnionOutline() throws IOException, URISyntaxException {
-		runTest("union-outline");
+	void testUnionExternal() throws IOException, URISyntaxException {
+		runTest("union-external");
 	}
 
 	@Test
