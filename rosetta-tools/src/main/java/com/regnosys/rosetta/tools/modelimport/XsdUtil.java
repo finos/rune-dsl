@@ -16,20 +16,14 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.security.InvalidParameterException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 
-import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
-import org.xmlet.xsdparser.xsdelements.XsdAnnotatedElements;
-import org.xmlet.xsdparser.xsdelements.XsdAnnotation;
-import org.xmlet.xsdparser.xsdelements.XsdAnnotationChildren;
-import org.xmlet.xsdparser.xsdelements.XsdNamedElements;
-import org.xmlet.xsdparser.xsdelements.XsdSchema;
-import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
+import org.xmlet.xsdparser.core.XsdParserCore;
+import org.xmlet.xsdparser.xsdelements.*;
 
 public class XsdUtil {
 	private final Set<String> documentationSources = Set.of("Definition");
@@ -69,8 +63,25 @@ public class XsdUtil {
 	}
 	
 	public boolean isEnumType(XsdSimpleType simpleType) {
-		return simpleType.getAllRestrictions().stream()
+		return getRestrictions(simpleType).stream()
 				.anyMatch(e -> !e.getEnumeration().isEmpty());
+	}
+
+	public List<XsdRestriction> getRestrictions(XsdSimpleType simpleType) {
+		Map<String, XsdRestriction> restrictions = new HashMap<>();
+		List<XsdRestriction> result = new ArrayList<>();
+
+		XsdRestriction restriction = simpleType.getRestriction();
+		XsdUnion union = simpleType.getUnion();
+
+		if (restriction != null){
+			result.add(restriction);
+		}
+
+		if (union != null){
+			result.addAll(union.getUnionElements().stream().map(XsdSimpleType::getRestriction).toList());
+		}
+		return result;
 	}
 	
 	public String getQualifiedName(XsdNamedElements elem) {

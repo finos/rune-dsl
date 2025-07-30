@@ -64,6 +64,8 @@ public class XsdEnumImport extends AbstractXsdImport<XsdSimpleType, RosettaEnume
 			.filter(e -> !e.getValue().isEmpty())
 			.map(e -> this.registerEnumValue(e, typeMappings, targetConfig))
 			.forEach(rosettaEnumeration.getEnumValues()::add);
+
+		util.makeNamesUnique(rosettaEnumeration.getEnumValues());
 		
 		return rosettaEnumeration;
 	}
