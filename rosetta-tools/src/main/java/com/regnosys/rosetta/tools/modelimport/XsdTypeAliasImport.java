@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
@@ -77,8 +76,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 			throw new RuntimeException("Unrecognized restriction: " + restr.getBase());
 		}
 		typeAlias.setTypeCall(tc);
-		if (tc.getType() instanceof ParametrizedRosettaType) {
-			util.addTypeArguments(tc, restr);
-		}
+		util.addTypeArguments(tc, restr);
+
 	}
 }
