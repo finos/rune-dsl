@@ -16,29 +16,17 @@
 
 package com.regnosys.rosetta.tools.modelimport;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import com.regnosys.rosetta.rosetta.*;
-import com.regnosys.rosetta.rosetta.simple.Choice;
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
-import com.regnosys.rosetta.rosetta.simple.SimpleFactory;
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType;
+import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
+import com.regnosys.rosetta.rosetta.TypeCall;
 import jakarta.inject.Inject;
-
 import org.xmlet.xsdparser.xsdelements.XsdAbstractElement;
 import org.xmlet.xsdparser.xsdelements.XsdRestriction;
 import org.xmlet.xsdparser.xsdelements.XsdSimpleType;
 
-import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
-import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
-import com.regnosys.rosetta.types.builtin.RNumberType;
-import com.regnosys.rosetta.types.builtin.RStringType;
-import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdStringRestrictions;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, RosettaTypeAlias> {	
 	
@@ -53,7 +41,7 @@ public class XsdTypeAliasImport extends AbstractXsdImport<XsdSimpleType, Rosetta
 	@Override
 	public List<XsdSimpleType> filterTypes(List<XsdAbstractElement> elements) {
 		return super.filterTypes(elements).stream()
-			.filter(x -> !util.isEnumType(x) && x.getRestriction() != null)
+			.filter(x -> !util.isEnumType(x) && !util.isChoiceType(x))
 			.collect(Collectors.toList());
 	}
 

@@ -18,7 +18,6 @@ package com.regnosys.rosetta.tools.modelimport;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +29,6 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
-import org.xmlet.xsdparser.core.XsdParserCore;
 import org.xmlet.xsdparser.xsdelements.*;
 import org.xmlet.xsdparser.xsdelements.xsdrestrictions.XsdStringRestrictions;
 
@@ -80,8 +78,14 @@ public class XsdUtil {
 		return !isEnumType(simpleType) && simpleType.getUnion() != null;
 	}
 
+	/**
+	 * Returns all restrictions defined for a simple type.
+	 * <p>
+	 * This method exists as an alternative to {@code org.xmlet.xsdparser.xsdelements.XsdSimpleType.getAllRestrictions()},
+	 * which combines restrictions and validates that they are non-contradictory. In this case, only the raw list of
+	 * restrictions defined on the given type is needed.
+	 */
 	public List<XsdRestriction> getRestrictions(XsdSimpleType simpleType) {
-		Map<String, XsdRestriction> restrictions = new HashMap<>();
 		List<XsdRestriction> result = new ArrayList<>();
 
 		XsdRestriction restriction = simpleType.getRestriction();
@@ -160,49 +164,50 @@ public class XsdUtil {
 	}
 
 	public void addTypeArguments(TypeCall tc, XsdRestriction restr) {
-		ParametrizedRosettaType paramBaseType = (ParametrizedRosettaType) tc.getType();
-		// add type arguments
-		if (restr.getTotalDigits() != null) {
-			BigInteger digits = BigInteger.valueOf(restr.getTotalDigits().getValue());
-			createTypeArgument(paramBaseType, RNumberType.DIGITS_PARAM_NAME, digits).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getFractionDigits() != null) {
-			BigInteger fractionalDigits = BigInteger.valueOf(restr.getFractionDigits().getValue());
-			createTypeArgument(paramBaseType, RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, fractionalDigits).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getMinInclusive() != null) {
-			BigDecimal min = new BigDecimal(restr.getMinInclusive().getValue());
-			createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getMaxInclusive() != null) {
-			BigDecimal max = new BigDecimal(restr.getMaxInclusive().getValue());
-			createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getMinExclusive() != null) {
-			BigDecimal min = new BigDecimal(restr.getMinExclusive().getValue());
-			createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getMaxExclusive() != null) {
-			BigDecimal max = new BigDecimal(restr.getMaxExclusive().getValue());
-			createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max).ifPresent(arg -> tc.getArguments().add(arg));
-		}
+		if (tc.getType() instanceof ParametrizedRosettaType paramBaseType) {
+			// add type arguments
+			if (restr.getTotalDigits() != null) {
+				BigInteger digits = BigInteger.valueOf(restr.getTotalDigits().getValue());
+				createTypeArgument(paramBaseType, RNumberType.DIGITS_PARAM_NAME, digits).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getFractionDigits() != null) {
+				BigInteger fractionalDigits = BigInteger.valueOf(restr.getFractionDigits().getValue());
+				createTypeArgument(paramBaseType, RNumberType.FRACTIONAL_DIGITS_PARAM_NAME, fractionalDigits).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMinInclusive() != null) {
+				BigDecimal min = new BigDecimal(restr.getMinInclusive().getValue());
+				createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMaxInclusive() != null) {
+				BigDecimal max = new BigDecimal(restr.getMaxInclusive().getValue());
+				createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMinExclusive() != null) {
+				BigDecimal min = new BigDecimal(restr.getMinExclusive().getValue());
+				createTypeArgument(paramBaseType, RNumberType.MIN_PARAM_NAME, min).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMaxExclusive() != null) {
+				BigDecimal max = new BigDecimal(restr.getMaxExclusive().getValue());
+				createTypeArgument(paramBaseType, RNumberType.MAX_PARAM_NAME, max).ifPresent(arg -> tc.getArguments().add(arg));
+			}
 
-		if (restr.getLength() != null) {
-			BigInteger length = BigInteger.valueOf(restr.getLength().getValue());
-			createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, length).ifPresent(arg -> tc.getArguments().add(arg));
-			createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, length).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getMinLength() != null && restr.getMinLength().getValue() != 0) {
-			BigInteger minLength = BigInteger.valueOf(restr.getMinLength().getValue());
-			createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, minLength).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getMaxLength() != null) {
-			BigInteger maxLength = BigInteger.valueOf(restr.getMaxLength().getValue());
-			createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, maxLength).ifPresent(arg -> tc.getArguments().add(arg));
-		}
-		if (restr.getPattern() != null) {
-			String pattern = restr.getPatterns().stream().map(XsdStringRestrictions::getValue).collect(Collectors.joining("|"));
-			createTypeArgument(paramBaseType, RStringType.PATTERN_PARAM_NAME, pattern).ifPresent(arg -> tc.getArguments().add(arg));
+			if (restr.getLength() != null) {
+				BigInteger length = BigInteger.valueOf(restr.getLength().getValue());
+				createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, length).ifPresent(arg -> tc.getArguments().add(arg));
+				createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, length).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMinLength() != null && restr.getMinLength().getValue() != 0) {
+				BigInteger minLength = BigInteger.valueOf(restr.getMinLength().getValue());
+				createTypeArgument(paramBaseType, RStringType.MIN_LENGTH_PARAM_NAME, minLength).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getMaxLength() != null) {
+				BigInteger maxLength = BigInteger.valueOf(restr.getMaxLength().getValue());
+				createTypeArgument(paramBaseType, RStringType.MAX_LENGTH_PARAM_NAME, maxLength).ifPresent(arg -> tc.getArguments().add(arg));
+			}
+			if (restr.getPattern() != null) {
+				String pattern = restr.getPatterns().stream().map(XsdStringRestrictions::getValue).collect(Collectors.joining("|"));
+				createTypeArgument(paramBaseType, RStringType.PATTERN_PARAM_NAME, pattern).ifPresent(arg -> tc.getArguments().add(arg));
+			}
 		}
 	}
 
