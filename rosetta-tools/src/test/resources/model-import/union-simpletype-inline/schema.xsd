@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:lei="http://www.gleif.org/data/schema/leidata/2016" targetNamespace="http://www.gleif.org/data/schema/leidata/2016" elementFormDefault="qualified">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:complexType name="RefType">
+        <xsd:attribute name="FooAttr" type="FooBar"/>
+    </xsd:complexType>
+
     <xsd:simpleType name="FooBar">
         <xsd:union>
             <xsd:simpleType>
