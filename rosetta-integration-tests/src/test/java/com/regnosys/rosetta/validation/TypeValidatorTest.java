@@ -59,7 +59,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void testOverridingAttributeWithoutKeywordIsDeprecated() {
+    void testCannotHaveDuplicateAttributeToSuperTypeWithoutOverriding() {
         // Note: once support is dropped, this should become a duplicate attribute error.
         assertIssues("""
                         type Foo:
@@ -74,7 +74,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void testCannotHaveDuplicateAttributeOnSameType() {
+    void testCannotNotHaveDuplicateAttributeOnSameType() {
         assertIssues("""
                         type Foo:
                             attr number (0..1)
@@ -82,6 +82,21 @@ class TypeValidatorTest extends AbstractValidatorTest {
                         """,
                 """
                         ERROR (null) 'Attribute 'attr' already defined' at 6:5, length 4, on Attribute
+                        """);
+    }
+
+    @Test
+    void testDuplicateAttributeErrorWhenAttributeAlreadyOverridden() {
+        assertIssues("""
+                        type Foo:
+                            attr number (0..1)
+
+                        type Bar extends Foo:
+                            override attr number (0..1)
+                            attr string (1..1)
+                        """,
+                """
+                        ERROR (null) 'Attribute 'attr' already defined' at 9:5, length 4, on Attribute
                         """);
     }
 
