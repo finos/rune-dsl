@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://example.com/custom"
+        xmlns="http://example.com/custom"
+        elementFormDefault="qualified">
+
+    <xs:element name="LastName" type="xs:string"/>
+</xs:schema>

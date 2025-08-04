@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Person1 xmlns="http://example.com/person"
+        xmlns:custom="http://example.com/custom">
+    <Name>MyName</Name>
+    <custom:LastName>MyLastName</custom:LastName>
+</Person1>

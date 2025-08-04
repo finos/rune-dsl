@@ -1,0 +1,10 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+type Person1 extends Person:
+    [rootType]
+
+type Person:
+
+    name string (1..1)
+    anyAttribute string (0..1)

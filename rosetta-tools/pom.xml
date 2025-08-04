@@ -33,7 +33,7 @@
 	</description>
 
 	<properties>
-		<xsdParser.version>1.2.18</xsdParser.version>
+		<xsdParser.version>1.2.19</xsdParser.version>
 		<commons-cli.version>1.8.0</commons-cli.version>
 	</properties>
 

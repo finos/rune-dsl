@@ -226,6 +226,11 @@ public class XsdImportTest {
 		runTest("inline-complexContent");
 	}
 
+	@Test
+	void testAny() throws IOException, URISyntaxException {
+		runTest("any");
+	}
+
 	private ImportConfig mockConfig(Path basePath) {
 		ImportConfig config = new ImportConfig(basePath.resolve("schema.xsd").toString(), new ImportTargetConfig(NAMESPACE, NAMESPACE_DEFINITION, Collections.emptyMap(), null));
 		return config;
