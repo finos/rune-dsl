@@ -3,6 +3,6 @@ version "${project.version}"
 
 enum FooEnum: <"FooEnum definition.">
 
-    VALUE1 <"Value1 definition.">
-    VALUE2 <"Value2 definition.">
-    VALUE3 <"Value3 definition.">
+    VALUE1 displayName "Value1" <"Value1 definition.">
+    VALUE2 displayName "Value2" <"Value2 definition.">
+    VALUE3 displayName "Value3" <"Value3 definition.">
