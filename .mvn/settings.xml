@@ -4,6 +4,12 @@
         xmlns="http://maven.apache.org/SETTINGS/1.1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <mirrors>
+        <!--
+        Because Xtext heavily relies on version ranges in their poms, Maven spends a ridiculous amount
+        of time fetching maven-metadata.xml for each snapshot version of all artifacts with these version ranges.
+        To disable this behavior, we redirect all requests to `sonatype-snapshots` to a local empty directory instead,
+        which disables this time-consuming behavior.
+        -->
         <mirror>
             <id>block-sonatype-snapshots</id>
             <mirrorOf>sonatype-snapshots</mirrorOf>
