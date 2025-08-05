@@ -207,8 +207,8 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 currentChoiceGroups.add(newChoiceGroup);
                 choice.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping, result, config));
             }
-        } else if (abstractElement instanceof XsdAny) {
-			Attribute attr = createPlaceholderForAny(config, currentChoiceGroup, xsdMapping);
+        } else if (abstractElement instanceof XsdAny xsdAny) {
+			Attribute attr = createPlaceholderForAny(xsdAny, config, currentChoiceGroup, xsdMapping);
 			currentData.getAttributes().add(attr);
 		}
     }
@@ -597,12 +597,19 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
         return maxOccurs.equals(UNBOUNDED) || Integer.parseInt(maxOccurs) > 1;
     }
 
-	private Attribute createPlaceholderForAny(ImportTargetConfig config, ChoiceGroup choiceGroup, RosettaXsdMapping xsdMapping) {
+	private Attribute createPlaceholderForAny(XsdAny any, ImportTargetConfig config, ChoiceGroup choiceGroup, RosettaXsdMapping xsdMapping) {
+		StringBuilder docs = new StringBuilder("Placeholder for xsd:any: ")
+				.append("Min Occurs: ").append(any.getMinOccurs())
+				.append("; Max Occurs: ").append(any.getMaxOccurs())
+				.append("; Namespace: ").append(any.getNamespace())
+				.append("; Process Contents: ").append(any.getProcessContents())
+				.append(".");
+
 		Attribute attribute = createAttribute(
 				"anyPlaceholder",
-				"Placeholder for xsd:any",
-				0,
-				"unbounded",
+				docs.toString(),
+				any.getMinOccurs(),
+				any.getMaxOccurs(),
 				choiceGroup,
 				config
 		);
