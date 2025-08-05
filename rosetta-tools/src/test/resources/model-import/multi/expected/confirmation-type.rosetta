@@ -11231,6 +11231,9 @@ type TransformTypeChoice:
     anyPlaceholder string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
     xPath string (0..1)
 
+    condition Choice:
+        optional choice anyPlaceholder, xPath
+
 type DigestMethodType:
 
     anyPlaceholder string (0..*) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: unbounded; Namespace: ##other; Process Contents: lax.">
@@ -11253,7 +11256,7 @@ type KeyInfoTypeChoice:
     anyPlaceholder string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
     condition Choice:
-        required choice keyName, keyValue , retrievalMethod , x509Data , pgpData , spkiData , mgmtData
+        one-of
 
 type KeyValueType:
 
@@ -11262,7 +11265,7 @@ type KeyValueType:
     anyPlaceholder string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
     condition Choice:
-        required choice dsaKeyValue, rsaKeyValue
+        one-of
 
 type RetrievalMethodType:
 
@@ -11284,7 +11287,7 @@ type X509DataTypeSequence:
     anyPlaceholder string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
     condition Choice:
-        required choice x509IssuerSerial, x509SKI , x509SubjectName , x509Certificate , x509CRL
+        one-of
 
 type X509IssuerSerialType:
 
@@ -11348,7 +11351,7 @@ type SignaturePropertyType:
 
 type SignaturePropertyTypeChoice:
 
-    anyPlaceholder string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
+    anyPlaceholder string (1..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
 type DSAKeyValueType:
 

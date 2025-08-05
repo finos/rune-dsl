@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:complexType name="Foo">
+        <xsd:choice>
+            <xsd:element name="Attr1" type="xsd:string"/>
+            <xsd:element name="Attr2" type="xsd:string"/>
+            <xsd:any processContents="lax" namespace="##any"/>
+        </xsd:choice>
+    </xsd:complexType>
+</xsd:schema>

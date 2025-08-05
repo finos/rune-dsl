@@ -231,6 +231,11 @@ public class XsdImportTest {
 		runTest("any");
 	}
 
+	@Test
+	void testAnyChoice() throws IOException, URISyntaxException {
+		runTest("any-choice");
+	}
+
 	private ImportConfig mockConfig(Path basePath) {
 		ImportConfig config = new ImportConfig(basePath.resolve("schema.xsd").toString(), new ImportTargetConfig(NAMESPACE, NAMESPACE_DEFINITION, Collections.emptyMap(), null));
 		return config;

@@ -50,6 +50,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 
 	public final String UNBOUNDED = "unbounded";
 	public final String SIMPLE_EXTENSION_ATTRIBUTE_NAME = "value";
+	public final String ANY_PLACEHOLDER = "anyPlaceholder";
 
 	private final XsdUtil util;
 	private final RosettaEcoreUtil ecoreUtil;
@@ -209,6 +210,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
             }
         } else if (abstractElement instanceof XsdAny xsdAny) {
 			Attribute attr = createPlaceholderForAny(xsdAny, config, currentChoiceGroup, xsdMapping);
+			xsdMapping.registerAttribute(xsdAny, attr);
 			currentData.getAttributes().add(attr);
 		}
     }
@@ -342,7 +344,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 currentChoiceGroups.add(newChoiceGroup);
             	choice.getXsdElements().forEach(child -> completeXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping));
             }
-        }
+        } else if (abstractElement instanceof XsdAny xsdAny) {
+			Attribute attr = xsdMapping.getAttribute(xsdAny);
+			attr.setTypeCall(xsdMapping.getRosettaTypeCall(xsdAny));
+			if (currentChoiceGroup != null) {
+				currentChoiceGroup.attributes.add(attr);
+			}
+		}
     }
 	private void completeData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping) {
         List<ChoiceGroup> choiceGroups = new ArrayList<>();
@@ -606,7 +614,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				.append(".");
 
 		Attribute attribute = createAttribute(
-				"anyPlaceholder",
+				ANY_PLACEHOLDER,
 				docs.toString(),
 				any.getMinOccurs(),
 				any.getMaxOccurs(),
