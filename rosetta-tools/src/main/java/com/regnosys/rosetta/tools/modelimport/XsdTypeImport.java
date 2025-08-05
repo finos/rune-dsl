@@ -207,7 +207,10 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 currentChoiceGroups.add(newChoiceGroup);
                 choice.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping, result, config));
             }
-        }
+        } else if (abstractElement instanceof XsdAny) {
+			Attribute attr = createPlaceholderForAny(config, currentChoiceGroup, xsdMapping);
+			currentData.getAttributes().add(attr);
+		}
     }
     private Data createData(String name, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         // Create type
@@ -593,4 +596,19 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     private boolean isMulti(String maxOccurs) {
         return maxOccurs.equals(UNBOUNDED) || Integer.parseInt(maxOccurs) > 1;
     }
+
+	private Attribute createPlaceholderForAny(ImportTargetConfig config, ChoiceGroup choiceGroup, RosettaXsdMapping xsdMapping) {
+		Attribute attribute = createAttribute(
+				"anyPlaceholder",
+				"Placeholder for xsd:any",
+				0,
+				"unbounded",
+				choiceGroup,
+				config
+		);
+
+		attribute.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));
+
+		return attribute;
+	}
 }
