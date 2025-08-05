@@ -1,10 +1,7 @@
 namespace test.ns : < "test.ns definition" >
 version "${project.version}"
 
-type Person1 extends Person:
-    [rootType]
+type Foo:
 
-type Person:
-
-    name string (1..1)
-    anyAttribute string (0..1)
+    attr1 string (1..1)
+    anyPlaceholder string (0..*) <"Placeholder for xsd:any">
