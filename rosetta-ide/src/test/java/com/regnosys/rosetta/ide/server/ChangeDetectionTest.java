@@ -323,45 +323,99 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 	}
 
 
+//	@Test
+//	@Disabled
+//	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
+//		String nsA = createModel("enum.rosetta", """
+//				namespace demo.a
+//
+//				enum Y: <"Text">
+//					Q
+//					R
+//					S
+//				""");
+//		String nsA2 = createModel("type.rosetta", """
+//				namespace demo.b
+//
+//				import demo.a.*
+//
+//				type X: x Z (1..1)
+//
+//				type Z: <"Text">
+//				    attr1 int (1..1)
+//				    attr2 Y (1..1)
+//				""");
+//		String nsB = createModel("rule.rosetta", """
+//				namespace demo.c
+//
+//				import demo.a.*
+//				import demo.b.*
+//
+//				reporting rule R from X:
+//					x ->> attr2
+//							filter
+//								item = Q
+//								or item = R
+//								or item = S
+//				""");
+//
+//		// There should be no issue.
+//		assertNoIssues();
+//
+//		makeChange(nsA, 2, 14, "\"", "");
+//		List<Diagnostic> issues = getDiagnostics().get(nsB);
+//
+//		assertIssues("Error [[4, 8] .. [4, 9]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+//
+//		makeChange(nsA, 2, 14, "", "\"");
+//
+//		// There should again be no issue.
+//		assertNoIssues();
+//	}
+
 	@Test
 	@Disabled
-	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
-		String nsA = createModel("a.rosetta", """
-				namespace demo.emissions.model
+	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues2() {
+		String nsA = createModel("enum.rosetta", """
+				namespace demo.namespace1
 
-				enum Y: <"Text">
-					Q
-					R
-					S
+				enum Enum1: <"Text">
+				    A
+				    B
+				    C
+
+				enum Enum2:
+				    A
+				    B
+				    C
 				""");
-		String nsB = createModel("b.rosetta", """
-				namespace b
+		String nsA2 = createModel("type.rosetta", """
+				namespace demo.namespace2
 
-				type X: x string (1..1)
-				reporting rule R from X:
-					c.Z ->> attr2
-							filter
-								item = Q
-								or item = R
-								or item = S
+				type X:
+				    x string (1..1)
 				""");
-		String nsC = createModel("c.rosetta", """
-				namespace a
-
-				type Z: <"Text">
-				    attr1 int (1..1)
-				    attr2 Y (1..1)
+		String nsB = createModel("rule.rosetta", """
+				namespace demo.namespace3
+								
+				import demo.namespace1.*
+				import demo.namespace2.*
+								
+				reporting rule AAA from X:
+				  extract Enum2 -> C
 				""");
 
 		// There should be no issue.
 		assertNoIssues();
 
-		makeChange(nsA, 2, 14, "\"", "");
+		makeChange(nsA, 2, 18, "\"", "");
 		List<Diagnostic> issues = getDiagnostics().get(nsB);
 
-		assertIssues("Error [[4, 8] .. [4, 9]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+		assertIssues("Error [[6, 10] .. [6, 15]]: Couldn't resolve reference to RosettaSymbol 'Enum2'.\n" +
+				"Error [[6, 19] .. [6, 20]]: Couldn't resolve reference to RosettaFeature 'C'.\n" +
+				"Warning [[2, 7] .. [2, 24]]: Unused import demo.namespace1.*\n", issues);
 
-		makeChange(nsA, 2, 14, "", "\"");
+		makeChange(nsA, 2, 18, "", "\"");
 
 		// There should again be no issue.
 		assertNoIssues();
