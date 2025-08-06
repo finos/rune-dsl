@@ -50,6 +50,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 
 	public final String UNBOUNDED = "unbounded";
 	public final String SIMPLE_EXTENSION_ATTRIBUTE_NAME = "value";
+	public final String ANY_ATTRIBUTE_NAME = "anyContents";
 
 	private final XsdUtil util;
 	private final RosettaEcoreUtil ecoreUtil;
@@ -207,7 +208,11 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 currentChoiceGroups.add(newChoiceGroup);
                 choice.getXsdElements().forEach(child -> registerXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping, result, config));
             }
-        }
+        } else if (abstractElement instanceof XsdAny xsdAny) {
+			Attribute attr = createPlaceholderForAny(xsdAny, config, currentChoiceGroup, xsdMapping);
+			xsdMapping.registerAttribute(xsdAny, attr);
+			currentData.getAttributes().add(attr);
+		}
     }
     private Data createData(String name, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping, List<Data> result, ImportTargetConfig config) {
         // Create type
@@ -339,7 +344,13 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
                 currentChoiceGroups.add(newChoiceGroup);
             	choice.getXsdElements().forEach(child -> completeXsdElementsRecursively(currentData, child, newChoiceGroup, currentChoiceGroups, xsdMapping));
             }
-        }
+        } else if (abstractElement instanceof XsdAny xsdAny) {
+			Attribute attr = xsdMapping.getAttribute(xsdAny);
+			attr.setTypeCall(xsdMapping.getRosettaTypeCall(xsdAny));
+			if (currentChoiceGroup != null) {
+				currentChoiceGroup.attributes.add(attr);
+			}
+		}
     }
 	private void completeData(Data data, Stream<XsdAbstractElement> abstractElements, ChoiceGroup initialChoiceGroup, RosettaXsdMapping xsdMapping) {
         List<ChoiceGroup> choiceGroups = new ArrayList<>();
@@ -593,4 +604,26 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
     private boolean isMulti(String maxOccurs) {
         return maxOccurs.equals(UNBOUNDED) || Integer.parseInt(maxOccurs) > 1;
     }
+
+	private Attribute createPlaceholderForAny(XsdAny any, ImportTargetConfig config, ChoiceGroup choiceGroup, RosettaXsdMapping xsdMapping) {
+		StringBuilder docs = new StringBuilder("Placeholder for xsd:any: ")
+				.append("Min Occurs: ").append(any.getMinOccurs())
+				.append("; Max Occurs: ").append(any.getMaxOccurs())
+				.append("; Namespace: ").append(any.getNamespace())
+				.append("; Process Contents: ").append(any.getProcessContents())
+				.append(".");
+
+		Attribute attribute = createAttribute(
+				ANY_ATTRIBUTE_NAME,
+				docs.toString(),
+				any.getMinOccurs(),
+				any.getMaxOccurs(),
+				choiceGroup,
+				config
+		);
+
+		attribute.setTypeCall(xsdMapping.getRosettaTypeCallFromBuiltin("string"));
+
+		return attribute;
+	}
 }

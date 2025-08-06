@@ -7874,6 +7874,8 @@ type MatchId: <"An identifier used to identify matched cashflows.">
 
 type Math: <"A type defining a mathematical expression.">
 
+    anyContents string (1..*) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: unbounded; Namespace: ##any; Process Contents: skip.">
+
 type MatrixType:
 
     value Scheme (1..1)
@@ -10792,6 +10794,8 @@ type AdditionalData: <"Provides extra information not represented in the model t
 
 type OriginalMessage:
 
+    anyContents string (1..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##any; Process Contents: skip.">
+
 type Acknowledgement extends ResponseMessage:
 
     originalMessage UnprocessedElementWrapper (0..1)
@@ -10998,6 +11002,8 @@ type ServiceStatus: <"A type that can be used to describe the availability or ot
 
 type UnprocessedElementWrapper: <"A type holding a structure that is unvalidated">
 
+    anyContents string (1..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##any; Process Contents: skip.">
+
 type VerificationStatus: <"The verification status of the position as reported by the sender (Verified, Disputed).">
 
     value Scheme (1..1)
@@ -11193,11 +11199,13 @@ type SignedInfoType:
 
 type CanonicalizationMethodType:
 
+    anyContents string (0..*) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: unbounded; Namespace: ##any; Process Contents: strict.">
     algorithm string(pattern: "\\w+:(\\/?\\/?)[^\\s]+") (1..1)
 
 type SignatureMethodType:
 
     hmacOutputLength HMACOutputLengthType (0..1)
+    anyContents string (0..*) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: unbounded; Namespace: ##other; Process Contents: strict.">
     algorithm string(pattern: "\\w+:(\\/?\\/?)[^\\s]+") (1..1)
 
 type ReferenceType:
@@ -11220,10 +11228,15 @@ type TransformType:
 
 type TransformTypeChoice:
 
+    anyContents string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
     xPath string (0..1)
+
+    condition Choice:
+        optional choice anyContents, xPath
 
 type DigestMethodType:
 
+    anyContents string (0..*) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: unbounded; Namespace: ##other; Process Contents: lax.">
     algorithm string(pattern: "\\w+:(\\/?\\/?)[^\\s]+") (1..1)
 
 type KeyInfoType:
@@ -11240,6 +11253,7 @@ type KeyInfoTypeChoice:
     pgpData PGPDataType (0..1)
     spkiData SPKIDataType (0..1)
     mgmtData string (0..1)
+    anyContents string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
     condition Choice:
         one-of
@@ -11248,6 +11262,7 @@ type KeyValueType:
 
     dsaKeyValue DSAKeyValueType (0..1)
     rsaKeyValue RSAKeyValueType (0..1)
+    anyContents string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
     condition Choice:
         one-of
@@ -11269,6 +11284,7 @@ type X509DataTypeSequence:
     x509SubjectName string (0..1)
     x509Certificate string (0..1)
     x509CRL string (0..1)
+    anyContents string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
     condition Choice:
         one-of
@@ -11290,10 +11306,12 @@ type PGPDataTypeSequence0:
 
     pgpKeyID string (1..1)
     pgpKeyPacket string (0..1)
+    anyContents string (0..*) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: unbounded; Namespace: ##other; Process Contents: lax.">
 
 type PGPDataTypeSequence1:
 
     pgpKeyPacket string (1..1)
+    anyContents string (0..*) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: unbounded; Namespace: ##other; Process Contents: lax.">
 
 type SPKIDataType:
 
@@ -11302,6 +11320,7 @@ type SPKIDataType:
 type SPKIDataTypeSequence:
 
     spkiSexp string (1..1)
+    anyContents string (0..1) <"Placeholder for xsd:any: Min Occurs: 0; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
 type ObjectType:
 
@@ -11311,6 +11330,8 @@ type ObjectType:
     encoding string(pattern: "\\w+:(\\/?\\/?)[^\\s]+") (0..1)
 
 type ObjectTypeSequence:
+
+    anyContents string (1..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##any; Process Contents: lax.">
 
 type ManifestType:
 
@@ -11329,6 +11350,8 @@ type SignaturePropertyType:
     id string (0..1)
 
 type SignaturePropertyTypeChoice:
+
+    anyContents string (1..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##other; Process Contents: lax.">
 
 type DSAKeyValueType:
 

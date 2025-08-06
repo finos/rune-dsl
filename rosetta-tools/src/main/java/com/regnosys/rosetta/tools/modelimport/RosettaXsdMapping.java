@@ -252,6 +252,8 @@ public class RosettaXsdMapping {
             return toTypeCall(getRosettaTypeFromGroup(group));
 		} else if (element instanceof XsdElement) {
 			return toTypeCall(getRosettaTypeFromElement((XsdElement)element));
+		} else if (element instanceof XsdAny) {
+			return getRosettaTypeCallFromBuiltin("string");
 		}
 		throw new RuntimeException("Unsupported Xsd type " + element + " of class " + element.getClass().getSimpleName() + ".");
 	}
