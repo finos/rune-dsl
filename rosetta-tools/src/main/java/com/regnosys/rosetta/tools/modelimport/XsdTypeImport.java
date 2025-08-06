@@ -50,7 +50,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 
 	public final String UNBOUNDED = "unbounded";
 	public final String SIMPLE_EXTENSION_ATTRIBUTE_NAME = "value";
-	public final String ANY_ATTRIBUTE_NAME = "anyContent";
+	public final String ANY_ATTRIBUTE_NAME = "anyContents";
 
 	private final XsdUtil util;
 	private final RosettaEcoreUtil ecoreUtil;

@@ -5,7 +5,7 @@ type Foo:
 
     attr1 string (0..1)
     attr2 string (0..1)
-    anyContent string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##any; Process Contents: lax.">
+    anyContents string (0..1) <"Placeholder for xsd:any: Min Occurs: 1; Max Occurs: 1; Namespace: ##any; Process Contents: lax.">
 
     condition Choice:
         one-of
