@@ -50,7 +50,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 
 	public final String UNBOUNDED = "unbounded";
 	public final String SIMPLE_EXTENSION_ATTRIBUTE_NAME = "value";
-	public final String ANY_PLACEHOLDER = "anyPlaceholder";
+	public final String ANY_ATTRIBUTE_NAME = "anyContent";
 
 	private final XsdUtil util;
 	private final RosettaEcoreUtil ecoreUtil;
@@ -614,7 +614,7 @@ public class XsdTypeImport extends AbstractXsdImport<XsdNamedElements, List<Data
 				.append(".");
 
 		Attribute attribute = createAttribute(
-				ANY_PLACEHOLDER,
+				ANY_ATTRIBUTE_NAME,
 				docs.toString(),
 				any.getMinOccurs(),
 				any.getMaxOccurs(),
