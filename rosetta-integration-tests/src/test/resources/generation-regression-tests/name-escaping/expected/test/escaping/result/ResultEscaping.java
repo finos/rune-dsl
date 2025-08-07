@@ -174,13 +174,13 @@ public interface ResultEscaping extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public ResultEscaping.ResultEscapingBuilder prune() {
-			if (result!=null) result.prune();
+			if (result!=null && !result.prune().hasData()) result = null;
 			return this;
 		}
 		
 		@Override
 		public boolean hasData() {
-			if (getResult()!=null) return true;
+			if (getResult()!=null && getResult().hasData()) return true;
 			return false;
 		}
 	
