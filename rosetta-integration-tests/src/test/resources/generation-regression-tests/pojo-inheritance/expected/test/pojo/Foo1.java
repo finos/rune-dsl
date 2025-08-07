@@ -140,8 +140,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="numberAttr")
-		@RuneAttribute(value="numberAttr")
+		@RosettaAttribute("numberAttr")
+		@RuneAttribute("numberAttr")
 		public BigDecimal getNumberAttr() {
 			return numberAttr;
 		}
@@ -154,15 +154,15 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="parentList")
-		@RuneAttribute(value="parentList")
+		@RosettaAttribute("parentList")
+		@RuneAttribute("parentList")
 		public List<? extends Parent> getParentList() {
 			return parentList;
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList")
-		@RuneAttribute(value="otherParentList")
+		@RosettaAttribute("otherParentList")
+		@RuneAttribute("otherParentList")
 		public List<? extends Parent> getOtherParentList() {
 			return otherParentList;
 		}
@@ -254,8 +254,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="numberAttr")
-		@RuneAttribute(value="numberAttr")
+		@RosettaAttribute("numberAttr")
+		@RuneAttribute("numberAttr")
 		public BigDecimal getNumberAttr() {
 			return numberAttr;
 		}
@@ -281,8 +281,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="parentList")
-		@RuneAttribute(value="parentList")
+		@RosettaAttribute("parentList")
+		@RuneAttribute("parentList")
 		public List<? extends Parent.ParentBuilder> getParentList() {
 			return parentList;
 		}
@@ -299,8 +299,8 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList")
-		@RuneAttribute(value="otherParentList")
+		@RosettaAttribute("otherParentList")
+		@RuneAttribute("otherParentList")
 		public List<? extends Parent.ParentBuilder> getOtherParentList() {
 			return otherParentList;
 		}
@@ -344,8 +344,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="numberAttr")
-		@RuneAttribute(value="numberAttr")
+		@RosettaAttribute("numberAttr")
+		@RuneAttribute("numberAttr")
 		@Override
 		public Foo1.Foo1Builder setNumberAttr(BigDecimal _numberAttr) {
 			this.numberAttr = _numberAttr == null ? null : _numberAttr;
@@ -360,8 +360,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="parentList")
-		@RuneAttribute(value="parentList")
+		@RosettaAttribute("parentList")
+		@RuneAttribute("parentList")
 		@Override
 		public Foo1.Foo1Builder addParentList(Parent _parentList) {
 			if (_parentList != null) {
@@ -399,8 +399,8 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="otherParentList")
-		@RuneAttribute(value="otherParentList")
+		@RosettaAttribute("otherParentList")
+		@RuneAttribute("otherParentList")
 		@Override
 		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList) {
 			if (_otherParentList != null) {
@@ -465,10 +465,10 @@ public interface Foo1 extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Foo1.Foo1Builder prune() {
-			if (parent!=null) parent.prune();
+			if (parent!=null && !parent.prune().hasData()) parent = null;
 			parentList = parentList.stream().filter(b->b!=null).<Parent.ParentBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
 			otherParentList = otherParentList.stream().filter(b->b!=null).<Parent.ParentBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (stringAttr!=null) stringAttr.prune();
+			if (stringAttr!=null && !stringAttr.prune().hasData()) stringAttr = null;
 			return this;
 		}
 		
@@ -476,7 +476,7 @@ public interface Foo1 extends RosettaModelObject {
 		public boolean hasData() {
 			if (getAttr()!=null) return true;
 			if (getNumberAttr()!=null) return true;
-			if (getParent()!=null) return true;
+			if (getParent()!=null && getParent().hasData()) return true;
 			if (getParentList()!=null && getParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getStringAttr()!=null) return true;

@@ -91,15 +91,15 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 		}
 		
 		@Override
-		@RosettaAttribute(value="value")
-		@RuneAttribute(value="@data")
+		@RosettaAttribute("value")
+		@RuneAttribute("@data")
 		public String getValue() {
 			return value;
 		}
 		
 		@Override
-		@RosettaAttribute(value="meta")
-		@RuneAttribute(value="meta")
+		@RosettaAttribute("meta")
+		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields getMeta() {
 			return meta;
@@ -158,15 +158,15 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
-		@RosettaAttribute(value="value")
-		@RuneAttribute(value="@data")
+		@RosettaAttribute("value")
+		@RuneAttribute("@data")
 		public String getValue() {
 			return value;
 		}
 		
 		@Override
-		@RosettaAttribute(value="meta")
-		@RuneAttribute(value="meta")
+		@RosettaAttribute("meta")
+		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields.MetaFieldsBuilder getMeta() {
 			return meta;
@@ -185,16 +185,16 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 			return result;
 		}
 		
-		@RosettaAttribute(value="value")
-		@RuneAttribute(value="@data")
+		@RosettaAttribute("value")
+		@RuneAttribute("@data")
 		@Override
 		public FieldWithMetaString.FieldWithMetaStringBuilder setValue(String _value) {
 			this.value = _value == null ? null : _value;
 			return this;
 		}
 		
-		@RosettaAttribute(value="meta")
-		@RuneAttribute(value="meta")
+		@RosettaAttribute("meta")
+		@RuneAttribute("meta")
 		@RuneMetaType
 		@Override
 		public FieldWithMetaString.FieldWithMetaStringBuilder setMeta(MetaFields _meta) {

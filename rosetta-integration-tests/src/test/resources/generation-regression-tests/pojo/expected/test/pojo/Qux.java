@@ -188,7 +188,7 @@ public interface Qux extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Qux.QuxBuilder prune() {
-			if (qux!=null) qux.prune();
+			if (qux!=null && !qux.prune().hasData()) qux = null;
 			return this;
 		}
 		
