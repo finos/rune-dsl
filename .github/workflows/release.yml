@@ -20,7 +20,7 @@ jobs:
           server-username: CI_DEPLOY_USERNAME
           server-password: CI_DEPLOY_PASSWORD
           gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          gpg-passphrase: GPG_PASSPHRASE
       - name: Set version
         shell: bash
         run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
@@ -28,6 +28,6 @@ jobs:
         run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
           GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}

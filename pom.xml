@@ -141,6 +141,27 @@
         <module>rosetta-profiling</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <configuration>
+                            <passphraseEnvName>GPG_PASSPHRASE</passphraseEnvName>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg><arg>loopback</arg>
+                                <arg>--digest-algo=SHA512</arg>
+                            </gpgArguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <dependencyManagement>
         <dependencies>
             <!-- Test dependencies -->
