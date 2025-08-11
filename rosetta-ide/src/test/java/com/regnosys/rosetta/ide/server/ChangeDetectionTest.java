@@ -379,7 +379,9 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				reporting rule FooAttr from int:
 					to-string
 					as "My attribute from rule"
-					
+				
+				type Bar:
+					attr string (1..1)
 				""");
 		String nsA2 = createModel("type.rosetta", """
 				namespace demo.namespace2
@@ -387,9 +389,9 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				import demo.namespace1.*
 
 				type Foo:
-					attr string (1..1)
+					attr1 string (1..1)
 						[ruleReference FooAttr]
-				
+					attr2 Bar (1..1)
 				""");
 
 		// There should be no issue.
@@ -401,14 +403,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		List<Diagnostic> issues = getDiagnostics().get(nsA2);
 
-		assertIssues("Error [[6, 17] .. [6, 24]]: Couldn't resolve reference to RosettaRule 'FooAttr'.\n" +
-				"Warning [[2, 7] .. [2, 24]]: Unused import demo.namespace1.*\n", issues);
+		assertIssues("Error [[6, 17] .. [6, 24]]: Couldn't resolve reference to RosettaRule 'FooAttr'.\n", issues);
 
 		makeChange(nsA2, 6, 0, "", "//");
 
 		// There should again be no issue.
-
-		// actually- should only have an unused import in this case
 		assertNoIssues();
 	}
 }
