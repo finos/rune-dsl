@@ -322,60 +322,9 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 	}
 
-
-//	@Test
-//	@Disabled
-//	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
-//		String nsA = createModel("enum.rosetta", """
-//				namespace demo.a
-//
-//				enum Y: <"Text">
-//					Q
-//					R
-//					S
-//				""");
-//		String nsA2 = createModel("type.rosetta", """
-//				namespace demo.b
-//
-//				import demo.a.*
-//
-//				type X: x Z (1..1)
-//
-//				type Z: <"Text">
-//				    attr1 int (1..1)
-//				    attr2 Y (1..1)
-//				""");
-//		String nsB = createModel("rule.rosetta", """
-//				namespace demo.c
-//
-//				import demo.a.*
-//				import demo.b.*
-//
-//				reporting rule R from X:
-//					x ->> attr2
-//							filter
-//								item = Q
-//								or item = R
-//								or item = S
-//				""");
-//
-//		// There should be no issue.
-//		assertNoIssues();
-//
-//		makeChange(nsA, 2, 14, "\"", "");
-//		List<Diagnostic> issues = getDiagnostics().get(nsB);
-//
-//		assertIssues("Error [[4, 8] .. [4, 9]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
-//
-//		makeChange(nsA, 2, 14, "", "\"");
-//
-//		// There should again be no issue.
-//		assertNoIssues();
-//	}
-
 	@Test
 	@Disabled
-	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues2() {
+	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
 		String nsA = createModel("enum.rosetta", """
 				namespace demo.namespace1
 
@@ -418,6 +367,48 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(nsA, 2, 18, "", "\"");
 
 		// There should again be no issue.
+		assertNoIssues();
+	}
+
+	@Test
+	@Disabled
+	void testCommentingAndFixingReportingRuleHasNoIssues() {
+		String nsA = createModel("enum.rosetta", """
+				namespace demo.namespace1
+				
+				reporting rule FooAttr from int:
+					to-string
+					as "My attribute from rule"
+					
+				""");
+		String nsA2 = createModel("type.rosetta", """
+				namespace demo.namespace2
+				
+				import demo.namespace1.*
+
+				type Foo:
+					attr string (1..1)
+						[ruleReference FooAttr]
+				
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsA, 2, 0, "", "//");
+		makeChange(nsA, 3, 0, "", "//");
+		makeChange(nsA, 4, 0, "", "//");
+
+		List<Diagnostic> issues = getDiagnostics().get(nsA2);
+
+		assertIssues("Error [[6, 17] .. [6, 24]]: Couldn't resolve reference to RosettaRule 'FooAttr'.\n" +
+				"Warning [[2, 7] .. [2, 24]]: Unused import demo.namespace1.*\n", issues);
+
+		makeChange(nsA2, 6, 0, "", "//");
+
+		// There should again be no issue.
+
+		// actually- should only have an unused import in this case
 		assertNoIssues();
 	}
 }
