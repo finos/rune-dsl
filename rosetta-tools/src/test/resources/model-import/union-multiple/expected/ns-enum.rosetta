@@ -1,0 +1,26 @@
+namespace test.ns : < "test.ns definition" >
+version "${project.version}"
+
+enum FooEnum:
+
+    FOO1 displayName "Foo1"
+    FOO2 displayName "Foo2"
+
+enum BarEnum:
+
+    BAR1 displayName "Bar1"
+    BAR2 displayName "Bar2"
+
+enum BazEnum:
+
+    BAZ1 displayName "Baz1"
+    BAZ2 displayName "Baz2"
+
+enum FooBarBazEnum:
+
+    FOO1 displayName "Foo1"
+    FOO2 displayName "Foo2"
+    BAR1 displayName "Bar1"
+    BAR2 displayName "Bar2"
+    BAZ1 displayName "Baz1"
+    BAZ2 displayName "Baz2"

@@ -43,6 +43,7 @@ class ModelObjectBuilderGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TypeCoercionService
+	@Inject IShouldPrune shouldPrune
 
 	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaPojoBuilderImpl builderImplClass, JavaClassScope scope) {
 		val superPojo = javaType.superPojo
@@ -75,17 +76,21 @@ class ModelObjectBuilderGenerator {
 			@Override
 			public «builderInterface» prune() {
 				«IF extendSuperImpl»super.prune();«ENDIF»
-				«FOR prop : properties»
-					«IF !prop.type.isList && prop.type.isRosettaModelObject»
-						if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
-					«ELSEIF prop.type.isList && prop.type.isRosettaModelObject»
-						«scope.getIdentifierOrThrow(prop)» = «scope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
+				«FOR prop : properties.filter[type.isRosettaModelObject]»
+					«IF !prop.type.isList»
+						«IF shouldPrune.shouldBePruned(javaType, prop)»
+							if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
+						«ELSE»
+							if («scope.getIdentifierOrThrow(prop)»!=null) «scope.getIdentifierOrThrow(prop)».prune();
+						«ENDIF»
+					«ELSE»
+						«scope.getIdentifierOrThrow(prop)» = «scope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune())«IF shouldPrune.shouldBePruned(javaType, prop)».filter(b->b.hasData())«ENDIF».collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
 			}
 			
-			«properties.hasData(extendSuperImpl, scope)»
+			«javaType.hasData(properties, extendSuperImpl, scope)»
 		
 			«properties.merge(builderInterface, extendSuperImpl, scope)»
 		
@@ -132,8 +137,8 @@ class ModelObjectBuilderGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			
 			@Override
-			@«RosettaAttribute»("«prop.javaAnnotation»")
-			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			@«RosettaAttribute»(«IF prop.isRequired»value="«prop.javaAnnotation»", isRequired=true«ELSE»"«prop.javaAnnotation»"«ENDIF»)
+			@«RuneAttribute»(«IF prop.isRequired»value="«prop.javaRuneAnnotation»", isRequired=true«ELSE»"«prop.javaRuneAnnotation»"«ENDIF»)
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -285,8 +290,8 @@ class ModelObjectBuilderGenerator {
 			«val itemType = propType.itemType»
 			«val mainItemType = mainPropType.itemType»
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				@«RosettaAttribute»(«IF currentProp.isRequired»value="«currentProp.javaAnnotation»", isRequired=true«ELSE»"«currentProp.javaAnnotation»"«ENDIF»)
+				@«RuneAttribute»(«IF currentProp.isRequired»value="«currentProp.javaRuneAnnotation»", isRequired=true«ELSE»"«currentProp.javaRuneAnnotation»"«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -499,8 +504,8 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 		«ELSE»
 			«IF isMainProp»
-				@«RosettaAttribute»("«currentProp.javaAnnotation»")
-				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
+				@«RosettaAttribute»(«IF currentProp.isRequired»value="«currentProp.javaAnnotation»", isRequired=true«ELSE»"«currentProp.javaAnnotation»"«ENDIF»)
+				@«RuneAttribute»(«IF currentProp.isRequired»value="«currentProp.javaRuneAnnotation»", isRequired=true«ELSE»"«currentProp.javaRuneAnnotation»"«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -552,7 +557,7 @@ class ModelObjectBuilderGenerator {
 		'''
 	}
 	
-	private def hasData(Iterable<JavaPojoProperty> properties, boolean extended, JavaClassScope builderScope) {
+	private def hasData(JavaPojoInterface type, Iterable<JavaPojoProperty> properties, boolean extended, JavaClassScope builderScope) {
 		'''
 		@Override
 		public boolean hasData() {
@@ -560,12 +565,12 @@ class ModelObjectBuilderGenerator {
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
 				«IF prop.type.isList»
-					«IF prop.type.isValueRosettaModelObject»
+					«IF shouldPrune.mayBeEmpty(type, prop)»
 						if («getter»()!=null && «getter»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 					«ELSE»
 						if («getter»()!=null && !«getter»().isEmpty()) return true;
 					«ENDIF»
-				«ELSEIF prop.type.isValueRosettaModelObject»
+				«ELSEIF shouldPrune.mayBeEmpty(type, prop)»
 					if («getter»()!=null && «getter»().hasData()) return true;
 				«ELSE»
 					if («getter»()!=null) return true;

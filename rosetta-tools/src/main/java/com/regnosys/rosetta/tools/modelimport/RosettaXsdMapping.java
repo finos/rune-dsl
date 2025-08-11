@@ -31,6 +31,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaIntLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
@@ -52,6 +53,7 @@ import java.util.stream.Stream;
 public class RosettaXsdMapping {
 	private final Map<String, Supplier<TypeCall>> builtinTypeSuppliersMap = new HashMap<>();
 	private final Map<XsdSimpleType, RosettaTypeAlias> simpleTypesMap = new HashMap<>();
+	private final Map<XsdSimpleType, Choice> choiceTypesMap = new HashMap<>();
 	private final Map<XsdSimpleType, RosettaEnumeration> enumTypesMap = new HashMap<>();
 	private final Map<XsdAbstractElement, Data> complexTypesMap = new HashMap<>();
     private final Map<String, Data> groupsMap = new HashMap<>();
@@ -188,6 +190,12 @@ public class RosettaXsdMapping {
 		}
 		simpleTypesMap.put(simpleType, type);
 	}
+	public void registerChoiceType(XsdSimpleType simpleType, Choice type) {
+		if (choiceTypesMap.containsKey(simpleType)) {
+			throw new IllegalArgumentException("There is already a registered type with the name " + simpleType.getName() + ".");
+		}
+		choiceTypesMap.put(simpleType, type);
+	}
 	public void registerEnumType(XsdSimpleType simpleType, RosettaEnumeration type) {
 		if (enumTypesMap.containsKey(simpleType)) {
 			throw new IllegalArgumentException("There is already a registered type with the name " + simpleType.getName() + ".");
@@ -234,6 +242,8 @@ public class RosettaXsdMapping {
 		} else if (element instanceof XsdSimpleType simple) {
             if (util.isEnumType(simple)) {
 				return toTypeCall(getRosettaEnumerationFromSimple(simple));
+			} else if (util.isChoiceType(simple)) {
+				return toTypeCall(getRosettaTypeFromChoice(simple));
 			}
 			return toTypeCall(getRosettaTypeFromSimple(simple));
 		} else if (element instanceof XsdComplexType || element instanceof XsdMultipleElements) {
@@ -242,6 +252,8 @@ public class RosettaXsdMapping {
             return toTypeCall(getRosettaTypeFromGroup(group));
 		} else if (element instanceof XsdElement) {
 			return toTypeCall(getRosettaTypeFromElement((XsdElement)element));
+		} else if (element instanceof XsdAny) {
+			return getRosettaTypeCallFromBuiltin("string");
 		}
 		throw new RuntimeException("Unsupported Xsd type " + element + " of class " + element.getClass().getSimpleName() + ".");
 	}
@@ -251,6 +263,9 @@ public class RosettaXsdMapping {
 		} else if (element instanceof XsdSimpleType simple) {
             if (util.isEnumType(simple)) {
 				return enumTypesMap.containsKey(simple);
+			}
+			else if (util.isChoiceType(simple)) {
+				return choiceTypesMap.containsKey(simple);
 			}
 			return simpleTypesMap.containsKey(simple);
 		} else if (element instanceof XsdComplexType || element instanceof XsdMultipleElements) {
@@ -277,6 +292,14 @@ public class RosettaXsdMapping {
 		RosettaTypeAlias t = simpleTypesMap.get(simpleType);
 		if (t == null) {
 			throw new RuntimeException("No registered simple type " + simpleType.getName() + " was found.");
+		}
+		return t;
+	}
+
+	public Choice getRosettaTypeFromChoice(XsdSimpleType simpleType) {
+		Choice t = choiceTypesMap.get(simpleType);
+		if (t == null) {
+			throw new RuntimeException("No registered choice type " + simpleType.getName() + " was found.");
 		}
 		return t;
 	}

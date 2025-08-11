@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sd:schema xmlns:sd="http://www.w3.org/2001/XMLSchema">
+    <sd:element name="Foo">
+        <sd:complexType>
+            <sd:sequence>
+                <sd:element name="FooAttr" type="sd:string"/>
+            </sd:sequence>
+        </sd:complexType>
+    </sd:element>
+</sd:schema>

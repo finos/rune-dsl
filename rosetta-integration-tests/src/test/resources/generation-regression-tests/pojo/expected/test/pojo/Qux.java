@@ -84,8 +84,8 @@ public interface Qux extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute("qux")
-		@RuneAttribute("qux")
+		@RosettaAttribute(value="qux", isRequired=true)
+		@RuneAttribute(value="qux", isRequired=true)
 		@RuneScopedAttributeKey
 		public FieldWithMetaString getQux() {
 			return qux;
@@ -139,8 +139,8 @@ public interface Qux extends RosettaModelObject {
 		protected FieldWithMetaString.FieldWithMetaStringBuilder qux;
 		
 		@Override
-		@RosettaAttribute("qux")
-		@RuneAttribute("qux")
+		@RosettaAttribute(value="qux", isRequired=true)
+		@RuneAttribute(value="qux", isRequired=true)
 		@RuneScopedAttributeKey
 		public FieldWithMetaString.FieldWithMetaStringBuilder getQux() {
 			return qux;
@@ -160,8 +160,8 @@ public interface Qux extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute("qux")
-		@RuneAttribute("qux")
+		@RosettaAttribute(value="qux", isRequired=true)
+		@RuneAttribute(value="qux", isRequired=true)
 		@RuneScopedAttributeKey
 		@Override
 		public Qux.QuxBuilder setQux(FieldWithMetaString _qux) {

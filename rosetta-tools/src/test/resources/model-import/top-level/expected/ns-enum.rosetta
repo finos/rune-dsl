@@ -3,5 +3,5 @@ version "${project.version}"
 
 enum UnitEnum:
 
-    METER
-    KILOGRAM
+    METER displayName "Meter"
+    KILOGRAM displayName "Kilogram"

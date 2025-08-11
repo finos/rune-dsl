@@ -245,8 +245,8 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		«FOR prop : properties»
 			«val field = new JavaVariable(implScope.getIdentifierOrThrow(prop), prop.type)»
 			@Override
-			@«RosettaAttribute»("«prop.javaAnnotation»")
-			@«RuneAttribute»("«prop.javaRuneAnnotation»")
+			@«RosettaAttribute»(«IF prop.isRequired»value="«prop.javaAnnotation»", isRequired=true«ELSE»"«prop.javaAnnotation»"«ENDIF»)
+			@«RuneAttribute»(«IF prop.isRequired»value="«prop.javaRuneAnnotation»", isRequired=true«ELSE»"«prop.javaRuneAnnotation»"«ENDIF»)
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
