@@ -320,4 +320,51 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		// There should again be no issue. 
 		assertNoIssues();
 	}
+
+	@Test
+	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
+		String nsEnum = createModel("enum.rosetta", """
+				namespace demo.namespace1
+
+				enum Enum1: <"Text">
+				    A
+				    B
+				    C
+
+				enum Enum2:
+				    A
+				    B
+				    C
+				""");
+		String nsType = createModel("type.rosetta", """
+				namespace demo.namespace2
+
+				type X:
+				    x string (1..1)
+				""");
+		String nsRule = createModel("rule.rosetta", """
+				namespace demo.namespace3
+								
+				import demo.namespace1.*
+				import demo.namespace2.*
+								
+				reporting rule AAA from X:
+				  extract Enum2 -> C
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		makeChange(nsEnum, 2, 18, "\"", "");
+		List<Diagnostic> issues = getDiagnostics().get(nsRule);
+
+		assertIssues("Error [[6, 10] .. [6, 15]]: Couldn't resolve reference to RosettaSymbol 'Enum2'.\n" +
+				"Error [[6, 19] .. [6, 20]]: Couldn't resolve reference to RosettaFeature 'C'.\n" +
+				"Warning [[2, 7] .. [2, 24]]: Unused import demo.namespace1.*\n", issues);
+
+		makeChange(nsEnum, 2, 18, "", "\"");
+
+		// There should again be no issue.
+		assertNoIssues();
+	}
 }
