@@ -323,7 +323,6 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 	}
 
 	@Test
-	@Disabled
 	void testDeletingAndFixingTrailingQuoteInEnumHasNoIssues() {
 		String nsEnum = createModel("enum.rosetta", """
 				namespace demo.namespace1
