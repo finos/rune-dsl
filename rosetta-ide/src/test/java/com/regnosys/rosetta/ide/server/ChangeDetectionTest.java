@@ -2,7 +2,6 @@ package com.regnosys.rosetta.ide.server;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
