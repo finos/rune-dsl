@@ -320,4 +320,59 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		// There should again be no issue. 
 		assertNoIssues();
 	}
+
+	@Test
+	void testCommentingAndFixingReportingRuleHasNoIssues() {
+		String nsA = createModel("rule.rosetta", """
+				namespace demo.namespace1
+
+				import demo.namespace2.*
+
+				body Authority Reg
+				corpus Reg Trade
+
+				report Reg Trade in T+1
+					from int
+					when eligibRule
+					with type Bar
+
+				eligibility rule eligibRule from int:
+				    True
+
+				reporting rule FooAttr from int:
+					to-string
+
+				type Imp:
+					attr string (1..1)
+				""");
+		String nsB = createModel("type.rosetta", """
+				namespace demo.namespace2
+
+				import demo.namespace1.*
+
+				type Foo:
+					attr0 Imp (1..1)
+					attr1 string (1..1)
+						[ruleReference FooAttr]
+
+				type Bar:
+					foobar1 Foo (1..1)
+				""");
+
+		// There should be no issue.
+		assertNoIssues();
+
+		//Comment out rule FoooAttr
+		makeChange(nsA, 15, 0, "", "//");
+		makeChange(nsA, 16, 0, "", "//");
+
+		List<Diagnostic> issuesB = getDiagnostics().get(nsB);
+
+		assertIssues("Error [[7, 17] .. [7, 24]]: Couldn't resolve reference to RosettaRule 'FooAttr'.\n", issuesB);
+
+		makeChange(nsB, 7, 0, "", "//");
+
+		// There should again be no issue.
+		assertNoIssues();
+	}
 }
