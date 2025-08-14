@@ -31,7 +31,7 @@ class JavaDependencyProvider {
 			val deepFeatureCalls = EcoreUtil2.eAllOfType(expression, RosettaDeepFeatureCall)
 
 			result.addAll(rosettaSymbols.filter(Function).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
-			result.addAll(rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it).toFunctionJavaClass])
+			result.addAll(rosettaSymbols.filter(RosettaRule).map[rTypeBuilderFactory.buildRFunction(it)].filter[symbolId !== null].map[toFunctionJavaClass])
 			result.addAll(deepFeatureCalls.map[typeProvider.getRMetaAnnotatedType(receiver).RType].map[it instanceof RChoiceType ? asRDataType : it].filter(RDataType).map[toDeepPathUtilJavaClass])
 		}
 	}
