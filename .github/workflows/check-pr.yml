@@ -13,12 +13,12 @@ jobs:
     name: Maven Build on Ubuntu
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: ./.github/actions/maven-build
   
   build-on-windows:
     name: Maven Build on Windows
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: ./.github/actions/maven-build
