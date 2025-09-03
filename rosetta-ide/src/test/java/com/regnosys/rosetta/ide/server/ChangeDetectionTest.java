@@ -320,59 +320,49 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		// There should again be no issue. 
 		assertNoIssues();
 	}
-
+	
 	@Test
-	void testCommentingAndFixingReportingRuleHasNoIssues() {
-		String nsA = createModel("rule.rosetta", """
-				namespace demo.namespace1
+	void testChangeInRuleReferenceShouldRegenerateReportFunction() {
+		createModel("ruleA.rosetta", """
+				namespace test
 
-				import demo.namespace2.*
+				body Authority Body
+				corpus Directive "My corpus" Corpus
+				
+				report Body Corpus in T+1
+					from string
+					when FilterEligible
+					with type MyReport 
+				
+				eligibility rule FilterEligible from string:
+					item
+				
+				reporting rule FooAttr from string:
+					item
+				""");
+		String typeURI = createModel("type.rosetta", """
+				namespace test
 
-				body Authority Reg
-				corpus Reg Trade
-
-				report Reg Trade in T+1
-					from int
-					when eligibRule
-					with type Bar
-
-				eligibility rule eligibRule from int:
-				    True
-
-				reporting rule FooAttr from int:
-					to-string
-
-				type Imp:
+				type MyReport:
 					attr string (1..1)
 				""");
-		String nsB = createModel("type.rosetta", """
-				namespace demo.namespace2
-
-				import demo.namespace1.*
-
-				type Foo:
-					attr0 Imp (1..1)
-					attr1 string (1..1)
-						[ruleReference FooAttr]
-
-				type Bar:
-					foobar1 Foo (1..1)
-				""");
+		
+		String reportPath = "test/reports/BodyCorpusReportFunction.java";
 
 		// There should be no issue.
 		assertNoIssues();
+		// There should be a generated report function.
+		String originalReportCode = readGeneratedFile(reportPath);
+		Assertions.assertNotNull(originalReportCode, "Report function does not exist at " + reportPath);
 
-		//Comment out rule FoooAttr
-		makeChange(nsA, 15, 0, "", "//");
-		makeChange(nsA, 16, 0, "", "//");
-
-		List<Diagnostic> issuesB = getDiagnostics().get(nsB);
-
-		assertIssues("Error [[7, 17] .. [7, 24]]: Couldn't resolve reference to RosettaRule 'FooAttr'.\n", issuesB);
-
-		makeChange(nsB, 7, 0, "", "//");
-
+		// Add a ruleReference to the `attr` attribute.
+		makeChange(typeURI, 3, 19, "", " [ruleReference FooAttr]");
+		
 		// There should again be no issue.
 		assertNoIssues();
+		// The new report function should be different.
+		String newReportCode = readGeneratedFile(reportPath);
+		Assertions.assertNotNull(newReportCode, "Report function does not exist at " + reportPath);
+		Assertions.assertNotEquals(originalReportCode, newReportCode);
 	}
 }
