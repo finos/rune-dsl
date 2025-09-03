@@ -196,8 +196,8 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList")
-		@RuneAttribute(value="otherParentList")
+		@RosettaAttribute("otherParentList")
+		@RuneAttribute("otherParentList")
 		public List<? extends Child> getOtherParentList() {
 			return otherParentList;
 		}
@@ -354,8 +354,8 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList")
-		@RuneAttribute(value="otherParentList")
+		@RosettaAttribute("otherParentList")
+		@RuneAttribute("otherParentList")
 		public List<? extends Child.ChildBuilder> getOtherParentList() {
 			return otherParentList;
 		}
@@ -501,8 +501,8 @@ public interface Foo2 extends Foo1 {
 			return setParentList(ifThenElseResult);
 		}
 		
-		@RosettaAttribute(value="otherParentList")
-		@RuneAttribute(value="otherParentList")
+		@RosettaAttribute("otherParentList")
+		@RuneAttribute("otherParentList")
 		@Override
 		public Foo2.Foo2Builder addOtherParentListOverriddenAsChild(Child _otherParentList) {
 			if (_otherParentList != null) {
@@ -607,10 +607,10 @@ public interface Foo2 extends Foo1 {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Foo2.Foo2Builder prune() {
-			if (parent!=null) parent.prune();
-			if (parentList!=null) parentList.prune();
+			if (parent!=null && !parent.prune().hasData()) parent = null;
+			if (parentList!=null && !parentList.prune().hasData()) parentList = null;
 			otherParentList = otherParentList.stream().filter(b->b!=null).<Child.ChildBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			if (stringAttr!=null) stringAttr.prune();
+			if (stringAttr!=null && !stringAttr.prune().hasData()) stringAttr = null;
 			return this;
 		}
 		
@@ -618,8 +618,8 @@ public interface Foo2 extends Foo1 {
 		public boolean hasData() {
 			if (getAttr()!=null) return true;
 			if (getNumberAttrOverriddenAsBigInteger()!=null) return true;
-			if (getParent()!=null) return true;
-			if (getParentListOverriddenAsSingleReferenceWithMetaChild()!=null) return true;
+			if (getParent()!=null && getParent().hasData()) return true;
+			if (getParentListOverriddenAsSingleReferenceWithMetaChild()!=null && getParentListOverriddenAsSingleReferenceWithMetaChild().hasData()) return true;
 			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getStringAttr()!=null) return true;
 			return false;
