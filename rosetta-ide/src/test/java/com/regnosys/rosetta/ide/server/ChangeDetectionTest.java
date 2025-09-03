@@ -320,4 +320,49 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		// There should again be no issue. 
 		assertNoIssues();
 	}
+	
+	@Test
+	void testChangeInRuleReferenceShouldRegenerateReportFunction() {
+		createModel("ruleA.rosetta", """
+				namespace test
+
+				body Authority Body
+				corpus Directive "My corpus" Corpus
+				
+				report Body Corpus in T+1
+					from string
+					when FilterEligible
+					with type MyReport 
+				
+				eligibility rule FilterEligible from string:
+					item
+				
+				reporting rule FooAttr from string:
+					item
+				""");
+		String typeURI = createModel("type.rosetta", """
+				namespace test
+
+				type MyReport:
+					attr string (1..1)
+				""");
+		
+		String reportPath = "test/reports/BodyCorpusReportFunction.java";
+
+		// There should be no issue.
+		assertNoIssues();
+		// There should be a generated report function.
+		String originalReportCode = readGeneratedFile(reportPath);
+		Assertions.assertNotNull(originalReportCode, "Report function does not exist at " + reportPath);
+
+		// Add a ruleReference to the `attr` attribute.
+		makeChange(typeURI, 3, 19, "", " [ruleReference FooAttr]");
+		
+		// There should again be no issue.
+		assertNoIssues();
+		// The new report function should be different.
+		String newReportCode = readGeneratedFile(reportPath);
+		Assertions.assertNotNull(newReportCode, "Report function does not exist at " + reportPath);
+		Assertions.assertNotEquals(originalReportCode, newReportCode);
+	}
 }

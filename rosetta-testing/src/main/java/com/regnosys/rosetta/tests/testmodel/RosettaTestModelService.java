@@ -119,7 +119,7 @@ public class RosettaTestModelService {
 	 */
 	public JavaTestModel toJavaTestModel(CharSequence source, CharSequence... other) {
 		RosettaTestModel rosettaModel = toTestModel(source, other);
-		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getModel().eResource().getResourceSet().getResources());
+		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getResourceSet().getResources());
 		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
 	}
 	

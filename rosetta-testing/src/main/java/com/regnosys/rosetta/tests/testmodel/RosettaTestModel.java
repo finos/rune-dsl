@@ -7,6 +7,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
@@ -42,6 +44,12 @@ public class RosettaTestModel {
 	
 	public RosettaModel getModel() {
 		return model;
+	}
+	public Resource getResource() {
+		return model.eResource();
+	}
+	public ResourceSet getResourceSet() {
+		return getResource().getResourceSet();
 	}
 	
 	public RosettaExpression parseExpression(CharSequence expressionSource, String... attributes) {
