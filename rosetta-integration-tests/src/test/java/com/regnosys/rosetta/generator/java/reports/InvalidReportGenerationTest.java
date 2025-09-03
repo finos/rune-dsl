@@ -51,6 +51,7 @@ public class InvalidReportGenerationTest {
 				    True
 				""");
 		
+		// Assert that we have an invalid rule reference (FooAttr does not exist)
 		validationTestHelper.assertIssues(model.getModel(), """
 				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaRule 'FooAttr'.' at 5:18, length 7, on RuleReferenceAnnotation
 				""");
