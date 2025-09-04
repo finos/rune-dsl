@@ -186,7 +186,7 @@ public interface Baz extends RosettaModelObject {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Baz.BazBuilder prune() {
-			if (baz!=null) baz.prune();
+			if (baz!=null && !baz.prune().hasData()) baz = null;
 			return this;
 		}
 		

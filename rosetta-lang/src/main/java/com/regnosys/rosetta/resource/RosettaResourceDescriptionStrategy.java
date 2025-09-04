@@ -56,8 +56,9 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
         QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(attr);
         String typeCall = serialize(attr.getTypeCall());
         String cardinality = serialize(attr.getCard());
+        String ruleReferences = serialize(attr.getRuleReferences());
         String labels = serialize(attr.getLabels());
-        acceptor.accept(new AttributeDescription(qualifiedName, attr, typeCall, cardinality, labels));
+        acceptor.accept(new AttributeDescription(qualifiedName, attr, typeCall, cardinality, ruleReferences, labels));
         return false;
     }
 

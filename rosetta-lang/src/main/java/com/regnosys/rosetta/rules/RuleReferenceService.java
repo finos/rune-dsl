@@ -219,6 +219,9 @@ public class RuleReferenceService {
 
     private void addRuleReferenceAnnotationsToMap(List<RuleReferenceAnnotation> annotations, RulePathMap map) {
         for (RuleReferenceAnnotation ruleRef : annotations) {
+        	if (ruleRef.getReportingRule() != null && ruleRef.getReportingRule().eIsProxy()) {
+        		continue; // ignore unresolved rule references
+        	}
             List<String> path = toList(ruleRef.getPath());
             if (path != null) { // Only add the annotation if the path is valid, i.e., if it does not contain any deep paths.
                 map.add(path, RuleResult.fromAnnotation(ruleRef));

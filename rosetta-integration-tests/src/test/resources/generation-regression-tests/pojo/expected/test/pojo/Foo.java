@@ -83,8 +83,8 @@ public interface Foo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="meta")
-		@RuneAttribute(value="meta")
+		@RosettaAttribute("meta")
+		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields getMeta() {
 			return meta;
@@ -138,8 +138,8 @@ public interface Foo extends RosettaModelObject, GlobalKey {
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
-		@RosettaAttribute(value="meta")
-		@RuneAttribute(value="meta")
+		@RosettaAttribute("meta")
+		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields.MetaFieldsBuilder getMeta() {
 			return meta;
@@ -158,8 +158,8 @@ public interface Foo extends RosettaModelObject, GlobalKey {
 			return result;
 		}
 		
-		@RosettaAttribute(value="meta")
-		@RuneAttribute(value="meta")
+		@RosettaAttribute("meta")
+		@RuneAttribute("meta")
 		@RuneMetaType
 		@Override
 		public Foo.FooBuilder setMeta(MetaFields _meta) {
