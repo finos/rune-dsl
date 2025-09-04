@@ -884,15 +884,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     // Helper type to avoid xbase Pair
-    private static class InvalidPathChar {
-        char ch;
-        boolean atSegmentStart;
-
-        InvalidPathChar(char ch, boolean atSegmentStart) {
-            ch = ch;
-            atSegmentStart = atSegmentStart;
-        }
-    }
+    private static record InvalidPathChar(char ch, boolean atSegmentStart) {}
 
     @Check
     public void checkSynonymMapPath(RosettaMapPathValue ele) {
@@ -1172,7 +1164,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     private InvalidPathChar checkPathChars(String str) {
         String[] segments = str.split("->");
         for (String segment : segments) {
-            if (segment.length() > 0) {
+            if (!segment.isEmpty()) {
                 if (!Character.isJavaIdentifierStart(segment.charAt(0))) {
                     return new InvalidPathChar(segment.charAt(0), true);
                 }
