@@ -143,6 +143,8 @@ public class LabelProviderGeneratorTest {
 				func MyFunc:
 				    [codeImplementation]
 					[ingest JSON]
+					inputs:
+					    inp int (1..1)
 					output:
 						foo Foo (1..1)
 				""");
@@ -371,6 +373,8 @@ public class LabelProviderGeneratorTest {
 				func MyFunc:
 				    [codeImplementation]
 					[ingest JSON]
+					inputs:
+					    inp int (1..1)
 					output:
 						foo Foo (1..1)
 				""");

@@ -1047,8 +1047,9 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         List<AnnotationRef> annotations = rosettaFunctionExtensions.getTransformAnnotations(ele);
         if (annotations.isEmpty()) return;
 
-        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function)) {
-            error("Transformation annotations only allowed on a function.", RosettaPackage.Literals.ROSETTA_NAMED__NAME);
+        if (!(ele instanceof Function func)) {
+            error("Transform annotations only allowed on a function.", RosettaPackage.Literals.ROSETTA_NAMED__NAME);
+            return;
         }
         if (annotations.size() > 1) {
             // Keep first, error on the rest
@@ -1057,16 +1058,24 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
             );
         }
         AnnotationRef annotationRef = annotations.get(0);
+        // A transformation may only have a single input
+        func.getInputs().stream().skip(1)
+                .forEach(i -> error("Transform functions may only have a single input.", i, null));
+        if (func.getOutput() != null) {
+            if (func.getInputs().isEmpty()) {
+                error("Transform functions must have a single input.", annotationRef, null);
+            }
+        }
         String name = annotationRef.getAnnotation().getName();
         if (Objects.equals(name, "ingest")) {
             if (annotationRef.getAttribute() == null) {
-                error("The `ingest` annotation must have a source format such as JSON or XML",
+                error("The `ingest` annotation must have a source format such as JSON, XML or CSV",
                         annotationRef, SimplePackage.Literals.ANNOTATION_REF__ANNOTATION);
             }
         }
         if (Objects.equals(name, "projection")) {
             if (annotationRef.getAttribute() == null) {
-                error("The `projection` annotation must have a target format such as JSON or XML",
+                error("The `projection` annotation must have a target format such as JSON, XML or CSV",
                         annotationRef, SimplePackage.Literals.ANNOTATION_REF__ANNOTATION);
             }
         }
