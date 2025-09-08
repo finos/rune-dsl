@@ -139,7 +139,7 @@ public class ExpressionGeneratorTest {
                                 .buildClass(pkg, content, fileScope)
                                 .replace("package test.ns;", "")
                                 .replace("\t", "    ")
-                                .trim() + System.lineSeparator();
+                                .trim() + "\n";
 
         assertEquals(expectedCode, actual);
     }
