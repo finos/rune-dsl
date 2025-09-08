@@ -11,7 +11,7 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
-    void csvIngestionInputMayOnlyHaveAttributesOfBasicType() {
+    void csvIngestionInputMustBeTabular() {
     	assertIssues("""
                 type Input:
                    attr string (1..1)
@@ -24,13 +24,13 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp Input (1..1)
                 """, """
-                ERROR
+                ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
                 """
     		);
     }
 
     @Test
-    void csvProjectionOutputMayOnlyHaveAttributesOfBasicType() {
+    void csvProjectionOutputMustBeTabular() {
         assertIssues("""
                 type Input:
                    attr string (1..1)
@@ -43,7 +43,59 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    output:
                        inp Input (1..1)
                 """, """
-                ERROR
+                WARNING (null) 'A function should specify an implementation, or they should be annotated with codeImplementation' at 10:6, length 6, on Function
+                ERROR (null) 'Transform functions must have a single input.' at 11:4, length 16, on AnnotationRef
+                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
+                """
+        );
+    }
+
+    @Test
+    void csvIngestionMayNotHaveMultipleInputs() {
+        assertIssues("""
+                type Input:
+                   attr string (1..1)
+                
+                func MyFunc:
+                   [ingest CSV]
+                   inputs:
+                       inp Input (1..1)
+                       inp2 Input (1..1)
+                """, """
+                ERROR (null) 'Transform functions may only have a single input.' at 11:8, length 17, on Attribute
+                """
+        );
+    }
+
+    @Test
+    void csvIngestionMayNotHaveMultiInput() {
+        assertIssues("""
+                type Input:
+                   attr string (1..1)
+                
+                func MyFunc:
+                   [ingest CSV]
+                   inputs:
+                       inp Input (0..*)
+                """, """
+                ERROR (null) 'The input of a CSV ingest function must be single cardinality' at 10:18, length 6, on Attribute
+                """
+        );
+    }
+
+    @Test
+    void csvIngestionMustHaveOneInput() {
+        assertIssues("""
+                type Input:
+                   attr string (1..1)
+                
+                func MyFunc:
+                   [ingest CSV]
+                   output:
+                       result string (1..1)
+                """, """
+                WARNING (null) 'A function should specify an implementation, or they should be annotated with codeImplementation' at 7:6, length 6, on Function
+                ERROR (null) 'Transform functions must have a single input.' at 8:4, length 12, on AnnotationRef
                 """
         );
     }
