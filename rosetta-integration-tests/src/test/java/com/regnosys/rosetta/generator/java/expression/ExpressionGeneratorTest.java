@@ -138,6 +138,7 @@ public class ExpressionGeneratorTest {
         String actual = importManagerExtension
                                 .buildClass(pkg, content, fileScope)
                                 .replace("package test.ns;", "")
+                                .replace("\r", "")
                                 .replace("\t", "    ")
                                 .trim() + "\n";
 
