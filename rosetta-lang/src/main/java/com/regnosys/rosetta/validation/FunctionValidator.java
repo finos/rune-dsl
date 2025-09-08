@@ -29,21 +29,7 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     public void checkCsvIngestionInput(Function function) {
         if (hasCsvTransformAnnotation(function, "ingest")) {
             if (!function.getInputs().isEmpty()) {
-                Attribute input = function.getInputs().get(0);
-                RAttribute attr = rObjectFactory.buildRAttribute(input);
-                RType t = attr.getRMetaAnnotatedType().getRType();
-                if (!(t instanceof RDataType dt)) {
-                    error("The input of a CSV ingest function must be a complex type", input, ROSETTA_TYPED__TYPE_CALL);
-                } else {
-                    List<RAttribute> nonSimple = csvUtil.getNonSimpleAttributes(dt);
-                    if (!nonSimple.isEmpty()) {
-                        String attrs = nonSimple.stream().map(a -> "`" + a.getName() + "`").collect(Collectors.joining(", "));
-                        error("The input of a CSV ingest function must be a tabular type. Type `" + dt.getName() + "` has non-simple attributes: " + attrs, input, ROSETTA_TYPED__TYPE_CALL);
-                    }
-                }
-                if (attr.isMulti()) {
-                    error("The input of a CSV ingest function must be single cardinality", input, SimplePackage.Literals.ATTRIBUTE__CARD);
-                }
+                checkAttributeIsTabular(function.getInputs().get(0), "The input of a CSV ingest function");
             }
         }
     }
@@ -52,21 +38,24 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
         if (hasCsvTransformAnnotation(function, "projection")) {
             Attribute output = function.getOutput();
             if (output != null) {
-                RAttribute attr = rObjectFactory.buildRAttribute(output);
-                RType t = attr.getRMetaAnnotatedType().getRType();
-                if (!(t instanceof RDataType dt)) {
-                    error("The output of a CSV projection function must be a complex type", output, ROSETTA_TYPED__TYPE_CALL);
-                } else {
-                    List<RAttribute> nonSimple = csvUtil.getNonSimpleAttributes(dt);
-                    if (!nonSimple.isEmpty()) {
-                        String attrs = nonSimple.stream().map(a -> "`" + a.getName() + "`").collect(Collectors.joining(", "));
-                        error("The output of a CSV projection function must be a tabular type. Type `" + dt.getName() + "` has non-simple attributes: " + attrs, output, ROSETTA_TYPED__TYPE_CALL);
-                    }
-                }
-                if (attr.isMulti()) {
-                    error("The output of a CSV projection function must be single cardinality", output, SimplePackage.Literals.ATTRIBUTE__CARD);
-                }
+                checkAttributeIsTabular(output, "The output of a CSV projection function");
             }
+        }
+    }
+    private void checkAttributeIsTabular(Attribute attribute, String attributeDescription) {
+        RAttribute attr = rObjectFactory.buildRAttribute(attribute);
+        RType t = attr.getRMetaAnnotatedType().getRType();
+        if (!(t instanceof RDataType dt)) {
+            error(attributeDescription + " must be a complex type", attribute, ROSETTA_TYPED__TYPE_CALL);
+        } else {
+            List<RAttribute> nonSimple = csvUtil.getNonSimpleAttributes(dt);
+            if (!nonSimple.isEmpty()) {
+                String attrs = nonSimple.stream().map(a -> "`" + a.getName() + "`").collect(Collectors.joining(", "));
+                error(attributeDescription + " must be a tabular type. Type `" + dt.getName() + "` has non-simple attributes: " + attrs, attribute, ROSETTA_TYPED__TYPE_CALL);
+            }
+        }
+        if (attr.isMulti()) {
+            error(attributeDescription + " must be single cardinality", attribute, SimplePackage.Literals.ATTRIBUTE__CARD);
         }
     }
     private boolean hasCsvTransformAnnotation(Function function, String transformName) {
