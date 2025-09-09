@@ -16,6 +16,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationS
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 
 class ExpressionJavaEvaluatorService {
 	@Inject
@@ -35,6 +36,9 @@ class ExpressionJavaEvaluatorService {
 	
 	def Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType, ClassLoader classLoader) {
 		val expr = expressionParser.parseExpression(rosettaExpression, #[context])
+		evaluate(expr, expectedType, classLoader)
+	}
+	def Object evaluate(RosettaExpression expr, JavaType expectedType, ClassLoader classLoader) {
 		validationHelper.assertNoIssues(expr)
 		
 		val packageName = DottedPath.splitOnDots("com.regnosys.rosetta.tests.testexpression")
