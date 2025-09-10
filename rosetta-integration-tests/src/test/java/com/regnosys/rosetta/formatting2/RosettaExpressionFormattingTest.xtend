@@ -59,14 +59,14 @@ class RosettaExpressionFormattingTest {
 			else "other", default empty
 		''' ->
 		'''
-		input with-meta {
-			scheme: "Some expression",
-			id: foo
+		input switch
+			Foo then "Some expression",
+			Bar then
 				extract
 					if True
 					then "This is a looong expression"
-					else "other"
-		}
+					else "other",
+			default empty
 		'''
 	}
 	
@@ -165,14 +165,14 @@ class RosettaExpressionFormattingTest {
 	def void testConstructorNestedWithBooleanFormat() {
 		'''
 		Constr1 {
-            attr1: if True
-            then False,
-            attr2: if False
-            then Constr2 {
-                    attr11: Constr3 {
-                        attr111: 42
-                	}}
-        }
+		attr1: if True
+		then False,
+		attr2: if False
+		then Constr2 {
+		attr11: Constr3 {
+		attr111: 42
+		}}
+		}
 		''' ->
 		'''
 		Constr1 {
