@@ -7,6 +7,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -32,7 +33,6 @@ import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
 import org.eclipse.xtext.util.CancelIndicator;
 
-import javax.inject.Provider;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
