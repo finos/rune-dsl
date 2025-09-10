@@ -159,7 +159,7 @@ public class SwitchOperationTest {
         String resStr = model.evaluateExpression(String.class, """
             Foo { MyString: "abc123" with-meta { scheme: "myScheme" }, ... }
                 switch
-                    number then to-string,
+                    number then item to-string,
                     MyString then scheme
         """);
         assertEquals("myScheme", resStr);

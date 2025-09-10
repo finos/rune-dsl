@@ -620,10 +620,14 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
 
     @Override
     protected RMetaAnnotatedType caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
-        var expectedType = expectedTypeProvider.getExpectedTypeFromContainer(expr);
-        if (expectedType != null) {
-            return expectedType;
-        }
-        return builtins.NOTHING_WITH_ANY_META;
+        var argType = safeRType(expr.getArgument(), cycleTracker);
+        
+        var newMetaAttributes = expr.getEntries().stream()
+                .map(WithMetaEntry::getKey)
+                .filter(f -> extensions.isResolved(f))
+                .map(f -> new RMetaAttribute(f.getName(), getRTypeOfFeature(f, null).getRType()))
+                .toList();
+        
+        return argType.addMeta(newMetaAttributes);
     }
 }

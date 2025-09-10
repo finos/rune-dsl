@@ -134,7 +134,7 @@ public class RosettaTestModelService {
 	}
 
     public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {
-        return resultType.cast(evaluatorService.evaluate(expressionParser.parseExpression(expr), JavaType.from(resultType), this.getClass().getClassLoader()));
+        return resultType.cast(evaluateExpression(JavaType.from(resultType), expr));
     }
     public Object evaluateExpression(JavaType resultType, CharSequence expr) {
         return evaluatorService.evaluate(expressionParser.parseExpression(expr), resultType, this.getClass().getClassLoader());
