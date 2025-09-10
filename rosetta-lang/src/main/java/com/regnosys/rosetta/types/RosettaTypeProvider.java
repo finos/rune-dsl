@@ -7,7 +7,10 @@ import com.regnosys.rosetta.rosetta.simple.*;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RNumberType;
 import com.regnosys.rosetta.types.builtin.RStringType;
-import com.regnosys.rosetta.utils.*;
+import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil;
+import com.regnosys.rosetta.utils.ImplicitVariableUtil;
+import com.regnosys.rosetta.utils.OptionalUtil;
+import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 
@@ -89,18 +92,18 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
                 return acc;
             }
         }
-        if (symbol instanceof Annotated) {
-            return getRMetaAttributes(((Annotated) symbol).getAnnotations());
+        if (symbol instanceof Annotated ann) {
+            return getRMetaAttributes(ann.getAnnotations());
         }
         return List.of();
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfFeature(RosettaFeature feature) {
-        if (feature instanceof RosettaSymbol) {
-            return getRMetaAttributesOfSymbol((RosettaSymbol) feature);
+        if (feature instanceof RosettaSymbol s) {
+            return getRMetaAttributesOfSymbol(s);
         }
-        if (feature instanceof Annotated) {
-            return getRMetaAttributes(((Annotated) feature).getAnnotations());
+        if (feature instanceof Annotated ann) {
+            return getRMetaAttributes(ann.getAnnotations());
         }
         return List.of();
     }
@@ -134,34 +137,34 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         }
         cycleTracker.put(symbol, builtins.NOTHING_WITH_ANY_META);
         RMetaAnnotatedType result;
-        if (symbol instanceof RosettaFeature) {
-            result = safeRType((RosettaFeature) symbol, context, cycleTracker);
-        } else if (symbol instanceof RosettaParameter) {
-            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(((RosettaParameter) symbol).getTypeCall()));
-        } else if (symbol instanceof ClosureParameter) {
-            RosettaFunctionalOperation setOp = ((ClosureParameter) symbol).getFunction() == null
+        if (symbol instanceof RosettaFeature f) {
+            result = safeRType(f, context, cycleTracker);
+        } else if (symbol instanceof RosettaParameter p) {
+            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(p.getTypeCall()));
+        } else if (symbol instanceof ClosureParameter cp) {
+            RosettaFunctionalOperation setOp = cp.getFunction() == null
                     ? null
-                    : (RosettaFunctionalOperation) ((ClosureParameter) symbol).getFunction().eContainer();
+                    : (RosettaFunctionalOperation) cp.getFunction().eContainer();
             if (setOp != null) {
                 result = safeRType(setOp.getArgument(), cycleTracker);
             } else {
                 result = builtins.NOTHING_WITH_ANY_META;
             }
-        } else if (symbol instanceof RosettaEnumeration) { // @Compat
-            result = RMetaAnnotatedType.withMeta(rObjectFactory.buildREnumType((RosettaEnumeration) symbol),
+        } else if (symbol instanceof RosettaEnumeration e) { // @Compat
+            result = RMetaAnnotatedType.withMeta(rObjectFactory.buildREnumType(e),
                     getRMetaAttributesOfSymbol(symbol));
-        } else if (symbol instanceof Function) {
-            Attribute out = ((Function) symbol).getOutput();
+        } else if (symbol instanceof Function func) {
+            Attribute out = func.getOutput();
             result = out != null ? safeRType((RosettaFeature) out, context, cycleTracker) : builtins.NOTHING_WITH_ANY_META;
-        } else if (symbol instanceof RosettaRule) {
-            RosettaExpression e = ((RosettaRule) symbol).getExpression();
+        } else if (symbol instanceof RosettaRule rule) {
+            RosettaExpression e = rule.getExpression();
             result = e != null ? safeRType(e, cycleTracker) : builtins.NOTHING_WITH_ANY_META;
-        } else if (symbol instanceof RosettaExternalFunction) {
-            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(((RosettaExternalFunction) symbol).getTypeCall()));
-        } else if (symbol instanceof ShortcutDeclaration) {
-            result = safeRType(((ShortcutDeclaration) symbol).getExpression(), cycleTracker);
-        } else if (symbol instanceof TypeParameter) {
-            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(((TypeParameter) symbol).getTypeCall()));
+        } else if (symbol instanceof RosettaExternalFunction extFunc) {
+            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(extFunc.getTypeCall()));
+        } else if (symbol instanceof ShortcutDeclaration alias) {
+            result = safeRType(alias.getExpression(), cycleTracker);
+        } else if (symbol instanceof TypeParameter tp) {
+            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(tp.getTypeCall()));
         } else {
             result = builtins.NOTHING_WITH_ANY_META;
         }
@@ -182,8 +185,8 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
                     getRMetaAttributesOfFeature(feature)
             );
         } else if (feature instanceof RosettaEnumValue) {
-            if (context instanceof RosettaFeatureCall) {
-                return safeRType(((RosettaFeatureCall) context).getReceiver(), cycleTracker);
+            if (context instanceof RosettaFeatureCall fc) {
+                return safeRType(fc.getReceiver(), cycleTracker);
             } else {
                 RMetaAnnotatedType fromContainer = expectedTypeProvider.getExpectedTypeFromContainer(context);
                 return fromContainer != null ? fromContainer : builtins.NOTHING_WITH_ANY_META;
@@ -203,17 +206,17 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         Optional<? extends EObject> definingContainer = implicitVariableUtil.findContainerDefiningImplicitVariable(context);
         return definingContainer.map(it -> {
             if (it instanceof RosettaTypeWithConditions) {
-                if (it instanceof Data) {
-                    return RMetaAnnotatedType.withNoMeta(rObjectFactory.buildRDataType((Data) it));
-                } else if (it instanceof RosettaTypeAlias) {
-                    return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType((RosettaTypeAlias) it));
+                if (it instanceof Data data) {
+                    return RMetaAnnotatedType.withNoMeta(rObjectFactory.buildRDataType(data));
+                } else if (it instanceof RosettaTypeAlias alias) {
+                    return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType(alias));
                 } else {
                     return builtins.NOTHING_WITH_ANY_META;
                 }
-            } else if (it instanceof RosettaFunctionalOperation) {
-                return safeRType(((RosettaFunctionalOperation) it).getArgument(), cycleTracker);
-            } else if (it instanceof RosettaRule) {
-                return RMetaAnnotatedType.withNoMeta(typeSystem.getRuleInputType((RosettaRule) it));
+            } else if (it instanceof RosettaFunctionalOperation fo) {
+                return safeRType(fo.getArgument(), cycleTracker);
+            } else if (it instanceof RosettaRule rule) {
+                return RMetaAnnotatedType.withNoMeta(typeSystem.getRuleInputType(rule));
             } else if (it instanceof SwitchCaseOrDefault sc) {
                 RosettaSymbol guardSymbol = sc.getGuard() != null ? sc.getGuard().getChoiceOptionGuard() : null;
                 return guardSymbol != null ? getRTypeOfSymbol(guardSymbol, context) : builtins.NOTHING_WITH_ANY_META;
@@ -621,7 +624,7 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     @Override
     protected RMetaAnnotatedType caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
         var argType = safeRType(expr.getArgument(), cycleTracker);
-        
+
         var newMetaAttributes = expr.getEntries().stream()
                 .map(WithMetaEntry::getKey)
                 .filter(f -> extensions.isResolved(f))
