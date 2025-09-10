@@ -49,6 +49,28 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testSwitchFormat() {
+		'''
+		input
+		switch   Foo then "Some expression",
+			Bar then   extract
+			if True
+		then "This is a looong expression"
+			else "other", default empty
+		''' ->
+		'''
+		input with-meta {
+			scheme: "Some expression",
+			id: foo
+				extract
+					if True
+					then "This is a looong expression"
+					else "other"
+		}
+		'''
+	}
+	
+	@Test
 	def void testWithMetaFormat() {
 		'''
 		input

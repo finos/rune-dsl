@@ -18,6 +18,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaPackageName
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
+import com.regnosys.rosetta.tests.compiler.CompilationException
 
 class ExpressionJavaEvaluatorService {
 	@Inject
@@ -73,7 +74,12 @@ class ExpressionJavaEvaluatorService {
 				.useParentClassLoader(classLoader)
 				.useOptions("--release", "8", "-Xlint:all", "-Xdiags:verbose");
 		generateMetaFieldClasses(expr, expressionCompiler)
-		val evaluatorClass = expressionCompiler.compile(packageName.child(className).withDots, sourceCode)
+		var Class<?> evaluatorClass
+		try {
+			evaluatorClass = expressionCompiler.compile(packageName.child(className).withDots, sourceCode)
+		} catch (CompilationException e) {
+			throw new RuntimeException("Failed to compile expression.\n" + sourceCode, e)
+		}
 		val instance = injector.getInstance(evaluatorClass)
 		
 		evaluatorClass.getDeclaredMethod(methodName).invoke(instance)

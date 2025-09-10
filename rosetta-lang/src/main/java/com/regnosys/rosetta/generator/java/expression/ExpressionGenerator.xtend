@@ -145,7 +145,6 @@ import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface
 import com.regnosys.rosetta.generator.GenerationException
-import com.regnosys.rosetta.RosettaEcoreUtil
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
@@ -271,7 +270,11 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			itemType
 		} else if (definingContainer instanceof SwitchCaseOrDefault) {
 			// For choice and data switch cases
-			MAPPER_S.wrap(itemType)
+			if (definingContainer.guard.choiceOptionGuard !== null) {
+				MAPPER_S.wrap(itemType)
+			} else {
+				itemType
+			}
 		} else {
 			// For inline functions
 			val f = definingContainer as RosettaFunctionalOperation
@@ -1274,7 +1277,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseSwitchOperation(SwitchOperation expr, Context context) {
-		val inputRType =  typeProvider.getRMetaAnnotatedType(expr.argument).RType
+		val inputRType = typeProvider.getRMetaAnnotatedType(expr.argument).RType.stripFromTypeAliases
 		if (inputRType instanceof RChoiceType) {
 			val switchArgument = expr.argument.javaCode(MAPPER.wrap(inputRType.toJavaReferenceType), context.scope)
 			
@@ -1297,6 +1300,23 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		 					typeUtil
 		 				)
 					]
+			], context)
+		} else if (inputRType instanceof RDataType) {
+			val switchArgument = expr.argument.javaCode(inputRType.toJavaReferenceType, context.scope)
+			
+			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
+				val caseType = switchCase.guard.dataGuard.buildRDataType
+				val caseJavaType = caseType.toJavaReferenceType
+				
+				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, caseType.name.toFirstLower)
+				val castExpression = JavaExpression.from('''(«caseJavaType») «switchArg»''', caseJavaType)
+				new JavaIfThenElseBuilder(
+					JavaExpression.from('''«switchArg» instanceof «caseType»''', JavaPrimitiveType.BOOLEAN),
+					new JavaLocalVariableDeclarationStatement(true, caseJavaType, itemVar, castExpression)
+								.append(switchCase.expression.javaCode(context.expectedType, context.scope)),
+					acc,
+					typeUtil
+				)
 			], context)
 		} else if (inputRType instanceof REnumType) {
 			val switchArgument = expr.argument.javaCode(inputRType.toJavaReferenceType, context.scope)
