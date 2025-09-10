@@ -970,7 +970,7 @@ The `switch` operator takes as its left hand input an argument on which to perfo
       default "resultC"
 ```
 
-The `switch` operator can also operate over enumerations and in the case where all enumeration values are not provided as case statements then a syntax validation error will occur until either all enumeration values or a default value is provided.
+The `switch` operator can also operate over enumerations. In case not all enumeration values are provided, a syntax validation error will occur until either all enumeration values or a default value is provided.
 
 ```Haskell
   enumInput switch 
@@ -1053,6 +1053,41 @@ func ComputeMileage:
 Even though the `Vehicle` choice type does not include `PetrolCar` directly, it is included indirectly through the `PoweredVehicle` choice type, and thus can be used as a case.
 
 Similarly to enumerations, the syntax enforces you to cover all cases - or to add a `default` case at the end. For example, leaving out the `Bicycle` case in the example above will result in the `switch` operation being highlighted in red.
+
+##### `switch` for complex types
+
+In a similar way, the `switch` operator can be used to perform case analysis on complex types. Consider the following example.
+
+``` Haskell
+type Person:
+  name string (1..1)
+
+type Employee extends Person:
+  salary number (1..1)
+
+type Contractor extends Person:
+  hourlyRate number (1..1)
+```
+
+By switching over a person, we can perform case analysis to compute a monthly wage.
+
+``` Haskell
+func ComputeMonthlyWage:
+  inputs:
+    person Person (1..1)
+  output:
+    monthlyWage number (1..1)
+  
+  set monthlyWage:
+    person switch
+      Employee then salary,
+      Contractor then hourlyRate * 8 * 5 * 20,
+      default 0
+```
+
+Again, within each case, you can access attributes specific to that case directly. The keyword `item` can be used to refer to the actual specific person inside each case.
+
+Since complex types are open for extension, a `default` case is mandatory.
 
 #### With Meta Operator
 The `with-meta` operator allows you to set metadata on an expression using a constructor-like syntax. This operator can be used when setting the output of a function or the value of an alias.
