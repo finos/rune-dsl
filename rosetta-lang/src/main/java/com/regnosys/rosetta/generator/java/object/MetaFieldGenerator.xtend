@@ -41,7 +41,9 @@ class MetaFieldGenerator extends JavaClassGenerator<RMetaAnnotatedType, RJavaWit
 		Stream.concat(
 			model.eAllOfType(Attribute).stream.map[buildRAttribute.RMetaAnnotatedType].filter[hasMeta],
 			model.eAllOfType(WithMetaOperation).stream.map[RMetaAnnotatedType].filter[hasMeta]
-		).distinct
+		)
+		.distinct
+		.filter[toJavaReferenceType instanceof RJavaWithMetaValue]
 	}
 	override createTypeRepresentation(RMetaAnnotatedType t) {
 		t.toJavaReferenceType as RJavaWithMetaValue

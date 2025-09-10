@@ -7,6 +7,8 @@ import javax.inject.Inject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.testing.validation.ValidationTestHelper;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -19,6 +21,8 @@ import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 public class RosettaExpressionPrioritisationTest {
 	@Inject
     private RosettaTestModelService modelService;
+    @Inject
+    private ValidationTestHelper validationHelper;
 	
 	@Test
 	void testPrioritisationOfOperations1() {

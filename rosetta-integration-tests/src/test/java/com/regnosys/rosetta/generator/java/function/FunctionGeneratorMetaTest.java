@@ -74,11 +74,11 @@ public class FunctionGeneratorMetaTest {
                     inputs:
                         inputField string (1..1)
                           [metadata location]
-                    output: 
+                    output:
                         outString string (1..1)
-                                        
+                
                     set outString: inputField -> location
-                 """;
+                """;
 
         var code = generatorTestHelper.generateCode(model);
                 
@@ -106,13 +106,13 @@ public class FunctionGeneratorMetaTest {
                     inputs:
                         inputField string (1..1)
                         keyValue string (1..1)
-                    output: 
+                    output:
                         outString string (1..1)
                           [metadata location]
-                                        
+                
                     set outString:
                         inputField with-meta { location: keyValue }
-                 """;
+                """;
 
         var code = generatorTestHelper.generateCode(model);
                 
@@ -135,13 +135,13 @@ public class FunctionGeneratorMetaTest {
         var model = """
             type Bar:
                 barField string (1..1)
-                 
+            
             
             func MyFunc:
                 output:
                     result Bar (0..1)
                      [metadata scheme]
-                 
+            
                 set result:
                         empty with-meta {
                             scheme: "someScheme"
@@ -183,7 +183,7 @@ public class FunctionGeneratorMetaTest {
             func MyFunc:
                 output:
                     result Bar (1..1)
-                 
+            
                 set result:
                     Bar {
                         fooReference:
@@ -227,17 +227,17 @@ public class FunctionGeneratorMetaTest {
                 output:
                     fooReference Foo (0..1)
                     [metadata reference]
-                 
+            
                 set fooReference -> reference: "someRef"
             
             func MyFunc:
                 output:
                     result Bar (1..1)
-                 
+            
                 set result:
                     Bar {
                         fooReference:
-                           if True 
+                           if True
                            then GetRefFunc()
                     }
             """;  
@@ -268,7 +268,7 @@ public class FunctionGeneratorMetaTest {
         type Foo:
           [metadata key]
           fooField string (1..1)
-          
+        
         func MyFunc:
             inputs:
                 fooReference Foo (1..1)
@@ -309,13 +309,13 @@ public class FunctionGeneratorMetaTest {
         		B
         		C
   
-        func MyFunc:        	      
+        func MyFunc:
             output:
                 result MyEnum (1..1)
         		  [metadata scheme]
-        	
+        
         	alias myEnum: MyEnum -> B
-        	
+        
             set result: myEnum with-meta {
                                         scheme: "someScheme"
                                     }
@@ -352,11 +352,11 @@ public class FunctionGeneratorMetaTest {
         	inputs:
         	    myInput Foo (1..1)
         	      [metadata location]
-        	      
+        
             output:
                 result Foo (1..1)
         		  [metadata location]
-             
+        
             set result: myInput with-meta {
         								key: "someKey"
                                     }
@@ -404,12 +404,12 @@ public class FunctionGeneratorMetaTest {
         	inputs:
         	    myInput Foo (1..1)
         	      [metadata location]
-        	      
+        
             output:
                 result Foo (1..1)
         		  [metadata scheme]
         		  [metadata location]
-             
+        
             set result: myInput with-meta {
         								key: "someKey",
                                         scheme: "someScheme"
@@ -456,11 +456,11 @@ public class FunctionGeneratorMetaTest {
         func MyFunc:
         	inputs:
         	    myInput Foo (1..1)
-        	      
+        
             output:
                 result Foo (1..1)
         		  [metadata scheme]
-             
+        
             set result: myInput with-meta {
                                         scheme: "someScheme"
                                     }
@@ -505,11 +505,11 @@ public class FunctionGeneratorMetaTest {
         	inputs:
         	    myInput Foo (1..1)
         	      [metadata location]
-        	      
+        
             output:
                 result Foo (1..1)
         		  [metadata scheme]
-             
+        
             set result: myInput with-meta {
                                         scheme: "someScheme"
                                     }
@@ -546,7 +546,7 @@ public class FunctionGeneratorMetaTest {
     void canSetMetaAdressAndReferenceUsingWithMetaSyntax() {
         var model = """
         metaType address string
-        metaType reference string        
+        metaType reference string
         
         type Foo:
            someField string (1..1)
@@ -557,11 +557,11 @@ public class FunctionGeneratorMetaTest {
         		  [metadata address]
           		  [metadata reference]
 
-             
+        
              alias foo: Foo {
         		someField: "someValue"
              }
-             
+        
             set result: foo with-meta {
                                         address: "someAddress",
                                         reference: "someReference"
@@ -601,11 +601,11 @@ public class FunctionGeneratorMetaTest {
             output:
                 result Foo (1..1)
         		  [metadata address]
-             
+        
              alias foo: Foo {
         		someField: "someValue"
              }
-             
+        
             set result: foo with-meta {
                                         address: "someAddress"
                                     }
@@ -643,11 +643,11 @@ public class FunctionGeneratorMetaTest {
             output:
                 result Foo (1..1)
         		  [metadata reference]
-             
+        
              alias foo: Foo {
         		someField: "someValue"
              }
-             
+        
             set result: foo with-meta {
                                         reference: "someReference"
                                     }
@@ -687,11 +687,11 @@ public class FunctionGeneratorMetaTest {
             output:
                 result Foo (1..1)
         		  [metadata scheme]
-             
+        
              alias foo: Foo {
         		someField: "someValue"
              }
-             
+        
             set result: foo with-meta {
                                         key: "someKey",
                                         scheme: "someScheme"
@@ -730,11 +730,11 @@ public class FunctionGeneratorMetaTest {
         func MyFunc:
             output:
                 result Foo (1..1)
-             
+        
              alias foo: Foo {
         		someField: "someValue"
              }
-             
+        
             set result: foo with-meta {
                                         key: "someKey"
                                     }
@@ -793,14 +793,14 @@ public class FunctionGeneratorMetaTest {
 
     @Test
     void canSetEnumOnReferenceWithMeta() {
-        var model = """	  
+        var model = """
         metaType reference string
-          
+  
         enum MyEnum:
             A
             B
             C
-                		    	    
+  
 		type Foo:
 		    myEnumField MyEnum (1..1)
 		     [metadata reference]
@@ -808,9 +808,9 @@ public class FunctionGeneratorMetaTest {
 		func MyFunc:
 		    output:
 		        foo Foo (1..1)
-		        
+		
 		    set foo -> myEnumField: MyEnum -> B
-        """;
+  """;
 
 
         var code = generatorTestHelper.generateCode(model);
@@ -833,12 +833,12 @@ public class FunctionGeneratorMetaTest {
 
     @Test
     void canSetEnumOnFieldWithMeta() {
-        var model = """	   
+        var model = """
         enum MyEnum:
             A
             B
             C
-                		    	    
+  
 		type Foo:
 		    myEnumField MyEnum (1..1)
 		     [metadata scheme]
@@ -846,9 +846,9 @@ public class FunctionGeneratorMetaTest {
 		func MyFunc:
 		    output:
 		        foo Foo (1..1)
-		        
+		
 		    set foo -> myEnumField: MyEnum -> B
-        """;
+  """;
 
 
         var code = generatorTestHelper.generateCode(model);

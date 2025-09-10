@@ -30,6 +30,7 @@ import org.eclipse.xtext.resource.impl.ListBasedDiagnosticConsumer;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
+import org.eclipse.xtext.util.CancelIndicator;
 
 import javax.inject.Provider;
 import java.io.StringReader;
@@ -136,6 +137,8 @@ public class ExpressionParser {
         resource.setLoading(false);
 
         obj.eResource().getErrors().addAll(consumer.getResult(Severity.ERROR));
+
+        EcoreUtil2.resolveLazyCrossReferences(obj.eResource(), CancelIndicator.NullImpl);
     }
 
     private static class RosettaContextBasedScopeProvider extends RosettaScopeProvider {
