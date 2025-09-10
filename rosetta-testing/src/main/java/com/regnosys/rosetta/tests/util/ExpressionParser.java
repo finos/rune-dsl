@@ -39,15 +39,15 @@ import java.util.Collection;
 import java.util.List;
 
 public class ExpressionParser {
-    @Inject 
+    @Inject
     private IParser parser;
-    @Inject 
+    @Inject
     private RosettaGrammarAccess grammar;
-    @Inject 
+    @Inject
     private ModelHelper modelHelper;
-    @Inject 
+    @Inject
     private Provider<ExpressionResource> resourceProvider;
-    @Inject 
+    @Inject
     private RosettaStaticLinker linker;
 
     public RosettaExpression parseExpression(CharSequence expr) {
@@ -123,7 +123,7 @@ public class ExpressionParser {
     private List<RosettaModel> defaultContext() {
         var rs = modelHelper.testResourceSet();
         List<RosettaModel> result = new ArrayList<>();
-        rs.getResources().forEach(r -> result.add((RosettaModel) r.getContents().get(0)));
+        rs.getResources().forEach(r -> result.add((RosettaModel) r.getContents().getFirst()));
         return result;
     }
 
@@ -152,7 +152,7 @@ public class ExpressionParser {
         protected List<ImportNormalizer> getImplicitImports(boolean ignoreCase) {
             List<ImportNormalizer> base = super.getImplicitImports(ignoreCase);
             List<ImportNormalizer> extra = context.stream()
-                    .map(m -> m.getName())
+                    .map(RosettaModel::getName)
                     .distinct()
                     .map(ns -> createImportedNamespaceResolver(ns + ".*", ignoreCase))
                     .toList();
@@ -164,7 +164,8 @@ public class ExpressionParser {
     }
 
     private static class RosettaStaticLinker extends LazyLinker {
-        @Inject RosettaContextBasedScopeProvider scopeProvider;
+        @Inject
+        RosettaContextBasedScopeProvider scopeProvider;
 
         IScope staticScope = IScope.NULLSCOPE;
 
