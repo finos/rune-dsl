@@ -270,7 +270,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			// For conditions and rules
 			itemType
 		} else if (definingContainer instanceof SwitchCaseOrDefault) {
-			// For choice switch cases
+			// For choice and data switch cases
 			MAPPER_S.wrap(itemType)
 		} else {
 			// For inline functions

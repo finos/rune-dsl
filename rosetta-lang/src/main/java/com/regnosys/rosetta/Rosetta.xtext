@@ -638,7 +638,7 @@ SwitchCaseOrDefault:
 ;
 
 SwitchCaseGuard:
-	literalGuard=RosettaLiteral | symbolGuard=[RosettaSymbol|ValidID]
+	literalGuard=RosettaLiteral | referenceGuard=[SwitchCaseTarget|ValidID]
 ;
 
 WithMetaEntry:

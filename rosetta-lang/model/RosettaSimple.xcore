@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
 import com.regnosys.rosetta.rosetta.RosettaCardinality
 import com.regnosys.rosetta.rosetta.RosettaFactory
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseTarget
 import com.regnosys.rosetta.rosetta.RosettaFeature
 
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -98,7 +99,7 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 }
 
 
-class Data extends RosettaTypeWithConditions, RootElement, References {
+class Data extends RosettaTypeWithConditions, RootElement, References, SwitchCaseTarget {
 	refers Data superType
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
@@ -136,7 +137,7 @@ class Choice extends Data {
 	}
 }
 
-class ChoiceOption extends Attribute {
+class ChoiceOption extends Attribute, SwitchCaseTarget {
 	String _hardcodedName
 	contains RosettaCardinality _hardcodedCardinality
 	

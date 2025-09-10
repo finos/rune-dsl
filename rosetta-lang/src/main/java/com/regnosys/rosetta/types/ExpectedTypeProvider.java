@@ -96,9 +96,8 @@ public interface ExpectedTypeProvider {
                     LOGGER.debug("Unexpected functional operation of type " + operation.getClass().getCanonicalName());
                 }
             } else if (owner instanceof SwitchCaseOrDefault switchCase) {
-                SwitchOperation op = switchCase.getSwitchOperation();
                 if (SWITCH_CASE_OR_DEFAULT__EXPRESSION.equals(reference)) {
-                    return getExpectedTypeFromContainer(op);
+                    return getExpectedTypeFromContainer(switchCase.getSwitchOperation());
                 }
             }
             return null;

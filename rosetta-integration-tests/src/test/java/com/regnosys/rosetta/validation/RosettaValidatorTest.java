@@ -348,7 +348,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     @Test
     void testSwitchInputRecordTypesAreNotValid() {
         var expression = expressionParser.parseExpression("someDate switch default \"someResult\"", List.of("someDate date (1..1)"));
-        validationTestHelper.assertError(expression, SWITCH_OPERATION, null, "Operator `switch` is not supported for type `date`. Supported argument types are basic types, enumerations, and choice types");
+        validationTestHelper.assertError(expression, SWITCH_OPERATION, null, "Operator `switch` is not supported for type `date`. Supported argument types are basic types, enumerations, complex types, and choice types");
     }
 
     @Test
@@ -428,17 +428,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					default "defaultValue"
 				""", List.of(model), List.of("inEnum SomeEnum (1..1)"));
         validationTestHelper.assertError(expression, SWITCH_CASE_OR_DEFAULT, null, "Case should match an enum value of SomeEnum");
-    }
-
-    @Test
-    void testDataTypesAreInvalidSwitchInputs() {
-        var model = modelHelper.parseRosettaWithNoIssues("""
-				type Foo:
-					fooField string (1..1)
-				""");
-
-        var expression = expressionParser.parseExpression("inFoo switch default 42", List.of(model), List.of("inFoo Foo (1..1)"));
-        validationTestHelper.assertError(expression, SWITCH_OPERATION, null, "Operator `switch` is not supported for type `Foo`. Supported argument types are basic types, enumerations, and choice types");
     }
 
     @Test
