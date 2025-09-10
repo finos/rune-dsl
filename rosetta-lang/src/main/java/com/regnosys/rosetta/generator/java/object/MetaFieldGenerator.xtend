@@ -15,30 +15,46 @@ import com.regnosys.rosetta.types.RType
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
-import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
-import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.rosetta.util.types.JavaParameterizedType
+import java.util.stream.Stream
+import com.regnosys.rosetta.types.RMetaAnnotatedType
+import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
+import com.regnosys.rosetta.types.RosettaTypeProvider
+import com.regnosys.rosetta.generator.java.JavaClassGenerator
+import org.eclipse.emf.ecore.EObject
 
-class MetaFieldGenerator extends RObjectJavaClassGenerator<RAttribute, RJavaWithMetaValue> {
+class MetaFieldGenerator extends JavaClassGenerator<RMetaAnnotatedType, RJavaWithMetaValue> {
 	@Inject extension ModelObjectGenerator
 	@Inject extension JavaTypeTranslator
 	@Inject extension RObjectFactory
+	@Inject extension RosettaTypeProvider
 
+	override protected getSource(RMetaAnnotatedType object) {
+		return null
+	}
 	override protected streamObjects(RosettaModel model) {
-		model.eAllOfType(Attribute).stream.map[buildRAttribute].filter[RMetaAnnotatedType.hasMeta]
+		streamObjects(model as EObject)
 	}
-	override protected createTypeRepresentation(RAttribute attr) {
-		attr.toForcedMetaItemJavaType as RJavaWithMetaValue
+	def Stream<RMetaAnnotatedType> streamObjects(EObject model) {
+		Stream.concat(
+			model.eAllOfType(Attribute).stream.map[buildRAttribute.RMetaAnnotatedType].filter[hasMeta],
+			model.eAllOfType(WithMetaOperation).stream.map[RMetaAnnotatedType].filter[hasMeta]
+		)
+		.distinct
+		.filter[toJavaReferenceType instanceof RJavaWithMetaValue]
 	}
-	override protected generate(RAttribute attr, RJavaWithMetaValue metaJt, String version, JavaClassScope scope) {
-		val targetPackage = attr.RMetaAnnotatedType.RType.namespace
+	override createTypeRepresentation(RMetaAnnotatedType t) {
+		t.toJavaReferenceType as RJavaWithMetaValue
+	}
+	override generate(RMetaAnnotatedType t, RJavaWithMetaValue metaJt, String version, JavaClassScope scope) {
+		val targetPackage = t.RType.namespace
 		
 		if (metaJt instanceof RJavaReferenceWithMeta) {
-			referenceWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType.RType, scope)
+			referenceWithMeta(targetPackage, metaJt, t.RType, scope)
 		} else if (metaJt instanceof RJavaFieldWithMeta) {
-			fieldWithMeta(targetPackage, metaJt, attr.RMetaAnnotatedType.RType, scope)
+			fieldWithMeta(targetPackage, metaJt, t.RType, scope)
 		} else {
 			throw new UnsupportedOperationException("Invalid JavaType: " + metaJt)
 		}
@@ -86,5 +102,4 @@ class MetaFieldGenerator extends RObjectJavaClassGenerator<RAttribute, RJavaWith
 			namespace
 		}
 	}
-	
 }

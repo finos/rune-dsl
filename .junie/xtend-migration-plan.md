@@ -86,7 +86,7 @@ No project files to migrate.
 - [ ] RosettaExpressionFormattingTest
 - [ ] RosettaFormattingTest
 - [ ] ListOperationTest
-- [ ] RosettaCountOperationTest
+- [x] RosettaCountOperationTest
 - [ ] CalculationFunctionGeneratorTest
 - [ ] FunctionGeneratorHelper
 - [ ] FunctionGeneratorTest
@@ -114,14 +114,14 @@ No project files to migrate.
 - [x] SubtypeRelationTest
 - [x] ChoiceValidatorTest
 - [x] EnumValidatorTest
-- [ ] RosettaValidatorTest
-- [ ] TypeValidatorTest
+- [x] RosettaValidatorTest
+- [x] TypeValidatorTest
 
 ##### Files with usage of string template features (5 files)
 - [ ] DocumentationSamples
-- [ ] ExpressionGeneratorTest
+- [x] ExpressionGeneratorTest
 - [ ] RosettaBinaryOperationTest
-- [ ] RosettaExistsExpressionTest
+- [x] RosettaExistsExpressionTest
 - [ ] ModelObjectGeneratorTest
 
 ### rosetta-lang (35 files)
@@ -131,17 +131,17 @@ No project files to migrate.
 ##### Files without usage of string template features (14 files)
 - [ ] RosettaFormatter
 - [ ] RosettaGenerator
-- [ ] RosettaInternalGenerator
+- [x] RosettaInternalGenerator
 - [ ] RosettaOutputConfigurationProvider
 - [ ] EnumHelper
-- [ ] JavaDependencyProvider
+- [x] JavaDependencyProvider
 - [ ] RuleGenerator
-- [ ] ImportingStringConcatenation
+- [x] ImportingStringConcatenation
 - [ ] RosettaGrammarUtil
 - [ ] ExpandedAttribute
 - [ ] TestResourceAwareFSAFactory
-- [ ] RosettaAttributeExtensions
-- [ ] RosettaFunctionExtensions
+- [x] RosettaAttributeExtensions
+- [x] RosettaFunctionExtensions
 - [ ] RosettaQualifiedNameProvider
 
 ##### Files with usage of string template features (21 files)
@@ -159,13 +159,13 @@ No project files to migrate.
 - [ ] ModelObjectBoilerPlate
 - [ ] ModelObjectBuilderGenerator
 - [ ] ModelObjectGenerator
-- [ ] ValidatorsGenerator
+- [x] ValidatorsGenerator
 - [ ] ReportGenerator
 - [ ] ImportManagerExtension
 - [ ] ModelGeneratorUtil
 - [ ] RecordJavaUtil
-- [ ] IterableUtil
-- [ ] RosettaSimpleValidator
+- [x] IterableUtil
+- [x] RosettaSimpleValidator
 
 ### rosetta-runtime (1 file)
 
@@ -180,7 +180,7 @@ No project files to migrate.
 
 ##### Files without usage of string template features (3 files)
 - [ ] CustomConfigTestHelper
-- [ ] ExpressionParser
+- [x] ExpressionParser
 - [ ] ExpressionValidationHelper
 
 ##### Files with usage of string template features (3 files)
