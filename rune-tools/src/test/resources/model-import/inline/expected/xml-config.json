@@ -1,9 +1,0 @@
-{
-  "test.ns.Foo" : {
-    "attributes" : {
-      "fooAttr" : {
-        "xmlName" : "FooAttr"
-      }
-    }
-  }
-}

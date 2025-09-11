@@ -1,9 +1,0 @@
-{
-  "test.ns.FooEnum" : {
-    "enumValues" : {
-      "VALUE1" : "Value1",
-      "VALUE2" : "Value2",
-      "VALUE3" : "Value3"
-    }
-  }
-}
