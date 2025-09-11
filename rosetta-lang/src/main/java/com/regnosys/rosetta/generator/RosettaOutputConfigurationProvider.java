@@ -20,8 +20,6 @@ public class RosettaOutputConfigurationProvider extends OutputConfigurationProvi
 
     public static final String SRC_GEN_JAVA_OUTPUT = IFileSystemAccess.DEFAULT_OUTPUT;
     public static final String SRC_TEST_GEN_JAVA_OUTPUT = "SRC_TEST_GEN_JAVA_OUTPUT";
-    public static final String SRC_MAIN_JAVA_OUTPUT = "SRC_MAIN_JAVA_OUTPUT";
-    public static final String SRC_GEN_DAML_OUTPUT = "SRC_GEN_DAML_OUTPUT";
 
     @Override
     public Set<OutputConfiguration> getOutputConfigurations() {
@@ -47,16 +45,6 @@ public class RosettaOutputConfigurationProvider extends OutputConfigurationProvi
         srcGenJava.setSetDerivedProperty(true);
         srcGenJava.setKeepLocalHistory(true);
 
-        OutputConfiguration srcMainJava = new OutputConfiguration(SRC_MAIN_JAVA_OUTPUT);
-        srcMainJava.setOutputDirectory("./src/main/java");
-        srcMainJava.setDescription("Java Main Output Folder");
-        srcMainJava.setOverrideExistingResources(false);
-        srcMainJava.setCanClearOutputDirectory(false);
-        srcMainJava.setCreateOutputDirectory(false);
-        srcMainJava.setCleanUpDerivedResources(false);
-        srcMainJava.setSetDerivedProperty(false);
-        srcMainJava.setKeepLocalHistory(false);
-
         OutputConfiguration srcTestJava = new OutputConfiguration(SRC_TEST_GEN_JAVA_OUTPUT);
         srcTestJava.setOutputDirectory("./src/test/generated/java");
         srcTestJava.setDescription("Java Tests Output Folder");
@@ -67,20 +55,8 @@ public class RosettaOutputConfigurationProvider extends OutputConfigurationProvi
         srcTestJava.setSetDerivedProperty(true);
         srcTestJava.setKeepLocalHistory(false);
 
-        OutputConfiguration srcGenDaml = new OutputConfiguration(SRC_GEN_DAML_OUTPUT);
-        srcGenDaml.setOutputDirectory("./src/generated/daml");
-        srcGenDaml.setDescription("Generated DAML Output Folder");
-        srcGenDaml.setOverrideExistingResources(true);
-        srcGenDaml.setCanClearOutputDirectory(true);
-        srcGenDaml.setCreateOutputDirectory(true);
-        srcGenDaml.setCleanUpDerivedResources(true);
-        srcGenDaml.setSetDerivedProperty(true);
-        srcGenDaml.setKeepLocalHistory(true);
-
         Map<String, OutputConfiguration> result = new HashMap<>();
         result.put(SRC_GEN_JAVA_OUTPUT, srcGenJava);
-        result.put(SRC_MAIN_JAVA_OUTPUT, srcMainJava);
-        result.put(SRC_GEN_DAML_OUTPUT, srcGenDaml);
         result.put(SRC_TEST_GEN_JAVA_OUTPUT, srcTestJava);
         return result;
     }
