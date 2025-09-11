@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseTarget
 import com.regnosys.rosetta.rosetta.simple.Condition
 
 class RosettaModel extends RosettaDefinable {
@@ -138,7 +139,7 @@ class RosettaEnumeration extends RootElement, RosettaType, RosettaDefinable, Ref
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated {
+class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated, SwitchCaseTarget {
 	String display
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues

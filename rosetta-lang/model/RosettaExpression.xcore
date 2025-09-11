@@ -17,6 +17,7 @@ import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption
+import com.regnosys.rosetta.rosetta.simple.Data
 import org.eclipse.emf.common.util.BasicEList
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 
@@ -384,21 +385,30 @@ class SwitchCaseGuard {
 	
 	contains RosettaLiteral literalGuard
 	
-	refers RosettaSymbol symbolGuard
+	refers SwitchCaseTarget referenceGuard
 	refers derived RosettaEnumValue enumGuard get {
-		val s = symbolGuard
+		val s = referenceGuard
 		if (s instanceof RosettaEnumValue) {
 			return s
 		}
 		return null
 	}
 	refers derived ChoiceOption choiceOptionGuard get {
-		val s = symbolGuard
+		val s = referenceGuard
 		if (s instanceof ChoiceOption) {
 			return s
 		}
 		return null
 	}
+	refers derived Data dataGuard get {
+		val s = referenceGuard
+		if (s instanceof Data) {
+			return s
+		}
+		return null
+	}
+}
+interface SwitchCaseTarget {
 }
 
 class WithMetaOperation extends RosettaUnaryOperation {

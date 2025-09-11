@@ -49,6 +49,28 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testSwitchFormat() {
+		'''
+		input
+		switch   Foo then "Some expression",
+			Bar then   extract
+			if True
+		then "This is a looong expression"
+			else "other", default empty
+		''' ->
+		'''
+		input switch
+			Foo then "Some expression",
+			Bar then
+				extract
+					if True
+					then "This is a looong expression"
+					else "other",
+			default empty
+		'''
+	}
+	
+	@Test
 	def void testWithMetaFormat() {
 		'''
 		input
@@ -143,14 +165,14 @@ class RosettaExpressionFormattingTest {
 	def void testConstructorNestedWithBooleanFormat() {
 		'''
 		Constr1 {
-            attr1: if True
-            then False,
-            attr2: if False
-            then Constr2 {
-                    attr11: Constr3 {
-                        attr111: 42
-                	}}
-        }
+		attr1: if True
+		then False,
+		attr2: if False
+		then Constr2 {
+		attr11: Constr3 {
+		attr111: 42
+		}}
+		}
 		''' ->
 		'''
 		Constr1 {

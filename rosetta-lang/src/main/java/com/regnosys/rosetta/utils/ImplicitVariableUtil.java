@@ -52,22 +52,20 @@ public class ImplicitVariableUtil {
 		Iterable<EObject> containers = EcoreUtil2.getAllContainers(context);
 		EObject prev = context;
 		for (EObject container: containers) {
-			if (container instanceof Condition) {
-				RosettaTypeWithConditions enclosingType = ((Condition) container).getEnclosingType();
+			if (container instanceof Condition cond) {
+				RosettaTypeWithConditions enclosingType = cond.getEnclosingType();
 				if (enclosingType != null) {
 					return Optional.of(enclosingType);
 				}
-			} else if (container instanceof RosettaFunctionalOperation) {
-				RosettaFunctionalOperation op = (RosettaFunctionalOperation)container;
-				InlineFunction f = op.getFunction();
-				if (f != null && f.equals(prev) && f.getParameters().size() == 0) {
+			} else if (container instanceof RosettaFunctionalOperation op) {
+                InlineFunction f = op.getFunction();
+				if (f != null && f.equals(prev) && f.getParameters().isEmpty()) {
 					return Optional.of(container);
 				}
 			} else if (container instanceof RosettaRule) {
 				return Optional.of(container);
-			} else if (container instanceof SwitchCaseOrDefault) {
-				SwitchCaseOrDefault c = (SwitchCaseOrDefault) container;
-				if (!c.isDefault() && c.getGuard().getChoiceOptionGuard() != null) {
+			} else if (container instanceof SwitchCaseOrDefault c) {
+                if (!c.isDefault() && (c.getGuard().getChoiceOptionGuard() != null || c.getGuard().getDataGuard() != null)) {
 					return Optional.of(container);
 				}
 			} else if (container instanceof BuiltinAnnotationWithPath) {

@@ -84,6 +84,8 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	
 	@Inject 
 	private RosettaTypeProvider typeProvider;
+	@Inject
+	private TypeSystem typeSystem;
 	@Inject 
 	private ExpectedTypeProvider expectedTypeProvider;
 	@Inject
@@ -260,16 +262,21 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES)) {
 				return filteredScope(defaultScope(context, reference), it -> it.getEClass().equals(ROSETTA_EXTERNAL_RULE_SOURCE));
-			} else if (reference.equals(SWITCH_CASE_GUARD__SYMBOL_GUARD)) {
+			} else if (reference.equals(SWITCH_CASE_GUARD__REFERENCE_GUARD)) {
 				if (context instanceof SwitchCaseGuard guard) {
-					var argumentType = typeProvider.getRMetaAnnotatedType(guard.getCase().getSwitchOperation().getArgument()).getRType();
+					var argumentType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(guard.getCase().getSwitchOperation().getArgument()).getRType());
 					if (argumentType instanceof REnumType argEnumType) {
 					   return Scopes.scopeFor(argEnumType.getAllEnumValues());
 					} else if (argumentType instanceof RChoiceType argChoiceType) {
 						return Scopes.scopeFor(Iterables.transform(argChoiceType.getAllOptions(), RChoiceOption::getEObject));
-					}
+					} else if (argumentType instanceof RDataType) {
+                        // TODO: find an efficient way to only include subtypes to improve auto-completion... E.g., by adding supertype info in the resource description?
+						// Once done succesfully: remove validation.
+                        return filteredScope(defaultScope(context, reference), it -> it.getEClass().equals(DATA));
+					} else {
+                        return IScope.NULLSCOPE;
+                    }
 				}
-				return IScope.NULLSCOPE;
 			} else if (reference.equals(WITH_META_ENTRY__KEY)) {
 				if (context instanceof WithMetaEntry) {
 					var resource = context.eResource();

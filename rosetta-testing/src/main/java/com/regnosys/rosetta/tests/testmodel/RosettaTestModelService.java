@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.rosetta.util.types.JavaType;
 import jakarta.inject.Inject;
 
@@ -123,6 +124,10 @@ public class RosettaTestModelService {
 		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getResourceSet().getResources());
 		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
 	}
+
+    public RosettaExpression parseExpression(CharSequence expressionSource, String... attributes) {
+        return expressionParser.parseExpression(expressionSource, List.of(attributes));
+    }
 	
 	/**
 	 * Load a test model from a file or folder on the classpath, and generate Java code.

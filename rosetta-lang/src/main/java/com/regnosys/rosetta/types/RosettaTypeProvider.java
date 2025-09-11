@@ -218,8 +218,17 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
             } else if (it instanceof RosettaRule rule) {
                 return RMetaAnnotatedType.withNoMeta(typeSystem.getRuleInputType(rule));
             } else if (it instanceof SwitchCaseOrDefault sc) {
-                RosettaSymbol guardSymbol = sc.getGuard() != null ? sc.getGuard().getChoiceOptionGuard() : null;
-                return guardSymbol != null ? getRTypeOfSymbol(guardSymbol, context) : builtins.NOTHING_WITH_ANY_META;
+                SwitchCaseGuard guard = sc.getGuard();
+                if (guard != null) {
+                    ChoiceOption choiceOption = guard.getChoiceOptionGuard();
+                    if (choiceOption != null) {
+                        return getRTypeOfSymbol(choiceOption, context);
+                    }
+                    Data data = guard.getDataGuard();
+                    if (data != null) {
+                        return RMetaAnnotatedType.withNoMeta(rObjectFactory.buildRDataType(data));
+                    }
+                }
             }
             return builtins.NOTHING_WITH_ANY_META;
         }).orElse(builtins.NOTHING_WITH_ANY_META);

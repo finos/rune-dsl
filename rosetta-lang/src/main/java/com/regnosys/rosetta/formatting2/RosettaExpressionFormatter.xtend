@@ -39,6 +39,7 @@ import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
+import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -558,6 +559,37 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				]
 			)
 		}
+	}
+	
+	private def dispatch void unsafeFormatExpression(SwitchOperation expr, extension IFormattableDocument document, FormattingMode mode) {
+		val extension switchCaseGrammarAccess = switchCaseOrDefaultAccess
+		
+		expr.indentInner(document)
+		expr.regionFor.keywords(',').forEach[prepend[noSpace]]
+		expr.formatUnaryOperation(document, mode, [extension doc|
+			expr.cases.forEach[switchCase|
+				switchCase.indentInner(doc)
+				switchCase.prepend[newLine]
+				switchCase.regionFor.keyword(thenKeyword_1_1)
+					.prepend[oneSpace]
+				
+				val thenOrDefault = switchCase.regionFor.keyword(thenKeyword_1_1) ?: switchCase.regionFor.keyword(defaultKeyword_0_0)
+				
+				val caseExpression = switchCase.expression
+				formatInlineOrMultiline(document, switchCase, mode.singleLineIf(caseExpression.shouldBeOnSingleLine), doc.getPreference(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth),
+					[extension nestedDoc | // case: short conditional
+						thenOrDefault
+							.append[oneSpace]
+						caseExpression.formatExpression(nestedDoc, mode)
+					],
+					[extension nestedDoc | // case: long conditional
+						thenOrDefault
+							.append[newLine]
+						caseExpression.formatExpression(nestedDoc, mode)
+					]
+				)
+			]
+		])
 	}
 
 	private def dispatch void unsafeFormatExpression(RosettaExistsExpression expr, extension IFormattableDocument document, FormattingMode mode) {

@@ -2,15 +2,11 @@ package com.regnosys.rosetta.validation.expression;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
 import org.eclipse.xtext.validation.Check;
@@ -23,10 +19,6 @@ import com.regnosys.rosetta.rosetta.expression.SwitchCaseOrDefault;
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
-import com.regnosys.rosetta.types.RChoiceType;
-import com.regnosys.rosetta.types.REnumType;
-import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBasicType;
 
 public class SwitchValidator extends ExpressionValidator {
@@ -34,6 +26,8 @@ public class SwitchValidator extends ExpressionValidator {
 	private RosettaInterpreter interpreter;
 	@Inject
 	private RosettaGrammarAccess grammar;
+    @Inject
+    private RObjectFactory rObjectFactory;
 	
 	@Check
 	public void checkSwitch(SwitchOperation op) {
@@ -58,8 +52,10 @@ public class SwitchValidator extends ExpressionValidator {
 			checkBasicTypeSwitch((RBasicType) rType, op);
 		} else if (rType instanceof RChoiceType) {
 			checkChoiceSwitch((RChoiceType) rType, op);
-		} else {
-			unsupportedTypeError(argumentType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "Supported argument types are basic types, enumerations, and choice types");
+		} else if (rType instanceof RDataType dt) {
+            checkDataSwitch(dt, op);
+        } else {
+			unsupportedTypeError(argumentType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "Supported argument types are basic types, enumerations, complex types, and choice types");
 		}
 	}
 	private void checkEnumSwitch(REnumType argumentType, SwitchOperation op) {
@@ -171,4 +167,44 @@ public class SwitchValidator extends ExpressionValidator {
 			}
 		}
 	}
+    private void checkDataSwitch(RDataType argumentType, SwitchOperation op) {
+        // When the argument is a data type:
+        // - all guards should extend the argument type,
+        // - all cases should be reachable,
+        // - there must be a default case.
+        Set<RDataType> seenDataTypes = new LinkedHashSet<>();
+        for (SwitchCaseOrDefault caseStatement : op.getCases()) {
+            if (caseStatement.isDefault()) {
+                continue;
+            }
+            Data guard = caseStatement.getGuard().getDataGuard();
+            if (guard == null) {
+                error("Case should be a subtype of type " + argumentType, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
+            } else {
+                RDataType dataGuard = rObjectFactory.buildRDataType(guard);
+                if (!typeSystem.isSubtypeOf(dataGuard, argumentType)) {
+                    error("Case should be a subtype of type " + argumentType, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
+                }
+                RDataType alreadyCovered = null;
+                if (seenDataTypes.contains(dataGuard)) {
+                    alreadyCovered = dataGuard;
+                } else {
+                    Optional<RDataType> firstAlreadyCovered = seenDataTypes.stream()
+                            .filter(seenDataType -> typeSystem.isSubtypeOf(dataGuard, seenDataType))
+                            .findFirst();
+                    if (firstAlreadyCovered.isPresent()) {
+                        alreadyCovered = firstAlreadyCovered.get();
+                    }
+                }
+                if (alreadyCovered != null) {
+                    error("Case already covered by " + alreadyCovered, caseStatement, SWITCH_CASE_OR_DEFAULT__GUARD);
+                } else {
+                    seenDataTypes.add(dataGuard);
+                }
+            }
+        }
+        if (op.getDefault() == null) {
+            error("A switch on a complex type must have a default case", op, ROSETTA_OPERATION__OPERATOR);
+        }
+    }
 }
