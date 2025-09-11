@@ -59,7 +59,7 @@ No project files to migrate.
 #### Test Files (10 files)
 
 ##### Files without usage of string template features (7 files)
-- [ ] ContentAssistTest
+- [x] ContentAssistTest
 - [ ] FormattingTest
 - [ ] RosettaDocumentationProviderTest
 - [ ] InlayHintTest
@@ -132,7 +132,7 @@ No project files to migrate.
 - [ ] RosettaFormatter
 - [ ] RosettaGenerator
 - [x] RosettaInternalGenerator
-- [ ] RosettaOutputConfigurationProvider
+- [x] RosettaOutputConfigurationProvider
 - [ ] EnumHelper
 - [x] JavaDependencyProvider
 - [ ] RuleGenerator
