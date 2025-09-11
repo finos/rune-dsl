@@ -8,9 +8,138 @@ import java.util.Map;
 
 // TODO: fix completion
 public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
-
     @Test
-    public void testInheritedAttributesCondition() {
+    void testSwitchOnComplexType() {
+        String model = """
+                namespace a
+                
+                type T1:
+                
+                type T2 extends T1:
+                
+                type U1:
+                
+                func Test:
+                    inputs:
+                        t1 T1 (1..1)
+                    output:
+                        result int (1..1)
+                    set result:
+                        t1 switch
+                           \s
+                """;
+        String otherModel = """
+                namespace a
+                
+                type T3 extends T1:
+                
+                type T4 extends T2:
+                
+                type U2:
+                """;
+        
+        testCompletion(it -> {
+            it.setModel(model);
+            it.setFilesInScope(Map.of("other.rosetta", otherModel));
+            it.setLine(15);
+            it.setColumn(12);
+            // TODO: fix auto-completion!
+            it.setExpectedCompletionItems("""
+                    a.T1 (Data) -> a.T1 [[15, 12] .. [15, 12]]
+                    a.T2 (Data) -> a.T2 [[15, 12] .. [15, 12]]
+                    a.T3 (Data) -> a.T3 [[15, 12] .. [15, 12]]
+                    a.T4 (Data) -> a.T4 [[15, 12] .. [15, 12]]
+                    a.U1 (Data) -> a.U1 [[15, 12] .. [15, 12]]
+                    a.U2 (Data) -> a.U2 [[15, 12] .. [15, 12]]
+                    T1 (Data) -> T1 [[15, 12] .. [15, 12]]
+                    T2 (Data) -> T2 [[15, 12] .. [15, 12]]
+                    T3 (Data) -> T3 [[15, 12] .. [15, 12]]
+                    T4 (Data) -> T4 [[15, 12] .. [15, 12]]
+                    U1 (Data) -> U1 [[15, 12] .. [15, 12]]
+                    U2 (Data) -> U2 [[15, 12] .. [15, 12]]
+                    "value" (STRING) -> "value" [[15, 12] .. [15, 12]]
+                    add -> add [[15, 12] .. [15, 12]]
+                    all -> all [[15, 12] .. [15, 12]]
+                    and -> and [[15, 12] .. [15, 12]]
+                    annotation -> annotation [[15, 12] .. [15, 12]]
+                    any -> any [[15, 12] .. [15, 12]]
+                    as-key -> as-key [[15, 12] .. [15, 12]]
+                    basicType -> basicType [[15, 12] .. [15, 12]]
+                    body -> body [[15, 12] .. [15, 12]]
+                    choice -> choice [[15, 12] .. [15, 12]]
+                    contains -> contains [[15, 12] .. [15, 12]]
+                    corpus -> corpus [[15, 12] .. [15, 12]]
+                    count -> count [[15, 12] .. [15, 12]]
+                    default -> default [[15, 12] .. [15, 12]]
+                    disjoint -> disjoint [[15, 12] .. [15, 12]]
+                    distinct -> distinct [[15, 12] .. [15, 12]]
+                    eligibility -> eligibility [[15, 12] .. [15, 12]]
+                    enum -> enum [[15, 12] .. [15, 12]]
+                    exists -> exists [[15, 12] .. [15, 12]]
+                    extract -> extract [[15, 12] .. [15, 12]]
+                    False -> False [[15, 12] .. [15, 12]]
+                    filter -> filter [[15, 12] .. [15, 12]]
+                    first -> first [[15, 12] .. [15, 12]]
+                    flatten -> flatten [[15, 12] .. [15, 12]]
+                    func -> func [[15, 12] .. [15, 12]]
+                    is -> is [[15, 12] .. [15, 12]]
+                    join -> join [[15, 12] .. [15, 12]]
+                    last -> last [[15, 12] .. [15, 12]]
+                    library -> library [[15, 12] .. [15, 12]]
+                    max -> max [[15, 12] .. [15, 12]]
+                    metaType -> metaType [[15, 12] .. [15, 12]]
+                    min -> min [[15, 12] .. [15, 12]]
+                    multiple -> multiple [[15, 12] .. [15, 12]]
+                    one-of -> one-of [[15, 12] .. [15, 12]]
+                    only-element -> only-element [[15, 12] .. [15, 12]]
+                    optional -> optional [[15, 12] .. [15, 12]]
+                    or -> or [[15, 12] .. [15, 12]]
+                    post-condition -> post-condition [[15, 12] .. [15, 12]]
+                    recordType -> recordType [[15, 12] .. [15, 12]]
+                    reduce -> reduce [[15, 12] .. [15, 12]]
+                    report -> report [[15, 12] .. [15, 12]]
+                    reporting -> reporting [[15, 12] .. [15, 12]]
+                    required -> required [[15, 12] .. [15, 12]]
+                    reverse -> reverse [[15, 12] .. [15, 12]]
+                    rule -> rule [[15, 12] .. [15, 12]]
+                    segment -> segment [[15, 12] .. [15, 12]]
+                    set -> set [[15, 12] .. [15, 12]]
+                    single -> single [[15, 12] .. [15, 12]]
+                    sort -> sort [[15, 12] .. [15, 12]]
+                    sum -> sum [[15, 12] .. [15, 12]]
+                    switch -> switch [[15, 12] .. [15, 12]]
+                    synonym -> synonym [[15, 12] .. [15, 12]]
+                    then -> then [[15, 12] .. [15, 12]]
+                    to-date -> to-date [[15, 12] .. [15, 12]]
+                    to-date-time -> to-date-time [[15, 12] .. [15, 12]]
+                    to-enum -> to-enum [[15, 12] .. [15, 12]]
+                    to-int -> to-int [[15, 12] .. [15, 12]]
+                    to-number -> to-number [[15, 12] .. [15, 12]]
+                    to-string -> to-string [[15, 12] .. [15, 12]]
+                    to-time -> to-time [[15, 12] .. [15, 12]]
+                    to-zoned-date-time -> to-zoned-date-time [[15, 12] .. [15, 12]]
+                    True -> True [[15, 12] .. [15, 12]]
+                    type -> type [[15, 12] .. [15, 12]]
+                    typeAlias -> typeAlias [[15, 12] .. [15, 12]]
+                    with-meta -> with-meta [[15, 12] .. [15, 12]]
+                    * -> * [[15, 12] .. [15, 12]]
+                    + -> + [[15, 12] .. [15, 12]]
+                    - -> - [[15, 12] .. [15, 12]]
+                    -> -> -> [[15, 12] .. [15, 12]]
+                    ->> -> ->> [[15, 12] .. [15, 12]]
+                    / -> / [[15, 12] .. [15, 12]]
+                    < -> < [[15, 12] .. [15, 12]]
+                    <= -> <= [[15, 12] .. [15, 12]]
+                    <> -> <> [[15, 12] .. [15, 12]]
+                    = -> = [[15, 12] .. [15, 12]]
+                    > -> > [[15, 12] .. [15, 12]]
+                    >= -> >= [[15, 12] .. [15, 12]]
+                    """);
+        });
+    }
+    
+    @Test
+    void testInheritedAttributesCondition() {
         String model = """
                 namespace "test"
                 version "test"
@@ -92,7 +221,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
 
     // TODO: debug null pointer exception in log
     @Test
-    public void testConditionAfterArrow() {
+    void testConditionAfterArrow() {
         String model = """
                 namespace "test"
                 version "test"
@@ -189,7 +318,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testConditionAfterArrow2() {
+    void testConditionAfterArrow2() {
         String model = """
                 namespace "test"
                 version "test"
@@ -265,7 +394,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testSynonymSource() {
+    void testSynonymSource() {
         String model = """
                 namespace "test"
                 
@@ -291,7 +420,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testSynonymSetToEnum() {
+    void testSynonymSetToEnum() {
         String model = """
                 namespace "test"
                 version "test"
@@ -316,7 +445,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testSynonymSetToBoolean() {
+    void testSynonymSetToBoolean() {
         String model = """
                 namespace "test"
                 version "test"
@@ -339,7 +468,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testAssignOutputEnumLiteral() {
+    void testAssignOutputEnumLiteral() {
         String model = """
                 namespace "test"
                 
@@ -461,7 +590,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testImport() {
+    void testImport() {
         String model = """
                 namespace my.ns
                 
@@ -480,7 +609,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    public void testAttributeOverride() {
+    void testAttributeOverride() {
         String model = """
                 namespace my.ns
                 
