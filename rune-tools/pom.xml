@@ -20,92 +20,29 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.finos.rune</groupId>
-		<artifactId>org.finos.rune.parent</artifactId>
+		<groupId>com.regnosys.rosetta</groupId>
+		<artifactId>com.regnosys.rosetta.parent</artifactId>
 		<version>0.0.0.main-SNAPSHOT</version>
 	</parent>
 
-	<name>Rune DSL Scripts</name>
-	<artifactId>rune-tools</artifactId>
+	<name>Rosetta DSL Scripts</name>
+	<artifactId>com.regnosys.rosetta.tools</artifactId>
 
 	<description>
 		Responsibilities: utility scripts.
 	</description>
 
-	<properties>
-		<xsdParser.version>1.2.18</xsdParser.version>
-		<commons-cli.version>1.8.0</commons-cli.version>
-	</properties>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.github.xmlet</groupId>
-				<artifactId>xsdParser</artifactId>
-				<version>${xsdParser.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-cli</groupId>
-				<artifactId>commons-cli</artifactId>
-				<version>${commons-cli.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 		<!-- Inter-project dependencies -->
 		<dependency>
-			<groupId>org.finos.rune</groupId>
-			<artifactId>rune-lang</artifactId>
+			<groupId>com.regnosys.rosetta</groupId>
+			<artifactId>com.regnosys.rosetta</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.finos.rune</groupId>
-			<artifactId>rune-ide</artifactId>
+			<groupId>com.regnosys.rosetta</groupId>
+			<artifactId>com.regnosys.rosetta.ide</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.finos.rune</groupId>
-			<artifactId>rune-testing</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- External dependencies -->
-		<dependency>
-			<groupId>com.github.xmlet</groupId>
-			<artifactId>xsdParser</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-cli</groupId>
-			<artifactId>commons-cli</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtext</groupId>
-			<artifactId>org.eclipse.xtext.testing</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtext</groupId>
-			<artifactId>org.eclipse.xtext.xbase.testing</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jdk8</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

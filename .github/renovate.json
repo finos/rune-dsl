@@ -1,54 +1,75 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
-
-  "labels": ["dependencies"],
-  "dependencyDashboardLabels": ["dependencies"],
-
+  "labels": [
+    "dependencies"
+  ],
+  "dependencyDashboardLabels": [
+    "dependencies"
+  ],
   "prConcurrentLimit": 4,
   "prHourlyLimit": 2,
   "timezone": "Europe/London",
-  "schedule": ["before 4am on Monday"],
-
-  "assignees": ["SimonCockx"],
-
+  "schedule": [
+    "before 4am on Monday"
+  ],
+  "assignees": [
+    "SimonCockx"
+  ],
   "packageRules": [
     {
       "description": "Group all Eclipse related dependencies (including Xtext). These dependencies often introduce breaking changes in minor version upgrades.",
-      "matchPackagePatterns": ["^org\\.eclipse\\."],
       "groupName": "eclipse dependencies",
-      "groupSlug": "eclipse-dependencies"
+      "groupSlug": "eclipse-dependencies",
+      "matchPackageNames": [
+        "/^org\\.eclipse\\./"
+      ]
     },
     {
       "description": "Group all non-breaking dependency updates. A PR will be created automatically.",
-      "matchPackagePatterns": ["*"],
-      "excludePackagePatterns": ["^org\\.eclipse\\."],
       "matchUpdateTypes": [
         "minor",
         "patch"
       ],
       "groupName": "all non-breaking dependencies",
-      "groupSlug": "all-non-breaking"
+      "groupSlug": "all-non-breaking",
+      "matchPackageNames": [
+        "*",
+        "!/^org\\.eclipse\\./"
+      ]
     }
   ],
-
   "customManagers": [
     {
+      "customType": "regex",
       "description": "Because the Node version we use for building the VS Code plugin is managed by a Maven plugin, we need a custom regex version detection strategy. This rule matches versions defined as a Maven property of the form <node.version>x.x.x</node.version>.",
-      "fileMatch": ["\\.pom\\.xml$", "(^|/)pom\\.xml$"],
-      "matchStrings": ["<node\\.version>(?<currentValue>.*?)<\\/node\\.version>"],
+      "managerFilePatterns": [
+        "/\\.pom\\.xml$/",
+        "/(^|/)pom\\.xml$/"
+      ],
+      "matchStrings": [
+        "<node\\.version>(?<currentValue>.*?)<\\/node\\.version>"
+      ],
       "depNameTemplate": "node",
       "datasourceTemplate": "node"
     },
     {
+      "customType": "regex",
       "description": "Detect Maven goals in GitHub workflows and actions.",
-      "fileMatch": ["(^|/)(workflow-templates|\\.(?:github|gitea|forgejo)/(?:workflows|actions))/.+\\.ya?ml$", "(^|/)action\\.ya?ml$"],
-      "matchStrings": ["mvn (?<depName>[^\\s:]+:[^\\s:]+):(?<currentValue>[^\\s:]+):[^\\s:]+"],
+      "managerFilePatterns": [
+        "/(^|/)(workflow-templates|\\.(?:github|gitea|forgejo)/(?:workflows|actions))/.+\\.ya?ml$/",
+        "/(^|/)action\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "mvn (?<depName>[^\\s:]+:[^\\s:]+):(?<currentValue>[^\\s:]+):[^\\s:]+"
+      ],
       "datasourceTemplate": "maven"
     }
   ],
-
-  "ignoreDeps": ["org.eclipse.m2e:lifecycle-mapping", "com.regnosys.rosetta:com.regnosys.rosetta.parent"]
+  "ignoreDeps": [
+    "org.eclipse.m2e:lifecycle-mapping",
+    "com.regnosys.rosetta:com.regnosys.rosetta.parent"
+  ]
 }

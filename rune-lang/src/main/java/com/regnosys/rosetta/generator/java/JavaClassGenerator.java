@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.stream.Stream;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.generator.IFileSystemAccess2;
@@ -22,7 +23,7 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 	@Inject
 	private ImportManagerExtension importManager;
 	
-	protected abstract Stream<T> streamObjects(RosettaModel model);
+	protected abstract Stream<? extends T> streamObjects(RosettaModel model);
 	protected abstract EObject getSource(T object);
 	protected abstract C createTypeRepresentation(T object);
 	protected abstract StringConcatenationClient generate(T object, C typeRepresentation, String version, JavaClassScope scope);
@@ -46,7 +47,8 @@ public abstract class JavaClassGenerator<T, C extends JavaTypeDeclaration<?>> {
 					generationExceptions.add(e);
 				} catch (Exception e) {
 					EObject source = getSource(object);
-					generationExceptions.add(new GenerationException(e.getMessage(), source.eResource().getURI(), source, e));
+					URI sourceURI = source == null ? model.eResource().getURI() : source.eResource().getURI();
+					generationExceptions.add(new GenerationException(e.getMessage(), sourceURI, source, e));
 				}
 			});
 		return generationExceptions;

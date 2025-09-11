@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.tests.validation;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
@@ -17,8 +18,12 @@ public class RosettaValidationTestHelper extends ValidationTestHelper {
 	
 	public void assertIssues(EObject model, String issuesExpectation) {
 		List<Issue> issues = validate(model);
+        // Issues come in no deterministic order (root cause: Class::getDeclaredMethods is non-deterministic in order)
+        // So sort them to have deterministic tests.
+        issues.sort(Comparator.comparing(Issue::getOffset)
+                .thenComparing(Issue::getMessage));
 		
-		String issuesRepresentation = getIssuesAsString(model, issues, new StringBuilder()).toString().trim();
+        String issuesRepresentation = getIssuesAsString(model, issues, new StringBuilder()).toString().trim();
 		
 		Assertions.assertEquals(issuesExpectation.trim(), issuesRepresentation);
 		Assertions.assertNotEquals("", issuesRepresentation, "No issues were found. When asserting for issues, the expected issues may not be empty. Use the method ValidationTestHelper#assertNoIssues instead.");
@@ -35,7 +40,7 @@ public class RosettaValidationTestHelper extends ValidationTestHelper {
 			result.append(issue.getMessage());
 			result.append("'");
 			// Use line number and column instead of offset (as is used in the superclass)
-			result.append(" at " + issue.getLineNumber() + ":" + issue.getColumn() + ", length " + issue.getLength());
+			result.append(" at ").append(issue.getLineNumber()).append(":").append(issue.getColumn()).append(", length ").append(issue.getLength());
 			if (uri != null) {
 				EObject eObject = resource.getResourceSet().getEObject(uri, true);
 				result.append(", on ");

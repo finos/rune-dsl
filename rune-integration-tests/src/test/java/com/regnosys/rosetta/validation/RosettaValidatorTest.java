@@ -49,7 +49,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				func Foo:
 					[projection]
 				""", """
-                ERROR (null) 'The `projection` annotation must have a target format such as JSON or XML' at 5:3, length 10, on AnnotationRef
+                ERROR (null) 'The `projection` annotation must have a target format such as JSON, XML or CSV' at 5:3, length 10, on AnnotationRef
                 """);
     }
 
@@ -67,7 +67,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				func Foo:
 					[ingest]
 				""", """
-                ERROR (null) 'The `ingest` annotation must have a source format such as JSON or XML' at 5:3, length 6, on AnnotationRef
+                ERROR (null) 'The `ingest` annotation must have a source format such as JSON, XML or CSV' at 5:3, length 6, on AnnotationRef
                 """);
     }
 
@@ -89,21 +89,21 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					[ingest JSON]
 				""");
 
-        validationTestHelper.assertError(model1, ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.");
+        validationTestHelper.assertError(model1, ROSETTA_NAMED, null, "Transform annotations only allowed on a function.");
 
         var model2 = modelHelper.parseRosetta("""
 				type Foo:
 					[enrich]
 				""");
 
-        validationTestHelper.assertError(model2, ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.");
+        validationTestHelper.assertError(model2, ROSETTA_NAMED, null, "Transform annotations only allowed on a function.");
 
         var model3 = modelHelper.parseRosetta("""
 				type Foo:
 					[projection]
 				""");
 
-        validationTestHelper.assertError(model3, ROSETTA_NAMED, null, "Transformation annotations only allowed on a function.");
+        validationTestHelper.assertError(model3, ROSETTA_NAMED, null, "Transform annotations only allowed on a function.");
     }
 
     @Test
@@ -1761,7 +1761,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					i int (0..1)
 				""");
-        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.");
+        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
     }
 
     @Test
@@ -1773,7 +1773,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					i int (1..*)
 				""");
-        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.");
+        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
     }
 
     @Test
@@ -1785,7 +1785,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					i string (1..1)
 				""");
-        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Duplicate attribute 'i'. To override the type, cardinality or annotations of this attribute, use the keyword `override`.");
+        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
     }
 
     @Test

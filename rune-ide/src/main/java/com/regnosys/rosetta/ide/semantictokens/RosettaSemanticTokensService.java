@@ -134,7 +134,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	
 	@MarkSemanticToken
 	public SemanticToken markMetaMemberInAnnotation(AnnotationRef annotation) {
-		if (annotation.getAnnotation().getName().equals("metadata") && annotation.getAttribute() != null) {
+		if (extensions.isResolved(annotation.getAnnotation()) && "metadata".equals(annotation.getAnnotation().getName()) && annotation.getAttribute() != null) {
 			return createSemanticToken(annotation, ANNOTATION_REF__ATTRIBUTE, META_MEMBER);
 		}
 		return null;

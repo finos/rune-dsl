@@ -16,10 +16,14 @@ import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationS
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 
 class ExpressionJavaEvaluatorService {
 	@Inject
 	ExpressionParser expressionParser
+	@Inject
+	MetaFieldGenerator metaFieldGenerator
 	@Inject
 	ExpressionGenerator expressionGenerator
 	@Inject
@@ -35,6 +39,9 @@ class ExpressionJavaEvaluatorService {
 	
 	def Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType, ClassLoader classLoader) {
 		val expr = expressionParser.parseExpression(rosettaExpression, #[context])
+		evaluate(expr, expectedType, classLoader)
+	}
+	def Object evaluate(RosettaExpression expr, JavaType expectedType, ClassLoader classLoader) {
 		validationHelper.assertNoIssues(expr)
 		
 		val packageName = DottedPath.splitOnDots("com.regnosys.rosetta.tests.testexpression")
@@ -65,9 +72,21 @@ class ExpressionJavaEvaluatorService {
 				.newInstance()
 				.useParentClassLoader(classLoader)
 				.useOptions("--release", "8", "-Xlint:all", "-Xdiags:verbose");
+		generateMetaFieldClasses(expr, expressionCompiler)
 		val evaluatorClass = expressionCompiler.compile(packageName.child(className).withDots, sourceCode)
 		val instance = injector.getInstance(evaluatorClass)
 		
 		evaluatorClass.getDeclaredMethod(methodName).invoke(instance)
+	}
+	
+	private def void generateMetaFieldClasses(RosettaExpression expr, InMemoryJavacCompiler compiler) {
+		metaFieldGenerator.streamObjects(expr)
+			.forEach[object|
+				val typeRepresentation = metaFieldGenerator.createTypeRepresentation(object);
+				val classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
+				val classCode = metaFieldGenerator.generate(object, typeRepresentation, "0", classScope);
+				val javaFileCode = buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
+				compiler.addSource(typeRepresentation.canonicalName.withDots, javaFileCode)
+			];
 	}
 }

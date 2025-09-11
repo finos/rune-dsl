@@ -4,7 +4,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
-import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.regnosys.rosetta.types.RDataType;
@@ -39,6 +37,8 @@ public class RuleReferenceServiceTest {
 				type Bar:
 					attr string (1..1)
 						[ruleReference AttrRule]
+				
+				reporting rule AttrRule:
 				""",
 				"""
 				"""
@@ -63,6 +63,9 @@ public class RuleReferenceServiceTest {
 				
 				type BarExtended extends Bar:
 					override attr int (1..1)
+				
+				reporting rule BarAttrRule:
+				reporting rule BarAttrRuleOverride:
 				""",
 				"""
 				bar -> attr: BarAttrRuleOverride
@@ -93,6 +96,8 @@ public class RuleReferenceServiceTest {
 					Foo:
 					- id
 				}
+				
+				reporting rule IdRule:
 				""",
 				"""
 				id: IdRule
@@ -116,6 +121,9 @@ public class RuleReferenceServiceTest {
 				type FooExtended extends Foo:
 					override bar Bar (1..1)
 						[ruleReference empty]
+				
+				reporting rule BarRule:
+				reporting rule BarAttr:
 				""",
 				"""
 				bar: <empty>
@@ -142,6 +150,9 @@ public class RuleReferenceServiceTest {
 					Foo:
 					- bar
 				}
+				
+				reporting rule BarRule:
+				reporting rule BarAttr:
 				""",
 				"""
 				bar: <empty>
@@ -184,6 +195,13 @@ public class RuleReferenceServiceTest {
 					Foo:
 					- fooAttr
 				}
+				
+				reporting rule FooAttr:
+				reporting rule BarAttr:
+				reporting rule BaseFooAttr1:
+				reporting rule BaseBarAttr1:
+				reporting rule BaseFooAttr2:
+				reporting rule BaseBarAttr2:
 				""",
 				"""
 				fooAttr: <empty>
@@ -206,8 +224,8 @@ public class RuleReferenceServiceTest {
 					attr string (1..1)
 					bar Bar (0..1)
 				
-				reporting rule AttrRule from string:
-					item
+				reporting rule AttrRule:
+				reporting rule DeepAttrRule:
     			""",
     			"""
     			bar -> attr: AttrRule
@@ -230,8 +248,8 @@ public class RuleReferenceServiceTest {
 						[ruleReference AttrRule]
 					bar Bar (0..1)
 				
-				reporting rule AttrRule from string:
-					item
+				reporting rule AttrRule:
+				reporting rule DeepAttrRule:
     			""",
     			"""
     			bar -> attr: AttrRule
@@ -258,9 +276,7 @@ public class RuleReferenceServiceTest {
 			if (context.isExplicitlyEmpty()) {
 				rule = "<empty>";
 			} else {
-				rule = NodeModelUtils.getTokenText(
-						NodeModelUtils.findNodesForFeature(context.getRuleOrigin(), SimplePackage.Literals.RULE_REFERENCE_ANNOTATION__REPORTING_RULE).get(0)
-					);
+				rule = context.getRule().getName();
 			}
 			return acc
 				.append(path)

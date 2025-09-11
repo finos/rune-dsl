@@ -43,6 +43,7 @@ class ModelObjectBuilderGenerator {
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil typeUtil
 	@Inject extension TypeCoercionService
+	@Inject IShouldPrune shouldPrune
 
 	def StringConcatenationClient builderClass(JavaPojoInterface javaType, JavaPojoBuilderImpl builderImplClass, JavaClassScope scope) {
 		val superPojo = javaType.superPojo
@@ -77,13 +78,13 @@ class ModelObjectBuilderGenerator {
 				«IF extendSuperImpl»super.prune();«ENDIF»
 				«FOR prop : properties.filter[type.isRosettaModelObject]»
 					«IF !prop.type.isList»
-						«IF prop.isRequired»
-							if («scope.getIdentifierOrThrow(prop)»!=null) «scope.getIdentifierOrThrow(prop)».prune();
-						«ELSE»
+						«IF shouldPrune.shouldBePruned(javaType, prop)»
 							if («scope.getIdentifierOrThrow(prop)»!=null && !«scope.getIdentifierOrThrow(prop)».prune().hasData()) «scope.getIdentifierOrThrow(prop)» = null;
+						«ELSE»
+							if («scope.getIdentifierOrThrow(prop)»!=null) «scope.getIdentifierOrThrow(prop)».prune();
 						«ENDIF»
 					«ELSE»
-						«scope.getIdentifierOrThrow(prop)» = «scope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune()).filter(b->b.hasData()).collect(«Collectors».toList());
+						«scope.getIdentifierOrThrow(prop)» = «scope.getIdentifierOrThrow(prop)».stream().filter(b->b!=null).<«prop.toBuilderTypeSingle»>map(b->b.prune())«IF shouldPrune.shouldBePruned(javaType, prop)».filter(b->b.hasData())«ENDIF».collect(«Collectors».toList());
 					«ENDIF»
 				«ENDFOR»
 				return this;
@@ -136,8 +137,8 @@ class ModelObjectBuilderGenerator {
 			«val field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.type)»
 			
 			@Override
-			@«RosettaAttribute»(value="«prop.javaAnnotation»"«IF prop.isRequired», isRequired=true«ENDIF»)
-			@«RuneAttribute»(value="«prop.javaRuneAnnotation»"«IF prop.isRequired», isRequired=true«ENDIF»)
+			@«RosettaAttribute»(«IF prop.isRequired»value="«prop.javaAnnotation»", isRequired=true«ELSE»"«prop.javaAnnotation»"«ENDIF»)
+			@«RuneAttribute»(«IF prop.isRequired»value="«prop.javaRuneAnnotation»", isRequired=true«ELSE»"«prop.javaRuneAnnotation»"«ENDIF»)
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 			«IF prop.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -289,8 +290,8 @@ class ModelObjectBuilderGenerator {
 			«val itemType = propType.itemType»
 			«val mainItemType = mainPropType.itemType»
 			«IF isMainProp»
-				@«RosettaAttribute»(value="«currentProp.javaAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
-				@«RuneAttribute»(value="«currentProp.javaRuneAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
+				@«RosettaAttribute»(«IF currentProp.isRequired»value="«currentProp.javaAnnotation»", isRequired=true«ELSE»"«currentProp.javaAnnotation»"«ENDIF»)
+				@«RuneAttribute»(«IF currentProp.isRequired»value="«currentProp.javaRuneAnnotation»", isRequired=true«ELSE»"«currentProp.javaRuneAnnotation»"«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -503,8 +504,8 @@ class ModelObjectBuilderGenerator {
 			«ENDIF»
 		«ELSE»
 			«IF isMainProp»
-				@«RosettaAttribute»(value="«currentProp.javaAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
-				@«RuneAttribute»(value="«currentProp.javaRuneAnnotation»"«IF currentProp.isRequired», isRequired=true«ENDIF»)
+				@«RosettaAttribute»(«IF currentProp.isRequired»value="«currentProp.javaAnnotation»", isRequired=true«ELSE»"«currentProp.javaAnnotation»"«ENDIF»)
+				@«RuneAttribute»(«IF currentProp.isRequired»value="«currentProp.javaRuneAnnotation»", isRequired=true«ELSE»"«currentProp.javaRuneAnnotation»"«ENDIF»)
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
@@ -564,12 +565,12 @@ class ModelObjectBuilderGenerator {
 			«FOR prop : properties.filter[name!="meta"]»
 				«val getter = prop.getOperationName(GET)»
 				«IF prop.type.isList»
-					«IF !prop.isRequired && prop.type.isValueRosettaModelObject»
+					«IF shouldPrune.mayBeEmpty(type, prop)»
 						if («getter»()!=null && «getter»().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 					«ELSE»
 						if («getter»()!=null && !«getter»().isEmpty()) return true;
 					«ENDIF»
-				«ELSEIF !prop.isRequired && prop.type.isValueRosettaModelObject»
+				«ELSEIF shouldPrune.mayBeEmpty(type, prop)»
 					if («getter»()!=null && «getter»().hasData()) return true;
 				«ELSE»
 					if («getter»()!=null) return true;

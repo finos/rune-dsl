@@ -181,7 +181,7 @@ public abstract class JavaClass<T> implements JavaReferenceType, JavaTypeDeclara
 		}
 	}
 	public static <T> JavaClass<T> from(Class<T> c) {
-		if (c.isArray() || c.isPrimitive() || c.getSimpleName().equals("")) {
+		if (c.isArray() || c.isPrimitive() || c.getSimpleName().isEmpty()) {
 			return null;
 		}
 		return new JavaClassImpl<>(c);
