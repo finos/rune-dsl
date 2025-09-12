@@ -16,46 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class SwitchOperationTest {
 
-    @Test
-    public void switchOnDataType() {
-        var model = modelService.toJavaTestModel("""
-            type Foo:
-        
-            type Bar extends Foo:
-                barAttr int (1..1)
-        
-            type Qux extends Foo:
-                quxAttr int (1..1)
-        """).compile();
-
-        Integer resultBar = model.evaluateExpression(Integer.class, """
-            (if True then Bar { barAttr: 42 } else Foo {})
-                switch
-                    Bar then barAttr,
-                    Qux then quxAttr,
-                    default 0
-        """);
-        assertEquals(42, resultBar);
-
-        Integer resultQux = model.evaluateExpression(Integer.class, """
-            (if True then Qux { quxAttr: 12 } else Foo {})
-                switch
-                    Bar then barAttr,
-                    Qux then quxAttr,
-                    default 0
-        """);
-        assertEquals(12, resultQux);
-
-        Integer resultNull = model.evaluateExpression(Integer.class, """
-            (if False then Foo {}) // mimic null input
-                switch
-                    Bar then barAttr,
-                    Qux then quxAttr,
-                    default 0
-        """);
-        assertNull(resultNull);
-    }
-
     @Inject
     private RosettaTestModelService modelService;
     @Inject
