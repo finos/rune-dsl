@@ -1385,7 +1385,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
  	
  	override protected caseWithMetaOperation(WithMetaOperation expr, Context context) {
  		val withMetaRMetaType = typeProvider.getRMetaAnnotatedType(expr)	
-		val withMetaJavaType = deriveJavaTypeWithDefault(withMetaRMetaType, context.expectedType)
+		val withMetaJavaType = deriveJavaTypeWithDefault(withMetaRMetaType, context.expectedType.itemType)
 		val argumentrMetaType = typeProvider.getRMetaAnnotatedType(expr.argument)
 		val argumentJavaType = deriveJavaTypeWithDefault(argumentrMetaType, withMetaJavaType instanceof RJavaWithMetaValue ? withMetaJavaType.valueType : withMetaJavaType)
 		
@@ -1465,8 +1465,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			]
 		}
 
-		throw new IllegalStateException("caseWithMetaOperation with Java meta or Java POJO expected types: " +
-			withMetaJavaType)
+		throw new IllegalStateException("Unsupported type: " + withMetaJavaType)
 	}
 	
 	private def JavaClass<?> deriveJavaTypeWithDefault(RMetaAnnotatedType withMetaRMetaType, JavaType defaultType) {

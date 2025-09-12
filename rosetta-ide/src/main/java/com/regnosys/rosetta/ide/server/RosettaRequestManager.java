@@ -101,13 +101,12 @@ public class RosettaRequestManager extends RequestManager {
 			request.cancel();
 			cfs[i] = request.get();
 		}
-		CompletableFuture<Void> cancelAll = CompletableFuture.allOf(cfs);
-		return cancelAll;
+        return CompletableFuture.allOf(cfs);
 	}
 	
 	@Override
 	public <V> CompletableFuture<V> runRead(Function1<? super CancelIndicator, ? extends V> cancellable) {
-		 return super.runRead(runCancellableWithTimeout(cancellable));
+		 return withTimeout(super.runRead(cancellable));
 	}
 
 	@Override
@@ -122,6 +121,12 @@ public class RosettaRequestManager extends RequestManager {
 		}, (cancelIndicator, intermediate) -> runCancellableWithTimeout((_cancelIndicator) -> cancellable.apply(_cancelIndicator, intermediate)).apply(cancelIndicator));
 	}
 	
+    private <V> CompletableFuture<V> withTimeout(CompletableFuture<V> future) {
+        if (timeout == null) {
+            return future;
+        }
+        return future.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
+    }
 	private <V> Function1<? super CancelIndicator, ? extends V> runCancellableWithTimeout(Function1<? super CancelIndicator, ? extends V> cancellable) {
 		return (cancelIndicator) -> {
 			try {
@@ -131,13 +136,15 @@ public class RosettaRequestManager extends RequestManager {
 				return CompletableFuture.supplyAsync(
 						() -> cancellable.apply(cancelIndicator),
 						scheduler
-					).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-			} catch (Exception ex) {
-				if (ex instanceof RuntimeException) {
-					throw (RuntimeException)ex;
-				}
-				throw new RuntimeException(ex);
-			}
-		};
+					).orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS).join();
+            } catch (CompletionException ex) {
+                // Unwrap to retain original cause semantics for callers
+                Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                if (cause instanceof RuntimeException re) {
+                    throw re;
+                }
+                throw new RuntimeException(cause);
+            }
+        };
 	}
 }
