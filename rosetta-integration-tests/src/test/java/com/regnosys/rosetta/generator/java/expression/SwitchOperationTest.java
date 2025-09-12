@@ -16,6 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class SwitchOperationTest {
 
+    @Inject
+    private RosettaTestModelService modelService;
+    @Inject
+    private JavaTypeUtil typeUtil;
+
     @Test
     public void switchOnDataType() {
         var model = modelService.toJavaTestModel("""
@@ -55,11 +60,6 @@ public class SwitchOperationTest {
         """);
         assertNull(resultNull);
     }
-
-    @Inject
-    private RosettaTestModelService modelService;
-    @Inject
-    private JavaTypeUtil typeUtil;
 
     @Test
     public void testIngoreMetaOnSwitchBasicTypeInputs() {

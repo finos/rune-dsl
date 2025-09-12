@@ -19,16 +19,18 @@ package com.regnosys.rosetta.ide.server;
 import com.regnosys.rosetta.ide.tests.RosettaIdeInjectorProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.util.CancelIndicator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import java.util.concurrent.*;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(InjectionExtension.class)
@@ -36,27 +38,58 @@ import static org.hamcrest.MatcherAssert.assertThat;
 class RosettaRequestManagerTest {
 
 	@Inject
-	RosettaRequestManager rosettaRequestManager;
+	private RosettaRequestManager requestManager;
 
 	@Test
-	public void testReadRequestsAreClearedFromRequestList()
+	void testReadRequestsAreClearedFromRequestList()
 			throws ExecutionException, InterruptedException, TimeoutException {
 
-		CompletableFuture<Object> completableFuture = rosettaRequestManager.runRead((cancelIndicator) -> null);
+		CompletableFuture<Object> completableFuture = requestManager.runRead((cancelIndicator) -> null);
 
 		completableFuture.get(300, TimeUnit.MILLISECONDS);
 
-		assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
+		assertThat(requestManager.removableRequestList.size(), equalTo(0));
 	}
 
 	@Test
-	public void testWriteRequestsAreClearedFromRequestList()
+	void testWriteRequestsAreClearedFromRequestList()
 			throws ExecutionException, InterruptedException, TimeoutException {
-		CompletableFuture<Object> completableFuture = rosettaRequestManager.runWrite(() -> null, (a, b) -> null);
+		CompletableFuture<Object> completableFuture = requestManager.runWrite(() -> null, (a, b) -> null);
 
 		completableFuture.get(300, TimeUnit.MILLISECONDS);
 
-		assertThat(rosettaRequestManager.removableRequestList.size(), equalTo(0));
+		assertThat(requestManager.removableRequestList.size(), equalTo(0));
 	}
 
+    @Test
+    void testReadRequestIsCancelledWhenWriteRequestIsQueued() throws ExecutionException, InterruptedException, TimeoutException {
+        CountDownLatch started = new CountDownLatch(1);
+
+        CompletableFuture<Object> readFuture = requestManager.runRead((cancelIndicator) -> {
+            started.countDown();
+            return busyWait(cancelIndicator);
+        });
+        assertThat(started.await(1, TimeUnit.SECONDS), equalTo(true));
+        
+        CompletableFuture<Object> writeFuture = requestManager.runWrite(() -> null, (a, b) -> null);
+        writeFuture.get(5, TimeUnit.SECONDS);
+
+        ExecutionException ex = Assertions.assertThrows(ExecutionException.class, () -> readFuture.get(5, TimeUnit.SECONDS));
+        assertThat(ex.getCause(), instanceOf(CancellationException.class));
+        assertThat(readFuture.isCancelled(), equalTo(true));
+    }
+    
+    private <T> T busyWait(CancelIndicator cancelIndicator) {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (System.nanoTime() < deadline) {
+            System.out.println("busy wait");
+            if (Thread.currentThread().isInterrupted()) {
+                throw new CancellationException("Read was cancelled");
+            }
+            // small pause to yield
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(2));
+        }
+        return null;
+
+    }
 }

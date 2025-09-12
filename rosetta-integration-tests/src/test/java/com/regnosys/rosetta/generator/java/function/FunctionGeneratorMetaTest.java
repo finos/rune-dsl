@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.function;
 
 import com.google.common.collect.Lists;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
+import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.meta.FieldWithMeta;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,9 +26,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FunctionGeneratorMetaTest {
 
     @Inject
-    FunctionGeneratorHelper functionGeneratorHelper;
+    private FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
-    CodeGeneratorTestHelper generatorTestHelper;
+    private CodeGeneratorTestHelper generatorTestHelper;
+
+    @Test
+    void canSetMetaWithMulticardinalityOutput() {
+        var model = """
+                type Foo:
+                
+                func MyFunc:
+                    output:
+                        result Foo (0..*)
+                            [metadata location]
+                    add result:
+                        empty with-meta { location: "loc" }
+                """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, List.class);
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaFoo", Map.of(
+                "meta", MetaFields.builder().setScopedKey("loc").build()
+        ));
+
+        assertEquals(List.of(expected), result);
+    }
 
     @Test
     void canSetMetaOnEmptyPassedArgumentUsingWithMeta() {
