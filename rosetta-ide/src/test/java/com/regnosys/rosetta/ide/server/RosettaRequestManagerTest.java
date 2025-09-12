@@ -19,18 +19,14 @@ package com.regnosys.rosetta.ide.server;
 import com.regnosys.rosetta.ide.tests.RosettaIdeInjectorProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.eclipse.xtext.util.CancelIndicator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import jakarta.inject.Inject;
 
 import java.util.concurrent.*;
-import java.util.concurrent.locks.LockSupport;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(InjectionExtension.class)
