@@ -78,12 +78,41 @@ class RosettaRequestManagerTest {
         assertThat(ex.getCause(), instanceOf(CancellationException.class));
         assertThat(readFuture.isCancelled(), equalTo(true));
     }
+
+    @Test
+    void testReadRequestInParallelWithWrite() throws ExecutionException, InterruptedException {
+        requestManager.runWrite(() -> {
+            System.out.println("write started");
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+            System.out.println("write finished 1");
+            return null;
+        }, (a, b) -> {
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+            System.out.println("write finished 2");
+            return null;
+        });
+        
+        CompletableFuture.allOf(
+                requestManager.runRead((c) -> {
+                    System.out.println("read 1 started");
+                    LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+                    System.out.println("read 1 finished");
+                    return null;
+                }),
+                requestManager.runRead((c) -> {
+                    System.out.println("read 2 started");
+                    LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+                    System.out.println("read 2 finished");
+                    return null;
+                })
+        ).join();
+    }
     
     private <T> T busyWait(CancelIndicator cancelIndicator) {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
         while (System.nanoTime() < deadline) {
             System.out.println("busy wait");
-            if (Thread.currentThread().isInterrupted()) {
+            if (cancelIndicator.isCanceled()) {
                 throw new CancellationException("Read was cancelled");
             }
             // small pause to yield
