@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.function;
 
 import com.google.common.collect.Lists;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
-import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.meta.FieldWithMeta;
