@@ -5,7 +5,6 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import jakarta.inject.Inject;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.serializer.impl.Serializer;
 import org.eclipse.xtext.testing.InjectWith;
@@ -70,7 +69,7 @@ public class UnnecessaryElementsRemoverTest {
             		a string (1..1)
             	output:
             		result MyEnum (1..1)
-            	
+            
             	set result:
             		if Unnecessary {} = Unnecessary {}
             		then MyEnum -> VALUE1
@@ -104,7 +103,7 @@ public class UnnecessaryElementsRemoverTest {
         service.removeUnnecessaryElementsFromResourceSet(rule, false);
 
         // Validate final state
-        resourceSet.getResources().forEach(res -> validationTestHelper.assertNoErrors((Resource) res));
+        resourceSet.getResources().forEach(res -> validationTestHelper.assertNoErrors(res));
         assertEquals(4, resourceSet.getResources().size());
         assertFalse(resourceSet.getResources().contains(model3.eResource()));
 
