@@ -385,23 +385,25 @@ class SwitchCaseGuard {
 	
 	contains RosettaLiteral literalGuard
 	
+	@GenModel(suppressedGetVisibility="true") // mark property as internal
 	refers SwitchCaseTarget referenceGuard
+	
 	refers derived RosettaEnumValue enumGuard get {
-		val s = referenceGuard
+		val s = eGet(ExpressionPackage::eINSTANCE.switchCaseGuard_ReferenceGuard)
 		if (s instanceof RosettaEnumValue) {
 			return s
 		}
 		return null
 	}
 	refers derived ChoiceOption choiceOptionGuard get {
-		val s = referenceGuard
+		val s = eGet(ExpressionPackage::eINSTANCE.switchCaseGuard_ReferenceGuard)
 		if (s instanceof ChoiceOption) {
 			return s
 		}
 		return null
 	}
 	refers derived Data dataGuard get {
-		val s = referenceGuard
+		val s = eGet(ExpressionPackage::eINSTANCE.switchCaseGuard_ReferenceGuard)
 		if (s instanceof Data) {
 			return s
 		}
