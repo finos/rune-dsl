@@ -117,7 +117,7 @@ public class UnnecessaryElementsRemoverTest {
             	attr1 int (0..1)
             	attr2 int (0..1)
             """;
-        assertEquals(expectedModel1, serializer.serialize(model1));
+        assertEquals(normalize(expectedModel1), normalize(serializer.serialize(model1)));
 
         String expectedModel2 = """
             namespace b
@@ -135,6 +135,13 @@ public class UnnecessaryElementsRemoverTest {
             	then Foo { attr1: 0, ... }
             	else Foo { attr2: 42, ... }
             """;
-        assertEquals(expectedModel2, serializer.serialize(model2));
+        assertEquals(normalize(expectedModel2), normalize(serializer.serialize(model2)));
     }
+
+    private static String normalize(String s) {
+        if (s == null) return null;
+        // Normalize CRLF -> LF, and drop trailing whitespace to ignore final newline differences
+        return s.replace("\r\n", "\n").replaceAll("\\s+$", "");
+    }
+
 }
