@@ -386,7 +386,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 
 	private IScope getSymbolParentScope(EObject object, EReference reference) {
 		if (object.eContainer() == null) {
-			return defaultScope(object, reference);
+			return filteredScope(defaultScope(object, reference), descr -> !descr.getEClass().equals(ROSETTA_META_TYPE));
 		}
 		var parentScope = getSymbolParentScope(object.eContainer(), reference);
 		if (object instanceof InlineFunction inlFunc) {
