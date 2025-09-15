@@ -44,5 +44,10 @@
 			<artifactId>com.regnosys.rosetta.ide</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.regnosys.rosetta</groupId>
+            <artifactId>com.regnosys.rosetta.tests</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	</dependencies>
 </project>
