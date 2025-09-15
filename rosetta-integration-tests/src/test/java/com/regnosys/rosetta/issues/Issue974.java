@@ -10,6 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.inject.Inject;
 
+/*
+ * Regression test for https://github.com/finos/rune-dsl/issues/974
+ */
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class Issue974 {
