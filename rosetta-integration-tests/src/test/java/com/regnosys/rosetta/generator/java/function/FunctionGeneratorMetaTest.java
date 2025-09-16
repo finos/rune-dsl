@@ -30,7 +30,7 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
-    void canSetWithMetaSameTypeNameAcrossNamespaces() {
+    void canSetUsingWithMetaSameTypeNameAcrossNamespaces() {
         var model1 = """
                 namespace other
                 
@@ -65,7 +65,7 @@ public class FunctionGeneratorMetaTest {
     }
 
     @Test
-    void canSetArrowMetaSameTypeNameAcrossNamespaces() {
+    void canSetUsingArrowMetaSameTypeNameAcrossNamespaces() {
         var model1 = """
                 namespace other
                 
