@@ -30,6 +30,41 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
+    void canSetWithMetaAcrossNamespaces() {
+        var model1 = """
+                namespace other
+                
+                type Baz:
+                  bazField string (1..1)
+                """;
+
+        var model2 = """
+                import other.* as testOther
+                
+                type Baz:
+                  bazField string (1..1)
+                
+                func MyFunc:
+                    inputs:
+                        inBaz testOther.Baz (1..1)
+                    output:
+                        outBaz Baz (1..1)
+                        [metadata scheme]
+                
+                    set outBaz: Baz {
+                        bazField: inBaz -> bazField
+                    } with-meta {
+                              scheme: "scheme"
+                          }
+                """;
+
+        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+    }
+
+    @Test
     void canSetMetaWithMulticardinalityOutput() {
         var model = """
                 type Foo:
