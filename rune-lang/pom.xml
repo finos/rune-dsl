@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2024 REGnosys
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.finos.rune</groupId>
+        <artifactId>org.finos.rune.parent</artifactId>
+        <version>0.0.0.main-SNAPSHOT</version>
+    </parent>
+
+    <name>Rune DSL SDK</name>
+    <artifactId>rune-lang</artifactId>
+
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+
+    <description>
+        Responsibilities: defining the core of the Rune DSL, including
+        - the AST
+        - parsing
+        - scoping and cross-reference resolution
+        - type system
+        - validation
+        - code generation
+    </description>
+
+    <dependencies>
+        <!-- Inter-project dependencies -->
+        <dependency>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>rune-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- External dependencies -->
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.lsp4j</groupId>
+            <artifactId>org.eclipse.lsp4j</artifactId>
+        </dependency>
+        <!-- This dependency is only necessary to make it work in Eclipse. TODO:
+        remove this and figure out a better way. -->
+        <dependency>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>rune-xcore-plugin-dependencies</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <!-- Make sure the .xcore file is part of the produced JAR. -->
+            <!-- It may be needed by downstream projects. -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>model/Rosetta.xcore</include>
+                    <include>model/RosettaSimple.xcore</include>
+                    <include>model/RosettaExpression.xcore</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src-gen/main/java</directory>
+                <includes>
+                    <include>com/regnosys/rosetta/Rosetta.xtextbin</include>
+                    <include>
+                        com/regnosys/rosetta/parser/antlr/internal/InternalRosetta.tokens</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets combine.children="append">
+                        <!-- rosetta-lang -->
+                        <fileset>
+                            <directory>${basedir}/../rosetta-lang/src-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/../rosetta-lang/emf-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>${basedir}/../rosetta-lang/xtend-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                        <!-- rosetta-testing -->
+                        <fileset>
+                            <directory>${basedir}/../rosetta-testing/src-gen/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                        <!-- rosetta-ide -->
+                        <fileset>
+                            <directory>${basedir}/../rosetta-ide/src-gen/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>mwe2Launcher</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
+                    <arguments>
+                        <argument>
+                            /${project.basedir}/src/main/java/com/regnosys/rosetta/GenerateRosetta.mwe2</argument>
+                        <argument>-p</argument>
+                        <argument>parentDir=${project.basedir}/..</argument>
+                    </arguments>
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <addOutputToClasspath>false</addOutputToClasspath>
+                    <addResourcesToClasspath>true</addResourcesToClasspath>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads><!-- see https://bugs.eclipse.org/bugs/show_bug.cgi?id=475098#c3 -->
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.rune</groupId>
+                        <artifactId>rune-xcore-plugin-dependencies</artifactId>
+                        <version>${project.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.eclipse.emf</groupId>
+                                <artifactId>org.eclipse.emf.ecore</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.xtext</groupId>
+                <artifactId>xtext-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>xcore-generator</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <compilerSourceLevel>${maven.compiler.release}</compilerSourceLevel>
+                    <compilerTargetLevel>${maven.compiler.release}</compilerTargetLevel>
+                    <!-- TODO: uncomment this line for faster builds once we upgrade Xtext. Also remove the `emf` folder from the clean plugin. -->
+                    <!-- <incrementalXtextBuild>true</incrementalXtextBuild> -->
+                    <!--<classPathLookupFilter>^.*\.(emf|xtext).*$</classPathLookupFilter>-->
+                    <addOutputDirectoriesToCompileSourceRoots>true</addOutputDirectoriesToCompileSourceRoots>
+                    <sourceRoots>
+                        <sourceRoot>${project.basedir}/model</sourceRoot>
+                        <sourceRoot>${project.basedir}/src/main/java</sourceRoot>
+                        <sourceRoot>${project.basedir}/src-gen/main/java</sourceRoot>
+                        <sourceRoot>${project.basedir}/emf-gen/main/java</sourceRoot>
+                        <sourceRoot>
+                            ${project.basedir}/xtend-gen/main/java</sourceRoot>
+                    </sourceRoots>
+                    <languages>
+                        <language>
+                            <setup>org.eclipse.xtext.ecore.EcoreSupport</setup>
+                        </language>
+                        <language>
+                            <setup>
+                                org.eclipse.emf.codegen.ecore.xtext.GenModelSupport</setup>
+                        </language>
+                        <language>
+                            <setup>
+                                org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup</setup>
+                            <outputConfigurations>
+                                <outputConfiguration>
+                                    <outputDirectory>
+                                        ${project.basedir}/emf-gen/main/java</outputDirectory>
+                                </outputConfiguration>
+                            </outputConfigurations>
+                        </language>
+                    </languages>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.rune</groupId>
+                        <artifactId>rune-xcore-plugin-dependencies</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.xtend</groupId>
+                <artifactId>xtend-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
