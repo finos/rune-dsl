@@ -54,7 +54,7 @@ public class FunctionGeneratorMetaTest {
                     set outBaz: Baz {
                         bazField: inBaz -> bazField
                     } with-meta {
-                              scheme: "scheme"
+                              scheme: "someScheme"
                           }
                 """;
 
