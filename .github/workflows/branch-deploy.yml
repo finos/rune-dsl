@@ -16,8 +16,6 @@ concurrency:
 jobs:
   deploy-branch:
     runs-on: ubuntu-latest
-    outputs:
-      normalized-branch: ${{ steps.normalize-branch-name.outputs.normalized }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Maven Central Repository
@@ -45,29 +43,18 @@ jobs:
           CI_DEPLOY_USERNAME_CENTRAL: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
 
-# It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait.
-  wait-for-artifact:
+# It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait. 
+  delay:
     needs: deploy-branch
     runs-on: ubuntu-latest
     steps:
-      - name: Wait until artifact is available
-        run: |
-          ARTIFACT="org.finos.rune:org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT:pom"
-          MAX_RETRIES=30
-          SLEEP=30
-          i=0
-          until mvn dependency:get -Dartifact=$ARTIFACT -DrepoUrl=https://s01.oss.sonatype.org/content/repositories/snapshots || [ $i -ge $MAX_RETRIES ]; do
-            echo "Artifact not available yet. Retrying in $SLEEP seconds..."
-            sleep $SLEEP
-            i=$((i+1))
-          done
-          if [ $i -ge $MAX_RETRIES ]; then
-            echo "Artifact did not appear in time."
-            exit 1
-          fi
+      - uses: GuillaumeFalourd/wait-sleep-action@v1
+        with:
+          time: '5m'
+
 
   backport-deploy-branch:
-    needs: wait-for-artifact
+    needs: delay
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
