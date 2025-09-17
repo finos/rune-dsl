@@ -45,7 +45,7 @@ public class FunctionGeneratorAliasTest {
 						then newFoos
 				""").compile();
 
-		Class<? extends RosettaModelObject> fooClass = model.getTypeJavaClass("Foo");
+		var fooClass = model.getTypeJavaType("Foo");
 		var foo1 = model.evaluateExpression(fooClass, """
 				Foo {
 					attr: "1"
@@ -89,7 +89,7 @@ public class FunctionGeneratorAliasTest {
 						then newFoos
 				""").compile();
 
-		Class<? extends RosettaModelObject> fooClass = model.getTypeJavaClass("Foo");
+		var fooClass = model.getTypeJavaType("Foo");
 		var foo1 = model.evaluateExpression(fooClass, """
 				Foo {
 					attr: "1"
