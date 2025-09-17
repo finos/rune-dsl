@@ -16,6 +16,8 @@ concurrency:
 jobs:
   deploy-branch:
     runs-on: ubuntu-latest
+    outputs:
+      normalized-branch: ${{ steps.normalize-branch-name.outputs.normalized }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Maven Central Repository
@@ -43,14 +45,14 @@ jobs:
           CI_DEPLOY_USERNAME_CENTRAL: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
 
-# It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait. 
+# It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait.
   wait-for-artifact:
     needs: deploy-branch
     runs-on: ubuntu-latest
     steps:
       - name: Wait until artifact is available
         run: |
-          ARTIFACT=":org.finos.rune.parent:0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT"
+          ARTIFACT=":org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT"
           MAX_RETRIES=30
           SLEEP=30
           i=0
