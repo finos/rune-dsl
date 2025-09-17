@@ -44,17 +44,28 @@ jobs:
           CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
 
 # It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait. 
-  delay:
+  wait-for-artifact:
     needs: deploy-branch
     runs-on: ubuntu-latest
     steps:
-      - uses: GuillaumeFalourd/wait-sleep-action@v1
-        with:
-          time: '5m'
-
+      - name: Wait until artifact is available
+        run: |
+          ARTIFACT=":org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized }}-SNAPSHOT"
+          MAX_RETRIES=30
+          SLEEP=30
+          i=0
+          until mvn dependency:get -Dartifact=$ARTIFACT -DrepoUrl=https://repo.maven.apache.org/maven2 || [ $i -ge $MAX_RETRIES ]; do
+            echo "Artifact not available yet. Retrying in $SLEEP seconds..."
+            sleep $SLEEP
+            i=$((i+1))
+          done
+          if [ $i -ge $MAX_RETRIES ]; then
+            echo "Artifact did not appear in time."
+            exit 1
+          fi
 
   backport-deploy-branch:
-    needs: delay
+    needs: wait-for-artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
