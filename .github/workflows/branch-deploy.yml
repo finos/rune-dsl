@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Wait until artifact is available
         run: |
-          ARTIFACT="org.finos.rune:org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT"
+          ARTIFACT="org.finos.rune:org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT:pom"
           MAX_RETRIES=30
           SLEEP=30
           i=0
