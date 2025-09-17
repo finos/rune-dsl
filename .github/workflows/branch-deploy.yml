@@ -52,11 +52,11 @@ jobs:
     steps:
       - name: Wait until artifact is available
         run: |
-          ARTIFACT=":org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT"
+          ARTIFACT="org.finos.rune:org.finos.rune.parent:0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT"
           MAX_RETRIES=30
           SLEEP=30
           i=0
-          until mvn dependency:get -Dartifact=$ARTIFACT -DrepoUrl=https://repo.maven.apache.org/maven2 || [ $i -ge $MAX_RETRIES ]; do
+          until mvn dependency:get -Dartifact=$ARTIFACT -DrepoUrl=https://s01.oss.sonatype.org/content/repositories/snapshots || [ $i -ge $MAX_RETRIES ]; do
             echo "Artifact not available yet. Retrying in $SLEEP seconds..."
             sleep $SLEEP
             i=$((i+1))
