@@ -30,6 +30,31 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
+    void canAccessKeyUsingWithMeta() {
+        var model = """
+                metaType key string
+        
+                type Foo:
+                  [metadata key]
+                   someField string (1..1)
+        
+                func MyFunc:
+                    inputs:
+                        inFoo Foo (1..1)
+        
+                    output:
+                        result string (1..1)
+        
+                    set result: inFoo -> key
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+    }
+
+    @Test
     void canSetUsingWithMetaSameTypeNameAcrossNamespaces() {
         var model1 = """
                 namespace other
