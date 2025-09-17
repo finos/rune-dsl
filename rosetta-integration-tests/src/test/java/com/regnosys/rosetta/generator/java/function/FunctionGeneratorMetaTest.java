@@ -59,8 +59,26 @@ public class FunctionGeneratorMetaTest {
                 """;
 
         var code = generatorTestHelper.generateCode(new String[]{model1, model2});
-
+        
         var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Baz", Map.of(
+                "bazField", "bazFieldValue"
+                )
+        );
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, input);
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaBaz", Map.of(
+                "value", generatorTestHelper.createInstanceUsingBuilder(classes, "Baz", Map.of(
+                        "bazField", "bazFieldValue"
+                )),
+                "meta", MetaFields.builder().setScheme("someScheme").build()
+        ));
+
+        assertEquals(expected, result);
 
     }
 

@@ -95,11 +95,11 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 
 	private GeneratedIdentifier internalDoImportIfPossible(Object object, DottedPath nestedTypeName, DottedPath canonicalName, Consumer<String> addImport) {
 		String desiredName = nestedTypeName.withDots();
-		if (scope.isNameTaken(desiredName)) {
+		String topLevelTypeInFile = nestedTypeName.first();
+		if (scope.isNameTaken(topLevelTypeInFile)) {
 			// There is a conflicting name in the scope. Use the canonical name.
 			return scope.createIdentifier(object, canonicalName.withDots());
 		}
-		String topLevelTypeInFile = nestedTypeName.first();
 		addImport.accept(topLevelTypeInFile);
 		return scope.createIdentifier(object, desiredName);
 	}
