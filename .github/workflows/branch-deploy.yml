@@ -56,7 +56,7 @@ jobs:
           MAX_RETRIES=30
           SLEEP=30
           i=0
-          until mvn dependency:get -Dartifact=$ARTIFACT -DrepoUrl=https://s01.oss.sonatype.org/content/repositories/snapshots || [ $i -ge $MAX_RETRIES ]; do
+          until mvn dependency:get -Dartifact=$ARTIFACT -DremoteRepositories=ossrh-snapshots::default::https://s01.oss.sonatype.org/content/repositories/snapshots -Dtransitive=false || [ $i -ge $MAX_RETRIES ]; do
             echo "Artifact not available yet. Retrying in $SLEEP seconds..."
             sleep $SLEEP
             i=$((i+1))
