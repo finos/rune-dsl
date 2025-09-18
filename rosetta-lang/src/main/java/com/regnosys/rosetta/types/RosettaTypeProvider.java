@@ -85,7 +85,7 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
-    	List<RMetaAttribute> acc = new ArrayList<>();
+    	Set<RMetaAttribute> acc = new HashSet<>();
         if (symbol instanceof Attribute a) {
             if (a.isOverride()) {
                 acc.addAll(getRMetaAttributesOfSymbol(extensions.getParentAttribute(a)));
@@ -100,7 +100,7 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         if (symbol instanceof Annotated ann) {
             acc.addAll(getRMetaAttributes(ann.getAnnotations()));
         }
-        return acc;
+        return new ArrayList<>(acc);
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfFeature(RosettaFeature feature) {
