@@ -34,9 +34,13 @@ public class RMetaAnnotatedType {
 		return rType;
 	}
 
-	public boolean hasMeta() {
-		return !metaAttributes.isEmpty();
-	}	
+	public boolean hasAttributeMeta() {
+		return metaAttributes.stream().anyMatch(x -> !"key".equals(x.getName()));
+	}
+	
+	public boolean hasKeyMeta() {
+		return metaAttributes.stream().anyMatch(x -> "key".equals(x.getName()));
+	}
 	
 	public List<RMetaAttribute> getMetaAttributes() {
 		return metaAttributes;

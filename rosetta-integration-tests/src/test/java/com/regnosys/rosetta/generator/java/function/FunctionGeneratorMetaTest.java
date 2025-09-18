@@ -30,6 +30,42 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
+    void canAccessKeyUsingWithMeta() {
+        var model = """
+                metaType key string
+        
+                type Foo:
+                  [metadata key]
+                   someField string (1..1)
+        
+                func MyFunc:
+                    inputs:
+                        inFoo Foo (1..1)
+        
+                    output:
+                        result string (1..1)
+        
+                    set result: inFoo -> key
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+                "someField", "someFieldValue",
+                "meta", MetaFields.builder().setExternalKey("someKey").build()
+            )
+        );
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("someKey", result);
+    }
+
+    @Test
     void canSetUsingWithMetaSameTypeNameAcrossNamespaces() {
         var model1 = """
                 namespace other

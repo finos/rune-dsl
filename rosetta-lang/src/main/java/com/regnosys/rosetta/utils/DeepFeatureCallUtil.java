@@ -113,7 +113,7 @@ public class DeepFeatureCallUtil {
 			String name = e.getKey();
 			RAttribute currFeature = e.getValue();
 			RAttribute otherFeature = otherFeatureMap.get(name);
-			if (otherFeature != null && currFeature.getRMetaAnnotatedType().hasMeta() && !otherFeature.getRMetaAnnotatedType().hasMeta()) {
+			if (otherFeature != null && currFeature.getRMetaAnnotatedType().hasAttributeMeta() && !otherFeature.getRMetaAnnotatedType().hasAttributeMeta()) {
 				e.setValue(otherFeature);
 			}
 		}
@@ -124,7 +124,7 @@ public class DeepFeatureCallUtil {
 			if (candidate != null) {
 				if (!match(candidate, attr)) {
 					featuresMapToModify.remove(name);
-				} else if (candidate.getRMetaAnnotatedType().hasMeta() && !attr.getRMetaAnnotatedType().hasMeta()) {
+				} else if (candidate.getRMetaAnnotatedType().hasAttributeMeta() && !attr.getRMetaAnnotatedType().hasAttributeMeta()) {
 					// Make sure we don't give back an attribute with metadata if not all of them have it.
 					featuresMapToModify.put(name, attr);
 				}
