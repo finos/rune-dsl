@@ -51,7 +51,18 @@ public class FunctionGeneratorMetaTest {
         var code = generatorTestHelper.generateCode(model);
 
         var classes = generatorTestHelper.compileToClasses(code);
+        
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+                "someField", "someFieldValue",
+                "meta", MetaFields.builder().setExternalKey("someKey").build()
+            )
+        );
+        
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("someKey", result);
     }
 
     @Test
