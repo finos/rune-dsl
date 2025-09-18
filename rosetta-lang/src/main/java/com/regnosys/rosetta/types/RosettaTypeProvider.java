@@ -85,18 +85,23 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
+    	List<RMetaAttribute> acc = new ArrayList<>();
         if (symbol instanceof Attribute a) {
             if (a.isOverride()) {
-                List<RMetaAttribute> acc = new ArrayList<>();
+                
                 acc.addAll(getRMetaAttributesOfSymbol(extensions.getParentAttribute(a)));
-                acc.addAll(getRMetaAttributes(a.getAnnotations()));
-                return acc;
+                acc.addAll(getRMetaAttributes(a.getAnnotations())); 
             }
+            
+        	RosettaType attributeType = a.getTypeCall().getType();
+        	if (attributeType instanceof Data data) {
+        		acc.addAll(getRMetaAttributesOfType(data));
+        	}
         }
         if (symbol instanceof Annotated ann) {
-            return getRMetaAttributes(ann.getAnnotations());
+            acc.addAll(getRMetaAttributes(ann.getAnnotations()));
         }
-        return List.of();
+        return acc;
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfFeature(RosettaFeature feature) {
@@ -186,18 +191,9 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
             if (tf.getTypeCall() == null) {
                 return builtins.NOTHING_WITH_ANY_META;
             }
-
-            TypeCall typeCall = tf.getTypeCall();
-
-            List<RMetaAttribute> rMetaAttributes = new ArrayList<>();
-            if (typeCall.getType() instanceof Data typeCallType) {
-            	rMetaAttributes.addAll(getRMetaAttributesOfType(typeCallType));
-            }
-            
-            rMetaAttributes.addAll(getRMetaAttributesOfFeature(feature));
             return RMetaAnnotatedType.withMeta(
-                    typeSystem.typeCallToRType(typeCall),
-                    rMetaAttributes
+                    typeSystem.typeCallToRType(tf.getTypeCall()),
+                    getRMetaAttributesOfFeature(feature)
             );
         } else if (feature instanceof RosettaEnumValue) {
             if (context instanceof RosettaFeatureCall fc) {
