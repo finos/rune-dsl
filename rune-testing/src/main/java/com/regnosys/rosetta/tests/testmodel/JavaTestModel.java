@@ -108,7 +108,7 @@ public class JavaTestModel {
 		return rosettaModel;
 	}
 	
-	private JavaType getTypeJavaType(String name) {
+	public JavaType getTypeJavaType(String name) {
 		Data type = rosettaModel.getType(name);
 		RDataType t = rObjectFactory.buildRDataType(type);
 		return typeTranslator.toJavaReferenceType(t);
