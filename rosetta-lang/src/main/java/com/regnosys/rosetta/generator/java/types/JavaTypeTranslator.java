@@ -69,7 +69,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	@Deprecated
 	public boolean isRosettaModelObject(RAttribute attr) {
 		RMetaAnnotatedType rMetaAnnotatedType = attr.getRMetaAnnotatedType();
-		return isValueRosettaModelObject(attr) || rMetaAnnotatedType.hasMeta();
+		return isValueRosettaModelObject(attr) || rMetaAnnotatedType.hasAttributeMeta();
 	}
 	@Deprecated
 	public boolean isValueRosettaModelObject(RAttribute attr) {
@@ -161,7 +161,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaClass<?> toForcedMetaItemJavaType(RAttribute attr) {
 		JavaClass<?> metaItemJavaType = toMetaItemJavaType(attr);
-		if (!attr.getRMetaAnnotatedType().hasMeta()) {
+		if (!attr.getRMetaAnnotatedType().hasAttributeMeta()) {
 			RType rType = typeSystem.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
 			DottedPath namespace = metaField(rType.getNamespace());
 			return new RJavaFieldWithMeta(metaItemJavaType, JavaPackageName.escape(namespace), typeUtil);
@@ -296,7 +296,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaType toJavaType(RMetaAnnotatedType type) {
 		JavaReferenceType javaType = toJavaReferenceType(type.getRType());
 		
-		if (type.hasMeta()) {
+		if (type.hasAttributeMeta()) {
 		    if (type.getMetaAttributes().stream().allMatch(m -> "key".equals(m.getName()))) {
 		        return javaType;
 		    }

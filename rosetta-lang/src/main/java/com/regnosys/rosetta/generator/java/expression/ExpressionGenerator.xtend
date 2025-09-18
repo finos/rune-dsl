@@ -1202,8 +1202,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		if (assignAsKey) {
 			return false
 		}
-		val attrHasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasMeta
-		val attrExprHasMeta = typeProvider.getRMetaAnnotatedType(attrExpr).hasMeta
+		val attrHasMeta = attr.buildRAttribute.RMetaAnnotatedType.hasAttributeMeta
+		val attrExprHasMeta = typeProvider.getRMetaAnnotatedType(attrExpr).hasAttributeMeta
 		return attrHasMeta && !attrExprHasMeta
 	}
 	
