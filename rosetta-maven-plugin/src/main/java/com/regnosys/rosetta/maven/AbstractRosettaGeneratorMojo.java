@@ -105,6 +105,10 @@ public abstract class AbstractRosettaGeneratorMojo extends AbstractXtextGenerato
             configureMavenOutputs();
         }
         Language language = getLanguages().stream().findFirst().orElseThrow(() -> new MojoExecutionException("Only one language supported by the Rosetta Plugin."));
+        // Turn off "Java support", which is enabled by default, since the Rune DSL does not link against Java.
+        // This saves time and memory during the build.
+        language.setJavaSupport(false);
+        
         Map<String, LanguageAccess> languages = new RosettaLanguageAccessFactory()
                 .createLanguageAccess(language, rosettaConfig, this.getClass().getClassLoader());
         Injector injector = Guice.createInjector(createModule());
