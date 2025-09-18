@@ -12,6 +12,7 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 import com.regnosys.rosetta.utils.OptionalUtil;
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 import jakarta.inject.Inject;
+
 import org.eclipse.emf.ecore.EObject;
 
 import java.math.BigInteger;
@@ -107,6 +108,11 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         }
         return List.of();
     }
+    
+    public List<RMetaAttribute> getRMetaAttributesOfType(Data data) {
+    	List<AnnotationRef> annotations = data.getAnnotations();
+    	return getRMetaAttributes(annotations);
+    }
 
     public List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {
         List<RMetaAttribute> res = new ArrayList<>();
@@ -180,9 +186,18 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
             if (tf.getTypeCall() == null) {
                 return builtins.NOTHING_WITH_ANY_META;
             }
+
+            TypeCall typeCall = tf.getTypeCall();
+
+            List<RMetaAttribute> rMetaAttributes = new ArrayList<>();
+            if (typeCall.getType() instanceof Data typeCallType) {
+            	rMetaAttributes.addAll(getRMetaAttributesOfType(typeCallType));
+            }
+            
+            rMetaAttributes.addAll(getRMetaAttributesOfFeature(feature));
             return RMetaAnnotatedType.withMeta(
-                    typeSystem.typeCallToRType(tf.getTypeCall()),
-                    getRMetaAttributesOfFeature(feature)
+                    typeSystem.typeCallToRType(typeCall),
+                    rMetaAttributes
             );
         } else if (feature instanceof RosettaEnumValue) {
             if (context instanceof RosettaFeatureCall fc) {
