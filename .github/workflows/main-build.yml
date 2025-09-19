@@ -31,6 +31,8 @@ jobs:
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
+          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
       # Upload full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
