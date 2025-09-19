@@ -112,10 +112,20 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         }
         return List.of();
     }
-    
+
     public List<RMetaAttribute> getRMetaAttributesOfType(Data data) {
-    	List<AnnotationRef> annotations = data.getAnnotations();
-    	return getRMetaAttributes(annotations);
+        Set<AnnotationRef> allAnnotations = new HashSet<>();
+        Set<Data> visited = new HashSet<>();
+        Data current = data;
+        while (current != null && visited.add(current)) {
+            allAnnotations.addAll(current.getAnnotations());
+            Data superType = current.getSuperType();
+            if (superType != null && !extensions.isResolved(superType)) {
+                break;
+            }
+            current = superType;
+        }
+        return getRMetaAttributes(new ArrayList<>(allAnnotations));
     }
 
     public List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {
