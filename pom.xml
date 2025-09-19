@@ -678,4 +678,15 @@
             </plugins>
         </pluginManagement>
     </build>
+    <profiles>
+        <profile>
+            <id>snapshots</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>sonatype-snapshots</id>
+                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
