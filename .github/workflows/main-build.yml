@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v5
     - uses: ./.github/actions/maven-build
       with:
-        build-command: deploy  # Deploy a snapshot build of main
+        build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release # Deploy a snapshot build of main
       env:
         CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
         CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
