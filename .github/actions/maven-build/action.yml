@@ -26,6 +26,8 @@ runs:
         server-id: ossrh
         server-username: CI_DEPLOY_USERNAME
         server-password: CI_DEPLOY_PASSWORD
+        gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+        gpg-passphrase: ${{ secrets.RUNE_GPG_PASSPHRASE }}
     - name: Build with Maven
       shell: bash
       run: mvn -B clean ${{ inputs.build-command }}${{ inputs.run-tests == 'false' && ' -DskipTests' || '' }}
