@@ -22,6 +22,7 @@ import com.google.inject.Module;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
 import org.eclipse.xtext.builder.standalone.compiler.CompilerConfiguration;
@@ -43,6 +44,12 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
 
     @Parameter(defaultValue = "true")
     boolean addOutputDirectoriesToCompileSourceRoots = Boolean.TRUE;
+
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    private MavenProject project;
+
+    @Parameter
+    private List<Language> languages;
 
     @Parameter
     private String classPathLookupFilter;
@@ -97,6 +104,16 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     // and duplicate all of the above parameters.
     protected Module createModule() {
         return new RuneMavenStandaloneBuilderModule();
+    }
+
+    @Override
+    public MavenProject getProject() {
+        return project;
+    }
+
+    @Override
+    public List<Language> getLanguages() {
+        return languages;
     }
 
     @Override
