@@ -35,20 +35,25 @@ public class FunctionGeneratorMetaTest {
                 metaType key string
         
                 type Foo:
+                   someFooField string (1..1)
+        
+                type Bar extends Foo:
                   [metadata key]
-                   someField string (1..1)
+                   someBarField string (1..1)
         
                 func MyFunc:
                     inputs:
-                        inField string (1..1)
+                        inBarField string (1..1)
+                        inFooField string (1..1)
                         inKey string (1..1)
         
                     output:
                         result Foo (1..1)
         
                     set result:
-                        Foo {
-                                someField: inField
+                        Bar {
+                                someBarField: inBarField,
+                                someFooField: inFooField
                             } with-meta {
                                   key: inKey
                               }
@@ -60,10 +65,11 @@ public class FunctionGeneratorMetaTest {
 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
-        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, "someFieldValue", "someKey");
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, "someBarFieldValue", "someFooFieldValue", "someKey");
 
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
-                        "someField", "someFieldValue",
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
+                        "someBarField", "someBarFieldValue",
+                        "someFooField", "someFooFieldValue",
                         "meta", MetaFields.builder().setExternalKey("someKey").build()
                 )
         );
