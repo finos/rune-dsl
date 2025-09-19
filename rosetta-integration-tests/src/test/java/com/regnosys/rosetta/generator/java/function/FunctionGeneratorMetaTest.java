@@ -35,10 +35,10 @@ public class FunctionGeneratorMetaTest {
                 metaType key string
         
                 type Foo:
+                   [metadata key]
                    someFooField string (1..1)
         
                 type Bar extends Foo:
-                  [metadata key]
                    someBarField string (1..1)
         
                 func MyFunc:
