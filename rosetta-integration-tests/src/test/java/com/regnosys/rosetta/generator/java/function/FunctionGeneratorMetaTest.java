@@ -48,7 +48,7 @@ public class FunctionGeneratorMetaTest {
                         inKey string (1..1)
         
                     output:
-                        result Foo (1..1)
+                        result Bar (1..1)
         
                     set result:
                         Bar {
