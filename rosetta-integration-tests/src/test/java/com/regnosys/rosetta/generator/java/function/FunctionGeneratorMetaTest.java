@@ -30,6 +30,50 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
+    void canSetUsingSettersKeyOnSuperType() {
+        var model = """
+                metaType key string
+        
+                type Foo:
+                   [metadata key]
+                   someFooField string (1..1)
+        
+                type Bar extends Foo:
+                   someBarField string (1..1)
+        
+                func MyFunc:
+                    inputs:
+                        inBarField string (1..1)
+                        inFooField string (1..1)
+                        inKey string (1..1)
+        
+                    output:
+                        result Bar (1..1)
+        
+                    set result -> someBarField: inBarField
+                    set result -> someFooField: inFooField
+                    set result -> key: inKey
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, "someBarFieldValue", "someFooFieldValue", "someKey");
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
+                        "someBarField", "someBarFieldValue",
+                        "someFooField", "someFooFieldValue",
+                        "meta", MetaFields.builder().setExternalKey("someKey").build()
+                )
+        );
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     void canSetUsingWithMetaKeyOnSuperType() {
         var model = """
                 metaType key string
