@@ -27,6 +27,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
 import org.eclipse.xtext.builder.standalone.compiler.CompilerConfiguration;
 import org.eclipse.xtext.builder.standalone.compiler.IJavaCompiler;
+import org.eclipse.xtext.generator.OutputConfiguration;
 import org.eclipse.xtext.maven.AbstractXtextGeneratorMojo;
 import org.eclipse.xtext.maven.ClusteringConfig;
 import org.eclipse.xtext.maven.Language;
@@ -153,6 +154,32 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         boolean errorDetected = !builder.launch();
         if (errorDetected && failOnValidationError) {
             throw new MojoExecutionException("Execution failed due to a severe validation error.");
+        }
+    }
+    // Override to ensure we use this class's injected MavenProject
+    @Override
+    protected void addCompileSourceRoots(Language language) {
+        if (language.getOutputConfigurations() == null) {
+            return;
+        }
+        for (OutputConfiguration configuration : language.getOutputConfigurations()) {
+            for (String output : configuration.getOutputDirectories()) {
+                getLog().debug("Adding output folder " + output + " to compile roots");
+                getProject().addCompileSourceRoot(output);
+            }
+        }
+    }
+
+    @Override
+    protected void addTestCompileSourceRoots(Language language) {
+        if (language.getOutputConfigurations() == null) {
+            return;
+        }
+        for (OutputConfiguration configuration : language.getOutputConfigurations()) {
+            for (String output : configuration.getOutputDirectories()) {
+                getLog().debug("Adding output folder " + output + " to test compile roots");
+                getProject().addTestCompileSourceRoot(output);
+            }
         }
     }
 
