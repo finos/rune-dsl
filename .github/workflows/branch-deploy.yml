@@ -16,6 +16,8 @@ concurrency:
 jobs:
   deploy-branch:
     runs-on: ubuntu-latest
+    outputs:
+      normalized-branch: ${{ steps.normalize-branch-name.outputs.normalized }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Maven Central Repository
@@ -43,18 +45,31 @@ jobs:
           CI_DEPLOY_USERNAME_CENTRAL: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
 
-# It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait. 
-  delay:
+  wait-for-snapshot:
     needs: deploy-branch
     runs-on: ubuntu-latest
     steps:
-      - uses: GuillaumeFalourd/wait-sleep-action@v1
-        with:
-          time: '5m'
+      - name: Poll for snapshot availability
+        run: |
+          GROUP_ID="org/finos/rune"
+          ARTIFACT_ID="rune-maven-plugin"
+          VERSION="0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT"
+          URL="https://central.sonatype.com/repository/maven-snapshots/$GROUP_ID/$ARTIFACT_ID/$VERSION/maven-metadata.xml"
 
+          echo "Polling $URL"
+          for i in {1..30}; do
+            if curl --silent --head --fail "$URL" > /dev/null; then
+              echo "Snapshot is available!"
+              exit 0
+            fi
+            echo "Not yet... waiting 20s"
+            sleep 20
+          done
+          echo "Snapshot not available after 10 minutes"
+          exit 1
 
   backport-deploy-branch:
-    needs: delay
+    needs: wait-for-snapshot
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -22,10 +22,12 @@ import com.google.inject.Module;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
 import org.eclipse.xtext.builder.standalone.compiler.CompilerConfiguration;
 import org.eclipse.xtext.builder.standalone.compiler.IJavaCompiler;
+import org.eclipse.xtext.generator.OutputConfiguration;
 import org.eclipse.xtext.maven.AbstractXtextGeneratorMojo;
 import org.eclipse.xtext.maven.ClusteringConfig;
 import org.eclipse.xtext.maven.Language;
@@ -43,6 +45,12 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
 
     @Parameter(defaultValue = "true")
     boolean addOutputDirectoriesToCompileSourceRoots = Boolean.TRUE;
+
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    private MavenProject project;
+
+    @Parameter
+    private List<Language> languages;
 
     @Parameter
     private String classPathLookupFilter;
@@ -100,11 +108,25 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     }
 
     @Override
+    public MavenProject getProject() {
+        return project;
+    }
+
+    @Override
+    public List<Language> getLanguages() {
+        return languages;
+    }
+
+    @Override
     protected void internalExecute() throws MojoExecutionException {
         if (addOutputDirectoriesToCompileSourceRoots) {
             configureMavenOutputs();
         }
         Language language = getLanguages().stream().findFirst().orElseThrow(() -> new MojoExecutionException("Only one language supported by the Rosetta Plugin."));
+        // Turn off "Java support", which is enabled by default, since the Rune DSL does not link against Java.
+        // This saves time and memory during the build.
+        language.setJavaSupport(false);
+
         Map<String, LanguageAccess> languages = new RuneLanguageAccessFactory()
                 .createLanguageAccess(language, rosettaConfig, this.getClass().getClassLoader());
         Injector injector = Guice.createInjector(createModule());
@@ -132,6 +154,32 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         boolean errorDetected = !builder.launch();
         if (errorDetected && failOnValidationError) {
             throw new MojoExecutionException("Execution failed due to a severe validation error.");
+        }
+    }
+    // Override to ensure we use this class's injected MavenProject
+    @Override
+    protected void addCompileSourceRoots(Language language) {
+        if (language.getOutputConfigurations() == null) {
+            return;
+        }
+        for (OutputConfiguration configuration : language.getOutputConfigurations()) {
+            for (String output : configuration.getOutputDirectories()) {
+                getLog().debug("Adding output folder " + output + " to compile roots");
+                getProject().addCompileSourceRoot(output);
+            }
+        }
+    }
+
+    @Override
+    protected void addTestCompileSourceRoots(Language language) {
+        if (language.getOutputConfigurations() == null) {
+            return;
+        }
+        for (OutputConfiguration configuration : language.getOutputConfigurations()) {
+            for (String output : configuration.getOutputDirectories()) {
+                getLog().debug("Adding output folder " + output + " to test compile roots");
+                getProject().addTestCompileSourceRoot(output);
+            }
         }
     }
 

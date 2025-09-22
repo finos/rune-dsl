@@ -131,10 +131,16 @@ public class RosettaFunctionExtensions {
 	}
 	
 	public List<AnnotationRef> getQualifierAnnotations(List<AnnotationRef> annotations) {
+        if(annotations == null || annotations.isEmpty()) {
+            return List.of();
+        }
 		return annotations.stream().filter(it -> "qualification".equals(it.getAnnotation().getName())).toList();
 	}
 	
 	public List<AnnotationRef> getTransformAnnotations(Annotated element) {
+        if(element.getAnnotations() == null || element.getAnnotations().isEmpty()) {
+            return List.of();
+        }
 		return element.getAnnotations().stream()
 			.filter(ecoreUtil::isResolved)
 			.filter(it -> "com.rosetta.model".equals(it.getAnnotation().getModel().getName()))

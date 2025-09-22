@@ -75,9 +75,8 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	}
 
 	public GeneratedIdentifier getOrImportIdentifier(Object object, DottedPath packageName, DottedPath nestedTypeName) {
-		var canonicalName = packageName.concat(nestedTypeName);
 		return scope.getIdentifier(object)
-				.orElseGet(() -> internalDoImportIfPossible(object, nestedTypeName, canonicalName, topLevelTypeInFile -> addImportIfNotAlreadyImported(packageName, packageName.child(topLevelTypeInFile))));
+				.orElseGet(() -> internalDoImportIfPossible(object, nestedTypeName, packageName, topLevelTypeInFile -> addImportIfNotAlreadyImported(packageName, packageName.child(topLevelTypeInFile))));
 	}
 
 	public GeneratedIdentifier getOrWildcardImportIdentifier(Object object, DottedPath packageName, DottedPath nestedTypeName) {
@@ -90,16 +89,21 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 					}
 					return it;
 				})
-				.orElseGet(() -> internalDoImportIfPossible(object, nestedTypeName, canonicalName, topLevelTypeInFile -> addWildcardImport(packageName)));
+				.orElseGet(() -> internalDoImportIfPossible(object, nestedTypeName, packageName, topLevelTypeInFile -> addWildcardImport(packageName)));
 	}
 
-	private GeneratedIdentifier internalDoImportIfPossible(Object object, DottedPath nestedTypeName, DottedPath canonicalName, Consumer<String> addImport) {
-		String desiredName = nestedTypeName.withDots();
-		if (scope.isNameTaken(desiredName)) {
-			// There is a conflicting name in the scope. Use the canonical name.
-			return scope.createIdentifier(object, canonicalName.withDots());
+	private GeneratedIdentifier internalDoImportIfPossible(Object object, DottedPath nestedTypeName, DottedPath packageName, Consumer<String> addImport) {
+        String desiredName = nestedTypeName.withDots();
+        String topLevelTypeInFile = nestedTypeName.first();
+        DottedPath topLevelCanonicalName = packageName.child(topLevelTypeInFile);
+        if (isAlreadyAccessible(packageName, topLevelCanonicalName)) {
+            return scope.createIdentifier(object, desiredName);
+        }
+        if (scope.isNameTaken(topLevelTypeInFile)) {
+            var canonicalName = packageName.concat(nestedTypeName);
+            // There is a conflicting name in the scope. Use the canonical name.
+            return scope.createIdentifier(object, canonicalName.withDots());
 		}
-		String topLevelTypeInFile = nestedTypeName.first();
 		addImport.accept(topLevelTypeInFile);
 		return scope.createIdentifier(object, desiredName);
 	}
@@ -132,10 +136,18 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	}
 	
 	public void addImportIfNotAlreadyImported(DottedPath packageName, DottedPath canonicalName) {
-		if (!packageName.equals(scope.getPackageName()) && !imports.containsKey(packageName.child("*"))) {
+		if (needsImport(packageName)) {
 			imports.put(canonicalName, packageName);
 		}
 	}
+
+    private boolean needsImport(DottedPath packageName) {
+        return !packageName.equals(scope.getPackageName()) && !imports.containsKey(packageName.child("*"));
+    }
+
+    public boolean isAlreadyAccessible(DottedPath packageName, DottedPath canonicalName) {
+    	return !needsImport(packageName) || imports.containsKey(canonicalName);
+    }
 	
 	public void addWildcardImport(DottedPath packageName) {
 		var wildcard = packageName.child("*");
