@@ -71,6 +71,55 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testWithMetaOnConstructorWtihInnerConstructorFormat() {
+		'''
+        Bar {
+            someBarField: "blah" with-meta {
+                    scheme: "someScheme"
+                },
+            someFooField: "foo",
+            innerBar:  Bar {
+                            someBarField: "blah" with-meta {
+                                scheme: "someScheme"
+                            },
+                            someFooField: "foo",
+                            ...
+                        } 
+                        with-meta {
+                            key: inKey
+                        },
+            innerBar2: MyFunc2() with-meta { key: inKey } 
+        } 
+        with-meta {
+            key: inKey
+        }
+
+		''' ->
+		'''
+        Bar {
+            someBarField: "blah" with-meta {
+                    scheme: "someScheme"
+                },
+            someFooField: "foo",
+            innerBar: 
+                Bar {
+                    someBarField: "blah" with-meta {
+                        scheme: "someScheme"
+                    },
+                    someFooField: "foo",
+                    ...
+                } with-meta {
+                    key: inKey
+                },
+            innerBar2: MyFunc2() with-meta { key: inKey } 
+        } with-meta {
+            key: inKey
+        }
+
+		'''
+	}	
+	
+	@Test
 	def void testWithMetaOnConstructorFormat() {
 		'''
 		SomeType {
@@ -94,7 +143,7 @@ class RosettaExpressionFormattingTest {
 						if True
 						then "This is a looong expression"
 						else "other"
-			}
+		}
 		'''
 	}
 	
