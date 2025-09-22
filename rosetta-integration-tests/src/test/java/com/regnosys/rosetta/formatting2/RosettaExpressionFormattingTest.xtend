@@ -104,8 +104,8 @@ class RosettaExpressionFormattingTest {
         	innerBar:  
         		Bar {
         			someBarField: "blah" with-meta {
-        				scheme: "someScheme"
-        			},
+        					scheme: "someScheme"
+        				},
         			someFooField: "foo",
         			...
         		} with-meta {
