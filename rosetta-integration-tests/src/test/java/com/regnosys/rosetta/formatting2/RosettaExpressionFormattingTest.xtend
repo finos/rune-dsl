@@ -97,29 +97,54 @@ class RosettaExpressionFormattingTest {
 		''' ->
 		'''
         Bar {
-            someBarField: "blah" with-meta {
-            	scheme: "someScheme"
-            },
-            someFooField: "foo",
-            innerBar: 
-            	Bar {
-            		someBarField: "blah" with-meta {
-                        scheme: "someScheme"
-                    },
-                    someFooField: "foo",
-                    ...
-                } with-meta {
-                    key: inKey
-                },
-            innerBar2: MyFunc4() with-meta {  
-                                key: inKey  
-                            }
+        	someBarField: "blah" with-meta {
+        			scheme: "someScheme"
+        		},
+        	someFooField: "foo",
+        	innerBar:  
+        		Bar {
+        			someBarField: "blah" with-meta {
+        				scheme: "someScheme"
+        			},
+        			someFooField: "foo",
+        			...
+        		} with-meta {
+        			key: inKey
+        		},
+        	innerBar2: MyFunc2() with-meta {  
+        			key: inKey  
+        		} 
         } with-meta {
-            key: inKey
+        	key: inKey
         }
 
 		'''
-	}	
+	}
+	
+	@Test
+	def void testWithMetaOnLiteralConstructorFields() {
+		'''
+		Bar {
+		    someBarField: "blah" with-meta {
+		    scheme: "someScheme"
+		    },
+		    someFooField: "blah" with-meta {
+		    scheme: "someScheme"
+		    },
+		    ...
+		}
+		''' ->
+		'''
+        Bar {
+            someBarField: "blah" with-meta {
+                    scheme: "someScheme"
+                },
+            someFooField: "blah" with-meta {
+                    scheme: "someScheme"
+                },
+            ...
+        }'''
+	}
 	
 	@Test
 	def void testWithMetaOnConstructorFormat() {
