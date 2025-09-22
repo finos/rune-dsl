@@ -88,7 +88,7 @@ class RosettaExpressionFormattingTest {
                         with-meta {
                             key: inKey
                         },
-            innerBar2: MyFunc2() with-meta { key: inKey } 
+            innerBar2: MyFunc2() with-meta {key: inKey } 
         } 
         with-meta {
             key: inKey
@@ -98,12 +98,12 @@ class RosettaExpressionFormattingTest {
 		'''
         Bar {
             someBarField: "blah" with-meta {
-                    scheme: "someScheme"
-                },
+            	scheme: "someScheme"
+            },
             someFooField: "foo",
             innerBar: 
-                Bar {
-                    someBarField: "blah" with-meta {
+            	Bar {
+            		someBarField: "blah" with-meta {
                         scheme: "someScheme"
                     },
                     someFooField: "foo",
@@ -111,7 +111,9 @@ class RosettaExpressionFormattingTest {
                 } with-meta {
                     key: inKey
                 },
-            innerBar2: MyFunc2() with-meta { key: inKey } 
+            innerBar2: MyFunc4() with-meta {  
+                                key: inKey  
+                            }
         } with-meta {
             key: inKey
         }
