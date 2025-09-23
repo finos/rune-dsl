@@ -115,10 +115,29 @@ class RosettaExpressionFormattingTest {
         		},
         	innerBar2: MyFunc2() with-meta {  
         			key: inKey  
-        		}} with-meta {
-        			key: inKey
-        		}
+        	}} with-meta {
+        		key: inKey
+        	}
 
+		'''
+	}
+	
+	@Test
+	def void testInnerConstructorIsOnNewLine() {
+		'''
+		Bar {
+			innerBar: Bar {
+					someBarField: "blah"
+				}
+			}
+		''' 
+		->
+		'''
+		Bar {
+			innerBar:
+				Bar {
+					someBarField: "blah"
+		}}
 		'''
 	}
 	
@@ -287,7 +306,8 @@ class RosettaExpressionFormattingTest {
 			attr1: if True then False,
 			attr2: if False
 					then Constr2 {
-						attr11: Constr3 {
+						attr11:
+							Constr3 {
 								attr111: 42
 		}}}
 		'''
