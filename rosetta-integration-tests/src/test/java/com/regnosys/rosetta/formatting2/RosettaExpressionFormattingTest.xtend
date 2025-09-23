@@ -71,7 +71,6 @@ class RosettaExpressionFormattingTest {
 		'''
 	}
 	
-	@Disabled
 	@Test
 	def void testWithMetaOnConstructorWtihInnerConstructorFormat() {
 		'''
@@ -103,7 +102,7 @@ class RosettaExpressionFormattingTest {
         			scheme: "someScheme"
         		},
         	someFooField: "foo",
-        	innerBar:  
+        	innerBar:
         		Bar {
         			someBarField: "blah" with-meta {
         					scheme: "someScheme"
@@ -115,9 +114,9 @@ class RosettaExpressionFormattingTest {
         		},
         	innerBar2: MyFunc2() with-meta {  
         			key: inKey  
-        	}} with-meta {
-        		key: inKey
-        	}
+        }} with-meta {
+        	key: inKey
+        }
 
 		'''
 	}
