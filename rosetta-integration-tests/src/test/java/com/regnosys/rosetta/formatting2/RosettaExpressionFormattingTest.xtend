@@ -7,6 +7,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.InjectWith
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider
+import org.junit.jupiter.api.Disabled
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -71,6 +72,131 @@ class RosettaExpressionFormattingTest {
 	}
 	
 	@Test
+	def void testWithMetaOnConstructorWtihInnerConstructorFormat() {
+		'''
+        Bar {
+            someBarField: "blah" with-meta {
+                    scheme: "someScheme"
+                },
+            someFooField: "foo",
+            innerBar:  Bar {
+                            someBarField: "blah" with-meta {
+                                scheme: "someScheme"
+                            },
+                            someFooField: "foo",
+                            ...
+                        } 
+                        with-meta {
+                            key: inKey
+                        },
+            innerBar2: MyFunc2() with-meta {key: inKey } 
+        } 
+        with-meta {
+            key: inKey
+        }
+
+		''' ->
+		'''
+        Bar {
+        	someBarField: "blah" with-meta {
+        			scheme: "someScheme"
+        		},
+        	someFooField: "foo",
+        	innerBar:
+        		Bar {
+        			someBarField: "blah" with-meta {
+        					scheme: "someScheme"
+        				},
+        			someFooField: "foo",
+        			...
+        		} with-meta {
+        			key: inKey
+        		},
+        	innerBar2: MyFunc2() with-meta {  
+        			key: inKey  
+        }} with-meta {
+        	key: inKey
+        }
+
+		'''
+	}
+	
+	@Test
+	def void testInnerConstructorIsOnNewLine() {
+		'''
+		Bar {
+			innerBar: Bar {
+					someBarField: "blah"
+				}
+			}
+		''' 
+		->
+		'''
+		Bar {
+			innerBar:
+				Bar {
+					someBarField: "blah"
+		}}
+		'''
+	}
+	
+	@Test
+	def void testWithMetaOnLiteralConstructorFields() {
+		'''
+		Bar {
+		    someBarField: "blah" with-meta {
+		    scheme: "someScheme"
+		    },
+		    someFooField: "blah" with-meta {
+		    scheme: "someScheme"
+		    },
+		    ...
+		}
+		''' ->
+		'''
+		Bar {
+			someBarField: "blah" with-meta {
+					scheme: "someScheme"
+				},
+			someFooField: "blah" with-meta {
+					scheme: "someScheme"
+				},
+			...
+		}
+        '''
+	}
+	
+	//TODO: fix issue where multi line expression in a with-meta on a constructor causes formatting exception
+	@Disabled
+	@Test
+	def void testWithMetaOnConstructorFormat() {
+		'''
+		SomeType {
+			attr1: "Some expression"
+		}
+		with-meta   {
+			scheme: "Some expression",
+			id: foo extract
+			if True
+			then "This is a looong expression"
+			else "other"
+		}
+		''' ->
+		'''
+		SomeType {
+			attr1: "Some expression"
+		} with-meta {
+		  	scheme: "Some expression",
+			id: foo
+					extract
+						if True
+						then "This is a looong expression"
+						else "other"
+		}
+		'''
+	}
+	
+	@Test
 	def void testWithMetaFormat() {
 		'''
 		input
@@ -86,10 +212,10 @@ class RosettaExpressionFormattingTest {
 		input with-meta {
 			scheme: "Some expression",
 			id: foo
-				extract
-					if True
-					then "This is a looong expression"
-					else "other"
+					extract
+						if True
+						then "This is a looong expression"
+						else "other"
 		}
 		'''
 	}
@@ -109,10 +235,10 @@ class RosettaExpressionFormattingTest {
 		SomeType {
 			attr1: "Some expression",
 			attr2: foo
-				extract
-					if True
-					then ["This is a looong", "expression"]
-					else 42,
+					extract
+						if True
+						then ["This is a looong", "expression"]
+						else 42,
 		}
 		'''
 	}
@@ -133,10 +259,10 @@ class RosettaExpressionFormattingTest {
 		SomeType {
 			attr1: "Some expression",
 			attr2: foo
-				extract
-					if True
-					then ["This is a looong", "expression"]
-					else 42,
+					extract
+						if True
+						then ["This is a looong", "expression"]
+						else 42,
 			...
 		}
 		'''
@@ -155,8 +281,9 @@ class RosettaExpressionFormattingTest {
 		'''
 		SomeType {
 			attr1: "Some expression",
-			attr2: Foo {
-				bar: True
+			attr2:
+				Foo {
+					bar: True
 		},}
 		'''
 	}
@@ -178,9 +305,10 @@ class RosettaExpressionFormattingTest {
 		Constr1 {
 			attr1: if True then False,
 			attr2: if False
-				then Constr2 {
-					attr11: Constr3 {
-						attr111: 42
+					then Constr2 {
+						attr11:
+							Constr3 {
+								attr111: 42
 		}}}
 		'''
 	}
@@ -199,11 +327,12 @@ class RosettaExpressionFormattingTest {
 		Constr1 {
 			attr1: if True then False,
 			attr2: if False
-				then 42
-				extract
-					Constr2 {
-						attr11: Constr3 {
-							attr111: item
+					then 42
+					extract
+						Constr2 {
+							attr11:
+								Constr3 {
+									attr111: item
 		}}}
 		'''
 	}

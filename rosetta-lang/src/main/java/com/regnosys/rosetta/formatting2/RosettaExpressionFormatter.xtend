@@ -170,9 +170,17 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		
 		if (expr instanceof RosettaConstructorExpression) {
 			expr.values.forEach [
-				regionFor.keyword(':')
-					.prepend[noSpace]
-					.append[oneSpace]
+				if (value instanceof RosettaConstructorExpression) {
+					regionFor.keyword(':')
+						.prepend[noSpace]
+						.append[newLine]
+				} else {
+					regionFor.keyword(':')
+						.prepend[noSpace]
+						.append[oneSpace]
+				}
+				
+				indentInnerWithoutCurlyBracket(it, document)
 				value.formatExpression(document, mode)
 			]
 		}
@@ -182,6 +190,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				regionFor.keyword(':')
 					.prepend[noSpace]
 					.append[oneSpace]
+				indentInnerWithoutCurlyBracket(it, document)
 				value.formatExpression(document, mode)
 			]
 		}
