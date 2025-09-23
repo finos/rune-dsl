@@ -115,10 +115,9 @@ class RosettaExpressionFormattingTest {
         		},
         	innerBar2: MyFunc2() with-meta {  
         			key: inKey  
-        		} 
-        } with-meta {
-        	key: inKey
-        }
+        		}} with-meta {
+        			key: inKey
+        		}
 
 		'''
 	}
@@ -242,10 +241,10 @@ class RosettaExpressionFormattingTest {
 		SomeType {
 			attr1: "Some expression",
 			attr2: foo
-				extract
-					if True
-					then ["This is a looong", "expression"]
-					else 42,
+					extract
+						if True
+						then ["This is a looong", "expression"]
+						else 42,
 			...
 		}
 		'''
@@ -265,7 +264,7 @@ class RosettaExpressionFormattingTest {
 		SomeType {
 			attr1: "Some expression",
 			attr2: Foo {
-				bar: True
+					bar: True
 		},}
 		'''
 	}
