@@ -282,7 +282,8 @@ class RosettaExpressionFormattingTest {
 		'''
 		SomeType {
 			attr1: "Some expression",
-			attr2: Foo {
+			attr2:
+				Foo {
 					bar: True
 		},}
 		'''
@@ -330,7 +331,8 @@ class RosettaExpressionFormattingTest {
 					then 42
 					extract
 						Constr2 {
-							attr11: Constr3 {
+							attr11:
+								Constr3 {
 									attr111: item
 		}}}
 		'''
