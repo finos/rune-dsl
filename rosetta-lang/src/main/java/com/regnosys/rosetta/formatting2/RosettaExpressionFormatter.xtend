@@ -183,6 +183,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				regionFor.keyword(':')
 					.prepend[noSpace]
 					.append[oneSpace]
+				indentInnerWithoutCurlyBracket(it, document)
 				value.formatExpression(document, mode)
 			]
 		}

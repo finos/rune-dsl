@@ -194,10 +194,10 @@ class RosettaExpressionFormattingTest {
 		input with-meta {
 			scheme: "Some expression",
 			id: foo
-				extract
-					if True
-					then "This is a looong expression"
-					else "other"
+					extract
+						if True
+						then "This is a looong expression"
+						else "other"
 		}
 		'''
 	}
