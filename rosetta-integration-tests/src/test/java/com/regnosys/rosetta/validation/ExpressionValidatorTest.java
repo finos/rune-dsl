@@ -24,6 +24,31 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
     
     @Test
+    void thenExpressionWithItemShouldHaveNoIssues() {
+    	RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                     isAllowable boolean (1..1)
+               """).parseExpression("""
+               Foo { isAllowable: False } filter isAllowable then extract "someResult"
+               """);
+    	
+    	validationTestHelper.assertNoIssues(expr);
+    }    
+    
+    @Test
+    void thenExpressionWithNoItemShouldBeDisallowed() {
+    	RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                     isAllowable boolean (1..1)
+               """).parseExpression("""
+               Foo { isAllowable: False } filter isAllowable then "someResult"
+               """);
+    	
+    	validationTestHelper.assertError(expr, INLINE_FUNCTION, null,
+                "The input item is not used in the `then` expression");
+    }
+    
+    @Test
     void enumTypeSymbolReferenceShouldBeDisallowed() {
     	RosettaExpression expr = modelService.toTestModel("""
                 enum Foo:
