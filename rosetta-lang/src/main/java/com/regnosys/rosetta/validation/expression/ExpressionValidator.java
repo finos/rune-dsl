@@ -2,8 +2,6 @@ package com.regnosys.rosetta.validation.expression;
 
 import jakarta.inject.Inject;
 
-import org.eclipse.emf.common.util.TreeIterator;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
@@ -25,7 +23,6 @@ import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +48,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkThenOperation(ThenOperation operation) {
 		InlineFunction inlineFunction = operation.getFunction();	
 		List<RosettaImplicitVariable> implicitVariables = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class);
-        if (implicitVariables.stream().noneMatch(x -> "item".equals(x.getName()))) {
+        if (implicitVariables.isEmpty()) {
             error("The input item is not used in the `then` expression", inlineFunction, INLINE_FUNCTION__BODY);
         }
 	}

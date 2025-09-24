@@ -24,6 +24,23 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
     
     @Test
+    void thenExpressioThatCallsFunctionShouldHaveNoIssues() {
+    	RosettaExpression expr = modelService.toTestModel("""
+                func SomeFunc:
+			 		inputs:
+			 			isAlowable boolean (1..1)
+			 		output:
+			 			result string (1..1)
+			 			
+			 		set result: if isAlowable then "allowed" else "not allowed"
+               """).parseExpression("""
+               False then SomeFunc
+               """);
+    	
+    	validationTestHelper.assertNoIssues(expr);
+    } 
+    
+    @Test
     void thenExpressionWithItemShouldHaveNoIssues() {
     	RosettaExpression expr = modelService.toTestModel("""
                 type Foo:

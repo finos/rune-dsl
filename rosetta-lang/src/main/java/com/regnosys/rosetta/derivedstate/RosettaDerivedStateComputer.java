@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
 
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
@@ -144,6 +145,9 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	
 	private void setImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
 		if (implicitVariableUtil.implicitVariableExistsInContext(expr)) {
+			if (expr.getSymbol() instanceof RosettaCallableWithArgs) {
+				expr.setImplicitArgument(implicitVariableUtil.getDefaultImplicitVariable());
+			}
 			expr.setImplicitVariableIsInContext(true);
 		}
 	}
