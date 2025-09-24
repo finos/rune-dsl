@@ -16,8 +16,6 @@
 
 package com.regnosys.rosetta.derivedstate;
 
-import jakarta.inject.Inject;
-
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
@@ -32,6 +30,8 @@ import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
+
+import jakarta.inject.Inject;
 
 /**
  * Derived state:
@@ -144,17 +144,15 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	}
 	
 	private void setImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
-		if (implicitVariableUtil.implicitVariableExistsInContext(expr)) {
-			if (expr.getSymbol() instanceof RosettaCallableWithArgs) {
+		if (implicitVariableUtil.implicitVariableExistsInContext(expr) && !expr.isExplicitArguments()) {
+			if (expr.getSymbol() instanceof RosettaCallableWithArgs callableWithArgs
+					&& callableWithArgs.numberOfParameters() == 1) {
+				
 				expr.setImplicitArgument(implicitVariableUtil.getDefaultImplicitVariable());
 			}
-			expr.setImplicitVariableIsInContext(true);
 		}
 	}
 	private void discardImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
-		if (expr.isImplicitVariableIsInContext()) {
-			expr.setImplicitVariableIsInContext(false);
-			expr.setImplicitArgument(null);
-		}
+		expr.setImplicitArgument(null);
 	}
 }
