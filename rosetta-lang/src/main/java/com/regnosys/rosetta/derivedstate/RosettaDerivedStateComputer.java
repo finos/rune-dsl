@@ -16,7 +16,6 @@
 
 package com.regnosys.rosetta.derivedstate;
 
-import com.regnosys.rosetta.rosetta.TypeParameter;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
@@ -147,7 +146,7 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	private void setImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
 		if (implicitVariableUtil.implicitVariableExistsInContext(expr) && !expr.isExplicitArguments()) {
 			if ((expr.getSymbol() instanceof RosettaCallableWithArgs callableWithArgs
-					&& callableWithArgs.numberOfParameters() == 1) || expr.getSymbol() instanceof TypeParameter) {
+					&& callableWithArgs.numberOfParameters() == 1)) {
 				expr.setImplicitArgument(implicitVariableUtil.getDefaultImplicitVariable());
 			}
 		}
