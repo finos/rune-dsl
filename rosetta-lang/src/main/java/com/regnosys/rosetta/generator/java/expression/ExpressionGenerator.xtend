@@ -1402,7 +1402,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
-			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList
+			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList // TODO
 			val keyEntry = metaEntries.findFirst[key == "key"]
 			val setMeta = !metaEntriesWithoutKey.empty
 			val setKey = keyEntry !== null

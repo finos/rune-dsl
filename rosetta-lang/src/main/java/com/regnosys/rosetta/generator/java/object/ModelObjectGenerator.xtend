@@ -218,7 +218,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 	}
 
 	def boolean globalKeyRecursive(RDataType class1) {
-		if (class1.hasMetaAttribute('key')) {
+		if (class1.hasMetaAttribute('key')) { // TODO
 			return true
 		}
 		val s = class1.superType
