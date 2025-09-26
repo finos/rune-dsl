@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation.expression;
 
+import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -16,10 +17,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.types.RChoiceType;
-import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
@@ -27,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
@@ -43,21 +41,31 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
-	
-	@Check
-	public void checkThenOperation(ThenOperation operation) {
-		InlineFunction inlineFunction = operation.getFunction();	
-		List<RosettaImplicitVariable> implicitVariables = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class);
-        
-        //TODO: look at all symbol references and check if they reference an attribute, if it is an attribute of an implicit variable then don't error.
-        // For attribute issue there is similar logic in the ScopeProvider where it tries to reference the features of an implicit variable.
 
-        //TODO: Further modification: implicit variable has a reference to where it comes from and we have util to find out that reference (implicitVarUtil)
-        // we should filter the implicit variable so we only error on the one that comes from the lett hand side of the then operation
-        if (implicitVariables.isEmpty()) {
-            error("The input item is not used in the `then` expression", inlineFunction, INLINE_FUNCTION__BODY);
+    @Check
+    public void checkThenOperation(ThenOperation operation) {
+        InlineFunction inlineFunction = operation.getFunction();
+
+        //look at all symbol references and check if they reference an attribute, if it is an attribute of an implicit variable then don't error.
+        // For attribute issue there is similar logic in the RosettaScopeProvider where it tries to reference the features of an implicit variable.
+        //check that at least one symbol reference exists in implicitFeatures
+        List<RosettaSymbolReference> symbolReferences = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaSymbolReference.class);
+        Set<RosettaFeature> implicitFeatures = StreamSupport.stream(typeProvider.findFeaturesOfImplicitVariable(inlineFunction).spliterator(), false)
+                .collect(Collectors.toSet());
+
+        boolean symbolReferencesFeatureOfAttribute =
+                symbolReferences.stream()
+                .anyMatch(ref -> ref.getSymbol() instanceof Attribute && implicitFeatures.contains((Attribute) ref.getSymbol()));
+
+        if (!symbolReferencesFeatureOfAttribute) {
+            //TODO: Further modification: implicit variable has a reference to where it comes from and we have util to find out that reference (implicitVarUtil)
+            // we should filter the implicit variable so we only error on the one that comes from the lett hand side of the then operation
+            List<RosettaImplicitVariable> implicitVariables = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class);
+            if (implicitVariables.isEmpty()) {
+                error("The input item is not used in the `then` expression", inlineFunction, INLINE_FUNCTION__BODY);
+            }
         }
-	}
+    }
 	
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
