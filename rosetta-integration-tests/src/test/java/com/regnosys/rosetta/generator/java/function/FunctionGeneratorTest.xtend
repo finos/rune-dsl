@@ -1921,9 +1921,9 @@ class FunctionGeneratorTest {
 				
 				set result:
 					1 extract [
-						item then param1 [
+						item then extract param1 [
 							10 extract [
-								item then param2 [
+								item then extract param2 [
 									100 extract [
 										item*10
 									] then extract [
@@ -2083,7 +2083,7 @@ class FunctionGeneratorTest {
 						extract Incr
 						then extract Incr
 						then extract item + 1
-						then a [ a extract Incr ]
+						then extract a [ a extract Incr ]
 		'''.generateCode
 		val classes = code.compileToClasses
 

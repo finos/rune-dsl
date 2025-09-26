@@ -1160,6 +1160,42 @@ The Rune DSL provides a number of list operators that feature in usual programmi
 
 The following sections details the syntax and usage and these list operator features.
 
+#### Then
+
+The `then` keyword, when used within an expression, evaluates the expression on the left-hand side and passes its result as the input to the expression on the right-hand side.
+You can pass the entire left-hand result (for example, a list) to a function that expects it, as in the following example:
+
+``` Haskell
+set updatedVehicleOwnership -> drivingLicence: <"Overwrite existing driving licences with renewed driving licences.">
+    vehicleOwnership -> drivingLicence
+        //then without extract means that item is a list of driving licenses
+        then RenewAllDrivingLicences(item, newDateOfRenewal)
+```
+
+
+You can also combine `then` with `extract` to iterate over the elements of the left-hand side and pass each element to the right-hand expression:
+
+```Haskell
+add renewedDrivingLicences:
+    drivingLicences 
+         //then with extract will pass driving licenses one by one to item
+        then extract RenewDrivingLicence(item, newDateOfRenewal)
+```
+
+There are situations where you might accidentally use `then` even though the right-hand side has no input parameter. 
+This is semantically incorrect because the left-hand result would be discarded. To prevent this, Rune raises a syntax error indicating that the input `item` is not used in the `then` expression. 
+For example, the following is incorrect:
+
+```Haskell
+Foo { isAllowable: False } filter isAllowable then "someResult"
+```
+
+If you intend to conditionally return "someResult" based on `isAllowable`, ensure that the right-hand side actually consumes the bound `item` by using `extract`, for example:
+
+```Haskell
+Foo { isAllowable: False } filter isAllowable then extract "someResult"
+```
+
 #### Filter
 
 The `filter` keyword filters the items of a list based on a specified filtering criteria provided as a bolean expression. The syntax is:
@@ -1208,7 +1244,7 @@ owners
 
 #### Extract
 
-The `extract` keyword allows to modify the items of a list based on an expression. The syntax is:
+The `extract` keyword allows you to modify the items of a list based on an expression. The syntax is:
 
 ``` Haskell
 <list> extract (optional <itemName>) [ <expression> ]
@@ -1218,6 +1254,7 @@ For each list item, the expression is invoked to modify the item. The resulting 
 
 ``` Haskell
 drivingLicences
+    extract person
     filter firstName exists and surname exists
     then extract firstName + " " + surname
 ```
