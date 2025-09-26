@@ -296,11 +296,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaType toJavaType(RMetaAnnotatedType type) {
 		JavaReferenceType javaType = toJavaReferenceType(type.getRType());
 		
-		if (type.hasAttributeMeta() || type.hasKeyMeta()) {
-		    if (type.getMetaAttributes().stream().allMatch(m -> "key".equals(m.getName()))) {
-		        return javaType;
-		    }
-		    
+		if (type.hasAttributeMeta()) {
 			RType rType = typeSystem.stripFromTypeAliases(type.getRType());
 			JavaPackageName packageName = JavaPackageName.escape(metaField(rType.getNamespace()));
 			return hasReferenceOrAddressMetadata(type) ? 
