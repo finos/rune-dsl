@@ -24,6 +24,19 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
 
     @Test
+    void thenExpressionImplicitVariableThatDoesNotReferenceArgumentIsDisallowed() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    isAllowable boolean (1..1)
+               """).parseExpression("""
+               Foo { isAllowable: False } then ("hello" extract item)
+               """);
+
+        validationTestHelper.assertError(expr, INLINE_FUNCTION, null,
+                "The input item is not used in the `then` expression");
+    }
+
+    @Test
     void thenExpressionReturnsAttributeOfLeftHandSideWithNoIssues() {
         RosettaExpression expr = modelService.toTestModel("""
                
