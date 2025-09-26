@@ -1402,53 +1402,53 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				.collapseToSingleExpression(context.scope)
 
 		if (withMetaJavaType instanceof RJavaFieldWithMeta || withMetaJavaType instanceof RJavaPojoInterface) {
-			val metaEntriesWithoutKey = metaEntries.filter[key != "key"].toList // TODO
-			val keyEntry = metaEntries.findFirst[key == "key"]
-			val setMeta = !metaEntriesWithoutKey.empty
-			val setKey = keyEntry !== null
+			val attributeMetaEntries = metaEntries.filter[key.isAttributeMeta].toList
+			val typeMetaEntries = metaEntries.filter[key.isTypeMeta].toList
+			val setMeta = !attributeMetaEntries.empty
+			val setMetafields = !typeMetaEntries.empty
 			
 			val withMetaArgument = argumentExpression
 					.declareAsVariable(true, "withMetaArgument", context.scope)				
 			val withMetaAgumentVar = context.scope.getIdentifierOrThrow(argumentExpression)
 			
-			if (setKey && !setMeta) {
+			if (setMetafields && !setMeta) {
 				if (argumentJavaType instanceof RJavaWithMetaValue) {
 					return withMetaArgument
-						.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', withMetaJavaType.itemType)]
+						.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta()«FOR m : typeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
 						.completeAsExpressionStatement
 						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))	
 				} else {
 					return withMetaArgument
-						.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''',  withMetaJavaType.itemType)]
+						.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : typeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''',  withMetaJavaType.itemType)]
 						.completeAsExpressionStatement
 						.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
 				}
-			} else if (!setKey && setMeta) {
+			} else if (!setMetafields && setMeta) {
 				if (argumentJavaType instanceof RJavaWithMetaValue) {
 					return withMetaArgument
-							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : attributeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
 							.completeAsExpressionStatement
 							.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))
 				} else {
 					return withMetaArgument
-							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : attributeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
 				}
 				
-			} else if (setKey && setMeta) {
+			} else if (setMetafields && setMeta) {
 				if (argumentJavaType instanceof RJavaWithMetaValue) {
 					return withMetaArgument
-							.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
+							.mapExpression[JavaExpression.from('''«it».getOrCreateValue().getOrCreateMeta()«FOR m : typeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', JavaPrimitiveType.VOID)]
 							.completeAsExpressionStatement
 							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
-							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : attributeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', withMetaJavaType.itemType)]
 							.completeAsExpressionStatement 
 							.append(new JavaVariable(withMetaAgumentVar, withMetaJavaType))				
 				} else {
 					return withMetaArgument
-							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta().set«keyEntry.key.toPojoSetter»(«keyEntry.value»)''', JavaPrimitiveType.VOID)]
+							.mapExpression[JavaExpression.from('''«it».getOrCreateMeta()«FOR m : typeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»''', JavaPrimitiveType.VOID)]
 							.completeAsExpressionStatement
 							.append(new JavaVariable(withMetaAgumentVar, argumentJavaType))
-							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : metaEntriesWithoutKey».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
+							.mapExpression[JavaExpression.from('''«withMetaJavaType».builder().setValue(«it»).setMeta(«MetaFields».builder()«FOR m : attributeMetaEntries».set«m.key.toPojoSetter»(«m.value»)«ENDFOR»)''', withMetaJavaType.itemType)]
 				}
 			} else {
 				return withMetaArgument

@@ -7,6 +7,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.meta.ReferenceWithMeta;
+import com.rosetta.model.metafields.MetaAndTemplateFields;
 import com.rosetta.model.metafields.MetaFields;
 import com.rosetta.util.DottedPath;
 import org.eclipse.xtext.testing.InjectWith;
@@ -28,6 +29,105 @@ public class FunctionGeneratorMetaTest {
     private FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     private CodeGeneratorTestHelper generatorTestHelper;
+    
+    @Test
+    void canGetMetaTemplateFromSuperType() {
+        var model = """
+                metaType key string
+                metaType template string
+        
+                type Foo:
+                    [metadata key]
+                    [metadata template]
+                
+                type Bar extends Foo:
+        
+                func MyFunc:
+        		    inputs:
+        				bar Bar (1..1)
+                    output:
+                        result string (1..1)
+        
+                    set result: bar -> template
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Bar", Map.of(
+                        "meta", MetaAndTemplateFields.builder().setTemplate("someTemplate").build()
+                )
+        );
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("someTemplate", result);
+    }
+    
+    @Test
+    void canGetMetaTemplate() {
+        var model = """
+                metaType key string
+                metaType template string
+        
+                type Foo:
+                    [metadata key]
+                    [metadata template]
+        
+                func MyFunc:
+        		    inputs:
+        				foo Foo (1..1)
+                    output:
+                        result string (1..1)
+        
+                    set result: foo -> template
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+                        "meta", MetaAndTemplateFields.builder().setTemplate("someTemplate").build()
+                )
+        );
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("someTemplate", result);
+    }
+
+    @Test
+    void canSetMetaTemplate() {
+        var model = """
+                metaType key string
+                metaType template string
+        
+                type Foo:
+                    [metadata key]
+                    [metadata template]
+        
+                func MyFunc:
+                    output:
+                        result Foo (1..1)
+        
+                    set result: Foo {} with-meta { template: "someTemplate" }
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
+                        "meta", MetaAndTemplateFields.builder().setTemplate("someTemplate").build()
+                )
+        );
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+
+        assertEquals(expected, result);
+    }
 
     @Test
     void canAccessMetaKeyOnSuperType() {

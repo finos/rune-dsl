@@ -13,7 +13,7 @@ public class PojoPropertyUtil {
 	        case "reference":
 	            return "externalReference";
 	        case "id":
-	        case "key": // TODO
+	        case "key":
 	            return "externalKey";
 	        case "address":
 	            return "reference";
