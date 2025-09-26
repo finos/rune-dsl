@@ -49,10 +49,11 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		InlineFunction inlineFunction = operation.getFunction();	
 		List<RosettaImplicitVariable> implicitVariables = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class);
         
-        //TODO: look at all symbol references and check if they reference an attribute if it is an attribute of an implicit variable then don't error
-        // for attribute issue there is simillar logic in the ScopeProvider where it tries to reference the features of an implicit variable
-        // Further modification: implicit variable has a reference to where it comes from and we have util to find out that reference (implicitVarUtil)
-        // we should filter the implicit variable so we only warn on the one that comes from the lett hand side of the then operation
+        //TODO: look at all symbol references and check if they reference an attribute, if it is an attribute of an implicit variable then don't error.
+        // For attribute issue there is similar logic in the ScopeProvider where it tries to reference the features of an implicit variable.
+
+        //TODO: Further modification: implicit variable has a reference to where it comes from and we have util to find out that reference (implicitVarUtil)
+        // we should filter the implicit variable so we only error on the one that comes from the lett hand side of the then operation
         if (implicitVariables.isEmpty()) {
             error("The input item is not used in the `then` expression", inlineFunction, INLINE_FUNCTION__BODY);
         }
