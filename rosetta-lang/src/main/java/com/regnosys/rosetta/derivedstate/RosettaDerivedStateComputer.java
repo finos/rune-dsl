@@ -151,6 +151,7 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			}
 		}
 	}
+
 	private void discardImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
 		expr.setImplicitArgument(null);
 	}
