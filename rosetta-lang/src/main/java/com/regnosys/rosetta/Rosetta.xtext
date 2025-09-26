@@ -551,7 +551,7 @@ Expression returns RosettaExpression:
 ;
 
 ThenOperation returns RosettaExpression:
-	OrOperation (->({ThenOperation.argument=current} operator='then') (function=InlineFunction|=>function=ImplicitInlineFunction)?)*
+	OrOperation (->({ThenOperation.argument=current} operator='then') (=>function=ImplicitInlineFunction)?)*
 ;
 
 /*
