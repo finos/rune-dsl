@@ -3,6 +3,7 @@ package com.regnosys.rosetta.validation.expression;
 import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
@@ -20,9 +21,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -46,10 +45,15 @@ public class ExpressionValidator extends AbstractExpressionValidator {
     public void checkThenOperation(ThenOperation operation) {
         InlineFunction inlineFunction = operation.getFunction();
 
-        //look at all symbol references and check if they reference an attribute, if it is an attribute of an implicit variable then don't error.
-        // For attribute issue there is similar logic in the RosettaScopeProvider where it tries to reference the features of an implicit variable.
-        //check that at least one symbol reference exists in implicitFeatures
-        List<RosettaSymbolReference> symbolReferences = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaSymbolReference.class);
+        /*
+         *  Look at all symbol references and check if they reference an attribute.
+         *  If those attribute references have a reference to implicit features of the inline function then don't error.
+         */
+        List<RosettaSymbolReference> symbolReferences = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaSymbolReference.class)
+	        .stream()
+	        .filter(implicitVar -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(implicitVar).orElse(null), operation))
+	        .toList();
+        
         Set<RosettaFeature> implicitFeatures = StreamSupport.stream(typeProvider.findFeaturesOfImplicitVariable(inlineFunction).spliterator(), false)
                 .collect(Collectors.toSet());
 
@@ -58,9 +62,16 @@ public class ExpressionValidator extends AbstractExpressionValidator {
                 .anyMatch(ref -> ref.getSymbol() instanceof Attribute && implicitFeatures.contains((Attribute) ref.getSymbol()));
 
         if (!symbolReferencesFeatureOfAttribute) {
-            //TODO: Further modification: implicit variable has a reference to where it comes from and we have util to find out that reference (implicitVarUtil)
-            // we should filter the implicit variable so we only error on the one that comes from the lett hand side of the then operation
-            List<RosettaImplicitVariable> implicitVariables = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class);
+            /*
+             * Implicit variable has a reference to where it comes from we should filter the implicit variable so that
+             *  we only error on the one that comes from the left hand side of the `then` operation
+             */
+            List<RosettaImplicitVariable> implicitVariables =
+                    EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class)
+                            .stream()
+                            .filter(implicitVar -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(implicitVar).orElse(null), operation))
+                            .toList();
+            
             if (implicitVariables.isEmpty()) {
                 error("The input item is not used in the `then` expression", inlineFunction, INLINE_FUNCTION__BODY);
             }
