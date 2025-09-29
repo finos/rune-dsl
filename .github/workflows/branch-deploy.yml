@@ -28,6 +28,7 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Deploy snapshot to Central (composite action)
         uses: ./.github/actions/maven-build
         with:
@@ -70,6 +71,7 @@ jobs:
     needs: wait-for-snapshot
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Deploy Rosetta Backport snapshot
         uses: ./.github/actions/maven-build
         with:
