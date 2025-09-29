@@ -9,7 +9,7 @@ inputs:
   run-tests:
     description: Whether or not to run tests. The default is true.
     required: false
-    # All inputs are strings in composite actions; use 'false' to skip tests.
+    # type: boolean - This is not supported (yet). All inputs are of type `string`. See https://github.com/actions/runner/issues/2238.
     default: 'true'
   working-directory:
     description: Working directory to run Maven in.
