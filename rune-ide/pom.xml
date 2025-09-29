@@ -25,7 +25,7 @@
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
-	<name>Rune DSL Language Server</name>
+    <name>Rune DSL Language Server</name>
     <artifactId>rune-ide</artifactId>
 
     <description>
