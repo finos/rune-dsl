@@ -14,46 +14,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-branch:
+  prepare:
     runs-on: ubuntu-latest
     outputs:
-      normalized-branch: ${{ steps.normalize-branch-name.outputs.normalized }}
+      normalized: ${{ steps.normalize.outputs.normalized }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          architecture: x64
-          cache: maven
-          server-id: ossrh
-          server-username: CI_DEPLOY_USERNAME_CENTRAL
-          server-password: CI_DEPLOY_PASSWORD_CENTRAL
-          gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
       - name: Normalize branch name
-        id: normalize-branch-name
+        id: normalize
         uses: ./.github/actions/normalize-branch-name
-      - name: Set version
-        run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
-      - name: Build and publish with Maven
-        run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release ${{ inputs.run-tests == false && ' -DskipTests' || '' }}
+
+  deploy-branch:
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy snapshot to Central (composite action)
+        uses: ./.github/actions/maven-build
+        with:
+          set-version: 0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+          run-tests: ${{ inputs.run-tests }}
         env:
-          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
-          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
-          CI_DEPLOY_USERNAME_CENTRAL: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
-          CI_DEPLOY_PASSWORD_CENTRAL: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
+          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
 
   wait-for-snapshot:
-    needs: deploy-branch
+    needs: [prepare, deploy-branch]
     runs-on: ubuntu-latest
     steps:
       - name: Poll for snapshot availability
         run: |
           GROUP_ID="org/finos/rune"
           ARTIFACT_ID="rune-maven-plugin"
-          VERSION="0.0.0.${{ needs.deploy-branch.outputs.normalized-branch }}-SNAPSHOT"
+          VERSION="0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT"
 
           # Poll for the main artifact JAR
           JAR="${ARTIFACT_ID}-${VERSION}.jar"
@@ -75,30 +70,15 @@ jobs:
     needs: wait-for-snapshot
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v4
+      - name: Deploy Rosetta Backport snapshot
+        uses: ./.github/actions/maven-build
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          architecture: x64
-          cache: maven
-          server-id: ossrh
-          server-username: CI_DEPLOY_USERNAME
-          server-password: CI_DEPLOY_PASSWORD
-          gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
-      - name: Normalize branch name
-        id: normalize-branch-name
-        uses: ./.github/actions/normalize-branch-name
-      - name: Set version
-        working-directory: rosetta-backport
-        run: mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=0.0.0.${{ steps.normalize-branch-name.outputs.normalized }}-SNAPSHOT
-      - name: Build and publish with Maven
-        working-directory: rosetta-backport
-        run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release ${{ inputs.run-tests == false && ' -DskipTests' || '' }}
+          working-directory: rosetta-backport
+          set-version: 0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+          run-tests: ${{ inputs.run-tests }}
         env:
-          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
-          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}

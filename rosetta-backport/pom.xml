@@ -37,37 +37,21 @@
 
     <build>
         <plugins>
-            <!-- Sources JAR -->
+            <!-- Prevent maven-source-plugin from running twice during a release -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
-                        <phase>package</phase>
+                        <phase>none</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <skipSource>true</skipSource>
+                        </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- Attach javadocs -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <failOnError>false</failOnError>
-                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
