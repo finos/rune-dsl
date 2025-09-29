@@ -558,7 +558,7 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		val innerPropType = innerProp.type.itemType
 		
 		val isMetaSegment = if (segment instanceof RAttribute) {
-			segment.RMetaAnnotatedType.hasMeta
+			segment.RMetaAnnotatedType.hasAttributeMeta
 		} else {
 			false
 		}

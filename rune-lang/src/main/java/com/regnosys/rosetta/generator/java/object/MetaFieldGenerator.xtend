@@ -39,8 +39,8 @@ class MetaFieldGenerator extends JavaClassGenerator<RMetaAnnotatedType, RJavaWit
 	}
 	def Stream<RMetaAnnotatedType> streamObjects(EObject model) {
 		Stream.concat(
-			model.eAllOfType(Attribute).stream.map[buildRAttribute.RMetaAnnotatedType].filter[hasMeta],
-			model.eAllOfType(WithMetaOperation).stream.map[RMetaAnnotatedType].filter[hasMeta]
+			model.eAllOfType(Attribute).stream.map[buildRAttribute.RMetaAnnotatedType].filter[hasAttributeMeta],
+			model.eAllOfType(WithMetaOperation).stream.map[RMetaAnnotatedType].filter[hasAttributeMeta]
 		)
 		.distinct
 		.filter[toJavaReferenceType instanceof RJavaWithMetaValue]
