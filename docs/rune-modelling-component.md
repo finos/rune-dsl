@@ -1163,7 +1163,7 @@ The following sections details the syntax and usage and these list operator feat
 #### Then
 
 The `then` keyword, when used within an expression, evaluates the expression on the left-hand side and passes its result as the input to the expression on the right-hand side.
-You can pass the entire left-hand result (for example, a list) to a function that expects it, as in the following example:
+You can pass the entire left-hand result (for example, a list or empty) to a function that expects it, as in the following example:
 
 ``` Haskell
 set updatedVehicleOwnership -> drivingLicence: <"Overwrite existing driving licences with renewed driving licences.">
