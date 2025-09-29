@@ -1,0 +1,6 @@
+namespace test.escaping.importoverlap.dep
+
+func MyFunc:
+  [codeImplementation]
+  output:
+    result int (1..1)
