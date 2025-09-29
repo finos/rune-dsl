@@ -50,6 +50,8 @@ public class ImportOverlapTest {
 
         var code = generatorTestHelper.generateCode(new String[]{model1, model2});
 
+        generatorTestHelper.writeClasses(code, "canImportOverlappingNamedFunctions");
+
         var classes = generatorTestHelper.compileToClasses(code);
 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
