@@ -463,10 +463,13 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>none</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <skipSource>true</skipSource>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
