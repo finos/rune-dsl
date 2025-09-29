@@ -12,6 +12,7 @@ import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 import com.regnosys.rosetta.utils.OptionalUtil;
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 import jakarta.inject.Inject;
+
 import org.eclipse.emf.ecore.EObject;
 
 import java.math.BigInteger;
@@ -84,18 +85,22 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfSymbol(RosettaSymbol symbol) {
+    	Set<RMetaAttribute> acc = new HashSet<>();
         if (symbol instanceof Attribute a) {
             if (a.isOverride()) {
-                List<RMetaAttribute> acc = new ArrayList<>();
                 acc.addAll(getRMetaAttributesOfSymbol(extensions.getParentAttribute(a)));
-                acc.addAll(getRMetaAttributes(a.getAnnotations()));
-                return acc;
+                acc.addAll(getRMetaAttributes(a.getAnnotations())); 
             }
+            
+        	RosettaType attributeType = a.getTypeCall().getType();
+        	if (attributeType instanceof Data data) {
+        		acc.addAll(getRMetaAttributesOfType(data));
+        	}
         }
         if (symbol instanceof Annotated ann) {
-            return getRMetaAttributes(ann.getAnnotations());
+            acc.addAll(getRMetaAttributes(ann.getAnnotations()));
         }
-        return List.of();
+        return new ArrayList<>(acc);
     }
 
     public List<RMetaAttribute> getRMetaAttributesOfFeature(RosettaFeature feature) {
@@ -106,6 +111,21 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
             return getRMetaAttributes(ann.getAnnotations());
         }
         return List.of();
+    }
+
+    public List<RMetaAttribute> getRMetaAttributesOfType(Data data) {
+        Set<AnnotationRef> allAnnotations = new HashSet<>();
+        Set<Data> visited = new HashSet<>();
+        Data current = data;
+        while (current != null && visited.add(current)) {
+            allAnnotations.addAll(current.getAnnotations());
+            Data superType = current.getSuperType();
+            if (superType != null && !extensions.isResolved(superType)) {
+                break;
+            }
+            current = superType;
+        }
+        return getRMetaAttributes(new ArrayList<>(allAnnotations));
     }
 
     public List<RMetaAttribute> getRMetaAttributes(List<AnnotationRef> annotations) {

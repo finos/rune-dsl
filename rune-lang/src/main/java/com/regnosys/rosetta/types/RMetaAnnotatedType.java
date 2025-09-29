@@ -2,6 +2,7 @@ package com.regnosys.rosetta.types;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
@@ -9,6 +10,8 @@ import org.apache.commons.lang3.Validate;
 import com.google.common.collect.Streams;
 
 public class RMetaAnnotatedType {
+    private static final Set<String> TYPE_META_NAMES = Set.of("key", "template");
+    
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;
 	
@@ -34,9 +37,13 @@ public class RMetaAnnotatedType {
 		return rType;
 	}
 
-	public boolean hasMeta() {
-		return !metaAttributes.isEmpty();
-	}	
+	public boolean hasAttributeMeta() {
+		return metaAttributes.stream().anyMatch(x -> !TYPE_META_NAMES.contains(x.getName()));
+	}
+	
+	public boolean hasTypeMeta() {
+		return metaAttributes.stream().anyMatch(x -> TYPE_META_NAMES.contains(x.getName()));
+	}
 	
 	public List<RMetaAttribute> getMetaAttributes() {
 		return metaAttributes;

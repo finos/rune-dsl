@@ -217,17 +217,6 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		'''
 	}
 
-	def boolean globalKeyRecursive(RDataType class1) {
-		if (class1.hasMetaAttribute('key')) {
-			return true
-		}
-		val s = class1.superType
-		if (s !== null) {
-			return globalKeyRecursive(s)
-		}
-		return false
-	}
-
 	private def StringConcatenationClient rosettaClass(JavaPojoInterface javaType, JavaPojoImpl implType, JavaPojoBuilderInterface builderType, boolean extended, JavaClassScope implScope) {
 		val properties = extended ? javaType.ownProperties : javaType.allProperties
 		'''
