@@ -1187,13 +1187,21 @@ This is semantically incorrect because the left-hand result would be discarded. 
 For example, the following is incorrect:
 
 ```Haskell
-Foo { isAllowable: False } filter isAllowable then "someResult"
+    add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+        drivingLicences
+            extract person
+            then filter firstName exists and surname exists
+            then firstName + " " + surname
 ```
 
-If you intend to conditionally return "someResult" based on `isAllowable`, ensure that the right-hand side actually consumes the bound `item` by using `extract`, for example:
+If you intend to conditionally return `firstName + " " + surname` based on if `surname` exists, ensure that the right-hand side actually consumes the bound `item` by using `extract`, for example:
 
 ```Haskell
-Foo { isAllowable: False } filter isAllowable then extract "someResult"
+    add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+        drivingLicences
+            extract person
+            then filter firstName exists and surname exists
+            then extract firstName + " " + surname
 ```
 
 #### Filter
