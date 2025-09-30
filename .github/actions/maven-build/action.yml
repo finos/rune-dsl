@@ -37,7 +37,7 @@ runs:
         server-password: CI_DEPLOY_PASSWORD
         # If provided by the caller via env, import GPG for signing
         gpg-private-key: ${{ env.RUNE_GPG_PRIVATE_KEY }}
-        gpg-passphrase: GPG_PASSPHRASE
+        gpg-passphrase: ${{ env.RUNE_GPG_PASSPHRASE }}
     - name: Set version
       if: ${{ inputs.set-version != '' }}
       shell: bash
