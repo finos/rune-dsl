@@ -93,9 +93,12 @@ public class RosettaRequestManager extends RequestManager {
 
 	@Override
 	protected CompletableFuture<Void> cancel() {
-		List<AbstractRequest<?>> localRequests = removableRequestList;
-		removableRequestList = new CopyOnWriteArrayList<>();
-		CompletableFuture<?>[] cfs = new CompletableFuture<?>[localRequests.size()];
+        List<AbstractRequest<?>> oldRequests = removableRequestList;
+        removableRequestList = new CopyOnWriteArrayList<>();
+        // Create a snapshot to avoid concurrent modification during iteration, e.g., elements being removed during iteration.
+        List<AbstractRequest<?>> localRequests = List.copyOf(oldRequests);
+
+        CompletableFuture<?>[] cfs = new CompletableFuture<?>[localRequests.size()];
 		for (int i = 0, max = localRequests.size(); i < max; i++) {
 			AbstractRequest<?> request = localRequests.get(i);
 			request.cancel();
