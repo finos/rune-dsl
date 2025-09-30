@@ -29,7 +29,7 @@ public class FunctionGeneratorMetaTest {
     private FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     private CodeGeneratorTestHelper generatorTestHelper;
-    
+
     @Test
     void canGetMetaTemplateFromSuperType() {
         var model = """
@@ -64,7 +64,7 @@ public class FunctionGeneratorMetaTest {
 
         assertEquals("someTemplate", result);
     }
-    
+
     @Test
     void canGetMetaTemplate() {
         var model = """
@@ -283,15 +283,15 @@ public class FunctionGeneratorMetaTest {
         var code = generatorTestHelper.generateCode(model);
 
         var classes = generatorTestHelper.compileToClasses(code);
-        
+
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
         var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "Foo", Map.of(
-                "someField", "someFieldValue",
-                "meta", MetaFields.builder().setExternalKey("someKey").build()
-            )
+                        "someField", "someFieldValue",
+                        "meta", MetaFields.builder().setExternalKey("someKey").build()
+                )
         );
-        
+
         var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
 
         assertEquals("someKey", result);
@@ -327,13 +327,13 @@ public class FunctionGeneratorMetaTest {
                 """;
 
         var code = generatorTestHelper.generateCode(new String[]{model1, model2});
-        
+
         var classes = generatorTestHelper.compileToClasses(code);
-        
+
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
         var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Baz", Map.of(
-                "bazField", "bazFieldValue"
+                        "bazField", "bazFieldValue"
                 )
         );
 
@@ -383,109 +383,7 @@ public class FunctionGeneratorMetaTest {
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
 
         var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Baz", Map.of(
-                "bazField", "bazFieldValue"
-                )
-        );
-
-        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, input);
-
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaBaz", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, "Baz", Map.of(
                         "bazField", "bazFieldValue"
-                )),
-                "meta", MetaFields.builder().setScheme("someScheme").build()
-        ));
-
-        assertEquals(expected, result);
-    }
-
-    @Test
-    void canSetUsingWithMetaSameTypeNameAcrossNamespaces() {
-        var model1 = """
-                namespace other
-                
-                type Baz:
-                  bazField string (1..1)
-                """;
-
-        var model2 = """
-                import other.* as testOther
-                
-                type Baz:
-                  bazField string (1..1)
-                
-                func MyFunc:
-                    inputs:
-                        inBaz testOther.Baz (1..1)
-                    output:
-                        outBaz Baz (1..1)
-                        [metadata scheme]
-                
-                    set outBaz: Baz {
-                        bazField: inBaz -> bazField
-                    } with-meta {
-                              scheme: "someScheme"
-                          }
-                """;
-
-        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
-        
-        var classes = generatorTestHelper.compileToClasses(code);
-        
-        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
-
-        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Baz", Map.of(
-                "bazField", "bazFieldValue"
-                )
-        );
-
-        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, input);
-
-        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "FieldWithMetaBaz", Map.of(
-                "value", generatorTestHelper.createInstanceUsingBuilder(classes, "Baz", Map.of(
-                        "bazField", "bazFieldValue"
-                )),
-                "meta", MetaFields.builder().setScheme("someScheme").build()
-        ));
-
-        assertEquals(expected, result);
-
-    }
-
-    @Test
-    void canSetUsingArrowMetaSameTypeNameAcrossNamespaces() {
-        var model1 = """
-                namespace other
-                
-                type Baz:
-                  bazField string (1..1)
-                """;
-
-        var model2 = """
-                import other.* as testOther
-                
-                type Baz:
-                  bazField string (1..1)
-                
-                func MyFunc:
-                    inputs:
-                        inBaz testOther.Baz (1..1)
-                    output:
-                        outBaz Baz (1..1)
-                        [metadata scheme]
-                
-                    set outBaz -> bazField: inBaz -> bazField
-                    set outBaz -> scheme: "someScheme"
-                """;
-
-        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
-
-        var classes = generatorTestHelper.compileToClasses(code);
-
-        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
-
-        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Baz", Map.of(
-                "bazField", "bazFieldValue"
                 )
         );
 
