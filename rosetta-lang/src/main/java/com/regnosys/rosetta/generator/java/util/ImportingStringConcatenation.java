@@ -96,7 +96,7 @@ class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
         String desiredName = nestedTypeName.withDots();
         String topLevelTypeInFile = nestedTypeName.first();
         DottedPath topLevelCanonicalName = packageName.child(topLevelTypeInFile);
-        if (isAlreadyAccessible(packageName, topLevelCanonicalName)) {
+        if (!scope.isNameTaken(desiredName) && isAlreadyAccessible(packageName, topLevelCanonicalName)) {
             return scope.createIdentifier(object, desiredName);
         }
         if (scope.isNameTaken(topLevelTypeInFile)) {
