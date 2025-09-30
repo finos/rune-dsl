@@ -8,6 +8,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Publish to Central (composite action)
         uses: ./.github/actions/maven-build
         with:
@@ -32,6 +33,7 @@ jobs:
     needs: delay
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Publish Rosetta Backport
         uses: ./.github/actions/maven-build
         with:
