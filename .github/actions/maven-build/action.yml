@@ -35,9 +35,11 @@ runs:
         server-id: ossrh
         server-username: CI_DEPLOY_USERNAME
         server-password: CI_DEPLOY_PASSWORD
-        # If provided by the caller via env, import GPG for signing
         gpg-private-key: ${{ env.RUNE_GPG_PRIVATE_KEY }}
-        gpg-passphrase: GPG_PASSPHRASE
+        gpg-passphrase: RUNE_GPG_PASSPHRASE
+      env:
+        RUNE_GPG_PRIVATE_KEY: ${{ env.RUNE_GPG_PRIVATE_KEY }}
+        RUNE_GPG_PASSPHRASE: ${{ env.RUNE_GPG_PASSPHRASE }}
     - name: Set version
       if: ${{ inputs.set-version != '' }}
       shell: bash
