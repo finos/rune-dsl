@@ -78,43 +78,43 @@ public class RosettaExistsExpressionTest {
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then before only exists
+                    foo -> bar first then extract before only exists
             
             func OnlyExistsMultiplePaths:
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then ( before, after ) only exists
+                    foo -> bar first then extract ( before, after ) only exists
 
             func OnlyExistsPathWithScheme:
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then ( before, afterWithScheme ) only exists
+                    foo -> bar first then extract ( before, afterWithScheme ) only exists
             
             func OnlyExistsBothPathsWithScheme:
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then ( beforeWithScheme, afterWithScheme ) only exists
+                    foo -> bar first then extract ( beforeWithScheme, afterWithScheme ) only exists
 
             func OnlyExistsListMultiplePaths:
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then ( before, afterList ) only exists
+                    foo -> bar first then extract ( before, afterList ) only exists
 
             func OnlyExistsListPathWithScheme:
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then ( before, afterListWithScheme ) only exists
+                    foo -> bar first then extract ( before, afterListWithScheme ) only exists
             
             func OnlyExistsListBothPathsWithScheme:
                 inputs: foo Foo (1..1)
                 output: result boolean (1..1)
                 set result:
-                    foo -> bar first then ( beforeListWithScheme, afterListWithScheme ) only exists
+                    foo -> bar first then extract ( beforeListWithScheme, afterListWithScheme ) only exists
 
             func MultipleSeparateOr_NoAliases_Exists:
                 inputs: foo Foo (1..1)
