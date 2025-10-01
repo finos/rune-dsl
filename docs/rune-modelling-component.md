@@ -1191,7 +1191,7 @@ For example, the following is incorrect:
         drivingLicences
             extract person
             then filter firstName exists and surname exists
-            then firstName + " " + surname
+            then "someOutput"
 ```
 
 If you intend to conditionally return `firstName + " " + surname` based on if `surname` exists, ensure that the right-hand side actually consumes the bound `item` by using `extract`, for example:
