@@ -67,7 +67,7 @@ jobs:
           exit 1
 
   backport-deploy-branch:
-    needs: wait-for-snapshot
+    needs: [prepare, wait-for-snapshot]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
