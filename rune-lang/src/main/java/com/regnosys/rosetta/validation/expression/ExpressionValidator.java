@@ -1,7 +1,9 @@
 package com.regnosys.rosetta.validation.expression;
 
+import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
@@ -16,17 +18,12 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.Operation;
-import com.regnosys.rosetta.types.RChoiceType;
-import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.RMetaAnnotatedType;
-import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
@@ -43,6 +40,43 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
+
+    @Check
+    public void checkThenOperation(ThenOperation operation) {
+        InlineFunction inlineFunction = operation.getFunction();
+
+        /*
+         *  Look at all symbol references and check if they reference an attribute.
+         *  If those attribute references have a reference to implicit features of the inline function then don't error.
+         */
+        List<RosettaSymbolReference> symbolReferences = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaSymbolReference.class)
+	        .stream()
+	        .filter(symbolReference -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(symbolReference).orElse(null), operation))
+	        .toList();
+        
+        Set<RosettaFeature> implicitFeatures = StreamSupport.stream(typeProvider.findFeaturesOfImplicitVariable(inlineFunction).spliterator(), false)
+                .collect(Collectors.toSet());
+
+        boolean symbolReferencesFeatureOfAttribute =
+                symbolReferences.stream()
+                .anyMatch(ref -> ref.getSymbol() instanceof Attribute && implicitFeatures.contains((Attribute) ref.getSymbol()));
+
+        if (!symbolReferencesFeatureOfAttribute) {
+            /*
+             * Implicit variable has a reference to where it comes from we should filter the implicit variable so that
+             *  we only error on the one that comes from the left hand side of the `then` operation
+             */
+            List<RosettaImplicitVariable> implicitVariables =
+                    EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaImplicitVariable.class)
+                            .stream()
+                            .filter(implicitVar -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(implicitVar).orElse(null), operation))
+                            .toList();
+            
+            if (implicitVariables.isEmpty()) {
+                error("The input item is not used in the `then` expression", inlineFunction, INLINE_FUNCTION__BODY);
+            }
+        }
+    }
 	
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
