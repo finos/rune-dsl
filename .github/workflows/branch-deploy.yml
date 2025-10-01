@@ -51,9 +51,8 @@ jobs:
           ARTIFACT_ID="rune-maven-plugin"
           VERSION="0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT"
 
-          # Poll for the main artifact JAR
-          JAR="${ARTIFACT_ID}-${VERSION}.jar"
-          URL="https://central.sonatype.com/repository/maven-snapshots/$GROUP_ID/$ARTIFACT_ID/$VERSION/$JAR"
+          # Poll for the maven-metadata.xml
+          URL="https://central.sonatype.com/repository/maven-snapshots/$GROUP_ID/$ARTIFACT_ID/$VERSION/maven-metadata.xml"
 
           echo "Polling $URL"
           for i in {1..30}; do
