@@ -51,7 +51,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
          */
         List<RosettaSymbolReference> symbolReferences = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaSymbolReference.class)
 	        .stream()
-	        .filter(implicitVar -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(implicitVar).orElse(null), operation))
+	        .filter(symbolReference -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(symbolReference).orElse(null), operation))
 	        .toList();
         
         Set<RosettaFeature> implicitFeatures = StreamSupport.stream(typeProvider.findFeaturesOfImplicitVariable(inlineFunction).spliterator(), false)
