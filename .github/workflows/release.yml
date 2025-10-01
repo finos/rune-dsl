@@ -9,28 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Publish to Central (composite action)
+      - name: Publish to Central
         uses: ./.github/actions/maven-build
         with:
           set-version: ${{ github.event.release.tag_name }}
-          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release -Dcentral-publishing.waitForCompletion=true
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
           RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
-  
-  # It takes some time for the deploy-branch mvn artifacts to maven central. TODO - add a poll or better to remove the need for this wait. 
-  delay:
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - uses: GuillaumeFalourd/wait-sleep-action@v1
-        with:
-          time: '5m'
 
   backport-publish:
-    needs: delay
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
