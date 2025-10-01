@@ -24,6 +24,21 @@ jobs:
           RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
 
+  build-and-publish-backport:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish Rosetta Backport
+        uses: ./.github/actions/maven-build
+        with:
+          working-directory: rosetta-backport
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+        env:
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+
   upload-dependency-graph:
     runs-on: ubuntu-latest
     needs: build-and-publish
