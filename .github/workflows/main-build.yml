@@ -34,8 +34,7 @@ jobs:
           ARTIFACT_ID="rune-runtime"
           VERSION="0.0.0.main-SNAPSHOT"
 
-          # Maven Central releases are published under repo1.maven.org (not snapshots)
-          URL="https://repo1.maven.org/maven2/${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
+          URL="https://central.sonatype.com/repository/maven-snapshots/$GROUP_ID/$ARTIFACT_ID/$VERSION/maven-metadata.xml"
 
           echo "Polling $URL"
           for i in {1..30}; do
