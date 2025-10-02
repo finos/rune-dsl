@@ -48,7 +48,7 @@ jobs:
       - name: Poll for snapshot availability
         run: |
           GROUP_ID="org/finos/rune"
-          ARTIFACT_ID="rune-maven-plugin"
+          ARTIFACT_ID="rune-runtime"
           VERSION="0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT"
 
           # Poll for the maven-metadata.xml
