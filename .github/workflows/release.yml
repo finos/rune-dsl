@@ -30,7 +30,6 @@ jobs:
           ARTIFACT_ID="rune-runtime"
           VERSION="${{ github.event.release.tag_name }}"
 
-          # Maven Central releases are published under repo1.maven.org (not snapshots)
           URL="https://repo1.maven.org/maven2/${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
 
           echo "Polling $URL"
