@@ -9,25 +9,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v5
+      - name: Publish to Central
+        uses: ./.github/actions/maven-build
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          architecture: x64
-          cache: maven
-          server-id: ossrh
-          server-username: CI_DEPLOY_USERNAME
-          server-password: CI_DEPLOY_PASSWORD
-          gpg-private-key: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
-      - name: Set version
-        shell: bash
-        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }}
-      - name: Publish package
-        run: mvn -B clean install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+          set-version: ${{ github.event.release.tag_name }}
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
-          GPG_KEYNAME: ${{ secrets.RUNE_GPG_KEYNAME }}
-          GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
+          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+
+  backport-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Publish Rosetta Backport
+        uses: ./.github/actions/maven-build
+        with:
+          working-directory: rosetta-backport
+          set-version: ${{ github.event.release.tag_name }}
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+        env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}

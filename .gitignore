@@ -12,8 +12,8 @@ build.acceleo
 plugin.xml_gen
 **/*.iml
 .classpath
-rosetta-profiling/dependency-reduced-pom.xml
-rosetta-profiling/reports/
+rune-profiling/dependency-reduced-pom.xml
+rune-profiling/reports/
 
 **/.settings
 **/src-gen/

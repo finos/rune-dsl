@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.finos</groupId>
+        <artifactId>finos</artifactId>
+        <version>9</version>
+    </parent>
+
+    <groupId>com.regnosys.rosetta</groupId>
+    <artifactId>rosetta-backport-parent</artifactId>
+    <version>0.0.0.main-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Release -->
+        <distMgmtReleaseName>REGnosys Release Distribution Repository</distMgmtReleaseName>
+        <distMgmtSnapshotsName>REGnosys Development Snapshot Repository</distMgmtSnapshotsName>
+        <organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
+    </properties>
+
+    <modules>
+        <module>rosetta-runtime</module>
+        <module>rosetta-ide</module>
+        <module>rosetta-maven-plugin</module>
+        <module>rosetta-testing</module>
+        <module>rosetta-tools</module>
+        <module>rosetta-xcore-plugin-dependencies</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <!-- Prevent maven-source-plugin from running twice during a release -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <skipSource>true</skipSource>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <failOnError>false</failOnError>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

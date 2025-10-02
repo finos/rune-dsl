@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.finos.rune</groupId>
+        <artifactId>org.finos.rune.parent</artifactId>
+        <version>0.0.0.main-SNAPSHOT</version>
+    </parent>
+
+    <name>Rune DSL Integration Test Project</name>
+    <artifactId>rune-integration-tests</artifactId>
+
+    <dependencies>
+        <!-- Inter-project dependencies -->
+        <dependency>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>rune-lang</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.rune</groupId>
+            <artifactId>rune-testing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
+        <!-- External dependencies -->
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.testing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.xbase.testing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mdkt.compiler</groupId>
+            <artifactId>InMemoryJavaCompiler</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.xtend</groupId>
+                <artifactId>xtend-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets combine.children="append">
+                        <fileset>
+                            <directory>${basedir}/xtend-gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>checkstyle-for-deprecated-guice.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <sourceDirectories>
+                        <sourceDirectory>src/main/java</sourceDirectory>
+                        <sourceDirectory>src/test/java</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/xtend-gen/main/java</sourceDirectory>
+                        <sourceDirectory>${project.basedir}/xtend-gen/test/java</sourceDirectory>
+                    </sourceDirectories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>Check style</id>
+                        <!-- This needs to run /after/ xtend (test) source
+                        generation is done. -->
+                        <phase>process-test-sources</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

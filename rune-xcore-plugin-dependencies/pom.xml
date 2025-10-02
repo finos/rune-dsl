@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2024 REGnosys
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.finos.rune</groupId>
+        <artifactId>org.finos.rune.parent</artifactId>
+        <version>0.0.0.main-SNAPSHOT</version>
+    </parent>
+
+	<name>Rune DSL Plugin Dependencies</name>
+    <artifactId>rune-xcore-plugin-dependencies</artifactId>
+
+    <description>
+        Responsibilities: defining plugin dependencies for the xtext-maven-plugin and the Mwe2Launcher.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.codegen.ecore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.xbase</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xcore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.mwe2.launch</artifactId>
+            <exclusions>
+				<exclusion>
+					<groupId>ch.qos.reload4j</groupId>
+					<artifactId>reload4j</artifactId>
+				</exclusion>
+			</exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.xtext.generator</artifactId>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.osgi</groupId>
+            		<artifactId>org.osgi.service.prefs</artifactId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+        <dependency> <!-- See issue https://github.com/eclipse/mwe/issues/255 -->
+	        <groupId>com.google.inject</groupId>
+	        <artifactId>guice</artifactId>
+	    </dependency>
+	    <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+    </dependencies>
+    
+    <build>
+		<plugins>
+            <plugin>
+                <groupId>org.eclipse.xtend</groupId>
+                <artifactId>xtend-maven-plugin</artifactId>
+            </plugin>
+		</plugins>
+	</build>
+</project>
