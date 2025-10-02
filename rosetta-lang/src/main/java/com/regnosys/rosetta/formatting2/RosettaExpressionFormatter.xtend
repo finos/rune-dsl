@@ -170,7 +170,9 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		
 		if (expr instanceof RosettaConstructorExpression) {
 			expr.values.forEach [
-				if (value instanceof RosettaConstructorExpression) {
+				if (value instanceof RosettaConstructorExpression || 
+					(value instanceof RosettaUnaryOperation && (value as RosettaUnaryOperation).argument instanceof RosettaConstructorExpression)
+				) {
 					regionFor.keyword(':')
 						.prepend[noSpace]
 						.append[newLine]
@@ -630,7 +632,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
-		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
+		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine || expr instanceof WithMetaOperation),
 			[extension doc | // case: short operation
 				if (!expr.argument.isEmpty) {
 					val afterArgument = expr.argument.nextHiddenRegion

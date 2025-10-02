@@ -112,8 +112,8 @@ class RosettaExpressionFormattingTest {
         		} with-meta {
         			key: inKey
         		},
-        	innerBar2: MyFunc2() with-meta {  
-        			key: inKey  
+        	innerBar2: MyFunc2() with-meta {
+        			key: inKey
         }} with-meta {
         	key: inKey
         }
