@@ -476,9 +476,9 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testShortListFormatting3() {
 		'''
-		[1  then  [  item] ]
+		[1  then extract  [  item] ]
 		''' -> '''
-		[1 then [ item ]]
+		[1 then extract [ item ]]
 		'''
 	}
 	
@@ -522,11 +522,11 @@ class RosettaExpressionFormattingTest {
 	@Test
 	def void testLongListFormatting3() {
 		'''
-		["This is a veeeeeeeeery loooooooong list" then [PerformComputation], 2, 3]
+		["This is a veeeeeeeeery loooooooong list" then extract [PerformComputation], 2, 3]
 		''' -> '''
 		[
 			"This is a veeeeeeeeery loooooooong list"
-				then [ PerformComputation ],
+				then extract [ PerformComputation ],
 			2,
 			3
 		]

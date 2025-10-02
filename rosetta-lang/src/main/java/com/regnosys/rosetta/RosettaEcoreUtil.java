@@ -303,6 +303,12 @@ public class RosettaEcoreUtil {
 	private boolean metaAttributeExists(Annotated it, Predicate<Attribute> test) {
 		return Iterables.any(metaAnnotations(it), ref -> isResolved(ref.getAttribute()) && test.test(ref.getAttribute()));
 	}
+	public boolean isAttributeMeta(String name) {
+		return !isTypeMeta(name);
+	}
+	public boolean isTypeMeta(String name) {
+		return "key".equals(name) || "template".equals(name);
+	}
 	@Deprecated
 	public boolean hasKeyedAnnotation(Annotated it) {
 		return metaAttributeExists(it, attr -> "key".equals(attr.getName()));

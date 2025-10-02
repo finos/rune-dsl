@@ -1,0 +1,13 @@
+namespace test.escaping.importoverlap
+
+import test.escaping.importoverlap.dep.* as dep
+
+func MyFunc:
+  [codeImplementation]
+  output:
+    result int (1..1)
+
+func UseFunctions:
+  output:
+    result int (1..1)
+  set result: MyFunc() + dep.MyFunc()
