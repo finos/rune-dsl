@@ -12,26 +12,16 @@ concurrency:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    outputs:
+      build-ts: ${{ steps.capture-ts.outputs.build_ts }}
     steps:
       - uses: actions/checkout@v5
+      - name: Capture build timestamp
+        id: capture-ts
+        run: echo "::set-output name=build_ts::$(date +%s)"
       - name: Build and publish with Maven (composite action)
         uses: ./.github/actions/maven-build
         with:
-          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
-        env:
-          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
-          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
-
-  build-and-publish-backport:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Publish Rosetta Backport
-        uses: ./.github/actions/maven-build
-        with:
-          working-directory: rosetta-backport
           build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
