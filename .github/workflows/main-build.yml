@@ -12,8 +12,13 @@ concurrency:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    outputs:
+      build-ts: ${{ steps.capture-ts.outputs.build_ts }}
     steps:
       - uses: actions/checkout@v5
+      - name: Capture build timestamp
+        id: capture-ts
+        run: echo "::set-output name=build_ts::$(date +%s)"
       - name: Build and publish with Maven (composite action)
         uses: ./.github/actions/maven-build
         with:
@@ -24,7 +29,40 @@ jobs:
           RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
 
+
+  wait-for-release:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll for release availability
+        run: |
+          GROUP_ID="org/finos/rune"
+          ARTIFACT_ID="rune-runtime"
+          VERSION="0.0.0.main-SNAPSHOT"
+
+          URL="https://central.sonatype.com/repository/maven-snapshots/$GROUP_ID/$ARTIFACT_ID/$VERSION/maven-metadata.xml"
+
+          # Use the timestamp from the previous step
+          BUILD_TS=${{ needs.build-and-publish.outputs.build-ts }}
+          echo "Polling $URL for snapshot updated after previous build step ($BUILD_TS)"
+
+          for i in {1..30}; do
+            LAST_MODIFIED=$(curl -sI "$URL" | grep -i "^Last-Modified:" | sed 's/Last-Modified: //I' | xargs -I{} date -d "{}" +%s)
+
+            if [[ -n "$LAST_MODIFIED" && "$LAST_MODIFIED" -ge "$BUILD_TS" ]]; then
+              echo "Snapshot $VERSION has been updated! Last-Modified: $(date -d @$LAST_MODIFIED)"
+              exit 0
+            fi
+
+            echo "Snapshot not updated yet... waiting 20s"
+            sleep 20
+          done
+
+          echo "Snapshot not available after 10 minutes"
+          exit 1
+
   build-and-publish-backport:
+    needs: wait-for-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

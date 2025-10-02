@@ -20,7 +20,32 @@ jobs:
           RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
 
+  wait-for-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll for release availability
+        run: |
+          GROUP_ID="org/finos/rune"
+          ARTIFACT_ID="rune-runtime"
+          VERSION="${{ github.event.release.tag_name }}"
+
+          URL="https://repo1.maven.org/maven2/${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
+
+          echo "Polling $URL"
+          for i in {1..30}; do
+            if curl --silent --head --fail "$URL" > /dev/null; then
+              echo "Release $VERSION is available!"
+              exit 0
+            fi
+            echo "Not yet... waiting 20s"
+            sleep 20
+          done
+          echo "Release not available after 10 minutes"
+          exit 1
+
   backport-publish:
+    needs: wait-for-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
