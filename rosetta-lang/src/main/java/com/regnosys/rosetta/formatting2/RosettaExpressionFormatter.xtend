@@ -70,6 +70,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			return true
 		}
 		switch expr {
+			WithMetaOperation:
+				true
 			RosettaBinaryOperation:
 				expr.left.isSimple || expr.right.isSimple
 			RosettaFunctionalOperation:
@@ -632,7 +634,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 	
 	private def void formatUnaryOperation(RosettaUnaryOperation expr, extension IFormattableDocument document, FormattingMode mode, (IFormattableDocument) => void internalFormatter) {
-		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine || expr instanceof WithMetaOperation),
+		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short operation
 				if (!expr.argument.isEmpty) {
 					val afterArgument = expr.argument.nextHiddenRegion
