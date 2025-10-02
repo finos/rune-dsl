@@ -25,21 +25,21 @@
         <version>9</version>
     </parent>
 
-    <groupId>com.regnosys.rosetta</groupId>
-    <artifactId>com.regnosys.rosetta.parent</artifactId>
+    <groupId>org.finos.rune</groupId>
+    <artifactId>org.finos.rune.parent</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Rosetta DSL Parent POM</name>
+    <name>Rune DSL Parent POM</name>
     <description>
-        Rosetta is a Domain-Specific Language (DSL) that supports the modelling
+        Rune DSL is a Domain-Specific Language (DSL) that supports the modelling
         of operational processes for the
         financial markets' industry. Its purpose is to promote consistency and
         inter-operability between the various
         implementations of these processes.
 
         This parent project manages dependencies of the modules that make up the
-        Rosetta DSL.
+        Rune DSL.
     </description>
     <url>https://github.com/finos/rune-dsl</url>
 
@@ -130,15 +130,15 @@
     </properties>
 
     <modules>
-        <module>rosetta-xcore-plugin-dependencies</module>
-        <module>rosetta-runtime</module>
-        <module>rosetta-lang</module>
-        <module>rosetta-testing</module>
-        <module>rosetta-integration-tests</module>
-        <module>rosetta-ide</module>
-        <module>rosetta-tools</module>
-        <module>rosetta-maven-plugin</module>
-        <module>rosetta-profiling</module>
+        <module>rune-xcore-plugin-dependencies</module>
+        <module>rune-runtime</module>
+        <module>rune-lang</module>
+        <module>rune-testing</module>
+        <module>rune-integration-tests</module>
+        <module>rune-ide</module>
+        <module>rune-tools</module>
+        <module>rune-maven-plugin</module>
+        <module>rune-profiling</module>
     </modules>
 
     <dependencyManagement>
@@ -368,6 +368,14 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <configuration>
+                    <waitUntil>PUBLISHED</waitUntil>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
@@ -570,22 +578,22 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>${maven-plugin-plugin.version}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<configuration>
-						<failOnError>false</failOnError>
-					</configuration>
-					<executions>
-						<execution>
-							<id>attach-javadocs</id>
-							<phase>package</phase>
-							<goals>
-								<goal>jar</goal>
-							</goals>
-						</execution>
-					</executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <failOnError>false</failOnError>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
