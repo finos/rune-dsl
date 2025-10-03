@@ -27,20 +27,40 @@ jobs:
       - name: Poll for release availability
         run: |
           GROUP_ID="org/finos/rune"
-          ARTIFACT_ID="rune-runtime"
           VERSION="${{ github.event.release.tag_name }}"
 
-          URL="https://repo1.maven.org/maven2/${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
+          MODULES=(
+            "rune-runtime"
+            "rune-ide"
+            "rune-maven-plugin"
+            "rune-testing"
+            "rune-tools"
+            "rune-xcore-plugin-dependencies"
+          )
 
-          echo "Polling $URL"
+          echo "Polling for all modules in version $VERSION"
+
           for i in {1..30}; do
-            if curl --silent --head --fail "$URL" > /dev/null; then
-              echo "Release $VERSION is available!"
+            ALL_OK=true
+            for ARTIFACT_ID in "${MODULES[@]}"; do
+              URL="https://repo1.maven.org/maven2/$GROUP_ID/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
+              if ! curl --silent --head --fail "$URL" > /dev/null; then
+                echo "Missing $ARTIFACT_ID-$VERSION.jar"
+                ALL_OK=false
+              else
+                echo "Found $ARTIFACT_ID-$VERSION.jar"
+              fi
+            done
+
+            if [ "$ALL_OK" = true ]; then
+              echo "All modules are available in Maven Central"
               exit 0
             fi
-            echo "Not yet... waiting 20s"
+
+            echo "Not all artifacts available yet... waiting 20s"
             sleep 20
           done
+
           echo "Release not available after 10 minutes"
           exit 1
 
