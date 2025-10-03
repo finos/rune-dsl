@@ -9,7 +9,8 @@
         <artifactId>rosetta-backport-parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
-    
+
+    <name>Rosetta Language Server</name>
     <artifactId>com.regnosys.rosetta.ide</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
 

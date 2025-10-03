@@ -10,6 +10,7 @@
         <version>9</version>
     </parent>
 
+    <name>Rosetta DSL Backport</name>
     <groupId>com.regnosys.rosetta</groupId>
     <artifactId>rosetta-backport-parent</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>

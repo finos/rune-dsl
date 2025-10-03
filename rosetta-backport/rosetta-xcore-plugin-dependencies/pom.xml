@@ -10,6 +10,7 @@
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
+    <name>Rosetta DSL Plugin Dependencies</name>
     <artifactId>com.regnosys.rosetta.xcore</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
 
