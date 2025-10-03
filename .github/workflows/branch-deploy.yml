@@ -27,8 +27,13 @@ jobs:
   deploy-branch:
     needs: prepare
     runs-on: ubuntu-latest
+    outputs:
+      build-ts: ${{ steps.capture-ts.outputs.build_ts }}
     steps:
       - uses: actions/checkout@v5
+      - name: Capture build timestamp
+        id: capture-ts
+        run: echo "::set-output name=build_ts::$(date +%s)"
       - name: Deploy snapshot to Central (composite action)
         uses: ./.github/actions/maven-build
         with:
@@ -38,48 +43,5 @@ jobs:
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
-          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
-          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
-
-  wait-for-snapshot:
-    needs: [prepare, deploy-branch]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Poll for snapshot availability
-        run: |
-          GROUP_ID="org/finos/rune"
-          ARTIFACT_ID="rune-maven-plugin"
-          VERSION="0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT"
-
-          # Poll for the maven-metadata.xml
-          URL="https://central.sonatype.com/repository/maven-snapshots/$GROUP_ID/$ARTIFACT_ID/$VERSION/maven-metadata.xml"
-
-          echo "Polling $URL"
-          for i in {1..30}; do
-            if curl --silent --head --fail "$URL" > /dev/null; then
-              echo "Snapshot is available!"
-              exit 0
-            fi
-            echo "Not yet... waiting 20s"
-            sleep 20
-          done
-          echo "Snapshot not available after 10 minutes"
-          exit 1
-
-  backport-deploy-branch:
-    needs: [prepare, wait-for-snapshot]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Deploy Rosetta Backport snapshot
-        uses: ./.github/actions/maven-build
-        with:
-          working-directory: rosetta-backport
-          set-version: 0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT
-          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
-          run-tests: ${{ inputs.run-tests }}
-        env:
-          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
           RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
