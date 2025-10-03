@@ -70,6 +70,8 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			return true
 		}
 		switch expr {
+			WithMetaOperation:
+				true
 			RosettaBinaryOperation:
 				expr.left.isSimple || expr.right.isSimple
 			RosettaFunctionalOperation:
@@ -170,9 +172,19 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		
 		if (expr instanceof RosettaConstructorExpression) {
 			expr.values.forEach [
-				regionFor.keyword(':')
-					.prepend[noSpace]
-					.append[oneSpace]
+				if (value instanceof RosettaConstructorExpression || 
+					(value instanceof RosettaUnaryOperation && (value as RosettaUnaryOperation).argument instanceof RosettaConstructorExpression)
+				) {
+					regionFor.keyword(':')
+						.prepend[noSpace]
+						.append[newLine]
+				} else {
+					regionFor.keyword(':')
+						.prepend[noSpace]
+						.append[oneSpace]
+				}
+				
+				indentInnerWithoutCurlyBracket(it, document)
 				value.formatExpression(document, mode)
 			]
 		}
@@ -182,6 +194,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				regionFor.keyword(':')
 					.prepend[noSpace]
 					.append[oneSpace]
+				indentInnerWithoutCurlyBracket(it, document)
 				value.formatExpression(document, mode)
 			]
 		}
