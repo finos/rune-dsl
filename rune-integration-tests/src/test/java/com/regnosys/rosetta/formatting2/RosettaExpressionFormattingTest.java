@@ -3,7 +3,6 @@ package com.regnosys.rosetta.formatting2;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -160,8 +159,6 @@ public class RosettaExpressionFormattingTest {
                 """);
     }
 
-    //TODO: fix issue where multi line expression in a with-meta on a constructor causes formatting exception
-    @Disabled
     @Test
     public void testWithMetaOnConstructorFormat() {
         arrow("""
@@ -179,7 +176,7 @@ public class RosettaExpressionFormattingTest {
                 SomeType {
                 	attr1: "Some expression"
                 } with-meta {
-                  	scheme: "Some expression",
+                	scheme: "Some expression",
                 	id: foo
                 			extract
                 				if True
