@@ -10,6 +10,7 @@
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
+    <name>Rune DSL Scripts</name>
     <artifactId>com.regnosys.rosetta.tools</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
 

@@ -9,6 +9,8 @@
         <artifactId>rosetta-backport-parent</artifactId>
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
+
+    <name>Rosetta DSL Maven Plugin</name>
     <artifactId>rosetta-maven-plugin</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
