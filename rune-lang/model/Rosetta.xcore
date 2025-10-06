@@ -1,5 +1,5 @@
 @Ecore(nsURI="http://www.rosetta-model.com/Rosetta")
-@GenModel(fileExtensions="rosetta", modelDirectory="/com.regnosys.rosetta/emf-gen/main/java", operationReflection="false",
+@GenModel(fileExtensions="rosetta", modelDirectory="/rune-lang/emf-gen/main/java", operationReflection="false",
 	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 package com.regnosys.rosetta.rosetta

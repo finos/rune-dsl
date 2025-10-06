@@ -24,9 +24,9 @@ public class ParserCaseExtractorFragmentTest {
 		fragment.addGrammarFile(target.toString());
 		
 		XtextGeneratorLanguage lang = new XtextGeneratorLanguage();
-		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore");
-		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/RosettaSimple.xcore");
-		lang.addReferencedResource("platform:/resource/com.regnosys.rosetta/model/RosettaExpression.xcore");
+		lang.addReferencedResource("platform:/resource/rune-lang/model/Rosetta.xcore");
+		lang.addReferencedResource("platform:/resource/rune-lang/model/RosettaSimple.xcore");
+		lang.addReferencedResource("platform:/resource/rune-lang/model/RosettaExpression.xcore");
 		lang.setGrammarUri(new File("src/main/java", "com.regnosys.rosetta.Rosetta".replace(".", "/") + ".xtext").toURI().toString());
 		lang.addFragment(fragment);
 		

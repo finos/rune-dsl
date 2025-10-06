@@ -58,9 +58,9 @@ Workflow {
 			}
 		}
 		language = StandardLanguage {
-			referencedResource = "platform:/resource/com.regnosys.rosetta/model/Rosetta.xcore"
-			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaSimple.xcore"
-			referencedResource = "platform:/resource/com.regnosys.rosetta/model/RosettaExpression.xcore"
+			referencedResource = "platform:/resource/rune-lang/model/Rosetta.xcore"
+			referencedResource = "platform:/resource/rune-lang/model/RosettaSimple.xcore"
+			referencedResource = "platform:/resource/rune-lang/model/RosettaExpression.xcore"
 			name = "com.regnosys.rosetta.Rosetta"
 			fileExtensions = "rosetta"
 

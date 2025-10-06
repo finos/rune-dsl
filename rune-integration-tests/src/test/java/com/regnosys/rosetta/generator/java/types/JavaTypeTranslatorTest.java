@@ -25,7 +25,7 @@ public class JavaTypeTranslatorTest {
     private RosettaTestModelService modelService;
 
     private Class<?> barClass;
-    
+
     @BeforeAll
     void setup() {
         JavaTestModel model = modelService.toJavaTestModel("""
@@ -46,7 +46,7 @@ public class JavaTypeTranslatorTest {
                 """).compile();
         barClass = model.getTypeJavaClass("Bar");
     }
-    
+
     List<TestCase> getTestCases() {
         return List.of(
                 new TestCase("attr1", "FooWithKey"),
@@ -63,7 +63,7 @@ public class JavaTypeTranslatorTest {
                 testCase.expectedJavaType,
                 getMethodType(testCase.attribute).getSimpleName());
     }
-    
+
     private Class<?> getMethodType(String attributeName) {
         Method method;
         try {
@@ -73,7 +73,7 @@ public class JavaTypeTranslatorTest {
         }
         return method.getReturnType();
     }
-    
+
     private record TestCase(String attribute, String expectedJavaType) {
         @Override
         public String toString() {
