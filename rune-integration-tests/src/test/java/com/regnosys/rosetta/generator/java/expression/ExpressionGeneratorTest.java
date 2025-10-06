@@ -146,6 +146,23 @@ public class ExpressionGeneratorTest {
     }
 
     @Test
+    public void testEvaluateEmptyIsFalse() {
+        CharSequence expr = """
+        empty or False
+        """;
+
+        String expected = """
+        import com.rosetta.model.lib.expression.ComparisonResult;
+        import com.rosetta.model.lib.mapper.MapperS;
+
+
+        return ComparisonResult.failureEmptyOperand("").or(ComparisonResult.of(MapperS.of(false))).get();
+        """;
+
+        assertJavaCode(expected, expr, Boolean.class);
+    }
+
+    @Test
     public void testDefaultWithMetaCoercion() {
         CharSequence expr = """
         foo default bar
