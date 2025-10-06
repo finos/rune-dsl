@@ -6,6 +6,7 @@ func MyOtherFunc:
 
     set result:
         Foo {
-            bar: Bar {
-                attr: "bar attr"
+            bar:
+                Bar {
+                    attr: "bar attr"
         }}
