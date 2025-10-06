@@ -10,7 +10,7 @@
         <version>0.0.0.main-SNAPSHOT</version>
     </parent>
 
-    <name>Rosetta Language Server</name>
+    <name>Rosetta DSL SDK</name>
     <artifactId>com.regnosys.rosetta</artifactId>
     <version>0.0.0.main-SNAPSHOT</version>
 

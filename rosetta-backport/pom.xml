@@ -30,6 +30,7 @@
     <modules>
         <module>rosetta-runtime</module>
         <module>rosetta-ide</module>
+        <module>rosetta-lang</module>
         <module>rosetta-maven-plugin</module>
         <module>rosetta-testing</module>
         <module>rosetta-tools</module>
