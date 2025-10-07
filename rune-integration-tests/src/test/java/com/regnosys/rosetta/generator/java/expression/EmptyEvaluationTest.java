@@ -18,6 +18,15 @@ public class EmptyEvaluationTest {
 
     @Test
     void emptyEvaluatesToFalseTest() {
+        var model = modelService.toJavaTestModel("").compile();
+
+        boolean result = model.evaluateExpression(Boolean.class, "empty or False");
+
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    void emptyInConstructorEvaluatesToFalseTest() {
         var model = modelService.toJavaTestModel("""
                 type Foo:
                     someBoolean boolean (0..1)

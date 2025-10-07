@@ -377,7 +377,7 @@ class TypeCoercionService {
 		} else if (expected.isMapperC) {
 			JavaExpression.from('''«MapperC».<«itemType»>ofNull()''', MAPPER_C.wrap(itemType))
 		} else if (expected.isComparisonResult) {
-			JavaExpression.from('''«ComparisonResult».successEmptyOperand("")''', COMPARISON_RESULT)
+			JavaExpression.from('''«ComparisonResult».of(«MapperS».<«itemType»>of(false))''', COMPARISON_RESULT)
 		} else if (expected == JavaPrimitiveType.BOOLEAN) {
 			JavaExpression.from('''false''', JavaPrimitiveType.BOOLEAN)
 		} else if (expected instanceof RJavaWithMetaValue) {

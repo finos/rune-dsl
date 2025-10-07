@@ -46,7 +46,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	public static ComparisonResult of(Mapper<Boolean> result) {
-		return new ComparisonResult(result.getMulti().stream().allMatch(r -> r == true), false, null);
+		return new ComparisonResult(!result.getMulti().isEmpty() && result.getMulti().stream().allMatch(r -> r == true), false, null);
 	}
 	
 	private ComparisonResult(boolean result, boolean emptyOperand, String error) {
