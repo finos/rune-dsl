@@ -144,15 +144,14 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	}
 	
 	private void setImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
-		if (implicitVariableUtil.implicitVariableExistsInContext(expr) && !expr.isExplicitArguments()) {
-			if ((expr.getSymbol() instanceof RosettaCallableWithArgs callableWithArgs
-					&& callableWithArgs.numberOfParameters() == 1)) {
-				expr.setImplicitArgument(implicitVariableUtil.getDefaultImplicitVariable());
+		if (implicitVariableUtil.implicitVariableExistsInContext(expr)) {
+			expr.setImplicitVariableIsInContext(true);
 			}
 		}
-	}
-
 	private void discardImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
-		expr.setImplicitArgument(null);
-	}
+		if (expr.isImplicitVariableIsInContext()) {
+			expr.setImplicitVariableIsInContext(false);
+		    expr.setImplicitArgument(null);
+	    }
+    }
 }
