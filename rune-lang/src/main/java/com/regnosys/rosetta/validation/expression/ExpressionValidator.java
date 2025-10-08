@@ -51,6 +51,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
          */
         List<RosettaSymbolReference> symbolReferences = EcoreUtil2.getAllContentsOfType(inlineFunction, RosettaSymbolReference.class)
 	        .stream()
+            .peek(RosettaSymbolReference::getArgs) //Calling getArgs on the SymbolReference will trigger the lazy population of the implicit argument
 	        .filter(symbolReference -> Objects.equals(implicitVarUtil.findContainerDefiningImplicitVariable(symbolReference).orElse(null), operation))
 	        .toList();
         
