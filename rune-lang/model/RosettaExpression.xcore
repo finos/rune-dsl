@@ -126,10 +126,17 @@ class RosettaSymbolReference extends RosettaReference {
 	boolean explicitArguments
 	contains RosettaExpression[] rawArgs
 	
+	boolean implicitVariableIsInContext
 	contains RosettaExpression implicitArgument
 	
 	op RosettaExpression[] getArgs() {
-		if (implicitArgument !== null) {
+		if (!explicitArguments && implicitVariableIsInContext && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
+			if (implicitArgument === null) {
+				val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+				def.setName("item");
+				def.setGenerated(true);
+				implicitArgument = def
+			}
 			return new BasicEList(#[implicitArgument])
 		}
 		return rawArgs
