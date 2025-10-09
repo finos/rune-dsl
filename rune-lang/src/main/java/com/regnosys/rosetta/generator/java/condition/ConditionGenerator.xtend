@@ -1,31 +1,38 @@
 package com.regnosys.rosetta.generator.java.condition
 
+import com.google.inject.ImplementedBy
+import com.regnosys.rosetta.generator.java.EcoreBasedJavaClassGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
+import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.simple.Condition
+import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.annotations.RosettaDataRule
 import com.rosetta.model.lib.expression.ComparisonResult
+import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ValidationResult
-
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
-import jakarta.inject.Inject
-import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
-import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
+import com.rosetta.util.types.JavaReferenceType
+import jakarta.inject.Inject
 import java.util.Arrays
 import java.util.Collections
 import java.util.List
-import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
-import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.EcoreBasedJavaClassGenerator
-import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 
 class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaConditionInterface> {
 	@Inject ExpressionGenerator expressionHandler
@@ -34,6 +41,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 	@Inject extension ModelGeneratorUtil
+	@Inject RosettaTypeProvider typeProvider
 	
 	
 	override protected streamObjects(RosettaModel model) {
@@ -112,7 +120,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 					}
 					
 					private «ComparisonResult» executeDataRule(«conditionClass.instanceClass» «defaultClassExecuteInstanceId»«FOR param : params.keySet», «params.get(param)» «defaultClassExecuteScope.getIdentifierOrThrow(param)»«ENDFOR») {
-						try «expressionHandler.javaCode(condition.expression, COMPARISON_RESULT, defaultClassExecuteBodyScope)
+						try «trueOnEmptyExpression(condition.expression, defaultClassExecuteBodyScope)
 								.completeAsReturn.toBlock»
 						catch («Exception» «defaultClassExecuteExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExecuteExceptionId».getMessage());
@@ -130,6 +138,14 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 				}
 			}
 		'''
+	}
+	
+	private def JavaStatementBuilder trueOnEmptyExpression(RosettaExpression expr, JavaStatementScope defaultClassExecuteBodyScope) {
+		val javaType = typeProvider.getRMetaAnnotatedType(expr).toJavaType
+		if (javaType.itemType == JavaReferenceType.NULL_TYPE || javaType.itemType.isVoid) {
+			return JavaExpression.from('''«ComparisonResult».of(«MapperS».<«Boolean»>of(true))''', COMPARISON_RESULT)
+		}
+		return expressionHandler.javaCode(expr, COMPARISON_RESULT, defaultClassExecuteBodyScope)
 	}
 }
 

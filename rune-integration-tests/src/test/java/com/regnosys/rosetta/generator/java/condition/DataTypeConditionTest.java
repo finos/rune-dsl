@@ -19,9 +19,42 @@ import com.rosetta.model.lib.path.RosettaPath;
 public class DataTypeConditionTest extends AbstractConditionTest {
 	@Inject
 	private RosettaTestModelService testModelService;
+	
+	@Test
+	void emptyConditionIsSuccess() {
+		testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+					
+					condition C:
+					    empty
+				""").writeClasses("emptyConditionIsSuccess");
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+					
+					condition C:
+					    empty
+				""").compile();
+		
+		var condition = getCondition(model, "Foo", "C");
+
+		RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    a: 10
+				}
+				""");
+		
+		var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+		
+		assertResults(
+			fooResults,
+			(v1) -> assertSuccess(v1, "FooC", "foo")
+		);
+	}
 
 	@Test
-	void emptyConditionIsSuccess() {	
+	void emptyConditionIfThenIsSuccess() {	
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
@@ -93,6 +126,15 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 	
 	@Test
 	void inapplicableConditionIsSuccess() {	
+		testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+					
+					condition C:
+					    if a exists
+					    then a = 42
+				""").writeClasses("inapplicableConditionIsSuccess");
+		
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
