@@ -39,8 +39,6 @@ public class FunctionEmptyArgumentTest {
 
         var code = generatorTestHelper.generateCode(model);
 
-        generatorTestHelper.writeClasses(code, "foo");
-
         var classes = generatorTestHelper.compileToClasses(code);
 
         var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
